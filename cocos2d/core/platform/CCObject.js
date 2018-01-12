@@ -12,7 +12,7 @@ var Dirty = 1 << 5;
 var DontDestroy = 1 << 6;
 var Destroying = 1 << 7;
 var Deactivating = 1 << 8;
-var Locked = 1 << 9;
+var LockedInEditor = 1 << 9;
 //var HideInGame = 1 << 9;
 //var HideInEditor = 1 << 10;
 
@@ -117,7 +117,7 @@ JS.value(CCObject, 'Flags', {
      * @property Locked
      * @private
      */
-    Locked,
+    LockedInEditor,
 
     ///**
     // * !#en
