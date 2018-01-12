@@ -111,8 +111,8 @@ JS.value(CCObject, 'Flags', {
     Deactivating,
 
     /**
-     * !#en Lock node, locked in the scene cannot be clicked, the property cannot be modified.
-     * !#zh 锁定节点，锁定后场景内不能点击，属性不能修改
+     * !#en The lock node, when the node is locked, cannot be clicked in the scene.
+     * !#zh 锁定节点，锁定后场景内不能点击
      * 
      * @property Locked
      * @private
