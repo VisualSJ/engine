@@ -12,6 +12,7 @@ var Dirty = 1 << 5;
 var DontDestroy = 1 << 6;
 var Destroying = 1 << 7;
 var Deactivating = 1 << 8;
+var Locked = 1 << 9;
 //var HideInGame = 1 << 9;
 //var HideInEditor = 1 << 10;
 
@@ -108,6 +109,15 @@ JS.value(CCObject, 'Flags', {
      * @private
      */
     Deactivating,
+
+    /**
+     * !#en Lock node, locked in the scene cannot be clicked, the property cannot be modified.
+     * !#zh 锁定节点，锁定后场景内不能点击，属性不能修改
+     * 
+     * @property Locked
+     * @private
+     */
+    Locked,
 
     ///**
     // * !#en
