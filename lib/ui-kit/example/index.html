@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Panel Example</title>
+        <style>
+            body > section {
+                font-family: -apple-system,BlinkMacSystemFont,Segoe WPC,Segoe UI,HelveticaNeue-Light,Noto Sans,Microsoft YaHei,PingFang SC,Hiragino Sans GB,Source Han Sans SC,Source Han Sans CN,Source Han Sans,sans-serif;
+                margin: 15px;
+            }
+
+            h1 {
+                margin: 0 0 15px 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        
+        <select id="select">
+            <option>ui-loading</option>
+            <option>ui-button</option>
+            <option>ui-input</option>
+            <option>ui-num-input</option>
+        </select>
+
+        <section id="content">
+
+        </section>
+    </body>
+
+    <script>
+        const fs = require('fs');
+        const ui = require('../index');
+        const $select = document.getElementById('select');
+        const $content = document.getElementById('content');
+
+        let changeTestPage = function (name) {
+            let path = __dirname + '/element/' + name + '.html';
+            if (!fs.existsSync(path)) {
+                $content.innerHTML = '';
+                return;
+            }
+            $content.innerHTML = fs.readFileSync(path, 'utf-8');
+        };
+        changeTestPage($select.value);
+        $select.addEventListener('change', (event) => {
+            changeTestPage(event.target.value);
+        });
+    </script>
+</html>

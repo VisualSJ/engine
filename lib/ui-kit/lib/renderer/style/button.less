@@ -1,0 +1,35 @@
+@import "./base.less";
+
+:host {
+    cursor: pointer;
+    background: #eee;
+    transition: opacity 0.3s;
+    border: 1px solid @border-color;
+    background: @background-color;
+
+    & > span {
+        background: none;
+        border: none;
+        font-size: inherit;
+        display: inline-block;
+        padding: 0.2em 1em;
+        outline: none;
+    }
+
+}
+
+:host([focused]) {
+    border-color: @focused-color;
+}
+
+:host([disabled]){
+    cursor: default;
+    
+    & > span {
+        opacity: @disabled-opacity;
+    }
+}
+
+:host([pressed]) {
+    background: @background-color * 0.9;
+}

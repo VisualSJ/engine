@@ -1,0 +1,27 @@
+{
+  "name": "editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "gulp update"
+  },
+  "author": "XiaMen YaJi",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "2.0.2",
+    "fs-extra": "^6.0.1",
+    "mousetrap": "^1.6.2",
+    "v-message": "^0.1.1",
+    "vue": "^2.5.16"
+  },
+  "devDependencies": {
+    "download": "^7.0.0",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.4.0",
+    "gulp-less": "^3.5.0",
+    "gulp-sequence": "^1.0.0",
+    "v-git": "0.0.2"
+  }
+}

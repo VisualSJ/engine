@@ -1,0 +1,26 @@
+{
+    "name": "scene",
+    "version": "0.0.1",
+
+    "menu": {
+        "i18n:menu.panel/i18n:scene.title": {
+            "message": "open",
+            "icon": "./icon.png",
+            "accelerator": "CmdOrCtrl+1"
+        }
+    },
+
+    "main": "./index.js",
+
+    "panel": {
+        "title": "i18n:scene.title",
+        "main": "./panel/index.js",
+        "allowClose": true,
+        "allowPopup": true,
+        "icon": "./icon.png",
+        "min-width": 400,
+        "min-height": 300,
+        "width": 500,
+        "height": 400
+    }
+}

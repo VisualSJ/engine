@@ -1,0 +1,81 @@
+@import "./input.less";
+
+@slider-color: #999;
+
+:host {
+    display: inline-flex;
+    position: relative;
+    padding: 0;
+    width: 8em;
+
+    input {
+        padding: 0.2em 0.2em 0.2em 0.5em;
+        flex: 1;
+        width: 0;
+    }
+}
+
+:host([unit]) {
+
+    .unit {
+        display: block;
+    }
+}
+
+.unit {
+    display: none;
+    padding: 0.14em 0.2em;
+    
+    span {
+        border-radius: 0.1em;
+        font-size: 0.7em;
+        padding: 0.2em 0.3em;
+        background: @slider-color;
+    }
+}
+
+.slider {
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    right: 0;
+    width: 0.8em;
+    background: @slider-color;
+}
+
+.slider > div {
+    flex: 1;
+    overflow: hidden;
+    text-align: center;
+    line-height: 0.7em;
+    cursor: pointer;
+    border-left: 1px solid @slider-color;
+}
+
+.slider svg {
+    width: 0.4em;
+    fill: #555;
+    transition: all 0.2s;
+}
+
+.up {
+    border-bottom: 1px solid @slider-color * 0.8;
+
+    &:hover {
+
+        svg {
+            fill: #fff;
+        }
+    }
+}
+
+.down {
+    border-top: 1px solid @slider-color * 1.2;
+
+    &:hover {
+
+        svg {
+            fill: #fff;
+        }
+    }
+}

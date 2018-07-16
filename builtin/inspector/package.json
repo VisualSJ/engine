@@ -1,0 +1,24 @@
+{
+    "name": "inspector",
+    "version": "0.0.1",
+
+    "menu": {
+        "i18n:menu.panel/i18n:inspector.title": {
+            "message": "open",
+            "icon": "./icon.png",
+            "accelerator": "CmdOrCtrl+3"
+        }
+    },
+
+    "main": "index.js",
+
+    "panel": {
+        "title": "i18n:inspector.title",
+        "main": "./panel/index.js",
+        "icon": "./icon.png",
+        "min-width": 200,
+        "min-height": 200,
+        "width": 400,
+        "height": 600
+    }
+}

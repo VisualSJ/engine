@@ -1,0 +1,10 @@
+.DS_Store
+.vscode
+bin.zip
+
+# node 模块
+node_modules
+
+# 临时文件
+_*
+.temp

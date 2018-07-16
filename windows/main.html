@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Editor</title>
+        <link href="./style/base.css" rel="stylesheet" />
+        <link href="./style/main.css" rel="stylesheet" />
+    </head>
+    
+    <body>
+        <!-- 进度条 -->
+        <div class="loading-mask"
+            :hidden="hidden"
+        >
+            <div>
+                <span
+                    :style="`width: ${process * 100}%;`"
+                ></span>
+            </div>
+        </div>
+
+        <!-- 顶部工具条 -->
+        <header>
+            <div class="tools"></div>
+            <div class="preview">
+                <svg viewBox="0 0 448 512">
+                    <path d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path>
+                </svg>
+                <select>
+                    <option>Mobile</option>
+                </select>
+            </div>
+            <div class="info"></div>
+        </header>
+
+        <!-- 实际的插件布局 -->
+        <dock-frame id="dock"></dock-frame>
+
+        <!-- 加载 js 运行逻辑 -->
+        <script>
+            window.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
+            require('./script/main');
+        </script>
+    </body>
+</html>

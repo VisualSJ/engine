@@ -1,0 +1,98 @@
+<style>
+    section.input {
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    section.input:last-child {
+        border-bottom: none;
+    }
+
+    ui-num-input::shadow .slider {
+        background: red;
+    }
+</style>
+
+<section class="input">
+    <h1>Standard</h1>
+    <ui-num-input></ui-num-input>
+</section>
+
+<section class="input">
+    <h1>Readonly</h1>
+    <ui-num-input value="0" readonly></ui-num-input>
+</section>
+
+<section class="input">
+    <h1>Disabled</h1>
+    <ui-num-input value="disabled" disabled></ui-num-input>
+</section>
+
+<section class="input">
+    <h1>Step</h1>
+    <ui-num-input value="10" step="10"></ui-num-input>
+</section>
+
+<section class="input">
+    <h1>Unit</h1>
+    <ui-num-input value="10px" unit="px"></ui-num-input>
+</section>
+
+<section class="input">
+    <h1>Max & Min</h1>
+    <ui-num-input value="10" min="0" max="20"></ui-num-input>
+</section>
+
+<section class="input size">
+    <h1>Size</h1>
+    <style>
+        .size div {
+            margin-bottom: 10px;
+        }
+        .size div span {
+            display: inline-block;
+            width: 60px;
+        }
+        .size-12 {
+            font-size: 12px;
+        }
+        .size-16 {
+            font-size: 16px;
+        }
+        .size-20 {
+            font-size: 20px;
+        }
+    </style>
+    <div class="size-12">
+        <ui-num-input value="12px"></ui-num-input>
+    </div>
+    <div class="size-16">
+        <ui-num-input value="16px"></ui-num-input>
+    </div>
+    <div class="size-20">
+        <ui-num-input value="20px"></ui-num-input>
+    </div>
+</section>
+
+<section class="input">
+    <h1>Style</h1>
+    <style>
+        .transparent {
+            transition: all 0.2s;
+            color: #333;
+            background: none;
+            border: 1px solid #4281b6;
+            border-radius: 2px;
+            width: 80px;
+        }
+        .transparent[focused] {
+            background: #4281b6;
+            color: #a6e5ff;
+        }
+        .transparent[pressed] {
+            color: #4281b6;
+            background: #104f84;
+        }
+    </style>
+    <ui-num-input class="transparent" unit="%">Button</ui-num-input>
+</section>

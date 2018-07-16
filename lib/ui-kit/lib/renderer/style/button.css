@@ -1,0 +1,32 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  cursor: pointer;
+  transition: opacity 0.3s;
+  border: 1px solid #333;
+  background: #eee;
+}
+:host > span {
+  background: none;
+  border: none;
+  font-size: inherit;
+  display: inline-block;
+  padding: 0.2em 1em;
+  outline: none;
+}
+:host([focused]) {
+  border-color: #07d;
+}
+:host([disabled]) {
+  cursor: default;
+}
+:host([disabled]) > span {
+  opacity: 0.4;
+}
+:host([pressed]) {
+  background: #d6d6d6;
+}
