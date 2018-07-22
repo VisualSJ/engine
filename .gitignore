@@ -7,4 +7,10 @@ node_modules
 
 # 临时文件
 _*
-.temp
+.*
+
+# Asset DB
+builtin/asset-db/db
+
+# 插件内的构建后目录
+builtin/**/dist

@@ -4,12 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "postinstall": "gulp update"
+    "start": "node ./scripts/start.js"
   },
   "author": "XiaMen YaJi",
   "license": "ISC",
   "dependencies": {
+    "@base/electron-base-ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-base-ipc.tgz",
+    "@base/electron-i18n": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-i18n.tgz",
+    "@base/electron-logger": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-logger.tgz",
+    "@base/electron-menu": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-menu.tgz",
+    "@base/electron-profile": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-profile.tgz",
+    "@base/electron-windows": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-windows.tgz",
+    "@editor/dock": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/dock.tgz",
+    "@editor/package": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/package.tgz",
+    "@editor/panel": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/panel.tgz",
+    "@editor/ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/ipc.tgz",
+    "@editor/project": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/project.tgz",
+    "@editor/setting": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/setting.tgz",
     "electron": "2.0.2",
     "fs-extra": "^6.0.1",
     "mousetrap": "^1.6.2",
