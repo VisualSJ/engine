@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./scripts/start.js"
+    "start": "node ./scripts/start.js",
+    "build": "node ./scripts/build.js"
   },
   "author": "XiaMen YaJi",
   "license": "ISC",
@@ -16,11 +17,13 @@
     "@base/electron-profile": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-profile.tgz",
     "@base/electron-windows": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-windows.tgz",
     "@editor/dock": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/dock.tgz",
+    "@editor/ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/ipc.tgz",
     "@editor/package": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/package.tgz",
     "@editor/panel": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/panel.tgz",
-    "@editor/ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/ipc.tgz",
     "@editor/project": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/project.tgz",
     "@editor/setting": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/setting.tgz",
+    "@types/vue": "^2.0.0",
+    "asset-db": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/asset-db.tgz",
     "electron": "2.0.2",
     "fs-extra": "^6.0.1",
     "mousetrap": "^1.6.2",
@@ -28,11 +31,7 @@
     "vue": "^2.5.16"
   },
   "devDependencies": {
-    "download": "^7.0.0",
-    "gulp": "^3.9.1",
-    "gulp-clean": "^0.4.0",
-    "gulp-less": "^3.5.0",
-    "gulp-sequence": "^1.0.0",
-    "v-git": "0.0.2"
+    "@types/fs-extra": "^5.0.4",
+    "@types/node": "^10.5.2"
   }
 }

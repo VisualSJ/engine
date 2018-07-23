@@ -1,6 +1,5 @@
 .DS_Store
 .vscode
-bin.zip
 
 # node 模块
 node_modules
@@ -8,9 +7,6 @@ node_modules
 # 临时文件
 _*
 .*
-
-# Asset DB
-builtin/asset-db/db
 
 # 插件内的构建后目录
 builtin/**/dist

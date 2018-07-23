@@ -1,0 +1,14 @@
+<section class="loading">
+    <ui-loading></ui-loading>
+</section>
+
+<section class="content">
+    <div
+        v-for="item in list"
+        @click="deleteTestAsset($event, item.uuid)"
+    >{{item.source}}</div>
+
+    <button
+        @click="addTestAsset"
+    >add</button>
+</section>

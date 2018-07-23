@@ -1,0 +1,79 @@
+declare const Editor: Editor;
+
+interface Editor {
+    App: App;
+    Project: Project;
+    I18n: I18n;
+    Menu: Menu;
+    Package: Package;
+    Layout: Layout;
+    Panel: Panel;
+    Ipc: Ipc;
+    UI: UI;
+    Logger: Logger;
+    Profile: Profile;
+}
+
+interface App {
+    home: string;
+    path: string;
+}
+
+interface Project {
+    path: string;
+}
+
+interface I18n {
+    t: Function;
+    switch: Function;
+}
+
+interface Menu {
+    // browser
+    add: Function;
+    remove: Function;
+    get: Function;
+    apply: Function;
+    //renderer
+    popup: Function;
+}
+
+interface Package {
+    // browser
+    load: Function;
+    unload: Function;
+    reload: Function;
+}
+
+interface Layout {
+    apply: Function;
+}
+
+interface Panel {
+    open: Function;
+    close: Function;
+}
+
+interface Ipc {
+    sendToAll: Function,
+    sendToAllPackages: Function,
+    sendToAllPanels: Function,
+    sendToPanel: Function,
+    sendToPackage: Function,
+    requestToPackage: Function,
+    requestToPanel: Function,
+}
+
+interface UI {}
+
+interface Logger {}
+
+interface Profile {
+    load: Function;
+}
+
+declare const IPCEvent: IPCEvent;
+
+interface IPCEvent {
+    reply: Function;
+}

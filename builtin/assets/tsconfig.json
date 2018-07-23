@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./source",
+    "strict": true,
+    "types": [
+      "../../node_modules/@types/node",
+      "../../node_modules/@types/fs-extra",
+      "../../@types/editor"
+    ],
+    "esModuleInterop": true
+  }
+}
