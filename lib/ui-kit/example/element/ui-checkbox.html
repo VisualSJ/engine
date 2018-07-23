@@ -1,0 +1,32 @@
+<style>
+    section.checkbox {
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    section.checkbox:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<section class="checkbox">
+    <h1>Standard</h1>
+    <ui-checkbox>default label</ui-checkbox>
+</section>
+
+<section class="checkbox">
+    <h1>Readonly</h1>
+    <ui-checkbox value="readonly" readonly>readonly</ui-checkbox>
+    <ui-checkbox value="readonly" readonly checked>readonly checked</ui-checkbox>
+</section>
+
+<section class="checkbox">
+    <h1>Disabled</h1>
+    <ui-checkbox value="disabled" disabled>disabled</ui-checkbox>
+</section>
+
+<section class="checkbox">
+    <h1>checked</h1>
+    <ui-checkbox id="test">checked</ui-checkbox>
+</section>
+

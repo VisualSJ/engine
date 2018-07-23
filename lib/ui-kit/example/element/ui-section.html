@@ -1,0 +1,84 @@
+<style>
+    section.section {
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    section.section:last-child {
+        border-bottom: none;
+    }
+
+    ui-section {
+        display: block;
+    }
+</style>
+
+<section class="section">
+    <h1>standard</h1>
+    <ui-section>
+        <div>
+            <p>line1</p>
+            <p>line2</p>
+            <p>line3</p>
+        </div>
+    </ui-section>
+</section>
+<section class="section">
+    <h1>size</h1>
+    <ui-section small text="small section">
+        <div>
+            <p>line1</p>
+            <p>line2</p>
+            <p>line3</p>
+        </div>
+    </ui-section>
+    <ui-section large text="large section">
+        <div>
+            <p>line1</p>
+            <p>line2</p>
+            <p>line3</p>
+        </div>
+    </ui-section>
+    <ui-section huge text="huge section">
+        <div>
+            <p>line1</p>
+            <p>line2</p>
+            <p>line3</p>
+        </div>
+    </ui-section>
+</section><section class="section">
+    <h1>custom</h1>
+    <style>
+        .custom[focused] {
+            --border-color: #ee00aa;
+            --text-color: #ee00aa;
+        }
+        .custom[expand] .header i{
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+        }
+        .custom .header i {
+            display: inline-block;
+            width: 0.5em;
+            height: 0.5em;
+            margin-right: 0.2em;
+            background-color: var(--border-color, #333333);
+            clip-path: polygon(0 0, 0 100%, 100% 50%);
+        }
+        .custom .header {
+            cursor: pointer;
+            color: var(--text-color, #333);
+            border-bottom: 1px solid var(--border-color, #333333);
+        }
+    </style>
+    <ui-section class="custom" text="attribute header text">
+        <div slot="header" class="header">
+            <i></i>
+            <span>custom header</span>
+        </div>
+        <div>
+            <p>line1</p>
+            <p>line2</p>
+            <p>line3</p>
+        </div>
+    </ui-section>
+</section>

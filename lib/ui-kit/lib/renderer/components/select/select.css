@@ -1,0 +1,82 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  --width: 240px;
+  --font-color: #606266;
+  --background-color: #fff;
+  --border-raduis: 4px;
+  --border-color: #dcdfe6;
+  --padding: 0 30px 0 15px;
+  --height: 40px;
+  --menu-border-color: #e4e7ed;
+  --menu-max-height: 274px;
+  --icon-color: #c0c4cc;
+  width: var(--width);
+  display: inline-block;
+  position: relative;
+}
+:host div {
+  position: relative;
+  font-size: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}
+:host div span {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  background-color: var(--background-color, #eee);
+  border-radius: var(--border-raduis);
+  border: 1px solid var(--border-color, #333);
+  box-sizing: border-box;
+  color: var(--font-color, #333);
+  font-size: inherit;
+  height: var(--height);
+  line-height: var(--height);
+  outline: none;
+  padding: var(--padding);
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  width: 100%;
+}
+:host div i {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--height);
+  height: var(--height);
+  background: var(--icon-color);
+  transition: transform 0.3s;
+  clip-path: polygon(30% 35%, 70% 35%, 50% 65%);
+}
+:host .select-menu {
+  position: absolute;
+  display: none;
+  z-index: 999;
+  max-height: var(--menu-max-height);
+  overflow: hidden;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  box-sizing: border-box;
+  border: 1px solid var(--menu-border-color);
+  border-radius: var(--border-raduis);
+  background-color: var(--background-color, #eee);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+:host([expand]) .select-menu {
+  display: block;
+}
+:host([expand]) div i {
+  transform: rotate(180deg);
+}
+:host([focused]) {
+  --border-color: #409eff;
+}
+:host([disabled]) div {
+  cursor: not-allowed;
+}

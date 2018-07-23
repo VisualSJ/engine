@@ -5,17 +5,26 @@
   position: relative;
 }
 :host {
+  display: inline-flex;
+  position: relative;
+  padding: 0;
+  width: 8em;
   border: 1px solid #333;
-  padding: 0.2em 0.5em;
 }
 :host > input {
+  display: block;
   color: inherit;
-  width: inherit;
+  width: 100%;
   padding: 0;
   outline: none;
   border: none;
   background: none;
   font-size: inherit;
+}
+:host input {
+  padding: 0.2em 0.2em 0.2em 0.5em;
+  flex: 1;
+  width: 0;
 }
 :host([focused]) {
   border-color: #07d;
@@ -26,17 +35,6 @@
 :host([disabled]) input {
   cursor: default;
   opacity: 0.4;
-}
-:host {
-  display: inline-flex;
-  position: relative;
-  padding: 0;
-  width: 8em;
-}
-:host input {
-  padding: 0.2em 0.2em 0.2em 0.5em;
-  flex: 1;
-  width: 0;
 }
 :host([unit]) .unit {
   display: block;

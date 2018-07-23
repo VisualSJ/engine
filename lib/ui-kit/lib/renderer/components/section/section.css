@@ -1,0 +1,52 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  all: initial;
+  display: flex;
+  color: var(--color, #333);
+}
+:host header {
+  cursor: pointer;
+  padding: 3px 4px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--border-color, #333);
+}
+:host header i {
+  display: inline-block;
+  margin-right: 0.2em;
+  width: 0.5em;
+  height: 0.5em;
+  background-color: var(--border-color, #333);
+  clip-path: polygon(0 0, 0 100%, 100% 50%);
+}
+:host .content {
+  padding: 3px 4px;
+}
+:host > .content {
+  display: none;
+}
+:host([small]) {
+  font-size: 0.75em;
+}
+:host([large]) {
+  font-size: 1.5em;
+}
+:host([huge]) {
+  font-size: 2em;
+}
+:host([focused]) {
+  --border-color: #07d;
+}
+:host([focused]) header {
+  color: var(--color, #07d);
+}
+:host([expand]) > .content {
+  display: flex;
+}
+:host([expand]) header i {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}

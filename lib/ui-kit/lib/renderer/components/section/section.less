@@ -1,0 +1,51 @@
+@import '../base/base.less';
+:host {
+    all: initial;
+    display: flex;
+    header {
+        cursor: pointer;
+        padding: 3px 4px;
+        margin-bottom: 5px;
+        border-bottom: 1px solid var(--border-color, @border-color);
+        i {
+            display: inline-block;
+            margin-right: 0.2em;
+            width: .5em;
+            height: .5em;
+            background-color: var(--border-color, @border-color);
+            clip-path: polygon(0 0, 0 100%, 100% 50%);
+        }
+    }
+    .content {
+        padding: 3px 4px;
+    }
+    color: var(--color, @font-color);
+    & > .content {
+        display: none;
+    }
+}
+:host([small]) {
+    font-size: 0.75em;
+}
+:host([large]) {
+    font-size: 1.5em;
+}
+:host([huge]) {
+    font-size: 2em;
+}
+:host([focused]) {
+    header {
+        color: var(--color, @focused-color);
+    }
+    --border-color: @focused-color;
+}
+:host([expand]) {
+    & > .content {
+        display: flex;
+    }
+    header {
+        i {
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+        }
+    }
+}

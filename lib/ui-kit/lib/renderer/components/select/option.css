@@ -1,0 +1,39 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  --font-color: #606266;
+  display: block;
+}
+:host li {
+  font-size: 14px;
+  padding: 0 20px;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--font-color);
+  height: 34px;
+  line-height: 34px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+:host li:hover {
+  background-color: var(--background-color_hover, #f5f7fa);
+}
+:host([selected]) {
+  --font-color: #409eff;
+}
+:host([selected]) li {
+  font-weight: bold;
+}
+:host([hover]) li {
+  background-color: var(--background-color_hover, #f5f7fa);
+}
+:host([disabled]) {
+  color: var(--disabled-color, #c0c4cc);
+  cursor: not-allowed;
+}
