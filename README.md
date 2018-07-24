@@ -10,6 +10,32 @@
 npm install
 ```
 
+npm 版本 5 以上会使用 package-lock.json 锁定依赖库，tgz 安装包也会进行校验，所以如果 ftp 上的包更新的时候，可能会造成校验失败，这时候需要手动删除 package-lock.json 文件。
+
+或者在项目内加入 .npmrc 文件，关闭 package-lock：
+
+```
+package-lock=false
+```
+
+## 构建编辑器
+
+编辑器内使用了部分 ts 以及 less 代码，需要在使用之前，进行构建生成可以直接运行的代码。
+
+```
+npm run build
+```
+
+## 更新 ftp 上的安装包
+
+tgz 包可以通过 npm run update 进行更新：
+
+```bash
+npm run update @editor/dock @editor/panel
+```
+
+命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。
+
 ## 启动编辑
 
 简单的启动预览，可以使用：
@@ -34,7 +60,7 @@ npm start --home /Users/name/.Editor3D
 
 ## 其他参考资料
 
-编辑器使用的基础模块的接口说明
+编辑器使用的基础模块的接口说明，因为部分文档存在与 node_modules 内，所以需要在项目构建完成后才能够预览。
 
 ### 管理系统
 

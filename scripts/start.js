@@ -8,8 +8,11 @@ let command, options;
 if (process.platform === 'darwin') {
     command = './node_modules/.bin/electron';
 } else if (process.platform === 'win32') {
-    command = './node_modules/.bin/electron.cmd';
+    // windows 上直接使用 electron.cmd 启动不了
+    command = './node_modules/electron/dist/electron.exe';
 }
+
+// 拼接 dev 参数
 options = ['./', '--dev'].concat(args);
 
 spawn(command, options, {
