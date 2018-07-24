@@ -26,6 +26,16 @@ package-lock=false
 npm run build
 ```
 
+## 更新 ftp 上的安装包
+
+tgz 包可以通过 npm run update 进行更新：
+
+```bash
+npm run update @editor/dock @editor/panel
+```
+
+命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。
+
 ## 启动编辑
 
 简单的启动预览，可以使用：

@@ -1,16 +1,8 @@
-{
-  "name": "editor",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node ./scripts/start.js",
-    "build": "node ./scripts/build.js",
-    "update": "node ./scripts/update.js"
-  },
-  "author": "XiaMen YaJi",
-  "license": "ISC",
-  "dependencies": {
+'use strict';
+
+const spawn = require('child_process').spawn;
+
+const packages = {
     "@base/electron-base-ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-base-ipc.tgz",
     "@base/electron-i18n": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-i18n.tgz",
     "@base/electron-logger": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-logger.tgz",
@@ -23,16 +15,40 @@
     "@editor/panel": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/panel.tgz",
     "@editor/project": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/project.tgz",
     "@editor/setting": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/setting.tgz",
-    "@types/vue": "^2.0.0",
     "asset-db": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/asset-db.tgz",
-    "electron": "2.0.2",
-    "fs-extra": "^6.0.1",
-    "mousetrap": "^1.6.2",
-    "v-message": "^0.1.1",
-    "vue": "^2.5.16"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^5.0.4",
-    "@types/node": "^10.5.2"
-  }
+};
+
+const install = function (url) {
+    return new Promise((resolve, reject) => {
+        let child = spawn('npm', ['install', url]);
+        child.on('error', reject);
+        child.on('exit', resolve);
+    });
 }
+
+const uninstall = function (name) {
+    return new Promise((resolve, reject) => {
+        let child = spawn('npm', ['uninstall', name]);
+        child.on('error', reject);
+        child.on('exit', resolve);
+    });
+}
+
+let names = process.argv.slice(2);
+names = names.filter((name) => {
+    return !!packages[name];
+});
+if (names.length === 0) {
+    names = Object.keys(packages);
+}
+
+const update = async function () {
+    for (let i=0; i<names.length; i++) {
+        let name = names[i];
+        console.log(`reinstall - ${name}`);
+        await uninstall(name);
+        await install(packages[name]);
+    }
+}
+
+update();
