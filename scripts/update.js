@@ -18,14 +18,33 @@ const packages = {
     "asset-db": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/asset-db.tgz",
 };
 
-const install = function (url) {
+/**
+ * 清空 npm cache
+ */
+const clean = function () {
     return new Promise((resolve, reject) => {
-        let child = spawn('npm', ['install', url]);
+        let child = spawn('npm', ['cache', 'clean', '-f']);
         child.on('error', reject);
         child.on('exit', resolve);
     });
 }
 
+/**
+ * 安装指定的模块
+ * @param {*} url 
+ */
+const install = function (url) {
+    return new Promise((resolve, reject) => {
+        let child = spawn('npm', ['install', '-f', url]);
+        child.on('error', reject);
+        child.on('exit', resolve);
+    });
+}
+
+/**
+ * 卸载指定的模块
+ * @param {*} name 
+ */
 const uninstall = function (name) {
     return new Promise((resolve, reject) => {
         let child = spawn('npm', ['uninstall', name]);
@@ -34,6 +53,7 @@ const uninstall = function (name) {
     });
 }
 
+// 整理传入的模块数量
 let names = process.argv.slice(2);
 names = names.filter((name) => {
     return !!packages[name];
@@ -42,7 +62,11 @@ if (names.length === 0) {
     names = Object.keys(packages);
 }
 
+/**
+ * 实际更新的逻辑
+ */
 const update = async function () {
+    await clean();
     for (let i=0; i<names.length; i++) {
         let name = names[i];
         console.log(`reinstall - ${name}`);

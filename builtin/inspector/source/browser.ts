@@ -4,7 +4,7 @@ let pkg: any = null;
 
 export const messages = {
     open () {
-        Editor.Panel.open('assets');
+        Editor.Panel.open('inspector');
     },
 };
 

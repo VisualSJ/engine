@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Editor</title>
+        <link href="../../windows/style/base.css" rel="stylesheet" />
+        <link href="../../windows/style/main.css" rel="stylesheet" />
+        <link href="./index.css" rel="stylesheet" />
+    </head>
+    
+    <body>
+        
+        <section class="messages">
+            <div class="package">
+                <h3>package:</h3>
+                <ul
+                    v-if="package"
+                >
+                    <li
+                        v-for="item in package"
+                        :title="item.tooltip"
+                        @click="_onPackageClick($event, item)"
+                    >{{item.name}}</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3>panel:</h3>
+                <ul
+                    v-if="panel"
+                >
+                    <li
+                        v-for="item in panel"
+                        :title="item.tooltip"
+                        @click="_onPanelClick($event, item)"
+                    >{{item.name}}</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="log">
+            <ul>
+                <li
+                    v-for="item in list"
+                    :type="item.type"
+                >
+                    <span
+                        v-if="item.from"
+                    >[{{item.from}}]</span>
+                    <span
+                        v-if="item.action"
+                    >[{{item.action}}]</span>
+                    <span
+                        v-if="item.packageID"
+                    >[{{item.packageID}}]</span>
+                    <span
+                        v-if="item.panelID"
+                    >[{{item.panelID}}]</span>
+                    <span
+                        v-if="item.message"
+                    >[{{item.message}}]</span>
+        
+                    <span>-</span>
+
+                    <span
+                        v-if="item.params"
+                    >{{item.params}}</span>
+                    <span
+                        v-else
+                    >none</span>
+                </li>
+            </ul>
+        </section>
+        
+        <script>
+            const ps = require('path');
+            const Vue = require('vue/dist/vue.js');
+            const windows = require('@base/electron-windows');
+            const packageManager = require('@editor/package');
+            const panelManager = require('@editor/panel');
+            const ipc = require('@base/electron-base-ipc');
+
+            let name = windows.userData.name;
+            let sender = {};
+            try {
+                let packagePath = ps.join(__dirname, '../../builtin', name, 'test/sender');
+                sender = require(packagePath);
+            } catch (error) {
+                console.error(error);
+                sender = {};
+            }
+            
+            window.vm = new Vue({
+                el: document.querySelector('.messages'),
+                data: sender,
+                methods: {
+        
+                    _onPackageClick (event, item) {
+                        let sender = packageManager.send(name, item.message, ...item.params);
+                        if (item.reply) {
+                            sender.callback((error, data) => {
+                                window.logVM.list.push({
+                                    type: 'send',
+
+                                    action: 'reply',
+
+                                    message: item.message,
+                                    params: data,
+                                });
+                            });
+                        }
+
+                        window.logVM.list.push({
+                            type: 'receive',
+
+                            action: 'sendToPackage',
+
+                            message: item.message,
+                            params: item.params,
+                        });
+                    },
+
+                    _onPanelClick (event, item) {
+                        let sender = panelManager.send(name, item.message, ...item.params);
+                        if (item.reply) {
+                            sender.callback((error, data) => {
+                                window.logVM.list.push({
+                                    type: 'send',
+
+                                    action: 'reply',
+
+                                    message: item.message,
+                                    params: data,
+                                });
+                            });
+                        }
+
+                        window.logVM.list.push({
+                            type: 'receive',
+
+                            action: 'sendToPanel',
+
+                            message: item.message,
+                            params: item.params,
+                        });
+                    },
+                },
+            });
+
+            window.logVM = new Vue({
+                el: document.querySelector('.log'),
+                data: {
+                    list: [],
+                },
+            });
+
+            // 当前测试的 package 发出的消息
+            ipc.on('tester:package-send', (event, action, info) => {
+                logVM.list.push({
+                    type: 'send',
+
+                    from: info.from, // 从哪里发出
+                    action, // 发出消息的接口
+
+                    packageID: info.packageID, // 发送到某个插件
+                    panelID: info.panelID, // 发送到某个面板
+
+                    message: info.message, // 消息名
+                    params: info.params, // 消息附带的参数
+                });
+            });
+        </script>
+    </body>
+</html>

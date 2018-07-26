@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./source",
+    "strict": true,
+    "types": [
+      "../../node_modules/@types/node",
+      "../../@types/editor"
+    ],
+    "esModuleInterop": true
+  }
+}

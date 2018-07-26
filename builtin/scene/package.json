@@ -5,19 +5,19 @@
     "menu": {
         "i18n:menu.panel/i18n:scene.title": {
             "message": "open",
-            "icon": "./icon.png",
+            "icon": "./static/icon.png",
             "accelerator": "CmdOrCtrl+1"
         }
     },
 
-    "main": "./index.js",
+    "main": "./dist/browser.js",
 
     "panel": {
         "title": "i18n:scene.title",
-        "main": "./panel/index.js",
+        "main": "./dist/panel.js",
         "allowClose": true,
         "allowPopup": true,
-        "icon": "./icon.png",
+        "icon": "./static/icon.png",
         "min-width": 400,
         "min-height": 300,
         "width": 500,

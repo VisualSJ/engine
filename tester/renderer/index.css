@@ -1,0 +1,69 @@
+body {
+    color: #bbb;
+    display: flex;
+    flex-direction: column;
+}
+
+.messages {
+    flex: 2;
+    display: flex;
+    margin-bottom: 5px;
+}
+
+.log {
+    flex: 1;
+    display: flex;
+    height: 0;
+    overflow: auto;
+    border: 1px solid #404040;
+    background: #444;
+    flex-direction: column;
+}
+
+h3 {
+    margin: 10px;
+}
+
+ul {
+    flex: 1;
+    padding: 0;
+    font-size: 12px;
+    height: 0;
+    overflow: auto;
+}
+
+li {
+    list-style: none;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+li[type="send"] {
+    color: rgb(189, 116, 20);
+}
+
+li[type="receive"] {
+    color: rgb(59, 189, 20);
+}
+
+li:hover {
+    background: #3c3c3c;
+}
+
+.package {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-right: 5px;
+    border: 1px solid #404040;
+    background: #444;
+}
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #404040;
+    background: #444;
+}
+

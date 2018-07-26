@@ -66,7 +66,11 @@ interface Ipc {
 
 interface UI {}
 
-interface Logger {}
+interface Logger {
+    on: Function;
+    removeListener: Function;
+    query: Function;
+}
 
 interface Profile {
     load: Function;

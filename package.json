@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./scripts/start.js",
     "build": "node ./scripts/build.js",
-    "update": "node ./scripts/update.js"
+    "update": "node ./scripts/update.js",
+    "test": "node ./scripts/test.js"
   },
   "author": "XiaMen YaJi",
   "license": "ISC",

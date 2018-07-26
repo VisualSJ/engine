@@ -9,6 +9,12 @@ let spawn = require('child_process').spawn;
 let tsDirnames = [
     './builtin/asset-db',
     './builtin/assets',
+    './builtin/console',
+    './builtin/hierarchy',
+    './builtin/inspector',
+    './builtin/preferences',
+    './builtin/scene',
+    './builtin/selection',
 ];
 
 Promise.all(tsDirnames.map((dir) => {

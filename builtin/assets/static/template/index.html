@@ -2,7 +2,9 @@
     <ui-loading></ui-loading>
 </section>
 
-<section class="content">
+<section class="content"
+    :hidden="!ready"
+>
     <div
         v-for="item in list"
         @click="deleteTestAsset($event, item.uuid)"
