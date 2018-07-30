@@ -1,7 +1,7 @@
 'use strict';
 
 const ps = require('path'); // path system
-let spawn = require('child_process').spawn;
+let exec = require('child_process').exec;
 
 /////////////////////////
 // 编译 typescript
@@ -20,13 +20,19 @@ let tsDirnames = [
 Promise.all(tsDirnames.map((dir) => {
     dir = ps.join(__dirname, '..', dir);
 
-    return new Promise((resolve) => {
-        let child = spawn('tsc', {
+    return new Promise((resolve, reject) => {
+        exec('tsc', {
             cwd: dir,
+            stdio: 'inherit',
+        }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return reject(error);
+            }
+
+            resolve();
         });
-        child.on('error', (error) => {
-            console.error(error);
-        });
-        child.on('exit', resolve);
     });
-}));
+})).catch((error) => {
+    console.log(`exec error: ${error}`);
+});

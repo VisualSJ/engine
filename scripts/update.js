@@ -1,6 +1,6 @@
 'use strict';
 
-const spawn = require('child_process').spawn;
+const exec = require('child_process').exec;
 
 const packages = {
     "@base/electron-base-ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-base-ipc.tgz",
@@ -23,9 +23,13 @@ const packages = {
  */
 const clean = function () {
     return new Promise((resolve, reject) => {
-        let child = spawn('npm', ['cache', 'clean', '-f']);
-        child.on('error', reject);
-        child.on('exit', resolve);
+        exec('npm cache clean -f', (error) => {
+            if (error) {
+                return reject(error);
+            }
+
+            resolve();
+        });
     });
 }
 
@@ -35,9 +39,13 @@ const clean = function () {
  */
 const install = function (url) {
     return new Promise((resolve, reject) => {
-        let child = spawn('npm', ['install', '-f', url]);
-        child.on('error', reject);
-        child.on('exit', resolve);
+        exec(`npm install ${url}`, (error) => {
+            if (error) {
+                return reject(error);
+            }
+
+            resolve();
+        });
     });
 }
 
@@ -47,9 +55,13 @@ const install = function (url) {
  */
 const uninstall = function (name) {
     return new Promise((resolve, reject) => {
-        let child = spawn('npm', ['uninstall', name]);
-        child.on('error', reject);
-        child.on('exit', resolve);
+        exec(`npm uninstall ${name}`, (error) => {
+            if (error) {
+                return reject(error);
+            }
+
+            resolve();
+        });
     });
 }
 
@@ -69,10 +81,13 @@ const update = async function () {
     await clean();
     for (let i=0; i<names.length; i++) {
         let name = names[i];
-        console.log(`reinstall - ${name}`);
+        console.log(`${name} - reinstall`);
         await uninstall(name);
         await install(packages[name]);
+        console.log(`${name} - success`);
     }
 }
 
-update();
+update().catch((error) => {
+    console.log(`exec error: ${error}`);
+});
