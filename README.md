@@ -58,6 +58,52 @@ npm start --home /Users/name/.Editor3D
 
 所有的参数都可以复合使用，npm start 启动的时候默认带上 --dev。编辑器内部会识别为 dev 模式。
 
+## 开发 / 测试插件
+
+插件开发过程中，可以使用独立的插件开发环境，在这个环境内，允许模拟其他插件监听消息，并发送消息给当前正在开发的插件。
+
+```javascript
+npm test -- --project assets
+```
+
+assets 插件内需要两个文件：
+
+1. ./test/listener.js 模拟监听其他插件/面板消息
+2. ./test/sender.js 模拟发送消息给开发插件
+
+listener.js
+
+```javascript
+// 模拟插件消息
+exports.package = {
+    // 第一级为模拟监听消息的插件名
+    'asset-db': {
+        // 第二级为插件下的消息名
+        'query-is-ready' (event) {
+            event.reply(null, false);
+        },
+    };
+};
+// 模拟面板消息
+exports.panel = {};
+```
+
+sender.js
+
+```javascript
+exports.package = [];
+exports.panel = [{
+    {
+        name: 'DB 就绪',
+        tooltip: '数据库就绪的时候，应该去除 loading 状态，并查询现在的资源树',
+        message: 'asset-db:ready',
+        params: [],
+    },
+}];
+```
+
+**暂时只支持测试与插件同名的面板**
+
 ## 其他参考资料
 
 编辑器使用的基础模块的接口说明，因为部分文档存在与 node_modules 内，所以需要在项目构建完成后才能够预览。

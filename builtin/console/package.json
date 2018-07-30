@@ -5,17 +5,17 @@
     "menu": {
         "i18n:menu.panel/i18n:console.title": {
             "message": "open",
-            "icon": "./icon.png",
+            "icon": "./static/icon.png",
             "accelerator": "CmdOrCtrl+0"
         }
     },
 
-    "main": "index.js",
+    "main": "./dist/browser.js",
 
     "panel": {
         "title": "i18n:console.title",
-        "main": "./panel/index.js",
-        "icon": "./icon.png",
+        "main": "./dist/panel.js",
+        "icon": "./static/icon.png",
         "min-width": 300,
         "min-height": 150,
         "width": 600,

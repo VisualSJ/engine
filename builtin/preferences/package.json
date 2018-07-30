@@ -8,11 +8,11 @@
         }
     },
 
-    "main": "index.js",
+    "main": "./dist/browser.js",
 
     "panel": {
         "title": "i18n:preferences.title",
-        "main": "./panel/index.js",
+        "main": "./dist/panel.js",
         "min-width": 200,
         "min-height": 200,
         "width": 400,

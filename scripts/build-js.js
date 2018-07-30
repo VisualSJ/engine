@@ -1,0 +1,38 @@
+'use strict';
+
+const ps = require('path'); // path system
+let exec = require('child_process').exec;
+
+/////////////////////////
+// 编译 typescript
+
+let tsDirnames = [
+    './builtin/asset-db',
+    './builtin/assets',
+    './builtin/console',
+    './builtin/hierarchy',
+    './builtin/inspector',
+    './builtin/preferences',
+    './builtin/scene',
+    './builtin/selection',
+];
+
+Promise.all(tsDirnames.map((dir) => {
+    dir = ps.join(__dirname, '..', dir);
+
+    return new Promise((resolve, reject) => {
+        exec('tsc', {
+            cwd: dir,
+            stdio: 'inherit',
+        }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return reject(error);
+            }
+
+            resolve();
+        });
+    });
+})).catch((error) => {
+    console.log(`exec error: ${error}`);
+});

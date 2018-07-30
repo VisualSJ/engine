@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./scripts/start.js",
-    "build": "node ./scripts/build.js",
-    "update": "node ./scripts/update.js"
+    "build": "node ./scripts/build-css.js & node ./scripts/build-js.js",
+    "build:css": "node ./scripts/build-css.js",
+    "build:js": "node ./scripts/build-js.js",
+    "update": "node ./scripts/update.js",
+    "test": "node ./scripts/test.js",
+    "temp": "node ./scripts/temp.js"
   },
   "author": "XiaMen YaJi",
   "license": "ISC",

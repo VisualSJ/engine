@@ -1,0 +1,7 @@
+<ul class="tree">
+    <li
+        v-for="item in list"
+        :active="select.indexOf(item.uuid) !== -1"
+        @click="selectNode($event, item.uuid)"
+    >{{item.name}}</li>
+</ul>

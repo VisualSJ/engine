@@ -1,0 +1,12 @@
+<div class="content">
+    <section class="loading"
+        v-if="!sceneReady || !assetReady"
+    >
+        <ui-loading></ui-loading>
+    </section>
+    <section
+        v-else
+    >
+        content
+    </section>
+</div>

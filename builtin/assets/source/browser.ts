@@ -1,15 +1,16 @@
 'use strict';
 
-module.exports = {
+let pkg: any = null;
 
-    messages: {
-        open () {
-            // 打开指定的 panel，this.name
-            Editor.Panel.open('assets');
-        },
+export const messages = {
+    open () {
+        Editor.Panel.open('assets');
     },
-
-    async load () {},
-
-    async unload () {},
 };
+
+export function load () {
+    // @ts-ignore
+    pkg = this;
+};
+
+export function unload () {};
