@@ -4,19 +4,22 @@ let pkg: any = null;
 let isReady: boolean = false;
 
 export const messages = {
+    /**
+     * 打开面板
+     */
     open () {
         Editor.Panel.open('scene');
     },
 
     /**
-     * 场景面板准备完成
+     * 面板准备完成
      */
     'scene:ready' () {
         isReady = true;
     },
 
     /**
-     * 场景面板关闭了场景
+     * 面板关闭了场景
      */
     'scene:close' () {
         isReady = false;
@@ -36,20 +39,48 @@ export const messages = {
         event.reply(null, isReady);
     },
 
-    'open-scene' () {},
-    'open-prefab' () {},
+    /**
+     * 打开场景
+     */
+    'open-scene' (event: IPCEvent, uuid: string) {
+        Editor.Ipc.sendToPanel('scene', 'open-scene', uuid);
+    },
 
-    'create-scene' () {},
-    'create-node' () {},
-    'create-prefab' () {},
+    /**
+     * 创建新场景
+     */
+    'create-scene' (event: IPCEvent) {},
 
-    'set-node-property' () {},
-    'set-node-index' () {},
+    /**
+     * 创建新节点
+     */
+    'create-node' (event: IPCEvent) {},
 
-    'select-node' () {},
-    'unselect-node' () {},
+    /**
+     * 设置节点的属性
+     */
+    'set-node-property' (event: IPCEvent) {},
 
-    'query-node' () {},
+    /**
+     * 设置节点的索引（调整在父节点内的位置）
+     */
+    'set-node-index' (event: IPCEvent) {},
+
+    /**
+     * 查询一个节点的 dump 信息
+     */
+    async 'query-node' (event: IPCEvent, uuid: string) {
+        let dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
+        event.reply(null, dump);
+    },
+
+    /**
+     * 查询当前场景内的节点树
+     */
+    async 'query-node-tree' (event: IPCEvent) {
+        let tree = await Editor.Ipc.requestToPanel('scene', 'query-node-tree');
+        event.reply(null, tree);
+    },
 };
 
 export function load () {

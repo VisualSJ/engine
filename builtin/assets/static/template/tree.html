@@ -1,0 +1,9 @@
+<ul class="tree">
+    <li
+        v-for="item in list"
+        :active="select.indexOf(item.uuid) !== -1"
+        @mousedown="mouseDownAsset($event, item.uuid)"
+        @click="selectAsset($event, item.uuid)"
+        @dblclick="openAsset($event, item.uuid)"
+    >{{item.source}}</li>
+</ul>

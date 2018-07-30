@@ -1,0 +1,22 @@
+.tree {
+    flex: 1;
+    height: 0;
+    margin: 1px;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid #222;
+    background: #333;
+
+    & > li {
+        cursor: pointer;
+        padding: 2px 8px;
+
+        &:hover {
+            background: #444;
+        }
+
+        &[active] {
+            background: #444;
+        }
+    }
+}

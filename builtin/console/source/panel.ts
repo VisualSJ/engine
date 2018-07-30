@@ -8,7 +8,7 @@ let vm: any = null;
 
 const Vue = require('vue/dist/vue.js');
 
-export const style = readFileSync(join(__dirname, '../static', '/style/index.css'));
+export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
@@ -48,5 +48,5 @@ export async function ready () {
 export async function beforeClose () {}
 
 export async function close () {
-    Editor.Logger.removeListener('record', panel._record);
+    Editor.Logger.removeListener('record', panel.record);
 }

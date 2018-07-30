@@ -1,6 +1,6 @@
 'use strict';
 
-import { join } from 'path';
+import { join, extname } from 'path';
 import { readFileSync } from 'fs';
 
 let panel: any = null;
@@ -8,7 +8,7 @@ let vm: any = null;
 
 const Vue = require('vue/dist/vue.js');
 
-export const style = readFileSync(join(__dirname, '../static', '/style/index.css'));
+export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
@@ -48,6 +48,32 @@ export const messages = {
         panel.$.loading.hidden = false;
         vm.ready = false;
         vm.list = [];
+    },
+
+    /**
+     * 选中了某个物体
+     */
+    'selection:select' (event: IPCEvent, type: string, uuid: string) {
+        if (type !== 'asset') {
+            return;
+        }
+        let index = vm.select.indexOf(uuid);
+        if (index === -1) {
+            vm.select.push(uuid);
+        }
+    },
+
+    /**
+     * 取消选中了某个物体
+     */
+    'selection:unselect' (event: IPCEvent, type: string, uuid: string) {
+        if (type !== 'asset') {
+            return;
+        }
+        let index = vm.select.indexOf(uuid);
+        if (index !== -1) {
+            vm.select.splice(index, 1);
+        }
     },
 
     /**
@@ -101,14 +127,15 @@ export async function ready () {
         data: {
             ready: isReady,
             list: [],
+            select: [],
+        },
+        components: {
+            tree: require('./components/tree'),
         },
         methods: {
             addTestAsset () {
                 let name = new Date().getTime();
                 Editor.Ipc.sendToPackage('asset-db', 'create-asset', `db://assets/${name}.txt`, name);
-            },
-            deleteTestAsset (event: any, uuid: string) {
-                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
             },
         },
     });
@@ -119,4 +146,6 @@ export async function ready () {
 
 export async function beforeClose () {}
 
-export async function close () {}
+export async function close () {
+    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+}

@@ -12,6 +12,7 @@ interface AssetInfo {
     source: string;
     uuid: string;
     importer: string; // meta 内存储的导入器名字
+    files: string[],
 }
 
 let source2url = function (source: string) {
@@ -56,6 +57,9 @@ module.exports = {
                     source: source2url(asset.source),
                     uuid: asset.uuid,
                     importer: asset.meta.importer,
+                    files: asset.meta.files.map((ext) => {
+                        return asset.library + ext;
+                    }),
                 };
                 return info;
             }));
@@ -79,6 +83,9 @@ module.exports = {
                 source: source2url(asset.source),
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
+                files: asset.meta.files.map((ext) => {
+                    return asset.library + ext;
+                }),
             };
             event.reply(null, info);
         },

@@ -4,24 +4,22 @@ const ps = require('path'); // path system
 let spawn = require('child_process').spawn;
 
 /////////////////////////
-// 1. 编译 typescript
+// 编译 less
 
-let tsDirnames = [
-    './builtin/asset-db',
+let lessDirnames = [
     './builtin/assets',
     './builtin/console',
     './builtin/hierarchy',
     './builtin/inspector',
     './builtin/preferences',
     './builtin/scene',
-    './builtin/selection',
 ];
 
-Promise.all(tsDirnames.map((dir) => {
+Promise.all(lessDirnames.map(async (dir) => {
     dir = ps.join(__dirname, '..', dir);
 
     return new Promise((resolve) => {
-        let child = spawn('tsc', {
+        let child = spawn('lessc', ['./static/style/index.less', './dist/index.css'], {
             cwd: dir,
         });
         child.on('error', (error) => {
@@ -30,6 +28,3 @@ Promise.all(tsDirnames.map((dir) => {
         child.on('exit', resolve);
     });
 }));
-
-/////////////////////////
-// 2. 编译 less

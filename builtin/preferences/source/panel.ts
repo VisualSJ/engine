@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 
 let panel: any = null;
 
-export const style = readFileSync(join(__dirname, '../static', '/style/index.css'));
+export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
