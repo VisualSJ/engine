@@ -21,7 +21,7 @@ Promise.all(tsDirnames.map((dir) => {
     dir = ps.join(__dirname, '..', dir);
 
     return new Promise((resolve, reject) => {
-        exec('tsc', {
+        exec(process.platform === 'win32' ? 'tsc.cmd' : 'tsc', {
             cwd: dir,
             stdio: 'inherit',
         }, (error, stdout, stderr) => {
