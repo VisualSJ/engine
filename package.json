@@ -31,6 +31,7 @@
     "asset-db": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/asset-db.tgz",
     "electron": "2.0.2",
     "fs-extra": "^6.0.1",
+    "lodash": "^4.17.10",
     "mousetrap": "^1.6.2",
     "v-message": "^0.1.1",
     "vue": "^2.5.16"

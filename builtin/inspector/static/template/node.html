@@ -1,0 +1,73 @@
+<section class="node">
+
+    <header>
+        <span>{{node.name.value}}</span>
+    </header>
+
+    <section>
+
+        <div>
+            <span class="name">active</span>
+            <ui-checkbox
+                :value="node.active.value"
+            ></ui-checkbox>
+        </div>
+
+        <div>
+            <span class="name">name</span>
+            <ui-input
+                :value="node.name.value"
+            ></ui-input>
+        </div>
+
+        <div>
+            <span class="name">layer</span>
+            <ui-num-input
+                :value="node.layer.value"
+            ></ui-num-input>
+        </div>
+
+        <div>
+            <span class="name">lpos</span>
+            <div class="flex-1">
+                <ui-num-input unit="x"
+                    :value="node.lpos.value.x"
+                ></ui-num-input>
+                <ui-num-input unit="y"
+                    :value="node.lpos.value.y"
+                ></ui-num-input>
+                <ui-num-input unit="z"
+                    :value="node.lpos.value.z"
+                ></ui-num-input>
+            </div>
+        </div>
+
+        <div>
+            <span class="name">lrot</span>
+            <div class="flex-1">
+                <ui-num-input unit="x"
+                    :value="node.lrot.value.x"
+                ></ui-num-input>
+                <ui-num-input unit="y"
+                    :value="node.lrot.value.y"
+                ></ui-num-input>
+                <ui-num-input unit="z"
+                    :value="node.lrot.value.z"
+                ></ui-num-input>
+                <ui-num-input unit="w"
+                    :value="node.lrot.value.w"
+                ></ui-num-input>
+            </div>
+        </div>
+
+
+    </section>
+
+    <template
+        v-for="(item, key) in node.comps.value"
+    >
+        <comp
+            :component="item.value"
+        ></comp>
+    </template>
+</section>

@@ -13,49 +13,41 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 export const $ = {
-    loading: '.loading',
     content: '.content',
 };
 
 export const methods = {
 
-    /**
-     * 刷新显示面板
-     * 查询对应选中的对象的信息
-     */
-    async refresh () {
-        
-    }
 };
 
 export const messages = {
 
     /**
-     * 场景准备就绪
+     * 选中某个物体
      */
-    'scene:ready' () {
-        vm.sceneReady = true;
-    },
+    async 'selection:select' (event: IPCEvent, type: string, uuid: string) {
+        vm.loading = true;
+        
+        if (type === 'asset') {
 
-    /**
-     * 资源数据库准备就绪
-     */
-    'asset-db:ready' () {
-        vm.assetReady = true;
-    },
+            let info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+            let meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
 
-    /**
-     * 关闭场景
-     */
-    'scene:close' () {
-        vm.sceneReady = false;
-    },
+            vm.asset.info = info;
+            vm.asset.meta = meta;
 
-    /**
-     * 资源数据库关闭
-     */
-    'asset-db:close' () {
-        vm.assetReady = false;
+            vm.type = 'asset';
+        } else if (type === 'node') {
+            let node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+
+            vm.node = node;
+
+            vm.type = 'node';
+        } else {
+            vm.type = '';
+        }
+
+        vm.loading = false;
     },
 };
 
@@ -63,15 +55,24 @@ export async function ready () {
     // @ts-ignore
     panel = this;
 
-    let sceneIsReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
-    let assetIsReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-
+    // 初始化 vue
     vm = new Vue({
         el: panel.$.content,
         data: {
-            sceneReady: sceneIsReady,
-            assetReady: assetIsReady,
-        }
+            loading: false,
+            type: '',
+            asset: {
+                info: null,
+                meta: null,
+            },
+            node: {
+
+            },
+        },
+        components: {
+            asset: require('./components/asset'),
+            node: require('./components/node'),
+        },
     });
 };
 

@@ -59,12 +59,16 @@ export const messages = {
     /**
      * 设置节点的属性
      */
-    'set-node-property' (event: IPCEvent) {},
+    'set-property' (event: IPCEvent, options: SetPropertyOptions) {
+        Editor.Ipc.sendToPanel('scene', 'set-property', options);
+    },
 
     /**
-     * 设置节点的索引（调整在父节点内的位置）
+     * 移动数组类型属性内某个 item 的位置 
      */
-    'set-node-index' (event: IPCEvent) {},
+    'move-array-element' (event: IPCEvent, options: MovePropertyOptions) {
+        Editor.Ipc.sendToPanel('scene', 'move-array-element', options);
+    },
 
     /**
      * 查询一个节点的 dump 信息

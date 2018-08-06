@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <title>Editor</title>
-        <link href="../../windows/style/base.css" rel="stylesheet" />
-        <link href="../../windows/style/main.css" rel="stylesheet" />
+        <link href="../style/base.css" rel="stylesheet" />
+        <link href="../style/main.css" rel="stylesheet" />
     </head>
     
     <body>
@@ -15,8 +15,8 @@
         <script>
             const ipc = require('@base/electron-base-ipc');
             window.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
-            window.Editor = require('../../lib/editor');
-            require('./ipc');
+            window.Editor = require('../../../lib/editor');
+            require('../ipc');
         </script>
     </body>
 </html>

@@ -1,10 +1,87 @@
 'use strict';
 
+declare const cc: any;
+
+import {
+    query,
+} from '../manager/node';
+
 /**
- * 生成一个 engine 3d node 的 dump 数据
+ * 生成一个 component 的 dump 数据
+ * @param component 
+ */
+export function dumpComponent (component: any) {
+    let schema = component.constructor.schema;
+    let result: any = {};
+    for (let key in schema) {
+        result[key] = dumpProperty(component[key], schema[key].type);
+    }
+    return result;
+};
+
+/**
+ * 生成一个属性的 dump 数据
+ * @param property 
+ */
+export function dumpProperty (property: any, schemaType?: string) : PropertyDump {
+    let type: string;
+    let value: any;
+    let extendArray: string[] = [];
+
+    if (schemaType) {
+        type = schemaType;
+    } else if (property === null) {
+        type = 'null';
+    } else if (property.constructor && property.constructor.name) {
+        type = property.constructor.name.toLocaleLowerCase();
+    } else {
+        type = (typeof property).toLocaleLowerCase();
+    }
+
+    // Entity
+    if (type === 'entity' || type === 'level') {
+        value = property._id;
+        if (type !== 'entity') {
+            extendArray.push('entity');
+        }
+    } 
+    // Component
+    else if (property instanceof cc.Component) {
+        value = dumpComponent(property);
+        if (type !== 'component') {
+            extendArray.push('component');
+        }
+    }
+    // Asset
+    else if (property instanceof cc.Asset) {
+        value = property._uuid;
+        if (type !== 'asset') {
+            extendArray.push('asset');
+        }
+    }
+    // Array
+    else if (type === 'array') {
+        value = property.map((item: any) => {
+            return dumpProperty(item);
+        });
+    }
+    // Other
+    else {
+        value = property;
+    }
+
+    return {
+        type,
+        value,
+        extends: extendArray,
+    };
+};
+
+/**
+ * 生成一个 node 的 dump 数据
  * @param node 
  */
-export function dumpNode (node: any) : any {
+export function dumpNode (node: any) : NodeDump {
     let children = [];
 
     for (let i=0; i<node._children.length; i++) {
@@ -16,14 +93,78 @@ export function dumpNode (node: any) : any {
     }
 
     return {
-        uuid: node._id,
+        uuid: dumpProperty(node._id),
 
-        active: node.active,
-        name: node.name,
-        layer: node.layer,
-        lpos: node.lpos,
-        lrot: node.lrot,
+        parent: dumpProperty(node.parent),
+        active: dumpProperty(node.active),
+        name: dumpProperty(node.name),
+        layer: dumpProperty(node.layer),
+        lpos: dumpProperty(node.lpos),
+        lrot: dumpProperty(node.lrot),
 
-        children: children,
+        comps: dumpProperty(node._comps),
+
+        children: dumpProperty(node._children),
     };
+};
+
+/**
+ * 恢复一个 dump 数据到 component
+ * @param dump 
+ * @param component 
+ */
+export function restoreComponent (dump: any, component: any) {
+    // todo
+}
+
+/**
+ * 恢复一个 dump 数据到 property
+ * @param dump 
+ * @param property 
+ */
+export function restoreProperty (dump: PropertyDump, property: any, key: string) {
+    switch (dump.type) {
+        case 'level':
+        case 'entity':
+            let node = query(dump.value);
+            if (key === 'parent') {
+                property.remove();
+                node.append(property);
+            } else {
+                property[key] = node;
+            }
+            break;
+        case 'vec3':
+            property[key].x = dump.value.x;
+            property[key].y = dump.value.y;
+            property[key].z = dump.value.z;
+            break;
+        case 'quat':
+            property[key].x = dump.value.x;
+            property[key].y = dump.value.y;
+            property[key].z = dump.value.z;
+            property[key].w = dump.value.w;
+            break;
+        default:
+            property[key] = dump.value;
+    }
+};
+
+/**
+ * 恢复一个 dump 数据到 node
+ * @param dump 
+ * @param node 
+ */
+export function restoreNode (dump: NodeDump, node: any) {
+    restoreProperty(dump.uuid, node, '_id');
+
+    restoreProperty(dump.parent, node, 'parent');
+    restoreProperty(dump.active, node, 'active');
+    restoreProperty(dump.name, node, 'name');
+    restoreProperty(dump.layer, node, 'layer');
+    restoreProperty(dump.lpos, node, 'lpos');
+    restoreProperty(dump.lrot, node, 'lrot');
+
+    // todo children
+    // restoreProperty(dump.uuid, node, '_id');
 };

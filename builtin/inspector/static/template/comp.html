@@ -1,0 +1,78 @@
+<section class="component">
+
+    <template
+        v-for="(item, key) in component"
+    >
+
+        <div
+            v-if="item.type === 'string'"
+        >
+            <span class="name">{{key}}</span>
+            <ui-input
+                :value="item.value"
+            ></ui-input>
+        </div>
+
+        <div
+            v-else-if="item.type === 'boolean'"
+        >
+            <span class="name">{{key}}</span>
+            <ui-checkbox
+                :value="item.value"
+            ></ui-checkbox>
+        </div>
+
+        <div
+            v-else-if="item.type === 'number'"
+        >
+            <span class="name">{{key}}</span>
+            <ui-num-input
+                :value="item.value"
+            ></ui-num-input>
+        </div>
+
+        <div
+            v-else-if="item.type === 'vec3'"
+        >
+            <span class="name">{{key}}</span>
+            <div class="flex-1">
+                <ui-num-input unit="x"
+                    :value="item.value.x"
+                ></ui-num-input>
+                <ui-num-input unit="y"
+                    :value="item.value.y"
+                ></ui-num-input>
+                <ui-num-input unit="z"
+                    :value="item.value.z"
+                ></ui-num-input>
+            </div>
+        </div>
+
+        <div
+            v-else-if="item.type === 'quat'"
+        >
+
+            <span class="name">{{key}}</span>
+            <div class="flex-1">
+                <ui-num-input unit="x"
+                    :value="item.value.x"
+                ></ui-num-input>
+                <ui-num-input unit="y"
+                    :value="item.value.y"
+                ></ui-num-input>
+                <ui-num-input unit="z"
+                    :value="item.value.z"
+                ></ui-num-input>
+                <ui-num-input unit="w"
+                    :value="item.value.w"
+                ></ui-num-input>
+            </div>
+        </div>
+
+        <div
+            v-else
+        >{{key}}</div>
+
+    </template>
+
+</section>

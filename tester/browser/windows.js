@@ -8,7 +8,7 @@ const packageManager = require('@editor/package');
  * 启动测试窗口
  */
 exports.tester = function (name) {
-    windows.open(ps.join(__dirname, '../renderer/index.html'), {
+    windows.open(ps.join(__dirname, '../renderer/template/index.html'), {
         x: 100,
         y: 200,
         width: 400,
@@ -31,7 +31,7 @@ exports.package = function (name) {
             return;
         }
 
-        windows.open(ps.join(__dirname, '../renderer/tester.html'), {
+        windows.open(ps.join(__dirname, '../renderer/template/tester.html'), {
             x: 600,
             y: 200,
             width: 400,

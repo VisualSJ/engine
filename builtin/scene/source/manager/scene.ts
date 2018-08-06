@@ -6,12 +6,15 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
 
-import { dumpNode } from '../utils/dump';
-import { crawler, query } from './node';
+import {
+    walk,
+    query,
+} from './node';
 
 declare const cc: any;
 
 let element: any = null;
+let scene: any = null;
 
 /**
  * 初始化场景管理器
@@ -38,58 +41,69 @@ export async function open (uuid: string) {
     element.appendChild($canvas);
 
     // 启动引擎
-    let app = new cc.App($canvas);
-    // @ts-ignore
-    window.app = app;
-    app.resize();
-    app.debugger.start();
+    scene = new cc.App($canvas);
+    scene.resize();
+    scene.debugger.start();
+
+    // @ts-ignore 暴露当前场景
+    window.app = scene;
 
     // 加载指定的场景
     let result = readFileSync(sceneFile, 'utf8');
     eval(`${result}\n//# sourceURL=${sceneFile}`);
 
     // 爬取所有的节点数据
-    crawler(app);
+    walk(scene);
 
     // 启动场景
-    app.run();
+    scene.run();
 };
 
 /**
  * 关闭当前场景
  */
 export function close () {
-    // @ts-ignore
-    if (window.app) {
-        // @ts-ignore
-        window.app.destroy();
-        // @ts-ignore
-        window.app = null;
+    if (scene) {
+        scene.destroy();
     }
     let $canvas = element.querySelector('canvas');
     $canvas && $canvas.remove();
+
+    scene = null;
+    // @ts-ignore
+    window.app = null;
 };
 
 /**
- * 获取一个节点的 dump 数据
- * 如果不传入 uuid 则获取场景的 dump 数据
- * @param uuid 
+ * 查询当前运行的场景内的节点树
+ * @param uuid 传入的时候生成当前节点的节点树，不传入的话生成场景的节点树
  */
-export function dump (uuid: string | null) {
+export function queryNodeTree (uuid?: string) : NodeTreeItem[] {
+
+    let step = function (node: any) : NodeTreeItem {
+        return {
+            name: node.name,
+            uuid: node._id,
+            children: node._children.map(step),
+        };
+    };
+
     if (uuid) {
         let node = query(uuid);
-        return dumpNode(node);
+
+        if (!node) {
+            return [];
+        }
+
+        return [step(node)];
     }
 
-    let array = [];
-    // @ts-ignore
-    for (let i=0; i<app._entities._data.length; i++) {
-        // @ts-ignore
-        let node = app._entities._data[i];
-        if (!node) {
-            break;
-        }
-        array.push(dumpNode(node));
+    let nodes = [];
+
+    for (let i=0; i<scene._entities._count; i++) {
+        let node = scene._entities._data[i];
+        nodes.push(step(node));
     }
-    return array;
+
+    return nodes;
 };

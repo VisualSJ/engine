@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8">
         <title>Editor</title>
-        <link href="../../windows/style/base.css" rel="stylesheet" />
-        <link href="../../windows/style/main.css" rel="stylesheet" />
-        <link href="./index.css" rel="stylesheet" />
+        <link href="../style/base.css" rel="stylesheet" />
+        <link href="../style/main.css" rel="stylesheet" />
+        <link href="../style/index.css" rel="stylesheet" />
     </head>
     
     <body>
@@ -82,7 +82,7 @@
             let name = windows.userData.name;
             let sender = {};
             try {
-                let packagePath = ps.join(__dirname, '../../builtin', name, 'test/sender');
+                let packagePath = ps.join(__dirname, '../../../builtin', name, 'test/sender');
                 sender = require(packagePath);
             } catch (error) {
                 console.error(error);
