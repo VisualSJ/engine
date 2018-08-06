@@ -1,0 +1,214 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  contain: content;
+  padding: 10px 6px;
+  outline: 0;
+  font-size: 12px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #474747;
+  box-shadow: 0 0 15px 2px rgba(0, 0, 0, 0.8);
+  cursor: default;
+  color: #bdbdbd;
+}
+:host input {
+  padding: 0.2em 0.6em;
+  width: 80px;
+  display: inline-block;
+  outline: 0;
+  border-radius: 3px;
+  border: 1px solid #888;
+  box-shadow: inset 0 0 3px 1px rgba(0, 0, 0, 0.3);
+  background: #252525;
+  color: #fd942b;
+}
+:host input:hover {
+  border-color: #aaaaaa;
+}
+:host input:focus {
+  border-color: #fd942b;
+}
+.hbox,
+.hex-field,
+.prop,
+.title,
+.vbox {
+  display: flex;
+}
+.alpha,
+.color,
+.hue {
+  height: 150px;
+  background-image: url(file:///lib/renderer/img/hue.png);
+}
+.hbox,
+.hue,
+.vbox {
+  position: relative;
+}
+.hbox,
+.vbox {
+  margin-bottom: 10px;
+}
+.hbox {
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.ctrl {
+  cursor: pointer;
+  margin-right: 6px;
+  outline: 0;
+  border: 1px solid #171717;
+}
+.ctrl i {
+  position: absolute;
+  top: -4px;
+}
+.hue {
+  width: 20px;
+  background-position: 0 0;
+}
+.hue-handle {
+  position: absolute;
+  left: 0;
+}
+.hue-handle i {
+  left: -2px;
+  width: 4px;
+  height: 8px;
+  background: #fff;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.alpha-handle {
+  position: absolute;
+  right: -2px;
+}
+.alpha-handle i {
+  right: 0;
+  width: 4px;
+  height: 8px;
+  background: #fff;
+  clip-path: polygon(100% 0, 0% 50%, 100% 100%);
+}
+.color-handle {
+  position: absolute;
+  color: #000;
+}
+.color-handle i {
+  width: 6px;
+  height: 6px;
+  top: -5px;
+  left: -5px;
+  border-radius: 50%;
+  border: 2px solid;
+}
+.color {
+  position: relative;
+  width: 150px;
+  background-position: -40px 0;
+}
+.alpha {
+  position: relative;
+  width: 20px;
+  background-color: #000;
+  background-position: -20px 0;
+}
+.vbox {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.prop {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+}
+.prop span {
+  margin: 0 0.25em 0 0;
+  font-weight: 700;
+  color: #ddd;
+  text-align: center;
+  width: 18px;
+  height: 16px;
+  border-radius: 3px;
+}
+.prop .red {
+  background: #b54344;
+}
+.prop .green {
+  background: #6b9e51;
+}
+.prop .blue {
+  background: #4281b6;
+}
+.prop .gray {
+  background: #333;
+}
+.prop ui-slider {
+  flex: 1;
+}
+.color-box,
+.color-block {
+  background-image: url(file:///lib/renderer/img/transparent-bg.png);
+}
+.hex-field {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+.hex-field .color-block {
+  position: relative;
+  border: 1px solid #171717;
+  background-position: 0 0;
+  width: 20px;
+  height: 20px;
+}
+.hex-field .color-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+.hex-field .space {
+  flex: 1;
+}
+.hex-field .label {
+  margin: 0 0.5em 0 0;
+}
+.title {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.palette {
+  width: 200px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: start;
+}
+.color-box {
+  position: relative;
+  border: 1px solid #171717;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  margin-left: 3px;
+  cursor: pointer;
+}
+ui-slider {
+  width: 150px;
+  --track-size: 4px;
+  --track-background: #333;
+  --margin: 0;
+}

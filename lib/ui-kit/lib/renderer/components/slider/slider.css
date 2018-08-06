@@ -1,0 +1,117 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  contain: content;
+  outline: 0;
+  flex: none;
+  width: 150px;
+  min-width: 20px;
+  margin: var(--margin, 0 0.25em 0 0);
+  padding: 6px 55px 6px 8px;
+  white-space: nowrap;
+  cursor: default;
+}
+:host .track {
+  position: relative;
+  outline: 0;
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+}
+:host .wrapper {
+  position: relative;
+  box-sizing: border-box;
+  background: #333;
+  height: 4px;
+  top: 6px;
+  border-radius: 3px;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+:host .bar {
+  height: var(--track-size);
+  background-color: var(--active-color, #409eff);
+  border-top-left-radius: calc(var(--track-size) / 2);
+  border-bottom-left-radius: calc(var(--track-size) / 2);
+  position: absolute;
+}
+:host .cursor {
+  position: absolute;
+  top: 1px;
+  margin-left: -6px;
+}
+:host .cursor div {
+  box-sizing: border-box;
+  background: #333;
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 1px 3px 1px #000 inset, 0 1px 1px 0 rgba(0, 0, 0, 0.9);
+  border-radius: 100%;
+  border: 2px solid #949494;
+}
+:host .input {
+  position: absolute;
+  box-sizing: border-box;
+  margin: 0;
+  outline: 0;
+  padding: 0 0.4em;
+  width: 45px;
+  height: 16px;
+  right: 0;
+  top: 6px;
+  border: 1px solid transparent;
+  box-shadow: inset 0 0 3px 1px rgba(0, 0, 0, 0.3);
+  background: #252525;
+  color: #fd942b;
+  font-size: 12px;
+}
+:host .input:hover {
+  border-color: #888;
+}
+:host([vertical]) {
+  padding: 8px 6px 40px;
+}
+:host([vertical]) .track {
+  width: 16px;
+}
+:host([vertical]) .wrapper {
+  top: auto;
+  left: 6px;
+  width: 4px;
+  height: 100%;
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #000;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+:host([vertical]) .bar {
+  width: 16px;
+  height: auto;
+  border-radius: 0 0 calc(var(--track-size) / 2) calc(var(--track-size) / 2);
+}
+:host([disabled]) {
+  pointer-events: none;
+  opacity: 0.5;
+}
+:host([disabled]) .wrapper {
+  background: #474747;
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+:host([disabled]) .input {
+  color: #636363;
+}
+:host([focused]:not([disabled])) .input {
+  border-color: #fd942b;
+}
+:host([focused]:not([disabled])) .cursor div {
+  border-color: #fd942b;
+  box-shadow: 0 1px 3px 1px rgba(255, 128, 0, 0.2) inset, 0 1px 1px 0 rgba(0, 0, 0, 0.9);
+}

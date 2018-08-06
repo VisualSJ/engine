@@ -1,0 +1,44 @@
+<style>
+    section.section {
+        background: #474747;
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    .section span {
+        line-height: 28px;
+        vertical-align: top;
+    }
+
+    section.section:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<section class="section">
+    <h1>standard</h1>
+    <ui-slider value="20">
+    </ui-slider>
+</section>
+<section class="section">
+    <h1>auto focused</h1>
+    <ui-slider autofocus value="20">
+    </ui-slider>
+</section>
+<section class="section">
+    <h1>disabled</h1>
+    <ui-slider disabled value="20">
+    </ui-slider>
+</section>
+<section class="section">
+    <h1>Min Max</h1>
+    <ui-slider min="-100" value="20" max="100">
+    </ui-slider>
+    <span>min="-100" max="100"</span>
+</section>
+<section class="section">
+    <h1>Step</h1>
+    <ui-slider step="3" value="5" min="0" max="100">
+    </ui-slider>
+    <span>step="3"</span>
+</section>
