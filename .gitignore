@@ -1,8 +1,8 @@
 .DS_Store
 .vscode
-
 # node 模块
 node_modules
+/**/package-lock.json
 
 # 临时文件
 _*

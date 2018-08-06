@@ -1,8 +1,6 @@
 <div class="content">
 
-    <section class="loading"
-        v-if="!ready"
-    >
+    <section class="loading" v-if="!ready">
         <ui-loading></ui-loading>
     </section>
 
@@ -13,8 +11,12 @@
         <input />
     </div>
 
-    <tree
-        :list="list"
-        :select="select"
-    ></tree>
+    <div class="viewBox" ref="viewBox">
+        <div class=scrollBar ref="scrollBar"></div>
+        <tree ref="tree" 
+        :list="nodes" 
+        :select="select" 
+        @toggle="toggleNode"></tree>
+        
+    </div>
 </div>

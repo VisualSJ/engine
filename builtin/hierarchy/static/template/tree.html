@@ -1,7 +1,16 @@
 <ul class="tree">
-    <li
-        v-for="item in list"
-        :active="select.indexOf(item.uuid) !== -1"
-        @click="selectNode($event, item.uuid)"
-    >{{item.name}}</li>
+    <li 
+    v-for="item in list" 
+    :active="select.indexOf(item.uuid) !== -1" 
+    @click="selectNode($event, item.uuid)" 
+    :style="{ paddingLeft: item.depth*16 + 'px' }">
+        <i 
+        v-if="item.isParent" 
+        @click="toggleNode(item.uuid)">
+            <label v-if="item.isExpand"> - </label>
+            <label v-else> + </label>
+        </i>
+        <i v-else>&nbsp;&nbsp;</i>
+        <span>{{item.name}}</span>
+    </li>
 </ul>

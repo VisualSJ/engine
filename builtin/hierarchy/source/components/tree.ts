@@ -10,7 +10,9 @@ export const props: string[] = [
     'select',
 ];
 
-export function data () {
+export const name = 'tree';
+
+export function data() {
     return {};
 };
 
@@ -20,8 +22,12 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    selectNode (event: Event, uuid: string) {
+    selectNode(event: Event, uuid: string) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
         Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
     },
+    toggleNode(uuid: string){
+        // @ts-ignore
+        this.$emit('toggle',uuid);
+    }
 };
