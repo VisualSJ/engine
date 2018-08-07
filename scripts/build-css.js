@@ -18,7 +18,7 @@ let lessDirnames = [
 Promise.all(lessDirnames.map(async (dir) => {
     dir = ps.join(__dirname, '..', dir);
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         exec('lessc ./static/style/index.less ./dist/index.css', {
             cwd: dir,
         }, (error) => {
