@@ -5,6 +5,11 @@ import { readFileSync } from 'fs';
 
 let panel: any = null;
 let vm: any = null;
+interface dragNode {
+    from: string; // 被拖动的节点
+    to: string; // 被指向的节点
+    insert: string; // 插入方式，有三种：inside, before, after
+}
 
 // 外部传进来的树形菜单总数据，internal格式 { name: '', uuid: '', children: [] } ; children 的内容数据格式一致
 interface TreeNode {
@@ -12,8 +17,8 @@ interface TreeNode {
     uuid: string;
     children?: Array<TreeNode>;
     depth?: number;
-    isParent?: boolean;
-    isExpand?: boolean;
+    isParent?: boolean; // 是否是父节点
+    isExpand?: boolean; // 是否展开显示
 }
 let treeData: Array<TreeNode> = [];
 /*
@@ -51,8 +56,6 @@ export const methods = {
         }
     }
 };
-
-
 
 export const messages = {
 
@@ -154,35 +157,12 @@ export async function ready() {
                 * */
 
                 // 获取该节点的数据，包含子节点
-                let parent = getOne(treeData, uuid);
+                let one = getOne(treeData, uuid)[0];
 
-                if (parent) {
-                    parent.isExpand = !parent.isExpand;
+                if (one) {
+                    one.isExpand = !one.isExpand;
                     vm.changeTreeData();
                 }
-
-                function getOne(arr: Array<TreeNode> = [], uuid = ''): any {
-                    let rt;
-
-                    for (let i = arr.length; i--;) {
-                        let one = arr[i];
-                        if (one.uuid === uuid) {
-                            // uuid全等匹配
-                            return one;
-                        };
-                        // 如果还有children的继续迭代查找
-                        if (one.children && one.children.length != 0) {
-                            rt = getOne(one.children, uuid);
-                            if (rt) {
-                                // 找到了才返回，找不到，继续循环
-                                return rt;
-                            }
-                        }
-                    }
-
-                    return rt;
-                }
-
             },
             changeTreeData() {
                 // 树形数据已改变，如节点增删改，是较大的变动，需要重新计算各个配套数据
@@ -203,6 +183,28 @@ export async function ready() {
                 vm.$refs.tree.$el.style.top = scrollTop + 'px';
                 // 重新渲染可视区域的树形
                 vm.renderTree();
+            },
+            dropNode(json: dragNode) {
+                // 将被移动的对象
+                let fromData = getOne(treeData, json.from);
+                // 将被注入数据的对象
+                let toData = getOne(treeData, json.to);
+
+                if (!toData[0].children) {
+                    toData[0].children = [];
+                }
+                let node = fromData[2].splice(fromData[1], 1)[0];
+                let index = toData[1];
+
+                if (json.insert === 'inside') {
+                    toData[0].children.push(node);
+                } else if (json.insert === 'before') {
+                    toData[2].splice(index, 0, node);
+                } else if (json.insert === 'after') {
+                    toData[2].splice(index + 1, 0, node);
+                }
+
+                vm.changeTreeData();
             }
         },
     });
@@ -246,3 +248,26 @@ function calcTreeNodePosition(tree = treeData, index = 0, depth = 0) {
     return index;
 }
 
+// 传入 uuid 获取 uuid 所在的 json 对象，及 json 所在的数组的索引值，数组本身
+// [one, i, arr]
+function getOne(arr: Array<TreeNode> = [], uuid = ''): any {
+    let rt;
+
+    for (let i = 0, ii = arr.length; i < ii; i++) {
+        let one = arr[i];
+        if (one.uuid === uuid) {
+            // uuid全等匹配
+            return [one, i, arr];
+        };
+        // 如果还有children的继续迭代查找
+        if (one.children && one.children.length != 0) {
+            rt = getOne(one.children, uuid);
+            if (rt) {
+                // 找到了才返回，找不到，继续循环
+                return rt;
+            }
+        }
+    }
+
+    return rt;
+}

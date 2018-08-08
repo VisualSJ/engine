@@ -1,8 +1,12 @@
 <ul class="tree">
-    <li 
+    <li draggable="true"
     v-for="item in list" 
     :active="select.indexOf(item.uuid) !== -1" 
     @click="selectNode($event, item.uuid)" 
+    @dragstart="dragStart($event, item.uuid)" 
+    @dragover="dragOver($event, item.uuid)" 
+    @dragleave="dragLeave($event, item.uuid)" 
+    @drop="drop($event, item.uuid)" 
     :style="{ paddingLeft: item.depth*16 + 'px' }">
         <i 
         v-if="item.isParent" 
