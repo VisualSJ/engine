@@ -1,0 +1,44 @@
+@import "../base/base.less";
+
+:host {
+    user-select: none;
+    outline: none;
+    display: inline-block;
+    position: relative;
+    height: 30px;
+    width: 140px;
+    background-color:black;
+    border:1px solid #ddd;
+    cursor: pointer;
+    .color-wrap{
+        height: 100%;
+        width: 100%;
+    }
+    .color{
+        height: 85%;
+    }
+    .alpha-line {
+        background-color: white;
+        height: 15%;
+    }
+    ui-color-picker{
+        position: absolute;
+        z-index:2;
+        top:40px;
+    }
+  }
+
+:host([focused]) {
+    border-color: @focused-color;
+}
+
+:host([disabled]) {
+    cursor: not-allowed;
+    opacity: @disabled-opacity;
+    input {
+        cursor: not-allowed;
+        
+    }
+}
+
+

@@ -1,0 +1,43 @@
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+}
+:host {
+  user-select: none;
+  outline: none;
+  display: inline-block;
+  position: relative;
+  height: 30px;
+  width: 140px;
+  background-color: black;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+:host .color-wrap {
+  height: 100%;
+  width: 100%;
+}
+:host .color {
+  height: 85%;
+}
+:host .alpha-line {
+  background-color: white;
+  height: 15%;
+}
+:host ui-color-picker {
+  position: absolute;
+  z-index: 2;
+  top: 40px;
+}
+:host([focused]) {
+  border-color: #07d;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+:host([disabled]) input {
+  cursor: not-allowed;
+}
