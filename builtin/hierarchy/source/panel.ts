@@ -1,26 +1,27 @@
 'use strict';
 
-import { join } from 'path';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 
 let panel: any = null;
 let vm: any = null;
-interface dragNode {
+interface IdragNode {
     from: string; // 被拖动的节点
     to: string; // 被指向的节点
     insert: string; // 插入方式，有三种：inside, before, after
 }
 
 // 外部传进来的树形菜单总数据，internal格式 { name: '', uuid: '', children: [] } ; children 的内容数据格式一致
-interface TreeNode {
+interface ItreeNode {
     name: string;
     uuid: string;
-    children?: Array<TreeNode>;
+    children?: ItreeNode[];
     depth?: number;
     isParent?: boolean; // 是否是父节点
     isExpand?: boolean; // 是否展开显示
+    rename?: boolean; // 是否
 }
-let treeData: Array<TreeNode> = [];
+let treeData: ItreeNode[] = [];
 /*
 * 将所有节点按照 key = position.top 排列，value = internal
 * 如第二个节点的数据:
@@ -28,9 +29,9 @@ let treeData: Array<TreeNode> = [];
 * value:  { name: '', uuid: '', children: [] }
 * 考虑到key是数字且要直接用于运算，Map格式的效率会高一些 （待测试）
 **/
-let positionMap: Map<number, TreeNode> = new Map;
+const positionMap: Map<number, ItreeNode> = new Map();
 // 配置每个节点的高度，需要与css一致
-let treeNodeHeight: number = 18;
+const ItreeNodeHeight: number = 20;
 
 const Vue = require('vue/dist/vue.js');
 
@@ -47,7 +48,7 @@ export const methods = {
     /**
      * 刷新显示面板
      */
-    async refresh() {
+    async refresh () {
         try {
             treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
             vm.changeTreeData();
@@ -62,7 +63,7 @@ export const messages = {
     /**
      * 场景准备就绪
      */
-    'scene:ready'() {
+    'scene:ready' () {
         vm.ready = true;
         panel.refresh();
     },
@@ -70,18 +71,18 @@ export const messages = {
     /**
      * 关闭场景
      */
-    'scene:close'() {
+    'scene:close' () {
         vm.ready = false;
     },
 
     /**
      * 选中了某个物体
      */
-    'selection:select'(event: IPCEvent, type: string, uuid: string) {
+    'selection:select' (event: IPCEvent, type: string, uuid: string) {
         if (type !== 'node') {
             return;
         }
-        let index = vm.select.indexOf(uuid);
+        const index = vm.select.indexOf(uuid);
         if (index === -1) {
             vm.select.push(uuid);
         }
@@ -90,22 +91,22 @@ export const messages = {
     /**
      * 取消选中了某个物体
      */
-    'selection:unselect'(event: IPCEvent, type: string, uuid: string) {
+    'selection:unselect' (event: IPCEvent, type: string, uuid: string) {
         if (type !== 'node') {
             return;
         }
-        let index = vm.select.indexOf(uuid);
+        const index = vm.select.indexOf(uuid);
         if (index !== -1) {
             vm.select.splice(index, 1);
         }
     },
 };
 
-export async function ready() {
+export async function ready () {
     // @ts-ignore
     panel = this;
 
-    let isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
+    const isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
 
     vm = new Vue({
         el: panel.$.content,
@@ -120,16 +121,16 @@ export async function ready() {
             tree: require('./components/tree'),
         },
         watch: {
-            viewHeight() {
+            viewHeight () {
                 // 当可视区域高度变化时，刷新树形
                 vm.renderTree();
             },
-            scrollTop() {
+            scrollTop () {
                 // 当可视区域有滚动变化时，刷新树形
                 vm.renderTree();
             }
         },
-        mounted() {
+        mounted () {
             // 监听容器viewBox的scroll事件
             this.$refs.viewBox.addEventListener('scroll', () => {
                 // 传入新的scrollTop值，触发变动
@@ -138,67 +139,80 @@ export async function ready() {
 
         },
         methods: {
-            renderTree() {
+            renderTree () {
                 // 清空会被渲染的节点数据
                 vm.nodes.length = 0;
                 // 算出可视区域的top最小值和最大值
-                let min = vm.scrollTop - treeNodeHeight / 2;
-                let max = vm.viewHeight + vm.scrollTop;
-                for (let [top, json] of positionMap) {
+                const min = vm.scrollTop - ItreeNodeHeight / 2;
+                const max = vm.viewHeight + vm.scrollTop;
+                for (const [top, json] of positionMap) {
                     if (top >= min && top <= max) {
                         // 在可视区域的才能被用于显示
                         vm.nodes.push(json);
                     }
                 }
             },
-            toggleNode(uuid = '') {
+            toggleNode (uuid = '') {
                 /*
                 * 节点的toggle切换
                 * */
 
                 // 获取该节点的数据，包含子节点
-                let one = getOne(treeData, uuid)[0];
+                const one = getOne(treeData, uuid)[0];
 
                 if (one) {
                     one.isExpand = !one.isExpand;
                     vm.changeTreeData();
                 }
             },
-            changeTreeData() {
+            renameNode (uuid = '', name = '') {
+                // 获取该节点的数据
+                const one = getOne(treeData, uuid)[0];
+                // name存在才能重名命
+                if (one && name) {
+                    one.name = name;
+                }
+                // 刷新
+                vm.changeTreeData();
+            },
+            changeTreeData () {
                 // 树形数据已改变，如节点增删改，是较大的变动，需要重新计算各个配套数据
                 positionMap.clear(); // 清空数据
-                calcTreeNodePosition(); // 重算排位
+                calcItreeNodePosition(); // 重算排位
                 vm.renderTree(); // 重新渲染出树形
-                vm.$refs.scrollBar.style.height = positionMap.size * treeNodeHeight + 'px'; // 重新定位滚动条
+                vm.$refs.scrollBar.style.height = positionMap.size * ItreeNodeHeight + 'px'; // 重新定位滚动条
             },
-            resizeTree() {
+            resizeTree () {
                 // 调整可视区域的高度
                 vm.viewHeight = vm.$refs.viewBox.clientHeight;
                 // 调整滚动条高度
                 vm.$refs.tree.$el.style.height = vm.viewHeight + 'px';
             },
-            scrollTree(scrollTop = 0) {
+            scrollTree (scrollTop = 0) {
                 // 滚动了多少，调整滚动条位置
                 vm.scrollTop = scrollTop;
                 vm.$refs.tree.$el.style.top = scrollTop + 'px';
                 // 重新渲染可视区域的树形
                 vm.renderTree();
             },
-            dropNode(json: dragNode) {
+            dropNode (json: IdragNode) {
                 // 将被移动的对象
-                let fromData = getOne(treeData, json.from);
+                const fromData = getOne(treeData, json.from);
                 // 将被注入数据的对象
-                let toData = getOne(treeData, json.to);
+                const toData = getOne(treeData, json.to);
 
                 if (!toData[0].children) {
                     toData[0].children = [];
                 }
-                let node = fromData[2].splice(fromData[1], 1)[0];
+                const node = fromData[2].splice(fromData[1], 1)[0];
                 let index = toData[1];
 
                 if (json.insert === 'inside') {
                     toData[0].children.push(node);
                 } else if (json.insert === 'before') {
+                    if (index > fromData[1]) {
+                        index--;
+                    }
                     toData[2].splice(index, 0, node);
                 } else if (json.insert === 'after') {
                     toData[2].splice(index + 1, 0, node);
@@ -211,13 +225,13 @@ export async function ready() {
 
     // 场景就绪状态才需要查询数据
     isReady && panel.refresh();
-};
+}
 
-export async function beforeClose() { }
+export async function beforeClose () { }
 
-export async function close() { }
+export async function close () { }
 
-window.addEventListener('resize', function () {
+window.addEventListener('resize', () => {
     // 临时监听窗口的变化
     vm.resizeTree();
 });
@@ -225,24 +239,25 @@ window.addEventListener('resize', function () {
 /*
 * 计算所有树形节点的位置数据，这一结果用来做快速检索
 */
-function calcTreeNodePosition(tree = treeData, index = 0, depth = 0) {
+function calcItreeNodePosition (tree = treeData, index = 0, depth = 0) {
     tree.forEach((json) => {
         // 起始位置
-        let start = index * treeNodeHeight;
+        const start = index * ItreeNodeHeight;
         // 平级保存，没有children
         positionMap.set(start, {
             name: json.name,
             uuid: json.uuid,
-            depth: depth,
+            depth,
             isParent: json.children && json.children.length > 0 ? true : false,
             isExpand: json.children && json.isExpand ? true : false,
+            rename: false
         });
         // index 是平级的编号，即使在children中也会被按顺序计算
         index++;
-        // 
+        //
         if (json.children && json.isExpand === true) {
             // depth 是该节点的层级
-            index = calcTreeNodePosition(json.children, index, depth + 1);
+            index = calcItreeNodePosition(json.children, index, depth + 1);
         }
     });
     return index;
@@ -250,17 +265,17 @@ function calcTreeNodePosition(tree = treeData, index = 0, depth = 0) {
 
 // 传入 uuid 获取 uuid 所在的 json 对象，及 json 所在的数组的索引值，数组本身
 // [one, i, arr]
-function getOne(arr: Array<TreeNode> = [], uuid = ''): any {
+function getOne (arr: ItreeNode[] = [], uuid = ''): any {
     let rt;
 
     for (let i = 0, ii = arr.length; i < ii; i++) {
-        let one = arr[i];
+        const one = arr[i];
         if (one.uuid === uuid) {
             // uuid全等匹配
             return [one, i, arr];
-        };
+        }
         // 如果还有children的继续迭代查找
-        if (one.children && one.children.length != 0) {
+        if (one.children && one.children.length !== 0) {
             rt = getOne(one.children, uuid);
             if (rt) {
                 // 找到了才返回，找不到，继续循环

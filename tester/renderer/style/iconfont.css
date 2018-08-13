@@ -1,0 +1,24 @@
+
+@font-face {font-family: "editor";
+  src: url('iconfont.woff?t=1533709236346#woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="i-"], [class*=" i-"] {
+  font-family:"editor" !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.i-arrow-right:before { content: "\e62d"; }
+
+.i-arrow-down:before { content: "\e62e"; }
+
+.i-add:before { content: "\e64d"; }
+

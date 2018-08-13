@@ -1,20 +1,34 @@
 <ul class="tree">
-    <li draggable="true"
+    <li 
     v-for="item in list" 
+    :draggable="item.rename?false:true"
     :active="select.indexOf(item.uuid) !== -1" 
     @click="selectNode($event, item.uuid)" 
     @dragstart="dragStart($event, item.uuid)" 
     @dragover="dragOver($event, item.uuid)" 
     @dragleave="dragLeave($event, item.uuid)" 
     @drop="drop($event, item.uuid)" 
-    :style="{ paddingLeft: item.depth*16 + 'px' }">
-        <i 
+    :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
+    v-bind:class="{'parent':item.isParent}"
+    >
+        <i class=""
         v-if="item.isParent" 
-        @click="toggleNode(item.uuid)">
-            <label v-if="item.isExpand"> - </label>
-            <label v-else> + </label>
+        @click="toggleNode(item.uuid)"
+        v-bind:class="{'i-arrow-right':!item.isExpand,'i-arrow-down':item.isExpand}"
+        >
         </i>
-        <i v-else>&nbsp;&nbsp;</i>
-        <span>{{item.name}}</span>
+        <span
+        @dblclick="renameNode($event, item)"
+        >
+        <label v-if="!item.rename">
+            {{item.name}}
+        </label>
+        <input class="rename-input" ref='input'
+        v-else
+        :value="item.name"
+        @blur="renameBlur(item.uuid)"
+        >
+    
+    </span>
     </li>
 </ul>

@@ -4,14 +4,24 @@
     position: absolute;
     left: 0;
     top: 0;
-    right: 16px;
-    padding: 5px 0 0 0;
+    right: 0;
+    z-index: 1;
+    padding: 4px 0 0 0;
     box-sizing: border-box;
     overflow: hidden;
     &>li {
         position: relative;
         cursor: pointer;
-        padding: 2px 8px;
+        padding: 2px 8px 2px 0;
+        height: 16px;
+        font-size: 12px;
+        text-indent: 4px;
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        &.parent {
+            text-indent: 0;
+        }
         &[insert="before"] {
             &:before {
                 content: '';
@@ -24,7 +34,7 @@
             }
         }
         &[insert="inside"] {
-            color:  @tree-active;
+            color: @tree-active;
         }
         &[insert="after"] {
             &:before {
@@ -36,6 +46,22 @@
                 height: 2px;
                 background-color: @tree-active;
             }
+        }
+        [class^="i-"] {
+            display: inline-block;
+            padding-left: 2px;
+            padding-right: 2px;
+            font-size: 10px;
+        }
+        i,
+        span {
+            vertical-align: middle;
+        }
+        .rename-input{
+            font-size: 12px;
+            outline: none;
+            border: 1px solid @tree-active;
+            padding-left: 4px;
         }
     }
 }

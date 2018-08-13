@@ -11,6 +11,6 @@ export const messages = {
 export function load () {
     // @ts-ignore
     pkg = this;
-};
+}
 
-export function unload () {};
+export function unload () {}
