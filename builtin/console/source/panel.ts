@@ -1,7 +1,7 @@
 'use strict';
 
-import { join } from 'path';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 
 let panel: any = null;
 let vm: any = null;
@@ -22,18 +22,18 @@ export const methods = {
      * 刷新显示面板
      * 查询对应选中的对象的信息
      */
-    async record (log: string) {
+    async record(log: string) {
         vm.list.push(log);
     }
 };
 
 export const messages = {};
 
-export async function ready () {
+export async function ready() {
     // @ts-ignore
     panel = this;
 
-    let list = Editor.Logger.query();
+    const list = Editor.Logger.query();
 
     vm = new Vue({
         el: panel.$.console,
@@ -43,10 +43,10 @@ export async function ready () {
     });
 
     Editor.Logger.on('record', panel.record);
-};
+}
 
-export async function beforeClose () {}
+export async function beforeClose() { }
 
-export async function close () {
+export async function close() {
     Editor.Logger.removeListener('record', panel.record);
 }

@@ -12,18 +12,17 @@ import {
 
 const get = require('lodash/get');
 
-let uuid2node: {[index: string]: any} = {};
+const uuid2node: { [index: string]: any } = {};
 
 /**
  * 爬取节点上的数据
- * @param children 
+ * @param children
  */
-function walkChildren (children: any[]) {
+function walkChildren(children: any[]) {
     if (!children) {
         return;
     }
-    for (let i=0; i<children.length; i++) {
-        let child = children[i];
+    for (const child of children) {
         if (!child) {
             break;
         }
@@ -32,23 +31,23 @@ function walkChildren (children: any[]) {
             walkChildren(child._chldren);
         }
     }
-};
+}
 
 /**
  * 爬取 engine 内打开的场景的节点数据
- * @param app 
+ * @param app
  */
-export function walk (app: any) {
+export function walk(app: any) {
     walkChildren(app._entities._data);
-};
+}
 
 /**
  * 查询 uuid 对应的节点
- * @param uuid 
+ * @param uuid
  */
-export function query (uuid: string) {
+export function query(uuid: string) {
     return uuid2node[uuid] || null;
-};
+}
 
 /**
  * 设置一个节点的属性
@@ -57,15 +56,20 @@ export function query (uuid: string) {
  * @param key 属性的 key，'name' | 'active'
  * @param dump 对应属性的值
  */
-export function setProperty (uuid: string, path: string, key: string, dump: PropertyDump) {
-    let node: any = query(uuid);
+export function setProperty(
+    uuid: string,
+    path: string,
+    key: string,
+    dump: PropertyDump
+) {
+    const node: any = query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
     }
 
     // 找到指定的 data 数据
-    let data = path ? get(node, path) : node;
+    const data = path ? get(node, path) : node;
     if (!data) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
@@ -102,7 +106,7 @@ export function setProperty (uuid: string, path: string, key: string, dump: Prop
 
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);
-};
+}
 
 /**
  * 调整一个数组类型的数据内某个 item 的位置
@@ -111,8 +115,14 @@ export function setProperty (uuid: string, path: string, key: string, dump: Prop
  * @param target 目标 item 原来的索引
  * @param offset 偏移量
  */
-export function moveProperty (uuid: string, path: string, key: string, target: number, offset: number) {
-    let node: any = query(uuid);
+export function moveProperty(
+    uuid: string,
+    path: string,
+    key: string,
+    target: number,
+    offset: number
+) {
+    const node: any = query(uuid);
     if (!node) {
         return console.warn(`Move property failed: ${uuid} does not exist`);
     }
@@ -126,32 +136,34 @@ export function moveProperty (uuid: string, path: string, key: string, target: n
 
     data = data[key];
     if (!Array.isArray(data)) {
-        return console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return console.warn(
+            `Move property failed: ${uuid} - ${path}.${key} isn't an array`
+        );
     }
 
-    let temp = data.splice(target, 1);
+    const temp = data.splice(target, 1);
     data.splice(target + offset, 0, temp[0]);
 
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);
-};
+}
 
 /**
  * 获取一个节点的 dump 数据
  * 如果不传入 uuid 则获取场景的 dump 数据
- * @param uuid 
+ * @param uuid
  */
-export function dump (uuid: string) {
+export function dump(uuid: string) {
     if (uuid) {
-        let node = query(uuid);
+        const node = query(uuid);
         return dumpNode(node);
     }
-};
+}
 
 /**
  * 节点是否存在
- * @param uuid 
+ * @param uuid
  */
-export function exists (uuid: string) : boolean {
+export function exists(uuid: string): boolean {
     return !!uuid2node[uuid];
-};
+}

@@ -1,7 +1,7 @@
 'use strict';
 
-import { join } from 'path';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 
 let panel: any = null;
 let vm: any = null;
@@ -25,20 +25,20 @@ export const messages = {
     /**
      * 选中某个物体
      */
-    async 'selection:select' (event: IPCEvent, type: string, uuid: string) {
+    async 'selection:select'(event: IPCEvent, type: string, uuid: string) {
         vm.loading = true;
-        
+
         if (type === 'asset') {
 
-            let info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-            let meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
+            const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+            const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
 
             vm.asset.info = info;
             vm.asset.meta = meta;
 
             vm.type = 'asset';
         } else if (type === 'node') {
-            let node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+            const node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
 
             vm.node = node;
 
@@ -51,7 +51,7 @@ export const messages = {
     },
 };
 
-export async function ready () {
+export async function ready() {
     // @ts-ignore
     panel = this;
 
@@ -74,8 +74,8 @@ export async function ready () {
             node: require('./components/node'),
         },
     });
-};
+}
 
-export async function beforeClose () {}
+export async function beforeClose() {}
 
-export async function close () {}
+export async function close() {}

@@ -9,10 +9,10 @@ export const props: string[] = [
     'component',
 ];
 
-export function data () {
+export function data() {
     return {};
-};
+}
 
 export const methods = {
-    
+
 };

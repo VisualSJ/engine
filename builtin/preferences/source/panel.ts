@@ -1,7 +1,7 @@
 'use strict';
 
-import { join } from 'path';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 
 let panel: any = null;
 
@@ -16,22 +16,22 @@ export const $ = {
 export const methods = {};
 
 export const messages = {
-    'asset-db:ready' () {
+    'asset-db:ready'() {
         panel.$.loading.hidden = true;
     },
-    'asset-db:close' () {
+    'asset-db:close'() {
         panel.$.loading.hidden = false;
     },
 };
 
-export async function ready () {
+export async function ready() {
     // @ts-ignore
     panel = this;
 
-    let isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    const isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
     panel.$.loading.hidden = isReady;
-};
+}
 
-export async function beforeClose () {};
+export async function beforeClose() {}
 
-export async function close () {};
+export async function close() {}

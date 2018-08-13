@@ -1,6 +1,6 @@
 'use strict';
 
-let selection: {[index: string]: string[]}  = {};
+const selection: { [index: string]: string[] } = {};
 
 // todo
 // 这里只记录了最后一次选中的 type
@@ -12,19 +12,19 @@ export const messages = {
 
     /**
      * 选中某个物体
-     * @param event 
-     * @param type 
-     * @param uuid 
+     * @param event
+     * @param type
+     * @param uuid
      */
-    'select' (event: IPCEvent, type: string, uuid: string | string[]) {
+    'select'(event: IPCEvent, type: string, uuid: string | string[]) {
         lastSelectType = type;
 
-        let array = selection[type] = selection[type] || [];
-        
+        const array = selection[type] = selection[type] || [];
+
         // 循环存储节点并广播消息
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
-                let index = array.indexOf(id);
+                const index = array.indexOf(id);
                 if (index !== -1) {
                     array.splice(index, 1);
                 }
@@ -34,7 +34,7 @@ export const messages = {
                 }
             });
         } else {
-            let index = array.indexOf(uuid);
+            const index = array.indexOf(uuid);
             if (index !== -1) {
                 array.splice(index, 1);
             }
@@ -47,28 +47,28 @@ export const messages = {
 
     /**
      * 取消选中某个物体
-     * @param event 
-     * @param type 
-     * @param uuid 
+     * @param event
+     * @param type
+     * @param uuid
      */
-    'unselect' (event: IPCEvent, type: string, uuid: string | string[]) {
+    'unselect'(event: IPCEvent, type: string, uuid: string | string[]) {
         if (!selection[type]) {
             return;
         }
 
-        let array = selection[type];
+        const array = selection[type];
 
         // 循环存储节点并广播消息
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
-                let index = array.indexOf(id);
+                const index = array.indexOf(id);
                 if (index !== -1) {
                     array.splice(index, 1);
                     Editor.Ipc.sendToAll('selection:unselect', type, id);
                 }
             });
         } else {
-            let index = array.indexOf(uuid);
+            const index = array.indexOf(uuid);
             if (index !== -1) {
                 array.splice(index, 1);
                 Editor.Ipc.sendToAll('selection:unselect', type, uuid);
@@ -78,10 +78,10 @@ export const messages = {
 
     /**
      * 清空莫哥类型选中的所有物体
-     * @param event 
-     * @param type 
+     * @param event
+     * @param type
      */
-    'clear' (event: IPCEvent, type: string) {
+    'clear'(event: IPCEvent, type: string) {
         if (!selection[type]) {
             return;
         }
@@ -94,26 +94,26 @@ export const messages = {
 
     /**
      * 查询最后一个选中的物体类型
-     * @param event 
+     * @param event
      */
-    'query-laset-select-type' (event: IPCEvent) {
+    'query-laset-select-type'(event: IPCEvent) {
         event.reply(null, lastSelectType);
     },
 
     /**
      * 查询一个类型最后选中的物体
-     * @param event 
+     * @param event
      */
-    'query-laset-select' (event: IPCEvent, type: string) {
+    'query-laset-select'(event: IPCEvent, type: string) {
         if (!selection[type]) {
             return;
         }
 
-        let array = selection[type];
+        const array = selection[type];
         event.reply(null, array[array.length - 1] || '');
     },
 };
 
-export async function load () {};
+export async function load() { }
 
-export async function unload () {};
+export async function unload() { }

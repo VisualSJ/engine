@@ -1,7 +1,7 @@
 'use strict';
 
-import { join, extname } from 'path';
 import { readFileSync } from 'fs';
+import { extname, join } from 'path';
 
 let panel: any = null;
 let vm: any = null;
@@ -22,8 +22,8 @@ export const methods = {
     /**
      * 刷新显示面板
      */
-    async refresh () {
-        let tree = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+    async refresh() {
+        const tree = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
         vm.list = tree;
     }
 };
@@ -34,7 +34,7 @@ export const messages = {
      * asset db 准备就绪
      * 去除 loading 状态，并且显示节点树
      */
-    'asset-db:ready' () {
+    'asset-db:ready'() {
         panel.$.loading.hidden = true;
         vm.ready = true;
         panel.refresh();
@@ -44,7 +44,7 @@ export const messages = {
      * asset db 关闭
      * 打开 loading 状态，并隐藏节点树
      */
-    'asset-db:close' () {
+    'asset-db:close'() {
         panel.$.loading.hidden = false;
         vm.ready = false;
         vm.list = [];
@@ -53,11 +53,11 @@ export const messages = {
     /**
      * 选中了某个物体
      */
-    'selection:select' (event: IPCEvent, type: string, uuid: string) {
+    'selection:select'(event: IPCEvent, type: string, uuid: string) {
         if (type !== 'asset') {
             return;
         }
-        let index = vm.select.indexOf(uuid);
+        const index = vm.select.indexOf(uuid);
         if (index === -1) {
             vm.select.push(uuid);
         }
@@ -66,11 +66,11 @@ export const messages = {
     /**
      * 取消选中了某个物体
      */
-    'selection:unselect' (event: IPCEvent, type: string, uuid: string) {
+    'selection:unselect'(event: IPCEvent, type: string, uuid: string) {
         if (type !== 'asset') {
             return;
         }
-        let index = vm.select.indexOf(uuid);
+        const index = vm.select.indexOf(uuid);
         if (index !== -1) {
             vm.select.splice(index, 1);
         }
@@ -80,13 +80,13 @@ export const messages = {
      * asset db 广播通知添加了 asset
      * 在显示的节点树上添加上这个资源
      */
-    async 'asset-db:asset-add' (event: IPCEvent, uuid: string) {
+    async 'asset-db:asset-add'(event: IPCEvent, uuid: string) {
         // 没有初始化的时候，无需处理添加消息
         if (!vm.ready) {
             return;
         }
 
-        let info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         if (
             !vm.list.length || vm.list.some((item: any) => {
                 return item.source !== info.source;
@@ -100,7 +100,7 @@ export const messages = {
      * asset db 广播通知删除了 asset
      * 在显示的节点树上删除这个资源
      */
-    async 'asset-db:asset-delete' (event: IPCEvent, uuid: string) {
+    async 'asset-db:asset-delete'(event: IPCEvent, uuid: string) {
         // 没有初始化的时候，无需处理添加消息
         if (!vm.ready) {
             return;
@@ -115,11 +115,11 @@ export const messages = {
     },
 };
 
-export async function ready () {
+export async function ready() {
     // @ts-ignore
     panel = this;
 
-    let isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    const isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
     panel.$.loading.hidden = isReady;
 
     vm = new Vue({
@@ -133,8 +133,8 @@ export async function ready () {
             tree: require('./components/tree'),
         },
         methods: {
-            addTestAsset () {
-                let name = new Date().getTime();
+            addTestAsset() {
+                const name = new Date().getTime();
                 Editor.Ipc.sendToPackage('asset-db', 'create-asset', `db://assets/${name}.txt`, name);
             },
         },
@@ -142,10 +142,10 @@ export async function ready () {
 
     // db 就绪状态才需要查询数据
     isReady && panel.refresh();
-};
+}
 
-export async function beforeClose () {}
+export async function beforeClose() { }
 
-export async function close () {
+export async function close() {
     Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
 }

@@ -1,29 +1,28 @@
 'use stirct';
 
-import { existsSync } from 'fs';
-import { join, relative } from 'path';
-import { ensureDirSync, outputFileSync, removeSync } from 'fs-extra'; 
 import { AssetDB } from 'asset-db';
+import { existsSync } from 'fs';
+import { ensureDirSync, outputFileSync, removeSync } from 'fs-extra';
+import { join, relative } from 'path';
 
 let isReady: boolean = false;
 let database: AssetDB | null = null;
 
-interface AssetInfo {
+interface IAssetInfo {
     source: string;
     uuid: string;
     importer: string; // meta 内存储的导入器名字
-    files: string[],
+    files: string[];
 }
 
-let source2url = function (source: string) {
+const source2url = (source: string) => {
     if (!database) {
         return '';
     }
     return relative(database.options.target, source);
-}
+};
 
 module.exports = {
-
     /**
      * 监听消息
      * ${action}-${method}
@@ -31,75 +30,78 @@ module.exports = {
     messages: {
         /**
          *  查询是否准备完成
-         * @param {*} event 
+         * @param {*} event
          */
-        'query-is-ready' (event: IPCEvent) {
+        'query-is-ready'(event: IPCEvent) {
             event.reply(null, isReady);
         },
 
         /**
          * 查询资源树
-         * @param event 
+         * @param event
          */
-        'query-assets' (event: IPCEvent, options: any) {
+        'query-assets'(event: IPCEvent, options: any) {
             if (!database) {
                 event.reply(new Error('Asset DB does not exist.'), null);
                 return;
             }
 
             // 返回所有的资源的基础数据
-            event.reply(null, Object.keys(database.uuid2asset).map((uuid) => {
-                if (!database) {
-                    return null;
-                }
-                let asset = database.uuid2asset[uuid];
-                let info: AssetInfo = {
-                    source: source2url(asset.source),
-                    uuid: asset.uuid,
-                    importer: asset.meta.importer,
-                    files: asset.meta.files.map((ext) => {
-                        return asset.library + ext;
-                    }),
-                };
-                return info;
-            }));
+            event.reply(
+                null,
+                Object.keys(database.uuid2asset).map((uuid) => {
+                    if (!database) {
+                        return null;
+                    }
+                    const asset = database.uuid2asset[uuid];
+                    const info: IAssetInfo = {
+                        source: source2url(asset.source),
+                        uuid: asset.uuid,
+                        importer: asset.meta.importer,
+                        files: asset.meta.files.map((ext) => {
+                            return asset.library + ext;
+                        })
+                    };
+                    return info;
+                })
+            );
         },
 
         /**
          * 查询资源信息
-         * @param event 
+         * @param event
          * @param uuid
          */
-        'query-asset-info' (event: IPCEvent, uuid: string) {
+        'query-asset-info'(event: IPCEvent, uuid: string) {
             if (!database) {
                 return event.reply(new Error('Asset DB does not exist.'), null);
             }
-            let asset = database.uuid2asset[uuid];
+            const asset = database.uuid2asset[uuid];
             if (!asset) {
                 return event.reply(new Error('File does not exist.'), null);
             }
-        
-            let info: AssetInfo = {
+
+            const info: IAssetInfo = {
                 source: source2url(asset.source),
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
                 files: asset.meta.files.map((ext) => {
                     return asset.library + ext;
-                }),
+                })
             };
             event.reply(null, info);
         },
 
         /**
          * 查询资源的 meta 信息
-         * @param event 
+         * @param event
          * @param uuid
          */
-        'query-asset-meta' (event: IPCEvent, uuid: string) {
+        'query-asset-meta'(event: IPCEvent, uuid: string) {
             if (!database) {
                 return event.reply(new Error('Asset DB does not exist.'), null);
             }
-            let asset = database.uuid2asset[uuid];
+            const asset = database.uuid2asset[uuid];
             if (!asset) {
                 return event.reply(new Error('File does not exist.'), null);
             }
@@ -108,11 +110,11 @@ module.exports = {
 
         /**
          * 创建一个新的资源
-         * @param event 
-         * @param url db://assets/abc.json 
-         * @param data 
+         * @param event
+         * @param url db://assets/abc.json
+         * @param data
          */
-        'create-asset' (event: IPCEvent, url: string, data: Buffer | string) {
+        'create-asset'(event: IPCEvent, url: string, data: Buffer | string) {
             if (!database) {
                 return;
             }
@@ -125,8 +127,8 @@ module.exports = {
             url = url.substr(12);
 
             // 文件目录路径
-            let dirname = database.options.target;
-            let file = join(dirname, url);
+            const dirname = database.options.target;
+            const file = join(dirname, url);
 
             if (existsSync(file)) {
                 // todo info
@@ -139,39 +141,36 @@ module.exports = {
         /**
          * 将一个资源移动到某个地方
          * 更名操作也可以调用 move
-         * @param event 
-         * @param uuid 
-         * @param target 
+         * @param event
+         * @param uuid
+         * @param target
          */
-        'move-asset' (event: IPCEvent, uuid: string, target: string) {
-
-        },
+        'move-asset'(event: IPCEvent, uuid: string, target: string) { },
 
         /**
          * 删除某个资源
-         * @param event 
-         * @param uuid 
+         * @param event
+         * @param uuid
          */
-        'delete-asset' (event: IPCEvent, uuid: string) {
+        'delete-asset'(event: IPCEvent, uuid: string) {
             if (!database) {
                 return;
             }
-            let asset = database.uuid2asset[uuid];
+            const asset = database.uuid2asset[uuid];
             existsSync(asset.source) && removeSync(asset.source);
             existsSync(asset.source + '.meta') && removeSync(asset.source + '.meta');
-        },
+        }
     },
 
     /**
      * 插件加载的时候执行的逻辑
      * 打开一个新的资源数据库
      */
-    async load () {
-        
+    async load() {
         // 拼接需要使用的地址
-        let options = {
+        const options = {
             target: join(Editor.Project.path, 'assets'),
-            library: join(Editor.Project.path, 'library'),
+            library: join(Editor.Project.path, 'library')
         };
 
         // 保证文件夹存在
@@ -205,7 +204,7 @@ module.exports = {
      * 插件关闭的时候执行的逻辑
      * 关闭打开的 AssetDB
      */
-    async unload () {
+    async unload() {
         if (database) {
             // 关闭资源数据库
             await database.stop();
@@ -215,6 +214,5 @@ module.exports = {
         // 更新主进程标记以及广播消息
         isReady = false;
         Editor.Ipc.sendToAll('asset-db:close');
-    },
-
+    }
 };

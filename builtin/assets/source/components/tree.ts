@@ -1,35 +1,38 @@
 'use strict';
 
 import { readFileSync } from 'fs';
-import { join, extname } from 'path';
+import { extname, join } from 'path';
 
-export const template = readFileSync(join(__dirname, '../../static/template/tree.html'), 'utf8');
+export const template = readFileSync(
+    join(__dirname, '../../static/template/tree.html'),
+    'utf8'
+);
 
-export const props: string[] = [
-    'list',
-    'select',
-];
+export const props: string[] = ['list', 'select'];
 
-export function data () {
+export function data() {
     return {};
-};
+}
 
 export const methods = {
-
     /**
      * 打开一个 asset
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
-    async openAsset (event: Event, uuid: string) {
-        let asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        let ext = extname(asset.source);
+    async openAsset(event: Event, uuid: string) {
+        const asset = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-info',
+            uuid
+        );
+        const ext = extname(asset.source);
         if (ext === '.scene') {
             Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
         }
     },
 
-    mouseDownAsset (event: Event, uuid: string) {
+    mouseDownAsset(event: Event, uuid: string) {
         // @ts-ignore
         if (event.button !== 2) {
             return;
@@ -37,7 +40,9 @@ export const methods = {
 
         Editor.Menu.popup({
             // @ts-ignore
-            x: event.pageX, y: event.pageY,
+            x: event.pageX,
+            // @ts-ignore
+            y: event.pageY,
             menu: [
                 {
                     label: Editor.I18n.t('assets.menu.new'),
@@ -45,38 +50,43 @@ export const methods = {
                         {
                             label: 'none',
                             enabled: false,
-                            click () {
-                                debugger;
+                            click() {
+                                // debugger;
                             }
                         }
                     ]
-                }, {
-                    type: 'separator',
-                }, {
+                },
+                {
+                    type: 'separator'
+                },
+                {
                     label: Editor.I18n.t('assets.menu.copy'),
-                    click () {},
-                }, {
+                    click() { }
+                },
+                {
                     label: Editor.I18n.t('assets.menu.paste'),
-                    click () {},
-                }, {
-                    type: 'separator',
-                }, {
+                    click() { }
+                },
+                {
+                    type: 'separator'
+                },
+                {
                     label: Editor.I18n.t('assets.menu.delete'),
-                    click () {
+                    click() {
                         Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
                     }
                 }
-            ],
+            ]
         });
     },
 
     /**
      * 选中某个节点
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
-    selectAsset (event: Event, uuid: string) {
+    selectAsset(event: Event, uuid: string) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-    },
+    }
 };

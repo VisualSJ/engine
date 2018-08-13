@@ -10,10 +10,10 @@ export const props: string[] = [
     'meta',
 ];
 
-export function data () {
+export function data() {
     return {};
-};
+}
 
 export const methods = {
-    
+
 };

@@ -3,14 +3,14 @@
 let pkg: any = null;
 
 export const messages = {
-    open () {
+    open() {
         Editor.Panel.open('console');
     },
 };
 
-export function load () {
+export function load() {
     // @ts-ignore
     pkg = this;
-};
+}
 
-export function unload () {};
+export function unload() { }

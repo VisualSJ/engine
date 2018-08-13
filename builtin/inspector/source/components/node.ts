@@ -13,10 +13,10 @@ export const components = {
     comp: require('./comp'),
 };
 
-export function data () {
+export function data() {
     return {};
-};
+}
 
 export const methods = {
-    
+
 };

@@ -2,31 +2,31 @@
 
 declare const cc: any;
 
-import {
-    query,
-} from '../manager/node';
+import { query } from '../manager/node';
 
 /**
  * 生成一个 component 的 dump 数据
- * @param component 
+ * @param component
  */
-export function dumpComponent (component: any) {
-    let schema = component.constructor.schema;
-    let result: any = {};
-    for (let key in schema) {
-        result[key] = dumpProperty(component[key], schema[key].type);
+export function dumpComponent(component: any) {
+    const schema = component.constructor.schema;
+    const result: any = {};
+    for (const key in schema) {
+        if (schema.hasOwnProperty(key)) {
+            result[key] = dumpProperty(component[key], schema[key].type);
+        }
     }
     return result;
-};
+}
 
 /**
  * 生成一个属性的 dump 数据
- * @param property 
+ * @param property
  */
-export function dumpProperty (property: any, schemaType?: string) : PropertyDump {
+export function dumpProperty(property: any, schemaType?: string): PropertyDump {
     let type: string;
     let value: any;
-    let extendArray: string[] = [];
+    const extendArray: string[] = [];
 
     if (schemaType) {
         type = schemaType;
@@ -44,48 +44,39 @@ export function dumpProperty (property: any, schemaType?: string) : PropertyDump
         if (type !== 'entity') {
             extendArray.push('entity');
         }
-    } 
-    // Component
-    else if (property instanceof cc.Component) {
+    } else if (property instanceof cc.Component) {
         value = dumpComponent(property);
         if (type !== 'component') {
             extendArray.push('component');
         }
-    }
-    // Asset
-    else if (property instanceof cc.Asset) {
+    } else if (property instanceof cc.Asset) {
         value = property._uuid;
         if (type !== 'asset') {
             extendArray.push('asset');
         }
-    }
-    // Array
-    else if (type === 'array') {
+    } else if (type === 'array') {
         value = property.map((item: any) => {
             return dumpProperty(item);
         });
-    }
-    // Other
-    else {
+    } else {
         value = property;
     }
 
     return {
         type,
         value,
-        extends: extendArray,
+        extends: extendArray
     };
-};
+}
 
 /**
  * 生成一个 node 的 dump 数据
- * @param node 
+ * @param node
  */
-export function dumpNode (node: any) : NodeDump {
-    let children = [];
+export function dumpNode(node: any): NodeDump {
+    const children = [];
 
-    for (let i=0; i<node._children.length; i++) {
-        let child = node._children[i];
+    for (const child of node._children) {
         if (!child) {
             break;
         }
@@ -104,29 +95,33 @@ export function dumpNode (node: any) : NodeDump {
 
         comps: dumpProperty(node._comps),
 
-        children: dumpProperty(node._children),
+        children: dumpProperty(node._children)
     };
-};
+}
 
 /**
  * 恢复一个 dump 数据到 component
- * @param dump 
- * @param component 
+ * @param dump
+ * @param component
  */
-export function restoreComponent (dump: any, component: any) {
+export function restoreComponent(dump: any, component: any) {
     // todo
 }
 
 /**
  * 恢复一个 dump 数据到 property
- * @param dump 
- * @param property 
+ * @param dump
+ * @param property
  */
-export function restoreProperty (dump: PropertyDump, property: any, key: string) {
+export function restoreProperty(
+    dump: PropertyDump,
+    property: any,
+    key: string
+) {
     switch (dump.type) {
         case 'level':
         case 'entity':
-            let node = query(dump.value);
+            const node = query(dump.value);
             if (key === 'parent') {
                 property.remove();
                 node.append(property);
@@ -148,14 +143,14 @@ export function restoreProperty (dump: PropertyDump, property: any, key: string)
         default:
             property[key] = dump.value;
     }
-};
+}
 
 /**
  * 恢复一个 dump 数据到 node
- * @param dump 
- * @param node 
+ * @param dump
+ * @param node
  */
-export function restoreNode (dump: NodeDump, node: any) {
+export function restoreNode(dump: NodeDump, node: any) {
     restoreProperty(dump.uuid, node, '_id');
 
     restoreProperty(dump.parent, node, 'parent');
@@ -167,4 +162,4 @@ export function restoreNode (dump: NodeDump, node: any) {
 
     // todo children
     // restoreProperty(dump.uuid, node, '_id');
-};
+}
