@@ -6,6 +6,7 @@
 
 import {
     dumpNode,
+    dumpProperty,
     restoreProperty,
 } from '../utils/dump';
 
@@ -70,13 +71,34 @@ export function setProperty (uuid: string, path: string, key: string, dump: Prop
         return;
     }
 
+    // 记录当前动作
+    Editor.History.record({
+        panel: 'scene',
+        redo: {
+            message: 'set-property',
+            params: [{
+                uuid, path, key, dump,
+            }],
+        },
+        undo: {
+            message: 'set-property',
+            params: [{
+                uuid, path, key,
+                dump: dumpProperty(get(data, key)),
+            }],
+        },
+    });
+
+    // 恢复数据
+    restoreProperty(dump, data, key);
+
+    // 提交当前动作
+    Editor.History.commit();
+
     if (key === 'parent') {
         // 广播父节点更改消息
         Editor.Ipc.sendToAll('scene:node-changed', node.parent._id);
     }
-
-    // 恢复数据
-    restoreProperty(dump, data, key);
 
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);

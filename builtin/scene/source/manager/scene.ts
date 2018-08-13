@@ -72,6 +72,11 @@ export function close () {
     scene = null;
     // @ts-ignore
     window.app = null;
+
+    // 清空有关场景的动作
+    Editor.History.clear({
+        panel: 'scene',
+    });
 };
 
 /**

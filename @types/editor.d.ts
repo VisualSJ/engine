@@ -12,6 +12,7 @@ interface Editor {
     UI: UI;
     Logger: Logger;
     Profile: Profile;
+    History: History;
 }
 
 interface App {
@@ -74,6 +75,14 @@ interface Logger {
 
 interface Profile {
     load: Function;
+}
+
+interface History {
+    record: Function;
+    commit: Function;
+    clear: Function;
+    undo: Function;
+    redo: Function;
 }
 
 declare const IPCEvent: IPCEvent;
