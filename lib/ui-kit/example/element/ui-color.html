@@ -3,6 +3,7 @@
         border-bottom: 1px solid #333;
         padding: 10px;
     }
+
     section.color:last-child {
         border-bottom: none;
     }
@@ -10,16 +11,46 @@
 
 <section class="color">
     <h1>Standard</h1>
-    <ui-color value="rgba(22,244,55,0.3)"></ui-color>
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <p id="showWrap"></p>
+    <ui-color id="colorTest" value="rgba(22,244,55,0.3)"></ui-color>
+    
+
 </section>
+
 
 <section class="color">
     <h1>Readonly</h1>
     <ui-color value="rgba(222,44,55,0.5)" readonly></ui-color>
+    <p></p>
 </section>
 
 <section class="color">
     <h1>Disabled</h1>
     <ui-color value="red" disabled></ui-color>
+    <p></p>
 </section>
 
+<script>
+    (function () {
+        let $colorTest = document.getElementById('colorTest');
+        let $testEvent = document.getElementById('testEvent');
+        let $showWrap = document.getElementById('showWrap');
+        let eventArr = ['change', 'click', 'confirm'];
+        const showEventHandle = (e) => {
+            $this = e.target;
+            $showWrap.innerHTML = `选择色值：rgba(${e.detail.value})`;
+        }
+        //定义可测试的事件数组
+        for (let i = 0, len = eventArr.length; i < len; i++) {
+            $colorTest.addEventListener(eventArr[i], (e) => {
+                console.log(eventArr[i]);
+                $testEvent.innerText = eventArr[i];
+            }, false)
+        }
+        $colorTest.addEventListener('change', showEventHandle);
+        $showWrap.innerHTML = `色值：rgba(${$colorTest.value})`;
+    })()
+</script>

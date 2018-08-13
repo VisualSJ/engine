@@ -11,7 +11,10 @@
 
 <section class="checkbox">
     <h1>Standard</h1>
-    <ui-checkbox>default label</ui-checkbox>
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <ui-checkbox id="checkboxTest">default label</ui-checkbox>
 </section>
 
 <section class="checkbox">
@@ -29,4 +32,26 @@
     <h1>checked</h1>
     <ui-checkbox id="test">checked</ui-checkbox>
 </section>
-
+<script>
+    (function () {
+        let $checkboxTest = document.getElementById('checkboxTest');
+        let $testEvent = document.getElementById('testEvent');
+        $checkboxTest.nextSibling.innerHTML = $checkboxTest.value;
+        // let eventArr = ['click','blur','change','focus'];
+        // for (let i = 0, len = eventArr.length; i < len;i++){
+        //     $uiInput.addEventListener(eventArr[i],(e)=>{
+        //         console.log(eventArr[i]);
+        //         $testEvent.innerText = eventArr[i];
+        //     },false)
+        // }
+        $checkboxTest.addEventListener('confirm', () => {
+            console.log('confirm');
+            $testEvent.innerText = 'confirm';
+        })
+        $checkboxTest.addEventListener('change', () => {
+            console.log('change');
+            $testEvent.innerText = 'change';
+            $checkboxTest.nextSibling.innerHTML = $checkboxTest.value;
+        })
+    })();
+</script>

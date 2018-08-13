@@ -15,7 +15,11 @@
 
 <section class="input">
     <h1>Standard</h1>
-    <ui-num-input></ui-num-input>
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <ui-num-input id="uiNumInput" value="666"></ui-num-input>
+    <span id="showWrap"></span>
 </section>
 
 <section class="input">
@@ -49,16 +53,20 @@
         .size div {
             margin-bottom: 10px;
         }
+
         .size div span {
             display: inline-block;
             width: 60px;
         }
+
         .size-12 {
             font-size: 12px;
         }
+
         .size-16 {
             font-size: 16px;
         }
+
         .size-20 {
             font-size: 20px;
         }
@@ -85,10 +93,12 @@
             border-radius: 2px;
             width: 80px;
         }
+
         .transparent[focused] {
             background: #4281b6;
             color: #a6e5ff;
         }
+
         .transparent[pressed] {
             color: #4281b6;
             background: #104f84;
@@ -96,3 +106,34 @@
     </style>
     <ui-num-input class="transparent" unit="%">Button</ui-num-input>
 </section>
+<script>
+    (function () {
+        let $uiNumInput = document.getElementById('uiNumInput');
+        let $testEvent = document.getElementById('testEvent');
+        let $showWrap = document.getElementById('showWrap');
+        $showWrap.innerHTML = $uiNumInput.value;
+        // let eventArr = ['change','blur','focus'];
+        // for (let i = 0, len = eventArr.length; i < len;i++){
+        //     $uiNumInput.addEventListener(eventArr[i],(e)=>{
+        //         console.log(eventArr[i]);
+        //         $testEvent.innerText = eventArr[i];
+        //     },false)
+        // }
+        $uiNumInput.addEventListener('confirm', (e) => {
+            console.log('confirm');
+            $testEvent.innerText = 'confirm';
+        })
+        $uiNumInput.addEventListener('change', (e) => {
+            let $target = e.target;
+            console.log('change');
+            $testEvent.innerText = 'change';
+            $showWrap.innerText = $target.$input.value;
+        })
+        $uiNumInput.addEventListener('cancel', (e) => {
+            let $target = e.target;
+            console.log('cancel');
+            $testEvent.innerText = 'cancel';
+            $showWrap.innerText = $target.value;
+        })
+    })();
+</script>

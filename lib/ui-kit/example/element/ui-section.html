@@ -46,16 +46,19 @@
             <p>line3</p>
         </div>
     </ui-section>
-</section><section class="section">
+</section>
+<section class="section">
     <h1>custom</h1>
     <style>
         .custom[focused] {
             --border-color: #ee00aa;
             --text-color: #ee00aa;
         }
-        .custom[expand] .header i{
+
+        .custom[expand] .header i {
             clip-path: polygon(0 0, 100% 0, 50% 100%);
         }
+
         .custom .header i {
             display: inline-block;
             width: 0.5em;
@@ -64,6 +67,7 @@
             background-color: var(--border-color, #333333);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
         }
+
         .custom .header {
             cursor: pointer;
             color: var(--text-color, #333);

@@ -17,8 +17,12 @@
 
 <section class="section">
     <h1>standard</h1>
-    <ui-slider value="20">
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <ui-slider value="20" id="testSlider">
     </ui-slider>
+    <span></span>
 </section>
 <section class="section">
     <h1>auto focused</h1>
@@ -42,3 +46,19 @@
     </ui-slider>
     <span>step="3"</span>
 </section>
+<script>
+    (function () {
+        let $testSlider = document.getElementById('testSlider');
+        let $testEvent = document.getElementById('testEvent');
+        $testSlider.nextSibling.innerHTML = $testSlider.value;
+        $testSlider.addEventListener('confirm', () => {
+            console.log('confirm');
+            $testEvent.innerText = 'confirm';
+        })
+        $testSlider.addEventListener('change', () => {
+            console.log('change');
+            $testEvent.innerText = 'change';
+            $testSlider.nextSibling.innerHTML = $testSlider.value;
+        })
+    })();
+</script>

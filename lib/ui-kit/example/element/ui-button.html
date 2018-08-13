@@ -11,7 +11,10 @@
 
 <section class="button">
     <h1>Standard</h1>
-    <ui-button>Button</ui-button>
+    <h5>事件/Event
+        <span id="testButtonEvent"></span>
+    </h5>
+    <ui-button id="testButton">Button</ui-button>
 </section>
 
 <section class="button">
@@ -25,16 +28,20 @@
         .size div {
             margin-bottom: 10px;
         }
+
         .size div span {
             display: inline-block;
             width: 60px;
         }
+
         .size-12 {
             font-size: 12px;
         }
+
         .size-16 {
             font-size: 16px;
         }
+
         .size-20 {
             font-size: 20px;
         }
@@ -63,13 +70,16 @@
             border: 1px solid transparent;
             border-radius: 2px;
         }
+
         .transparent:hover {
             background: #4281b6;
             color: #a6e5ff;
         }
+
         .transparent[focused] {
             border-color: #4281b6;
         }
+
         .transparent[pressed] {
             color: #4281b6;
             background: #104f84;
@@ -77,3 +87,16 @@
     </style>
     <ui-button class="transparent">Button</ui-button>
 </section>
+<script>
+    (function () {
+        let $testButton = document.getElementById('testButton');
+        let $testButtonEvent = document.getElementById('testButtonEvent');
+        let eventArr = ['click', 'confirm'];
+        for (let i = 0, len = eventArr.length; i < len; i++) {
+            $testButton.addEventListener(eventArr[i], (e) => {
+                console.log(eventArr[i]);
+                $testButtonEvent.innerText = eventArr[i];
+            }, false)
+        }
+    })()
+</script>

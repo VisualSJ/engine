@@ -19,6 +19,9 @@
 <body>
 
     <select id="select">
+        <option>ui-num-input</option>
+        <option>ui-input</option>
+
         <option>ui-color</option>
         <option>ui-color-picker</option>
         <option>ui-slider</option>
@@ -27,33 +30,52 @@
         <option>ui-checkbox</option>
         <option>ui-loading</option>
         <option>ui-button</option>
-        <option>ui-input</option>
-        <option>ui-num-input</option>
+
+
     </select>
 
     <section id="content">
 
     </section>
-</body>
 
+</body>
 <script>
     const fs = require('fs');
     const ui = require('../index');
     const $select = document.getElementById('select');
     const $content = document.getElementById('content');
-
+    const regScript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/; //验证script脚本的正则
     let changeTestPage = function (name) {
         let path = __dirname + '/element/' + name + '.html';
+        let $scriptWrap = document.getElementById('scriptWrap');
+        if ($scriptWrap) {
+            document.body.removeChild($scriptWrap);
+        }
+
         if (!fs.existsSync(path)) {
             $content.innerHTML = '';
             return;
         }
-        $content.innerHTML = fs.readFileSync(path, 'utf-8');
+        let contentHtml = fs.readFileSync(path, 'utf-8');
+        let scriptArr = contentHtml.match(regScript);
+        if (scriptArr !== null) { //先判断文本内是否存在script标签           
+            let scriptCodes = scriptArr[0].replace(/<\/?script>/g, ''); //提取标签内容
+            contentHtml = contentHtml.replace(scriptArr[0], ''); //移除原html字符串中的script标签部分
+            $content.innerHTML = contentHtml;
+            //新建script标签，放置原本的script内容
+            let $script = document.createElement('script');
+            $script.id = 'scriptWrap';
+            $script.innerHTML = scriptCodes;
+            document.body.appendChild($script);
+        } else {
+            $content.innerHTML = contentHtml;
+        }
     };
     changeTestPage($select.value);
     $select.addEventListener('change', (event) => {
         changeTestPage(event.target.value);
     });
 </script>
+
 
 </html>

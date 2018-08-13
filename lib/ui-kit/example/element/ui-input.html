@@ -11,12 +11,22 @@
 
 <section class="input">
     <h1>Standard</h1>
-    <ui-input></ui-input>
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <ui-input id="uiInput" value="Standard"></ui-input>
+    <span id="showWrap"></span>
 </section>
 
 <section class="input">
     <h1>Placeholder</h1>
     <ui-input placeholder="placeholder"></ui-input>
+</section>
+
+
+<section class="input">
+    <h1>autofocus</h1>
+    <ui-input></ui-input>
 </section>
 
 <section class="input">
@@ -40,16 +50,20 @@
         .size div {
             margin-bottom: 10px;
         }
+
         .size div span {
             display: inline-block;
             width: 60px;
         }
+
         .size-12 {
             font-size: 12px;
         }
+
         .size-16 {
             font-size: 16px;
         }
+
         .size-20 {
             font-size: 20px;
         }
@@ -75,10 +89,12 @@
             border: 1px solid #4281b6;
             border-radius: 2px;
         }
+
         .transparent[focused] {
             background: #4281b6;
             color: #a6e5ff;
         }
+
         .transparent[pressed] {
             color: #4281b6;
             background: #104f84;
@@ -86,3 +102,37 @@
     </style>
     <ui-input class="transparent">Button</ui-input>
 </section>
+<script>
+    (function () {
+        let $uiInput = document.getElementById('uiInput');
+        let $testEvent = document.getElementById('testEvent');
+        let $showWrap = document.getElementById('showWrap');
+        $showWrap.innerHTML = $uiInput.value;
+        // let eventArr = ['click','blur','change','focus'];
+        // for (let i = 0, len = eventArr.length; i < len;i++){
+        //     $uiInput.addEventListener(eventArr[i],(e)=>{
+        //         console.log(eventArr[i]);
+        //         $testEvent.innerText = eventArr[i];
+        //     },false)
+        // }
+        // let eventNames ='',timer;
+        $uiInput.addEventListener('confirm', () => {
+            console.log('confirm');
+            $testEvent.innerText = 'confirm';
+        })
+        $uiInput.addEventListener('change', (e) => {
+            let $target = e.target;
+            console.log('change');
+            $showWrap.innerHTML = $target.$input.value;
+            $testEvent.innerText = 'change';
+        })
+
+        $uiInput.addEventListener('cancel', (e) => {
+            let $target = e.target;
+            console.log('cancel');
+            $testEvent.innerText = 'cancel';
+            $showWrap.innerHTML = $target.value;
+        })
+
+    })();
+</script>

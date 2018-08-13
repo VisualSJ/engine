@@ -10,7 +10,12 @@
 </style>
 <section class="section">
     <h1>standard</h1>
-    <ui-select value="4" placeholder="请选择">
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <p id="selectValue"></p>
+    <p></p>
+    <ui-select value="4" placeholder="请选择" id="selectTest">
         <select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</select-option>
         <select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</select-option>
         <select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</select-option>
@@ -38,3 +43,27 @@
         <select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</select-option>
     </ui-select>
 </section>
+
+<script>
+    (function () {
+        let $selectTest = document.getElementById('selectTest');
+        let $testEvent = document.getElementById('testEvent');
+        let $selectValue = document.getElementById('selectValue');
+        $selectTest.nextSibling.innerHTML = $selectTest.value;
+
+        $selectTest.addEventListener('confirm', (e) => {
+            console.log('confirm');
+            let $select = e.target;
+            $selectValue.innerHTML = '选中值：' + $select.valueText;
+            $testEvent.innerText = 'confirm';
+        })
+        $selectTest.addEventListener('change', (e) => {
+            console.log('change');
+            $testEvent.innerText = 'change';
+            $selectTest.nextSibling.innerHTML = $selectTest.value;
+            let $select = e.target;
+            $selectValue.innerHTML = '选中值：' + $select.valueText;
+            $selectValue.nextSibling.innerHTML = 'value:' + $select.value;
+        })
+    })();
+</script>

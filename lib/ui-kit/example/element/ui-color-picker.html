@@ -15,7 +15,25 @@
 
 <section class="section">
     <h1>standard</h1>
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
     <div class="wrapper">
-        <ui-color-picker value="#00ffee"></ui-color-picker>
+
+        <ui-color-picker value="#00ffee" id="colorPicker"></ui-color-picker>
     </div>
 </section>
+
+<script>
+    (function () {
+        let $colorPicker = document.getElementById('colorPicker');
+        let $testEvent = document.getElementById('testEvent');
+        let eventArr = ['change', 'confirm'];
+        for (let i = 0, len = eventArr.length; i < len; i++) {
+            $colorPicker.addEventListener(eventArr[i], (e) => {
+                console.log(eventArr[i]);
+                $testEvent.innerText = eventArr[i];
+            }, false)
+        }
+    })()
+</script>
