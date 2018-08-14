@@ -85,6 +85,10 @@ export function close() {
  * @param uuid 传入的时候生成当前节点的节点树，不传入的话生成场景的节点树
  */
 export function queryNodeTree(uuid?: string): NodeTreeItem[] {
+    /**
+     * 逐步打包数据
+     * @param node
+     */
     const step = (node: any): NodeTreeItem => {
         return {
             name: node.name,
@@ -106,8 +110,10 @@ export function queryNodeTree(uuid?: string): NodeTreeItem[] {
     const nodes = [];
 
     for (let i = 0; i < scene._entities._count; i++) {
-        const node = scene._entities._data[i];
-        nodes.push(step(node));
+        const child = scene._entities._data[i];
+        if (child._parent && child._parent.constructor.name === 'Level') {
+            nodes.push(step(child));
+        }
     }
 
     return nodes;

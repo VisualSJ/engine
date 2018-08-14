@@ -12,7 +12,7 @@ import {
 
 const get = require('lodash/get');
 
-const uuid2node: { [index: string]: any } = {};
+let uuid2node: { [index: string]: any } = {};
 
 /**
  * 爬取节点上的数据
@@ -23,12 +23,9 @@ function walkChildren(children: any[]) {
         return;
     }
     for (const child of children) {
-        if (!child) {
-            break;
-        }
         uuid2node[child._id] = child;
         if (child._children && child._children.length) {
-            walkChildren(child._chldren);
+            walkChildren(child._children);
         }
     }
 }
@@ -38,7 +35,17 @@ function walkChildren(children: any[]) {
  * @param app
  */
 export function walk(app: any) {
-    walkChildren(app._entities._data);
+    uuid2node = {};
+    const children = [];
+
+    for (let i = 0; i < app._entities._count; i++) {
+        const child = app._entities._data[i];
+        if (child._parent && child._parent.constructor.name === 'Level') {
+            children.push(child);
+        }
+    }
+
+    walkChildren(children);
 }
 
 /**
