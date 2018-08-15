@@ -1,8 +1,11 @@
-<section class="console">
-    <ul>
-        <li
-            v-for="item in list"
-            :type="item.type"
-        >{{item.message}}</li>
-    </ul>
-</section>
+<div class="console-panel">
+    <header class="header">
+        <span class="clear" @click="onClear">
+            <i></i>
+        </span>
+        <input class="filter" type="text" @input="onFilterText" />
+        <ui-checkbox v-on:confirm="onFilterRegex">Regex</ui-checkbox>
+        <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox>
+    </header>
+    <console-list :list="list" :font-size="fontSize" :line-height="lineHeight"></console-list>
+</div>

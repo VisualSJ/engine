@@ -1,0 +1,130 @@
+::-webkit-scrollbar {
+    height: 11px;
+    width: 11px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    border: 4px solid transparent;
+    background: #7d7d7d;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    border-radius: 5px;
+    border: 3px solid transparent;
+    background: #fd942b;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+    border: 5px solid transparent;
+    background: rgba(0, 0, 0, 0.5);
+    background-clip: content-box;
+}
+::-webkit-scrollbar-track:hover {
+    border: 5px solid transparent;
+    background: rgba(0, 0, 0, 0.5);
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+    display: none;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+:host {
+    position: relative;
+    contain: content;
+    color: #999;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+section {
+    position: relative;
+    flex: 1;
+    display: flex;
+    overflow-y: auto;
+    background: #333333;
+}
+
+.item {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    list-style: none;
+    overflow-x: scroll;
+    padding: 0 12px;
+    box-sizing: border-box;
+    .wrap {
+        display: flex;
+        align-items: center;
+    }
+    .text {
+        flex: 1;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-right: 4px;
+    }
+    .details,
+    .stack {
+        margin-left: 25px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        pre {
+            margin: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+    .details ~ .stack {
+        margin-left: 40px;
+    }
+    .arrow {
+        display: inline-block;
+        background: #555555;
+        width: 0.5em;
+        height: 0.7em;
+        clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    .arrow-unfold {
+        transform: rotate(90deg);
+    }
+    &.dark {
+        background: #222222;
+    }
+    &.light {
+        background: #292929;
+    }
+    &:hover {
+        background: #353535;
+    }
+}
+.item[fold] {
+    overflow-x: hidden;
+    .details,
+    .stack {
+        display: none;
+    }
+    .text {
+        overflow: hidden;
+    }
+}
+
+.item[type="warn"] {
+    color: #cc9631;
+}
+
+.item[type="error"] {
+    color: #e64646;
+}
+
+.item[type="info"] {
+    color: #519aba;
+}

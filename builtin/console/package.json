@@ -1,7 +1,6 @@
 {
     "name": "console",
     "version": "0.0.1",
-
     "menu": {
         "i18n:menu.panel/i18n:console.title": {
             "message": "open",
@@ -9,9 +8,7 @@
             "accelerator": "CmdOrCtrl+0"
         }
     },
-
     "main": "./dist/browser.js",
-
     "panel": {
         "title": "i18n:console.title",
         "main": "./dist/panel.js",

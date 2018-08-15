@@ -1,0 +1,27 @@
+<section class="console" @scroll="onScroll">
+    <div class="wrapper" :style="wrapperStyle">
+        <div :class="[item.texture, 'item']" v-for="(item, index) in showList" :type="item.type" :fold="item.fold" v-show="item.show"
+            :style="{transform: `translateY(${item.translateY}px)`,fontSize: `${fontSize}px`, lineHeight: `${lineHeight}px`}">
+            <div class="wrap">
+                <div class="text" @click="item.rows > 1 ? toggleContent(item.translateY) : null">
+                    <span v-if="item.rows > 1">
+                        <i class="arrow arrow-fold" v-if="item.fold"></i>
+                        <i class="arrow arrow-unfold" v-else></i>
+                    </span>
+                    <span>{{item.title}}</span>
+                </div>
+                <span v-if="item.count > 1">{{item.count}}</span>
+            </div>
+            <div class="details" v-for="(text, i) in item.content" :key="i">
+                <div class="text" :style="{fontSize: `${fontSize}px`, lineHeight: `${lineHeight - 2}px`}">
+                    <pre>{{text}}</pre>
+                </div>
+            </div>
+            <div class="stack" v-for="(text, i) in item.stack" :key="i">
+                <div class="text" :style="{fontSize: `${fontSize}px`, lineHeight: `${lineHeight - 2}px`}">
+                    <pre>{{text}}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
