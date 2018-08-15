@@ -26,77 +26,108 @@ export const methods = {
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
         Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
     },
+    /**
+     * 节点折叠切换
+     * @param uuid 
+     */
     toggleNode (uuid: string) {
         // @ts-ignore
         this.$emit('toggle', uuid);
     },
-    renameNode (event: Event, item: any) {
-        // 重名命节点
-        // 暂时先绑定在双击事件上
-        item.rename = true;
+    /**
+     * 节点重名命
+     * @param event 
+     * @param item 
+     */
+    renameNode (event: Event, item: ItreeNode) {
+        // 改变节点状态
+        item.rename = 'input';
+
         // @ts-ignore
         this.$nextTick(() => {
             // @ts-ignore
             this.$refs.input[0].focus();
         });
-
     },
-    renameBlur (uuid: string) {
+    /**
+     * 提交重名命
+     * @param item 
+     */
+    renameBlur (item: ItreeNode) {
         // @ts-ignore
         const newName = this.$refs.input[0].value.trim();
 
-        // 正式提交重名命
         // @ts-ignore
-        this.$emit('rename', uuid, newName);
+        this.$emit('rename', item, newName);
     },
+    /**
+     * 开始拖动
+     * 只能传字符，所以用了.stringify
+     * @param event 
+     * @param uuid 
+     */
     dragStart (event: Event, uuid: string) {
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({
-            // 只能传字符，所以用了.stringify
             from: uuid
         }));
     },
+    /**
+     * 拖动到元素的上面
+     * 一个元素仍然识别为上中下三个区域
+     * @param event 
+     * @param uuid 
+     */
     dragOver (event: Event, uuid: string) {
-        event.preventDefault();
+        event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
         // @ts-ignore
         const target: any = event.currentTarget;
 
         const offset = target.getBoundingClientRect();
+
         // @ts-ignore
         if (event.clientY - offset.top <= 4) {
-            // 偏上的位置
-            target.setAttribute('insert', 'before');
+            target.setAttribute('insert', 'before'); // 偏上位置
             // @ts-ignore
         } else if (offset.bottom - event.clientY <= 4) {
-            // 偏下
-            target.setAttribute('insert', 'after');
+            target.setAttribute('insert', 'after'); // 偏下位置
         } else {
-            // 中间位置
-            target.setAttribute('insert', 'inside');
+            target.setAttribute('insert', 'inside'); // 中间位置
         }
     },
+    /**
+     * 拖动移开
+     * @param event 
+     * @param uuid 
+     */
     dragLeave (event: Event, uuid: string) {
         // @ts-ignore
         event.currentTarget.setAttribute('insert', '');
     },
+    /**
+     * 放开鼠标，识别为 drop 事件后回调
+     * @param event 
+     * @param uuid 
+     */
     drop (event: Event, uuid: string) {
         event.preventDefault();
-        // @ts-ignore
-        const target: any = event.currentTarget;
+        
         // @ts-ignore
         const data = JSON.parse(event.dataTransfer.getData('dragData'));
-        // 被瞄准的节点
-        data.to = uuid;
+        data.to = uuid; // 被瞄准的节点
 
-        // 在重新排序前获取数据
-        data.insert = target.getAttribute('insert');
-        // 还原节点状态
-        target.setAttribute('insert', '');
+        // @ts-ignore
+        const target: any = event.currentTarget;
 
-        // 如果移动到自身节点，则不需要移动
-        if (data.to === data.from) {
+        data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
+        
+        target.setAttribute('insert', ''); // 还原节点状态
+
+       
+        if (data.to === data.from) {  // 如果移动到自身节点，则不需要移动
             return false;
         }
+        
         // @ts-ignore
         this.$emit('drop', data);
     }

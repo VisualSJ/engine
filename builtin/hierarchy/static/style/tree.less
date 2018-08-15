@@ -47,17 +47,25 @@
                 background-color: @tree-active;
             }
         }
-        [class^="i-"] {
+        .icon {
+            vertical-align: middle;
             display: inline-block;
             padding-left: 2px;
             padding-right: 2px;
             font-size: 10px;
+            min-width: 6px;
         }
-        i,
-        span {
+        .name {
+            position: relative;
             vertical-align: middle;
+            height: 100%;
+            .loading {
+                display: inline-block;
+                position: relative;
+                height: 100%;
+            }
         }
-        .rename-input{
+        .rename-input {
             font-size: 12px;
             outline: none;
             border: 1px solid @tree-active;

@@ -29,7 +29,7 @@ exports.package = {
                     one.children = [];
                 }
                 for (let j = 1; j < jMax; j++) {
-                    let child = `Child ${i} ${j}`
+                    let child = `Child ${i} ${j}`;
                     let two = {
                         name: child,
                         uuid: child,
@@ -42,7 +42,7 @@ exports.package = {
                         two.children = [];
                     }
                     for (let k = 1; k < kMax; k++) {
-                        let level = `Level ${i} ${j} ${k}`
+                        let level = `Level ${i} ${j} ${k}`;
                         let three = {
                             name: level,
                             uuid: level,
