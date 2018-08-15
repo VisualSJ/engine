@@ -9,7 +9,7 @@
     "types": [
       "../../node_modules/@types/node",
       "../../@types/editor",
-      "./source/interface.d.ts"
+      "../../@types/hierarchy",
     ],
     "esModuleInterop": true
   }

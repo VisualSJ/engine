@@ -1,9 +1,10 @@
-interface IdragNode {
+ declare interface IdragNode {
     from: string; // 被拖动的节点
     to: string; // 被指向的节点
     insert: string; // 插入方式，有三种：inside, before, after
 }
-interface ItreeNode {
+
+declare interface ItreeNode {
     name: string;
     uuid: string;
     children?: ItreeNode[];
