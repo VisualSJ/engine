@@ -31,9 +31,15 @@ export const methods = {
 export const messages = {};
 
 export const listeners = {
+    /**
+     * 窗口缩放时调用更新
+     */
     resize() {
         manager.update();
     },
+    /**
+     * 窗口显示时调用更新
+     */
     show() {
         manager.update();
     }
@@ -46,12 +52,17 @@ export async function ready() {
         el: panel.$['console-panel'],
         data() {
             return {
-                list: [],
+                change: false,
                 fontSize: 14,
                 lineHeight: 26
             };
         },
         methods: <any>{
+            update() {
+                if (!this.change) {
+                    this.change = true;
+                }
+            },
             onClear() {
                 manager.clear();
             },
@@ -69,7 +80,7 @@ export async function ready() {
             'console-list': require('./components/list')
         }
     });
-    manager.setOutputList(vm.list);
+    manager.setUpdateFn(vm.update);
     manager.setLineHeight(vm.lineHeight);
     const list = Editor.Logger.query();
     manager.addItems(list);
@@ -79,5 +90,6 @@ export async function ready() {
 export async function beforeClose() {}
 
 export async function close() {
+    manager.setUpdateFn(null);
     Editor.Logger.removeListener('record', panel.record);
 }

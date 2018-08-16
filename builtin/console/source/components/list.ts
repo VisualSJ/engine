@@ -2,6 +2,8 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+const manager = require('../manager');
+const outputList = manager.outputList;
 
 export const template = readFileSync(
     join(__dirname, '../../static', '/template/list.html'),
@@ -11,13 +13,15 @@ export const template = readFileSync(
 export const name = 'console-list';
 
 export const props = {
-    list: { type: Array },
+    value: { type: Boolean },
     fontSize: { type: Number },
     lineHeight: { type: Number }
 };
 
 export function data() {
     return {
+        // @ts-ignore
+        change: this.value,
         timer: null,
         cacheListLength: 0,
         showList: [],
@@ -26,8 +30,14 @@ export function data() {
 }
 
 export const watch: any = {
-    list() {
-        this.renderList();
+    value(val: boolean) {
+        this.change = val;
+    },
+    change(val: boolean) {
+        if (val) {
+            this.renderList();
+            this.$emit('input', false);
+        }
     }
 };
 
@@ -37,17 +47,17 @@ export const methods: any = {
      * @param {number} translateY
      */
     toggleContent(translateY: number) {
-        const index = this.list.findIndex(
+        const index = outputList.findIndex(
             (item: IMessageItem) => item.translateY === translateY
         );
-        const item = this.list[index];
+        const item = outputList[index];
         const height = !item.fold
             ? (item.rows * (this.lineHeight - 2) + 14 - this.lineHeight) * -1
             : item.rows * (this.lineHeight - 2) + 14 - this.lineHeight;
 
         item.fold = !item.fold;
-        for (let i = index + 1; i < this.list.length; i++) {
-            const item = this.list[i];
+        for (let i = index + 1; i < outputList.length; i++) {
+            const item = outputList[i];
             item.translateY += height;
         }
         this.wrapperStyle.height = `${this.getHeight()}px`;
@@ -74,7 +84,7 @@ export const methods: any = {
      */
     getHeight(): number {
         let height = 0;
-        this.list.forEach((item: IMessageItem) => {
+        outputList.forEach((item: IMessageItem) => {
             item.fold
                 ? (height += this.lineHeight)
                 : (height += item.rows * (this.lineHeight - 2) + 14);
@@ -90,7 +100,7 @@ export const methods: any = {
     getScrollPosition(scrollTop: number, lineHeight: number): number {
         let height = 0;
         let index = 0;
-        this.list.some((item: IMessageItem, i: number) => {
+        outputList.some((item: IMessageItem, i: number) => {
             if (item.fold) {
                 height += lineHeight;
             } else {
@@ -120,11 +130,11 @@ export const methods: any = {
             const height = this.getHeight();
             const scrollTop = this.$el.scrollTop;
             const clientHeight = this.$el.clientHeight;
-            const delta = this.list.length - this.cacheListLength;
-            const isAtTop = screenTop === 0;
+            const delta = outputList.length - this.cacheListLength;
+            const isAtTop = scrollTop === 0;
             const isAtBottom =
                 height - clientHeight - scrollTop <= delta * lineHeight;
-            this.cacheListLength = this.list.length;
+            this.cacheListLength = outputList.length;
             // 未滚动或者在底部需要滚动到底部
             if (isAtTop || isAtBottom) {
                 this.$el.scrollTop = height - clientHeight;
@@ -139,6 +149,7 @@ export const methods: any = {
                     showList.push(this.createItem());
                 }
             }
+
             this.onScroll();
         }, 10);
     },
@@ -152,20 +163,20 @@ export const methods: any = {
             const index = this.getScrollPosition(scrollTop, lineHeight);
             // 遍历下要显示的列表元素对存在的item进行数据填充
             this.showList.forEach((item: IMessageItem, i: number) => {
-                const o = this.list[index + i];
-                if (!o) {
+                const outputItem = outputList[index + i];
+                if (!outputItem) {
                     item.translateY = -1000;
                     item.show = false;
                 } else {
-                    item.type = o.type;
-                    item.rows = o.rows;
-                    item.title = o.title;
-                    item.content = o.content;
-                    item.count = o.count;
-                    item.fold = o.fold;
-                    item.translateY = o.translateY;
+                    item.type = outputItem.type;
+                    item.rows = outputItem.rows;
+                    item.title = outputItem.title;
+                    item.content = outputItem.content;
+                    item.count = outputItem.count;
+                    item.fold = outputItem.fold;
+                    item.translateY = outputItem.translateY;
                     item.texture = (index + i) % 2 === 0 ? 'dark' : 'light';
-                    item.stack = o.stack;
+                    item.stack = outputItem.stack;
                     item.show = true;
                 }
             });

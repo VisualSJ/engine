@@ -7,5 +7,5 @@
         <ui-checkbox v-on:confirm="onFilterRegex">Regex</ui-checkbox>
         <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox>
     </header>
-    <console-list :list="list" :font-size="fontSize" :line-height="lineHeight"></console-list>
+    <console-list v-model="change" :font-size="fontSize" :line-height="lineHeight"></console-list>
 </div>

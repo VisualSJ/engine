@@ -1,17 +1,21 @@
 const list: any[] = (exports.list = []);
-let outputList: IMessageItem[];
+let outputList: IMessageItem[] = (exports.outputList = []);
+let updateFn: any;
 let lineHeight: number;
 let collapse: boolean = true;
 let filterType: string = '';
 let filterText: string = '';
 let filterRegex: boolean = false;
+
 /**
- * 设置满足条件输出到panel的所有消息列表
- * @param {any[]} logList
+ * 设置更新函数
+ * 后续update时调用该函数触发界面更新
+ * @param {function} fn
  */
-exports.setOutputList = (logList: any[]) => {
-    outputList = exports.outputList = logList;
+exports.setUpdateFn = (fn: any) => {
+    updateFn = fn;
 };
+
 /**
  * 设置行高
  * @param {number} h
@@ -91,49 +95,56 @@ exports.clear = () => {
     }
     exports.update();
 };
+let updateLocker = false;
 /**
  * 筛选条件变更或log消息变更更新输出到panel的所有消息列表outputList
  */
 exports.update = () => {
-    let text: any = filterText;
-    let height = 0;
-    for (; outputList.length > 0;) {
-        outputList.pop();
-    }
-    if (filterRegex) {
-        try {
-            text = new RegExp(text);
-        } catch (e) {
-            text = /.*/;
-        }
-    }
-    list.filter((item: any) => {
-        const hasTitle = !!item.title;
-        const isTypeMatch = !filterType || item.type === filterType;
-        const isRegexMatch = filterRegex
-            ? text.test(item.title)
-            : item.title.indexOf(text) !== -1;
+    !updateLocker &&
+        (updateLocker = true) &&
+        requestAnimationFrame(() => {
+            let text: any = filterText;
+            let height = 0;
+            for (; outputList.length > 0;) {
+                outputList.pop();
+            }
+            if (filterRegex) {
+                try {
+                    text = new RegExp(text);
+                } catch (e) {
+                    text = /.*/;
+                }
+            }
+            list.filter((item: any) => {
+                const hasTitle = !!item.title;
+                const isTypeMatch = !filterType || item.type === filterType;
+                const isRegexMatch = filterRegex
+                    ? text.test(item.title)
+                    : item.title.indexOf(text) !== -1;
 
-        return hasTitle && isTypeMatch && isRegexMatch;
-    }).forEach((item: any) => {
-        const outputItem = outputList[outputList.length - 1];
-        const isSameContent =
-            outputItem &&
-            outputItem.title === item.title &&
-            outputItem.type === item.type &&
-            outputItem.content.join('\n') === item.content.join('\n') &&
-            outputItem.stack.join('\n') === item.stack.join('\n');
-        // 折叠状态下需要累计相同消息个数
-        if (collapse && isSameContent) {
-            outputItem.count += 1;
-            return;
-        }
+                return hasTitle && isTypeMatch && isRegexMatch;
+            }).forEach((item: any) => {
+                const outputItem = outputList[outputList.length - 1];
+                const isSameContent =
+                    outputItem &&
+                    outputItem.title === item.title &&
+                    outputItem.type === item.type &&
+                    outputItem.content.join('\n') === item.content.join('\n') &&
+                    outputItem.stack.join('\n') === item.stack.join('\n');
+                // 折叠状态下需要累计相同消息个数
+                if (collapse && isSameContent) {
+                    outputItem.count += 1;
+                    return;
+                }
 
-        item.count = 1;
-        item.translateY = height;
-        outputList.push(item);
-        item.fold
-            ? (height += lineHeight)
-            : (height += item.rows * (lineHeight - 2) + 14);
-    });
+                item.count = 1;
+                item.translateY = height;
+                outputList.push(item);
+                item.fold
+                    ? (height += lineHeight)
+                    : (height += item.rows * (lineHeight - 2) + 14);
+                updateFn();
+                updateLocker = false;
+            });
+        });
 };
