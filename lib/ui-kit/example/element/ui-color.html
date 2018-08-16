@@ -38,7 +38,7 @@
         let $colorTest = document.getElementById('colorTest');
         let $testEvent = document.getElementById('testEvent');
         let $showWrap = document.getElementById('showWrap');
-        let eventArr = ['change', 'click', 'confirm'];
+        let eventArr = ['change', 'click', 'confirm', 'cancel'];
         const showEventHandle = (e) => {
             $this = e.target;
             $showWrap.innerHTML = `选择色值：rgba(${e.detail.value})`;

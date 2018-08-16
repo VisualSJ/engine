@@ -127,7 +127,7 @@
             let $target = e.target;
             console.log('change');
             $testEvent.innerText = 'change';
-            $showWrap.innerText = $target.$input.value;
+            $showWrap.innerText = $target.value;
         })
         $uiNumInput.addEventListener('cancel', (e) => {
             let $target = e.target;

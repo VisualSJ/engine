@@ -9,20 +9,20 @@
     }
 </style>
 
-<section class="input">
+<section class="input" id="testWrap">
     <h1>Standard</h1>
+    <button id="toggleElem">移除/添加元素</button> 
     <h5>事件/Event
         <span id="testEvent"></span>
     </h5>
-    <ui-input id="uiInput" value="Standard"></ui-input>
     <span id="showWrap"></span>
+    <ui-input id="uiInput" value="Standard1"></ui-input>
 </section>
 
 <section class="input">
     <h1>Placeholder</h1>
     <ui-input placeholder="placeholder"></ui-input>
 </section>
-
 
 <section class="input">
     <h1>autofocus</h1>
@@ -105,34 +105,33 @@
 <script>
     (function () {
         let $uiInput = document.getElementById('uiInput');
+        let $uiInput2 = document.getElementById('uiInput2');
+        let $uiInput3 = document.getElementById('uiInput3');
         let $testEvent = document.getElementById('testEvent');
         let $showWrap = document.getElementById('showWrap');
+        let $testWrap = document.getElementById('testWrap');
+        let $toggleElem = document.getElementById('toggleElem');
+
+        let eventArr = ['confirm', 'change', 'cancel', 'click', 'blur'];
+        let hideFlag = false;
         $showWrap.innerHTML = $uiInput.value;
-        // let eventArr = ['click','blur','change','focus'];
-        // for (let i = 0, len = eventArr.length; i < len;i++){
-        //     $uiInput.addEventListener(eventArr[i],(e)=>{
-        //         console.log(eventArr[i]);
-        //         $testEvent.innerText = eventArr[i];
-        //     },false)
-        // }
-        // let eventNames ='',timer;
-        $uiInput.addEventListener('confirm', () => {
-            console.log('confirm');
-            $testEvent.innerText = 'confirm';
-        })
-        $uiInput.addEventListener('change', (e) => {
-            let $target = e.target;
-            console.log('change');
-            $showWrap.innerHTML = $target.$input.value;
-            $testEvent.innerText = 'change';
-        })
 
-        $uiInput.addEventListener('cancel', (e) => {
-            let $target = e.target;
-            console.log('cancel');
-            $testEvent.innerText = 'cancel';
-            $showWrap.innerHTML = $target.value;
-        })
+        for (let i = 0, len = eventArr.length; i < len; i++) {
+            $uiInput.addEventListener(eventArr[i], (e) => {
+                let $target = e.target;
+                console.log(eventArr[i]);
+                $testEvent.innerText = eventArr[i];
+                $showWrap.innerHTML = $target.value;
+            })
+        }
 
+        $toggleElem.addEventListener('click', (e) => {
+            hideFlag = !hideFlag;
+            if (hideFlag) {
+                $testWrap.removeChild($uiInput);
+            } else {
+                $testWrap.appendChild($uiInput);
+            }
+        })
     })();
 </script>

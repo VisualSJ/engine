@@ -26,10 +26,11 @@
   background-color: white;
   height: 15%;
 }
-:host ui-color-picker {
+:host .color-picker {
   position: absolute;
   z-index: 2;
   top: 40px;
+  display: none;
 }
 :host([focused]) {
   border-color: #07d;
