@@ -69,13 +69,11 @@ export const messages = {
 
     /**
      * 节点被修改
-     * 
-     * @param event 
-     * @param uuid 
+     * @param uuid 被更改节点的 uuid
      */
-    async 'scene:node-changed'(event: IPCEvent, uuid: string) {
+    async 'scene:node-changed'(uuid: string) {
         // 获取该节点最新数据
-        let newOne = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+        const newOne = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
 
         // 替换当前数据
         const nodeData = getOne(treeData, uuid)[0];
@@ -87,8 +85,10 @@ export const messages = {
 
     /**
      * 选中了某个物体
+     * @param type 选中物体的类型
+     * @param uuid 被更改节点的 uuid
      */
-    'selection:select'(event: IPCEvent, type: string, uuid: string) {
+    'selection:select'(type: string, uuid: string) {
         if (type !== 'node') {
             return;
         }
@@ -100,8 +100,10 @@ export const messages = {
 
     /**
      * 取消选中了某个物体
+     * @param type 取消选中物体的类型
+     * @param uuid 被更改节点的 uuid
      */
-    'selection:unselect'(event: IPCEvent, type: string, uuid: string) {
+    'selection:unselect'(type: string, uuid: string) {
         if (type !== 'node') {
             return;
         }
@@ -132,14 +134,14 @@ export async function ready() {
         },
         watch: {
             /**
-             * 监听属性 viewHeight 
+             * 监听属性 viewHeight
              * 高度变化，刷新树形
              */
             viewHeight() {
                 vm.renderTree();
             },
             /**
-             * 监听属性 scrollTop 
+             * 监听属性 scrollTop
              * 滚动变化，刷新树形
              */
             scrollTop() {
@@ -161,7 +163,7 @@ export async function ready() {
             /**
              * 重新渲染树形
              * nodes 存放被渲染的节点数据
-             * 主要通过 nodes 数据的变动 
+             * 主要通过 nodes 数据的变动
              */
             renderTree() {
 
@@ -178,7 +180,7 @@ export async function ready() {
             },
             /**
              * 节点的折叠切换
-             * @param uuid 
+             * @param uuid
              */
             toggleNode(uuid = '') {
 
@@ -194,8 +196,8 @@ export async function ready() {
              * 修改节点属性
              * 这是异步的，只做发送
              * 获取在另外ipc 'scene:node-changed' 处理数据替换和刷新视图
-             * @param item 
-             * @param name 
+             * @param item
+             * @param name
              */
             renameNode(item: ItreeNode, name = '') {
 
@@ -244,7 +246,7 @@ export async function ready() {
             },
             /**
              * 滚动了多少，调整滚动条位置
-             * @param scrollTop 
+             * @param scrollTop
              */
             scrollTree(scrollTop = 0) {
 
@@ -256,8 +258,8 @@ export async function ready() {
             },
             /**
              * 节点拖动
-             * 
-             * @param json 
+             *
+             * @param json
              */
             dropNode(json: IdragNode) {
 
@@ -307,7 +309,7 @@ export const listeners = {
  * 计算所有树形节点的位置数据，这一结果用来做快速检索
  * 重点是设置 positionMap 数据
  * 返回当前序号
- * @param tree 
+ * @param tree
  * @param index 节点的序号
  * @param depth 节点的层级
  */
@@ -339,9 +341,9 @@ function calcItreeNodePosition(tree = treeData, index = 0, depth = 0) {
  * 这个数据处理，临时使用，很快会被删除
  * 获取 uuid 所在的 json 对象及 json 所在的数组的索引值，数组本身
  * 返回 [itreeNode, index, array]
- * 
- * @param arr 
- * @param uuid 
+ *
+ * @param arr
+ * @param uuid
  */
 function getOne(arr: ItreeNode[] = [], uuid = ''): any {
     let rt = [];

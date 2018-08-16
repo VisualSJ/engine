@@ -12,11 +12,10 @@ export const messages = {
 
     /**
      * 选中某个物体
-     * @param event
      * @param type
      * @param uuid
      */
-    'select'(event: IPCEvent, type: string, uuid: string | string[]) {
+    'select'(type: string, uuid: string | string[]) {
         lastSelectType = type;
 
         const array = selection[type] = selection[type] || [];
@@ -47,11 +46,10 @@ export const messages = {
 
     /**
      * 取消选中某个物体
-     * @param event
      * @param type
      * @param uuid
      */
-    'unselect'(event: IPCEvent, type: string, uuid: string | string[]) {
+    'unselect'(type: string, uuid: string | string[]) {
         if (!selection[type]) {
             return;
         }
@@ -78,10 +76,9 @@ export const messages = {
 
     /**
      * 清空莫哥类型选中的所有物体
-     * @param event
      * @param type
      */
-    'clear'(event: IPCEvent, type: string) {
+    'clear'(type: string) {
         if (!selection[type]) {
             return;
         }
@@ -94,23 +91,21 @@ export const messages = {
 
     /**
      * 查询最后一个选中的物体类型
-     * @param event
      */
-    'query-laset-select-type'(event: IPCEvent) {
-        event.reply(null, lastSelectType);
+    'query-laset-select-type'() {
+        return lastSelectType;
     },
 
     /**
      * 查询一个类型最后选中的物体
-     * @param event
      */
-    'query-laset-select'(event: IPCEvent, type: string) {
+    'query-laset-select'(type: string) {
         if (!selection[type]) {
-            return;
+            return null;
         }
 
         const array = selection[type];
-        event.reply(null, array[array.length - 1] || '');
+        return array[array.length - 1] || '';
     },
 };
 

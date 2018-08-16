@@ -52,8 +52,10 @@ export const messages = {
 
     /**
      * 选中了某个物体
+     * @param type 选中物体的类型
+     * @param uuid 选中物体的 uuid
      */
-    'selection:select'(event: IPCEvent, type: string, uuid: string) {
+    'selection:select'(type: string, uuid: string) {
         if (type !== 'asset') {
             return;
         }
@@ -65,8 +67,10 @@ export const messages = {
 
     /**
      * 取消选中了某个物体
+     * @param type 选中物体的类型
+     * @param uuid 选中物体的 uuid
      */
-    'selection:unselect'(event: IPCEvent, type: string, uuid: string) {
+    'selection:unselect'(type: string, uuid: string) {
         if (type !== 'asset') {
             return;
         }
@@ -79,8 +83,9 @@ export const messages = {
     /**
      * asset db 广播通知添加了 asset
      * 在显示的节点树上添加上这个资源
+     * @param uuid 选中物体的 uuid
      */
-    async 'asset-db:asset-add'(event: IPCEvent, uuid: string) {
+    async 'asset-db:asset-add'(uuid: string) {
         // 没有初始化的时候，无需处理添加消息
         if (!vm.ready) {
             return;
@@ -99,8 +104,9 @@ export const messages = {
     /**
      * asset db 广播通知删除了 asset
      * 在显示的节点树上删除这个资源
+     * @param uuid 选中物体的 uuid
      */
-    async 'asset-db:asset-delete'(event: IPCEvent, uuid: string) {
+    async 'asset-db:asset-delete'(uuid: string) {
         // 没有初始化的时候，无需处理添加消息
         if (!vm.ready) {
             return;

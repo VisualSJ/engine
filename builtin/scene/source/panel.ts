@@ -55,8 +55,9 @@ export const messages = {
 
     /**
      * 打开场景
+     * @param uuid 打开场景的 uuid
      */
-    async 'open-scene'(event: IPCEvent, uuid: string) {
+    async 'open-scene'(uuid: string) {
         // 关闭当前场景
         Editor.Ipc.sendToAll('scene:close');
         panel.$.loading.hidden = false;
@@ -80,17 +81,18 @@ export const messages = {
     /**
      * 创建新场景
      */
-    'create-scene'(event: IPCEvent) {},
+    'create-scene'() {},
 
     /**
      * 创建新节点
      */
-    'create-node'(event: IPCEvent) {},
+    'create-node'() {},
 
     /**
      * 设置某个元素内的属性
+     * @param options 设置节点的参数
      */
-    'set-property'(event: IPCEvent, options: SetPropertyOptions) {
+    'set-property'(options: SetPropertyOptions) {
         if (nodeExists(options.uuid)) {
             setNodeProperty(options.uuid, options.path, options.key, options.dump);
             return;
@@ -99,8 +101,9 @@ export const messages = {
 
     /**
      * 移动数组类型 property 内的某个 item 的位置
+     * @param options 移动节点的参数
      */
-    'move-array-element'(event: IPCEvent, options: MovePropertyOptions) {
+    'move-array-element'(options: MovePropertyOptions) {
         if (nodeExists(options.uuid)) {
             moveNodeProperty(options.uuid, options.path, options.key, options.target, options.offset);
             return;
@@ -109,23 +112,18 @@ export const messages = {
 
     /**
      * 查询一个节点的 dump 信息
+     * @param uuid 查询节点的 uuid
      */
-    'query-node'(event: IPCEvent, uuid: string) {
-        let dump;
-        try {
-            dump = dumpNode(uuid);
-        } catch (error) {
-            return event.reply(error, null);
-        }
-        event.reply(null, dump);
+    'query-node'(uuid: string) {
+        return dumpNode(uuid);
     },
 
     /**
      * 查询当前场景内的节点树
      * 节点树并不会显示所有的 dump 数据
      */
-    'query-node-tree'(event: IPCEvent) {
-        event.reply(null, queryNodeTree());
+    'query-node-tree'() {
+        return queryNodeTree();
     },
 };
 

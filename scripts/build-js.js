@@ -27,6 +27,7 @@ Promise.all(tsDirnames.map((dir) => {
         }, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
+                console.error(`  ${dir}`)
                 return reject(error);
             }
 

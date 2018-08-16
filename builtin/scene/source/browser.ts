@@ -35,55 +35,57 @@ export const messages = {
     /**
      * 查询场景编辑器是否准备就绪
      */
-    'query-is-ready'(event: IPCEvent) {
-        event.reply(null, isReady);
+    'query-is-ready'() {
+        return isReady;
     },
 
     /**
      * 打开场景
+     * @param uuid 打开场景的 uuid
      */
-    'open-scene'(event: IPCEvent, uuid: string) {
+    'open-scene'(uuid: string) {
         Editor.Ipc.sendToPanel('scene', 'open-scene', uuid);
     },
 
     /**
      * 创建新场景
      */
-    'create-scene'(event: IPCEvent) { },
+    'create-scene'() { },
 
     /**
      * 创建新节点
      */
-    'create-node'(event: IPCEvent) { },
+    'create-node'() { },
 
     /**
      * 设置节点的属性
+     * @param options 设置节点属性的参数
      */
-    'set-property'(event: IPCEvent, options: SetPropertyOptions) {
+    'set-property'(options: SetPropertyOptions) {
         Editor.Ipc.sendToPanel('scene', 'set-property', options);
     },
 
     /**
      * 移动数组类型属性内某个 item 的位置
+     * @param options 移动节点属性的参数
      */
-    'move-array-element'(event: IPCEvent, options: MovePropertyOptions) {
+    'move-array-element'(options: MovePropertyOptions) {
         Editor.Ipc.sendToPanel('scene', 'move-array-element', options);
     },
 
     /**
      * 查询一个节点的 dump 信息
+     * @param uuid 查询节点的 uuid
      */
-    async 'query-node'(event: IPCEvent, uuid: string) {
-        const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
-        event.reply(null, dump);
+    async 'query-node'(uuid: string) {
+        return await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
     },
 
     /**
      * 查询当前场景内的节点树
      */
-    async 'query-node-tree'(event: IPCEvent) {
-        const tree = await Editor.Ipc.requestToPanel('scene', 'query-node-tree');
-        event.reply(null, tree);
+    async 'query-node-tree'() {
+        return await Editor.Ipc.requestToPanel('scene', 'query-node-tree');
     }
 };
 

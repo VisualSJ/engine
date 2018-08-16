@@ -24,8 +24,10 @@ export const messages = {
 
     /**
      * 选中某个物体
+     * @param type 选中物体的类型
+     * @param uuid 选中物体的 uuid
      */
-    async 'selection:select'(event: IPCEvent, type: string, uuid: string) {
+    async 'selection:select'(type: string, uuid: string) {
         vm.loading = true;
 
         if (type === 'asset') {

@@ -114,6 +114,15 @@ exports.panel = [{
 
 **暂时只支持测试与插件同名的面板**
 
+## 依赖的一些环境
+
+1. 使用 npm 全局安装 typescript、tslint
+```bash
+npm install typescript -g
+npm install tslint -g
+```
+2. 安装 vscode 的 tslint 插件
+
 ## 其他参考资料
 
 编辑器使用的基础模块的接口说明，因为部分文档存在与 node_modules 内，所以需要在项目构建完成后才能够预览。
