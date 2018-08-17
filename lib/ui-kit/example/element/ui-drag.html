@@ -1,0 +1,85 @@
+<style>
+
+    section.drag {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 1px;
+    }
+
+    section.drop {
+        margin: 0 0 10px 0;
+        padding: 10px;
+        border-radius: 1px;
+    }
+
+    ui-drag-item {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 1px solid #f00;
+        background: #900;
+        border-radius: 4px;
+        line-height: 50px;
+        text-align: center;
+        margin-right: 10px;
+    }
+
+    ui-drag-item[draging] {
+        border: 1px solid #0f0;
+        background: #090;
+    }
+
+    ui-drag-area {
+        display: inline-block;
+        width: 70px;
+        height: 70px;
+        border: 4px dotted #666;
+        line-height: 70px;
+        text-align: center;
+        margin-right: 10px;
+    }
+
+    ui-drag-area[hoving] {
+        border-color: #090;
+    }
+
+    ui-drag-area.wrap {
+        width: auto;
+        height: auto;
+        padding: 10px;
+    }
+</style>
+
+<section class="drag">
+    <ui-drag-item type="foo">
+        <span>foo</span>
+    </ui-drag-item>
+    <ui-drag-item type="bar">bar</ui-drag-item>
+</section>
+
+<section class="drop">
+    <ui-drag-area dropable="foo">foo</ui-drag-area>
+    <ui-drag-area dropable="bar">bar</ui-drag-area>
+    <ui-drag-area dropable="foo,bar">foo,bar</ui-drag-area>
+</section>
+
+<section class="drop">
+    <ui-drag-area class="wrap" dropable="foo,bar">
+        <ui-drag-area dropable="foo">foo</ui-drag-area>
+        <ui-drag-area dropable="bar">bar</ui-drag-area>
+        <ui-drag-area dropable="foo,bar">foo,bar</ui-drag-area>
+    </ui-drag-area>
+</section>
+
+<section class="drop">
+    <ui-drag-area id="file" dropable="file">file</ui-drag-area>
+</section>
+
+<script>
+    const $areas = document.querySelectorAll('ui-drag-area');
+    Array.prototype.forEach.call($areas, ($area) => {
+        $area.addEventListener('drop', (event) => {
+            console.log('drop');
+        });
+    });
+</script>
