@@ -6,19 +6,30 @@ interface SetPropertyOptions {
     dump: PropertyDump; // 属性 dump 出来的数据
 }
 
-// move-array-item 消息的 options 定义
-interface MoveArrayItemOptions {
-    uuid: string;
-    path: string;
-    offset: number;
+// insert-array-element 消息的 options 定义
+interface InsertArrayOptions {
+    uuid: string; // 修改属性对象的 uuid
+    path: string; // 修改的对象与 uuid 指向对象间的搜索路径 - 'comps/0'
+    key: string; // 修改对象上的某个值的 key - 'colors'
+    index: number; // 修改 item 在数组内的 index
+    dump: PropertyDump; // 该数据的 dump 信息
 }
 
-interface MovePropertyOptions {
+// move-array-element 消息的 options 定义
+interface MoveArrayOptions {
     uuid: string;
     path: string;
     key: string;
     target: number;
     offset: number;
+}
+
+// remove-array-element 消息的 options 定义
+interface RemoveArrayOptions {
+    uuid: string;
+    path: string;
+    key: string;
+    index: number;
 }
 
 interface NodeDump {
@@ -39,7 +50,7 @@ interface NodeDump {
 interface PropertyDump {
     type: string;
     value: any;
-    extends?: string[];
+    extends: string[];
 }
 
 interface NodeTreeItem {

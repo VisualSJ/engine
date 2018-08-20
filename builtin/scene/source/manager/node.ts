@@ -7,6 +7,7 @@
 import {
     dumpNode,
     dumpProperty,
+    restoreComponent,
     restoreProperty,
 } from '../utils/dump';
 
@@ -28,6 +29,19 @@ function walkChildren(children: any[]) {
             walkChildren(child._children);
         }
     }
+}
+
+/**
+ * 获取一个节点的 dump 数据
+ * 如果不传入 uuid 则获取场景的 dump 数据
+ * @param uuid
+ */
+export function dump(uuid: string) {
+    if (!uuid) {
+        return null;
+    }
+    const node = query(uuid);
+    return dumpNode(node);
 }
 
 /**
@@ -116,13 +130,81 @@ export function setProperty(
 }
 
 /**
+ * 插入一个 item 到一个数组类型的 property 内
+ * @param uuid 节点的 uuid
+ * @param path 属性的搜索路径
+ * @param key 属性在搜索到的对象内的 key
+ * @param index 目标 item 原来的索引
+ * @param dump 插入的数据的 dump 信息
+ *
+ * @return {boolean} 是否插入成功
+ */
+export function insertArrayProperty(
+    uuid: string,
+    path: string,
+    key: string,
+    index: number,
+    dump: PropertyDump
+) {
+    const node: any = query(uuid);
+
+    if (key === 'children') {
+        console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
+        return false;
+    }
+
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    // 找到指定的 data 数据
+    let data = path ? get(node, path) : node;
+    if (!data) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    data = data[key];
+    if (!Array.isArray(data)) {
+        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return false;
+    }
+
+    let value;
+    if (dump.extends[0] === 'component') {
+        // 如果插入的是一个 component 对象
+        // 则需要特殊处理
+        const cName = dump.type.replace(/(^\S)(\S+)component/, (all, s, c) => {
+            return s.toUpperCase() + c;
+        });
+        // @ts-ignore
+        const Comp = app.getClass(cName);
+        const comp = new Comp();
+        restoreComponent(dump.value, comp);
+        value = comp;
+    } else {
+        const temp = {value: null};
+        restoreProperty(dump, temp, 'value');
+        value = temp.value;
+    }
+
+    data.splice(index, 0, value);
+
+    // 广播更改消息
+    Editor.Ipc.sendToAll('scene:node-changed', uuid);
+    return true;
+}
+
+/**
  * 调整一个数组类型的数据内某个 item 的位置
  * @param uuid 节点的 uuid
  * @param path 属性的搜索路径
+ * @param key 属性在搜索到的对象内的 key
  * @param target 目标 item 原来的索引
  * @param offset 偏移量
  */
-export function moveProperty(
+export function moveArrayProperty(
     uuid: string,
     path: string,
     key: string,
@@ -131,46 +213,68 @@ export function moveProperty(
 ) {
     const node: any = query(uuid);
     if (!node) {
-        return console.warn(`Move property failed: ${uuid} does not exist`);
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
     }
 
     // 找到指定的 data 数据
     let data = path ? get(node, path) : node;
     if (!data) {
         console.warn(`Move property failed: ${uuid} does not exist`);
-        return;
+        return false;
     }
 
     data = data[key];
     if (!Array.isArray(data)) {
-        return console.warn(
-            `Move property failed: ${uuid} - ${path}.${key} isn't an array`
-        );
+        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return false;
     }
 
+    // 移动顺序
     const temp = data.splice(target, 1);
     data.splice(target + offset, 0, temp[0]);
 
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);
+    return true;
 }
 
 /**
- * 获取一个节点的 dump 数据
- * 如果不传入 uuid 则获取场景的 dump 数据
- * @param uuid
+ * 删除一个数组
+ * @param uuid 节点的 uuid
+ * @param path 属性的搜索路径
+ * @param key 属性在搜索到的对象内的 key
+ * @param index 目标 item 原来的索引
  */
-export function dump(uuid: string) {
-    if (uuid) {
-        const node = query(uuid);
-        return dumpNode(node);
+export function removeArrayProperty(
+    uuid: string,
+    path: string,
+    key: string,
+    index: number
+) {
+    const node: any = query(uuid);
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
     }
-}
 
-/**
- * 节点是否存在
- * @param uuid
- */
-export function exists(uuid: string): boolean {
-    return !!uuid2node[uuid];
+    // 找到指定的 data 数据
+    let data = path ? get(node, path) : node;
+    if (!data) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    data = data[key];
+    if (!Array.isArray(data)) {
+        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return false;
+    }
+
+    // 移动顺序
+    data.splice(index, 1);
+
+    // 广播更改消息
+    Editor.Ipc.sendToAll('scene:node-changed', uuid);
+    return true;
 }

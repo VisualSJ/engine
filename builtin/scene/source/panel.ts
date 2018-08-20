@@ -12,9 +12,10 @@ import {
 
 import {
     dump as dumpNode,
-    exists as nodeExists,
-    moveProperty as moveNodeProperty,
-    setProperty as setNodeProperty
+    insertArrayProperty as insertNodeArrayProperty,
+    moveArrayProperty as moveNodeArrayProperty,
+    removeArrayProperty as removeNodeArrayProperty,
+    setProperty as setNodeProperty,
 } from './manager/node';
 
 let isAssetReady: boolean = false;
@@ -53,6 +54,9 @@ export const messages = {
         isAssetReady = false;
     },
 
+    /////////////////////
+    // 场景操作
+
     /**
      * 打开场景
      * @param uuid 打开场景的 uuid
@@ -78,37 +82,43 @@ export const messages = {
         await closeScene();
     },
 
-    /**
-     * 创建新场景
-     */
-    'create-scene'() {},
-
-    /**
-     * 创建新节点
-     */
-    'create-node'() {},
+    /////////////////////
+    // 修改场景内数据的消息
 
     /**
      * 设置某个元素内的属性
      * @param options 设置节点的参数
      */
     'set-property'(options: SetPropertyOptions) {
-        if (nodeExists(options.uuid)) {
-            setNodeProperty(options.uuid, options.path, options.key, options.dump);
-            return;
-        }
+        setNodeProperty(options.uuid, options.path, options.key, options.dump);
+    },
+
+    /**
+     * 插入一个 item 到某个数组类型的 property 内
+     * @param options
+     */
+    'insert-array-element'(options: InsertArrayOptions) {
+        insertNodeArrayProperty(options.uuid, options.path, options.key, options.index, options.dump);
     },
 
     /**
      * 移动数组类型 property 内的某个 item 的位置
      * @param options 移动节点的参数
      */
-    'move-array-element'(options: MovePropertyOptions) {
-        if (nodeExists(options.uuid)) {
-            moveNodeProperty(options.uuid, options.path, options.key, options.target, options.offset);
-            return;
-        }
+    'move-array-element'(options: MoveArrayOptions) {
+        moveNodeArrayProperty(options.uuid, options.path, options.key, options.target, options.offset);
     },
+
+    /**
+     * 删除数组类型 property 内的某个 item 的位置
+     * @param options 移动节点的参数
+     */
+    'remove-array-element'(options: RemoveArrayOptions) {
+        removeNodeArrayProperty(options.uuid, options.path, options.key, options.index);
+    },
+
+    /////////////////////
+    // 查询场景内的数据的消息
 
     /**
      * 查询一个节点的 dump 信息

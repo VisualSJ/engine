@@ -151,15 +151,13 @@ export function restoreProperty(
  * @param node
  */
 export function restoreNode(dump: NodeDump, node: any) {
-    restoreProperty(dump.uuid, node, '_id');
-
-    restoreProperty(dump.parent, node, 'parent');
     restoreProperty(dump.active, node, 'active');
-    restoreProperty(dump.name, node, 'name');
+    // restoreProperty(dump.children, node, 'children');
+    restoreProperty(dump.comps, node, '_comps');
     restoreProperty(dump.layer, node, 'layer');
     restoreProperty(dump.lpos, node, 'lpos');
     restoreProperty(dump.lrot, node, 'lrot');
-
-    // todo children
-    // restoreProperty(dump.uuid, node, '_id');
+    restoreProperty(dump.name, node, 'name');
+    restoreProperty(dump.parent, node, 'parent');
+    restoreProperty(dump.uuid, node, '_id');
 }

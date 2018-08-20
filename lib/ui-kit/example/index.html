@@ -19,19 +19,25 @@
 <body>
 
     <select id="select">
-        <option>ui-num-input</option>
-        <option>ui-input</option>
+        <optgroup label="Controls">
+            <option>ui-button</option>
+            <option>ui-checkbox</option>
+            <option>ui-input</option>
+            <option>ui-num-input</option>
+            <option>ui-select</option>
+            <option>ui-slider</option>
+            <option>ui-color</option>
+            <option>ui-color-picker</option>
+        </optgroup>
 
-        <option>ui-color</option>
-        <option>ui-color-picker</option>
-        <option>ui-slider</option>
-        <option>ui-select</option>
-        <option>ui-section</option>
-        <option>ui-checkbox</option>
-        <option>ui-loading</option>
-        <option>ui-button</option>
-
-
+        <optgroup label="Containers">
+            <option>ui-section</option>
+            <option>ui-drag</option>
+        </optgroup>
+        
+        <optgroup label="Views">
+            <option>ui-loading</option>
+        </optgroup>
     </select>
 
     <section id="content">
@@ -74,6 +80,15 @@
     changeTestPage($select.value);
     $select.addEventListener('change', (event) => {
         changeTestPage(event.target.value);
+    });
+
+    // 阻止默认打开文件事件
+    window.addEventListener('dragover', event => {
+    event.dataTransfer.dropEffect = 'none';
+        event.preventDefault();
+    });
+    window.addEventListener('drop', event => {
+        event.preventDefault();
     });
 </script>
 
