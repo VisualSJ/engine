@@ -12,7 +12,7 @@ export const props: string[] = [
 
 export const name = 'tree';
 
-export function data () {
+export function data() {
     return {};
 }
 
@@ -22,26 +22,26 @@ export const methods = {
      * @param event
      * @param uuid
      */
-    selectNode (event: Event, uuid: string) {
+    selectNode(event: Event, item: ItreeNode) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+        Editor.Ipc.sendToPackage('selection', 'select', 'node', item.uuid);
     },
     /**
      * 节点折叠切换
      * @param uuid 
      */
-    toggleNode (uuid: string) {
+    toggleNode(item: ItreeNode) {
         // @ts-ignore
-        this.$emit('toggle', uuid);
+        this.$emit('toggle', item.uuid);
     },
     /**
      * 节点重名命
      * @param event 
      * @param item 
      */
-    renameNode (event: Event, item: ItreeNode) {
+    renameNode(event: Event, item: ItreeNode) {
         // 改变节点状态
-        item.rename = 'input';
+        item.state = 'input';
 
         // @ts-ignore
         this.$nextTick(() => {
@@ -53,7 +53,7 @@ export const methods = {
      * 提交重名命
      * @param item 
      */
-    renameBlur (item: ItreeNode) {
+    renameBlur(item: ItreeNode) {
         // @ts-ignore
         const newName = this.$refs.input[0].value.trim();
 
@@ -66,10 +66,10 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragStart (event: Event, uuid: string) {
+    dragStart(event: Event, item: ItreeNode) {
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({
-            from: uuid
+            from: item.uuid
         }));
     },
     /**
@@ -78,10 +78,14 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragOver (event: Event, uuid: string) {
+    dragOver(event: Event, item: ItreeNode) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
+        event.stopPropagation();
+        event.stopImmediatePropagation();
         // @ts-ignore
         const target: any = event.currentTarget;
+        
+        target.setAttribute('drag', 'over');
 
         const offset = target.getBoundingClientRect();
 
@@ -100,35 +104,37 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragLeave (event: Event, uuid: string) {
+    dragLeave(event: Event, item: ItreeNode) {
         // @ts-ignore
-        event.currentTarget.setAttribute('insert', '');
+        const target: any = event.currentTarget;
+        target.setAttribute('insert', '');
+        target.setAttribute('drag', '');
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
      * @param event 
      * @param uuid 
      */
-    drop (event: Event, uuid: string) {
+    drop(event: Event, item: ItreeNode) {
         event.preventDefault();
-        
+
         // @ts-ignore
         const data = JSON.parse(event.dataTransfer.getData('dragData'));
-        data.to = uuid; // 被瞄准的节点
+        data.to = item.uuid; // 被瞄准的节点
 
         // @ts-ignore
         const target: any = event.currentTarget;
 
         data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
-        
-        target.setAttribute('insert', ''); // 还原节点状态
 
-       
+        target.setAttribute('insert', ''); // 还原节点状态
+        target.setAttribute('drag', '');
+
         if (data.to === data.from) {  // 如果移动到自身节点，则不需要移动
-            return false;
+            return;
         }
-        
+
         // @ts-ignore
-        this.$emit('drop', data);
+        this.$emit('drop', item, data);
     }
 };

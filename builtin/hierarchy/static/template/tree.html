@@ -3,38 +3,38 @@
         v-for="item in list" 
         :draggable="item.rename?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
-        @click="selectNode($event, item.uuid)" 
-        @dragstart="dragStart($event, item.uuid)" 
-        @dragover="dragOver($event, item.uuid)" 
-        @dragleave="dragLeave($event, item.uuid)" 
-        @drop="drop($event, item.uuid)" 
+        @click="selectNode($event, item)" 
+        @dragstart="dragStart($event, item)" 
+        @dragover="dragOver($event, item)" 
+        @dragleave="dragLeave($event, item)" 
+        @drop="drop($event, item)" 
         :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
         v-bind:class="{'parent':item.isParent}"
+        :state="!item.isExpand?'':'expand'"
     >
         <div class="name">
-            <i class="icon"
+            <i class="icon i-arrow-right"
                 v-if="item.isParent" 
-                @click="toggleNode(item.uuid)"
-                v-bind:class="{'i-arrow-right':!item.isExpand,'i-arrow-down':item.isExpand}"
+                @click="toggleNode(item)"
             >
             </i>
             <i class="icon"
                 v-else
             >
             </i>
-            <label 
-                v-if="item.rename===''"
+            <label class="label"
+                v-if="item.state===''"
                 @dblclick="renameNode($event, item)"
             >
                 {{item.name}}
             </label>
-            <section class="loading" title="Renaming"
-                v-else-if="item.rename==='loading'"
+            <section class="loading"
+                v-else-if="item.state==='loading'"
             >
                 <ui-loading></ui-loading>
             </section>
             <input class="rename-input" ref='input'
-                v-else-if="item.rename==='input'"
+                v-else-if="item.state==='input'"
                 :value="item.name"
                 @blur="renameBlur(item)"
             >

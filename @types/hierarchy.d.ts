@@ -7,9 +7,9 @@
 declare interface ItreeNode {
     name: string;
     uuid: string;
-    children?: ItreeNode[];
+    children: ItreeNode[];
     depth?: number;
     isParent?: boolean; // 是否是父节点
     isExpand?: boolean; // 是否展开显示
-    rename?: string; // 是否
+    state?: string; // 是否
 }

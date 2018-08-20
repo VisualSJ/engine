@@ -1,4 +1,6 @@
-@tree-active: #e4893e;
+@active-color: #f90;
+@active-border: #09f;
+@drag-color: #0f0;
 .tree {
     flex: 1;
     position: absolute;
@@ -6,21 +8,28 @@
     top: 0;
     right: 0;
     z-index: 1;
-    padding: 4px 0 0 0;
+    padding: 4px 0 4px 0;
     box-sizing: border-box;
     overflow: hidden;
     &>li {
         position: relative;
-        cursor: pointer;
         padding: 2px 8px 2px 0;
         height: 16px;
         font-size: 12px;
-        text-indent: 4px;
-        &:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        &[state="expand"] {
+            .icon {
+                transform: rotate(90deg);
+            }
         }
-        &.parent {
-            text-indent: 0;
+        &[active="true"] {
+            background-color: #059 !important;
+        }
+        &[drag="over"] {
+            color: @drag-color !important;
+        }
+        &:hover {
+            color: @active-color;
+            background-color: rgba(255, 255, 255, 0.1);
         }
         &[insert="before"] {
             &:before {
@@ -30,11 +39,11 @@
                 top: -2px;
                 width: 100%;
                 height: 2px;
-                background-color: @tree-active;
+                background-color: @drag-color;
             }
         }
         &[insert="inside"] {
-            color: @tree-active;
+            color: @active-color;
         }
         &[insert="after"] {
             &:before {
@@ -44,16 +53,21 @@
                 bottom: -2px;
                 width: 100%;
                 height: 2px;
-                background-color: @tree-active;
+                background-color: @drag-color;
             }
         }
         .icon {
             vertical-align: middle;
             display: inline-block;
-            padding-left: 2px;
-            padding-right: 2px;
             font-size: 10px;
-            min-width: 6px;
+            width: 16px;
+            text-align: center;
+            transition: 0.2s all;
+            cursor: pointer;
+        }
+        .label {
+            cursor: default;
+            vertical-align: middle;
         }
         .name {
             position: relative;
@@ -67,9 +81,13 @@
         }
         .rename-input {
             font-size: 12px;
-            outline: none;
-            border: 1px solid @tree-active;
+            outline: 1px solid @active-border;
+            outline-offset: 0;
+            background-color: #252525;
+            border: none;
+            color: #999;
             padding-left: 4px;
+            width: 80%;
         }
     }
 }

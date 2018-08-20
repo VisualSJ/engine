@@ -1,5 +1,4 @@
 @import '../iconfont.less';
-
 :host {
     position: relative;
     display: flex;
@@ -9,6 +8,10 @@
         right: 0;
         bottom: 0;
         left: 0;
+        z-index: 100;
+        &.center {
+            margin: auto;
+        }
         ui-loading {
             position: absolute;
             top: 0;
@@ -16,6 +19,8 @@
             bottom: 0;
             left: 0;
             margin: auto;
+            width: 18px;
+            height: 18px;
         }
     }
     .content {
