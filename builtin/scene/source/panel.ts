@@ -5,16 +5,20 @@ import { join } from 'path';
 
 import {
     close as closeScene,
+    createNode,
     initEngineManager,
     open as openScene,
     queryNodeTree,
+    removeNode,
 } from './manager/scene';
 
 import {
+    createComponent,
     dump as dumpNode,
     insertArrayProperty as insertNodeArrayProperty,
     moveArrayProperty as moveNodeArrayProperty,
     removeArrayProperty as removeNodeArrayProperty,
+    removeComponent,
     setProperty as setNodeProperty,
 } from './manager/node';
 
@@ -115,6 +119,39 @@ export const messages = {
      */
     'remove-array-element'(options: RemoveArrayOptions) {
         removeNodeArrayProperty(options.uuid, options.path, options.key, options.index);
+    },
+
+    /**
+     * 创建一个新的节点
+     * @param options 创建节点的参数
+     * @return {Stirng} 返回新建的节点的 uuid
+     */
+    'create-node'(options: CreateNodeOptions) {
+        return createNode(options.parent, options.name);
+    },
+
+    /**
+     * 删除一个已有的节点
+     * @param options 删除节点的参数
+     */
+    'remove-node'(options: RemoveNodeOptions) {
+        removeNode(options.uuid);
+    },
+
+    /**
+     * 创建一个新的组件
+     * @param options 创建组件的参数
+     */
+    'create-component'(options: CreateComponentOptions) {
+        createComponent(options.uuid, options.component);
+    },
+
+    /**
+     * 移除一个节点上的组件
+     * @param options 移除组件的参数
+     */
+    'remove-component'(options: RemoveComponentOptions) {
+        removeComponent(options.uuid, options.component);
     },
 
     /////////////////////

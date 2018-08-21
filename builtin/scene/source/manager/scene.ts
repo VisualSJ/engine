@@ -6,7 +6,14 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { query, walk } from './node';
+import {
+    query,
+    walk,
+} from './node';
+
+import {
+    restoreNode,
+} from '../utils/dump';
 
 declare const cc: any;
 
@@ -84,7 +91,7 @@ export function close() {
  * 查询当前运行的场景内的节点树
  * @param uuid 传入的时候生成当前节点的节点树，不传入的话生成场景的节点树
  */
-export function queryNodeTree(uuid?: string): NodeTreeItem[] {
+export function queryNodeTree(uuid?: string): NodeTreeItem | null {
     /**
      * 逐步打包数据
      * @param node
@@ -99,22 +106,51 @@ export function queryNodeTree(uuid?: string): NodeTreeItem[] {
 
     if (uuid) {
         const node = query(uuid);
-
         if (!node) {
-            return [];
+            return null;
         }
-
-        return [step(node)];
+        return step(node);
     }
 
-    const nodes = [];
+    return step(scene.activeLevel);
+}
 
-    for (let i = 0; i < scene._entities._count; i++) {
-        const child = scene._entities._data[i];
-        if (child._parent && child._parent.constructor.name === 'Level') {
-            nodes.push(step(child));
-        }
+/**
+ * 在场景内创建一个新的节点，并挂载到指定的父节点下
+ * @param uuid 父节点的 uuid
+ */
+export function createNode(uuid: string, name: string = '', components: string[] = [], dump?: NodeDump) {
+    if (!scene) {
+        return;
     }
 
-    return nodes;
+    const parent = query(uuid);
+    const entity = scene.createEntity(name);
+
+    components.forEach((name) => {
+        entity.addComp(name);
+    });
+
+    if (dump) {
+        restoreNode(dump, entity);
+    }
+
+    parent.append(entity);
+    walk(scene);
+
+    // 广播更改消息
+    Editor.Ipc.sendToAll('scene:node-created', entity._id);
+    return entity._id;
+}
+
+/**
+ * 移除某个节点
+ * @param uuid 移除节点的 uuid
+ */
+export function removeNode(uuid: string) {
+    const node = query(uuid);
+    node.remove();
+
+    // 广播更改消息
+    Editor.Ipc.sendToAll('scene:node-removed', uuid);
 }
