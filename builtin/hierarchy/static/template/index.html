@@ -6,6 +6,13 @@
 
     <div class="tools">
         <i class="i-add"></i>
+        <ui-input tabindex="-1" value="" placeholder="搜索..."></ui-input>
+        <i class="i-search"></i>
+        <i class="expand"
+            v-bind:class="{'i-full':!expand, 'i-full-over':expand}"
+            @click="toggleAll"
+        ></i>
+        <i class="i-refresh"></i>
     </div>
 
     <div class="viewBox" ref="viewBox">
@@ -13,8 +20,9 @@
         <tree ref="tree" 
             :list="nodes" 
             :select="select" 
-            @toggle="toggleNode"
-            @rename="renameNode"
+            @lock="lockNode"
+            @toggle="toggleNode" 
+            @rename="renameNode" 
             @drop="dropNode"
         ></tree>
     </div>

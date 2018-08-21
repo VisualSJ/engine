@@ -27,6 +27,14 @@ export const methods = {
         Editor.Ipc.sendToPackage('selection', 'select', 'node', item.uuid);
     },
     /**
+     * 锁定 / 解锁节点
+     * @param item 
+     */
+    lockNode(item: ItreeNode) {
+        // @ts-ignore
+        this.$emit('lock', item.uuid);
+    },
+    /**
      * 节点折叠切换
      * @param uuid 
      */

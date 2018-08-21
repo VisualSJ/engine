@@ -11,13 +11,13 @@
     padding: 4px 0 4px 0;
     box-sizing: border-box;
     overflow: hidden;
-    &>li {
+    &>.node {
         position: relative;
         padding: 2px 8px 2px 0;
         height: 16px;
         font-size: 12px;
         &[state="expand"] {
-            .icon {
+            .arrow {
                 transform: rotate(90deg);
             }
         }
@@ -30,6 +30,9 @@
         &:hover {
             color: @active-color;
             background-color: rgba(255, 255, 255, 0.1);
+            .lock {
+                display: inline-block;
+            }
         }
         &[insert="before"] {
             &:before {
@@ -56,36 +59,47 @@
                 background-color: @drag-color;
             }
         }
-        .icon {
-            vertical-align: middle;
-            display: inline-block;
+        [class^="i-"],
+        [class*=" i-"] {
             font-size: 10px;
-            width: 16px;
+            width: 20px;
             text-align: center;
             transition: 0.2s all;
             cursor: pointer;
         }
-        .label {
+        .lock {
+            display: none;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            z-index: 100;
+            font-size: 12px;
+            color: #ccc !important;
+            &:hover {
+                color: @active-color  !important;
+            }
+            &.i-lock {
+                display: inline-block;
+            }
+        }
+        .name {
             cursor: default;
             vertical-align: middle;
         }
-        .name {
+        .loading {
+            display: inline-block;
             position: relative;
-            vertical-align: middle;
-            height: 100%;
-            .loading {
-                display: inline-block;
-                position: relative;
-                height: 100%;
-            }
+            top: -3px;
+            left: 5px;
+            transform: scale(0.8);
         }
-        .rename-input {
+        .rename {
             font-size: 12px;
             outline: 1px solid @active-border;
             outline-offset: 0;
             background-color: #252525;
             border: none;
-            color: #999;
+            color: #ccc;
             padding-left: 4px;
             width: 80%;
         }
