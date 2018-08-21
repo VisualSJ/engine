@@ -32,6 +32,28 @@ interface RemoveArrayOptions {
     index: number;
 }
 
+// create-node 消息的 options 定义
+interface CreateNodeOptions {
+    parent: string;
+    name: string;
+    components?: string[];
+    dump?: NodeDump;
+}
+
+interface RemoveNodeOptions {
+    uuid: string;
+}
+
+interface CreateComponentOptions {
+    uuid: string;
+    component: string;
+}
+
+interface RemoveComponentOptions {
+    uuid: string;
+    component: string;
+}
+
 interface NodeDump {
     uuid: PropertyDump;
 

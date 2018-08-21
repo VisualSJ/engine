@@ -19,16 +19,11 @@ let uuid2node: { [index: string]: any } = {};
  * 爬取节点上的数据
  * @param children
  */
-function walkChildren(children: any[]) {
-    if (!children) {
-        return;
-    }
-    for (const child of children) {
-        uuid2node[child._id] = child;
-        if (child._children && child._children.length) {
-            walkChildren(child._children);
-        }
-    }
+function walkChild(entity: any) {
+    uuid2node[entity._id] = entity;
+    entity.children && entity.children.forEach((child: any) => {
+        walkChild(child);
+    });
 }
 
 /**
@@ -50,16 +45,7 @@ export function dump(uuid: string) {
  */
 export function walk(app: any) {
     uuid2node = {};
-    const children = [];
-
-    for (let i = 0; i < app._entities._count; i++) {
-        const child = app._entities._data[i];
-        if (child._parent && child._parent.constructor.name === 'Level') {
-            children.push(child);
-        }
-    }
-
-    walkChildren(children);
+    walkChild(app.activeLevel);
 }
 
 /**
@@ -277,4 +263,34 @@ export function removeArrayProperty(
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);
     return true;
+}
+
+/**
+ * 创建一个组件并挂载到指定的 entity 上
+ * @param uuid entity 的 uuid
+ * @param component 组件的名字
+ */
+export function createComponent(uuid: string, component: string) {
+    const node: any = query(uuid);
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    node.addComp(component);
+}
+
+/**
+ * 移除一个 entity 上的指定组件
+ * @param uuid entity 的 uuid
+ * @param component 组件的名字
+ */
+export function removeComponent(uuid: string, component: string) {
+    const node: any = query(uuid);
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    node._removeComp(component);
 }
