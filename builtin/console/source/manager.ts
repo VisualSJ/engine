@@ -105,9 +105,11 @@ exports.update = () => {
         requestAnimationFrame(() => {
             let text: any = filterText;
             let height = 0;
+
             for (; outputList.length > 0;) {
                 outputList.pop();
             }
+
             if (filterRegex) {
                 try {
                     text = new RegExp(text);
@@ -115,6 +117,7 @@ exports.update = () => {
                     text = /.*/;
                 }
             }
+
             list.filter((item: any) => {
                 const hasTitle = !!item.title;
                 const isTypeMatch = !filterType || item.type === filterType;
@@ -143,8 +146,9 @@ exports.update = () => {
                 item.fold
                     ? (height += lineHeight)
                     : (height += item.rows * (lineHeight - 2) + 14);
-                updateFn();
-                updateLocker = false;
             });
+
+            updateFn();
+            updateLocker = false;
         });
 };

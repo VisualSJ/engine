@@ -4,11 +4,15 @@
             :style="{transform: `translateY(${item.translateY}px)`,fontSize: `${fontSize}px`, lineHeight: `${lineHeight}px`}">
             <div class="wrap">
                 <div class="text" @click="item.rows > 1 ? toggleContent(item.translateY) : null">
-                    <span v-if="item.rows > 1">
-                        <i class="arrow arrow-fold" v-if="item.fold"></i>
-                        <i class="arrow arrow-unfold" v-else></i>
+                    <span>
+                        <i class="i-warn" v-if="item.type === 'warn'"></i>
+                        <i class="i-error" v-if="item.type === 'error'"></i>
                     </span>
-                    <span>{{item.title}}</span>
+                    <span :title="item.title">
+                        <i class="i-arrow-right arrow-fold" v-if="item.rows > 1 && item.fold"></i>
+                        <i class="i-arrow-right arrow-unfold" v-if="item.rows > 1 && !item.fold"></i>
+                        {{item.title}}
+                    </span>
                 </div>
                 <span v-if="item.count > 1">{{item.count}}</span>
             </div>

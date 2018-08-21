@@ -13,7 +13,15 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(
     join(__dirname, '../static', '/template/index.html')
 );
-
+/**
+ * 配置 console 的 iconfont 图标
+ */
+export const fonts = [
+    {
+        name: 'console',
+        file: 'packages://console/static/iconfont.woff'
+    }
+];
 export const $ = {
     'console-panel': '.console-panel'
 };
