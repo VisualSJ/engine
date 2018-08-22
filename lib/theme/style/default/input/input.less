@@ -1,0 +1,18 @@
+@import '../base/base';
+@import '../base/variable';
+:host {
+  background-color: @c-dark-bg;
+  border-radius: @n-border-radius;
+  input {
+    color:@c-font-color;
+  }
+}
+
+:host(:hover) {
+  border-color: @c-border-hover;
+}
+
+//focus的border颜色设置须在hover之后
+:host([focused]) {
+  border-color: @c-border-focus;
+}

@@ -1,0 +1,17 @@
+:host {
+  font-size: inherit;
+  --font-color: #999;
+  --width: 20em;
+  --border-raduis: 0.25em;
+  --border-color: #999;
+  --padding: 0 1em 0 0.5em;
+}
+:host div span {
+  background-image: linear-gradient(#585858, #444);
+}
+:host(:hover) {
+  --border-color: #fff;
+}
+:host([focused]) {
+  --border-color: #fd942b;
+}

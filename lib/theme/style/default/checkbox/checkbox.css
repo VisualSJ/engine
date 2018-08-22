@@ -1,0 +1,27 @@
+:host {
+  border-color: #999;
+  border-radius: 0.25em;
+}
+:host .default-checkbox {
+  border-color: #999;
+  width: 0.9em;
+  height: 0.9em;
+  background-color: #333;
+}
+:host div,
+:host label {
+  display: inline-block;
+  vertical-align: middle;
+}
+:host(:hover) {
+  border-color: #fff;
+}
+:host([focused]) .default-checkbox {
+  border-color: #fd942b;
+}
+:host .default-checkbox:hover {
+  border-color: #fff;
+}
+:host .default-checkbox i {
+  background-color: #fd942b;
+}

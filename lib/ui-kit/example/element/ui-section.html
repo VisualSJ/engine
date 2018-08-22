@@ -11,40 +11,46 @@
     ui-section {
         display: block;
     }
+
+    ul,li{list-style: none;margin: 0;padding: 0;}
 </style>
 
 <section class="section">
     <h1>standard</h1>
     <ui-section>
-        <div>
-            <p>line1</p>
-            <p>line2</p>
-            <p>line3</p>
-        </div>
+        <div slot="header">这里是标题</div>
+        <ul slot="content">
+            <li>这里是第1条</li>
+            <li>这里是第2条</li>
+            <li>这里是第3条</li>
+        </ul>
     </ui-section>
 </section>
 <section class="section">
     <h1>size</h1>
-    <ui-section small text="small section">
-        <div>
-            <p>line1</p>
-            <p>line2</p>
-            <p>line3</p>
-        </div>
+    <ui-section small >
+        <div slot="header">small section</div>
+        <ul slot="content">
+            <li>line1</li>
+            <li>line2</li>
+            <li>line3</li>
+        </ul>
     </ui-section>
-    <ui-section large text="large section">
-        <div>
-            <p>line1</p>
-            <p>line2</p>
-            <p>line3</p>
-        </div>
+    <ui-section large>
+        <div slot="header">large section</div>
+        <ul slot="content">
+            <li>line1</li>
+            <li>line2</li>
+            <li>line3</li>
+        </ul>
     </ui-section>
-    <ui-section huge text="huge section">
-        <div>
-            <p>line1</p>
-            <p>line2</p>
-            <p>line3</p>
-        </div>
+    <ui-section huge>
+        <div slot="header">huge section</div>
+        <ul slot="content">
+            <li>line1</li>
+            <li>line2</li>
+            <li>line3</li>
+        </ul>
     </ui-section>
 </section>
 <section class="section">
@@ -74,15 +80,12 @@
             border-bottom: 1px solid var(--border-color, #333333);
         }
     </style>
-    <ui-section class="custom" text="attribute header text">
-        <div slot="header" class="header">
-            <i></i>
-            <span>custom header</span>
-        </div>
-        <div>
-            <p>line1</p>
-            <p>line2</p>
-            <p>line3</p>
-        </div>
+    <ui-section class="custom" >
+        <div slot="header">attribute header text</div>
+        <ul slot="content">
+            <li>这里是第1条</li>
+            <li>这里是第2条</li>
+            <li>这里是第3条</li>
+        </ul>
     </ui-section>
 </section>

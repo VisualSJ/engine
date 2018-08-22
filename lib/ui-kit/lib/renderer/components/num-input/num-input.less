@@ -1,7 +1,11 @@
 @import '../base/base.less';
 
 @slider-color: #999;
-
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button{
+    -webkit-appearance: none !important;
+    margin: 0; 
+}
 :host {
     display: inline-flex;
     position: relative;
@@ -26,17 +30,8 @@
     }
 }
 
-:host([focused]) {
-    border-color: #07d;
-}
 
-:host([disabled]) {
-    cursor: not-allowed;
-    opacity: @disabled-opacity;
-    input {
-        cursor: default;
-    }
-}
+
 
 :host([unit]) {
     .unit {
@@ -47,12 +42,10 @@
 .unit {
     display: none;
     padding: 0.14em 0.2em;
-
     span {
         border-radius: 0.1em;
         font-size: 0.7em;
         padding: 0.2em 0.3em;
-        background: @slider-color;
     }
 }
 
@@ -99,3 +92,13 @@
         }
     }
 }
+
+
+:host([disabled]) {
+    cursor: not-allowed;
+    opacity: @disabled-opacity;
+    input {
+        cursor: default;
+    }
+}
+

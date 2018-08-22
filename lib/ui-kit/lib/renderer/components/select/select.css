@@ -4,14 +4,22 @@
   display: inline-block;
   position: relative;
 }
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
-  --width: 240px;
+  --width: 10em;
   --font-color: #606266;
-  --background-color: #fff;
   --border-raduis: 4px;
   --border-color: #dcdfe6;
-  --padding: 0 30px 0 15px;
-  --height: 40px;
+  --padding: 0 1em 0 0.5em;
+  --height: 2em;
   --menu-border-color: #e4e7ed;
   --menu-max-height: 274px;
   --icon-color: #c0c4cc;
@@ -21,7 +29,6 @@
 }
 :host div {
   position: relative;
-  font-size: 14px;
   overflow: hidden;
   cursor: pointer;
 }

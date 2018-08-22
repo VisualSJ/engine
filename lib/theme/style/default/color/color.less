@@ -1,0 +1,14 @@
+@import '../base//base';
+@import '../base//variable';
+:host {
+  width: 8em;
+  height: 1.6em;
+}
+
+:host(:hover) {
+  border-color: @c-border-hover;
+}
+
+:host([focus]) {
+  border-color: @c-border-focus;
+}

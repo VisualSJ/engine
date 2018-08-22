@@ -1,0 +1,31 @@
+@import '../base/base';
+@import '../base/variable';
+:host {
+  .default-checkbox {
+    border-color: @c-border;
+    width: 0.9em;
+    height: 0.9em;
+    background-color: @c-dark-bg;
+  }
+  div,
+  label {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+:host(:hover) {
+  border-color: @c-border-hover;
+}
+
+:host([focused]) .default-checkbox {
+  border-color: @c-border-focus;
+}
+
+:host .default-checkbox:hover {
+  border-color: @c-border-hover;
+}
+
+:host .default-checkbox i {
+  background-color: @c-border-focus;
+}

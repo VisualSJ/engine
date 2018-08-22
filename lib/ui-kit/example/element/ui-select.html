@@ -16,31 +16,31 @@
     <p id="selectValue"></p>
     <p></p>
     <ui-select value="4" placeholder="请选择" id="selectTest">
-        <select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</select-option>
-        <select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</select-option>
-        <select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</select-option>
-        <select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</select-option>
-        <select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</select-option>
+        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
+        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
+        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
+        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
+        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
     </ui-select>
 </section>
 <section class="section">
     <h1>disabled</h1>
     <ui-select value="1" disabled placeholder="qing xuan zhe">
-        <select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</select-option>
-        <select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</select-option>
-        <select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</select-option>
-        <select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</select-option>
-        <select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</select-option>
+        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
+        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
+        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
+        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
+        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
     </ui-select>
 </section>
 <section class="section">
     <h1>focused</h1>
     <ui-select value="1" autofocus placeholder="qing xuan zhe">
-        <select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</select-option>
-        <select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</select-option>
-        <select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</select-option>
-        <select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</select-option>
-        <select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</select-option>
+        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
+        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
+        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
+        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
+        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
     </ui-select>
 </section>
 
@@ -57,6 +57,7 @@
             $selectValue.innerHTML = '选中值：' + $select.valueText;
             $testEvent.innerText = 'confirm';
         })
+        
         $selectTest.addEventListener('change', (e) => {
             console.log('change');
             $testEvent.innerText = 'change';

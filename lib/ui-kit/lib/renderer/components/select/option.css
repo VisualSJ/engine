@@ -4,20 +4,29 @@
   display: inline-block;
   position: relative;
 }
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
   --font-color: #606266;
   display: block;
+  font-size: 14px;
 }
 :host li {
-  font-size: 14px;
-  padding: 0 20px;
+  padding: 0 0.2em;
   position: relative;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: auto;
   text-overflow: ellipsis;
   color: var(--font-color);
-  height: 34px;
-  line-height: 34px;
+  height: 1.6em;
+  line-height: 1.6em;
   box-sizing: border-box;
   cursor: pointer;
 }

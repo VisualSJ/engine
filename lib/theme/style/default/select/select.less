@@ -1,0 +1,21 @@
+@import '../base//variable';
+
+:host {
+  font-size: inherit;
+  --font-color:@c-defaulttext;
+  --width: 20em;
+  --border-raduis:@n-border-radius;
+  --border-color:@c-border;
+  --padding: 0 1em 0 0.5em;
+  div span{
+    background-image: linear-gradient(#585858, #444);
+  }
+}
+
+:host(:hover) {
+  --border-color: @c-border-hover;
+}
+
+:host([focused]) {
+  --border-color: @c-border-focus;
+}

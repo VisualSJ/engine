@@ -1,0 +1,17 @@
+@import '../base/base';
+@import '../base//variable';
+:host {
+  border-color: @c-border-dark;
+  background-image: linear-gradient(#585858, #444);
+  color:@c-font-color;
+}
+
+:host(:hover) {
+  background-image: linear-gradient(#626262, #4e4e4e);
+  color: #d1d1d1;
+}
+
+//focus的border颜色设置须在hover之后
+:host([focused]) {
+  border-color: @c-border-focus;
+}

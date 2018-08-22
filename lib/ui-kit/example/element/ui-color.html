@@ -15,22 +15,17 @@
         <span id="testEvent"></span>
     </h5>
     <p id="showWrap"></p>
-    <ui-color id="colorTest" value="rgba(22,244,55,0.3)"></ui-color>
-    
-
+    <ui-color id="colorTest" value="[22,244,55,0.3]"></ui-color>
 </section>
-
 
 <section class="color">
     <h1>Readonly</h1>
-    <ui-color value="rgba(222,44,55,0.5)" readonly></ui-color>
-    <p></p>
+    <ui-color value="[222,44,55,0.5]" readonly></ui-color>
 </section>
 
 <section class="color">
     <h1>Disabled</h1>
-    <ui-color value="red" disabled></ui-color>
-    <p></p>
+    <ui-color value="[222,244,55,0.7]" disabled></ui-color>
 </section>
 
 <script>
@@ -41,7 +36,7 @@
         let eventArr = ['change', 'click', 'confirm', 'cancel'];
         const showEventHandle = (e) => {
             $this = e.target;
-            $showWrap.innerHTML = `选择色值：rgba(${e.detail.value})`;
+            $showWrap.innerHTML = `选择色值：rgba(${$this.value})`;
         }
         //定义可测试的事件数组
         for (let i = 0, len = eventArr.length; i < len; i++) {

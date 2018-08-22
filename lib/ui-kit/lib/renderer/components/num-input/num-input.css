@@ -13,6 +13,11 @@
 :host([disabled]) {
   cursor: not-allowed;
 }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0;
+}
 :host {
   display: inline-flex;
   position: relative;
@@ -34,16 +39,6 @@
 :host > input::-webkit-inner-spin-button {
   display: none;
 }
-:host([focused]) {
-  border-color: #07d;
-}
-:host([disabled]) {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-:host([disabled]) input {
-  cursor: default;
-}
 :host([unit]) .unit {
   display: block;
 }
@@ -55,7 +50,6 @@
   border-radius: 0.1em;
   font-size: 0.7em;
   padding: 0.2em 0.3em;
-  background: #999;
 }
 .slider {
   display: flex;
@@ -89,4 +83,11 @@
 }
 .down:hover svg {
   fill: #fff;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+:host([disabled]) input {
+  cursor: default;
 }

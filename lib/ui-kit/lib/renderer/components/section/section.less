@@ -1,19 +1,28 @@
 @import '../base/base.less';
 :host {
     all: initial;
-    display: flex;
+    font-size: 12px;
     header {
+        position: relative;
         cursor: pointer;
-        padding: 3px 4px;
-        margin-bottom: 5px;
+        padding: 0.04em 0.7em;
+        margin-bottom: 0.2em;
         border-bottom: 1px solid var(--border-color, @border-color);
         i {
+            position: absolute;
+            left: 0;
+            top:0;
+            bottom: 0;
+            margin: auto;
             display: inline-block;
             margin-right: 0.2em;
             width: .5em;
             height: .5em;
             background-color: var(--border-color, @border-color);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
+        }
+        slot{
+            display: inline-block;
         }
     }
     .content {

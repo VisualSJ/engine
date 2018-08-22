@@ -1,12 +1,15 @@
+@import '../base//variable';
 :host {
   display: flex;
-  color: #999;
+  color: @c-defaulttext;
   font-size: 12px;
 }
+
 dock-layout[direction="none"] {
   border-radius: 2px;
   border-color: #212121;
 }
+
 dock-groups {
   display: flex;
   width: 100%;
@@ -14,30 +17,35 @@ dock-groups {
   overflow: hidden;
   flex-direction: column;
 }
+
 dock-tabs {
   height: 24px;
   line-height: 24px;
-  background: #333;
+  background: @c-dark-bg;
   border-bottom: 1px solid #212121;
   box-shadow: 0px 1px 0px #444 inset;
 }
-dock-tabs > div:hover > svg {
-  fill: #fff;
+
+dock-tabs>div:hover>svg {
+  fill: @c-border-hover;
 }
-dock-tabs > div > svg {
+
+dock-tabs>div>svg {
   width: 0.8em;
-  fill: #999;
+  fill: @c-defaulttext;
 }
+
 dock-tab {
   height: 24px;
   padding: 0 6px;
   border-color: #212121;
   font-size: 14px;
-  color: #999;
+  color: @c-defaulttext;
+  &:hover {
+    color: @c-border-hover;
+  }
 }
-dock-tab:hover {
-  color: #fff;
-}
+
 dock-tab[active] {
   background: #474747;
   height: 25px;
@@ -45,29 +53,35 @@ dock-tab[active] {
   border-bottom: 1px solid #474747;
   z-index: 1;
 }
-dock-tab > span:last-child {
+
+dock-tab>span:last-child {
   font-size: 12px;
   position: relative;
   top: -1px;
   padding-right: 2px;
 }
-dock-tab > .img {
+
+dock-tab>.img {
   padding: 0 0.1em;
   vertical-align: middle;
   position: relative;
   top: 1px;
 }
-dock-tab > .img svg {
+
+dock-tab>.img svg {
   width: 0.7em;
   fill: #999;
 }
-dock-tab > .img img {
+
+dock-tab>.img img {
   width: 1em;
   padding-right: 0.2em;
 }
+
 dock-panels {
   border: 1px solid #555;
 }
+
 panel-frame {
   flex: 1;
   background: #474747;

@@ -4,6 +4,15 @@
   display: inline-block;
   position: relative;
 }
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
   cursor: pointer;
   transition: opacity 0.3s;

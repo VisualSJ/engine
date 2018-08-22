@@ -1,0 +1,25 @@
+:host {
+  color: #999;
+}
+:host header {
+  border-bottom: 1px solid var(--border-color, #999);
+}
+:host header i {
+  background-color: var(--border-color, #999);
+}
+:host slot {
+  font-size: inherit;
+}
+:host(:hover) header {
+  color: #fff;
+  border-bottom: 1px solid var(--border-color, #fff);
+}
+:host(:hover) header i {
+  background-color: var(--border-color, #fff);
+}
+:host([focused]) {
+  --border-color: #fd942b;
+}
+:host([focused]) header {
+  color: var(--color, #fd942b);
+}

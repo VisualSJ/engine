@@ -4,6 +4,15 @@
   display: inline-block;
   position: relative;
 }
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
   contain: content;
   cursor: pointer;
@@ -27,6 +36,9 @@
   height: 100%;
   background: #07d;
   clip-path: polygon(8% 55%, 20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
+}
+:host div {
+  display: inline-block;
 }
 :host label {
   cursor: pointer;

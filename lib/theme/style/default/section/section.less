@@ -1,0 +1,31 @@
+@import '../base//variable';
+
+:host {
+  color:@c-defaulttext;
+  header {
+    border-bottom: 1px solid var(--border-color, @c-defaulttext);
+    i {
+      background-color: var(--border-color, @c-defaulttext);
+    }
+  }
+  slot {
+    font-size: inherit;
+  }
+}
+
+:host(:hover) {
+  header {
+    color: @c-border-hover;
+    border-bottom: 1px solid var(--border-color,@c-border-hover);
+    i {
+      background-color: var(--border-color, @c-border-hover);
+    }
+  } 
+}
+
+:host([focused]) {
+  header {
+      color: var(--color, @c-border-focus);
+  }
+  --border-color: @c-border-focus;
+}
