@@ -25,6 +25,14 @@ export const methods = {
     selectNode(event: Event, item: ItreeNode) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
         Editor.Ipc.sendToPackage('selection', 'select', 'node', item.uuid);
+
+        // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
+        // @ts-ignore
+        const target: any = event.currentTarget;
+        target.setAttribute('animate', '');
+        setTimeout(() => {
+            target.removeAttribute('animate');
+        }, 500);
     },
     /**
      * 锁定 / 解锁节点
@@ -55,6 +63,8 @@ export const methods = {
         this.$nextTick(() => {
             // @ts-ignore
             this.$refs.input[0].focus();
+            // @ts-ignore
+            this.$refs.input[0].select();
         });
     },
     /**
@@ -92,7 +102,7 @@ export const methods = {
         event.stopImmediatePropagation();
         // @ts-ignore
         const target: any = event.currentTarget;
-        
+
         target.setAttribute('drag', 'over');
 
         const offset = target.getBoundingClientRect();

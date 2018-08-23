@@ -7,7 +7,7 @@ let panel: any = null;
 
 let vm: any = null;
 
-let treeData: ItreeNode;
+let treeData: ItreeNode; // 树形结构的数据，含 children
 
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
@@ -136,6 +136,7 @@ export async function ready() {
             select: [],
             viewHeight: 0, // 当前树形的可视区域高度
             scrollTop: 0, // 当前树形的滚动数据
+            search: '', // 搜索节点名称
             nodes: [] // 当前树形在可视区域的节点数据
         },
         components: {
@@ -155,9 +156,23 @@ export async function ready() {
              */
             scrollTop() {
                 vm.renderTree();
+            },
+            /**
+             * 监听属性 搜索节点名称 
+             */
+            search() {
+                vm.changeTreeData();
             }
         },
         mounted() {
+
+            // 初始化搜索框
+            this.$refs.searchInput.placeholder = Editor.I18n.t('hierarchy.menu.searchPlaceholder');
+            this.$refs.searchInput.addEventListener('change', (event: Event) => {
+                let $target: any = event.target;
+                this.search = $target.value.trim();
+            });
+
             // 初始化监听 scroll 事件
             this.$refs.viewBox.addEventListener('scroll', () => {
                 vm.scrollTree(vm.$refs.viewBox.scrollTop);
@@ -176,9 +191,10 @@ export async function ready() {
              */
             renderTree() {
 
-                vm.nodes.length = 0; // 先清空
+                vm.nodes = []; // 先清空，这种赋值机制才能刷新vue，而 .length = 0 不行
 
-                const min = vm.scrollTop - treeNodeHeight / 2; // 算出可视区域的 top 最小值
+                // const min = vm.scrollTop - treeNodeHeight / 2; // 算出可视区域的 top 最小值
+                const min = vm.scrollTop - treeNodeHeight; // 算出可视区域的 top 最小值
                 const max = vm.viewHeight + vm.scrollTop; // 最大值
 
                 for (const [top, json] of positionMap) {
@@ -369,12 +385,15 @@ export async function ready() {
              */
             scrollTree(scrollTop = 0) {
 
+                let mode = scrollTop % treeNodeHeight;
+                let top = scrollTop - mode;
+                if (mode === 0 && scrollTop !== 0) {
+                    top -= treeNodeHeight;
+                }
+                vm.$refs.tree.$el.style.top = `${top}px`; // 模拟出样式
+
                 vm.scrollTop = scrollTop; // 新的滚动值
-
-                vm.$refs.tree.$el.style.top = scrollTop + 'px'; // 模拟出样式
-
-                vm.renderTree();
-            },
+            }
         },
     });
 
@@ -406,22 +425,43 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
 
-        positionMap.set(start, { // 平级保存
-            name: json.name,
-            uuid: json.uuid,
-            children: [],
-            isLock: json.isLock ? true : false,
-            depth,
-            isParent: json.children && json.children.length > 0 ? true : false,
-            isExpand: json.children && json.isExpand ? true : false,
-            state: ''
-        });
+        if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
+            positionMap.set(start, { // 平级保存
+                name: json.name,
+                uuid: json.uuid,
+                children: [],
+                isLock: json.isLock ? true : false,
+                depth,
+                isParent: json.children && json.children.length > 0 ? true : false,
+                isExpand: json.children && json.isExpand ? true : false,
+                state: ''
+            });
 
-        index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+            index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
-        if (json.children && json.isExpand === true) {
-            index = calcItreeNodePosition(json, index, depth + 1); // depth 是该节点的层级
+            if (json.children && json.isExpand === true) {
+                index = calcItreeNodePosition(json, index, depth + 1); // depth 是该节点的层级
+            }
+        } else { // 有搜索
+            if (json.name.indexOf(vm.search) !== -1) {
+                positionMap.set(start, { // 平级保存
+                    name: json.name,
+                    uuid: json.uuid,
+                    children: [],
+                    isLock: json.isLock ? true : false,
+                    depth: 0, // 都保持在第一层
+                    isParent: false,
+                    isExpand: true,
+                    state: ''
+                });
+                index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+            }
+
+            if (json.children) {
+                index = calcItreeNodePosition(json, index, 0);
+            }
         }
+
     });
     // 返回序号
     return index;

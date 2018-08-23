@@ -10,7 +10,8 @@
         @drop="drop($event, item)" 
         :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
         v-bind:class="{'parent':item.isParent}"
-        :state="!item.isExpand?'':'expand'"
+        :expand="item.isExpand"
+        :state="item.state"
     >
         <i class="lock"
             :lock="item.isLock"
