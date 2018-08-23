@@ -73,6 +73,8 @@ interface PropertyDump {
     type: string;
     value: any;
     extends: string[];
+    default?: any;
+    options?: [];
 }
 
 interface NodeTreeItem {

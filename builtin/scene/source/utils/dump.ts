@@ -13,7 +13,7 @@ export function dumpComponent(component: any) {
     const result: any = {};
     for (const key in schema) {
         if (schema.hasOwnProperty(key)) {
-            result[key] = dumpProperty(component[key], schema[key].type);
+            result[key] = dumpProperty(component[key], schema[key]);
         }
     }
     return result;
@@ -23,50 +23,60 @@ export function dumpComponent(component: any) {
  * 生成一个属性的 dump 数据
  * @param property
  */
-export function dumpProperty(property: any, schemaType?: string): PropertyDump {
-    let type: string;
-    let value: any;
-    const extendArray: string[] = [];
+export function dumpProperty(property: any, schema?: any): PropertyDump {
+    const result: PropertyDump = {
+        type: '',
+        value: '',
+        extends: [],
+    };
+
+    if (schema) {
+        if ('default' in schema) {
+            result.default = schema.default;
+        }
+
+        if ('options' in schema) {
+            result.options = schema.options;
+        }
+    }
+
+    const schemaType = schema ? schema.type : '';
 
     if (schemaType) {
-        type = schemaType;
+        result.type = schemaType;
     } else if (property === null) {
-        type = 'null';
+        result.type = 'null';
     } else if (property.constructor && property.constructor.name) {
-        type = property.constructor.name.toLocaleLowerCase();
+        result.type = property.constructor.name.toLocaleLowerCase();
     } else {
-        type = (typeof property).toLocaleLowerCase();
+        result.type = (typeof property).toLocaleLowerCase();
     }
 
     // Entity
-    if (type === 'entity' || type === 'level') {
-        value = property._id;
-        if (type !== 'entity') {
-            extendArray.push('entity');
+    if (result.type === 'entity' || result.type === 'level') {
+        result.value = property._id;
+        if (result.type !== 'entity') {
+            result.extends.push('entity');
         }
     } else if (property instanceof cc.Component) {
-        value = dumpComponent(property);
-        if (type !== 'component') {
-            extendArray.push('component');
+        result.value = dumpComponent(property);
+        if (result.type !== 'component') {
+            result.extends.push('component');
         }
     } else if (property instanceof cc.Asset) {
-        value = property._uuid;
-        if (type !== 'asset') {
-            extendArray.push('asset');
+        result.value = property._uuid;
+        if (result.type !== 'asset') {
+            result.extends.push('asset');
         }
-    } else if (type === 'array') {
-        value = property.map((item: any) => {
+    } else if (result.type === 'array') {
+        result.value = property.map((item: any) => {
             return dumpProperty(item);
         });
     } else {
-        value = property;
+        result.value = property;
     }
 
-    return {
-        type,
-        value,
-        extends: extendArray
-    };
+    return result;
 }
 
 /**
@@ -95,7 +105,7 @@ export function dumpNode(node: any): NodeDump {
 
         comps: dumpProperty(node._comps),
 
-        children: dumpProperty(node._children)
+        children: dumpProperty(node._children),
     };
 }
 
@@ -152,6 +162,7 @@ export function restoreProperty(
  */
 export function restoreNode(dump: NodeDump, node: any) {
     restoreProperty(dump.active, node, 'active');
+    // 恢复子节点只会恢复子节点的顺序
     // restoreProperty(dump.children, node, 'children');
     restoreProperty(dump.comps, node, '_comps');
     restoreProperty(dump.layer, node, 'layer');
