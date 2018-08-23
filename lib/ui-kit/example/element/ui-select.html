@@ -7,6 +7,7 @@
     section.section:last-child {
         border-bottom: none;
     }
+
 </style>
 <section class="section">
     <h1>standard</h1>
@@ -16,45 +17,55 @@
     <p id="selectValue"></p>
     <p></p>
     <ui-select value="4" placeholder="请选择" id="selectTest">
-        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
-        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
-        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
-        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
-        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
+        <optgroup label="Swedish Cars">
+            <option value ="volvo">Volvo</option>
+            <option value ="saab">Saab</option>
+        </optgroup>
+        <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+        <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+        <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+        <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+        <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
     </ui-select>
+    <br>
+    <p>测试动态增加或移除option</p>
+    <button id="addOption">添加option节点</button>
+    <button id="deleteOption">删除最后一个option节点</button>
 </section>
 <section class="section">
     <h1>disabled</h1>
-    <ui-select value="1" disabled placeholder="qing xuan zhe">
-        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
-        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
-        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
-        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
-        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
+    <ui-select value="1" disabled>
+        <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+        <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+        <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+        <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+        <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
     </ui-select>
 </section>
 <section class="section">
-    <h1>focused</h1>
-    <ui-select value="1" autofocus placeholder="qing xuan zhe">
-        <ui-select-option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</ui-select-option>
-        <ui-select-option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</ui-select-option>
-        <ui-select-option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</ui-select-option>
-        <ui-select-option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</ui-select-option>
-        <ui-select-option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</ui-select-option>
+    <h1>autofocus</h1>
+    <ui-select value="1" autofocus>
+        <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+        <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+        <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+        <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+        <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
     </ui-select>
 </section>
 
-<script>
+<script>    
     (function () {
         let $selectTest = document.getElementById('selectTest');
         let $testEvent = document.getElementById('testEvent');
         let $selectValue = document.getElementById('selectValue');
+        let $addBtn = document.getElementById('addOption');
+        let $delBtn = document.getElementById('deleteOption');
         $selectTest.nextSibling.innerHTML = $selectTest.value;
 
         $selectTest.addEventListener('confirm', (e) => {
             console.log('confirm');
             let $select = e.target;
-            $selectValue.innerHTML = '选中值：' + $select.valueText;
+            $selectValue.innerHTML = '选中Value：' + $select.value;
             $testEvent.innerText = 'confirm';
         })
         
@@ -63,8 +74,21 @@
             $testEvent.innerText = 'change';
             $selectTest.nextSibling.innerHTML = $selectTest.value;
             let $select = e.target;
-            $selectValue.innerHTML = '选中值：' + $select.valueText;
+            $selectValue.innerHTML = '选中Value：' + $select.valueText;
             $selectValue.nextSibling.innerHTML = 'value:' + $select.value;
         })
+
+        $addBtn.addEventListener('click', () => {
+            let option = document.createElement('option');
+            option.innerHTML = "testoption";
+            option.value = 'testoption';
+            $selectTest.appendChild(option);
+        })
+
+        $delBtn.addEventListener('click', () => {
+            console.log($selectTest.lastElementChild);
+            $selectTest.removeChild($selectTest.lastElementChild);
+        })
+
     })();
 </script>

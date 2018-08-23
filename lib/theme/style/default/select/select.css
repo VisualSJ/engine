@@ -1,17 +1,72 @@
 :host {
-  font-size: inherit;
-  --font-color: #999;
-  --width: 20em;
-  --border-raduis: 0.25em;
-  --border-color: #999;
-  --padding: 0 1em 0 0.5em;
-}
-:host div span {
+  display: inline-flex;
+  position: relative;
+  box-sizing: border-box;
+  contain: content;
+  outline: 0;
+  flex: none;
+  flex-direction: row;
+  margin: 0 .25em 0 0;
+  width: auto;
+  min-width: 20px;
+  border: 1px solid #171717;
+  border-radius: 0.25em;
+  cursor: pointer;
   background-image: linear-gradient(#585858, #444);
 }
+:host(:last-child) {
+  margin-right: 0;
+}
+select {
+  -webkit-appearance: none;
+  display: flex;
+  flex: 1;
+  outline: 0;
+  border: 0;
+  margin: 0;
+  padding: .2em 2em .2em .8em;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.25em;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  color: #bdbdbd;
+  background: 0 0;
+  width: 100%;
+}
+select option {
+  color: #bdbdbd;
+  background: #4e4e4e;
+}
+select optgroup {
+  color: #bdbdbd;
+  background: #585858;
+}
+:host::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  top: 50%;
+  right: .8em;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 7px solid #bdbdbd;
+  margin-top: -3px;
+}
 :host(:hover) {
-  --border-color: #fff;
+  border-color: #fff;
+  background-image: linear-gradient(#626262, #4e4e4e);
+}
+:host(:hover) select {
+  color: #d1d1d1;
+}
+:host(:hover)::after {
+  border-top-color: #d1d1d1;
 }
 :host([focused]) {
-  --border-color: #fd942b;
+  border-color: #fd942b;
 }

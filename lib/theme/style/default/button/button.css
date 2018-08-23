@@ -1,12 +1,11 @@
 :host {
   border-color: #999;
   border-radius: 0.25em;
-  color: #fd942b;
 }
 :host {
   border-color: #171717;
   background-image: linear-gradient(#585858, #444);
-  color: #fd942b;
+  color: #999;
 }
 :host(:hover) {
   background-image: linear-gradient(#626262, #4e4e4e);
