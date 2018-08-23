@@ -11,6 +11,13 @@ import {
     restoreProperty,
 } from '../utils/dump';
 
+import {
+    insertArrayProperty as insertArrayPropertyUndo,
+    moveArrayProperty as moveArrayPropertyUndo,
+    removeArrayProperty as removeArrayPropertyUndo,
+    setProperty as setPropertyUndo,
+} from '../utils/undo';
+
 const get = require('lodash/get');
 
 let uuid2node: { [index: string]: any } = {};
@@ -83,22 +90,9 @@ export function setProperty(
     }
 
     // 记录当前动作
-    Editor.History.record({
-        panel: 'scene',
-        redo: {
-            message: 'set-property',
-            params: [{
-                uuid, path, key, dump,
-            }],
-        },
-        undo: {
-            message: 'set-property',
-            params: [{
-                uuid, path, key,
-                dump: dumpProperty(get(data, key)),
-            }],
-        },
-    });
+    setPropertyUndo(
+        uuid, path, key, dump, dumpProperty(get(data, key)),
+    );
 
     // 恢复数据
     restoreProperty(dump, data, key);
@@ -175,6 +169,10 @@ export function insertArrayProperty(
         value = temp.value;
     }
 
+    // 记录 undo 事件
+    insertArrayPropertyUndo(uuid, path, key, index, dump);
+    Editor.History.commit();
+
     data.splice(index, 0, value);
 
     // 广播更改消息
@@ -220,6 +218,10 @@ export function moveArrayProperty(
     const temp = data.splice(target, 1);
     data.splice(target + offset, 0, temp[0]);
 
+    // 记录 undo 事件
+    moveArrayPropertyUndo(uuid, path, key, target, offset);
+    Editor.History.commit();
+
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);
     return true;
@@ -239,6 +241,12 @@ export function removeArrayProperty(
     index: number
 ) {
     const node: any = query(uuid);
+
+    if (key === 'children') {
+        console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
+        return false;
+    }
+
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -257,8 +265,12 @@ export function removeArrayProperty(
         return false;
     }
 
-    // 移动顺序
-    data.splice(index, 1);
+    // 删除某个 item
+    const temp = data.splice(index, 1);
+
+    // 记录 undo 事件
+    removeArrayPropertyUndo(uuid, path, key, index, dumpProperty(temp[0]));
+    Editor.History.commit();
 
     // 广播更改消息
     Editor.Ipc.sendToAll('scene:node-changed', uuid);

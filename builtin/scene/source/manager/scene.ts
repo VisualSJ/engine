@@ -118,8 +118,10 @@ export function queryNodeTree(uuid?: string): NodeTreeItem | null {
 /**
  * 在场景内创建一个新的节点，并挂载到指定的父节点下
  * @param uuid 父节点的 uuid
+ * @param name 父节点的 uuid
+ * @param data 节点序列化后的数据
  */
-export function createNode(uuid: string, name: string = '', components: string[] = [], dump?: NodeDump) {
+export function createNode(uuid: string, name: string = '', data?: any) {
     if (!scene) {
         return;
     }
@@ -127,12 +129,8 @@ export function createNode(uuid: string, name: string = '', components: string[]
     const parent = query(uuid);
     const entity = scene.createEntity(name);
 
-    components.forEach((name) => {
-        entity.addComp(name);
-    });
-
-    if (dump) {
-        restoreNode(dump, entity);
+    if (data) {
+        // todo 通过反序列化重新生成节点
     }
 
     parent.append(entity);
