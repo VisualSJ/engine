@@ -37,7 +37,7 @@ export const $ = {
 export const listeners = {
     resize() {
         // @ts-ignore
-        app && app.resize();
+        window.app && window.app.resize();
     },
 };
 
