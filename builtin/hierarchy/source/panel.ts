@@ -42,17 +42,7 @@ export const methods = {
      */
     async refresh() {
         try {
-            let initData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
-            if (!initData.children) {
-                treeData = {
-                    name: 'root-temp',
-                    uuid: 'root-temp',
-                    children: initData,
-                    isLock: false,
-                }
-            } else {
-                treeData = initData;
-            }
+            treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
             vm.changeTreeData();
         } catch (error) {
             console.warn(error);
@@ -86,7 +76,7 @@ export const messages = {
     async 'scene:node-changed'(uuid: string) {
         // 获取该节点最新数据
         let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        console.log(dumpData);
+        console.log('node-changed', dumpData);
 
         // 更新当前数据
         changeTreeNodeData(uuid, dumpData);
@@ -94,7 +84,36 @@ export const messages = {
         // 触发节点数据已变动
         vm.changeTreeData();
     },
+    /**
+     * 创建一个新节点
+     * @param uuid 当前选中节点，即新节点的父节点uuid
+     */
+    async 'scene:node-created'(uuid: string) {
+        // 获取该节点最新数据
+        let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+        console.log('node-created', dumpData);
 
+        // 更新当前数据
+        let newNodeUUID = addTreeNodeData(dumpData);
+
+        // 新节点被选中
+        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        Editor.Ipc.sendToPackage('selection', 'select', 'node', newNodeUUID);
+
+        // 触发节点数据已变动
+        vm.changeTreeData();
+    },
+    /**
+     * 删除节点
+     * @param uuid 要被删除的节点
+     */
+    async 'scene:node-removed'(uuid: string) {
+        // 删除当前数据
+        removeTreeNodeData(uuid);
+
+        // 触发节点数据已变动
+        vm.changeTreeData();
+    },
     /**
      * 选中了某个物体
      */
@@ -185,29 +204,37 @@ export async function ready() {
         },
         methods: {
             /**
-             * 重新渲染树形
-             * nodes 存放被渲染的节点数据
-             * 主要通过 nodes 数据的变动 
+             * 创建节点
+             * @param item 
+             * @param json 
              */
-            renderTree() {
-
-                vm.nodes = []; // 先清空，这种赋值机制才能刷新vue，而 .length = 0 不行
-
-                // const min = vm.scrollTop - treeNodeHeight / 2; // 算出可视区域的 top 最小值
-                const min = vm.scrollTop - treeNodeHeight; // 算出可视区域的 top 最小值
-                const max = vm.viewHeight + vm.scrollTop; // 最大值
-
-                for (const [top, json] of positionMap) {
-                    if (top >= min && top <= max) { // 在可视区域才显示
-                        vm.nodes.push(json);
-                    }
+            newNode(uuid: string, json: IaddNode) {
+                if (json.type === 'empty') {
+                    Editor.Ipc.sendToPanel('scene', 'create-node', { // 发送创建节点
+                        parent: uuid,
+                        name: 'New Node',
+                    });
                 }
+            },
+            /**
+             * 删除节点
+             * @param item 
+             */
+            deleteNode(uuid: string) {
+                // 如果当前节点已被选中，先取消选择
+                if (vm.select.includes(uuid)) {
+                    Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+                }
+
+                Editor.Ipc.sendToPanel('scene', 'remove-node', { // 发送删除节点
+                    uuid: uuid
+                });
             },
             /**
              * 锁定 / 解锁节点
              * @param uuid 
              */
-            lockNode(uuid = '') {
+            lockNode(uuid: string) {
 
                 const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
 
@@ -222,7 +249,7 @@ export async function ready() {
              * 节点的折叠切换
              * @param uuid 
              */
-            toggleNode(uuid = '') {
+            toggleNode(uuid: string) {
 
                 const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
 
@@ -372,6 +399,25 @@ export async function ready() {
                 vm.$refs.scrollBar.style.height = (positionMap.size + 1) * treeNodeHeight + 'px';
             },
             /**
+             * 重新渲染树形
+             * nodes 存放被渲染的节点数据
+             * 主要通过 nodes 数据的变动 
+             */
+            renderTree() {
+
+                vm.nodes = []; // 先清空，这种赋值机制才能刷新vue，而 .length = 0 不行
+
+                // const min = vm.scrollTop - treeNodeHeight / 2; // 算出可视区域的 top 最小值
+                const min = vm.scrollTop - treeNodeHeight; // 算出可视区域的 top 最小值
+                const max = vm.viewHeight + vm.scrollTop; // 最大值
+
+                for (const [top, json] of positionMap) {
+                    if (top >= min && top <= max) { // 在可视区域才显示
+                        vm.nodes.push(json);
+                    }
+                }
+            },
+            /**
              * dock-layout resize 事件被触发了
              * 即可视区域的高度有调整
              * viewHeight 已被监听，所以视图也会跟着变化
@@ -393,6 +439,35 @@ export async function ready() {
                 vm.$refs.tree.$el.style.top = `${top}px`; // 模拟出样式
 
                 vm.scrollTop = scrollTop; // 新的滚动值
+            },
+            /**
+             * 创建按钮的弹出菜单
+             */
+            menuPopupNew(event: Event) {
+                Editor.Menu.popup({
+                    // @ts-ignore
+                    x: event.pageX,
+                    // @ts-ignore
+                    y: event.pageY,
+                    menu: [
+                        {
+                            label: Editor.I18n.t('hierarchy.menu.newNode'),
+                            submenu: [
+                                {
+                                    label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
+                                    click() {
+                                        // 当前选中的节点
+                                        let currentNode = vm.select[0];
+                                        if (!currentNode) { // 当前没有选中的节点
+                                            currentNode = treeData.uuid; // 根节点
+                                        }
+                                        vm.newNode(currentNode, { type: 'empty' });
+                                    }
+                                }
+                            ]
+                        },
+                    ]
+                });
             }
         },
     });
@@ -499,6 +574,10 @@ function resetItreeNodeProperty(obj: ItreeNode, props: any) {
 function getOne(obj: ItreeNode, uuid = ''): any {
     let rt = [];
 
+    if (obj.uuid === uuid) {
+        return [obj]; // 根节点比较特殊
+    }
+
     let arr = obj.children;
     for (let i = 0, ii = arr.length; i < ii; i++) {
         let one = arr[i];
@@ -519,19 +598,27 @@ function getOne(obj: ItreeNode, uuid = ''): any {
     return rt;
 }
 
+/**
+ * 改变现有节点数据
+ * @param uuid 现有节点的uuid
+ * @param dumpData 新的数据包
+ */
 function changeTreeNodeData(uuid: string, dumpData: any) {
     // 现有的节点数据
     const nodeData = getOne(treeData, uuid)[0];
 
-    // 属性是值类型的修改
+    /**
+     *  属性是值类型的修改
+     * */
     ['name'].forEach((key) => {
         if (nodeData[key] !== dumpData[key].value) {
             nodeData[key] = dumpData[key].value;
         }
     });
 
-    // 属性值是对象类型的修改
-    // children
+    /**
+     *  属性值是对象类型的修改， 如 children
+     * */
     let childrenKeys: Array<string> = nodeData.children.map((one: ItreeNode) => one.uuid);
     let newChildren: Array<ItreeNode> = [];
     dumpData.children.value.forEach((json: any, i: number) => {
@@ -550,4 +637,38 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
     nodeData.children = newChildren;
 }
 
+/**
+ * 添加新的节点数据
+ * @param dumpData 
+ */
+function addTreeNodeData(dumpData: any) {
+    let uuid = dumpData.uuid.value;
 
+    // 父级节点
+    let uuidParent = dumpData.parent.value;
+    const parentNode = getOne(treeData, uuidParent)[0];
+
+    // 数据转换
+    let childNode: ItreeNode = {
+        name: dumpData.name.value,
+        uuid: uuid,
+        children: dumpData.children.value,
+        isLock: false
+    };
+
+    // 添加入父级
+    parentNode.children.push(childNode);
+    parentNode.isExpand = true;
+
+    return uuid;
+}
+
+/**
+ * 清除对应节点数据
+ */
+function removeTreeNodeData(uuid: string) {
+    let nodeData = getOne(treeData, uuid);
+    let index = nodeData[1];
+
+    nodeData[2].splice(index, 1);
+}

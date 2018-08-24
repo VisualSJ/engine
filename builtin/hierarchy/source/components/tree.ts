@@ -17,6 +17,45 @@ export function data() {
 }
 
 export const methods = {
+    mouseDown(event: Event, item: ItreeNode) {
+        // @ts-ignore
+        if (event.button !== 2) {
+            return;
+        }
+
+        let self = this;
+
+        Editor.Menu.popup({
+            // @ts-ignore
+            x: event.pageX,
+            // @ts-ignore
+            y: event.pageY,
+            menu: [
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newNode'),
+                    submenu: [
+                        {
+                            label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('new', item.uuid, { type: 'empty' });
+                            }
+                        }
+                    ]
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: Editor.I18n.t('assets.menu.delete'),
+                    click() {
+                        // @ts-ignore
+                        self.$emit('delete', item.uuid);
+                    }
+                },
+            ]
+        });
+    },
     /**
      * 选中某个节点
      * @param event

@@ -5,7 +5,9 @@
     </section>
 
     <div class="tools">
-        <i class="i-add"></i>
+        <i class="i-add"
+            @click="menuPopupNew($event)"
+        ></i>
         <ui-input tabindex="-1" ref="searchInput"></ui-input>
         <i class="i-search"></i>
         <i class="expand"
@@ -17,13 +19,15 @@
 
     <div class="viewBox" ref="viewBox">
         <div class=scrollBar ref="scrollBar"></div>
-        <tree ref="tree" 
-            :list="nodes" 
-            :select="select" 
+        <tree ref="tree"
+            :list="nodes"
+            :select="select"
             @lock="lockNode"
-            @toggle="toggleNode" 
-            @rename="renameNode" 
+            @toggle="toggleNode"
+            @rename="renameNode"
             @drop="dropNode"
+            @new="newNode"
+            @delete="deleteNode"
         ></tree>
     </div>
 </div>

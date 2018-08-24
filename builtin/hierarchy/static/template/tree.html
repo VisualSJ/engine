@@ -3,6 +3,7 @@
         v-for="item in list" 
         :draggable="item.rename?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
+        @mousedown="mouseDown($event, item)"
         @click="selectNode($event, item)" 
         @dragstart="dragStart($event, item)" 
         @dragover="dragOver($event, item)" 
