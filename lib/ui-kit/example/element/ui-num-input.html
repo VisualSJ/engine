@@ -120,8 +120,10 @@
         //     },false)
         // }
         $uiNumInput.addEventListener('confirm', (e) => {
+            let $target = e.target;
             console.log('confirm');
             $testEvent.innerText = 'confirm';
+            $showWrap.innerText = $target.value;
         })
         $uiNumInput.addEventListener('change', (e) => {
             let $target = e.target;

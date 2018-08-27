@@ -4,6 +4,15 @@
   display: inline-block;
   position: relative;
 }
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
   display: block;
   position: relative;
@@ -53,10 +62,6 @@
 .hue,
 .vbox {
   position: relative;
-}
-.hbox,
-.vbox {
-  margin-bottom: 10px;
 }
 .hbox {
   flex-direction: row;
@@ -190,13 +195,25 @@
   align-items: center;
   justify-content: space-between;
 }
+.title .add-presets {
+  width: 1.8em;
+  height: 1.8em;
+  text-align: center;
+  line-height: 1.8em;
+  margin: 0.2em;
+}
+.title .add-presets:hover {
+  background-color: rgba(226, 226, 210, 0.75);
+  color: #222;
+  border-radius: 3px;
+}
 .palette {
   width: 200px;
   flex-wrap: wrap;
   align-items: center;
   justify-content: start;
 }
-.color-box {
+.palette div {
   position: relative;
   border: 1px solid #171717;
   width: 15px;

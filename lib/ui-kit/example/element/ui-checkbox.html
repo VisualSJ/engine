@@ -14,6 +14,7 @@
     <h5>事件/Event
         <span id="testEvent"></span>
     </h5>
+    <p id="testWrap"></p>
     <ui-checkbox id="checkboxTest">default label</ui-checkbox>
 </section>
 
@@ -36,6 +37,8 @@
     (function () {
         let $checkboxTest = document.getElementById('checkboxTest');
         let $testEvent = document.getElementById('testEvent');
+        let $testWrap = document.getElementById('testWrap');
+        $testWrap.innerText = checkboxTest.checked;
         $checkboxTest.nextSibling.innerHTML = $checkboxTest.value;
         // let eventArr = ['click','blur','change','focus'];
         // for (let i = 0, len = eventArr.length; i < len;i++){
@@ -44,14 +47,16 @@
         //         $testEvent.innerText = eventArr[i];
         //     },false)
         // }
-        $checkboxTest.addEventListener('confirm', () => {
+        $checkboxTest.addEventListener('confirm', (e) => {
             console.log('confirm');
+            $testWrap.innerText = e.target.value;
             $testEvent.innerText = 'confirm';
         })
-        $checkboxTest.addEventListener('change', () => {
+        $checkboxTest.addEventListener('change', (e) => {
             console.log('change');
             $testEvent.innerText = 'change';
-            $checkboxTest.nextSibling.innerHTML = $checkboxTest.value;
+            // $testWrap.innerText = e.target.value;
+            $testWrap.innerText = e.target.checked;
         })
     })();
 </script>

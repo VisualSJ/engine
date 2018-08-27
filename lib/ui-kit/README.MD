@@ -1,22 +1,32 @@
 ## 使用指南
 
-参见example
+详情示例，可参见example，示例运行方式: 在ui-kit文件夹下
+```
+npm start .\example\
+```
+
+1. 对组件value的取值直接调用$dom.value的形式
+### ui-num-input
+1. num-input的change事件只发生在输入有效数据并且与上次数据不同时触发，
+例如
+- 输入“-3”在输入负号字符将不触发change事件直到3后才触发，一共一次change；
+- 输入“0.2”只触发2次change；
+- 输入数据与原数据相同时也不触发change事件；
+
+### color组件
+1.value值
+
+传入的颜色值支持rgb\rgba\十六进制以及代表rgb或rgba的数组形式
+
+### colorPicker组件
+
+公开方法：
+#### show()
+需要调用该方式显示组件才可以保证colorPresets颜色值的实时一致性
 
 ## 开发指南
 
-1. 入参指代Element(this)的参数统一为elem;
-```
-/**
- * 派发change事件
- * @param {Element} elem
- */
- ```
-2. 组件的class内部的方法尽量只放默认生命周期函数或者需要对外暴露的方法之类的，自定义的处理方法统一放置在外层，通过传this的方式使用；
-3. 事件绑定和销毁可参照其他组件的模式
+
 
 
 ## todo
-1. select结构整理以及事件绑定销毁方式
-2. slider结构整理以及对应的事件绑定销毁（包括domUtil内定义的drag拖动的事件）
-3. colorPicker的presets功能
-4. 剩余组件的事件销毁测试代码

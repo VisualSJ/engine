@@ -4,6 +4,20 @@
   display: inline-block;
   position: relative;
 }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0;
+}
+:host([focused]) {
+  border-color: #07d;
+}
+:host([readonly]) {
+  cursor: default;
+}
+:host([disabled]) {
+  cursor: not-allowed;
+}
 :host {
   display: inline-block;
   position: relative;
@@ -17,6 +31,7 @@
   padding: 6px 55px 6px 8px;
   white-space: nowrap;
   cursor: default;
+  --track-size: 1.6em;
 }
 :host .track {
   position: relative;
@@ -38,8 +53,6 @@
 :host .bar {
   height: var(--track-size);
   background-color: var(--active-color, #409eff);
-  border-top-left-radius: calc(var(--track-size) / 2);
-  border-bottom-left-radius: calc(var(--track-size) / 2);
   position: absolute;
 }
 :host .cursor {
@@ -57,6 +70,7 @@
   border: 2px solid #949494;
 }
 :host .input {
+  --slider-display: none;
   position: absolute;
   box-sizing: border-box;
   margin: 0;
@@ -94,7 +108,6 @@
 :host([vertical]) .bar {
   width: 16px;
   height: auto;
-  border-radius: 0 0 calc(var(--track-size) / 2) calc(var(--track-size) / 2);
 }
 :host([disabled]) {
   pointer-events: none;

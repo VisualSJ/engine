@@ -4,13 +4,16 @@
 }
 :host .default-checkbox {
   border-color: #999;
-  width: 0.9em;
-  height: 0.9em;
+  width: 1.2em;
+  height: 1.2em;
   background-color: #333;
 }
 :host div,
 :host label {
   display: inline-block;
+}
+:host label,
+:host .default-checkbox {
   vertical-align: middle;
 }
 :host(:hover) {

@@ -50,10 +50,7 @@
 .vbox {
     position: relative;
 }
-.hbox,
-.vbox {
-    margin-bottom: 10px;
-}
+
 .hbox {
     flex-direction: row;
     flex-wrap: nowrap;
@@ -187,22 +184,35 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
+    .add-presets{
+        width: 1.8em;
+        height: 1.8em;
+        text-align: center;
+        line-height: 1.8em;
+        margin: 0.2em;
+    }
+    .add-presets:hover {
+        background-color: rgba(226, 226, 210, 0.75);
+        color:#222;
+        border-radius: 3px;
+    }
 }
 .palette {
     width: 200px;
     flex-wrap: wrap;
     align-items: center;
     justify-content: start;
+    div {
+        position: relative;
+        border: 1px solid #171717;
+        width: 15px;
+        height: 15px;
+        margin-top: 3px;
+        margin-left: 3px;
+        cursor: pointer;
+    }
 }
-.color-box {
-    position: relative;
-    border: 1px solid #171717;
-    width: 15px;
-    height: 15px;
-    margin-top: 3px;
-    margin-left: 3px;
-    cursor: pointer;
-}
+
 ui-slider {
     width: 150px;
     --track-size: 4px;

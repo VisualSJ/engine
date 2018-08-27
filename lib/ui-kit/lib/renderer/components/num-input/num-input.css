@@ -22,7 +22,7 @@ input::-webkit-inner-spin-button {
   display: inline-flex;
   position: relative;
   padding: 0;
-  width: 8em;
+  width: 100%;
   border: 1px solid #333;
 }
 :host > input {
