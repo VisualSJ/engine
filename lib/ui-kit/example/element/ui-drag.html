@@ -75,7 +75,22 @@
     <ui-drag-area id="file" dropable="file">file</ui-drag-area>
 </section>
 
+<section class="drop">
+    <ui-drag-object dropable="foo"></ui-drag-object>
+</section>
+
 <script>
+    ui.DragObject.setNameTranslator((string) => {
+        return `translator: ${string}`;
+    });
+
+    const $items = document.querySelectorAll('ui-drag-item');
+    Array.prototype.forEach.call($items, ($item) => {
+        $item.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('value', $item.type);
+        });
+    });
+
     const $areas = document.querySelectorAll('ui-drag-area');
     Array.prototype.forEach.call($areas, ($area) => {
         $area.addEventListener('drop', (event) => {

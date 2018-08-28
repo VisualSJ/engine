@@ -1,0 +1,122 @@
+@import '../base/base.less';
+
+:host {
+    display: inline-block;
+    outline: none;
+
+    .type {
+        position: absolute;
+        border: 1px solid #333;
+        border-bottom: none;
+        border-radius: 0.1em 0.1em 0 0;
+        padding: 0 4px;
+        background: #999;
+        top: -0.8em;
+
+        & > .icon {
+
+        }
+
+        & > .name {
+            font-size: 0.7em;
+        }
+    }
+
+    .area {
+        display: flex;
+        padding: 2px;
+        background: #999;
+        border: 1px solid #333;
+        border-radius: 0 2px 2px 2px;
+
+        & > ui-drag-area {
+            flex: 1;
+            display: flex;
+            padding: 2px 6px;
+            border-radius: 0 0 0 2px;
+
+            & > .value {
+                flex: 1;
+                display: none;
+            }
+
+            & > .placeholder {
+                flex: 1;
+                color: #666;
+            }
+        }
+
+        & > svg {
+            display: none;
+            padding: 2px 4px;
+            width: 1em;
+            height: 1em;
+            position: relative;
+            top: 1px;
+            cursor: pointer;
+            fill: #b54344;
+        }
+    }
+}
+
+:host([focused]) {
+
+    .type {
+        border-color: @focused-color;
+    }
+
+    .area {
+        border-color: @focused-color;
+    }
+}
+
+:host([value]) {
+
+    .area {
+
+        & > ui-drag-area {
+
+            & > .value {
+                display: inline;
+            }
+
+            & > .placeholder {
+                display: none;
+            }
+        }
+
+        & > svg {
+            display: inline;
+        }
+    }
+}
+
+:host([state='allow']) {
+
+    .type {
+        border-color: #6b9e51;
+    }
+
+    .area {
+        border-color: #6b9e51;
+
+        & > ui-drag-area {
+            background: #6b9e51;
+        }
+    }
+}
+
+:host([state='refused']) {
+
+    .type {
+        border-color: #b54344;
+    }
+
+    .area {
+        border-color: #b54344;
+
+        & > ui-drag-area {
+            background: #b54344;
+        }
+    }
+}
