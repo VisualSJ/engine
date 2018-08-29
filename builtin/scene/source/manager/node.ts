@@ -83,7 +83,7 @@ export function setProperty(
     }
 
     // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('.comp', '._comp');
+    path = path.replace('comps.', '_comps.');
 
     // 找到指定的 data 数据
     const data = path ? get(node, path) : node;
@@ -142,7 +142,7 @@ export function insertArrayProperty(
     }
 
     // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('.comp', '._comp');
+    path = path.replace('comps.', '_comps.');
 
     // 找到指定的 data 数据
     let data = path ? get(node, path) : node;
@@ -208,7 +208,7 @@ export function moveArrayProperty(
     }
 
     // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('.comp', '._comp');
+    path = path.replace('comps.', '_comps.');
 
     // 找到指定的 data 数据
     let data = path ? get(node, path) : node;
@@ -262,7 +262,7 @@ export function removeArrayProperty(
     }
 
     // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('.comp', '._comp');
+    path = path.replace('comps.', '_comps.');
 
     // 找到指定的 data 数据
     let data = path ? get(node, path) : node;
