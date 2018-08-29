@@ -10,6 +10,7 @@ _*
 
 # 插件内的构建后目录
 builtin/**/dist
+lib/theme/**/dist
 
 # 引擎文件夹
 builtin/scene/engine
