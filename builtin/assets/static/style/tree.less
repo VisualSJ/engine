@@ -12,6 +12,7 @@
     box-sizing: border-box;
     overflow: hidden;
     &>.node {
+        display: block;
         position: relative;
         padding: 2px 8px 2px 0;
         height: 16px;
@@ -20,7 +21,10 @@
             background-color: #059 !important;
         }
         &[drag="over"] {
-            color: @drag-color  !important;
+            color: #fff !important;
+        }
+        &[state="over"] {
+            color: #fff !important;
         }
         &[state="input"] {
             background-color: transparent !important;
@@ -34,30 +38,8 @@
                 }
             }
         }
-        &[insert="before"] {
-            &:before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: -2px;
-                width: 100%;
-                height: 2px;
-                background-color: @drag-color;
-            }
-        }
         &[insert="inside"] {
             color: @active-color;
-        }
-        &[insert="after"] {
-            &:before {
-                content: '';
-                position: absolute;
-                left: 0;
-                bottom: -2px;
-                width: 100%;
-                height: 2px;
-                background-color: @drag-color;
-            }
         }
         &[animate] {
             .arrow {

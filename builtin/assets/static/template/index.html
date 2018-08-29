@@ -20,10 +20,17 @@
             @lock="lockNode"
             @toggle="toggleNode"
             @rename="renameNode"
+            @dragover="overNode"
+            @dragleave="leaveNode"
             @drop="dropNode"
             @new="newNode"
             @delete="deleteNode"
         ></tree>
+        <section class="dirShadow" 
+            v-if="shadowOffset[1]>0"
+            :style="{ top: shadowOffset[0] + 'px', height: shadowOffset[1] + 'px' }"
+        >
+        </section>
     </div>
 
 </div>

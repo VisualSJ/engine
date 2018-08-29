@@ -1,6 +1,7 @@
 <ul class="tree">
-    <li class="node"
-        v-for="item in list" 
+    <ui-drag-item class="node"
+        :key="index"
+        v-for="(item,index) in list" 
         :draggable="item.rename?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
         @mousedown="mouseDown($event, item)"
@@ -40,5 +41,5 @@
         >
             <ui-loading></ui-loading>
         </section>
-    </li>
+    </ui-drag-item>
 </ul>

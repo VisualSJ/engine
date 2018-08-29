@@ -8,6 +8,8 @@ export const template = readFileSync(
     'utf8'
 );
 
+let isDragOver: boolean;
+
 export const props: string[] = [
     'list',
     'select',
@@ -91,6 +93,14 @@ export const methods = {
     selectNode(event: Event, item: ItreeNode) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', item.uuid);
+
+        // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
+        // @ts-ignore
+        const target: any = event.currentTarget;
+        target.setAttribute('animate', '');
+        setTimeout(() => {
+            target.removeAttribute('animate');
+        }, 500);
     },
     /**
      * 节点折叠切换
@@ -100,11 +110,11 @@ export const methods = {
         // @ts-ignore
         this.$emit('toggle', item.uuid);
     },
-        /**
-     * 节点重名命
-     * @param event 
-     * @param item 
-     */
+    /**
+ * 节点重名命
+ * @param event 
+ * @param item 
+ */
     renameNode(event: Event, item: ItreeNode) {
         // 改变节点状态
         item.state = 'input';
@@ -139,6 +149,13 @@ export const methods = {
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: item.uuid
         }));
+
+        let img = new Image();
+        img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
+        // @ts-ignore
+        event.dataTransfer.setDragImage(img, 0, 0);
+
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
     },
     /**
      * 拖动到元素的上面
@@ -155,16 +172,13 @@ export const methods = {
 
         target.setAttribute('drag', 'over');
 
-        const offset = target.getBoundingClientRect();
+        target.setAttribute('insert', 'inside');
 
-        // @ts-ignore
-        if (event.clientY - offset.top <= 4) {
-            target.setAttribute('insert', 'before'); // 偏上位置
+        // 拖动中感知当前所处的文件夹，高亮此文件夹
+        if (!isDragOver) {
             // @ts-ignore
-        } else if (offset.bottom - event.clientY <= 4) {
-            target.setAttribute('insert', 'after'); // 偏下位置
-        } else {
-            target.setAttribute('insert', 'inside'); // 中间位置
+            this.$emit('dragover', item.uuid);
+            isDragOver = true;
         }
     },
     /**
@@ -177,6 +191,11 @@ export const methods = {
         const target: any = event.currentTarget;
         target.setAttribute('insert', '');
         target.setAttribute('drag', '');
+
+        // 拖动中感知当前所处的文件夹，离开后取消高亮
+        // @ts-ignore
+        this.$emit('dragleave', item.uuid);
+        isDragOver = false;
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
@@ -198,11 +217,18 @@ export const methods = {
         target.setAttribute('insert', ''); // 还原节点状态
         target.setAttribute('drag', '');
 
+        // 重新选中节点
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', data.from);
+
+        // @ts-ignore
+        this.$emit('dragleave', item.uuid); // 取消拖动的高亮效果
+
         if (data.to === data.from) {  // 如果移动到自身节点，则不需要移动
             return;
         }
 
         // @ts-ignore
         this.$emit('drop', item, data);
+
     }
 };

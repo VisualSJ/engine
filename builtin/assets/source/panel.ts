@@ -17,6 +17,8 @@ const positionMap: Map<number, ItreeNode> = new Map();
 
 const treeNodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
 
+let timeIdShadowHide: any; // 延时取消高亮，避免高亮与不高亮之间的操作闪烁
+
 const Vue = require('vue/dist/vue.js');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
@@ -44,6 +46,7 @@ export const methods = {
         const initData = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
         // 数据格式需要转换一下
         treeData = transformData(initData);
+        console.log(treeData);
         vm.changeTreeData();
     }
 };
@@ -156,7 +159,8 @@ export async function ready() {
             viewHeight: 0, // 当前树形的可视区域高度
             scrollTop: 0, // 当前树形的滚动数据
             search: '', // 搜索节点名称
-            nodes: [] // 当前树形在可视区域的节点数据
+            nodes: [], // 当前树形在可视区域的节点数据
+            shadowOffset: {}, // 拖动时高亮的目录区域位置
         },
         components: {
             tree: require('./components/tree'),
@@ -181,7 +185,7 @@ export async function ready() {
              */
             search() {
                 vm.changeTreeData();
-            }
+            },
         },
         mounted() {
 
@@ -299,6 +303,40 @@ export async function ready() {
                 });
             },
             /**
+             * 拖动中感知当前所处的文件夹，高亮此文件夹
+             */
+            overNode(uuid: string) {
+                // @ts-ignore
+                let node = this.nodes.find(one => one.uuid === uuid);
+                if (!node.isDir) {
+                    // @ts-ignore
+                    node = this.nodes.find(one => one.uuid === node.parent);
+                    node.state = 'over';
+                }
+
+                clearTimeout(timeIdShadowHide);
+                // @ts-ignore
+                this.shadowOffset = [node.top + 4, node.height + 3];
+            },
+            /**
+             * 拖动中感知当前所处的文件夹，离开后取消高亮
+             */
+            leaveNode(uuid: string) {
+                // @ts-ignore
+                let node = this.nodes.find(one => one.uuid === uuid);
+                if (!node.isDir) {
+                    // @ts-ignore
+                    node = this.nodes.find(one => one.uuid === node.parent);
+                }
+
+                clearTimeout(timeIdShadowHide);
+                timeIdShadowHide = setTimeout(() => {
+                    // @ts-ignore
+                    this.shadowOffset = [0, 0];
+                    node.state = '';
+                }, 100);
+            },
+            /**
              * 节点拖动
              * 
              * @param json 
@@ -312,74 +350,36 @@ export async function ready() {
                 let offset = 0;
                 let loadingItem;
 
-                // 内部平级移动
-                if (fromData[3].uuid === toData[3].uuid && ['before', 'after'].indexOf(json.insert) != -1) {
+                if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
                     // @ts-ignore
-                    loadingItem = this.nodes.find(one => one.uuid === fromData[3].uuid); //元素的父级
+                    loadingItem = this.nodes.find(one => one.uuid === toData[0].uuid); // 元素自身
 
-                    offset = toData[1] - fromData[1]; // 目标索引减去自身索引
-                    if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
-                        offset += 1;
-                    } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                        offset -= 1;
-                    }
-
-                    Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                        uuid: fromData[3].uuid,  // 被移动的节点的父级 uuid
+                    Editor.Ipc.sendToPackage('scene', 'set-property', {
+                        uuid: fromData[0].uuid,
                         path: '',
-                        key: 'children',
-                        target: fromData[1], // 被移动的节点所在的索引
-                        offset: offset,
-                    });
-                } else { // 跨级移动
-
-                    if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
-                        // @ts-ignore
-                        loadingItem = this.nodes.find(one => one.uuid === toData[0].uuid); // 元素自身
-
-                        Editor.Ipc.sendToPackage('scene', 'set-property', {
-                            uuid: fromData[0].uuid,
-                            path: '',
-                            key: 'parent',
-                            dump: {
-                                type: 'entity',
-                                value: toData[0].uuid // 被 drop 的元素就是父级
-                            }
-                        });
-                    } else { // 跨级插入
-                        // @ts-ignore
-                        loadingItem = this.nodes.find(one => one.uuid === toData[3].uuid); //元素的父级
-
-                        Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                            uuid: fromData[0].uuid,
-                            path: '',
-                            key: 'parent',
-                            dump: {
-                                type: 'entity',
-                                value: toData[3].uuid // 被 drop 的元素的父级
-                            }
-                        });
-
-                        offset = toData[1] - toData[2].length; // 目标索引减去自身索引
-                        if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
-                            offset += 1;
-                        } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                            offset -= 1;
+                        key: 'parent',
+                        dump: {
+                            type: 'entity',
+                            value: toData[0].uuid // 被 drop 的元素就是父级
                         }
+                    });
+                } else { // 跨级插入
+                    // @ts-ignore
+                    loadingItem = this.nodes.find(one => one.uuid === toData[3].uuid); //元素的父级
 
-                        // 再在父级里平移
-                        Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                            uuid: toData[3].uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
-                            path: '',
-                            key: 'children',
-                            target: toData[2].length,
-                            offset: offset,
-                        });
-                    }
+                    Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
+                        uuid: fromData[0].uuid,
+                        path: '',
+                        key: 'parent',
+                        dump: {
+                            type: 'entity',
+                            value: toData[3].uuid // 被 drop 的元素的父级
+                        }
+                    });
+                }
 
-                    if (loadingItem) {
-                        loadingItem.state = 'loading'; // 显示 loading 效果
-                    }
+                if (loadingItem) {
+                    loadingItem.state = 'loading'; // 显示 loading 效果
                 }
 
             },
@@ -414,6 +414,13 @@ export async function ready() {
                 for (const [top, json] of positionMap) {
                     if (top >= min && top <= max) { // 在可视区域才显示
                         vm.nodes.push(json);
+
+                        //
+                        for (const [t, j] of positionMap) {
+                            if (j.uuid === json.parent) {
+                                j.height = 1; // 大于 0 就可以，实际计算在内部的setter
+                            }
+                        }
                     }
                 }
             },
@@ -502,16 +509,41 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
 
+        const one = {
+            name: json.name,
+            uuid: json.uuid,
+            children: json.children,
+            top: start,
+            _height: treeNodeHeight,
+            get height() {
+                return this._height;
+            },
+            set height(add) {
+                if (add) {
+                    this._height += treeNodeHeight;
+
+                    // 触发其父级高度也增加
+                    for (const [top, json] of positionMap) {
+                        if (json.uuid === this.parent) {
+                            json.height = 1; // 大于 0 就可以，实际计算在内部的setter
+                        }
+                    }
+                }
+            },
+            parent: json.parent,
+            depth: 0, // 都保持在第一层
+            isDir: json.isDir || false,
+            isParent: false,
+            isExpand: true,
+            state: '',
+        }
+
         if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
-            positionMap.set(start, { // 平级保存
-                name: json.name,
-                uuid: json.uuid,
-                children: [],
+            positionMap.set(start, Object.assign(one, { // 平级保存
                 depth,
                 isParent: json.children && json.children.length > 0 ? true : false,
                 isExpand: json.children && json.isExpand ? true : false,
-                state: ''
-            });
+            }));
 
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
@@ -519,16 +551,8 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
                 index = calcItreeNodePosition(json, index, depth + 1); // depth 是该节点的层级
             }
         } else { // 有搜索
-            if (json.name.indexOf(vm.search) !== -1) {
-                positionMap.set(start, { // 平级保存
-                    name: json.name,
-                    uuid: json.uuid,
-                    children: [],
-                    depth: 0, // 都保持在第一层
-                    isParent: false,
-                    isExpand: true,
-                    state: ''
-                });
+            if (json.name.indexOf(vm.search) !== -1) { // 平级保存
+                positionMap.set(start, one);
                 index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
             }
 
@@ -638,41 +662,6 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
 }
 
 /**
- * 添加新的节点数据
- * @param dumpData 
- */
-function addTreeNodeData(dumpData: any) {
-    let uuid = dumpData.uuid.value;
-
-    // 父级节点
-    let uuidParent = dumpData.parent.value;
-    const parentNode = getOne(treeData, uuidParent)[0];
-
-    // 数据转换
-    let childNode: ItreeNode = {
-        name: dumpData.name.value,
-        uuid: uuid,
-        children: dumpData.children.value,
-    };
-
-    // 添加入父级
-    parentNode.children.push(childNode);
-    parentNode.isExpand = true;
-
-    return uuid;
-}
-
-/**
- * 清除对应节点数据
- */
-function removeTreeNodeData(uuid: string) {
-    let nodeData = getOne(treeData, uuid);
-    let index = nodeData[1];
-
-    nodeData[2].splice(index, 1);
-}
-
-/**
  * 从一个扁平的数组的转换为含有 children 字段的树形
  * @param arr
  * @param key 唯一标识的字段
@@ -697,6 +686,11 @@ function toTreeData(arr: Array<any>, key: string, parentKey: any) {
                     one.children = [];
                 }
                 one.children.push(a);
+
+                // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
+                one.isDir = true;
+                a.parent = one.uuid;
+
             } else {
                 rt.push(a);
             }
@@ -725,6 +719,10 @@ function toTreeData(arr: Array<any>, key: string, parentKey: any) {
     }
 }
 
+/**
+ * 初始的请求数据转换为可用的面板树形数据
+ * @param arr 
+ */
 function transformData(arr: Array<IsourceNode>) {
 
     let newArr = arr.filter(a => a.source !== '').map((a: IsourceNode) => {
@@ -732,7 +730,7 @@ function transformData(arr: Array<IsourceNode>) {
 
         // 赋予两个新字段用于子父层级关联
         a.name = paths.pop() || '';
-        a.parent = paths.join('\\') || '';
+        a.parent = paths.join('\\') || 'assets';
 
         return a;
     });
@@ -740,7 +738,21 @@ function transformData(arr: Array<IsourceNode>) {
     return {
         name: 'root',
         uuid: 'root',
-        children: toTreeData(newArr, 'source', 'parent')
+        children: [
+            {
+                name: 'assets',
+                uuid: 'assets',
+                children: toTreeData(newArr, 'source', 'parent'),
+                top: 0,
+                parent: 'root',
+                isDir: true,
+                isExpand: true,
+            }
+        ],
+        top: 0,
+        parent: '',
+        isDir: true,
+        isExpand: true,
     };
 
 }

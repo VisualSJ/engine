@@ -1,6 +1,7 @@
 <ul class="tree">
-        <li class="node"
-        v-for="item in list" 
+    <ui-drag-item class="node"
+        :key="index"
+        v-for="(item,index) in list" 
         :draggable="item.rename?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
         @mousedown="mouseDown($event, item)"
@@ -14,26 +15,26 @@
         :expand="item.isExpand"
         :state="item.state"
     >
-    <i class="arrow i-arrow-right"
-        v-if="item.isParent" 
-        @click="toggleNode(item)"
-    ></i>
-    <i class="i-temp-file-ext"
-        v-else
-    ></i>
-    <label class="name"
-        v-if="item.state!=='input'"
-        @dblclick="openNode($event, item)"
-    >{{item.name}}</label>
-    <input class="rename" ref='input'
-        v-else-if="item.state==='input'"
-        :value="item.name"
-        @blur="renameBlur(item)"
-    >
-    <section class="loading"
-        v-if="item.state==='loading'"
-    >
-        <ui-loading></ui-loading>
-    </section>
-    </li>
+        <i class="arrow i-arrow-right"
+            v-if="item.isParent" 
+            @click="toggleNode(item)"
+        ></i>
+        <i class="i-temp-file-ext"
+            v-else
+        ></i>
+        <label class="name"
+            v-if="item.state!=='input'"
+            @dblclick="openNode($event, item)"
+        >{{item.name}}</label>
+        <input class="rename" ref='input'
+            v-else-if="item.state==='input'"
+            :value="item.name"
+            @blur="renameBlur(item)"
+        >
+        <section class="loading"
+            v-if="item.state==='loading'"
+        >
+            <ui-loading></ui-loading>
+        </section>
+    </ui-drag-item>
 </ul>
