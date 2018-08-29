@@ -3,7 +3,7 @@
   border-radius: 0.25em;
 }
 :host {
-  width: 8em;
+  width: 100%;
   height: 1.6em;
 }
 :host(:hover) {
@@ -11,4 +11,9 @@
 }
 :host([focus]) {
   border-color: #fd942b;
+}
+:host([disabled]) {
+  cursor: default;
+  border-color: #999;
+  opacity: 0.6;
 }

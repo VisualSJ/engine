@@ -30,12 +30,6 @@
 :host([focused]) {
   border-color: #07d;
 }
-:host([disabled]) {
-  cursor: default;
-}
-:host([disabled]) > span {
-  opacity: 0.4;
-}
 :host([pressed]) {
   background: #d6d6d6;
 }

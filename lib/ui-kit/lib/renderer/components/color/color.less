@@ -5,8 +5,8 @@
     outline: none;
     display: inline-block;
     position: relative;
-    height: 30px;
-    width: 140px;
+    height: 1.6em;
+    width: 100%;
     background-color:black;
     border:1px solid #ddd;
     cursor: pointer;
@@ -25,20 +25,10 @@
         position: absolute;
         z-index:2;
         top:40px;
+        display: none;
     }
   }
 
 :host([focused]) {
     border-color: @focused-color;
 }
-
-:host([disabled]) {
-    cursor: not-allowed;
-    opacity: @disabled-opacity;
-    input {
-        cursor: not-allowed;
-        
-    }
-}
-
-

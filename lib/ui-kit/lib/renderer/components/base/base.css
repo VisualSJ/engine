@@ -3,18 +3,5 @@
   outline: none;
   display: inline-block;
   position: relative;
-}
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none !important;
-  margin: 0;
-}
-:host([focused]) {
-  border-color: #07d;
-}
-:host([readonly]) {
-  cursor: default;
-}
-:host([disabled]) {
-  cursor: not-allowed;
+  box-sizing: border-box;
 }

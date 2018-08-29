@@ -1,0 +1,18 @@
+<div class="ui-preview">
+    <ui-select class="select" :value="chooseIndex" @change="selectChange">
+        <option :value="item" v-for="item in uiCollectors">ui-{{item}}</option>
+    </ui-select>
+    <div class="ui-content">
+        <test-button v-if="chooseIndex === 'button'"></test-button>
+        <test-input v-if="chooseIndex === 'input'"></test-input>
+        <test-checkbox v-if="chooseIndex === 'checkbox'"></test-checkbox>
+        <test-num-input v-if="chooseIndex === 'num-input'"></test-num-input>
+        <test-slider v-if="chooseIndex === 'slider'"></test-slider>
+        <test-select v-if="chooseIndex === 'select'"></test-select>
+        <test-section v-if="chooseIndex === 'section'"></test-section>
+        <test-color-picker v-if="chooseIndex === 'color-picker'"></test-color-picker>
+        <test-color v-if="chooseIndex === 'color'"></test-color>
+        <test-drag v-if="chooseIndex === 'drag'"></test-drag>
+        <test-loading v-if="chooseIndex === 'loading'"></test-loading>
+    </div>
+</div>

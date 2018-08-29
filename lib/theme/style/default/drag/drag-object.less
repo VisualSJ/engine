@@ -1,0 +1,26 @@
+@import '../base//variable';
+:host {
+  width: 100%;
+  color: white;
+  .type {
+    background-color: @c-dark-bg;
+    border-radius: @n-border-radius @n-border-radius 0 0;
+    border-color:@c-border;
+  }
+  .area {
+    background-color: @c-dark-bg;
+    border-radius: 0  @n-border-radius  @n-border-radius  @n-border-radius;
+    border-color:@c-border;
+  }
+}
+
+:host[draging] {
+  border: 1px solid #0f0;
+  background: #090;
+}
+
+:host(:hover) {
+  ui-drag-area {
+    background-color: #ccc;
+  }
+}

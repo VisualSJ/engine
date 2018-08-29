@@ -3,6 +3,7 @@
     outline: none;
     display: inline-block;
     position: relative;
+    box-sizing: border-box;
 }
 
 @font-color: #333;
@@ -11,15 +12,3 @@
 @background-color: #eee;
 
 @disabled-opacity: 0.4;
-
-:host([focused]) {
-    border-color: @focused-color;
-}
-
-:host([readonly]) {
-    cursor: default;
-}
-
-:host([disabled]) {
-    cursor: not-allowed;
-}

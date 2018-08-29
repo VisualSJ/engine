@@ -1,0 +1,52 @@
+<div class="input-wrap">
+    <section>
+        <h1>Standard</h1>
+        <ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button>
+        <h5>事件/Event:{{eventName}}</h5>
+        <ui-input name="uiTest" value = "test"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-input>{{value}}
+        <div v-html="itemHtmls"></div>
+    </section>
+
+    <section>
+        <h1>Placeholder</h1>
+        <ui-input placeholder="placeholder"></ui-input>
+    </section>
+
+    <section>
+        <h1>autofocus</h1>
+        <ui-input autofocus></ui-input>
+    </section>
+
+    <section>
+        <h1>Readonly</h1>
+        <ui-input value="readonly" readonly></ui-input>
+    </section>
+
+    <section>
+        <h1>Disabled</h1>
+        <ui-input value="disabled" disabled></ui-input>
+    </section>
+
+    <section>
+        <h1>Password</h1>
+        <ui-input value="password" password></ui-input>
+    </section>
+
+    <section class="section size">
+        <h1>Size</h1>
+        <div class="size-12">
+            <ui-input value="12px"></ui-input>
+        </div>
+        <div class="size-16">
+            <ui-input value="16px"></ui-input>
+        </div>
+        <div class="size-20">
+            <ui-input value="20px"></ui-input>
+        </div>
+    </section>
+
+    <section >
+        <h1>Style</h1>
+        <ui-input class="transparent">Button</ui-input>
+    </section>
+</div>

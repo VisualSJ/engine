@@ -1,7 +1,7 @@
 @import '../base//base';
 @import '../base//variable';
 :host {
-  width: 8em;
+  width: 100%;
   height: 1.6em;
 }
 
@@ -11,4 +11,11 @@
 
 :host([focus]) {
   border-color: @c-border-focus;
+}
+
+// focus的颜色设置需在Hover之后
+:host([disabled]){
+  cursor: default;
+  border-color: @c-border;
+  opacity: @n-disabled-opacity;
 }

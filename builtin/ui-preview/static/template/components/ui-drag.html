@@ -1,0 +1,29 @@
+<div class="drag-wrap">
+        <section>
+            <ui-drag-object dropable="foo"></ui-drag-object>
+        </section>
+        <section>
+            <ui-drag-item type="foo" @dragstart="onDragstart">
+                <span>foo</span>
+            </ui-drag-item>
+            <ui-drag-item type="bar"  @dragstart="onDragstart">bar</ui-drag-item>
+        </section>
+    
+        <section>
+            <ui-drag-area dropable="foo" @drag="onDrag">foo</ui-drag-area>
+            <ui-drag-area dropable="bar" @drag="onDrag">bar</ui-drag-area>
+            <ui-drag-area dropable="foo,bar" @drag="onDrag">foo,bar</ui-drag-area>
+        </section>
+    
+        <section>
+            <ui-drag-area class="wrap" dropable="foo,bar">
+                <ui-drag-area dropable="foo" @drag="onDrag">foo</ui-drag-area>
+                <ui-drag-area dropable="bar" @drag="onDrag">bar</ui-drag-area>
+                <ui-drag-area dropable="foo,bar" @drag="onDrag">foo,bar</ui-drag-area>
+            </ui-drag-area>
+        </section>
+    
+        <section>
+            <ui-drag-area id="file" dropable="file">file</ui-drag-area>
+        </section>
+    </div>

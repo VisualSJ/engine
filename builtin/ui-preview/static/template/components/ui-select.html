@@ -1,0 +1,34 @@
+<div class="select">
+    <section>
+        <h1>standard</h1>
+        <h5>事件/Event:{{eventName}}</h5>
+        <div>选中值：{{value}}</div>
+        <ui-select value="4" placeholder="请选择"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue" id="selectTest">
+            <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+            <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+            <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+            <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+            <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
+        </ui-select>
+    </section>
+    <section>
+        <h1>disabled</h1>
+        <ui-select value="1" disabled>
+            <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+            <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+            <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+            <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+            <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
+        </ui-select>
+    </section>
+    <section>
+        <h1>autofocus</h1>
+        <ui-select value="1" autofocus>
+            <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
+            <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
+            <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
+            <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+            <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
+        </ui-select>
+    </section>
+</div>

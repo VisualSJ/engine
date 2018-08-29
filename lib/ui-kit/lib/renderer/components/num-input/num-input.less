@@ -29,9 +29,6 @@ input::-webkit-inner-spin-button{
     }
 }
 
-
-
-
 :host([unit]) {
     .unit {
         display: block;
@@ -49,7 +46,7 @@ input::-webkit-inner-spin-button{
 }
 
 .slider {
-    display: flex;
+    display: var(--control-display,flex);
     flex-direction: column;
     top: 0;
     right: 0;
@@ -91,13 +88,3 @@ input::-webkit-inner-spin-button{
         }
     }
 }
-
-
-:host([disabled]) {
-    cursor: not-allowed;
-    opacity: @disabled-opacity;
-    input {
-        cursor: default;
-    }
-}
-

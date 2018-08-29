@@ -23,3 +23,10 @@
 :host([focused]) header {
   color: var(--color, #fd942b);
 }
+:host([disabled]) {
+  cursor: default;
+  --border-color: #999;
+}
+:host([disabled]) header {
+  color: var(--color, #999);
+}

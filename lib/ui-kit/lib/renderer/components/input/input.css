@@ -4,15 +4,6 @@
   display: inline-block;
   position: relative;
 }
-:host([focused]) {
-  border-color: #07d;
-}
-:host([readonly]) {
-  cursor: default;
-}
-:host([disabled]) {
-  cursor: not-allowed;
-}
 :host {
   border: 1px solid #333;
   padding: 0.2em 0.5em;
@@ -29,11 +20,4 @@
 }
 :host([focused]) {
   border-color: #07d;
-}
-:host([disabled]) {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-:host([disabled]) input {
-  cursor: not-allowed;
 }

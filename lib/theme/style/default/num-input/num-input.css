@@ -32,3 +32,8 @@
 .slider svg {
   fill: #333;
 }
+:host([disabled]) {
+  cursor: default;
+  border-color: #999;
+  opacity: 0.6;
+}

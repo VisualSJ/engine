@@ -1,0 +1,12 @@
+<div class="collor-picker">
+    <section>
+        <h1>standard</h1>
+        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
+        <h5>事件/Event : {{eventName}}</h5>
+        
+        <div class="wrapper">
+            <ui-color-picker value="#00ffee" id="colorPicker"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-num-input></ui-color-picker>{{value}}
+            <div v-html="itemHtmls"></div>
+        </div>
+    </section>
+</div>

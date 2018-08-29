@@ -1,0 +1,51 @@
+<div class="num-input">
+    <section>
+        <h1>Standard</h1>
+        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
+        <h5>事件/Event : {{eventName}}</h5>
+        <ui-num-input id="uiNumInput" value="666"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-num-input>{{value}}
+        <div v-html="itemHtmls"></div>
+    </section>
+
+    <section>
+        <h1>Readonly</h1>
+        <ui-num-input value="0" readonly></ui-num-input>
+    </section>
+
+    <section>
+        <h1>Disabled</h1>
+        <ui-num-input value="100" disabled></ui-num-input>
+    </section>
+
+    <section>
+        <h1>Step</h1>
+        <ui-num-input value="10" step="10"></ui-num-input>
+    </section>
+
+    <section>
+        <h1>Unit</h1>
+        <ui-num-input value="10px" unit="px"></ui-num-input>
+    </section>
+
+    <section>
+        <h1>Max and Min</h1>
+        <ui-num-input value="10" min="0" max="20"></ui-num-input>
+    </section>
+
+    <section class="input size">
+        <h1>Size</h1>
+        <div class="size-12">
+            <ui-num-input value="12px"></ui-num-input>
+        </div>
+        <div class="size-16">
+            <ui-num-input value="16px"></ui-num-input>
+        </div>
+        <div class="size-20">
+            <ui-num-input value="20px"></ui-num-input>
+        </div>
+    </section>
+    <section>
+        <h1>Style</h1>
+        <ui-num-input class="transparent" unit="%">Button</ui-num-input>
+    </section>
+</div>

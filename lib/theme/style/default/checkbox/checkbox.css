@@ -8,6 +8,9 @@
   height: 1.2em;
   background-color: #333;
 }
+:host .default-checkbox i {
+  background-color: #fd942b;
+}
 :host div,
 :host label {
   display: inline-block;
@@ -16,15 +19,15 @@
 :host .default-checkbox {
   vertical-align: middle;
 }
-:host(:hover) {
+:host(:hover) .default-checkbox {
   border-color: #fff;
 }
 :host([focused]) .default-checkbox {
   border-color: #fd942b;
 }
-:host .default-checkbox:hover {
-  border-color: #fff;
+:host([disabled]) {
+  cursor: default;
 }
-:host .default-checkbox i {
-  background-color: #fd942b;
+:host([disabled]) .default-checkbox {
+  border-color: #999;
 }

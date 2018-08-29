@@ -12,7 +12,14 @@
   border-color: @c-border-hover;
 }
 
-//focus的border颜色设置须在hover之后
+// focus的border颜色设置须在hover之后
 :host([focused]) {
   border-color: @c-border-focus;
+}
+
+// focus的颜色设置需在Hover之后
+:host([disabled]){
+  cursor: default;
+  border-color: @c-border;
+  opacity: @n-disabled-opacity;
 }

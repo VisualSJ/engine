@@ -1,11 +1,10 @@
 @import '../base//variable';
-
 :host {
-  color:@c-defaulttext;
+  color: @c-default-text;
   header {
-    border-bottom: 1px solid var(--border-color, @c-defaulttext);
+    border-bottom: 1px solid var(--border-color, @c-default-text);
     i {
-      background-color: var(--border-color, @c-defaulttext);
+      background-color: var(--border-color, @c-default-text);
     }
   }
   slot {
@@ -16,16 +15,24 @@
 :host(:hover) {
   header {
     color: @c-border-hover;
-    border-bottom: 1px solid var(--border-color,@c-border-hover);
+    border-bottom: 1px solid var(--border-color, @c-border-hover);
     i {
       background-color: var(--border-color, @c-border-hover);
     }
-  } 
+  }
 }
 
 :host([focused]) {
   header {
-      color: var(--color, @c-border-focus);
+    color: var(--color, @c-border-focus);
   }
   --border-color: @c-border-focus;
+}
+
+:host([disabled]) {
+  cursor: default;
+  header {
+    color: var(--color, @c-border);
+  }
+  --border-color: @c-border;
 }

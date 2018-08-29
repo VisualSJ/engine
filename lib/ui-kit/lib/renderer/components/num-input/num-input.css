@@ -4,15 +4,6 @@
   display: inline-block;
   position: relative;
 }
-:host([focused]) {
-  border-color: #07d;
-}
-:host([readonly]) {
-  cursor: default;
-}
-:host([disabled]) {
-  cursor: not-allowed;
-}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none !important;
@@ -52,7 +43,7 @@ input::-webkit-inner-spin-button {
   padding: 0.2em 0.3em;
 }
 .slider {
-  display: flex;
+  display: var(--control-display, flex);
   flex-direction: column;
   top: 0;
   right: 0;
@@ -83,11 +74,4 @@ input::-webkit-inner-spin-button {
 }
 .down:hover svg {
   fill: #fff;
-}
-:host([disabled]) {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-:host([disabled]) input {
-  cursor: default;
 }

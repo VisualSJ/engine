@@ -15,3 +15,8 @@
 :host([focused]) {
   border-color: #fd942b;
 }
+:host([disabled]) {
+  cursor: default;
+  border-color: #999;
+  opacity: 0.6;
+}

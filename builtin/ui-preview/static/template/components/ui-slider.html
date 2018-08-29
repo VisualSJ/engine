@@ -1,0 +1,31 @@
+<div class="slider">
+    <section>
+        <h1>standard</h1>
+        <ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button>
+        <h5>事件/Event:{{eventName}}</h5>
+        <ui-slider value="20"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-slider> {{value}}
+        <div v-html="itemHtmls"></div>
+    </section>
+    <section>
+        <h1>auto focused</h1>
+        <ui-slider autofocus value="20">
+        </ui-slider>
+    </section>
+    <section>
+        <h1>disabled</h1>
+        <ui-slider disabled value="20">
+        </ui-slider>
+    </section>
+    <section>
+        <h1>Min Max</h1>
+        <ui-slider min="-100" value="20" max="100">
+        </ui-slider>
+        <span>min="-100" max="100"</span>
+    </section>
+    <section>
+        <h1>Step</h1>
+        <ui-slider step="3" value="5" min="0" max="100">
+        </ui-slider>
+        <span>step="3"</span>
+    </section>
+</div>

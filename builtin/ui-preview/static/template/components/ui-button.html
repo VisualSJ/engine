@@ -1,0 +1,32 @@
+<div class="button-wrap">
+    <section class="section">
+        <h1>Standard</h1>
+        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
+        <h5>事件/Event ： {{eventName}}</h5>
+        <ui-button @change = "changeValue" @confirm = "confirmValue">Button</ui-button>
+        <div v-html="itemHtmls"></div>
+    </section>
+    <section class="section">
+        <h1>Disabled</h1>
+        <ui-button disabled>Disabled</ui-button>
+    </section>
+    <section class="section">
+            <h1>readOnly</h1>
+            <ui-button readOnly>readOnly</ui-button>
+    </section>
+    <section class="section size">
+        <h1>Size</h1>
+        <div class="size-12">
+            <span>12px: </span>
+            <ui-button>Button</ui-button>
+        </div>
+        <div class="size-16">
+            <span>16px: </span>
+            <ui-button>Button</ui-button>
+        </div>
+        <div class="size-20">
+            <span>20px: </span>
+            <ui-button>Button</ui-button>
+        </div>
+    </section>
+</div>

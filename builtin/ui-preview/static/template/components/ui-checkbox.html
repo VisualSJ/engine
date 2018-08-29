@@ -1,0 +1,25 @@
+<div class="cehckebox-wrap">
+    <section>
+        <h1>Standard</h1>
+        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
+        <h5>事件/Event : {{eventName}}</h5>
+        <ui-checkbox  @change = "changeValue" @confirm = "confirmValue">default label</ui-checkbox> {{value}}
+        <div v-html="itemHtmls"></div>
+    </section>
+
+    <section>
+        <h1>Readonly</h1>
+        <ui-checkbox value="readonly" readonly>readonly</ui-checkbox>
+        <ui-checkbox value="readonly" readonly checked>readonly checked</ui-checkbox>
+    </section>
+
+    <section>
+        <h1>Disabled</h1>
+        <ui-checkbox value="disabled" disabled>disabled</ui-checkbox>
+    </section>
+
+    <section>
+        <h1>checked</h1>
+        <ui-checkbox checked>checked</ui-checkbox>
+    </section>
+</div>
