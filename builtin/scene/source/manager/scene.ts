@@ -4,7 +4,7 @@
 // 场景管理器
 
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 import {
     query,
@@ -24,12 +24,16 @@ let scene: any = null;
  * 初始化场景管理器
  * @param panel
  */
-export function initEngineManager(panel: any) {
-    element = panel;
-
-    const script = document.createElement('script');
-    script.src = join(__dirname, '../../engine/engine.dev.js');
-    document.body.appendChild(script);
+export async function initEngineManager(panel: any) {
+    return new Promise((resolve) => {
+        element = panel;
+        const script = document.createElement('script');
+        script.src = join(__dirname, '../../engine/engine.dev.js');
+        document.body.appendChild(script);
+        script.addEventListener('load', () => {
+            resolve();
+        });
+    });
 }
 
 /**

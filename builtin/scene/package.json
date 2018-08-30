@@ -15,8 +15,8 @@
     "panel": {
         "title": "i18n:scene.title",
         "main": "./dist/panel.js",
-        "allowClose": true,
-        "allowPopup": true,
+        "allowClose": false,
+        "allowPopup": false,
         "icon": "./static/icon.png",
         "min-width": 400,
         "min-height": 300,

@@ -25,6 +25,8 @@ import {
 let isAssetReady: boolean = false;
 let panel: any = null;
 
+const profile = Editor.Profile.load('profile://local/packages/scene.json');
+
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
@@ -41,14 +43,22 @@ export const listeners = {
     },
 };
 
-export const methods = {};
+export const methods = {
+    async openScene(uuid: string) {
+        await openScene(uuid);
+        Editor.Ipc.sendToAll('scene:ready');
+        panel.$.loading.hidden = true;
+    },
+};
 
 export const messages = {
     /**
      * 资源数据库准备就绪
      */
-    'asset-db:ready'() {
+    async 'asset-db:ready'() {
         isAssetReady = true;
+        const uuid = profile.get('current-scene');
+        uuid && await panel.openScene(uuid);
     },
 
     /**
@@ -72,9 +82,14 @@ export const messages = {
         await closeScene();
 
         // 打开新的场景
-        isAssetReady && await openScene(uuid);
-        Editor.Ipc.sendToAll('scene:ready');
-        panel.$.loading.hidden = true;
+        if (!isAssetReady) {
+            return;
+        }
+        await panel.openScene(uuid);
+
+        // 保存最后一个打开的场景
+        profile.set('current-scene', uuid);
+        profile.save();
     },
 
     /**
@@ -179,10 +194,15 @@ export async function ready() {
     panel = this;
 
     // 初始化引擎管理器
-    initEngineManager(panel.$.content);
+    await initEngineManager(panel.$.content);
 
     // 检查 asset db 是否准备就绪
     isAssetReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+
+    if (isAssetReady) {
+        const uuid = profile.get('current-scene');
+        uuid && await panel.openScene(uuid);
+    }
 }
 
 /**

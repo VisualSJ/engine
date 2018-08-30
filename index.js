@@ -5,10 +5,14 @@
 // Editor 这个全局对象应该避免在编辑器内部使用
 global.Editor  = require('./lib/editor');
 
-// 开始编辑器启动流程
-const startup = require('./lib/startup');
-// 启动窗口
-startup.window();
-// 打开各个插件, 这是个异步流程
-// 在启动插件过程中会实时与窗口进行交互，等待加载完成
-startup.package();
+(async function () {
+    // 开始编辑器启动流程
+    const startup = require('./lib/startup');
+
+    // 启动窗口
+    await startup.window();
+
+    // 打开各个插件, 这是个异步流程
+    // 在启动插件过程中会实时与窗口进行交互，等待加载完成
+    await startup.package();
+})();

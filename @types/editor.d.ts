@@ -13,6 +13,7 @@ interface Editor {
     Logger: Logger;
     Profile: Profile;
     History: History;
+    Theme: Theme;
 }
 
 interface App {
@@ -27,6 +28,7 @@ interface Project {
 interface I18n {
     t: Function;
     switch: Function;
+    current: Function;
 }
 
 interface Menu {
@@ -53,6 +55,11 @@ interface Layout {
 interface Panel {
     open: Function;
     close: Function;
+}
+
+
+interface Theme {
+    use: Function;
 }
 
 interface Ipc {
