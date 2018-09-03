@@ -29,7 +29,6 @@
         ></i>
         <label class="name"
             v-if="item.state!=='input'"
-            @dblclick="renameNode($event, item)"
         >{{item.name}}</label>
         <input class="rename" ref='input'
             v-else-if="item.state==='input'"

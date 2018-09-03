@@ -5,7 +5,7 @@
         :draggable="item.rename?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
         @mousedown="mouseDown($event, item)"
-        @click="selectNode($event, item)" 
+        @click="selectAsset($event, item)" 
         @dragstart="dragStart($event, item)" 
         @dragover="dragOver($event, item)" 
         @dragleave="dragLeave($event, item)" 
@@ -17,14 +17,17 @@
     >
         <i class="arrow i-arrow-right"
             v-if="item.isParent" 
-            @click="toggleNode(item)"
+            @click="toggleAsset(item)"
+        ></i>
+        <i class="folder i-folder"
+            v-if="item.isDir" 
         ></i>
         <i class="i-temp-file-ext"
             v-else
         ></i>
         <label class="name"
             v-if="item.state!=='input'"
-            @dblclick="openNode($event, item)"
+            @dblclick="openAsset($event, item)"
         >{{item.name}}</label>
         <input class="rename" ref='input'
             v-else-if="item.state==='input'"

@@ -1,15 +1,16 @@
 'use strict';
 
 module.exports = {
-    title: 'hierarchy',
+    title: 'Hierarchy',
 
     menu: {
         searchPlaceholder: 'Search...',
         search: 'Search',
         
-        newNode: '创建节点',
-        newNodeEmpty: '空节点',
+        newNode: 'Node',
+        newNodeEmpty: 'Empty Node',
 
-        delete: '删除',
+        delete: 'Delete',
+        rename: 'Rename',
     }
 };

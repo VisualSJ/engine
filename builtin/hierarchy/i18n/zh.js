@@ -11,5 +11,6 @@ module.exports = {
         newNodeEmpty: '空节点',
         
         delete: '删除',
+        rename: '重名命',
     }
 };

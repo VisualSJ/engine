@@ -4,9 +4,15 @@ module.exports = {
     title: 'assets',
 
     menu: {
-        new: 'new',
-        copy: 'copy',
-        paste: 'paste',
-        delete: 'delete',
+        searchPlaceholder: 'Search...',
+        search: 'Search',
+
+        new: 'Create',
+        newFolder: 'Folder',
+        newJavascript: 'JavaScript',
+        copy: 'Copy',
+        paste: 'Paste',
+        delete: 'Delete',
+        rename: 'Rename',
     },
 };

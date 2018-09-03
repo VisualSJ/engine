@@ -1,19 +1,19 @@
-declare interface IdragNode {
+declare interface IdragAsset {
     from: string; // 被拖动的节点
     to: string; // 被指向的节点
     insert: string; // 插入方式，有三种：inside, before, after
 }
 
-declare interface IaddNode {
+declare interface IaddAsset {
     type: string; // 一个节点的类型，默认空节点，值为 'empty'
     name: string;
     value: string;
 }
 
-declare interface ItreeNode {
+declare interface ItreeAsset {
     name: string;
     uuid: string;
-    children: ItreeNode[];
+    children: ItreeAsset[];
     top: number; // top 位置
     _height?: number; // 整个节点包括children的高度
     height?: number; // 整个节点包括children的高度
@@ -30,7 +30,7 @@ declare interface ItreeNode {
 
 }
 
-declare interface IsourceNode {
+declare interface IsourceAsset {
     files: Array<string>;
     importer: string;
     source: string;

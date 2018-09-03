@@ -47,7 +47,14 @@ export const methods = {
                     type: 'separator'
                 },
                 {
-                    label: Editor.I18n.t('assets.menu.delete'),
+                    label: Editor.I18n.t('hierarchy.menu.rename'),
+                    click(event: Event) {
+                        // @ts-ignore
+                        self.renameNode(event, item);
+                    }
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.delete'),
                     click() {
                         // @ts-ignore
                         self.$emit('delete', item.uuid);
@@ -103,7 +110,7 @@ export const methods = {
             // @ts-ignore
             this.$refs.input[0].focus();
             // @ts-ignore
-            this.$refs.input[0].select();
+            this.$refs.input[0].setSelectionRange(0, item.name.lastIndexOf('.'));
         });
     },
     /**
@@ -112,7 +119,14 @@ export const methods = {
      */
     renameBlur(item: ItreeNode) {
         // @ts-ignore
-        const newName = this.$refs.input[0].value.trim();
+        let newName = this.$refs.input[0].value.trim();
+
+         // 节点的名称不能为空
+         if (item.name.lastIndexOf('.') !== -1) {
+            if (newName.substring(0, newName.lastIndexOf('.')) === '') {
+                newName = '';
+            }
+        }
 
         // @ts-ignore
         this.$emit('rename', item, newName);

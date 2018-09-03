@@ -76,7 +76,7 @@ export const messages = {
     async 'scene:node-changed'(uuid: string) {
         // 获取该节点最新数据
         let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        console.log('node-changed', dumpData);
+        // console.log('node-changed', dumpData);
 
         // 更新当前数据
         changeTreeNodeData(uuid, dumpData);
@@ -91,7 +91,7 @@ export const messages = {
     async 'scene:node-created'(uuid: string) {
         // 获取该节点最新数据
         let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        console.log('node-created', dumpData);
+        // console.log('node-created', dumpData);
 
         // 更新当前数据
         let newNodeUUID = addTreeNodeData(dumpData);

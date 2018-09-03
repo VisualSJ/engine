@@ -3,19 +3,20 @@
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 
+
 let panel: any = null;
 
 let vm: any = null;
 
-let treeData: ItreeNode; // 树形结构的数据，含 children
+let treeData: ItreeAsset; // 树形结构的数据，含 children
 
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
- * 将所有节点按照 key = position.top 排列，value = ItreeNode
+ * 将所有资源按照 key = position.top 排列，value = ItreeAsset
  */
-const positionMap: Map<number, ItreeNode> = new Map();
+const positionMap: Map<number, ItreeAsset> = new Map();
 
-const treeNodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
+const treeNodeHeight: number = 20; // 配置每个资源的高度，需要与css一致
 
 let timeIdShadowHide: any; // 延时取消高亮，避免高亮与不高亮之间的操作闪烁
 
@@ -45,8 +46,8 @@ export const methods = {
     async refresh() {
         const initData = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
         // 数据格式需要转换一下
+        // console.log(initData);
         treeData = transformData(initData);
-        console.log(treeData);
         vm.changeTreeData();
     }
 };
@@ -55,7 +56,7 @@ export const messages = {
 
     /**
      * asset db 准备就绪
-     * 去除 loading 状态，并且显示节点树
+     * 去除 loading 状态，并且显示资源树
      */
     'asset-db:ready'() {
         panel.$.loading.hidden = true;
@@ -65,7 +66,7 @@ export const messages = {
 
     /**
      * asset db 关闭
-     * 打开 loading 状态，并隐藏节点树
+     * 打开 loading 状态，并隐藏资源树
      */
     'asset-db:close'() {
         panel.$.loading.hidden = false;
@@ -105,7 +106,7 @@ export const messages = {
 
     /**
      * asset db 广播通知添加了 asset
-     * 在显示的节点树上添加上这个资源
+     * 在显示的资源树上添加上这个资源
      * @param uuid 选中物体的 uuid
      */
     async 'asset-db:asset-add'(uuid: string) {
@@ -126,7 +127,7 @@ export const messages = {
 
     /**
      * asset db 广播通知删除了 asset
-     * 在显示的节点树上删除这个资源
+     * 在显示的资源树上删除这个资源
      * @param uuid 选中物体的 uuid
      */
     async 'asset-db:asset-delete'(uuid: string) {
@@ -158,8 +159,8 @@ export async function ready() {
             select: [],
             viewHeight: 0, // 当前树形的可视区域高度
             scrollTop: 0, // 当前树形的滚动数据
-            search: '', // 搜索节点名称
-            nodes: [], // 当前树形在可视区域的节点数据
+            search: '', // 搜索资源名称
+            nodes: [], // 当前树形在可视区域的资源数据
             shadowOffset: {}, // 拖动时高亮的目录区域位置
         },
         components: {
@@ -181,7 +182,7 @@ export async function ready() {
                 vm.renderTree();
             },
             /**
-             * 监听属性 搜索节点名称 
+             * 监听属性 搜索资源名称 
              */
             search() {
                 vm.changeTreeData();
@@ -190,7 +191,7 @@ export async function ready() {
         mounted() {
 
             // 初始化搜索框
-            this.$refs.searchInput.placeholder = Editor.I18n.t('hierarchy.menu.searchPlaceholder');
+            this.$refs.searchInput.placeholder = Editor.I18n.t('assets.menu.searchPlaceholder');
             this.$refs.searchInput.addEventListener('change', (event: Event) => {
                 let $target: any = event.target;
                 this.search = $target.value.trim();
@@ -208,54 +209,55 @@ export async function ready() {
         },
         methods: {
             /**
-             * 创建节点
+             * 创建资源
              * @param item 
              * @param json 
              */
-            newNode(uuid: string, json: IaddNode) {
-                if (json.type === 'empty') {
-                    Editor.Ipc.sendToPanel('scene', 'create-node', { // 发送创建节点
-                        parent: uuid,
-                        name: 'New Node',
-                    });
+            newAsset(uuid: string, json: IaddAsset) {
+                if (uuid === '') {
+                    if (!vm.select[0]) { // 当前没有选中的资源
+                        uuid = treeData.uuid; // 根资源
+                    } else {
+                        uuid = vm.select[0]; // 当前选中的资源
+                    }
                 }
+
+                // 获取该资源
+                let one = getOne(treeData, uuid);
+                let url = one[0].source;
+
+                if (one[0].isDir !== true) { // 不是目录，指向父级级
+                    url = one[3].source;
+                }
+
+                switch (json.type) {
+                    case 'empty': url += '/New Folder'; break;
+                    case 'javascript': url += '/NewScript.js'; break;
+                }
+
+                url = 'db://assets/' + join(url);
+
+                Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, '');
             },
             /**
-             * 删除节点
+             * 删除资源
              * @param item 
              */
-            deleteNode(uuid: string) {
-                // 如果当前节点已被选中，先取消选择
+            deleteAsset(uuid: string) {
+                // 如果当前资源已被选中，先取消选择
                 if (vm.select.includes(uuid)) {
                     Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
                 }
 
-                Editor.Ipc.sendToPanel('scene', 'remove-node', { // 发送删除节点
-                    uuid: uuid
-                });
+                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
             },
             /**
-             * 锁定 / 解锁节点
+             * 资源的折叠切换
              * @param uuid 
              */
-            lockNode(uuid: string) {
+            toggleAsset(uuid: string) {
 
-                const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
-
-                if (one) {
-                    // TODO 这块需要 ipc scene 修改数据
-                    one.isLock = !one.isLock;
-
-                    vm.changeTreeData();
-                }
-            },
-            /**
-             * 节点的折叠切换
-             * @param uuid 
-             */
-            toggleNode(uuid: string) {
-
-                const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
+                const one = getOne(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
 
                 if (one) {
                     one.isExpand = !one.isExpand;
@@ -269,20 +271,20 @@ export async function ready() {
             toggleAll() {
                 vm.expand = !vm.expand;
 
-                resetItreeNodeProperty(treeData, { isExpand: vm.expand })
+                resetItreeAssetProperty(treeData, { isExpand: vm.expand })
 
                 vm.changeTreeData();
             },
             /**
-             * 修改节点属性
+             * 修改资源属性
              * 这是异步的，只做发送
-             * 获取在另外ipc 'scene:node-changed' 处理数据替换和刷新视图
+             * 获取在另外ipc 'assets-db:node-changed' 处理数据替换和刷新视图
              * @param item 
              * @param name 
              */
-            renameNode(item: ItreeNode, name = '') {
+            renameAsset(item: ItreeAsset, name = '') {
 
-                const one = getOne(treeData, item.uuid)[0]; // 获取该节点的数据
+                const one = getOne(treeData, item.uuid)[0]; // 获取该资源的数据
 
                 if (!one || name === '') {
                     // name存在才能重名命，否则还原状态
@@ -292,20 +294,12 @@ export async function ready() {
 
                 item.state = 'loading'; // 显示 loading 效果
 
-                Editor.Ipc.sendToPackage('scene', 'set-property', { // 发送修改数据
-                    uuid: item.uuid,
-                    path: '',
-                    key: 'name',
-                    dump: {
-                        type: 'string',
-                        value: name,
-                    },
-                });
+
             },
             /**
              * 拖动中感知当前所处的文件夹，高亮此文件夹
              */
-            overNode(uuid: string) {
+            overAsset(uuid: string) {
                 // @ts-ignore
                 let node = this.nodes.find(one => one.uuid === uuid);
                 if (!node.isDir) {
@@ -316,12 +310,12 @@ export async function ready() {
 
                 clearTimeout(timeIdShadowHide);
                 // @ts-ignore
-                this.shadowOffset = [node.top + 4, node.height + 3];
+                this.shadowOffset = [node.top + 4, node.height > treeNodeHeight ? (node.height + 3) : node.height];
             },
             /**
              * 拖动中感知当前所处的文件夹，离开后取消高亮
              */
-            leaveNode(uuid: string) {
+            leaveAsset(uuid: string) {
                 // @ts-ignore
                 let node = this.nodes.find(one => one.uuid === uuid);
                 if (!node.isDir) {
@@ -337,61 +331,51 @@ export async function ready() {
                 }, 100);
             },
             /**
-             * 节点拖动
+             * 资源拖动
              * 
              * @param json 
              */
-            dropNode(item: ItreeNode, json: IdragNode) {
+            dropAsset(item: ItreeAsset, json: IdragAsset) {
+                if (json.insert !== 'inside') {
+                    return false; // 不是拖动的话，取消
+                }
 
                 const fromData = getOne(treeData, json.from);
 
                 const toData = getOne(treeData, json.to); // 将被注入数据的对象
 
-                let offset = 0;
-                let loadingItem;
+                let target;
 
-                if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+                // @ts-ignore
+                let toNode = this.nodes.find(one => one.uuid === toData[0].uuid); // 树形节点自身
+
+                if (toNode.isDir) {
+                    target = toNode;
+                } else {
                     // @ts-ignore
-                    loadingItem = this.nodes.find(one => one.uuid === toData[0].uuid); // 元素自身
-
-                    Editor.Ipc.sendToPackage('scene', 'set-property', {
-                        uuid: fromData[0].uuid,
-                        path: '',
-                        key: 'parent',
-                        dump: {
-                            type: 'entity',
-                            value: toData[0].uuid // 被 drop 的元素就是父级
-                        }
-                    });
-                } else { // 跨级插入
-                    // @ts-ignore
-                    loadingItem = this.nodes.find(one => one.uuid === toData[3].uuid); //元素的父级
-
-                    Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                        uuid: fromData[0].uuid,
-                        path: '',
-                        key: 'parent',
-                        dump: {
-                            type: 'entity',
-                            value: toData[3].uuid // 被 drop 的元素的父级
-                        }
-                    });
+                    target = this.nodes.find(one => one.uuid === toData[3].uuid); // 树形节点的父级
                 }
 
-                if (loadingItem) {
-                    loadingItem.state = 'loading'; // 显示 loading 效果
+                if (target.uuid === fromData[3].uuid) {
+                    return false; // 资源移动仍在原来的目录内，不需要移动
                 }
 
+                // 移动资源
+                Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, target.uuid);
+
+                if (target) {
+                    target.state = 'loading'; // 显示 loading 效果
+                }
             },
             /**
              * 树形数据已改变
-             * 如节点增删改，是较大的变动，需要重新计算各个配套数据
+             * 如资源增删改，是较大的变动，需要重新计算各个配套数据
              */
             changeTreeData() {
 
                 positionMap.clear(); // 清空数据
 
-                calcItreeNodePosition(); // 重算排位
+                calcItreeAssetPosition(); // 重算排位
 
                 vm.renderTree(); // 重新渲染出树形
 
@@ -400,7 +384,7 @@ export async function ready() {
             },
             /**
              * 重新渲染树形
-             * nodes 存放被渲染的节点数据
+             * nodes 存放被渲染的资源数据
              * 主要通过 nodes 数据的变动 
              */
             renderTree() {
@@ -458,20 +442,19 @@ export async function ready() {
                     y: event.pageY,
                     menu: [
                         {
-                            label: Editor.I18n.t('hierarchy.menu.newNode'),
-                            submenu: [
-                                {
-                                    label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
-                                    click() {
-                                        // 当前选中的节点
-                                        let currentNode = vm.select[0];
-                                        if (!currentNode) { // 当前没有选中的节点
-                                            currentNode = treeData.uuid; // 根节点
-                                        }
-                                        vm.newNode(currentNode, { type: 'empty' });
-                                    }
-                                }
-                            ]
+                            label: Editor.I18n.t('assets.menu.newFolder'),
+                            click() {
+                                vm.newAsset('', { type: 'empty' });
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newJavascript'),
+                            click() {
+                                vm.newAsset('', { type: 'javascript' });
+                            }
                         },
                     ]
                 });
@@ -497,14 +480,14 @@ export const listeners = {
 };
 
 /**
- * 计算所有树形节点的位置数据，这一结果用来做快速检索
+ * 计算所有树形资源的位置数据，这一结果用来做快速检索
  * 重点是设置 positionMap 数据
  * 返回当前序号
  * @param obj 
- * @param index 节点的序号
- * @param depth 节点的层级
+ * @param index 资源的序号
+ * @param depth 资源的层级
  */
-function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
+function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
     let tree = obj.children;
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
@@ -548,7 +531,7 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
             if (json.children && json.isExpand === true) {
-                index = calcItreeNodePosition(json, index, depth + 1); // depth 是该节点的层级
+                index = calcItreeAssetPosition(json, index, depth + 1); // depth 是该资源的层级
             }
         } else { // 有搜索
             if (json.name.indexOf(vm.search) !== -1) { // 平级保存
@@ -557,7 +540,7 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
             }
 
             if (json.children) {
-                index = calcItreeNodePosition(json, index, 0);
+                index = calcItreeAssetPosition(json, index, 0);
             }
         }
 
@@ -571,7 +554,7 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
  * @param obj 
  * @param props 
  */
-function resetItreeNodeProperty(obj: ItreeNode, props: any) {
+function resetItreeAssetProperty(obj: ItreeAsset, props: any) {
     let tree = obj.children;
     tree.forEach((json: any) => {
         for (let k in props) {
@@ -579,14 +562,14 @@ function resetItreeNodeProperty(obj: ItreeNode, props: any) {
         }
 
         if (json.children) {
-            resetItreeNodeProperty(json, props);
+            resetItreeAssetProperty(json, props);
         }
     });
 }
 
 /**
  * 这个数据处理，临时使用，很快会被删除
- * 获取 uuid 所在的 itreeNode 对象 node, 
+ * 获取 uuid 所在的 ItreeNode 对象 node, 
  * 对象所在数组索引 index，
  * 所在数组 array，
  * 所在数组其所在的对象 object
@@ -595,11 +578,11 @@ function resetItreeNodeProperty(obj: ItreeNode, props: any) {
  * @param arr 
  * @param uuid 
  */
-function getOne(obj: ItreeNode, uuid = ''): any {
+function getOne(obj: ItreeAsset, uuid = ''): any {
     let rt = [];
 
     if (obj.uuid === uuid) {
-        return [obj]; // 根节点比较特殊
+        return [obj]; // 根资源比较特殊
     }
 
     let arr = obj.children;
@@ -623,12 +606,12 @@ function getOne(obj: ItreeNode, uuid = ''): any {
 }
 
 /**
- * 改变现有节点数据
- * @param uuid 现有节点的uuid
+ * 改变现有资源数据
+ * @param uuid 现有资源的uuid
  * @param dumpData 新的数据包
  */
 function changeTreeNodeData(uuid: string, dumpData: any) {
-    // 现有的节点数据
+    // 现有的资源数据
     const nodeData = getOne(treeData, uuid)[0];
 
     /**
@@ -643,14 +626,14 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
     /**
      *  属性值是对象类型的修改， 如 children
      * */
-    let childrenKeys: Array<string> = nodeData.children.map((one: ItreeNode) => one.uuid);
-    let newChildren: Array<ItreeNode> = [];
+    let childrenKeys: Array<string> = nodeData.children.map((one: ItreeAsset) => one.uuid);
+    let newChildren: Array<ItreeAsset> = [];
     dumpData.children.value.forEach((json: any, i: number) => {
         let id: string = json.value;
         let index = childrenKeys.findIndex(uid => id === uid);
         let one;
         if (index != -1) { // 平级移动
-            one = nodeData.children[index]; // 原来的父级节点有该元素
+            one = nodeData.children[index]; // 原来的父级资源有该元素
         } else { // 跨级移动
             let arrInfo = getOne(treeData, id); // 从全部数据中找出被移动的数据
             one = arrInfo[2].splice(arrInfo[1], 1)[0];
@@ -669,36 +652,45 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
  */
 function toTreeData(arr: Array<any>, key: string, parentKey: any) {
 
-    return loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
+    let tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
+    // 重新排序
+    dirSort(tree);
+    return tree;
 
     function loopOne(arr: any, key: string, parentKey: any) {
-        let rt: Array<ItreeNode> = [];
+        let rt: Array<ItreeAsset> = [];
 
-        arr.forEach((a: any) => {
-            if (!Array.isArray(a.children)) {
-                a.children = [];
+        arr.forEach((item: any) => {
+            if (!Array.isArray(item.children)) {
+                item.children = [];
             }
 
-            let one = deepFind(rt, key, a[parentKey]);
+            let one = deepFind(rt, key, item[parentKey]);
 
             if (one) {
                 if (!Array.isArray(one.children)) {
                     one.children = [];
                 }
-                one.children.push(a);
+                one.children.push(item);
 
                 // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
                 one.isDir = true;
-                a.parent = one.uuid;
+                item.parent = one.uuid;
 
             } else {
-                rt.push(a);
+                rt.push(item);
             }
         });
 
         return rt;
     }
 
+    /**
+     * 深度查找对应关系，类似 id === parentId 确定子父关系
+     * @param arr 
+     * @param key 
+     * @param parentValue 
+     */
     function deepFind(arr: Array<any>, key: string, parentValue: any) {
         let one: any = arr.find(a => {
             return a[key] === parentValue;
@@ -720,13 +712,38 @@ function toTreeData(arr: Array<any>, key: string, parentKey: any) {
 }
 
 /**
+ * 目录文件和文件夹排序
+ * @param arr 
+ */
+function dirSort(arr: Array<ItreeAsset>) {
+    //@ts-ignore;
+    arr.sort((a: ItreeAsset, b: ItreeAsset) => {
+        // 文件夹优先
+        if (a.isDir === true && !b.isDir) {
+            return -1;
+        } else if (!a.isDir && b.isDir === true) {
+            return 1;
+        } else {
+            return a.name > b.name;
+        }
+    });
+
+    // 子集也重新排序
+    arr.forEach((a: ItreeAsset) => {
+        if (a.children) {
+            dirSort(a.children);
+        }
+    })
+}
+
+/**
  * 初始的请求数据转换为可用的面板树形数据
  * @param arr 
  */
-function transformData(arr: Array<IsourceNode>) {
-
-    let newArr = arr.filter(a => a.source !== '').map((a: IsourceNode) => {
-        let paths: Array<string> = a.source.split('\\');
+function transformData(arr: Array<IsourceAsset>) {
+    // 处理原始数据
+    let newArr = arr.filter(a => a.source !== '').map((a: IsourceAsset) => {
+        let paths: Array<string> = a.source.split(/\/|\\/);
 
         // 赋予两个新字段用于子父层级关联
         a.name = paths.pop() || '';
@@ -735,6 +752,7 @@ function transformData(arr: Array<IsourceNode>) {
         return a;
     });
 
+    // 转为树形数据
     return {
         name: 'root',
         uuid: 'root',
@@ -743,12 +761,16 @@ function transformData(arr: Array<IsourceNode>) {
                 name: 'assets',
                 uuid: 'assets',
                 children: toTreeData(newArr, 'source', 'parent'),
+                state: '',
+                source: '',
                 top: 0,
                 parent: 'root',
                 isDir: true,
                 isExpand: true,
             }
         ],
+        state: '',
+        source: '',
         top: 0,
         parent: '',
         isDir: true,

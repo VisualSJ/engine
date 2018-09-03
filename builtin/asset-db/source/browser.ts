@@ -2,7 +2,7 @@
 
 import { AssetDB } from 'asset-db';
 import { existsSync } from 'fs';
-import { ensureDirSync, outputFileSync, removeSync } from 'fs-extra';
+import { ensureDirSync, outputFileSync, removeSync, moveSync } from 'fs-extra';
 import { join, relative } from 'path';
 
 let isReady: boolean = false;
@@ -121,15 +121,45 @@ module.exports = {
 
             // 文件目录路径
             const dirname = database.options.target;
-            const file = join(dirname, url);
+            let file = join(dirname, url);
 
-            if (existsSync(file)) {
-                // todo info
-                return false;
-            }
+            // 名命
+            file = rename(file, 0);
 
+            // 创建
             outputFileSync(file, data);
             return true;
+
+            // 如果创建的文件名称重复 按 001, 002 递增
+            //@ts-ignore;
+            function rename(filepath: string, suffix: number) {
+                let file = filepath;
+
+                if (suffix !== 0) {
+                    let fileArr = filepath.split(/\/|\\/);
+                    let fileName = fileArr.pop() || '';
+                    let nameArr = fileName.split('.');
+                    let ext;
+                    if (nameArr.length > 1) {
+                        ext = nameArr.pop();
+                        fileName = nameArr.join('.');
+                    } else {
+                        fileName = nameArr[0];
+                    }
+
+                    //@ts-ignore;
+                    fileName += ' - ' + suffix.toString().padStart(3, '0');
+                    file = join(...fileArr, (fileName + (ext ? '.' + ext : '')));
+                }
+
+                if (existsSync(file)) {
+                    // 名称重复
+                    suffix++;
+                    return rename(filepath, suffix);
+                }
+
+                return file;
+            }
         },
 
         /**
@@ -138,7 +168,16 @@ module.exports = {
          * @param uuid
          * @param target
          */
-        'move-asset'(uuid: string, target: string) {},
+        'move-asset'(uuid: string, target: string) {
+            if (!database) {
+                return false;
+            }
+            const asset = database.uuid2asset[uuid];
+            const dir = database.uuid2asset[target];
+            existsSync(asset.source) && existsSync(dir.source) && moveSync(asset.source, dir.source);
+            existsSync(asset.source + '.meta') && existsSync(dir.source) && moveSync(asset.source + '.meta', dir.source);
+            return true;
+        },
 
         /**
          * 删除某个资源

@@ -27,7 +27,7 @@ export const methods = {
      * @param event
      * @param uuid
      */
-    async openNode(event: Event, item: ItreeNode) {
+    async openAsset(event: Event, item: ItreeAsset) {
         const asset = await Editor.Ipc.requestToPackage(
             'asset-db',
             'query-asset-info',
@@ -38,11 +38,13 @@ export const methods = {
             Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
         }
     },
-    mouseDown(event: Event, item: ItreeNode) {
+    mouseDown(event: Event, item: ItreeAsset) {
         // @ts-ignore
         if (event.button !== 2) {
             return;
         }
+
+        let self = this;
 
         Editor.Menu.popup({
             // @ts-ignore
@@ -54,12 +56,22 @@ export const methods = {
                     label: Editor.I18n.t('assets.menu.new'),
                     submenu: [
                         {
-                            label: 'none',
-                            enabled: false,
+                            label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
-                                // debugger;
+                                // @ts-ignore
+                                self.$emit('new', item.uuid, { type: 'empty' });
                             }
-                        }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newJavascript'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('new', item.uuid, { type: 'javascript' });
+                            }
+                        },
                     ]
                 },
                 {
@@ -77,9 +89,17 @@ export const methods = {
                     type: 'separator'
                 },
                 {
+                    label: Editor.I18n.t('assets.menu.rename'),
+                    click(event: Event) {
+                        // @ts-ignore
+                        self.renameAsset(event, item);
+                    }
+                },
+                {
                     label: Editor.I18n.t('assets.menu.delete'),
                     click() {
-                        Editor.Ipc.sendToPackage('asset-db', 'delete-asset', item.uuid);
+                        // @ts-ignore
+                        self.$emit('delete', item.uuid);
                     }
                 }
             ]
@@ -90,7 +110,7 @@ export const methods = {
      * @param event
      * @param item
      */
-    selectNode(event: Event, item: ItreeNode) {
+    selectAsset(event: Event, item: ItreeAsset) {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', item.uuid);
 
@@ -106,16 +126,16 @@ export const methods = {
      * 节点折叠切换
      * @param uuid 
      */
-    toggleNode(item: ItreeNode) {
+    toggleAsset(item: ItreeAsset) {
         // @ts-ignore
         this.$emit('toggle', item.uuid);
     },
     /**
- * 节点重名命
- * @param event 
- * @param item 
- */
-    renameNode(event: Event, item: ItreeNode) {
+     * 节点重名命
+     * @param event 
+     * @param item 
+     */
+    renameAsset(event: Event, item: ItreeAsset) {
         // 改变节点状态
         item.state = 'input';
 
@@ -124,16 +144,23 @@ export const methods = {
             // @ts-ignore
             this.$refs.input[0].focus();
             // @ts-ignore
-            this.$refs.input[0].select();
+            this.$refs.input[0].setSelectionRange(0, item.name.lastIndexOf('.'));
         });
     },
     /**
      * 提交重名命
      * @param item 
      */
-    renameBlur(item: ItreeNode) {
+    renameBlur(item: ItreeAsset) {
         // @ts-ignore
-        const newName = this.$refs.input[0].value.trim();
+        let newName = this.$refs.input[0].value.trim();
+
+        // 文件的名称不能为空
+        if (item.name.lastIndexOf('.') !== -1) {
+            if (newName.substring(0, newName.lastIndexOf('.')) === '') {
+                newName = '';
+            }
+        }
 
         // @ts-ignore
         this.$emit('rename', item, newName);
@@ -144,7 +171,7 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragStart(event: Event, item: ItreeNode) {
+    dragStart(event: Event, item: ItreeAsset) {
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: item.uuid
@@ -163,7 +190,7 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragOver(event: Event, item: ItreeNode) {
+    dragOver(event: Event, item: ItreeAsset) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
         event.stopPropagation();
         event.stopImmediatePropagation();
@@ -186,7 +213,7 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    dragLeave(event: Event, item: ItreeNode) {
+    dragLeave(event: Event, item: ItreeAsset) {
         // @ts-ignore
         const target: any = event.currentTarget;
         target.setAttribute('insert', '');
@@ -202,7 +229,7 @@ export const methods = {
      * @param event 
      * @param uuid 
      */
-    drop(event: Event, item: ItreeNode) {
+    drop(event: Event, item: ItreeAsset) {
         event.preventDefault();
 
         // @ts-ignore
