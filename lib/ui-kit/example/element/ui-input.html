@@ -105,25 +105,15 @@
 <script>
     (function () {
         let $uiInput = document.getElementById('uiInput');
-        let $uiInput2 = document.getElementById('uiInput2');
-        let $uiInput3 = document.getElementById('uiInput3');
         let $testEvent = document.getElementById('testEvent');
         let $showWrap = document.getElementById('showWrap');
         let $testWrap = document.getElementById('testWrap');
         let $toggleElem = document.getElementById('toggleElem');
-
-        let eventArr = ['confirm', 'change', 'cancel', 'click', 'blur'];
+        
+        let eventArr = ['confirm', 'change', 'cancel'];
         let hideFlag = false;
         $showWrap.innerHTML = $uiInput.value;
-
-        for (let i = 0, len = eventArr.length; i < len; i++) {
-            $uiInput.addEventListener(eventArr[i], (e) => {
-                let $target = e.target;
-                console.log(eventArr[i]);
-                $testEvent.innerText = eventArr[i];
-                $showWrap.innerHTML = $target.value;
-            })
-        }
+        addNormalEvent(eventArr, $uiInput, $testEvent, $showWrap);
 
         $toggleElem.addEventListener('click', (e) => {
             hideFlag = !hideFlag;

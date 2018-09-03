@@ -12,7 +12,7 @@
 <section class="button" id="testWrap">
     <h1>Standard</h1>
     <h5>事件/Event
-        <span id="testButtonEvent"></span>
+        <span id="testEvent"></span>
     </h5>
     <ui-button id="testButton">Button</ui-button>
     <button id="toggleElem">移除/添加元素</button> 
@@ -91,17 +91,11 @@
 <script>
     (function () {
         let $toggleElem = document.getElementById('toggleElem');
-        let $testButtonEvent = document.getElementById('testButtonEvent');
+        let $testEvent = document.getElementById('testEvent');
         let $testWrap = document.getElementById('testWrap');
         let $testButton = document.getElementById('testButton');
-        // console.log($h5);
-        let eventArr = ['click', 'confirm', 'blur', 'focus'];
-        for (let i = 0, len = eventArr.length; i < len; i++) {
-            $testButton.addEventListener(eventArr[i], (e) => {
-                console.log(eventArr[i]);
-                $testButtonEvent.innerText = eventArr[i];
-            }, false)
-        }
+        let eventArr = ['change', 'confirm'];
+        addNormalEvent(eventArr, $testButton, $testEvent);
         let hideFlag = false;
         $toggleElem.addEventListener('click', (e) => {
             hideFlag = !hideFlag;

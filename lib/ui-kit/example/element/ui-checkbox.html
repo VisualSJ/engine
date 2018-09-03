@@ -40,23 +40,7 @@
         let $testWrap = document.getElementById('testWrap');
         $testWrap.innerText = checkboxTest.checked;
         $checkboxTest.nextSibling.innerHTML = $checkboxTest.value;
-        // let eventArr = ['click','blur','change','focus'];
-        // for (let i = 0, len = eventArr.length; i < len;i++){
-        //     $uiInput.addEventListener(eventArr[i],(e)=>{
-        //         console.log(eventArr[i]);
-        //         $testEvent.innerText = eventArr[i];
-        //     },false)
-        // }
-        $checkboxTest.addEventListener('confirm', (e) => {
-            console.log('confirm');
-            $testWrap.innerText = e.target.value;
-            $testEvent.innerText = 'confirm';
-        })
-        $checkboxTest.addEventListener('change', (e) => {
-            console.log('change');
-            $testEvent.innerText = 'change';
-            // $testWrap.innerText = e.target.value;
-            $testWrap.innerText = e.target.checked;
-        })
+        let eventArr = ['change','confirm'];
+        addNormalEvent(eventArr, $checkboxTest, $testEvent, $testWrap);
     })();
 </script>

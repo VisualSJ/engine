@@ -13,6 +13,11 @@
         h1 {
             margin: 0 0 15px 0;
         }
+        h5 {
+            overflow: hidden;
+            height: 20px;
+            line-height: 20px;
+        }
     </style>
 </head>
 
@@ -20,11 +25,11 @@
 
     <select id="select">
         <optgroup label="Controls">
-            <option>ui-num-input</option>
             <option>ui-color</option>
+            <option>ui-num-input</option>
+            <option>ui-slider</option>
             <option>ui-select</option>
             <option>ui-color-picker</option>
-            <option>ui-slider</option>
             <option>ui-checkbox</option>
             <option>ui-button</option>
             <option>ui-input</option>
@@ -50,6 +55,8 @@
     const $select = document.getElementById('select');
     const $content = document.getElementById('content');
     const regScript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/; //验证script脚本的正则
+    const eventNames = []; // 存储事件名
+    let  _timer; // 存储定时器
     let changeTestPage = function (name) {
         let path = __dirname + '/element/' + name + '.html';
         let $scriptWrap = document.getElementById('scriptWrap');
@@ -89,7 +96,24 @@
     window.addEventListener('drop', event => {
         event.preventDefault();
     });
+
+    // 基础事件的添加处理
+    function addNormalEvent(eventArr, element, showEvent, showValue) {
+        for (let i = 0, len = eventArr.length; i < len; i++) {
+            element.addEventListener(eventArr[i], (event) => {
+                console.log(eventArr[i]);
+                if (showValue) {
+                    showValue.innerHTML = event.target.value;
+                }
+                eventNames.push(eventArr[i]);
+                showEvent.innerText = eventNames.toString();
+                clearTimeout(_timer);
+                _timer = setTimeout(() => {
+                    showEvent.innerText = '';
+                    eventNames.length = 0;
+                }, 500)
+            }, false)
+        }
+    }
 </script>
-
-
 </html>

@@ -15,7 +15,7 @@
         <span id="testEvent"></span>
     </h5>
     <p id="selectValue"></p>
-    <p></p>
+    <p id="showWrap"></p>
     <ui-select value="4" placeholder="请选择" id="selectTest">
         <optgroup label="Swedish Cars">
             <option value ="volvo">Volvo</option>
@@ -60,23 +60,11 @@
         let $selectValue = document.getElementById('selectValue');
         let $addBtn = document.getElementById('addOption');
         let $delBtn = document.getElementById('deleteOption');
-        $selectTest.nextSibling.innerHTML = $selectTest.value;
+        let $showWrap = document.getElementById('showWrap');
+        $showWrap.innerHTML = $selectTest.value;
 
-        $selectTest.addEventListener('confirm', (e) => {
-            console.log('confirm');
-            let $select = e.target;
-            $selectValue.innerHTML = '选中Value：' + $select.value;
-            $testEvent.innerText = 'confirm';
-        })
-        
-        $selectTest.addEventListener('change', (e) => {
-            console.log('change');
-            $testEvent.innerText = 'change';
-            $selectTest.nextSibling.innerHTML = $selectTest.value;
-            let $select = e.target;
-            $selectValue.innerHTML = '选中Value：' + $select.valueText;
-            $selectValue.nextSibling.innerHTML = 'value:' + $select.value;
-        })
+        let eventArr = ['confirm', 'change', 'cancel'];
+        addNormalEvent(eventArr, $selectTest, $testEvent, $showWrap);
 
         $addBtn.addEventListener('click', () => {
             let option = document.createElement('option');

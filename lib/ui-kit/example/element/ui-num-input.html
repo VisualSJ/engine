@@ -18,7 +18,7 @@
     <h5>事件/Event
         <span id="testEvent"></span>
     </h5>
-    <ui-num-input id="uiNumInput" value="666"></ui-num-input>
+    <ui-num-input id="uiNumInput" value="6.55555" max="15"></ui-num-input>
     <span id="showWrap"></span>
 </section>
 
@@ -38,13 +38,18 @@
 </section>
 
 <section class="input">
+    <h1>preci 2 step 0.1</h1>
+    <ui-num-input value="10.66777" preci="2" max = "13"></ui-num-input>
+</section>
+
+<section class="input">
     <h1>Unit</h1>
     <ui-num-input value="10px" unit="px"></ui-num-input>
 </section>
 
 <section class="input">
     <h1>Max & Min</h1>
-    <ui-num-input value="10" min="0" max="20"></ui-num-input>
+    <ui-num-input value="10" min="ff" max="20"></ui-num-input>
 </section>
 
 <section class="input size">
@@ -112,30 +117,10 @@
         let $testEvent = document.getElementById('testEvent');
         let $showWrap = document.getElementById('showWrap');
         $showWrap.innerHTML = $uiNumInput.value;
-        // let eventArr = ['change','blur','focus'];
-        // for (let i = 0, len = eventArr.length; i < len;i++){
-        //     $uiNumInput.addEventListener(eventArr[i],(e)=>{
-        //         console.log(eventArr[i]);
-        //         $testEvent.innerText = eventArr[i];
-        //     },false)
-        // }
-        $uiNumInput.addEventListener('confirm', (e) => {
-            let $target = e.target;
-            console.log('confirm');
-            $testEvent.innerText = 'confirm';
-            $showWrap.innerText = $target.value;
-        })
-        $uiNumInput.addEventListener('change', (e) => {
-            let $target = e.target;
-            console.log('change');
-            $testEvent.innerText = 'change';
-            $showWrap.innerText = $target.value;
-        })
-        $uiNumInput.addEventListener('cancel', (e) => {
-            let $target = e.target;
-            console.log('cancel');
-            $testEvent.innerText = 'cancel';
-            $showWrap.innerText = $target.value;
+        let eventArr = ['change','confirm', 'cancel'];
+        // addNormalEvent(eventArr, $uiNumInput, $testEvent, $showWrap);
+        $uiNumInput.addEventListener('change', (event) => {
+            console.log(event.target.value);
         })
     })();
 </script>
