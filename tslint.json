@@ -1,96 +1,82 @@
 {
-  "extends": "tslint:recommended",
-  "linterOptions": {
-    "exclude": [
-      "**/node_modules/**/*"
-    ]
-  },
-  "rules": {
-    "indent": [
-      true,
-      "spaces",
-      4
-    ],
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-module",
-      "check-separator",
-      "check-type"
-    ],
-    "space-within-parens": true,
-    "arrow-parens": [
-      true
-    ],
-    // "linebreak-style": [
-    //     true,
-    //     "LF"
-    // ],
-    "no-console": false,
-    "no-var-requires": false,
-    "no-unused-expression": false,
-    "no-shadowed-variable": false,
-    "no-bitwise": false,
-    "trailing-comma": false,
-    "quotemark": [
-      true,
-      "single",
-      "avoid-escape"
-    ],
-    "object-literal-sort-keys": false,
-    "no-angle-bracket-type-assertion": false,
-    "no-eval": false,
-    "no-empty": [
-      true,
-      "allow-empty-functions",
-      "allow-empty-catch"
-    ]
-    // "space-before-function-paren": [true, "always"]
-  },
-  "jsRules": {
-    "indent": [
-      true,
-      "spaces",
-      4
-    ],
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-module",
-      "check-separator",
-      "check-type"
-    ],
-    "space-within-parens": true,
-    "arrow-parens": [
-      true
-    ],
-    // "linebreak-style": [
-    //     true,
-    //     "LF"
-    // ],
-    "no-console": false,
-    "no-var-requires": false,
-    "no-unused-expression": false,
-    "no-shadowed-variable": false,
-    "no-bitwise": false,
-    "trailing-comma": false,
-    "quotemark": [
-      true,
-      "single",
-      "avoid-escape"
-    ],
-    "object-literal-sort-keys": false,
-    "no-angle-bracket-type-assertion": false,
-    "no-eval": false,
-    "no-empty": [
-      true,
-      "allow-empty-functions",
-      "allow-empty-catch"
-    ]
-    // "space-before-function-paren": [true, "always"]
-  }
+    "extends": "tslint:recommended",
+    "linterOptions": {
+        "exclude": ["**/node_modules/**/*"]
+    },
+    "rules": {
+        "indent": [true, "spaces", 4],
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-module",
+            "check-separator",
+            "check-type"
+        ],
+        "space-within-parens": true,
+        "arrow-parens": [true],
+        // "linebreak-style": [
+        //     true,
+        //     "LF"
+        // ],
+        "no-console": false,
+        "no-var-requires": false,
+        "no-unused-expression": false,
+        "no-shadowed-variable": false,
+        "no-bitwise": false,
+        "trailing-comma": false,
+        "quotemark": [true, "single", "avoid-escape"],
+        "object-literal-key-quotes": [true, "as-needed"],
+        "object-literal-sort-keys": false,
+        "no-angle-bracket-type-assertion": false,
+        "no-eval": false,
+        "no-empty": [true, "allow-empty-functions", "allow-empty-catch"],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-pascal-case",
+            "allow-snake-case"
+        ]
+        // "space-before-function-paren": [true, "always"]
+    },
+    "jsRules": {
+        "indent": [true, "spaces", 4],
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-module",
+            "check-separator",
+            "check-type"
+        ],
+        "space-within-parens": true,
+        "arrow-parens": [true],
+        // "linebreak-style": [
+        //     true,
+        //     "LF"
+        // ],
+        "no-console": false,
+        "no-var-requires": false,
+        "no-unused-expression": false,
+        "no-shadowed-variable": false,
+        "no-bitwise": false,
+        "trailing-comma": false,
+        "quotemark": [true, "single", "avoid-escape"],
+        "object-literal-key-quotes": [true, "as-needed"],
+        "object-literal-sort-keys": false,
+        "no-angle-bracket-type-assertion": false,
+        "no-eval": false,
+        "no-empty": [true, "allow-empty-functions", "allow-empty-catch"],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-pascal-case",
+            "allow-snake-case"
+        ]
+        // "space-before-function-paren": [true, "always"]
+    }
 }

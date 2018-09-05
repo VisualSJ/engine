@@ -4,70 +4,50 @@
         <span>{{node.name.value}}</span>
     </header>
 
-    <section>
+    <section v-on:confirm="onNodePropertyChange">
 
-        <div>
-            <span class="name">active</span>
-            <ui-checkbox
-                :value="node.active.value"
-            ></ui-checkbox>
-        </div>
+        <my-prop label="active">
+            <ui-checkbox path="active" :value="node.active.value"></ui-checkbox>
+        </my-prop>
 
-        <div>
-            <span class="name">name</span>
-            <ui-input
-                :value="node.name.value"
-            ></ui-input>
-        </div>
+        <my-prop label="name">
+            <ui-input class="flex-1 flex" path="name" :value="node.name.value"></ui-input>
+        </my-prop>
 
-        <div>
-            <span class="name">layer</span>
-            <ui-num-input
-                :value="node.layer.value"
-            ></ui-num-input>
-        </div>
+        <my-prop label="layer">
+            <ui-num-input preci="2" path="layer" :value="node.layer.value"></ui-num-input>
+        </my-prop>
 
-        <div>
-            <span class="name">lpos</span>
-            <div class="flex-1">
-                <ui-num-input unit="x"
-                    :value="node.lpos.value.x"
-                ></ui-num-input>
-                <ui-num-input unit="y"
-                    :value="node.lpos.value.y"
-                ></ui-num-input>
-                <ui-num-input unit="z"
-                    :value="node.lpos.value.z"
-                ></ui-num-input>
-            </div>
-        </div>
+        <my-prop label="lpos" class="column3">
+            <my-prop label="X">
+                <ui-num-input preci="2" path="lpos.x" :value="node.lpos.value.x">
+                </ui-num-input>
+            </my-prop>
+            <my-prop label="Y">
+                <ui-num-input preci="2" path="lpos.y" :value="node.lpos.value.y"></ui-num-input>
+            </my-prop>
+            <my-prop label="Z">
+                <ui-num-input preci="2" path="lpos.z" :value="node.lpos.value.z"></ui-num-input>
+            </my-prop>
+        </my-prop>
 
-        <div>
-            <span class="name">lrot</span>
-            <div class="flex-1">
-                <ui-num-input unit="x"
-                    :value="node.lrot.value.x"
-                ></ui-num-input>
-                <ui-num-input unit="y"
-                    :value="node.lrot.value.y"
-                ></ui-num-input>
-                <ui-num-input unit="z"
-                    :value="node.lrot.value.z"
-                ></ui-num-input>
-                <ui-num-input unit="w"
-                    :value="node.lrot.value.w"
-                ></ui-num-input>
-            </div>
-        </div>
-
-
+        <my-prop label="lrot" class="column3">
+            <my-prop label="X">
+                <ui-num-input preci="2" path="lrot.x" :value="node.lrot.value.x"></ui-num-input>
+            </my-prop>
+            <my-prop label="Y">
+                <ui-num-input preci="2" path="lrot.y" :value="node.lrot.value.y"></ui-num-input>
+            </my-prop>
+            <my-prop label="Z">
+                <ui-num-input preci="2" path="lrot.z" :value="node.lrot.value.z"></ui-num-input>
+            </my-prop>
+            <my-prop label="W">
+                <ui-num-input preci="2" path="lrot.w" :value="node.lrot.value.w"></ui-num-input>
+            </my-prop>
+        </my-prop>
     </section>
 
-    <template
-        v-for="(item, key) in node.comps.value"
-    >
-        <comp
-            :component="item.value"
-        ></comp>
+    <template v-for="(item, key) in node.comps.value">
+        <comp :index="key" :component="item.value" :on-node-property-change="onNodePropertyChange"></comp>
     </template>
 </section>

@@ -1,15 +1,16 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./source",
-    "strict": true,
-    "types": [
-      "../../node_modules/@types/node",
-      "../../@types/editor"
-    ],
-    "esModuleInterop": true
-  }
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "rootDir": "./source",
+        "strict": true,
+        "types": [
+            "../../node_modules/@types/node",
+            "../../@types/editor",
+            "../../@types/scene"
+        ],
+        "esModuleInterop": true
+    }
 }

@@ -1,0 +1,18 @@
+<ui-focusable class="prop-container" :hovering="hovering" @mouseover.stop="onMouseOver" @mouseout.stop="onMouseOut">
+    <div class="wrapper">
+        <div class="label" :style="{paddingLeft: `${indent * baseIndentSize}px`}">
+            <i class="move icon-braille" v-if="movable"></i>
+            <i class="fold icon-fold-up" v-if="foldable"></i>
+            <span class="text">{{label}}</span>
+            <div class="lock">
+                <i class="icon-lock"></i>
+            </div>
+        </div>
+        <div class="wrapper-content">
+            <slot></slot>
+        </div>
+        <div class="remove" v-if="removable">
+            <i class="icon-trash-empty"></i>
+        </div>
+    </div>
+</ui-focusable>

@@ -1,25 +1,13 @@
 <div class="content">
 
-    <section class="loading"
-        v-if="loading"
-    >
+    <section class="loading" v-if="loading">
         <ui-loading></ui-loading>
     </section>
 
-    <section
-        v-else
-    >
+    <section v-else>
+        <asset v-if="type === 'asset'" :info="asset.info" :meta="asset.meta"></asset>
 
-        <asset
-            v-if="type === 'asset'"
-            :info="asset.info"
-            :meta="asset.meta"
-        ></asset>
-
-        <node
-            v-if="type === 'node'"
-            :node="node"
-        ></node>
+        <node :on-node-property-change="onNodePropertyChange" v-if="type === 'node'" :node="node"></node>
 
     </section>
 </div>

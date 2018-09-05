@@ -117,11 +117,15 @@ exports.panel = [{
 ## 依赖的一些环境
 
 1. 使用 npm 全局安装 typescript、tslint
+
 ```bash
 npm install typescript -g
 npm install tslint -g
 ```
+
 2. 安装 vscode 的 tslint 插件
+
+3. 建议 vscode 的个人设置里面启用 tslint.autoFixOnSave、tslint.jsEnable
 
 ## 其他参考资料
 
@@ -129,19 +133,19 @@ npm install tslint -g
 
 ### 管理系统
 
-[dock     - 面板停靠管理](./node_modules/@editor/dock/README.MD)
+[dock - 面板停靠管理](./node_modules/@editor/dock/README.MD)
 
-[ipc      - 消息管理](./node_modules/@editor/ipc/README.MD)
+[ipc - 消息管理](./node_modules/@editor/ipc/README.MD)
 
-[package  - 插件管理](./node_modules/@editor/package/README.MD)
+[package - 插件管理](./node_modules/@editor/package/README.MD)
 
-[panel    - 面板管理](./node_modules/@editor/panel/README.MD)
+[panel - 面板管理](./node_modules/@editor/panel/README.MD)
 
-[project  - 项目管理](./node_modules/@editor/project/README.MD)
+[project - 项目管理](./node_modules/@editor/project/README.MD)
 
 [protocol - 协议管理](./node_modules/@editor/protocol/README.MD)
 
-[setting  - 设置管理](./node_modules/@editor/setting/README.MD)
+[setting - 设置管理](./node_modules/@editor/setting/README.MD)
 
 ## electron 扩展模块
 

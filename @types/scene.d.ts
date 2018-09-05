@@ -67,6 +67,7 @@ interface NodeDump {
     comps: PropertyDump;
 
     children: PropertyDump;
+    [index: string]: PropertyDump;
 }
 
 interface PropertyDump {
@@ -75,6 +76,7 @@ interface PropertyDump {
     extends: string[];
     default?: any;
     options?: [];
+    [index: string]: any;
 }
 
 interface NodeTreeItem {
@@ -122,7 +124,6 @@ interface color4 {
 }
 
 interface mat3 {
-
     m00: number;
     m01: number;
     m02: number;
@@ -137,7 +138,6 @@ interface mat3 {
 }
 
 interface mat4 {
-
     m00: number;
     m01: number;
     m02: number;
