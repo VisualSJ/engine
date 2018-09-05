@@ -14,6 +14,7 @@ declare interface ItreeNode {
     name: string;
     uuid: string;
     children: ItreeNode[];
+    top: number; // top 位置
     isLock: boolean; // 是否锁定
     depth?: number;
     isParent?: boolean; // 是否是父节点

@@ -11,7 +11,7 @@
     padding: 4px 1px 4px 1px;
     box-sizing: border-box;
     overflow: hidden;
-    &>.node {
+    >.node {
         display: block;
         position: relative;
         padding: 2px 8px 2px 0;
@@ -43,11 +43,8 @@
         }
         &[animate] {
             .arrow {
-                transition: 0.2s all !important;
+                transition: 0.2s all;
             }
-        }
-        .arrow {
-            transition: none !important;
         }
         .folder {
             font-size: 11px !important;
@@ -64,7 +61,6 @@
             font-size: 10px;
             width: 20px;
             text-align: center;
-            transition: 0.2s all;
             cursor: pointer;
         }
         .lock {

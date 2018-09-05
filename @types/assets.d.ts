@@ -12,6 +12,8 @@ declare interface IaddAsset {
 
 declare interface ItreeAsset {
     name: string;
+    filename: string;
+    fileext: string;
     uuid: string;
     children: ItreeAsset[];
     top: number; // top 位置
@@ -36,5 +38,7 @@ declare interface IsourceAsset {
     source: string;
 
     name: string;
+    filename: string;
+    fileext: string;
     parent: string;
 }

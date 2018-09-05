@@ -236,7 +236,7 @@ export async function ready() {
              */
             lockNode(uuid: string) {
 
-                const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
+                const one = getOneFromTreeData(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
 
                 if (one) {
                     // TODO 这块需要 ipc scene 修改数据
@@ -251,7 +251,7 @@ export async function ready() {
              */
             toggleNode(uuid: string) {
 
-                const one = getOne(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
+                const one = getOneFromTreeData(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
 
                 if (one) {
                     one.isExpand = !one.isExpand;
@@ -278,7 +278,7 @@ export async function ready() {
              */
             renameNode(item: ItreeNode, name = '') {
 
-                const one = getOne(treeData, item.uuid)[0]; // 获取该节点的数据
+                const one = getOneFromTreeData(treeData, item.uuid)[0]; // 获取该节点的数据
 
                 if (!one || name === '') {
                     // name存在才能重名命，否则还原状态
@@ -305,9 +305,9 @@ export async function ready() {
              */
             dropNode(item: ItreeNode, json: IdragNode) {
 
-                const fromData = getOne(treeData, json.from);
+                const fromData = getOneFromTreeData(treeData, json.from);
 
-                const toData = getOne(treeData, json.to); // 将被注入数据的对象
+                const toData = getOneFromTreeData(treeData, json.to); // 将被注入数据的对象
 
                 let offset = 0;
                 let loadingItem;
@@ -315,7 +315,7 @@ export async function ready() {
                 // 内部平级移动
                 if (fromData[3].uuid === toData[3].uuid && ['before', 'after'].indexOf(json.insert) != -1) {
                     // @ts-ignore
-                    loadingItem = this.nodes.find(one => one.uuid === fromData[3].uuid); //元素的父级
+                    loadingItem = getOneFromPositionMap(fromData[3].uuid); //元素的父级
 
                     offset = toData[1] - fromData[1]; // 目标索引减去自身索引
                     if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
@@ -335,7 +335,7 @@ export async function ready() {
 
                     if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
                         // @ts-ignore
-                        loadingItem = this.nodes.find(one => one.uuid === toData[0].uuid); // 元素自身
+                        loadingItem = getOneFromPositionMap(toData[0].uuid); // 元素自身
 
                         Editor.Ipc.sendToPackage('scene', 'set-property', {
                             uuid: fromData[0].uuid,
@@ -348,7 +348,7 @@ export async function ready() {
                         });
                     } else { // 跨级插入
                         // @ts-ignore
-                        loadingItem = this.nodes.find(one => one.uuid === toData[3].uuid); //元素的父级
+                        loadingItem = getOneFromPositionMap(toData[3].uuid); //元素的父级
 
                         Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
                             uuid: fromData[0].uuid,
@@ -505,6 +505,7 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
                 name: json.name,
                 uuid: json.uuid,
                 children: [],
+                top: start,
                 isLock: json.isLock ? true : false,
                 depth,
                 isParent: json.children && json.children.length > 0 ? true : false,
@@ -523,6 +524,7 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
                     name: json.name,
                     uuid: json.uuid,
                     children: [],
+                    top: start,
                     isLock: json.isLock ? true : false,
                     depth: 0, // 都保持在第一层
                     isParent: false,
@@ -571,7 +573,7 @@ function resetItreeNodeProperty(obj: ItreeNode, props: any) {
  * @param arr 
  * @param uuid 
  */
-function getOne(obj: ItreeNode, uuid = ''): any {
+function getOneFromTreeData(obj: ItreeNode, uuid = ''): any {
     let rt = [];
 
     if (obj.uuid === uuid) {
@@ -587,7 +589,7 @@ function getOne(obj: ItreeNode, uuid = ''): any {
         }
 
         if (one.children && one.children.length !== 0) { // 如果还有children的继续迭代查找
-            rt = getOne(one, uuid);
+            rt = getOneFromTreeData(one, uuid);
 
             if (rt.length > 0) { // 找到了才返回，找不到，继续循环
                 return rt;
@@ -599,13 +601,24 @@ function getOne(obj: ItreeNode, uuid = ''): any {
 }
 
 /**
+ * 更快速地找到树形节点
+ */
+function getOneFromPositionMap(uuid = '') {
+    for (const [top, json] of positionMap) {
+        if (uuid === json.uuid) {
+            return json;
+        }
+    }
+}
+
+/**
  * 改变现有节点数据
  * @param uuid 现有节点的uuid
  * @param dumpData 新的数据包
  */
 function changeTreeNodeData(uuid: string, dumpData: any) {
     // 现有的节点数据
-    const nodeData = getOne(treeData, uuid)[0];
+    const nodeData = getOneFromTreeData(treeData, uuid)[0];
 
     /**
      *  属性是值类型的修改
@@ -628,7 +641,7 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
         if (index != -1) { // 平级移动
             one = nodeData.children[index]; // 原来的父级节点有该元素
         } else { // 跨级移动
-            let arrInfo = getOne(treeData, id); // 从全部数据中找出被移动的数据
+            let arrInfo = getOneFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
             one = arrInfo[2].splice(arrInfo[1], 1)[0];
         }
         one.isExpand = false;
@@ -646,13 +659,14 @@ function addTreeNodeData(dumpData: any) {
 
     // 父级节点
     let uuidParent = dumpData.parent.value;
-    const parentNode = getOne(treeData, uuidParent)[0];
+    const parentNode = getOneFromTreeData(treeData, uuidParent)[0];
 
     // 数据转换
     let childNode: ItreeNode = {
         name: dumpData.name.value,
         uuid: uuid,
         children: dumpData.children.value,
+        top: 0,
         isLock: false
     };
 
@@ -667,8 +681,40 @@ function addTreeNodeData(dumpData: any) {
  * 清除对应节点数据
  */
 function removeTreeNodeData(uuid: string) {
-    let nodeData = getOne(treeData, uuid);
+    let nodeData = getOneFromTreeData(treeData, uuid);
     let index = nodeData[1];
 
     nodeData[2].splice(index, 1);
+}
+
+/**
+ * 滚动节点到可视范围内
+ * @param uuid 
+ */
+function scrollIntoView(uuid: string) {
+    // 先A判断是否已在展开的节点中，
+    let one = getOneFromPositionMap(uuid);
+    if (one) { // 如果A是，
+        // 再B判断是否是否在可视范围，
+        if ((vm.scrollTop - treeNodeHeight) < one.top && one.top < (vm.scrollTop + vm.viewHeight - treeNodeHeight)) {
+            return; // 如果B是，终止
+        } else { // 如果B不是，滚动到可视的居中范围内
+            vm.$refs.viewBox.scrollTo(0, (vm.scrollTop + one.top) / 2);
+        }
+    } else { // 如果A不是，展开其父级节点，并循环展开其父级的父级节点，滚动到可视的居中范围内
+        expandTreeNode(uuid);
+        vm.changeTreeData();
+        scrollIntoView(uuid);
+    }
+}
+
+/**
+ * 展开树形节点
+ */
+function expandTreeNode(uuid: string) {
+    let arr = getOneFromTreeData(treeData, uuid);
+    arr[0].isExpand = true;
+    if (arr[3] && arr[3].uuid) {
+        expandTreeNode(arr[3].uuid);
+    }
 }

@@ -59,7 +59,7 @@ export const methods = {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('new', item.uuid, { type: 'empty' });
+                                self.$emit('new', item.uuid, { type: 'folder' });
                             }
                         },
                         {

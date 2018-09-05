@@ -18,6 +18,7 @@ const positionMap: Map<number, ItreeAsset> = new Map();
 
 const treeNodeHeight: number = 20; // 配置每个资源的高度，需要与css一致
 
+let dragOverNode: any; // 拖拽时鼠标处于哪个节点上
 let timeIdShadowHide: any; // 延时取消高亮，避免高亮与不高亮之间的操作闪烁
 
 const Vue = require('vue/dist/vue.js');
@@ -116,13 +117,19 @@ export const messages = {
         }
 
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        if (
-            !vm.list.length || vm.list.some((item: any) => {
-                return item.source !== info.source;
-            })
-        ) {
-            vm.list.push(info);
-        }
+        console.log(info);
+        addSourceData(info);
+
+        // 触发节点数据已变动
+        // vm.changeTreeData();
+
+        // if (
+        //     !vm.list.length || vm.list.some((item: any) => {
+        //         return item.source !== info.source;
+        //     })
+        // ) {
+        //     vm.list.push(info);
+        // }
     },
 
     /**
@@ -135,13 +142,18 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
+        // 删除当前数据
+        removeTreeNodeData(uuid);
 
-        vm.list.some((item: any, index: number) => {
-            if (item.uuid === uuid) {
-                vm.list.splice(index, 1);
-                return true;
-            }
-        });
+        // 触发节点数据已变动
+        vm.changeTreeData();
+
+        // vm.list.some((item: any, index: number) => {
+        //     if (item.uuid === uuid) {
+        //         vm.list.splice(index, 1);
+        //         return true;
+        //     }
+        // });
     },
 };
 
@@ -155,7 +167,7 @@ export async function ready() {
         el: panel.$.content,
         data: {
             ready: isReady,
-            expand: false,
+            expand: false, // 是否全部展开
             select: [],
             viewHeight: 0, // 当前树形的可视区域高度
             scrollTop: 0, // 当前树形的滚动数据
@@ -223,21 +235,22 @@ export async function ready() {
                 }
 
                 // 获取该资源
-                let one = getOne(treeData, uuid);
+                let one = getOneFromTreeData(treeData, uuid);
                 let url = one[0].source;
 
                 if (one[0].isDir !== true) { // 不是目录，指向父级级
                     url = one[3].source;
                 }
 
+                let content;
                 switch (json.type) {
-                    case 'empty': url += '/New Folder'; break;
-                    case 'javascript': url += '/NewScript.js'; break;
+                    case 'folder': url += '/New Folder'; break;
+                    case 'javascript': url += '/NewScript.js'; content = ''; break;
                 }
 
                 url = 'db://assets/' + join(url);
 
-                Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, '');
+                Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
             },
             /**
              * 删除资源
@@ -257,7 +270,7 @@ export async function ready() {
              */
             toggleAsset(uuid: string) {
 
-                const one = getOne(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
+                const one = getOneFromTreeData(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
 
                 if (one) {
                     one.isExpand = !one.isExpand;
@@ -284,7 +297,7 @@ export async function ready() {
              */
             renameAsset(item: ItreeAsset, name = '') {
 
-                const one = getOne(treeData, item.uuid)[0]; // 获取该资源的数据
+                const one = getOneFromTreeData(treeData, item.uuid)[0]; // 获取该资源的数据
 
                 if (!one || name === '') {
                     // name存在才能重名命，否则还原状态
@@ -293,21 +306,25 @@ export async function ready() {
                 }
 
                 item.state = 'loading'; // 显示 loading 效果
-
-
             },
             /**
              * 拖动中感知当前所处的文件夹，高亮此文件夹
              */
             overAsset(uuid: string) {
                 // @ts-ignore
-                let node = this.nodes.find(one => one.uuid === uuid);
+                let node: ItreeAsset = getOneFromPositionMap(uuid);
                 if (!node.isDir) {
                     // @ts-ignore
-                    node = this.nodes.find(one => one.uuid === node.parent);
+                    node = getOneFromPositionMap(node.parent);
                     node.state = 'over';
                 }
 
+                if (node != dragOverNode) {
+                    if (dragOverNode) {
+                        dragOverNode.state = '';
+                    }
+                    dragOverNode = node;
+                }
                 clearTimeout(timeIdShadowHide);
                 // @ts-ignore
                 this.shadowOffset = [node.top + 4, node.height > treeNodeHeight ? (node.height + 3) : node.height];
@@ -317,10 +334,16 @@ export async function ready() {
              */
             leaveAsset(uuid: string) {
                 // @ts-ignore
-                let node = this.nodes.find(one => one.uuid === uuid);
+                let node: ItreeAsset = getOneFromPositionMap(uuid);
                 if (!node.isDir) {
                     // @ts-ignore
-                    node = this.nodes.find(one => one.uuid === node.parent);
+                    node = getOneFromPositionMap(node.parent);
+                }
+
+                if (node != dragOverNode) {
+                    // @ts-ignore
+                    this.shadowOffset = [0, 0];
+                    node.state = '';
                 }
 
                 clearTimeout(timeIdShadowHide);
@@ -340,20 +363,20 @@ export async function ready() {
                     return false; // 不是拖动的话，取消
                 }
 
-                const fromData = getOne(treeData, json.from);
+                const fromData = getOneFromTreeData(treeData, json.from);
 
-                const toData = getOne(treeData, json.to); // 将被注入数据的对象
+                const toData = getOneFromTreeData(treeData, json.to); // 将被注入数据的对象
 
-                let target;
+                let target: ItreeAsset;
 
                 // @ts-ignore
-                let toNode = this.nodes.find(one => one.uuid === toData[0].uuid); // 树形节点自身
+                let toNode: ItreeAsset = getOneFromPositionMap(toData[0].uuid);
 
                 if (toNode.isDir) {
                     target = toNode;
                 } else {
                     // @ts-ignore
-                    target = this.nodes.find(one => one.uuid === toData[3].uuid); // 树形节点的父级
+                    target = getOneFromPositionMap(toData[3].uuid); // 树形节点的父级
                 }
 
                 if (target.uuid === fromData[3].uuid) {
@@ -377,6 +400,8 @@ export async function ready() {
 
                 calcItreeAssetPosition(); // 重算排位
 
+                calcItreeAssetHeight(); // 计算文件夹的高度
+
                 vm.renderTree(); // 重新渲染出树形
 
                 // 重新定位滚动条, +1 是为了离底部一些距离，更美观，也能避免死循环 scroll 事件
@@ -398,13 +423,6 @@ export async function ready() {
                 for (const [top, json] of positionMap) {
                     if (top >= min && top <= max) { // 在可视区域才显示
                         vm.nodes.push(json);
-
-                        //
-                        for (const [t, j] of positionMap) {
-                            if (j.uuid === json.parent) {
-                                j.height = 1; // 大于 0 就可以，实际计算在内部的setter
-                            }
-                        }
                     }
                 }
             },
@@ -444,7 +462,7 @@ export async function ready() {
                         {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
-                                vm.newAsset('', { type: 'empty' });
+                                vm.newAsset('', { type: 'folder' });
                             }
                         },
                         {
@@ -494,6 +512,8 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
 
         const one = {
             name: json.name,
+            filename: json.filename,
+            fileext: json.fileext,
             uuid: json.uuid,
             children: json.children,
             top: start,
@@ -511,10 +531,12 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
                             json.height = 1; // 大于 0 就可以，实际计算在内部的setter
                         }
                     }
+                } else {
+                    this._height = treeNodeHeight;
                 }
             },
             parent: json.parent,
-            depth: 0, // 都保持在第一层
+            depth: 1, // 第二层，默认给搜索状态下赋值
             isDir: json.isDir || false,
             isParent: false,
             isExpand: true,
@@ -524,7 +546,7 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
         if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
             positionMap.set(start, Object.assign(one, { // 平级保存
                 depth,
-                isParent: json.children && json.children.length > 0 ? true : false,
+                isParent: json.children && json.children.length > 0 ? true : json.isDir ? true : false,
                 isExpand: json.children && json.isExpand ? true : false,
             }));
 
@@ -547,6 +569,23 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
     });
     // 返回序号
     return index;
+}
+
+/**
+ * 计算一个文件夹的完整高度
+ */
+function calcItreeAssetHeight() {
+    for (const [top, json] of positionMap) {
+        json.height = 0;
+    }
+
+    for (const [top, json] of positionMap) {
+        for (const [t, j] of positionMap) {
+            if (j.uuid === json.parent) {
+                j.height = 1; // 大于 0 就可以，实际计算在内部的 setter 函数
+            }
+        }
+    }
 }
 
 /**
@@ -578,7 +617,7 @@ function resetItreeAssetProperty(obj: ItreeAsset, props: any) {
  * @param arr 
  * @param uuid 
  */
-function getOne(obj: ItreeAsset, uuid = ''): any {
+function getOneFromTreeData(obj: ItreeAsset, uuid = ''): any {
     let rt = [];
 
     if (obj.uuid === uuid) {
@@ -594,7 +633,7 @@ function getOne(obj: ItreeAsset, uuid = ''): any {
         }
 
         if (one.children && one.children.length !== 0) { // 如果还有children的继续迭代查找
-            rt = getOne(one, uuid);
+            rt = getOneFromTreeData(one, uuid);
 
             if (rt.length > 0) { // 找到了才返回，找不到，继续循环
                 return rt;
@@ -606,13 +645,24 @@ function getOne(obj: ItreeAsset, uuid = ''): any {
 }
 
 /**
+ * 更快速地找到树形节点
+ */
+function getOneFromPositionMap(uuid = '') {
+    for (const [top, json] of positionMap) {
+        if (uuid === json.uuid) {
+            return json;
+        }
+    }
+}
+
+/**
  * 改变现有资源数据
  * @param uuid 现有资源的uuid
  * @param dumpData 新的数据包
  */
 function changeTreeNodeData(uuid: string, dumpData: any) {
     // 现有的资源数据
-    const nodeData = getOne(treeData, uuid)[0];
+    const nodeData = getOneFromTreeData(treeData, uuid)[0];
 
     /**
      *  属性是值类型的修改
@@ -635,7 +685,7 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
         if (index != -1) { // 平级移动
             one = nodeData.children[index]; // 原来的父级资源有该元素
         } else { // 跨级移动
-            let arrInfo = getOne(treeData, id); // 从全部数据中找出被移动的数据
+            let arrInfo = getOneFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
             one = arrInfo[2].splice(arrInfo[1], 1)[0];
         }
         one.isExpand = false;
@@ -645,19 +695,50 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
 }
 
 /**
+ * 添加资源后，增加树形节点数据
+ */
+function addTreeNodeData(rt: Array<ItreeAsset>, key: string, parentKey: any, item: any) {
+    // 找出父级
+    let one = deepFindParent(rt, key, item[parentKey]);
+
+    if (one) {
+        if (!Array.isArray(one.children)) {
+            one.children = [];
+        }
+        one.children.push(item);
+
+        // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
+        one.isDir = true;
+        item.parent = one.uuid;
+
+    } else {
+        rt.push(item);
+    }
+}
+
+/**
+ * 删除资源后，清除对应树形节点数据
+ */
+function removeTreeNodeData(uuid: string) {
+    let nodeData = getOneFromTreeData(treeData, uuid);
+    let index = nodeData[1];
+
+    nodeData[2].splice(index, 1);
+}
+/**
  * 从一个扁平的数组的转换为含有 children 字段的树形
  * @param arr
  * @param key 唯一标识的字段
  * @param parentKey 父级的字段名称
  */
-function toTreeData(arr: Array<any>, key: string, parentKey: any) {
+function toTreeData(arr: Array<any>, key: string, parentKey: string) {
 
     let tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
     // 重新排序
     dirSort(tree);
     return tree;
 
-    function loopOne(arr: any, key: string, parentKey: any) {
+    function loopOne(arr: any, key: string, parentKey: string) {
         let rt: Array<ItreeAsset> = [];
 
         arr.forEach((item: any) => {
@@ -665,50 +746,59 @@ function toTreeData(arr: Array<any>, key: string, parentKey: any) {
                 item.children = [];
             }
 
-            let one = deepFind(rt, key, item[parentKey]);
-
-            if (one) {
-                if (!Array.isArray(one.children)) {
-                    one.children = [];
-                }
-                one.children.push(item);
-
-                // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
-                one.isDir = true;
-                item.parent = one.uuid;
-
-            } else {
-                rt.push(item);
+            // TODO: 这只是一个临时做法，无法正确识别 a.js 的文件夹
+            if (item.filename && !item.fileext) { // 处理空文件夹
+                item.isDir = true;
             }
+
+            addTreeNodeData(rt, key, parentKey, item);
+
+            // // 找出父级
+            // let one = deepFindParent(rt, key, item[parentKey]);
+
+            // if (one) {
+            //     if (!Array.isArray(one.children)) {
+            //         one.children = [];
+            //     }
+            //     one.children.push(item);
+
+            //     // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
+            //     one.isDir = true;
+            //     item.parent = one.uuid;
+
+            // } else {
+            //     rt.push(item);
+            // }
         });
 
         return rt;
     }
 
-    /**
-     * 深度查找对应关系，类似 id === parentId 确定子父关系
-     * @param arr 
-     * @param key 
-     * @param parentValue 
-     */
-    function deepFind(arr: Array<any>, key: string, parentValue: any) {
-        let one: any = arr.find(a => {
-            return a[key] === parentValue;
-        });
 
-        if (one) {
-            return one;
-        }
+}
+/**
+ * 找出父级，深度查找对应关系，类似 id === parentId 确定子父关系
+ * @param arr 
+ * @param key 
+ * @param parentValue 
+ */
+function deepFindParent(arr: Array<any>, key: string, parentValue: any) {
+    let one: any = arr.find(a => {
+        return a[key] === parentValue;
+    });
 
-        for (let i in arr) {
-            let rt: any = deepFind(arr[i].children, key, parentValue);
-            if (rt) {
-                return rt;
-            }
-        }
-
-        return;
+    if (one) {
+        return one;
     }
+
+    for (let i in arr) {
+        let rt: any = deepFindParent(arr[i].children, key, parentValue);
+        if (rt) {
+            return rt;
+        }
+    }
+
+    return;
 }
 
 /**
@@ -741,26 +831,18 @@ function dirSort(arr: Array<ItreeAsset>) {
  * @param arr 
  */
 function transformData(arr: Array<IsourceAsset>) {
-    // 处理原始数据
-    let newArr = arr.filter(a => a.source !== '').map((a: IsourceAsset) => {
-        let paths: Array<string> = a.source.split(/\/|\\/);
-
-        // 赋予两个新字段用于子父层级关联
-        a.name = paths.pop() || '';
-        a.parent = paths.join('\\') || 'assets';
-
-        return a;
-    });
-
-    // 转为树形数据
     return {
         name: 'root',
+        filename: 'root',
+        fileext: '',
         uuid: 'root',
         children: [
             {
                 name: 'assets',
+                filename: 'assets',
+                fileext: '',
                 uuid: 'assets',
-                children: toTreeData(newArr, 'source', 'parent'),
+                children: toTreeData(dealSourceData(arr), 'source', 'parent'),
                 state: '',
                 source: '',
                 top: 0,
@@ -776,5 +858,33 @@ function transformData(arr: Array<IsourceAsset>) {
         isDir: true,
         isExpand: true,
     };
+}
 
+/**
+ * 添加一个新资源节点的原始数据
+ * @param source
+ */
+function addSourceData(source: IsourceAsset) {
+    let item = dealSourceData([source]);
+    // TODO：这里有问题，待续
+    addTreeNodeData(treeData.children, 'source', 'parent', item);
+}
+
+/**
+ * 处理原始数据
+ * @param arr 
+ */
+function dealSourceData(arr: Array<IsourceAsset>) {
+    return arr.filter(a => a.source !== '').map((a: IsourceAsset) => {
+        let paths: Array<string> = a.source.split(/\/|\\/);
+
+        // 赋予两个新字段用于子父层级关联
+        a.name = paths.pop() || '';
+        let [filename, fileext] = a.name.split('.');
+        a.filename = filename;
+        a.fileext = fileext || '';
+        a.parent = paths.join('\\') || 'assets';
+
+        return a;
+    });
 }

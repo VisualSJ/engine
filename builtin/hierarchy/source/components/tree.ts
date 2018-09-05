@@ -142,6 +142,11 @@ export const methods = {
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: item.uuid
         }));
+
+        let img = new Image();
+        img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
+        // @ts-ignore
+        event.dataTransfer.setDragImage(img, 0, 0);
     },
     /**
      * 拖动到元素的上面

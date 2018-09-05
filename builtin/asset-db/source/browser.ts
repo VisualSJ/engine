@@ -1,8 +1,8 @@
 'use stirct';
 
 import { AssetDB } from 'asset-db';
-import { existsSync } from 'fs';
-import { ensureDirSync, outputFileSync, removeSync, moveSync } from 'fs-extra';
+import { promisify } from 'util';
+import { existsSync, ensureDirSync, outputFileSync, removeSync, move, remove, outputFile, ensureDir } from 'fs-extra';
 import { join, relative } from 'path';
 
 let isReady: boolean = false;
@@ -107,7 +107,7 @@ module.exports = {
          * @param url db://assets/abc.json
          * @param data
          */
-        'create-asset'(url: string, data: Buffer | string) {
+        async 'create-asset'(url: string, data: Buffer | string) {
             if (!database) {
                 return false;
             }
@@ -127,8 +127,19 @@ module.exports = {
             file = rename(file, 0);
 
             // 创建
-            outputFileSync(file, data);
-            return true;
+            let outputFilePromise = promisify(outputFile);
+            let ensureDirPromise = promisify(ensureDir);
+            try {
+                if (data === null) { // 是文件夹
+                    await ensureDirPromise(file);
+                } else { // 是文件
+                    await outputFilePromise(file, data);
+                }
+                return true;
+            } catch (err) {
+                console.log(err);
+                return false;
+            }
 
             // 如果创建的文件名称重复 按 001, 002 递增
             //@ts-ignore;
@@ -168,15 +179,39 @@ module.exports = {
          * @param uuid
          * @param target
          */
-        'move-asset'(uuid: string, target: string) {
+        async 'move-asset'(uuid: string, target: string) {
             if (!database) {
                 return false;
             }
             const asset = database.uuid2asset[uuid];
             const dir = database.uuid2asset[target];
-            existsSync(asset.source) && existsSync(dir.source) && moveSync(asset.source, dir.source);
-            existsSync(asset.source + '.meta') && existsSync(dir.source) && moveSync(asset.source + '.meta', dir.source);
-            return true;
+            if (asset.source === dir.source || !existsSync(asset.source) || !existsSync(dir.source)) {
+                return false;
+            }
+            let newPath = join(dir.source, asset.basename + asset.extname);
+            let metaPath = asset.source + '.meta';
+            if (!existsSync(metaPath)) {
+                return false;
+            }
+
+            let movePromise = promisify(move);
+            let removePromise = promisify(remove);
+            try {
+                //@ts-ignore;
+                await movePromise(asset.source, newPath, { overwrite: true });
+                //@ts-ignore;
+                await movePromise(metaPath, newPath + '.meta', { overwrite: true });
+
+                // 复制成功，删除原位置文件
+                //@ts-ignore;
+                await removePromise(asset.source);
+                await removePromise(metaPath);
+
+                return true;
+            } catch (err) {
+                console.log(err);
+                return false;
+            }
         },
 
         /**
