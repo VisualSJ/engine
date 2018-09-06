@@ -6,8 +6,11 @@ const fse = require('fs-extra');
 
 const files = [
     {
-        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/engine.dev.js',
-        dist: './builtin/scene/engine/engine.dev.js',
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/3d-engine/0.15.0.js',
+        dist: './builtin/engine/resources/3d/0.15.0.js',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/2d-engine/2.0.0-alpha.js',
+        dist: './builtin/engine/resources/2d/2.0.0-alpha.js',
     }, {
         url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/button.js',
         dist: './.project/assets/button.scene',

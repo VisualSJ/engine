@@ -1,0 +1,23 @@
+<ul>
+    <li
+        v-for="item in list[type]"
+    >
+        <div class="name">{{item.version}}</div>
+        <div class="button">
+            <i class="icon cloud-download"
+                v-if="!item.exists && !item.download"
+                @click="_onClickDownload($event, item)"
+            ></i>
+
+            <ui-loading
+                v-if="item.download"
+            ></ui-loading>
+
+            <i class="icon check"
+                v-if="item.exists"
+                :use="current[type] === item.version"
+                @click="_onClickUseEngine($event, item)"
+            ></i>
+        </div>
+    </li>
+</ul>

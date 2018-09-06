@@ -1,16 +1,14 @@
 'use strict';
 
-declare const cc: any;
-
-import { query } from '../manager/node';
+const { query } = require('../manager/scene');
 
 /**
  * 生成一个 component 的 dump 数据
  * @param component
  */
-export function dumpComponent(component: any) {
+function dumpComponent(component) {
     const schema = component.constructor.schema;
-    const result: any = {};
+    const result = {};
     for (const key in schema) {
         if (schema.hasOwnProperty(key)) {
             result[key] = dumpProperty(component[key], schema[key]);
@@ -23,8 +21,8 @@ export function dumpComponent(component: any) {
  * 生成一个属性的 dump 数据
  * @param property
  */
-export function dumpProperty(property: any, schema?: any): PropertyDump {
-    const result: PropertyDump = {
+function dumpProperty(property, schema) {
+    const result = {
         type: '',
         value: '',
         extends: [],
@@ -69,7 +67,7 @@ export function dumpProperty(property: any, schema?: any): PropertyDump {
             result.extends.push('asset');
         }
     } else if (result.type === 'array') {
-        result.value = property.map((item: any) => {
+        result.value = property.map((item) => {
             return dumpProperty(item);
         });
     } else {
@@ -83,7 +81,7 @@ export function dumpProperty(property: any, schema?: any): PropertyDump {
  * 生成一个 node 的 dump 数据
  * @param node
  */
-export function dumpNode(node: any): NodeDump {
+function dumpNode(node) {
     const children = [];
 
     for (const child of node._children) {
@@ -114,7 +112,7 @@ export function dumpNode(node: any): NodeDump {
  * @param dump
  * @param component
  */
-export function restoreComponent(dump: any, component: any) {
+function restoreComponent(dump, component) {
     // todo
 }
 
@@ -123,11 +121,7 @@ export function restoreComponent(dump: any, component: any) {
  * @param dump
  * @param property
  */
-export function restoreProperty(
-    dump: PropertyDump,
-    property: any,
-    key: string
-) {
+function restoreProperty(dump, property, key) {
     switch (dump.type) {
         case 'level':
         case 'entity':
@@ -160,7 +154,7 @@ export function restoreProperty(
  * @param dump
  * @param node
  */
-export function restoreNode(dump: NodeDump, node: any) {
+function restoreNode(dump, node) {
     restoreProperty(dump.active, node, 'active');
     // 恢复子节点只会恢复子节点的顺序
     // restoreProperty(dump.children, node, 'children');
@@ -172,3 +166,12 @@ export function restoreNode(dump: NodeDump, node: any) {
     restoreProperty(dump.parent, node, 'parent');
     restoreProperty(dump.uuid, node, '_id');
 }
+
+module.exports = {
+    dumpComponent,
+    dumpProperty,
+    dumpNode,
+    restoreComponent,
+    restoreProperty,
+    restoreNode,
+};

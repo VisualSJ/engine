@@ -1,82 +1,130 @@
-'use strict';
+'use stirct';
 
-/////////////
-// 节点管理器
-// 场景打开后，建立节点的索引关系
+const { readFileSync } = require('fs');
+const { get } = require('lodash');
+const nodeUtils = require('../utils/node');
+const dumpUtils = require('../utils/dump');
 
-import {
-    dumpNode,
-    dumpProperty,
-    restoreComponent,
-    restoreProperty,
-} from '../utils/dump';
-
-import {
-    insertArrayProperty as insertArrayPropertyUndo,
-    moveArrayProperty as moveArrayPropertyUndo,
-    removeArrayProperty as removeArrayPropertyUndo,
-    setProperty as setPropertyUndo,
-} from '../utils/undo';
-
-const get = require('lodash/get');
-
-let uuid2node: { [index: string]: any } = {};
+let scene = null;
+let uuid2node = {};
 
 /**
- * 爬取节点上的数据
- * @param children
+ * 打开一个场景文件
+ * @param {*} file 
  */
-function walkChild(entity: any) {
-    uuid2node[entity._id] = entity;
-    entity.children && entity.children.forEach((child: any) => {
-        walkChild(child);
-    });
+function open(file) {
+    const $canvas = document.createElement('canvas');
+    document.querySelector('.canvas').appendChild($canvas);
+
+    // 启动引擎
+    scene = new cc.App($canvas);
+    scene.resize();
+    scene.debugger.start();
+
+    // @ts-ignore 暴露当前场景
+    window.app = scene;
+
+    // 加载指定的场景
+    const result = readFileSync(file, 'utf8');
+    eval(`${result}\n//# sourceURL=${file}`);
+
+    // 爬取所有的节点数据
+    nodeUtils.walk(uuid2node, app.activeLevel);
+
+    // 启动场景
+    scene.run();
 }
 
 /**
- * 获取一个节点的 dump 数据
- * 如果不传入 uuid 则获取场景的 dump 数据
- * @param uuid
+ * 关闭当前打开的场景
  */
-export function dump(uuid: string) {
-    if (!uuid) {
-        return null;
+function close() {
+    if (scene) {
+        scene.destroy();
     }
-    const node = query(uuid);
-    return dumpNode(node);
-}
+    const $canvas = document.body.querySelector('canvas');
+    $canvas && $canvas.remove();
 
-/**
- * 爬取 engine 内打开的场景的节点数据
- * @param app
- */
-export function walk(app: any) {
-    uuid2node = {};
-    walkChild(app.activeLevel);
+    scene = null;
+    window.app = null;
 }
 
 /**
  * 查询 uuid 对应的节点
  * @param uuid
  */
-export function query(uuid: string) {
+function query(uuid) {
     return uuid2node[uuid] || null;
 }
 
 /**
- * 设置一个节点的属性
- * @param uuid 节点的 uuid
- * @param path 属性的路径，'' | '_comps.0'
- * @param key 属性的 key，'name' | 'active'
- * @param dump 对应属性的值
+ * 查询 uuid 对应节点的 dump 数据
+ * @param {*} uuid 
  */
-export function setProperty(
-    uuid: string,
-    path: string,
-    key: string,
-    dump: PropertyDump
-) {
-    const node: any = query(uuid);
+function queryNode(uuid) {
+    let node = query(uuid);
+    if (!node) {
+        return null;
+    }
+    return dumpUtils.dumpNode(node);
+}
+
+/**
+ * 查询当前运行的场景内的节点树
+ * @param uuid 传入的时候生成当前节点的节点树，不传入的话生成场景的节点树
+ */
+function queryNodeTree(uuid) {
+    /**
+     * 逐步打包数据
+     * @param node
+     */
+    const step = (node) => {
+        return {
+            name: node.name,
+            uuid: node._id,
+            children: node._children.map(step)
+        };
+    };
+
+    if (uuid) {
+        const node = query(uuid);
+        if (!node) {
+            return null;
+        }
+        return step(node);
+    }
+
+    return step(scene.activeLevel);
+}
+
+/**
+ * 查询从场景到某个节点的搜索路径
+ * @param {*} uuid 
+ */
+function queryNodePath(uuid) {
+    let node = query(uuid);
+    if (!node) {
+        return '';
+    }
+    let names = [node.name];
+    while(node = node.parent) {
+        if (!node) {
+            break;
+        }
+        names.splice(0, 0, node.name);
+    }
+    return names.join('/');
+}
+
+/**
+ * 设置属性
+ * @param {*} uuid 
+ * @param {*} path 
+ * @param {*} key 
+ * @param {*} dump 
+ */
+function setProperty(uuid, path, key, dump) {
+    const node = query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
@@ -92,24 +140,8 @@ export function setProperty(
         return;
     }
 
-    // 记录当前动作
-    setPropertyUndo(
-        uuid, path, key, dump, dumpProperty(get(data, key)),
-    );
-
     // 恢复数据
-    restoreProperty(dump, data, key);
-
-    // 提交当前动作
-    Editor.History.commit();
-
-    if (key === 'parent') {
-        // 广播父节点更改消息
-        Editor.Ipc.sendToAll('scene:node-changed', node.parent._id);
-    }
-
-    // 广播更改消息
-    Editor.Ipc.sendToAll('scene:node-changed', uuid);
+    dumpUtils.restoreProperty(dump, data, key);
 }
 
 /**
@@ -122,14 +154,8 @@ export function setProperty(
  *
  * @return {boolean} 是否插入成功
  */
-export function insertArrayProperty(
-    uuid: string,
-    path: string,
-    key: string,
-    index: number,
-    dump: PropertyDump
-) {
-    const node: any = query(uuid);
+function insertArrayProperty(uuid, path, key, index, dump) {
+    const node = query(uuid);
 
     if (key === 'children') {
         console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
@@ -167,22 +193,16 @@ export function insertArrayProperty(
         // @ts-ignore
         const Comp = app.getClass(cName);
         const comp = new Comp();
-        restoreComponent(dump.value, comp);
+        dumpUtils.restoreComponent(dump.value, comp);
         value = comp;
     } else {
         const temp = {value: null};
-        restoreProperty(dump, temp, 'value');
+        dumpUtils.restoreProperty(dump, temp, 'value');
         value = temp.value;
     }
 
-    // 记录 undo 事件
-    insertArrayPropertyUndo(uuid, path, key, index, dump);
-    Editor.History.commit();
-
     data.splice(index, 0, value);
 
-    // 广播更改消息
-    Editor.Ipc.sendToAll('scene:node-changed', uuid);
     return true;
 }
 
@@ -194,14 +214,8 @@ export function insertArrayProperty(
  * @param target 目标 item 原来的索引
  * @param offset 偏移量
  */
-export function moveArrayProperty(
-    uuid: string,
-    path: string,
-    key: string,
-    target: number,
-    offset: number
-) {
-    const node: any = query(uuid);
+function moveArrayProperty(uuid, path, key, target, offset) {
+    const node = query(uuid);
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -227,12 +241,6 @@ export function moveArrayProperty(
     const temp = data.splice(target, 1);
     data.splice(target + offset, 0, temp[0]);
 
-    // 记录 undo 事件
-    moveArrayPropertyUndo(uuid, path, key, target, offset);
-    Editor.History.commit();
-
-    // 广播更改消息
-    Editor.Ipc.sendToAll('scene:node-changed', uuid);
     return true;
 }
 
@@ -243,13 +251,8 @@ export function moveArrayProperty(
  * @param key 属性在搜索到的对象内的 key
  * @param index 目标 item 原来的索引
  */
-export function removeArrayProperty(
-    uuid: string,
-    path: string,
-    key: string,
-    index: number
-) {
-    const node: any = query(uuid);
+function removeArrayProperty(uuid, path, key, index) {
+    const node = query(uuid);
 
     if (key === 'children') {
         console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
@@ -280,22 +283,54 @@ export function removeArrayProperty(
     // 删除某个 item
     const temp = data.splice(index, 1);
 
-    // 记录 undo 事件
-    removeArrayPropertyUndo(uuid, path, key, index, dumpProperty(temp[0]));
-    Editor.History.commit();
-
-    // 广播更改消息
-    Editor.Ipc.sendToAll('scene:node-changed', uuid);
     return true;
 }
+
+/**
+ * 在场景内创建一个新的节点，并挂载到指定的父节点下
+ * @param uuid 父节点的 uuid
+ * @param name 父节点的 uuid
+ * @param data 节点序列化后的数据
+ */
+function createNode(uuid, name = '', data) {
+    if (!scene) {
+        return;
+    }
+
+    const parent = query(uuid);
+    const entity = scene.createEntity(name);
+
+    if (data) {
+        // todo 通过 dump 重新生成节点
+        // 数据带有 uuid 的情况下, 需要从缓存拿旧的节点对象
+    }
+
+    parent.append(entity);
+    nodeUtils.walk(uuid2node, entity);
+
+    return entity._id;
+}
+
+/**
+ * 移除某个节点
+ * @param uuid 移除节点的 uuid
+ */
+function removeNode(uuid) {
+    const node = query(uuid);
+
+    // 移除节点,但是不会移除 uuid2node 的节点缓存
+    // 因为后续如果需要将节点重新插入回来, 就需要从缓存内拿旧节点对象
+    node.remove();
+}
+
 
 /**
  * 创建一个组件并挂载到指定的 entity 上
  * @param uuid entity 的 uuid
  * @param component 组件的名字
  */
-export function createComponent(uuid: string, component: string) {
-    const node: any = query(uuid);
+function createComponent(uuid, component) {
+    const node = query(uuid);
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -309,8 +344,8 @@ export function createComponent(uuid: string, component: string) {
  * @param uuid entity 的 uuid
  * @param component 组件的名字
  */
-export function removeComponent(uuid: string, component: string) {
-    const node: any = query(uuid);
+function removeComponent(uuid, component) {
+    const node = query(uuid);
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -318,3 +353,29 @@ export function removeComponent(uuid: string, component: string) {
 
     node._removeComp(component);
 }
+
+module.exports = {
+    get uuid2node() {
+        return uuid2node;
+    },
+
+    open,
+    close,
+
+    query,
+
+    queryNode,
+    queryNodeTree,
+    queryNodePath,
+
+    setProperty,
+    insertArrayProperty,
+    moveArrayProperty,
+    removeArrayProperty,
+    
+    createComponent,
+    removeComponent,
+
+    createNode,
+    removeNode,
+};

@@ -23,6 +23,7 @@ interface App {
 
 interface Project {
     path: string;
+    type: string;
 }
 
 interface I18n {
