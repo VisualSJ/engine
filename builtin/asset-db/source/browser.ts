@@ -2,8 +2,9 @@
 
 import { AssetDB } from 'asset-db';
 import { promisify } from 'util';
-import { existsSync, ensureDirSync, outputFileSync, removeSync, move, remove, outputFile, ensureDir } from 'fs-extra';
-import { join, relative } from 'path';
+import { statSync } from 'fs';
+import { existsSync, ensureDirSync, removeSync, move, remove, outputFile, ensureDir } from 'fs-extra';
+import { join, relative, basename } from 'path';
 
 let isReady: boolean = false;
 let database: AssetDB | null = null;
@@ -195,17 +196,51 @@ module.exports = {
             }
 
             let movePromise = promisify(move);
-            let removePromise = promisify(remove);
+            // let removePromise = promisify(remove);
             try {
                 //@ts-ignore;
                 await movePromise(asset.source, newPath, { overwrite: true });
                 //@ts-ignore;
                 await movePromise(metaPath, newPath + '.meta', { overwrite: true });
 
-                // 复制成功，删除原位置文件
+                // // 复制成功，删除原位置文件
+                // //@ts-ignore;
+                // await removePromise(asset.source);
+                // await removePromise(metaPath);
+
+                return true;
+            } catch (err) {
+                console.log(err);
+                return false;
+            }
+        },
+
+        /**
+         * 外部文件系统拖进资源
+         * @param uuid 
+         * @param path 
+         */
+        async 'insert-asset'(uuid: string, path: string) {
+            if (!database) {
+                return false;
+            }
+            const asset = database.uuid2asset[uuid];
+            let assetStat = statSync(asset.source);
+
+            if (!assetStat.isDirectory()) {
+                return false;
+            }
+
+            if (asset.source === path || !existsSync(asset.source) || !existsSync(path)) {
+                return false;
+            }
+
+            let newPath = join(asset.source, basename(path));
+
+            let movePromise = promisify(move);
+            try {
                 //@ts-ignore;
-                await removePromise(asset.source);
-                await removePromise(metaPath);
+                await movePromise(path, newPath, { overwrite: true });
 
                 return true;
             } catch (err) {

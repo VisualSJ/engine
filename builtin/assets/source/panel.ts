@@ -116,20 +116,12 @@ export const messages = {
             return;
         }
 
-        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        console.log(info);
-        addSourceData(info);
+        const source = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        let newNode = legalData([source])[0];
+        addTreeData(treeData.children, 'source', 'parent', newNode);
 
         // 触发节点数据已变动
-        // vm.changeTreeData();
-
-        // if (
-        //     !vm.list.length || vm.list.some((item: any) => {
-        //         return item.source !== info.source;
-        //     })
-        // ) {
-        //     vm.list.push(info);
-        // }
+        vm.changeTreeData();
     },
 
     /**
@@ -143,17 +135,10 @@ export const messages = {
             return;
         }
         // 删除当前数据
-        removeTreeNodeData(uuid);
+        removeTreeData(uuid);
 
         // 触发节点数据已变动
         vm.changeTreeData();
-
-        // vm.list.some((item: any, index: number) => {
-        //     if (item.uuid === uuid) {
-        //         vm.list.splice(index, 1);
-        //         return true;
-        //     }
-        // });
     },
 };
 
@@ -234,23 +219,7 @@ export async function ready() {
                     }
                 }
 
-                // 获取该资源
-                let one = getOneFromTreeData(treeData, uuid);
-                let url = one[0].source;
-
-                if (one[0].isDir !== true) { // 不是目录，指向父级级
-                    url = one[3].source;
-                }
-
-                let content;
-                switch (json.type) {
-                    case 'folder': url += '/New Folder'; break;
-                    case 'javascript': url += '/NewScript.js'; content = ''; break;
-                }
-
-                url = 'db://assets/' + join(url);
-
-                Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
+                newAsset(uuid, json);
             },
             /**
              * 删除资源
@@ -270,7 +239,7 @@ export async function ready() {
              */
             toggleAsset(uuid: string) {
 
-                const one = getOneFromTreeData(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
+                const one = getAssetFromTreeData(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
 
                 if (one) {
                     one.isExpand = !one.isExpand;
@@ -284,7 +253,7 @@ export async function ready() {
             toggleAll() {
                 vm.expand = !vm.expand;
 
-                resetItreeAssetProperty(treeData, { isExpand: vm.expand })
+                resetAssetProperty(treeData, { isExpand: vm.expand })
 
                 vm.changeTreeData();
             },
@@ -297,7 +266,7 @@ export async function ready() {
              */
             renameAsset(item: ItreeAsset, name = '') {
 
-                const one = getOneFromTreeData(treeData, item.uuid)[0]; // 获取该资源的数据
+                const one = getAssetFromTreeData(treeData, item.uuid)[0]; // 获取该资源的数据
 
                 if (!one || name === '') {
                     // name存在才能重名命，否则还原状态
@@ -312,10 +281,10 @@ export async function ready() {
              */
             overAsset(uuid: string) {
                 // @ts-ignore
-                let node: ItreeAsset = getOneFromPositionMap(uuid);
+                let node: ItreeAsset = getAssetFromPositionMap(uuid);
                 if (!node.isDir) {
                     // @ts-ignore
-                    node = getOneFromPositionMap(node.parent);
+                    node = getAssetFromPositionMap(node.parent);
                     node.state = 'over';
                 }
 
@@ -334,10 +303,10 @@ export async function ready() {
              */
             leaveAsset(uuid: string) {
                 // @ts-ignore
-                let node: ItreeAsset = getOneFromPositionMap(uuid);
+                let node: ItreeAsset = getAssetFromPositionMap(uuid);
                 if (!node.isDir) {
                     // @ts-ignore
-                    node = getOneFromPositionMap(node.parent);
+                    node = getAssetFromPositionMap(node.parent);
                 }
 
                 if (node != dragOverNode) {
@@ -363,31 +332,41 @@ export async function ready() {
                     return false; // 不是拖动的话，取消
                 }
 
-                const fromData = getOneFromTreeData(treeData, json.from);
-
-                const toData = getOneFromTreeData(treeData, json.to); // 将被注入数据的对象
+                const toData = getAssetFromTreeData(treeData, json.to); // 将被注入数据的对象
 
                 let target: ItreeAsset;
 
                 // @ts-ignore
-                let toNode: ItreeAsset = getOneFromPositionMap(toData[0].uuid);
+                let toNode: ItreeAsset = getAssetFromPositionMap(toData[0].uuid);
 
                 if (toNode.isDir) {
                     target = toNode;
                 } else {
                     // @ts-ignore
-                    target = getOneFromPositionMap(toData[3].uuid); // 树形节点的父级
+                    target = getAssetFromPositionMap(toData[3].uuid); // 树形节点的父级
                 }
 
-                if (target.uuid === fromData[3].uuid) {
-                    return false; // 资源移动仍在原来的目录内，不需要移动
-                }
+                if (json.from === 'osFile') { // 从外部拖文件进来
+                    // TODO 面板需要有等待的遮罩效果
+                    console.log(json);
+                    // @ts-ignore
+                    json.files.forEach((one) => {
+                        insertAsset(target.uuid, one.path);
+                    });
+                    return;
+                } else { // 常规内部节点拖拽
+                    const fromData = getAssetFromTreeData(treeData, json.from);
 
-                // 移动资源
-                Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, target.uuid);
+                    if (target.uuid === fromData[3].uuid) {
+                        return false; // 资源移动仍在原来的目录内，不需要移动
+                    }
 
-                if (target) {
-                    target.state = 'loading'; // 显示 loading 效果
+                    // 移动资源
+                    Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, target.uuid);
+
+                    if (target) {
+                        target.state = 'loading'; // 显示 loading 效果
+                    }
                 }
             },
             /**
@@ -398,9 +377,9 @@ export async function ready() {
 
                 positionMap.clear(); // 清空数据
 
-                calcItreeAssetPosition(); // 重算排位
+                calcAssetPosition(); // 重算排位
 
-                calcItreeAssetHeight(); // 计算文件夹的高度
+                calcAssetHeight(); // 计算文件夹的高度
 
                 vm.renderTree(); // 重新渲染出树形
 
@@ -505,7 +484,7 @@ export const listeners = {
  * @param index 资源的序号
  * @param depth 资源的层级
  */
-function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
+function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
     let tree = obj.children;
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
@@ -553,7 +532,7 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
             if (json.children && json.isExpand === true) {
-                index = calcItreeAssetPosition(json, index, depth + 1); // depth 是该资源的层级
+                index = calcAssetPosition(json, index, depth + 1); // depth 是该资源的层级
             }
         } else { // 有搜索
             if (json.name.indexOf(vm.search) !== -1) { // 平级保存
@@ -562,7 +541,7 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
             }
 
             if (json.children) {
-                index = calcItreeAssetPosition(json, index, 0);
+                index = calcAssetPosition(json, index, 0);
             }
         }
 
@@ -574,7 +553,7 @@ function calcItreeAssetPosition(obj = treeData, index = 0, depth = 0) {
 /**
  * 计算一个文件夹的完整高度
  */
-function calcItreeAssetHeight() {
+function calcAssetHeight() {
     for (const [top, json] of positionMap) {
         json.height = 0;
     }
@@ -593,7 +572,7 @@ function calcItreeAssetHeight() {
  * @param obj 
  * @param props 
  */
-function resetItreeAssetProperty(obj: ItreeAsset, props: any) {
+function resetAssetProperty(obj: ItreeAsset, props: any) {
     let tree = obj.children;
     tree.forEach((json: any) => {
         for (let k in props) {
@@ -601,7 +580,7 @@ function resetItreeAssetProperty(obj: ItreeAsset, props: any) {
         }
 
         if (json.children) {
-            resetItreeAssetProperty(json, props);
+            resetAssetProperty(json, props);
         }
     });
 }
@@ -617,7 +596,7 @@ function resetItreeAssetProperty(obj: ItreeAsset, props: any) {
  * @param arr 
  * @param uuid 
  */
-function getOneFromTreeData(obj: ItreeAsset, uuid = ''): any {
+function getAssetFromTreeData(obj: ItreeAsset, uuid = ''): any {
     let rt = [];
 
     if (obj.uuid === uuid) {
@@ -633,7 +612,7 @@ function getOneFromTreeData(obj: ItreeAsset, uuid = ''): any {
         }
 
         if (one.children && one.children.length !== 0) { // 如果还有children的继续迭代查找
-            rt = getOneFromTreeData(one, uuid);
+            rt = getAssetFromTreeData(one, uuid);
 
             if (rt.length > 0) { // 找到了才返回，找不到，继续循环
                 return rt;
@@ -647,7 +626,7 @@ function getOneFromTreeData(obj: ItreeAsset, uuid = ''): any {
 /**
  * 更快速地找到树形节点
  */
-function getOneFromPositionMap(uuid = '') {
+function getAssetFromPositionMap(uuid = '') {
     for (const [top, json] of positionMap) {
         if (uuid === json.uuid) {
             return json;
@@ -660,9 +639,9 @@ function getOneFromPositionMap(uuid = '') {
  * @param uuid 现有资源的uuid
  * @param dumpData 新的数据包
  */
-function changeTreeNodeData(uuid: string, dumpData: any) {
+function changeTreeData(uuid: string, dumpData: any) {
     // 现有的资源数据
-    const nodeData = getOneFromTreeData(treeData, uuid)[0];
+    const nodeData = getAssetFromTreeData(treeData, uuid)[0];
 
     /**
      *  属性是值类型的修改
@@ -685,7 +664,7 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
         if (index != -1) { // 平级移动
             one = nodeData.children[index]; // 原来的父级资源有该元素
         } else { // 跨级移动
-            let arrInfo = getOneFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
+            let arrInfo = getAssetFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
             one = arrInfo[2].splice(arrInfo[1], 1)[0];
         }
         one.isExpand = false;
@@ -697,7 +676,7 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
 /**
  * 添加资源后，增加树形节点数据
  */
-function addTreeNodeData(rt: Array<ItreeAsset>, key: string, parentKey: any, item: any) {
+function addTreeData(rt: Array<ItreeAsset>, key: string, parentKey: any, item: any) {
     // 找出父级
     let one = deepFindParent(rt, key, item[parentKey]);
 
@@ -711,18 +690,20 @@ function addTreeNodeData(rt: Array<ItreeAsset>, key: string, parentKey: any, ite
         one.isDir = true;
         item.parent = one.uuid;
 
+        sortData(one.children, false);
     } else {
         rt.push(item);
+        sortData(rt, false);
     }
+
 }
 
 /**
  * 删除资源后，清除对应树形节点数据
  */
-function removeTreeNodeData(uuid: string) {
-    let nodeData = getOneFromTreeData(treeData, uuid);
+function removeTreeData(uuid: string) {
+    let nodeData = getAssetFromTreeData(treeData, uuid);
     let index = nodeData[1];
-
     nodeData[2].splice(index, 1);
 }
 /**
@@ -735,7 +716,7 @@ function toTreeData(arr: Array<any>, key: string, parentKey: string) {
 
     let tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
     // 重新排序
-    dirSort(tree);
+    sortData(tree);
     return tree;
 
     function loopOne(arr: any, key: string, parentKey: string) {
@@ -751,30 +732,11 @@ function toTreeData(arr: Array<any>, key: string, parentKey: string) {
                 item.isDir = true;
             }
 
-            addTreeNodeData(rt, key, parentKey, item);
-
-            // // 找出父级
-            // let one = deepFindParent(rt, key, item[parentKey]);
-
-            // if (one) {
-            //     if (!Array.isArray(one.children)) {
-            //         one.children = [];
-            //     }
-            //     one.children.push(item);
-
-            //     // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
-            //     one.isDir = true;
-            //     item.parent = one.uuid;
-
-            // } else {
-            //     rt.push(item);
-            // }
+            addTreeData(rt, key, parentKey, item);
         });
 
         return rt;
     }
-
-
 }
 /**
  * 找出父级，深度查找对应关系，类似 id === parentId 确定子父关系
@@ -804,8 +766,9 @@ function deepFindParent(arr: Array<any>, key: string, parentValue: any) {
 /**
  * 目录文件和文件夹排序
  * @param arr 
+ * @param loop 是否循环子集排序，默认开启 
  */
-function dirSort(arr: Array<ItreeAsset>) {
+function sortData(arr: Array<ItreeAsset>, loop = true) {
     //@ts-ignore;
     arr.sort((a: ItreeAsset, b: ItreeAsset) => {
         // 文件夹优先
@@ -818,10 +781,13 @@ function dirSort(arr: Array<ItreeAsset>) {
         }
     });
 
+    if (loop === false) {
+        return;
+    }
     // 子集也重新排序
     arr.forEach((a: ItreeAsset) => {
         if (a.children) {
-            dirSort(a.children);
+            sortData(a.children, loop);
         }
     })
 }
@@ -842,7 +808,7 @@ function transformData(arr: Array<IsourceAsset>) {
                 filename: 'assets',
                 fileext: '',
                 uuid: 'assets',
-                children: toTreeData(dealSourceData(arr), 'source', 'parent'),
+                children: toTreeData(legalData(arr), 'source', 'parent'),
                 state: '',
                 source: '',
                 top: 0,
@@ -861,20 +827,10 @@ function transformData(arr: Array<IsourceAsset>) {
 }
 
 /**
- * 添加一个新资源节点的原始数据
- * @param source
- */
-function addSourceData(source: IsourceAsset) {
-    let item = dealSourceData([source]);
-    // TODO：这里有问题，待续
-    addTreeNodeData(treeData.children, 'source', 'parent', item);
-}
-
-/**
  * 处理原始数据
  * @param arr 
  */
-function dealSourceData(arr: Array<IsourceAsset>) {
+function legalData(arr: Array<IsourceAsset>) {
     return arr.filter(a => a.source !== '').map((a: IsourceAsset) => {
         let paths: Array<string> = a.source.split(/\/|\\/);
 
@@ -887,4 +843,38 @@ function dealSourceData(arr: Array<IsourceAsset>) {
 
         return a;
     });
+}
+
+/**
+ * 面板内的添加操作，按钮或右击菜单
+ * @param uuid 创建的位置
+ * @param json 
+ */
+function newAsset(uuid: string, json: IaddAsset) {
+    // 获取该资源
+    let one = getAssetFromTreeData(treeData, uuid);
+    let url = one[0].source;
+
+    if (one[0].isDir !== true) { // 不是目录，指向父级级
+        url = one[3].source;
+    }
+
+    let content;
+    switch (json.type) {
+        case 'folder': url += '/New Folder'; break;
+        case 'javascript': url += '/NewScript.js'; content = ''; break;
+    }
+
+    url = 'db://assets/' + join(url);
+
+    Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
+}
+
+/**
+ * 外部文件系统拖进资源
+ * @param uuid 创建的位置
+ * @param path 资源路径
+ */
+function insertAsset(uuid: string, path: string) {
+    Editor.Ipc.sendToPackage('asset-db', 'insert-asset', uuid, path);
 }

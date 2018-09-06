@@ -201,6 +201,8 @@ export const methods = {
 
         target.setAttribute('insert', 'inside');
 
+        target.setAttribute('active', '');
+
         // 拖动中感知当前所处的文件夹，高亮此文件夹
         if (!isDragOver) {
             // @ts-ignore
@@ -231,31 +233,43 @@ export const methods = {
      */
     drop(event: Event, item: ItreeAsset) {
         event.preventDefault();
-
-        // @ts-ignore
-        const data = JSON.parse(event.dataTransfer.getData('dragData'));
-        data.to = item.uuid; // 被瞄准的节点
-
         // @ts-ignore
         const target: any = event.currentTarget;
+        // 尾部结束时重新选中的节点，默认为 drop 节点
+        let selectId = item.uuid
 
-        data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
+        // @ts-ignore
+        let dragData = event.dataTransfer.getData('dragData');
 
+        if (dragData === '') { // 是从外部拖文件进来
+            // @ts-ignore
+            this.$emit('drop', item, {
+                from: 'osFile',
+                insert: 'inside',
+                to: item.uuid,
+                // @ts-ignore
+                files: Array.from(event.dataTransfer.files),
+            });
+        } else { // 常规内部节点拖拽
+            const data = JSON.parse(dragData);
+
+            if (item.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
+                data.to = item.uuid; // 被瞄准的节点
+                data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
+
+                // @ts-ignore
+                this.$emit('drop', item, data);
+
+                // 重新选中被移动的节点
+                selectId = data.from;
+            }
+        }
+        // @ts-ignore
+        this.$emit('dragleave', item.uuid); // 取消拖动的高亮效果
         target.setAttribute('insert', ''); // 还原节点状态
         target.setAttribute('drag', '');
 
-        // 重新选中节点
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', data.from);
-
         // @ts-ignore
-        this.$emit('dragleave', item.uuid); // 取消拖动的高亮效果
-
-        if (data.to === data.from) {  // 如果移动到自身节点，则不需要移动
-            return;
-        }
-
-        // @ts-ignore
-        this.$emit('drop', item, data);
-
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', selectId);
     }
 };
