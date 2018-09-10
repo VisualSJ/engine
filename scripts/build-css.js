@@ -16,6 +16,7 @@ let lessDirnames = [
     './builtin/preferences',
     './builtin/scene',
     './builtin/ui-preview',
+    './builtin/engine',
 ];
 
 Promise.all(lessDirnames.map(async (dir) => {

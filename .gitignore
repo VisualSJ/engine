@@ -13,4 +13,4 @@ builtin/**/dist
 lib/theme/**/dist
 
 # 引擎文件夹
-builtin/scene/engine
+builtin/engine/resources

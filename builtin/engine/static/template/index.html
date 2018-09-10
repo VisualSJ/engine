@@ -1,0 +1,33 @@
+<section class="section">
+    <div class="slider">
+        <div class="location">
+            <!-- <span
+                :active="setting === 'global'"
+                @click="_onChangeSettingType($event, 'global')"
+            >Global</span> -->
+            <span
+                :active="setting === 'local'"
+                @click="_onChangeSettingType($event, 'local')"
+            >Local</span>
+        </div>
+
+        <ul>
+            <li
+                :active="type === '3d'"
+                @click="_onChangeEngineType($event, '3d')"
+            >Engine 3D</li>
+            <li
+                :active="type === '2d'"
+                @click="_onChangeEngineType($event, '2d')"
+            >Engine 2D</li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <engine
+            :pt="pt"
+            :current="current"
+            :type="type"
+        ></engine>
+    </div>
+</section>

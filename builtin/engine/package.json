@@ -1,0 +1,21 @@
+{
+    "name": "engine",
+    "version": "0.0.1",
+
+    "menu": {
+        "Cocos3d/i18n:engine.title": {
+            "message": "open"
+        }
+    },
+
+    "main": "./dist/browser.js",
+
+    "panel": {
+        "title": "i18n:engine.title",
+        "main": "./dist/panel.js",
+        "min-width": 200,
+        "min-height": 200,
+        "width": 400,
+        "height": 600
+    }
+}
