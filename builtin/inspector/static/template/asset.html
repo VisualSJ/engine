@@ -1,5 +1,3 @@
-<section class="asset">
-    <header>
-        <span>{{info.source}}</span>
-    </header>
+<section class="asset" v-on:confirm="onMetaChange">
+    <component :is="currentAssetType" :meta="meta"></component>
 </section>

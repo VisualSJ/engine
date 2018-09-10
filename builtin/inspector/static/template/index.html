@@ -1,11 +1,12 @@
 <div class="content">
 
-    <section class="loading" v-if="loading">
+    <section class="loading" v-if="loading || !isReady">
         <ui-loading></ui-loading>
     </section>
 
-    <section v-else>
-        <asset v-if="type === 'asset'" :info="asset.info" :meta="asset.meta"></asset>
+    <section v-else-if="!loading && isReady">
+
+        <asset v-if="type === 'asset'" :meta="asset.meta" :on-meta-change="onMetaChange"></asset>
 
         <node :on-node-property-change="onNodePropertyChange" v-if="type === 'node'" :node="node"></node>
 

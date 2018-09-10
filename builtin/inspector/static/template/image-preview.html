@@ -1,0 +1,8 @@
+<div :style="cssHost">
+    <div ref="content" :style="cssContent">
+        <canvas ref="canvas" class="fit" :style="cssCanvas" width=1 height=1></canvas>
+    </div>
+    <div :style="cssLabels" class="image-label">
+        <div :style="cssLabel">{{ info }}</div>
+    </div>
+</div>

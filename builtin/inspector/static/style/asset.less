@@ -1,7 +1,112 @@
 .asset {
-
-    & > header {
+    header {
         padding: 4px 8px 6px 8px;
         border-bottom: 1px solid #666;
+    }
+    .fit {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
+
+    .flex {
+        display: flex;
+    }
+
+    .flex-1 {
+        flex: 1;
+    }
+    .fixedHeight {
+        max-height: 24px;
+        min-height: 24px;
+    }
+    .prop-container {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: center;
+        position: relative;
+        box-sizing: border-box;
+        outline: 0;
+        .wrapper {
+            .fixedHeight();
+            margin: 3px 0;
+            display: grid;
+            align-items: center;
+            grid-template-columns: [first] minmax(100px, 15%) [line2] auto [end];
+            grid-template-rows: [row-start] auto [row-end];
+            color: #bdbdbd;
+        }
+        .label {
+            display: flex;
+            grid-column-start: first;
+            grid-column-end: line2;
+            grid-row-start: row-start;
+            grid-row-end: row-end;
+            white-space: nowrap;
+            & > * {
+                margin-right: 3px;
+            }
+        }
+        .text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wrapper-content {
+            grid-column-start: line2;
+            grid-column-end: end;
+            grid-row-start: row-start;
+            grid-row-end: row-end;
+        }
+        &[hovering] > .wrapper {
+            color: #09d;
+        }
+        &[selected] > .wrapper {
+            color: #fd942b;
+        }
+    }
+    .column3 {
+        & > .wrapper {
+            max-height: none;
+            min-height: 0;
+            display: grid;
+            align-items: flex-start;
+            grid-row-gap: 3px;
+            grid-template-columns: [first] minmax(100px, 15%) [line2] auto [end];
+            grid-template-rows: [row-start] auto [row-end];
+            .label {
+                grid-column-start: first;
+                grid-column-end: line2;
+                grid-row-start: row-start;
+                grid-row-end: row-end;
+            }
+            & > .label {
+                .fixedHeight();
+                line-height: 24px;
+            }
+            .wrapper-content {
+                max-height: none;
+                display: grid;
+                grid-column-gap: 10px;
+                grid-row-gap: 6px;
+                grid-template-columns: [first] 1fr [line2] 1fr [end];
+                grid-template-rows: [row-start] auto [row-end];
+                .wrapper-content {
+                    grid-template-columns: [first] auto [end];
+                }
+            }
+            .wrapper {
+                margin: 0;
+                grid-template-columns: [first] auto [line2] 1fr [end];
+                align-items: center;
+            }
+        }
+    }
+    .image-label {
+        display: flex;
+        justify-content: center;
     }
 }
