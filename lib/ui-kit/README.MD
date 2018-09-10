@@ -27,6 +27,19 @@ npm start .\example\
 #### show()
 需要调用该方式显示组件才可以保证colorPresets颜色值的实时一致性
 
+### ui-prop组件
+使用方式：
+需要让prop直接渲染数据的，直接传递label、type、value值即可；
+```
+  <ui-prop label="number" type="number" value="22.888"></ui-prop>
+```
+在ui-prop里面直接嵌套标签
+
+```
+ <ui-prop label="number" type="number" value="22.888">
+     <ui-prop label="number" type="number" value="22.888" slot = 'child'></ui-prop>
+ </ui-prop>
+```
 ## 开发指南
 
 

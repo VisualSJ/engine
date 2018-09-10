@@ -118,7 +118,7 @@
         let $showWrap = document.getElementById('showWrap');
         $showWrap.innerHTML = $uiNumInput.value;
         let eventArr = ['change','confirm', 'cancel'];
-        // addNormalEvent(eventArr, $uiNumInput, $testEvent, $showWrap);
+        addNormalEvent(eventArr, $uiNumInput, $testEvent, $showWrap);
         $uiNumInput.addEventListener('change', (event) => {
             console.log(event.target.value);
         })

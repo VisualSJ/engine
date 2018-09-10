@@ -25,7 +25,7 @@ export async function ready() {
         el: panel.$['ui-preview'],
         data() {
             return {
-                uiCollectors:['button', 'input', 'num-input', 'checkbox', 'slider', 'select', 'section', 'color-picker', 'color', 'loading', 'drag'],
+                uiCollectors:['button', 'input', 'num-input', 'checkbox', 'slider', 'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop'],
                 chooseIndex:'button'
             };
         },
@@ -53,6 +53,7 @@ export async function ready() {
             'test-color': require('./components/ui-color'),
             'test-loading': require('./components/ui-loading'),
             'test-drag': require('./components/ui-drag'),
+            'test-prop': require('./components/ui-prop'),
         },
     });
 

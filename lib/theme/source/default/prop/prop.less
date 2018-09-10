@@ -1,0 +1,19 @@
+@import '../base//variable';
+:host([selected]) {
+  .text {
+    color:@c-font-color;
+  }
+}
+
+:host(:hover){
+  .text {
+    color:white;
+    border-color:white;
+  }
+}
+
+:host([disabled]){
+  .text {
+    color:@c-default-text;
+  }
+}

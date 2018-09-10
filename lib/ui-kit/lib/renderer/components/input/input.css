@@ -3,10 +3,12 @@
   outline: none;
   display: inline-block;
   position: relative;
+  box-sizing: border-box;
 }
 :host {
   border: 1px solid #333;
   padding: 0.2em 0.5em;
+  width: 100%;
 }
 :host > input {
   display: block;
