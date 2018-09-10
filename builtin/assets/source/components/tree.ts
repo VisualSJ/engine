@@ -8,8 +8,6 @@ export const template = readFileSync(
     'utf8'
 );
 
-let isDragOver: boolean;
-
 export const props: string[] = [
     'list',
     'select',
@@ -18,7 +16,9 @@ export const props: string[] = [
 export const name = 'tree';
 
 export function data() {
-    return {};
+    return {
+        dragover: false
+    };
 }
 
 export const methods = {
@@ -44,7 +44,7 @@ export const methods = {
             return;
         }
 
-        let self = this;
+        const self = this;
 
         Editor.Menu.popup({
             // @ts-ignore
@@ -124,7 +124,7 @@ export const methods = {
     },
     /**
      * 节点折叠切换
-     * @param uuid 
+     * @param uuid
      */
     toggleAsset(item: ItreeAsset) {
         // @ts-ignore
@@ -132,8 +132,8 @@ export const methods = {
     },
     /**
      * 节点重名命
-     * @param event 
-     * @param item 
+     * @param event
+     * @param item
      */
     renameAsset(event: Event, item: ItreeAsset) {
         // 改变节点状态
@@ -149,7 +149,7 @@ export const methods = {
     },
     /**
      * 提交重名命
-     * @param item 
+     * @param item
      */
     renameBlur(item: ItreeAsset) {
         // @ts-ignore
@@ -168,8 +168,8 @@ export const methods = {
     /**
      * 开始拖动
      * 只能传字符，所以用了.stringify
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragStart(event: Event, item: ItreeAsset) {
         // @ts-ignore
@@ -177,7 +177,7 @@ export const methods = {
             from: item.uuid
         }));
 
-        let img = new Image();
+        const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
@@ -187,13 +187,11 @@ export const methods = {
     /**
      * 拖动到元素的上面
      * 一个元素仍然识别为上中下三个区域
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragOver(event: Event, item: ItreeAsset) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
-        event.stopPropagation();
-        event.stopImmediatePropagation();
         // @ts-ignore
         const target: any = event.currentTarget;
 
@@ -204,16 +202,16 @@ export const methods = {
         target.setAttribute('active', '');
 
         // 拖动中感知当前所处的文件夹，高亮此文件夹
-        if (!isDragOver) {
+        // @ts-ignore
+        if (!this.dragover) {
             // @ts-ignore
             this.$emit('dragover', item.uuid);
-            isDragOver = true;
         }
     },
     /**
      * 拖动移开
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragLeave(event: Event, item: ItreeAsset) {
         // @ts-ignore
@@ -224,22 +222,31 @@ export const methods = {
         // 拖动中感知当前所处的文件夹，离开后取消高亮
         // @ts-ignore
         this.$emit('dragleave', item.uuid);
-        isDragOver = false;
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     drop(event: Event, item: ItreeAsset) {
         event.preventDefault();
-        // @ts-ignore
-        const target: any = event.currentTarget;
-        // 尾部结束时重新选中的节点，默认为 drop 节点
-        let selectId = item.uuid
 
         // @ts-ignore
-        let dragData = event.dataTransfer.getData('dragData');
+        const target: any = event.currentTarget;
+        target.setAttribute('insert', ''); // 还原节点状态
+        target.setAttribute('drag', '');
+
+        // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
+        // @ts-ignore
+        if (!this.$el.hasAttribute('hoving')) {
+            return;
+        }
+
+        // 尾部结束时重新选中的节点，默认为 drop 节点
+        let selectId = item.uuid;
+
+        // @ts-ignore
+        const dragData = event.dataTransfer.getData('dragData');
 
         if (dragData === '') { // 是从外部拖文件进来
             // @ts-ignore
@@ -266,10 +273,22 @@ export const methods = {
         }
         // @ts-ignore
         this.$emit('dragleave', item.uuid); // 取消拖动的高亮效果
-        target.setAttribute('insert', ''); // 还原节点状态
-        target.setAttribute('drag', '');
 
         // @ts-ignore
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', selectId);
     }
 };
+
+export function mounted() {
+    // @ts-ignore
+    this.$el.addEventListener('dragenter', () => {
+        // @ts-ignore
+        this.dragover = true;
+    });
+
+    // @ts-ignore
+    this.$el.addEventListener('dragleave', () => {
+        // @ts-ignore
+        this.dragover = false;
+    });
+}

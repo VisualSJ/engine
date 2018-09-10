@@ -13,7 +13,9 @@ export const props: string[] = [
 export const name = 'tree';
 
 export function data() {
-    return {};
+    return {
+        dragover: false
+    };
 }
 
 export const methods = {
@@ -23,7 +25,7 @@ export const methods = {
             return;
         }
 
-        let self = this;
+        const self = this;
 
         Editor.Menu.popup({
             // @ts-ignore
@@ -82,7 +84,7 @@ export const methods = {
     },
     /**
      * 锁定 / 解锁节点
-     * @param item 
+     * @param item
      */
     lockNode(item: ItreeNode) {
         // @ts-ignore
@@ -90,7 +92,7 @@ export const methods = {
     },
     /**
      * 节点折叠切换
-     * @param uuid 
+     * @param uuid
      */
     toggleNode(item: ItreeNode) {
         // @ts-ignore
@@ -98,8 +100,8 @@ export const methods = {
     },
     /**
      * 节点重名命
-     * @param event 
-     * @param item 
+     * @param event
+     * @param item
      */
     renameNode(event: Event, item: ItreeNode) {
         // 改变节点状态
@@ -115,14 +117,14 @@ export const methods = {
     },
     /**
      * 提交重名命
-     * @param item 
+     * @param item
      */
     renameBlur(item: ItreeNode) {
         // @ts-ignore
         let newName = this.$refs.input[0].value.trim();
 
-         // 节点的名称不能为空
-         if (item.name.lastIndexOf('.') !== -1) {
+        // 节点的名称不能为空
+        if (item.name.lastIndexOf('.') !== -1) {
             if (newName.substring(0, newName.lastIndexOf('.')) === '') {
                 newName = '';
             }
@@ -134,8 +136,8 @@ export const methods = {
     /**
      * 开始拖动
      * 只能传字符，所以用了.stringify
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragStart(event: Event, item: ItreeNode) {
         // @ts-ignore
@@ -143,7 +145,7 @@ export const methods = {
             from: item.uuid
         }));
 
-        let img = new Image();
+        const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
@@ -151,13 +153,12 @@ export const methods = {
     /**
      * 拖动到元素的上面
      * 一个元素仍然识别为上中下三个区域
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragOver(event: Event, item: ItreeNode) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+
         // @ts-ignore
         const target: any = event.currentTarget;
 
@@ -177,8 +178,8 @@ export const methods = {
     },
     /**
      * 拖动移开
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     dragLeave(event: Event, item: ItreeNode) {
         // @ts-ignore
@@ -188,23 +189,27 @@ export const methods = {
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
-     * @param event 
-     * @param uuid 
+     * @param event
+     * @param uuid
      */
     drop(event: Event, item: ItreeNode) {
         event.preventDefault();
 
         // @ts-ignore
-        const data = JSON.parse(event.dataTransfer.getData('dragData'));
-        data.to = item.uuid; // 被瞄准的节点
-
-        // @ts-ignore
         const target: any = event.currentTarget;
-
-        data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
-
         target.setAttribute('insert', ''); // 还原节点状态
         target.setAttribute('drag', '');
+
+        // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
+        // @ts-ignore
+        if (!this.$el.hasAttribute('hoving')) {
+            return;
+        }
+
+        // @ts-ignore
+        const data = JSON.parse(event.dataTransfer.getData('dragData'));
+        data.to = item.uuid; // 被瞄准的节点
+        data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
 
         if (data.to === data.from) {  // 如果移动到自身节点，则不需要移动
             return;
@@ -214,3 +219,17 @@ export const methods = {
         this.$emit('drop', item, data);
     }
 };
+
+export function mounted() {
+    // @ts-ignore
+    this.$el.addEventListener('dragenter', () => {
+        // @ts-ignore
+        this.dragover = true;
+    });
+
+    // @ts-ignore
+    this.$el.addEventListener('dragleave', () => {
+        // @ts-ignore
+        this.dragover = false;
+    });
+}

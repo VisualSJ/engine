@@ -69,13 +69,13 @@ export const messages = {
 
     /**
      * 节点被修改
-     * 
-     * @param event 
-     * @param uuid 
+     *
+     * @param event
+     * @param uuid
      */
     async 'scene:node-changed'(uuid: string) {
         // 获取该节点最新数据
-        let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+        const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
         // console.log('node-changed', dumpData);
 
         // 更新当前数据
@@ -90,11 +90,11 @@ export const messages = {
      */
     async 'scene:node-created'(uuid: string) {
         // 获取该节点最新数据
-        let dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+        const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
         // console.log('node-created', dumpData);
 
         // 更新当前数据
-        let newNodeUUID = addTreeNodeData(dumpData);
+        const newNodeUUID = addTreeNodeData(dumpData);
 
         // 新节点被选中
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
@@ -163,21 +163,21 @@ export async function ready() {
         },
         watch: {
             /**
-             * 监听属性 viewHeight 
+             * 监听属性 viewHeight
              * 高度变化，刷新树形
              */
             viewHeight() {
                 vm.renderTree();
             },
             /**
-             * 监听属性 scrollTop 
+             * 监听属性 scrollTop
              * 滚动变化，刷新树形
              */
             scrollTop() {
                 vm.renderTree();
             },
             /**
-             * 监听属性 搜索节点名称 
+             * 监听属性 搜索节点名称
              */
             search() {
                 vm.changeTreeData();
@@ -188,7 +188,7 @@ export async function ready() {
             // 初始化搜索框
             this.$refs.searchInput.placeholder = Editor.I18n.t('hierarchy.menu.searchPlaceholder');
             this.$refs.searchInput.addEventListener('change', (event: Event) => {
-                let $target: any = event.target;
+                const $target: any = event.target;
                 this.search = $target.value.trim();
             });
 
@@ -205,8 +205,8 @@ export async function ready() {
         methods: {
             /**
              * 创建节点
-             * @param item 
-             * @param json 
+             * @param item
+             * @param json
              */
             newNode(uuid: string, json: IaddNode) {
                 if (json.type === 'empty') {
@@ -218,7 +218,7 @@ export async function ready() {
             },
             /**
              * 删除节点
-             * @param item 
+             * @param item
              */
             deleteNode(uuid: string) {
                 // 如果当前节点已被选中，先取消选择
@@ -227,12 +227,12 @@ export async function ready() {
                 }
 
                 Editor.Ipc.sendToPanel('scene', 'remove-node', { // 发送删除节点
-                    uuid: uuid
+                    uuid
                 });
             },
             /**
              * 锁定 / 解锁节点
-             * @param uuid 
+             * @param uuid
              */
             lockNode(uuid: string) {
 
@@ -247,7 +247,7 @@ export async function ready() {
             },
             /**
              * 节点的折叠切换
-             * @param uuid 
+             * @param uuid
              */
             toggleNode(uuid: string) {
 
@@ -265,7 +265,7 @@ export async function ready() {
             toggleAll() {
                 vm.expand = !vm.expand;
 
-                resetItreeNodeProperty(treeData, { isExpand: vm.expand })
+                resetItreeNodeProperty(treeData, { isExpand: vm.expand });
 
                 vm.changeTreeData();
             },
@@ -273,8 +273,8 @@ export async function ready() {
              * 修改节点属性
              * 这是异步的，只做发送
              * 获取在另外ipc 'scene:node-changed' 处理数据替换和刷新视图
-             * @param item 
-             * @param name 
+             * @param item
+             * @param name
              */
             renameNode(item: ItreeNode, name = '') {
 
@@ -300,8 +300,8 @@ export async function ready() {
             },
             /**
              * 节点拖动
-             * 
-             * @param json 
+             *
+             * @param json
              */
             dropNode(item: ItreeNode, json: IdragNode) {
 
@@ -313,9 +313,9 @@ export async function ready() {
                 let loadingItem;
 
                 // 内部平级移动
-                if (fromData[3].uuid === toData[3].uuid && ['before', 'after'].indexOf(json.insert) != -1) {
+                if (fromData[3].uuid === toData[3].uuid && ['before', 'after'].indexOf(json.insert) !== -1) {
                     // @ts-ignore
-                    loadingItem = getOneFromPositionMap(fromData[3].uuid); //元素的父级
+                    loadingItem = getOneFromPositionMap(fromData[3].uuid); // 元素的父级
 
                     offset = toData[1] - fromData[1]; // 目标索引减去自身索引
                     if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
@@ -329,7 +329,7 @@ export async function ready() {
                         path: '',
                         key: 'children',
                         target: fromData[1], // 被移动的节点所在的索引
-                        offset: offset,
+                        offset,
                     });
                 } else { // 跨级移动
 
@@ -348,7 +348,7 @@ export async function ready() {
                         });
                     } else { // 跨级插入
                         // @ts-ignore
-                        loadingItem = getOneFromPositionMap(toData[3].uuid); //元素的父级
+                        loadingItem = getOneFromPositionMap(toData[3].uuid); // 元素的父级
 
                         Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
                             uuid: fromData[0].uuid,
@@ -373,7 +373,7 @@ export async function ready() {
                             path: '',
                             key: 'children',
                             target: toData[2].length,
-                            offset: offset,
+                            offset,
                         });
                     }
 
@@ -401,7 +401,7 @@ export async function ready() {
             /**
              * 重新渲染树形
              * nodes 存放被渲染的节点数据
-             * 主要通过 nodes 数据的变动 
+             * 主要通过 nodes 数据的变动
              */
             renderTree() {
 
@@ -427,11 +427,11 @@ export async function ready() {
             },
             /**
              * 滚动了多少，调整滚动条位置
-             * @param scrollTop 
+             * @param scrollTop
              */
             scrollTree(scrollTop = 0) {
 
-                let mode = scrollTop % treeNodeHeight;
+                const mode = scrollTop % treeNodeHeight;
                 let top = scrollTop - mode;
                 if (mode === 0 && scrollTop !== 0) {
                     top -= treeNodeHeight;
@@ -491,12 +491,12 @@ export const listeners = {
  * 计算所有树形节点的位置数据，这一结果用来做快速检索
  * 重点是设置 positionMap 数据
  * 返回当前序号
- * @param obj 
+ * @param obj
  * @param index 节点的序号
  * @param depth 节点的层级
  */
 function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
-    let tree = obj.children;
+    const tree = obj.children;
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
 
@@ -546,13 +546,13 @@ function calcItreeNodePosition(obj = treeData, index = 0, depth = 0) {
 
 /**
  * 重置某些属性，比如全部折叠或全部展开
- * @param obj 
- * @param props 
+ * @param obj
+ * @param props
  */
 function resetItreeNodeProperty(obj: ItreeNode, props: any) {
-    let tree = obj.children;
+    const tree = obj.children;
     tree.forEach((json: any) => {
-        for (let k in props) {
+        for (const k of Object.keys(props)) {
             json[k] = props[k];
         }
 
@@ -564,14 +564,14 @@ function resetItreeNodeProperty(obj: ItreeNode, props: any) {
 
 /**
  * 这个数据处理，临时使用，很快会被删除
- * 获取 uuid 所在的 itreeNode 对象 node, 
+ * 获取 uuid 所在的 itreeNode 对象 node,
  * 对象所在数组索引 index，
  * 所在数组 array，
  * 所在数组其所在的对象 object
  * 返回 [node, index, array, object]
- * 
- * @param arr 
- * @param uuid 
+ *
+ * @param arr
+ * @param uuid
  */
 function getOneFromTreeData(obj: ItreeNode, uuid = ''): any {
     let rt = [];
@@ -580,9 +580,9 @@ function getOneFromTreeData(obj: ItreeNode, uuid = ''): any {
         return [obj]; // 根节点比较特殊
     }
 
-    let arr = obj.children;
+    const arr = obj.children;
     for (let i = 0, ii = arr.length; i < ii; i++) {
-        let one = arr[i];
+        const one = arr[i];
 
         if (one.uuid === uuid) { // uuid全等匹配
             return [one, i, arr, obj];
@@ -620,28 +620,24 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
     // 现有的节点数据
     const nodeData = getOneFromTreeData(treeData, uuid)[0];
 
-    /**
-     *  属性是值类型的修改
-     * */
+    // 属性是值类型的修改
     ['name'].forEach((key) => {
         if (nodeData[key] !== dumpData[key].value) {
             nodeData[key] = dumpData[key].value;
         }
     });
 
-    /**
-     *  属性值是对象类型的修改， 如 children
-     * */
-    let childrenKeys: Array<string> = nodeData.children.map((one: ItreeNode) => one.uuid);
-    let newChildren: Array<ItreeNode> = [];
+    // 属性值是对象类型的修改， 如 children
+    const childrenKeys: string[] = nodeData.children.map((one: ItreeNode) => one.uuid);
+    const newChildren: ItreeNode[] = [];
     dumpData.children.value.forEach((json: any, i: number) => {
-        let id: string = json.value;
-        let index = childrenKeys.findIndex(uid => id === uid);
+        const id: string = json.value;
+        const index = childrenKeys.findIndex((uid) => id === uid);
         let one;
-        if (index != -1) { // 平级移动
+        if (index !== -1) { // 平级移动
             one = nodeData.children[index]; // 原来的父级节点有该元素
         } else { // 跨级移动
-            let arrInfo = getOneFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
+            const arrInfo = getOneFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
             one = arrInfo[2].splice(arrInfo[1], 1)[0];
         }
         one.isExpand = false;
@@ -652,19 +648,19 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
 
 /**
  * 添加新的节点数据
- * @param dumpData 
+ * @param dumpData
  */
 function addTreeNodeData(dumpData: any) {
-    let uuid = dumpData.uuid.value;
+    const uuid = dumpData.uuid.value;
 
     // 父级节点
-    let uuidParent = dumpData.parent.value;
+    const uuidParent = dumpData.parent.value;
     const parentNode = getOneFromTreeData(treeData, uuidParent)[0];
 
     // 数据转换
-    let childNode: ItreeNode = {
+    const childNode: ItreeNode = {
         name: dumpData.name.value,
-        uuid: uuid,
+        uuid,
         children: dumpData.children.value,
         top: 0,
         isLock: false
@@ -681,19 +677,19 @@ function addTreeNodeData(dumpData: any) {
  * 清除对应节点数据
  */
 function removeTreeNodeData(uuid: string) {
-    let nodeData = getOneFromTreeData(treeData, uuid);
-    let index = nodeData[1];
+    const nodeData = getOneFromTreeData(treeData, uuid);
+    const index = nodeData[1];
 
     nodeData[2].splice(index, 1);
 }
 
 /**
  * 滚动节点到可视范围内
- * @param uuid 
+ * @param uuid
  */
 function scrollIntoView(uuid: string) {
     // 先A判断是否已在展开的节点中，
-    let one = getOneFromPositionMap(uuid);
+    const one = getOneFromPositionMap(uuid);
     if (one) { // 如果A是，
         // 再B判断是否是否在可视范围，
         if ((vm.scrollTop - treeNodeHeight) < one.top && one.top < (vm.scrollTop + vm.viewHeight - treeNodeHeight)) {
@@ -712,7 +708,7 @@ function scrollIntoView(uuid: string) {
  * 展开树形节点
  */
 function expandTreeNode(uuid: string) {
-    let arr = getOneFromTreeData(treeData, uuid);
+    const arr = getOneFromTreeData(treeData, uuid);
     arr[0].isExpand = true;
     if (arr[3] && arr[3].uuid) {
         expandTreeNode(arr[3].uuid);

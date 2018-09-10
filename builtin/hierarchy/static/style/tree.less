@@ -12,6 +12,39 @@
     padding: 4px 1px 4px 1px;
     box-sizing: border-box;
     overflow: hidden;
+    &[hoving] {
+        >.node {
+            &[drag="over"] {
+                color: @drag-color  !important;
+            }
+            &[insert="before"] {
+                &:before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: -2px;
+                    width: 100%;
+                    height: 2px;
+                    background-color: @drag-color;
+                }
+            }
+            &[insert="inside"] {
+                color: #fff !important;
+                background-color: @drag-bgcolor  !important;
+            }
+            &[insert="after"] {
+                &:before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    bottom: -2px;
+                    width: 100%;
+                    height: 2px;
+                    background-color: @drag-color;
+                }
+            }
+        }
+    }
     >.node {
         display: block;
         position: relative;
@@ -20,9 +53,6 @@
         font-size: 12px;
         &[active="true"] {
             background-color: #059 !important;
-        }
-        &[drag="over"] {
-            color: @drag-color !important;
         }
         &[state="input"] {
             background-color: transparent !important;
@@ -36,46 +66,21 @@
                 }
             }
         }
-        &[insert="before"] {
-            &:before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: -2px;
-                width: 100%;
-                height: 2px;
-                background-color: @drag-color;
-            }
-        }
-        &[insert="inside"] {
-            color: #fff !important;
-            background-color: @drag-bgcolor  !important;
-        }
-        &[insert="after"] {
-            &:before {
-                content: '';
-                position: absolute;
-                left: 0;
-                bottom: -2px;
-                width: 100%;
-                height: 2px;
-                background-color: @drag-color;
-            }
-        }
         &[animate] {
             .arrow {
-                transition: 0.2s all;
+                transition: 0.2s transform;
             }
         }
         &[expand="true"] {
             .arrow {
                 transform: rotate(90deg);
+                padding-top: 2px;
             }
         }
         [class^="i-"],
         [class*=" i-"] {
-            font-size: 10px;
-            width: 20px;
+            font-size: 9px;
+            width: 18px;
             text-align: center;
             cursor: pointer;
         }

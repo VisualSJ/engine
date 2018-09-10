@@ -1,5 +1,5 @@
-<ul class="tree">
-    <ui-drag-item class="node"
+<ui-drag-area class="tree" dropable="entity">
+    <ui-drag-item class="node" type="entity"
         :key="index"
         v-for="(item,index) in list" 
         :draggable="item.rename?false:true"
@@ -41,4 +41,4 @@
             <ui-loading></ui-loading>
         </section>
     </ui-drag-item>
-</ul>
+</ui-drag-area>

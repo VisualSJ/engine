@@ -11,6 +11,22 @@
     padding: 4px 1px 4px 1px;
     box-sizing: border-box;
     overflow: hidden;
+    &[hoving] {
+        >.node {
+            &[drag="over"] {
+                color: #fff !important;
+            }
+            &[state="over"] {
+                color: #fff !important;
+            }
+            &[insert="inside"] {
+                color: @active-color;
+            }
+        }
+        & + .dirShadow{
+            display: block;
+        }
+    }
     >.node {
         display: block;
         position: relative;
@@ -20,12 +36,6 @@
         white-space: nowrap;
         &[active="true"] {
             background-color: #059 !important;
-        }
-        &[drag="over"] {
-            color: #fff !important;
-        }
-        &[state="over"] {
-            color: #fff !important;
         }
         &[state="input"] {
             background-color: transparent !important;
@@ -39,30 +49,26 @@
                 }
             }
         }
-        &[insert="inside"] {
-            color: @active-color;
-        }
         &[animate] {
             .arrow {
-                transition: 0.2s all;
+                transition: 0.2s transform;
             }
-        }
-        .arrow {
-            width: 18px;
         }
         .folder {
             font-size: 11px !important;
             transition: none !important;
+            text-align: left !important;
         }
         &[expand="true"] {
             .arrow {
                 transform: rotate(90deg);
+                padding-top: 2px;
             }
         }
         [class^="i-"],
         [class*=" i-"] {
-            font-size: 10px;
-            width: 20px;
+            font-size: 9px;
+            width: 18px;
             text-align: center;
             cursor: pointer;
         }
@@ -104,4 +110,5 @@
             vertical-align: middle;
         }
     }
+
 }

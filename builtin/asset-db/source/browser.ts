@@ -1,10 +1,10 @@
 'use stirct';
 
 import { AssetDB } from 'asset-db';
-import { promisify } from 'util';
 import { statSync } from 'fs';
-import { existsSync, ensureDirSync, removeSync, move, remove, outputFile, ensureDir } from 'fs-extra';
-import { join, relative, basename } from 'path';
+import { ensureDir, ensureDirSync, existsSync, move, outputFile, remove, removeSync } from 'fs-extra';
+import { basename, join, relative } from 'path';
+import { promisify } from 'util';
 
 let isReady: boolean = false;
 let database: AssetDB | null = null;
@@ -128,8 +128,8 @@ module.exports = {
             file = rename(file, 0);
 
             // 创建
-            let outputFilePromise = promisify(outputFile);
-            let ensureDirPromise = promisify(ensureDir);
+            const outputFilePromise = promisify(outputFile);
+            const ensureDirPromise = promisify(ensureDir);
             try {
                 if (data === null) { // 是文件夹
                     await ensureDirPromise(file);
@@ -143,14 +143,14 @@ module.exports = {
             }
 
             // 如果创建的文件名称重复 按 001, 002 递增
-            //@ts-ignore;
+            // @ts-ignore;
             function rename(filepath: string, suffix: number) {
                 let file = filepath;
 
                 if (suffix !== 0) {
-                    let fileArr = filepath.split(/\/|\\/);
+                    const fileArr = filepath.split(/\/|\\/);
                     let fileName = fileArr.pop() || '';
-                    let nameArr = fileName.split('.');
+                    const nameArr = fileName.split('.');
                     let ext;
                     if (nameArr.length > 1) {
                         ext = nameArr.pop();
@@ -159,7 +159,7 @@ module.exports = {
                         fileName = nameArr[0];
                     }
 
-                    //@ts-ignore;
+                    // @ts-ignore;
                     fileName += ' - ' + suffix.toString().padStart(3, '0');
                     file = join(...fileArr, (fileName + (ext ? '.' + ext : '')));
                 }
@@ -176,7 +176,6 @@ module.exports = {
 
         /**
          * 将一个资源移动到某个地方
-         * 更名操作也可以调用 move
          * @param uuid
          * @param target
          */
@@ -189,24 +188,45 @@ module.exports = {
             if (asset.source === dir.source || !existsSync(asset.source) || !existsSync(dir.source)) {
                 return false;
             }
-            let newPath = join(dir.source, asset.basename + asset.extname);
-            let metaPath = asset.source + '.meta';
+            const newPath = join(dir.source, asset.basename + asset.extname);
+            const metaPath = asset.source + '.meta';
             if (!existsSync(metaPath)) {
                 return false;
             }
 
-            let movePromise = promisify(move);
-            // let removePromise = promisify(remove);
+            const movePromise = promisify(move);
             try {
-                //@ts-ignore;
+                // @ts-ignore;
                 await movePromise(asset.source, newPath, { overwrite: true });
-                //@ts-ignore;
+                // @ts-ignore;
                 await movePromise(metaPath, newPath + '.meta', { overwrite: true });
 
-                // // 复制成功，删除原位置文件
-                // //@ts-ignore;
-                // await removePromise(asset.source);
-                // await removePromise(metaPath);
+                return true;
+            } catch (err) {
+                console.log(err);
+                return false;
+            }
+        },
+
+        /**
+         * 资源重名命 rename
+         * @param uuid
+         * @param target
+         */
+        async 'rename-asset'(uuid: string, name: string) {
+            if (!database) {
+                return false;
+            }
+            const asset = database.uuid2asset[uuid];
+            if (!existsSync(asset.source)) {
+                return false;
+            }
+            const newPath = asset.source.replace(asset.basename + asset.extname, name);
+
+            const movePromise = promisify(move);
+            try {
+                // @ts-ignore;
+                await movePromise(asset.source, newPath, { overwrite: true });
 
                 return true;
             } catch (err) {
@@ -217,15 +237,15 @@ module.exports = {
 
         /**
          * 外部文件系统拖进资源
-         * @param uuid 
-         * @param path 
+         * @param uuid
+         * @param path
          */
         async 'insert-asset'(uuid: string, path: string) {
             if (!database) {
                 return false;
             }
             const asset = database.uuid2asset[uuid];
-            let assetStat = statSync(asset.source);
+            const assetStat = statSync(asset.source);
 
             if (!assetStat.isDirectory()) {
                 return false;
@@ -235,11 +255,11 @@ module.exports = {
                 return false;
             }
 
-            let newPath = join(asset.source, basename(path));
+            const newPath = join(asset.source, basename(path));
 
-            let movePromise = promisify(move);
+            const movePromise = promisify(move);
             try {
-                //@ts-ignore;
+                // @ts-ignore;
                 await movePromise(path, newPath, { overwrite: true });
 
                 return true;
