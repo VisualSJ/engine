@@ -4,6 +4,7 @@
   border-color: @c-border-dark;
   background-image: linear-gradient(#585858, #444);
   color:@c-default-text;
+  box-sizing: border-box;
 }
 
 :host(:hover) {
@@ -11,8 +12,13 @@
   color: #d1d1d1;
 }
 
+:host([pressed]) {
+  background-color: #3E3E3E;
+  color:@c-default-text;
+}
+
 // focus的border颜色设置需在hover之后
-:host([focused]) {
+:host([focused]){
   border-color: @c-border-focus;
 }
 
@@ -22,4 +28,136 @@
   color:@c-default-text;
   opacity: @n-disabled-opacity;
   background-image: linear-gradient(#585858, #444);
+}
+
+// red
+:host(.red:hover) {
+  background-image: linear-gradient(#FF8080, @c-red-light);
+  color:white;
+}
+
+:host(.red[pressed]) {
+  background-image: linear-gradient(@c-red-dark, @c-red);
+  color:#ddd;
+}
+
+:host(.red), :host(.red[disabled]) {
+  background-image: linear-gradient(@c-red-light, @c-red);
+  color:#ddd;
+}
+
+// green
+:host(.green:hover) {
+  background-image: linear-gradient(#5ADD94, @c-green-light);
+  color:white;
+}
+
+:host(.green[pressed]) {
+  background-image: linear-gradient(@c-green-dark, @c-green);
+  color:#ddd;
+}
+
+:host(.green), :host(.green[disabled]) {
+  background-image: linear-gradient(@c-green-light, @c-green);
+  color:#ddd;
+}
+// blue
+:host(.blue:hover) {
+  background-image: linear-gradient(#A1BFFC, @c-blue-light);
+  color:white;
+}
+
+:host(.blue[pressed]) {
+  background-image: linear-gradient(@c-blue-dark, @c-blue);
+  color:#ddd;
+}
+
+:host(.blue), :host(.blue[disabled]) {
+  background-image: linear-gradient(@c-blue-light, @c-blue);
+  color:#ddd;
+}
+
+// yellow
+:host(.yellow:hover) {
+  background-image: linear-gradient(#FFD96B, @c-yellow-light);
+  color:white;
+}
+
+:host(.yellow[pressed]) {
+  background-image: linear-gradient(@c-yellow-dark, @c-yellow);
+  color:#ddd;
+}
+
+:host(.yellow), :host(.yellow[disabled]) {
+  background-image: linear-gradient(@c-yellow-light, @c-yellow);
+  color:#ddd;
+}
+
+// 带透明背景的按钮
+:host(.transparent) {
+  background: none;
+  border: 1px solid transparent;
+  font-weight: bold;
+}
+
+:host(.transparent:hover) {
+  background: #585858;
+}
+
+:host(.transparent[pressed]) {
+  opacity: 0.7;
+}
+
+:host(.transparent.red) {
+  color:@c-red;
+}
+
+:host(.transparent.red:hover) {
+  color:@c-red-light;
+  background:@c-red-tran;
+}
+
+:host(.transparent.green) {
+  color:@c-green;
+}
+
+:host(.transparent.green:hover) {
+  color:@c-green-light;
+  background:@c-green-tran;
+}
+
+:host(.transparent.blue) {
+  color:@c-blue;
+}
+
+:host(.transparent.blue:hover) {
+  color:@c-blue-light;
+  background:@c-blue-tran;
+}
+
+
+:host(.transparent.yellow) {
+  color:@c-yellow;
+}
+
+:host(.transparent.yellow:hover) {
+  color:@c-yellow-light;
+  background:@c-yellow-tran;
+}
+
+// focus的border颜色设置需在hover之后
+:host(.transparent[focused]) {
+  border:1px solid @c-border-focus;
+}
+
+// disabled的颜色设置需在Hover之后
+:host(.transparent[disabled]),
+:host(.transparent.red[disabled]),
+:host(.transparent.green[disabled]),
+:host(.transparent.blue[disabled]),
+:host(.transparent.yellow[disabled]),{
+  cursor: default;
+  opacity: @n-disabled-opacity;
+  background: none;
+  border:1px solid transparent;
 }

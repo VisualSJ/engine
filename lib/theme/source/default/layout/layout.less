@@ -59,6 +59,9 @@ dock-tabs {
   background: @c-dark-bg;
   border-bottom: 1px solid #212121;
   box-shadow: 0px 1px 0px #444 inset;
+  dock-tab:first-child {
+    margin-left: 1px;
+  }
 }
 
 dock-tabs>div:hover>svg {
@@ -71,13 +74,16 @@ dock-tabs>div>svg {
 }
 
 dock-tab {
-  height: 24px;
+  height: 25px;
   padding: 0 6px;
   border-color: #212121;
   font-size: 14px;
   color: @c-default-text;
   &:hover {
     color: @c-border-hover;
+  }
+  &:focus {
+    border:1px solid @c-blue;
   }
 }
 
@@ -120,4 +126,9 @@ dock-panels {
 panel-frame {
   flex: 1;
   background: #474747;
+  border:1px solid transparent;
+  box-sizing: border-box;
+  &:focus {
+    border:1px solid @c-blue;
+  }
 }

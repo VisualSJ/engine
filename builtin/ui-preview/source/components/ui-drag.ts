@@ -10,11 +10,11 @@ export function data() {
 }
 
 export const methods = {
-    onDragstart(event:Event) {
+    onDragstart(event: Event) {
          // @ts-ignore
         event.dataTransfer.setData('value', event.target.type);
     },
-    onDrag(event:Event) {
+    onDrag(event: Event) {
         console.log('drop');
     }
 };

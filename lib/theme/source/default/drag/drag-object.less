@@ -12,6 +12,16 @@
     border-radius: 0  @n-border-radius  @n-border-radius  @n-border-radius;
     border-color:@c-border;
   }
+  ui-drag-area {
+    width: 90%;
+    box-sizing: border-box;
+  }
+  .value {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 :host[draging] {
