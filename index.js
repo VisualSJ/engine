@@ -5,7 +5,7 @@
 // Editor 这个全局对象应该避免在编辑器内部使用
 global.Editor  = require('./lib/editor');
 
-(async function () {
+(async function() {
     // 开始编辑器启动流程
     const startup = require('./lib/startup');
 

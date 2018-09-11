@@ -1,0 +1,21 @@
+<div class="button-wrap">
+    <section>
+        <h1>dialog信息弹框示例</h1>
+        <ui-button @click="show('info')">显示info弹框</ui-button>
+        <ui-button @click="show('warn')">显示warn弹框</ui-button>
+        <ui-button @click="show('error')">显示error弹框</ui-button>
+        <p>更改按钮文本</p>
+        <ui-button @click="show('okText')">更改okText弹框</ui-button>
+        <ui-button @click="show('both')">更改okText和cancelText弹框</ui-button>
+        <p>自定义button个数以及对应的事件回调函数</p>
+        <ui-button @click="show('buttons')">buttons更改文本测试弹框</ui-button>
+        <h1>dialog打开文件夹弹框示例</h1>
+        <ui-button @click="openFiles('all')">打开文件</ui-button>
+        <ui-button @click="openFiles('images')">打开过滤图片文件</ui-button>
+        <ui-button @click="openFiles('images,movies')">打开过滤图片和影视文件</ui-button>
+
+        <ui-button @click="openDirectory">打开文件夹</ui-button>
+        <h1>dialog保存文件示例</h1>
+        <ui-button @click="savefiles">保存文件</ui-button>
+    </section>
+</div>

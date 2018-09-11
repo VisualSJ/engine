@@ -19,25 +19,24 @@ export const methods = {};
 export const messages = {};
 
 export async function ready() {
-    // @ts-ignore    
+    // @ts-ignore
     panel = this;
     vm = new Vue({
         el: panel.$['ui-preview'],
-        data() {
-            return {
-                uiCollectors:['button', 'input', 'num-input', 'checkbox', 'slider', 'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop'],
-                chooseIndex:'button'
-            };
+        data: {
+            uiCollectors: ['dialog', 'button', 'input', 'num-input', 'checkbox', 'slider',
+             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop'],
+            chooseIndex: 'dialog'
         },
         beforeCreate() {
-            
+
         },
         methods: <any>{
             /**
              * select的change回调事件
-             * @param event 
+             * @param event
              */
-            selectChange(event:any) {
+            selectChange(event: any) {
                 this.chooseIndex = event.target.value;
             },
         },
@@ -54,6 +53,8 @@ export async function ready() {
             'test-loading': require('./components/ui-loading'),
             'test-drag': require('./components/ui-drag'),
             'test-prop': require('./components/ui-prop'),
+
+            'test-dialog': require('./components/ui-dialog'),
         },
     });
 

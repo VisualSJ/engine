@@ -14,6 +14,7 @@ interface Editor {
     Profile: Profile;
     History: History;
     Theme: Theme;
+    Dialog: Dialog;
 }
 
 interface App {
@@ -91,6 +92,13 @@ interface History {
     clear: Function;
     undo: Function;
     redo: Function;
+}
+
+interface Dialog {
+    show: Function,
+    openFiles: Function,
+    openDirectory: Function,
+    saveFiles: Function
 }
 
 declare const IPCEvent: IPCEvent;
