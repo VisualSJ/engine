@@ -141,8 +141,8 @@ export async function ready() {
             node: require('./components/node')
         },
         async mounted() {
-            const type = await Editor.Ipc.requestToPackage('selection', 'query-laset-select-type');
-            const uuid = await Editor.Ipc.requestToPackage('selection', 'query-laset-select', type);
+            const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
+            const uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
 
             vm.isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
 

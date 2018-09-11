@@ -39,7 +39,7 @@ class View extends window.HTMLElement {
         });
 
         // 打开调试工具
-        this.$scene.openDevTools();
+        // this.$scene.openDevTools();
 
         // 设置当前的引擎
         await this.ipc.send('init-engine', info.path).promise();

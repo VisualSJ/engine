@@ -15,7 +15,7 @@ export const messages = {
      * @param type
      * @param uuid
      */
-    'select'(type: string, uuid: string | string[]) {
+    select(type: string, uuid: string | string[]) {
         lastSelectType = type;
 
         const array = selection[type] = selection[type] || [];
@@ -49,7 +49,7 @@ export const messages = {
      * @param type
      * @param uuid
      */
-    'unselect'(type: string, uuid: string | string[]) {
+    unselect(type: string, uuid: string | string[]) {
         if (!selection[type]) {
             return;
         }
@@ -78,7 +78,7 @@ export const messages = {
      * 清空莫哥类型选中的所有物体
      * @param type
      */
-    'clear'(type: string) {
+    clear(type: string) {
         if (!selection[type]) {
             return;
         }
@@ -92,14 +92,14 @@ export const messages = {
     /**
      * 查询最后一个选中的物体类型
      */
-    'query-laset-select-type'() {
+    'query-last-select-type'() {
         return lastSelectType;
     },
 
     /**
      * 查询一个类型最后选中的物体
      */
-    'query-laset-select'(type: string) {
+    'query-last-select'(type: string) {
         if (!selection[type]) {
             return null;
         }
@@ -107,6 +107,17 @@ export const messages = {
         const array = selection[type];
         return array[array.length - 1] || '';
     },
+
+    /**
+     * 查询一个类型全部选中的物体
+     */
+    'query-select'(type: string) {
+        if (!selection[type]) {
+            return null;
+        }
+        return selection[type];
+    }
+
 };
 
 export async function load() { }

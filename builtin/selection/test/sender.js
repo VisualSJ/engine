@@ -22,7 +22,7 @@ exports.package = [
     }, {
         name: '查询最后选中的节点',
         tooltip: '返回最后选中的节点的 uuid',
-        message: 'query-laset-select',
+        message: 'query-last-select',
         params: ['node'],
         reply: true,
     }, {
@@ -43,13 +43,13 @@ exports.package = [
     }, {
         name: '查询最后选中的资源',
         tooltip: '返回最后选中的资源的 uuid',
-        message: 'query-laset-select',
+        message: 'query-last-select',
         params: ['asset'],
         reply: true,
     }, {
         name: '查询最后选中的物体类型',
         tooltip: '返回选中的类型',
-        message: 'query-laset-select-type',
+        message: 'query-last-select-type',
         params: [],
         reply: true,
     },

@@ -10,6 +10,7 @@ let tsDirnames = [
     './builtin/asset-db',
     './builtin/assets',
     './builtin/console',
+    './builtin/engine',
     './builtin/hierarchy',
     './builtin/inspector',
     './builtin/preferences',

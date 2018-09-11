@@ -52,7 +52,7 @@
         height: 16px;
         font-size: 12px;
         &[active="true"] {
-            background-color: #059 !important;
+            background-color: rgba(255, 255, 255, 0.1);
         }
         &[state="input"] {
             background-color: transparent !important;
@@ -120,6 +120,14 @@
             padding-left: 4px;
             width: ~'calc(100% - 50px)';
             vertical-align: middle;
+        }
+    }
+}
+
+:host([focused]) {
+    .tree {
+        .node[active="true"] {
+            background-color: #059;
         }
     }
 }
