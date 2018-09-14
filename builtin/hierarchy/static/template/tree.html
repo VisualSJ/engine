@@ -1,5 +1,5 @@
-<ui-drag-area class="tree" dropable="entity">
-    <ui-drag-item class="node" type="entity"
+<ui-drag-area class="tree" dropable="node">
+    <ui-drag-item class="node" type="node"
         :key="index"
         v-for="(item,index) in list" 
         :draggable="item.rename?false:true"

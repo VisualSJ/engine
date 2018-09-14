@@ -112,10 +112,7 @@ export const messages = {
      * 查询一个类型全部选中的物体
      */
     'query-select'(type: string) {
-        if (!selection[type]) {
-            return null;
-        }
-        return selection[type];
+        return selection[type] || [];
     }
 
 };

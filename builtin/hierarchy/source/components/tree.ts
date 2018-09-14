@@ -19,6 +19,11 @@ export function data() {
 }
 
 export const methods = {
+    /**
+     * 右击菜单
+     * @param event
+     * @param item
+     */
     mouseDown(event: Event, item: ItreeNode) {
         // @ts-ignore
         if (event.button !== 2) {
@@ -67,12 +72,18 @@ export const methods = {
     },
     /**
      * 选中某个节点
+     * 区分单选 和 多选
      * @param event
      * @param uuid
      */
     selectNode(event: Event, item: ItreeNode) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        Editor.Ipc.sendToPackage('selection', 'select', 'node', item.uuid);
+        // @ts-ignore
+        if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
+            this.multipleSelect(event, item);
+        } else { // 单选
+            Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+            Editor.Ipc.sendToPackage('selection', 'select', 'node', item.uuid);
+        }
 
         // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
         // @ts-ignore
@@ -81,6 +92,38 @@ export const methods = {
         setTimeout(() => {
             target.removeAttribute('animate');
         }, 500);
+    },
+    /**
+     * 多选
+     * 按下 ctrl 或 shift
+     * ctrl 支持取消已选中项
+     */
+    async multipleSelect(event: Event, item: ItreeNode) {
+        const uuid = item.uuid;
+        // @ts-ignore
+        if (event.ctrlKey || event.metaKey) {
+            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+            if (uuids.includes(uuid)) {
+                Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+            } else {
+                Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+            }
+            return;
+        }
+
+        // @ts-ignore
+        if (event.shiftKey) {
+            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+            // 如果之前没有选中节点，则只要选中当前点击的节点
+
+            if (uuids.length === 0) {
+                Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+                return;
+            } else {
+                // @ts-ignore
+                this.$emit('multiple', item.uuid);
+            }
+        }
     },
     /**
      * 锁定 / 解锁节点

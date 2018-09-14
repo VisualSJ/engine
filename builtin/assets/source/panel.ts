@@ -257,6 +257,39 @@ export async function ready() {
                 vm.changeTreeData();
             },
             /**
+             * 节点多选
+             */
+            async multipleSelect(uuid: string | string[]) {
+                if (Array.isArray(uuid)) {
+                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+                    return;
+                }
+                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
+                if (uuids.length === 0) {
+                    return;
+                }
+                const one = getAssetFromPositionMap(uuid); // 当前给定的元素
+                const first = getAssetFromPositionMap(uuids[0]); // 已选列表中的第一个元素
+                if (one !== undefined && first !== undefined) {
+                    const select: string[] = [];
+                    const min = one.top < first.top ? one.top : first.top;
+                    const max = min === one.top ? first.top : one.top;
+                    for (const [top, json] of positionMap) {
+                        if (min <= top && top <= max) {
+                                select.push(json.uuid);
+                        }
+                    }
+                    select.splice(select.findIndex((id) => id === first.uuid), 1);
+                    select.unshift(first.uuid);
+                    select.splice(select.findIndex((id) => id === one.uuid), 1);
+                    select.push(one.uuid);
+
+                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', select);
+                }
+            },
+            /**
              * 修改资源属性
              * 这是异步的，只做发送
              * 获取在另外ipc 'assets-db:node-changed' 处理数据替换和刷新视图
