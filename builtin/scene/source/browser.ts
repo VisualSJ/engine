@@ -25,6 +25,13 @@ export const messages = {
     },
 
     /**
+     * 切换调试模式
+     */
+    'open-devtools'() {
+        Editor.Ipc.sendToPanel('scene', 'open-devtools');
+    },
+
+    /**
      * 监听消息
      * ${action}-${method}
      *

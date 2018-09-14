@@ -107,6 +107,13 @@ export const messages = {
         }
     },
 
+    /**
+     * 切换调试模式
+     */
+    'open-devtools'() {
+        panel.$.scene.openDevTools(true);
+    },
+
     /////////////////////
     // 场景操作
 

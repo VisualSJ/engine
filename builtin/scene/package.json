@@ -15,6 +15,9 @@
         "i18n:menu.file/i18n:scene.save": {
             "message": "save-scene",
             "accelerator": "CmdOrCtrl+s"
+        },
+        "i18n:menu.develop/i18n:scene.develop": {
+            "message": "open-devtools"
         }
     },
 

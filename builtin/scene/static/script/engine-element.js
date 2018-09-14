@@ -9,7 +9,6 @@ class View extends window.HTMLElement {
     constructor() {
         super();
 
-        this.info = {};
         this.$scene = document.createElement('webview');
 
         // 封装的 webview 通讯模块
@@ -21,6 +20,7 @@ class View extends window.HTMLElement {
         });
 
         this.uuid = '';
+        this.version = null;
     }
 
     /**
@@ -56,6 +56,13 @@ class View extends window.HTMLElement {
 
         // 设置当前的引擎
         await this.ipc.send('init-engine', info).promise();
+    }
+
+    /**
+     * 打开调试模式
+     */
+    openDevTools() {
+        this.$scene.openDevTools();
     }
 
     /**

@@ -9,7 +9,6 @@ const worker = require('@base/electron-worker');
 
 let isReady: boolean = false;
 let assetWorker: any = null;
-let debug = false;
 
 module.exports = {
     /**
@@ -37,9 +36,8 @@ module.exports = {
         /**
          * 切换调试模式
          */
-        'switch-debug'() {
-            debug = !debug;
-            assetWorker.debug(debug);
+        'open-devtools'() {
+            assetWorker.debug(true);
         },
 
         /**

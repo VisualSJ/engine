@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-    'debug-mode': '切换资源调试工具'
+    'debug-mode': '打开资源调试工具'
 };

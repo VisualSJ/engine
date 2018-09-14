@@ -31,7 +31,7 @@ export default class ImageImporter extends Importer {
      * 如果返回 true，则会更新依赖这个资源的所有资源
      * @param asset
      */
-    public async exec(asset: Asset) {
+    public async import(asset: Asset) {
         let updated = false;
 
         const ext = extname(asset.source);

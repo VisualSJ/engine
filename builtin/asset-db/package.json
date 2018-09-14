@@ -4,7 +4,7 @@
 
     "menu": {
         "i18n:menu.develop/i18n:asset-db.debug-mode": {
-            "message": "switch-debug"
+            "message": "open-devtools"
         }
     },
 

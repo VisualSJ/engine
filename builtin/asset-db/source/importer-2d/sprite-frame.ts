@@ -33,7 +33,7 @@ export default class SpriteImporter extends Importer {
      * 如果返回 true，则会更新依赖这个资源的所有资源
      * @param asset
      */
-    public async exec(asset: VirtualAsset | Asset) {
+    public async import(asset: VirtualAsset | Asset) {
         let updated = false;
         // 如果没有生成 json 文件，则重新生成
         if (!(await asset.existsInLibrary('.json'))) {

@@ -3,6 +3,8 @@
 module.exports = {
     title: 'scene',
 
-    new: 'new scene',
-    save: 'save scene',
+    new: 'New Scene',
+    save: 'Save Scene',
+
+    develop: 'Open Scene DevTools',
 };

@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-    'debug-mode': 'switch assets debug tools'
+    'debug-mode': 'Open Sssets DevTools',
 };
