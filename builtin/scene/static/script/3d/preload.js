@@ -1,6 +1,5 @@
 'use strict';
 
-const { ipcRenderer } = require('electron');
 const ipc = require('../ipc/webview');
 
 // 放到全局, 便于调试
@@ -11,7 +10,9 @@ window.Manager = {
 };
 
 // 初始化指定版本的引擎, 成功后通知 host
-ipc.on('init-engine', async (file) => {
+ipc.on('init-engine', async (info) => {
+    const file = info.path;
+
     const script = document.createElement('script');
     script.src = `file://${file}`;
     document.body.appendChild(script);

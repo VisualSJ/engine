@@ -26,6 +26,18 @@ package-lock=false
 npm run build
 ```
 
+## 使用 electron 构建原生的 node 模块
+
+编辑器内使用的 nodejs 模块，可能会包含 c++ 等原生模块，而 electron 环境和本机环境有所不同，所以需要重新使用 electron 环境编译这些模块。
+
+需要注意的是，如果在 npm install 出现了报错信息，需要优先解决，才能够正常使用。
+
+一般来说优先检查本机 c++ 编译环境，其次清空 npm cache，然后再次尝试。
+
+```
+npm run build:npm
+```
+
 ## 更新 ftp 上的安装包
 
 tgz 包可以通过 npm run update 进行更新：
@@ -116,11 +128,12 @@ exports.panel = [{
 
 ## 依赖的一些环境
 
-1. 使用 npm 全局安装 typescript、tslint
+1. 使用 npm 全局安装 typescript、tslint、electron-rebuild
 
 ```bash
 npm install typescript -g
 npm install tslint -g
+npm install electron-rebuild -g
 ```
 
 2. 安装 vscode 的 tslint 插件

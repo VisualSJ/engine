@@ -1,6 +1,13 @@
 {
     "name": "asset-db",
     "version": "0.0.1",
+
+    "menu": {
+        "i18n:menu.develop/i18n:asset-db.debug-mode": {
+            "message": "switch-debug"
+        }
+    },
+
     "main": "./dist/browser.js",
     "dependencies": {}
 }

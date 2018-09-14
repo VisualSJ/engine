@@ -1,27 +1,15 @@
 'use stirct';
 
-import { AssetDB } from 'asset-db';
 import { statSync } from 'fs';
-import { ensureDir, ensureDirSync, existsSync, move, outputFile, remove, removeSync } from 'fs-extra';
-import { basename, join, relative } from 'path';
-import { promisify } from 'util';
+import { ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
+import { basename, extname, join, relative } from 'path';
+import { getName } from './utils';
+
+const worker = require('@base/electron-worker');
 
 let isReady: boolean = false;
-let database: AssetDB | null = null;
-
-interface IAssetInfo {
-    source: string;
-    uuid: string;
-    importer: string; // meta 内存储的导入器名字
-    files: string[];
-}
-
-const source2url = (source: string) => {
-    if (!database) {
-        return '';
-    }
-    return relative(database.options.target, source);
-};
+let assetWorker: any = null;
+let debug = false;
 
 module.exports = {
     /**
@@ -30,77 +18,70 @@ module.exports = {
      */
     messages: {
         /**
-         *  查询是否准备完成
+         * 查询是否准备完成
          */
         'query-is-ready'() {
             return isReady;
         },
 
         /**
-         * 查询资源树
+         * 重启刷新数据库
          */
-        'query-assets'(options: any) {
-            if (!database) {
+        'refresh-database'() {
+            if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
+            assetWorker.win.reload();
+        },
 
-            // 返回所有的资源的基础数据
-            const assets = Object.keys(database.uuid2asset).map((uuid) => {
-                if (!database) {
-                    return null;
-                }
-                const asset = database.uuid2asset[uuid];
-                const info: IAssetInfo = {
-                    source: source2url(asset.source),
-                    uuid: asset.uuid,
-                    importer: asset.meta.importer,
-                    files: asset.meta.files.map((ext) => {
-                        return asset.library + ext;
-                    })
-                };
-                return info;
-            });
+        /**
+         * 切换调试模式
+         */
+        'switch-debug'() {
+            debug = !debug;
+            assetWorker.debug(debug);
+        },
 
-            return assets;
+        /**
+         * 查询资源树
+         */
+        async 'query-assets'(options: any) {
+            if (!assetWorker) {
+                throw new Error('Asset DB does not exist.');
+            }
+            return await assetWorker.send('asset-worker:query-assets');
+        },
+
+        /**
+         * 传入资源的路径，返回 uuid
+         */
+        async 'query-asset-uuid'(source: string) {
+            if (!assetWorker) {
+                return null;
+            }
+            return await assetWorker.send('asset-worker:query-asset-uuid', source);
         },
 
         /**
          * 查询资源信息
          * @param uuid
          */
-        'query-asset-info'(uuid: string) {
-            if (!database) {
+        async 'query-asset-info'(uuid: string) {
+            if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
-            const asset = database.uuid2asset[uuid];
-            if (!asset) {
-                throw new Error('File does not exist.');
-            }
-
-            const info: IAssetInfo = {
-                source: source2url(asset.source),
-                uuid: asset.uuid,
-                importer: asset.meta.importer,
-                files: asset.meta.files.map((ext) => {
-                    return asset.library + ext;
-                })
-            };
-            return info;
+            return await assetWorker.send('asset-worker:query-asset-info', uuid);
         },
 
         /**
          * 查询资源的 meta 信息
          * @param uuid
          */
-        'query-asset-meta'(uuid: string) {
-            if (!database) {
+        async 'query-asset-meta'(uuid: string) {
+            if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
-            const asset = database.uuid2asset[uuid];
-            if (!asset) {
-                throw new Error('File does not exist.');
-            }
-            return asset.meta;
+            return await assetWorker.send('asset-worker:query-asset-meta', uuid);
         },
 
         /**
@@ -109,69 +90,29 @@ module.exports = {
          * @param data
          */
         async 'create-asset'(url: string, data: Buffer | string) {
-            if (!database) {
-                return false;
+            if (!assetWorker) {
+                return;
             }
-
-            if (!url.startsWith('db://assets')) {
-                // todo info
-                return false;
+            const flag = 'db://assets';
+            if (!url.startsWith(flag)) {
+                throw new Error('Must be prefixed with db://assets');
             }
-
-            url = url.substr(12);
 
             // 文件目录路径
-            const dirname = database.options.target;
-            let file = join(dirname, url);
+            const dirname = join(Editor.Project.path, 'assets');
+            let file = join(dirname, url.substr(flag.length));
 
-            // 名命
-            file = rename(file, 0);
+            // 获取可以使用的文件名
+            file = getName(file);
 
-            // 创建
-            const outputFilePromise = promisify(outputFile);
-            const ensureDirPromise = promisify(ensureDir);
-            try {
-                if (data === null) { // 是文件夹
-                    await ensureDirPromise(file);
-                } else { // 是文件
-                    await outputFilePromise(file, data);
-                }
-                return true;
-            } catch (err) {
-                console.log(err);
-                return false;
+            if (data === null) {
+                await ensureDir(file);
+            } else {
+                await outputFile(file, data);
             }
 
-            // 如果创建的文件名称重复 按 001, 002 递增
-            // @ts-ignore;
-            function rename(filepath: string, suffix: number) {
-                let file = filepath;
-
-                if (suffix !== 0) {
-                    const fileArr = filepath.split(/\/|\\/);
-                    let fileName = fileArr.pop() || '';
-                    const nameArr = fileName.split('.');
-                    let ext;
-                    if (nameArr.length > 1) {
-                        ext = nameArr.pop();
-                        fileName = nameArr.join('.');
-                    } else {
-                        fileName = nameArr[0];
-                    }
-
-                    // @ts-ignore;
-                    fileName += ' - ' + suffix.toString().padStart(3, '0');
-                    file = join(...fileArr, (fileName + (ext ? '.' + ext : '')));
-                }
-
-                if (existsSync(file)) {
-                    // 名称重复
-                    suffix++;
-                    return rename(filepath, suffix);
-                }
-
-                return file;
-            }
+            // 返回插入的文件地址
+            return 'db://' + relative(Editor.Project.path, file);
         },
 
         /**
@@ -180,32 +121,37 @@ module.exports = {
          * @param target
          */
         async 'move-asset'(uuid: string, target: string) {
-            if (!database) {
-                return false;
+            if (!assetWorker) {
+                return;
             }
-            const asset = database.uuid2asset[uuid];
-            const dir = database.uuid2asset[target];
-            if (asset.source === dir.source || !existsSync(asset.source) || !existsSync(dir.source)) {
-                return false;
-            }
-            const newPath = join(dir.source, asset.basename + asset.extname);
-            const metaPath = asset.source + '.meta';
-            if (!existsSync(metaPath)) {
-                return false;
+            const assets = {
+                // assets 目录
+                dirname: join(Editor.Project.path, 'assets'),
+                // 被移动的资源信息
+                source: await assetWorker.send('asset-worker:query-asset-info', uuid),
+                // 移动到这个资源内
+                target: await assetWorker.send('asset-worker:query-asset-info', target),
+            };
+
+            const path = {
+                source: join(assets.dirname, assets.source.source),
+                target: join(assets.dirname, assets.target.source),
+            };
+
+            // 如果其中一个数据是错误的，则停止操作
+            if (
+                assets.source.source === assets.target.source ||
+                !existsSync(path.source) ||
+                !existsSync(path.target) ||
+                !statSync(join(assets.dirname, assets.target.source)).isDirectory()
+            ) {
+                return;
             }
 
-            const movePromise = promisify(move);
-            try {
-                // @ts-ignore;
-                await movePromise(asset.source, newPath, { overwrite: true });
-                // @ts-ignore;
-                await movePromise(metaPath, newPath + '.meta', { overwrite: true });
-
-                return true;
-            } catch (err) {
-                console.log(err);
-                return false;
-            }
+            // 实际移动逻辑，首先移动 meta 文件，再移动实际文件
+            const name = basename(path.source);
+            move(path.source + '.meta', join(path.target, name) + '.meta');
+            move(path.source, join(path.target, name));
         },
 
         /**
@@ -214,73 +160,35 @@ module.exports = {
          * @param target
          */
         async 'rename-asset'(uuid: string, name: string) {
-            if (!database) {
-                return false;
+            if (!assetWorker) {
+                return;
             }
-            const asset = database.uuid2asset[uuid];
-            if (!existsSync(asset.source)) {
-                return false;
-            }
-            const newPath = asset.source.replace(asset.basename + asset.extname, name);
+            const dir = join(Editor.Project.path, 'assets');
+            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
 
-            const movePromise = promisify(move);
-            try {
-                // @ts-ignore;
-                await movePromise(asset.source, newPath, { overwrite: true });
+            const file = join(dir, info.source);
+            const ext = extname(file);
+            const base = basename(file, ext);
 
-                return true;
-            } catch (err) {
-                console.log(err);
-                return false;
-            }
-        },
-
-        /**
-         * 外部文件系统拖进资源
-         * @param uuid
-         * @param path
-         */
-        async 'insert-asset'(uuid: string, path: string) {
-            if (!database) {
-                return false;
-            }
-            const asset = database.uuid2asset[uuid];
-            const assetStat = statSync(asset.source);
-
-            if (!assetStat.isDirectory()) {
-                return false;
-            }
-
-            if (asset.source === path || !existsSync(asset.source) || !existsSync(path)) {
-                return false;
-            }
-
-            const newPath = join(asset.source, basename(path));
-
-            const movePromise = promisify(move);
-            try {
-                // @ts-ignore;
-                await movePromise(path, newPath, { overwrite: true });
-
-                return true;
-            } catch (err) {
-                console.log(err);
-                return false;
-            }
+            const target = file.replace(base, name);
+            rename(file, target);
         },
 
         /**
          * 删除某个资源
          * @param uuid
          */
-        'delete-asset'(uuid: string) {
-            if (!database) {
-                return false;
+        async 'delete-asset'(uuid: string) {
+            if (!assetWorker) {
+                return;
             }
-            const asset = database.uuid2asset[uuid];
-            existsSync(asset.source) && removeSync(asset.source);
-            existsSync(asset.source + '.meta') && removeSync(asset.source + '.meta');
-            return true;
+            const dir = join(Editor.Project.path, 'assets');
+            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+
+            const file = join(dir, info.source);
+
+            await remove(file);
+            await remove(file + '.meta');
         }
     },
 
@@ -289,37 +197,7 @@ module.exports = {
      * 打开一个新的资源数据库
      */
     async load() {
-        // 拼接需要使用的地址
-        const options = {
-            target: join(Editor.Project.path, 'assets'),
-            library: join(Editor.Project.path, 'library')
-        };
-
-        // 保证文件夹存在
-        ensureDirSync(options.target);
-        ensureDirSync(options.library);
-
-        // 启动资源数据库
-        try {
-            database = new AssetDB(options);
-            await database.start();
-
-            // 绑定文件添加事件
-            database.on('add', (uuid) => {
-                Editor.Ipc.sendToAll('asset-db:asset-add', uuid);
-            });
-
-            // 绑定文件删除事件
-            database.on('delete', (uuid) => {
-                Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
-            });
-        } catch (error) {
-            console.error(error);
-        }
-
-        // 更新主进程标记以及广播消息
-        isReady = true;
-        Editor.Ipc.sendToAll('asset-db:ready');
+        await createWorker();
     },
 
     /**
@@ -327,14 +205,77 @@ module.exports = {
      * 关闭打开的 AssetDB
      */
     async unload() {
-        if (database) {
-            // 关闭资源数据库
-            await database.stop();
-            database = null;
-        }
+        // 关闭 worker
+        worker.close('asset-db');
 
         // 更新主进程标记以及广播消息
         isReady = false;
         Editor.Ipc.sendToAll('asset-db:close');
     }
 };
+
+/**
+ * 创建 asset-db 的 worker 并且初始化
+ */
+async function createWorker() {
+    // 查询引擎数据, 并指定 worker 加载
+    const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+    assetWorker = worker.create('asset-db');
+    await assetWorker.init();
+    assetWorker.require(join(__dirname, '../static/asset-db'));
+
+    // 是否打开调试模式
+    assetWorker.debug(false);
+
+    // 启动 worker 后的初始化操作
+    assetWorker.on('asset-worker:startup', () => {
+        assetWorker.send('asset-worker:init', {
+            engine: info.path,
+            type: Editor.Project.type,
+            dist: join(__dirname, '../dist'),
+            utils: info.utils,
+        });
+
+        assetWorker.send('asset-worker:startup-database', {
+            name: 'assets',
+            assets: join(Editor.Project.path, 'assets'),
+            library: join(Editor.Project.path, 'library'),
+        });
+    });
+
+    // 如果 worker 检测到正在刷新
+    assetWorker.on('refresh', () => {
+        Editor.Ipc.sendToAll('asset-db:close');
+        isReady = false;
+    });
+
+    // 如果 worker 检测到关闭
+    assetWorker.on('closed', () => {
+        Editor.Ipc.sendToAll('asset-db:close');
+        isReady = false;
+    });
+
+    // 更新主进程标记以及广播消息
+    assetWorker.on('asset-worker:ready', async (event: any, name: string) => {
+        if (name !== 'assets') {
+            return;
+        }
+        Editor.Ipc.sendToAll('asset-db:ready');
+        isReady = true;
+    });
+
+    // workder 检测到了插入资源
+    assetWorker.on('asset-worker:asset-add', (event: any, uuid: string) => {
+        Editor.Ipc.sendToAll('asset-db:asset-add', uuid);
+    });
+
+    // worker 检测到了修改资源
+    assetWorker.on('asset-worker:asset-change', (event: any, uuid: string) => {
+        Editor.Ipc.sendToAll('asset-db:asset-change', uuid);
+    });
+
+    // worker 检测到了删除资源
+    assetWorker.on('asset-worker:asset-delete', (event: any, uuid: string) => {
+        Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
+    });
+}

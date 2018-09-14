@@ -46,6 +46,14 @@ export const methods = {
     },
 
     /**
+     * 保存场景
+     */
+    async saveScene() {
+        await panel.$.scene.saveScene();
+        Editor.Ipc.sendToAll('scene:save');
+    },
+
+    /**
      * 关闭场景
      */
     async closeScene() {
@@ -62,14 +70,15 @@ export const messages = {
     async 'asset-db:ready'() {
         isAssetReady = true;
         const uuid = profile.get('current-scene');
-        uuid && await panel.openScene(uuid);
+        await panel.openScene(uuid);
     },
 
     /**
      * 资源数据库关闭
      */
-    'asset-db:close'() {
+    async 'asset-db:close'() {
         isAssetReady = false;
+        await panel.closeScene();
     },
 
     /**
@@ -119,6 +128,13 @@ export const messages = {
         // 保存最后一个打开的场景
         profile.set('current-scene', uuid);
         profile.save();
+    },
+
+    /**
+     * 保存场景
+     */
+    async 'save-scene'() {
+        await panel.saveScene();
     },
 
     /**
@@ -246,7 +262,7 @@ export async function ready() {
 
     if (isAssetReady) {
         const uuid = profile.get('current-scene');
-        uuid && await panel.openScene(uuid);
+        await panel.openScene(uuid);
     }
 }
 

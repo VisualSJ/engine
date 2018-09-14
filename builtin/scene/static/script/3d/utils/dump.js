@@ -82,15 +82,6 @@ function dumpProperty(property, schema) {
  * @param node
  */
 function dumpNode(node) {
-    const children = [];
-
-    for (const child of node._children) {
-        if (!child) {
-            break;
-        }
-        children.push(dumpNode(child));
-    }
-
     return {
         uuid: dumpProperty(node._id),
 

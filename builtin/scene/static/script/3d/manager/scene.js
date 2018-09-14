@@ -25,8 +25,11 @@ function open(file) {
     window.app = scene;
 
     // 加载指定的场景
-    const result = readFileSync(file, 'utf8');
-    eval(`${result}\n//# sourceURL=${file}`);
+    if (file) {
+        try {
+            require(result);
+        } catch (error) {}
+    }
 
     // 爬取所有的节点数据
     nodeUtils.walk(uuid2node, app.activeLevel);

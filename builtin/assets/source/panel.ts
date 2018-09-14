@@ -59,7 +59,7 @@ export const messages = {
      * 去除 loading 状态，并且显示资源树
      */
     'asset-db:ready'() {
-        panel.$.loading.hidden = true;
+        // panel.$.loading.hidden = true;
         vm.ready = true;
         panel.refresh();
     },
@@ -69,7 +69,7 @@ export const messages = {
      * 打开 loading 状态，并隐藏资源树
      */
     'asset-db:close'() {
-        panel.$.loading.hidden = false;
+        // panel.$.loading.hidden = false;
         vm.ready = false;
         vm.list = [];
     },

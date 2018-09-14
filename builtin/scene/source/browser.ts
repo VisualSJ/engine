@@ -6,7 +6,7 @@ export const messages = {
     /**
      * 打开面板
      */
-    'open'() {
+    open() {
         Editor.Panel.open('scene');
     },
 
@@ -44,6 +44,13 @@ export const messages = {
      */
     async 'open-scene'(uuid: string) {
         return await Editor.Ipc.sendToPanel('scene', 'open-scene', uuid);
+    },
+
+    /**
+     * 保存场景
+     */
+    async 'save-scene'() {
+        return await Editor.Ipc.sendToPanel('scene', 'save-scene');
     },
 
     /**
@@ -134,6 +141,14 @@ export const messages = {
     }
 };
 
-export function load() {}
+export function load() {
+    require('electron').protocol.registerFileProtocol('import', (request: any, cb: any) => {
+        const url = decodeURIComponent(request.url);
+        const uri = require('url').parse(url);
+        const path = require('path');
+        const result = path.join(Editor.Project.path, 'library', uri.host, uri.path);
+        cb({ path: result });
+    });
+}
 
 export function unload() {}

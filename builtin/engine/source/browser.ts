@@ -33,6 +33,7 @@ export const messages = {
         return {
             version,
             path: file,
+            utils: path.join(__dirname, '../static/utils', type),
         };
     },
 };

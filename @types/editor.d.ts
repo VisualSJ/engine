@@ -59,7 +59,6 @@ interface Panel {
     close: Function;
 }
 
-
 interface Theme {
     use: Function;
 }

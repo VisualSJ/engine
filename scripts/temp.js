@@ -17,6 +17,21 @@ const files = [
     }, {
         url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/slider.js',
         dist: './.project/assets/slider.scene',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/123.js',
+        dist: './.project-2d/assets/123.scene',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/123.meta.js',
+        dist: './.project-2d/assets/123.scene.meta',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/texture.png',
+        dist: './.project-2d/assets/texture.png',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/texture.meta.js',
+        dist: './.project-2d/assets/texture.png.meta',
+    }, {
+        url: 'http://192.168.52.109/TestBuilds/Editor-3d/resources/package.js',
+        dist: './.project-2d/package.json',
     }
 ];
 
@@ -31,14 +46,17 @@ let download = function (item) {
         http.get(item.url, (res) => {
             console.log(`正在下载: ${item.url} ...`);
 
-            let string = '';
+            let buffer;
 
             res.on('data', (chunk) => {
-                string += chunk;
+                if (!buffer) {
+                    return buffer = chunk;
+                }
+                buffer = Buffer.concat([buffer, chunk], buffer.length + chunk.length);
             });
 
             res.on('end', () => {
-                fse.outputFileSync(item.dist, string);
+                fse.outputFileSync(item.dist, buffer);
                 resolve();
             });
 
