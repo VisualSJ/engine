@@ -6,24 +6,24 @@
 不设置对应回调函数时，将不显示任何按钮
 
 #### config 为弹框的配置对象
-- title  标题 选填/不同弹框有不同的默认值，例如alert对应的title默认为alert
-- message 展示内容正文 选填
-- onOk() {} 确认按钮的回调函数，本质上是定义的第一个按钮点击后回调的快捷方式
-- onCancel() {} 取消按钮的点击回调函数 ，，本质上是定义的第二个按钮点击后回调的快捷方式
-- okText 更改默认确认按钮的文本内容（选填, 默认值：OK），本质上是buttons的快捷方式
-- cancelText 更改取消按钮的默认文本内容（选填, 默认值：cancel)，本质上是buttons的快捷方式
-- type 弹框类型 （选填，默认为info，支持error,info,warning....）
+- title :string 标题 选填/不同弹框有不同的默认值，例如alert对应的title默认为alert
+- message :string 展示内容正文 选填
+- onOk :function 确认按钮的回调函数，本质上是定义的第一个按钮点击后回调的快捷方式
+- onCancel :function 取消按钮的点击回调函数 ，，本质上是定义的第二个按钮点击后回调的快捷方式
+- okText :string 更改默认确认按钮的文本内容（选填, 默认值：OK），本质上是buttons的快捷方式
+- cancelText :string 更改取消按钮的默认文本内容（选填, 默认值：cancel)，本质上是buttons的快捷方式
+- type :string 弹框类型 （选填，默认为info，支持error,info,warning....）
 
-- icon 指定图标地址 （选填，默认以type对应的图标为准, 一般不使用该属性）
-- buttons 指定需要展示的按钮文本，按钮数量以数组长度为准，
-- callback() {} 当没有指定onOk 以及onCancel函数时，将触发该事件
+- icon :string 指定图标地址 （选填，默认以type对应的图标为准, 一般不使用该属性）
+- buttons :string | array 指定需要展示的按钮文本，按钮数量以数组长度为准，
+- callback :function  当没有指定onOk 以及onCancel函数时，将触发该事件,函数将接收当前点击按钮index的参数；
 
 注意：
 1. 当存在onOk函数与onCancel函数，没有指定对应按钮的文本将显示默认值；
 2. 当options中存在cancelText而没有指定okText，将默认显示2个按钮，确认按钮文本为配置的默认值；故如需单个的取消按钮请更改okText文本内容模拟单一的取消按钮；
 3. 当同时存在callback函数与onOk等函数时，前2个按钮点击回调将执行onOk或onCancel函数（如存在，不存在则callback函数）；剩余函数将触发callback函数；
 4. 当buttons与okText、cancelText同时存在时，前两个数组内容将被其覆盖对应的值；
-5.onOk函数为驼峰式，注意大小写；
+5. onOk函数为驼峰式，注意大小写；
 
 ### 使用示例
 
@@ -57,5 +57,4 @@ const filterConfig = {
 ```
 **todo: 关于默认的几种文件过滤规则需细化确认**
 
-- onOk(filePaths) {} 选择或者取消后的回调函数
-其中filePaths为选中的文件路径数组，若取消选择该值为undifined；
+- onOk ： function 选择或者取消后的回调函数，回调函数将接收filePaths参数（array)，为当前选中文件路径的数组，没有选择则返回undifined；

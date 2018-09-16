@@ -83,6 +83,9 @@ export const methods = {
             }
           }
         });
+        break;
+      default:
+        Editor.Dialog.show();
     }
   },
 
@@ -99,7 +102,17 @@ export const methods = {
       },
     });
   },
-
+  openFile() {
+    Editor.Dialog.openFiles({
+      onOk(path: string[]) {
+        if (!path) {
+          console.log('取消选择');
+          return;
+        }
+        console.log('选中的文件位置' + path);
+      },
+    });
+  },
   openDirectory() {
     Editor.Dialog.openDirectory({
       title: '打开文件夹标题测试',
