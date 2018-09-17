@@ -2,9 +2,9 @@
 
 import { Asset, Importer, VirtualAsset } from 'asset-db';
 import { existsSync } from 'fs';
-import { clamp, getPixiel, getTrimRect } from './utils';
+import { clamp, getTrimRect } from './utils';
 
-const sharp = require('sharp');
+const imageUtils = require('../../static/utils/image');
 
 export default class SpriteImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
@@ -45,38 +45,19 @@ export default class SpriteImporter extends Importer {
             }
 
             const userData = asset.userData;
-            const data: any = await new Promise((resolve, reject) => {
-                sharp(userData.textureFile).raw().toBuffer((error: any, buffer: Uint8Array, info: object) => {
-                    if (error) {
-                        reject(error);
-                    }
-                    resolve({
-                        buffer, info,
-                    });
-                });
-            });
-            // userData.trimType = '';
-            // userData.textureUuid = '';
-            // userData.textureFile = '';
+            const imageData = await imageUtils.getImageData(userData.textureFile);
 
             userData.trimThreshold = 1;
             userData.rotated = false;
 
-            userData.rawWidth = data.info.width;
-            userData.rawHeight = data.info.height;
-            if (data.info.channels !== 4) {
-                userData.trimX = 0;
-                userData.trimY = 0;
-                userData.width = userData.rawWidth;
-                userData.height = userData.rawHeight;
-            } else {
-                // need trim & the image has alpha data
-                const rect = getTrimRect(data, userData.rawWidth, userData.rawHeight, userData.trimThreshold);
-                userData.trimX = rect[0];
-                userData.trimY = rect[1];
-                userData.width = rect[2];
-                userData.height = rect[3];
-            }
+            userData.rawWidth = imageData.width;
+            userData.rawHeight = imageData.height;
+
+            const rect = getTrimRect(imageData.data, userData.rawWidth, userData.rawHeight, userData.trimThreshold);
+            userData.trimX = rect[0];
+            userData.trimY = rect[1];
+            userData.width = rect[2];
+            userData.height = rect[3];
 
             userData.offsetX = userData.trimX + userData.width / 2 - userData.rawWidth / 2;
             userData.offsetY = -(userData.trimY + userData.height / 2 - userData.rawHeight / 2);
@@ -139,10 +120,12 @@ export default class SpriteImporter extends Importer {
         // }
 
         let capInsets;
-        if (sprite.insetLeft !== 0 ||
-            sprite.insetTop !== 0 ||
-            sprite.insetRight !== 0 ||
-            sprite.insetBottom !== 0) {
+        if (
+            sprite.insetLeft ||
+            sprite.insetTop ||
+            sprite.insetRight ||
+            sprite.insetBottom
+        ) {
             capInsets = [sprite.insetLeft, sprite.insetTop, sprite.insetRight, sprite.insetBottom];
         }
 
@@ -160,7 +143,7 @@ export default class SpriteImporter extends Importer {
         return {
             name: sprite._name,
             texture: uuid || undefined,
-            atlas: sprite._atlasUuid,  // strip from json if exporting
+            atlas: sprite._atlasUuid || '',  // strip from json if exporting
             rect: rect ? [rect.x, rect.y, rect.width, rect.height] : undefined,
             offset: offset ? [offset.x, offset.y] : undefined,
             originalSize: size ? [size.width, size.height] : undefined,

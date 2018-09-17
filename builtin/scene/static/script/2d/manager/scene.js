@@ -35,18 +35,17 @@ async function open(uuid) {
  * 保存场景
  */
 async function serialize() {
-    const serialize = require('../utils/serialize');
     let asset = new cc.SceneAsset();
     asset.scene = cc.director._scene;
     cc.Object._deferredDestroy();
-    return serialize(asset);
+    return Manager.serialize(asset);
 }
 
 /**
  * 关闭一个场景
  */
 function close() {
-    
+
 }
 
 /**

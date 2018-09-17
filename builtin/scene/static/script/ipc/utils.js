@@ -48,10 +48,22 @@ class Options {
     }
 }
 
+let HostSenderLock = false;
+let HostSenderQueue = [];
+
 /**
  * 主页面发送给 webview 的临时 sender 对象
  */
 class HostSender {
+
+    static step() {
+        if (HostSenderLock || HostSenderQueue.length === 0) {
+            return;
+        }
+        HostSenderLock = true;
+        let func = HostSenderQueue.shift();
+        func && func();
+    }
 
     static query (id) {
         return _id2sender[id];
@@ -63,10 +75,10 @@ class HostSender {
 
     constructor(options, webview) {
         this.options = options;
-
-        process.nextTick(() => {
-            webview.send(`scene-webview:send`, options);
+        HostSenderQueue.push(() => {
+            webview.send('scene-webview:send', this.options);
         });
+        process.nextTick(HostSender.step);
     }
 
     /**
@@ -81,6 +93,8 @@ class HostSender {
             _id2sender[this.options.cid] = this;
 
             this._callback = function (error, data) {
+                HostSenderLock = false;
+                process.nextTick(HostSender.step);
                 if (error) {
                     return reject(error);
                 }

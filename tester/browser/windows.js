@@ -52,6 +52,4 @@ exports.package = function (name) {
             },
         });
     });
-
-    
 };

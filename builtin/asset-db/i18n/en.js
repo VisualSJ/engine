@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-    'debug-mode': 'Open Sssets DevTools',
+    'debug-mode': 'Open Assets DevTools',
 };

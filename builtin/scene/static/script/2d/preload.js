@@ -61,7 +61,7 @@ ipc.on('init-engine', async (info) => {
 
                 const info = await ipc.send('query-asset-info', uuid).promise();
                 let url = info.files[0]
-                    .replace(/^\S+\/library\//, '')
+                    .replace(/^\S+(\/|\\)library(\/|\\)/, '')
                     .replace(/\.\S+$/, '.json');
 
                 callback(null, `import://${url}`, false, assets.getCtor(info.importer));

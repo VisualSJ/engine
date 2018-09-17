@@ -3,9 +3,7 @@
 const fse = require('fs-extra');
 const spawn = require('child_process').spawn;
 
-const moduleDirnames = [
-    './node_modules/sharp',
-];
+const moduleDirnames = [];
 
 let pkg = fse.readJSONSync('./node_modules/electron/package.json');
 
