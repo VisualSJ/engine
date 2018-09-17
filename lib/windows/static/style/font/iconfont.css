@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'iconfont';
+    src: url('iconfont.woff');
+}
+
+.iconfont {
+    font-family: 'iconfont' !important;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-play:before {
+    content: '\e603';
+}
+
+.icon-refresh:before {
+    content: '\e60e';
+}

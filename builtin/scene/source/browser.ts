@@ -1,13 +1,19 @@
 'use strict';
 
 let isReady: boolean = false;
-
+let currentSceneUuid: string | null = null;
 export const messages = {
     /**
      * 打开面板
      */
     open() {
         Editor.Panel.open('scene');
+    },
+    /**
+     * 查询当前场景 uuid
+     */
+    'query-current-scene'() {
+        return currentSceneUuid;
     },
 
     /**
@@ -50,6 +56,7 @@ export const messages = {
      * @param uuid 打开场景的 uuid
      */
     async 'open-scene'(uuid: string) {
+        currentSceneUuid = uuid;
         return await Editor.Ipc.sendToPanel('scene', 'open-scene', uuid);
     },
 
@@ -64,6 +71,7 @@ export const messages = {
      * 关闭当前场景
      */
     async 'close-scene'() {
+        currentSceneUuid = null;
         return await Editor.Ipc.sendToPanel('scene', 'close-scene');
     },
 

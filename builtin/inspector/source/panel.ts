@@ -113,7 +113,7 @@ export const listeners = {
      * 窗口缩放时调用更新
      */
     resize() {
-        eventBus.$emit('panel:resize');
+        eventBus.emit('panel:resize');
     }
 };
 

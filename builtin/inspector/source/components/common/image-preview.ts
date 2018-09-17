@@ -200,9 +200,7 @@ export function mounted(this: any) {
     const { __src__ } = this.meta;
 
     this.loadImage(__src__);
-    eventBus.$on('panel:resize', () => {
-        this.updateImage();
-    });
+    eventBus.on('panel:resize', this.updateImage);
 }
 
 export const watch = {
@@ -215,6 +213,6 @@ export const watch = {
 };
 
 export function destroyed(this: any) {
-    eventBus.$off('panel:resize');
+    eventBus.off('panel:resize', this.updateImage);
     this._destroyed = true;
 }

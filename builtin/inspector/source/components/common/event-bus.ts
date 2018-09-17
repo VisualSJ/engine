@@ -1,2 +1,2 @@
-import Vue from 'vue';
-export const eventBus = new Vue();
+import { EventEmitter } from 'events';
+export const eventBus = new EventEmitter();
