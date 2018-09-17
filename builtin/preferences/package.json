@@ -4,7 +4,8 @@
 
     "menu": {
         "Cocos3d/i18n:preferences.title": {
-            "message": "open"
+            "message": "open",
+            "icon": "./static/icon.png"
         }
     },
 
@@ -12,10 +13,11 @@
 
     "panel": {
         "title": "i18n:preferences.title",
+        "icon": "./static/icon.png",
         "main": "./dist/panel.js",
-        "min-width": 200,
+        "min-width": 400,
         "min-height": 200,
-        "width": 400,
+        "width": 800,
         "height": 600
     }
 }

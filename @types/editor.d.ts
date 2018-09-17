@@ -31,6 +31,7 @@ interface I18n {
     t: Function;
     switch: Function;
     current: Function;
+    on: Function
 }
 
 interface Menu {
