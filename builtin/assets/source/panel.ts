@@ -117,7 +117,7 @@ export const messages = {
 
         const source = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         const newNode = legalData([source])[0];
-        addTreeData(treeData.children, 'source', 'parent', newNode);
+        addTreeData(treeData.children, 'pathname', 'parent', newNode);
         // 触发节点数据已变动
         vm.changeTreeData();
     },
@@ -525,6 +525,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
         const start = index * treeNodeHeight;  // 起始位置
 
         const one = {
+            pathname: json.pathname,
             name: json.name,
             filename: json.filename,
             fileext: json.fileext,
@@ -834,23 +835,10 @@ function transformData(arr: IsourceAsset[]) {
         filename: 'root',
         fileext: '',
         uuid: 'root',
-        children: [
-            {
-                name: 'assets',
-                filename: 'assets',
-                fileext: '',
-                uuid: 'assets',
-                children: toTreeData(legalData(arr), 'source', 'parent'),
-                state: '',
-                source: '',
-                top: 0,
-                parent: 'root',
-                isDir: true,
-                isExpand: true,
-            }
-        ],
+        children: toTreeData(legalData(arr), 'pathname', 'parent'),
         state: '',
         source: '',
+        pathname: '',
         top: 0,
         parent: '',
         isDir: true,
@@ -863,15 +851,17 @@ function transformData(arr: IsourceAsset[]) {
  * @param arr
  */
 function legalData(arr: IsourceAsset[]) {
-    return arr.filter((a) => a.source !== '').map((a: IsourceAsset) => {
-        const paths: string[] = a.source.split(/\/|\\/);
+    return arr.filter((a) => a.pathname !== '').map((a: IsourceAsset) => {
+        const paths: string[] = a.source.replace('db://', '').split(/\/|\\/).filter((b) => b !== '');
+        a.pathname = paths.join('/');
 
-        // 赋予两个新字段用于子父层级关联
+        // 赋予新字段用于子父层级关联
         a.name = paths.pop() || '';
         const [filename, fileext] = a.name.split('.');
+
         a.filename = filename;
         a.fileext = fileext || '';
-        a.parent = paths.join('\\') || 'assets';
+        a.parent = a.name === '' ? 'root' : paths.join('/');
 
         return a;
     });
@@ -885,10 +875,10 @@ function legalData(arr: IsourceAsset[]) {
 function newAsset(uuid: string, json: IaddAsset) {
     // 获取该资源
     const one = getAssetFromTreeData(treeData, uuid);
-    let url = one[0].source;
+    let url = one[0].pathname;
 
     if (one[0].isDir !== true) { // 不是目录，指向父级级
-        url = one[3].source;
+        url = one[3].pathname;
     }
 
     let content;
@@ -897,7 +887,7 @@ function newAsset(uuid: string, json: IaddAsset) {
         case 'javascript': url += '/NewScript.js'; content = ''; break;
     }
 
-    url = 'db://assets/' + join(url);
+    url = 'db://' + join(url);
 
     Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
 }

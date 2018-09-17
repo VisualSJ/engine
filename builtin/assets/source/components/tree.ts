@@ -33,6 +33,7 @@ export const methods = {
             'query-asset-info',
             item.uuid
         );
+
         const ext = extname(asset.source);
         if (ext === '.scene') {
             Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
@@ -275,6 +276,7 @@ export const methods = {
 
         // @ts-ignore
         const target: any = event.currentTarget;
+        const  insert = target.getAttribute('insert');
         target.setAttribute('insert', ''); // 还原节点状态
         target.setAttribute('drag', '');
 
@@ -304,7 +306,7 @@ export const methods = {
 
             if (item.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
                 data.to = item.uuid; // 被瞄准的节点
-                data.insert = target.getAttribute('insert'); // 在重新排序前获取数据
+                data.insert = insert; // 在重新排序前获取数据
 
                 // @ts-ignore
                 this.$emit('drop', item, data);

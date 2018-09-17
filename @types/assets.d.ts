@@ -11,6 +11,7 @@ declare interface IaddAsset {
 }
 
 declare interface ItreeAsset {
+    pathname: string; // 来自 source 数据，去掉协议头 db://
     name: string;
     filename: string;
     fileext: string;
@@ -37,6 +38,7 @@ declare interface IsourceAsset {
     importer: string;
     source: string;
 
+    pathname: string;
     name: string;
     filename: string;
     fileext: string;
