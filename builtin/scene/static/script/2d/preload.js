@@ -32,6 +32,7 @@ ipc.on('init', async (info) => {
 
     (typeof info.uuid === 'string') && Manager.Scene.open(info.uuid);
 
+    ipc.ready();
     // 标记已经准备就绪
     isReady = true;
 });

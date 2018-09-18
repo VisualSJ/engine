@@ -49,6 +49,13 @@ class WebviewIpc extends EventEmitter {
         }
         ipcRenderer.sendToHost('webview-ipc:send', item);
     }
+
+    /**
+     * 准备就绪的时候调用这个接口
+     */
+    ready() {
+        ipcRenderer.sendToHost('webview-ipc:ready');
+    }
 }
 
 const ipc = module.exports = new WebviewIpc();
@@ -84,8 +91,4 @@ ipcRenderer.on('webview-ipc:send-reply', (event, error, args) => {
     const item = ipc.sendQueue.shift();
     item.callback(deserializeError(error), args);
     ipc.step();
-});
-
-requestAnimationFrame(() => {
-    ipcRenderer.sendToHost('webview-ipc:ready');
 });
