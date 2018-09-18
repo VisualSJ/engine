@@ -1,16 +1,22 @@
 'use strict';
 
+import UnknownImporter from './scene';
 import SceneImporter from './scene';
 import SpriteFrameImporter from './sprite-frame';
 import TextureImporter from './texture';
 
 export function register(database: any) {
 
-    database.register(new SceneImporter(), '.scene');
+    // 未知类型导入（不处理）
+    database.register(new UnknownImporter(), '*');
 
-    // database.register(new TextureImporter(), '.jpg');
-    database.register(new TextureImporter(), '.png');
+    // 场景文件导入
+    database.register(new SceneImporter(), ['.scene', '.fire']);
 
+    // 图片资源导入
+    database.register(new TextureImporter(), ['.jpg', '.png']);
+
+    // 虚拟的 sprite-frame 导入
     database.register(new SpriteFrameImporter());
 }
 

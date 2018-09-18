@@ -7,7 +7,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -59,13 +59,15 @@ export default class ImageImporter extends Importer {
         }
 
         // 如果 subAsset 没有生成，则重新生成
-        if (!asset.meta.subMetas['sprite-frame']) {
+        if (
+            !asset.meta.subMetas['sprite-frame'] ||
+            asset.meta.subMetas['sprite-frame'].importer !== 'sprite-frame'
+        ) {
             // 名字叫 sprite-frame，使用 sprite 导入器
             const subSprite = await asset.createSubAsset('sprite-frame', 'sprite-frame');
             if (subSprite) {
                 // 将数据传递给 subAsset
                 subSprite.userData.textureUuid = asset.uuid;
-                subSprite.userData.textureFile = asset.library + asset.extname;
                 await asset.save();
                 updated = true;
             }

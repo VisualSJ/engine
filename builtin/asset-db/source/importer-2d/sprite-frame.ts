@@ -37,15 +37,20 @@ export default class SpriteImporter extends Importer {
         let updated = false;
         // 如果没有生成 json 文件，则重新生成
         if (!(await asset.existsInLibrary('.json'))) {
+            let file = '';
+            if (asset.parent) {
+                // @ts-ignore
+                file = asset.parent.library + (asset.parent.extname || '');
+            }
 
-            if (!existsSync(asset.userData.textureFile)) {
+            if (!file || !existsSync(file)) {
                 throw new Error(
                     `Spriteframe import failed: The picture file [${asset.userData.textureUuid}] does not exist`
                 );
             }
 
             const userData = asset.userData;
-            const imageData = await imageUtils.getImageData(userData.textureFile);
+            const imageData = await imageUtils.getImageData(file);
 
             userData.trimThreshold = 1;
             userData.rotated = false;
