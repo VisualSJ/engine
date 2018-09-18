@@ -21,7 +21,7 @@ declare interface ItreeAsset {
     _height?: number; // 整个节点包括children的高度
     height?: number; // 整个节点包括children的高度
     parent: string; // 它的父级的uuid
-    isDir: boolean; // 是否是文件夹
+    isDirectory: boolean; // 是否是文件夹
     depth?: number;
     isParent?: boolean; // 是否是父节点
     isExpand?: boolean; // 是否展开显示
@@ -43,4 +43,5 @@ declare interface IsourceAsset {
     filename: string;
     fileext: string;
     parent: string;
+    isExpand: boolean;
 }

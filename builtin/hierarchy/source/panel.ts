@@ -41,11 +41,9 @@ export const methods = {
      * 刷新显示面板
      */
     async refresh() {
-        try {
-            treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
+        treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
+        if (treeData) {// 容错处理，数据可能为空
             vm.changeTreeData();
-        } catch (error) {
-            console.warn(error);
         }
     }
 };
@@ -204,6 +202,12 @@ export async function ready() {
         },
         methods: {
             /**
+             * 刷新数据
+             */
+            refresh() {
+                vm.ready && panel.refresh();
+            },
+            /**
              * 创建节点
              * @param item
              * @param json
@@ -290,7 +294,7 @@ export async function ready() {
                     const max = min === one.top ? first.top : one.top;
                     for (const [top, json] of positionMap) {
                         if (min <= top && top <= max) {
-                                select.push(json.uuid);
+                            select.push(json.uuid);
                         }
                     }
                     select.splice(select.findIndex((id) => id === first.uuid), 1);

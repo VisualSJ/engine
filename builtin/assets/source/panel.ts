@@ -45,10 +45,12 @@ export const methods = {
      */
     async refresh() {
         const initData = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-        // 数据格式需要转换一下
-        // console.log(initData);
-        treeData = transformData(initData);
-        vm.changeTreeData();
+        if (initData) { // 容错处理，数据可能为空
+            // 数据格式需要转换一下
+            // console.log(initData); return;
+            treeData = transformData(initData);
+            vm.changeTreeData();
+        }
     }
 };
 
@@ -205,6 +207,12 @@ export async function ready() {
         },
         methods: {
             /**
+             * 刷新数据
+             */
+            refresh() {
+                vm.ready && panel.refresh();
+            },
+            /**
              * 创建资源
              * @param item
              * @param json
@@ -277,7 +285,7 @@ export async function ready() {
                     const max = min === one.top ? first.top : one.top;
                     for (const [top, json] of positionMap) {
                         if (min <= top && top <= max) {
-                                select.push(json.uuid);
+                            select.push(json.uuid);
                         }
                     }
                     select.splice(select.findIndex((id) => id === first.uuid), 1);
@@ -317,7 +325,7 @@ export async function ready() {
             overAsset(uuid: string) {
                 // @ts-ignore
                 let node: ItreeAsset = getAssetFromPositionMap(uuid);
-                if (!node.isDir) {
+                if (!node.isDirectory) {
                     // @ts-ignore
                     node = getAssetFromPositionMap(node.parent);
                     node.state = 'over';
@@ -339,7 +347,7 @@ export async function ready() {
             leaveAsset(uuid: string) {
                 // @ts-ignore
                 let node: ItreeAsset = getAssetFromPositionMap(uuid);
-                if (!node.isDir) {
+                if (!node.isDirectory) {
                     // @ts-ignore
                     node = getAssetFromPositionMap(node.parent);
                 }
@@ -374,7 +382,7 @@ export async function ready() {
                 // @ts-ignore
                 const toNode: ItreeAsset = getAssetFromPositionMap(toData[0].uuid);
 
-                if (toNode.isDir) {
+                if (toNode.isDirectory) {
                     target = toNode;
                 } else {
                     // @ts-ignore
@@ -552,7 +560,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             },
             parent: json.parent,
             depth: 1, // 第二层，默认给搜索状态下赋值
-            isDir: json.isDir || false,
+            isDirectory: json.isDirectory || false,
             isParent: false,
             isExpand: true,
             state: '',
@@ -561,7 +569,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
         if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
             positionMap.set(start, Object.assign(one, { // 平级保存
                 depth,
-                isParent: json.children && json.children.length > 0 ? true : json.isDir ? true : false,
+                isParent: json.children && json.children.length > 0 ? true : json.isDirectory ? true : false,
                 isExpand: json.children && json.isExpand ? true : false,
             }));
 
@@ -572,7 +580,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             }
         } else { // 有搜索
             // @ts-ignore
-            if (!['root', 'assets'].includes(json.uuid) && json.name.indexOf(vm.search) !== -1) { // 平级保存
+            if (!['root'].includes(json.parent) && json.name.search(vm.search) !== -1) { // 平级保存
                 positionMap.set(start, one);
                 index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
             }
@@ -719,8 +727,6 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
         }
         one.children.push(item);
 
-        // 业务逻辑，根据 a/b/c 这种特征，a, b 需要判定为文件夹
-        one.isDir = true;
         item.parent = one.uuid;
 
         sortData(one.children, false);
@@ -758,11 +764,6 @@ function toTreeData(arr: any[], key: string, parentKey: string) {
         arr.forEach((item: any) => {
             if (!Array.isArray(item.children)) {
                 item.children = [];
-            }
-
-            // TODO: 这只是一个临时做法，无法正确识别 a.js 的文件夹
-            if (item.filename && !item.fileext) { // 处理空文件夹
-                item.isDir = true;
             }
 
             addTreeData(rt, key, parentKey, item);
@@ -805,9 +806,9 @@ function sortData(arr: ItreeAsset[], loop = true) {
     // @ts-ignore;
     arr.sort((a: ItreeAsset, b: ItreeAsset) => {
         // 文件夹优先
-        if (a.isDir === true && !b.isDir) {
+        if (a.isDirectory === true && !b.isDirectory) {
             return -1;
-        } else if (!a.isDir && b.isDir === true) {
+        } else if (!a.isDirectory && b.isDirectory === true) {
             return 1;
         } else {
             return a.name > b.name;
@@ -841,7 +842,7 @@ function transformData(arr: IsourceAsset[]) {
         pathname: '',
         top: 0,
         parent: '',
-        isDir: true,
+        isDirectory: true,
         isExpand: true,
     };
 }
@@ -861,7 +862,8 @@ function legalData(arr: IsourceAsset[]) {
 
         a.filename = filename;
         a.fileext = fileext || '';
-        a.parent = a.name === '' ? 'root' : paths.join('/');
+        a.parent = paths.length === 0 ? 'root' : paths.join('/');
+        a.isExpand = a.parent === 'root' ? true : false;
 
         return a;
     });
@@ -877,7 +879,7 @@ function newAsset(uuid: string, json: IaddAsset) {
     const one = getAssetFromTreeData(treeData, uuid);
     let url = one[0].pathname;
 
-    if (one[0].isDir !== true) { // 不是目录，指向父级级
+    if (one[0].isDirectory !== true) { // 不是目录，指向父级级
         url = one[3].pathname;
     }
 
