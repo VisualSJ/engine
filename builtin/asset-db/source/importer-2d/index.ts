@@ -1,9 +1,9 @@
 'use strict';
 
-import UnknownImporter from './scene';
 import SceneImporter from './scene';
 import SpriteFrameImporter from './sprite-frame';
 import TextureImporter from './texture';
+import UnknownImporter from './unknown';
 
 export function register(database: any) {
 

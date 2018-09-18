@@ -13,6 +13,9 @@ class HostIpc extends EventEmitter {
         // webview 内是否已经准备好接收数据
         this.isReady = false;
 
+        // 是否正在等待返回
+        this.isLock = false;
+
         // 发送到 webview 的消息的队列
         this.sendQueue = [];
 
@@ -48,10 +51,8 @@ class HostIpc extends EventEmitter {
             if (event.channel === 'webview-ipc:send-reply') {
                 const [error, data] = event.args;
                 const item = this.sendQueue.shift();
-                if (!item) {
-                    return;
-                }
                 item.callback(deserializeError(error), data);
+                this.isLock = false;
                 this.step();
             }
 
@@ -94,13 +95,14 @@ class HostIpc extends EventEmitter {
      * 如果没有准备就绪，会等到准备就绪后执行
      */
     step() {
-        if (!this.isReady) {
+        if (!this.isReady || this.isLock) {
             return;
         }
         const item = this.sendQueue[0];
         if (!item) {
             return;
         }
+        this.isLock = true;
         this.$webview.send('webview-ipc:send', item);
     }
 }

@@ -27,9 +27,9 @@ function dumpComponent(component, options) {
 
 /**
  * 查询一个属性的数据
- * @param {*} attrs 
+ * @param {*} attrs
  */
-function dumpAttr (attrs) {
+function dumpAttr(attrs) {
     const data = {};
 
     if (attrs.hasOwnProperty('type')) {
@@ -44,9 +44,7 @@ function dumpAttr (attrs) {
         data.default = getDefault(attrs.default);
         if (attrs.saveUrlAsAsset && data.default === '') {
             data.default = null;
-        }
-        //noinspection EqualityComparisonWithCoercionJS
-        else if (data.default != null && !data.type) {
+        } else if (data.default != null && !data.type) {
             // 为 inspector 提供类型信息
             let type = ({
                 number: 'Float',
@@ -66,8 +64,7 @@ function dumpAttr (attrs) {
                 }
             }
         }
-    }
-    else if (!attrs.hasSetter) {
+    } else if (!attrs.hasSetter) {
         data.readonly = true;
     }
 
@@ -126,8 +123,10 @@ function dumpProperty(property, options) {
     let propertyType;
     if (!options.name) {
         propertyType = cc.js._getClassId(options.klass);
-    } else {
-        propertyType = cc.js._getClassId(attr.ctor || property.constructor);
+    } else if (attr.ctor) {
+        propertyType = cc.js._getClassId(attr.ctor);
+    } else if (property && property.constructor) {
+        propertyType = cc.js._getClassId(property.constructor);
     }
 
     // 设置 type
@@ -143,7 +142,6 @@ function dumpProperty(property, options) {
 
     // 取出序列化数据的构造函数
     let ctor = attr.ctor || ((property && typeof property === 'object') ? property.constructor : property);
-
 
     // 如果数据有继承链，则生成 extends 数组
     if (ctor) {
@@ -175,25 +173,17 @@ function dumpProperty(property, options) {
     // 如果序列化数据是一个 Node
     if (cc.js.isChildClassOf(ctor, cc.Node)) {
         result.value = property._id;
-    }
-    // 如果序列化数据是一个 Component
-    else if (cc.js.isChildClassOf(ctor, cc.Component)) {
+    } else if (cc.js.isChildClassOf(ctor, cc.Component)) {
         result.value = dumpComponent(property, { klass: options.klass });
-    }
-    // 如果序列化数据是一个 Asset
-    else if (cc.js.isChildClassOf(ctor, cc.Asset)) {
+    } else if (cc.js.isChildClassOf(ctor, cc.Asset)) {
         result.value = property ? property._uuid : null;
-    }
-    // 如果序列化数据是一个数组
-    else if (result.type === 'Array') {
+    } else if (result.type === 'Array') {
         result.value = property.map((item) => {
             return dumpProperty(item, {
                 klass: item.constructor,
             });
         });
-    }
-    // 未识别的类型则直接赋值
-    else if (ctor && ctor.__props__) {
+    } else if (ctor && ctor.__props__) {
         result.value = {};
         ctor.__props__.forEach((name) => {
             result.value[name] = property[name];
@@ -307,7 +297,7 @@ function restoreNode(dump, node) {
     // 恢复子节点只会恢复子节点的顺序
     // restoreProperty(dump.children, node, '_children');
 
-    throw 'asdf'
+    throw new Error('asdf');
 }
 
 module.exports = {
