@@ -1,51 +1,58 @@
-<div>
-    <section>
-        <h1>standard</h1>
-        <ui-section>
-            <div slot="header">这里是标题</div>
-            <ul slot="content">
-                <li>这里是第1条</li>
-                <li>这里是第2条</li>
-                <li>这里是第3条</li>
-            </ul>
-        </ui-section>
-    </section>
-    <section>
-        <h1>size</h1>
-        <ui-section small>
-            <div slot="header">small section</div>
-            <ul slot="content">
-                <li>line1</li>
-                <li>line2</li>
-                <li>line3</li>
-            </ul>
-        </ui-section>
-        <ui-section large>
-            <div slot="header">large section</div>
-            <ul slot="content">
-                <li>line1</li>
-                <li>line2</li>
-                <li>line3</li>
-            </ul>
-        </ui-section>
-        <ui-section huge>
-            <div slot="header">huge section</div>
-            <ul slot="content">
-                <li>line1</li>
-                <li>line2</li>
-                <li>line3</li>
-            </ul>
-        </ui-section>
-    </section>
-    <section>
-        <h1>custom</h1>
-        <ui-section class="custom">
-            <div slot="header">attribute header text</div>
-            <ul slot="content">
-                <li>这里是第1条</li>
-                <li>这里是第2条</li>
-                <li>这里是第3条</li>
-            </ul>
-        </ui-section>
-    </section>
+<div class="section-wrap">
+<section class="section">
+    <h1>standard</h1>
+    <ui-section header="这里是标题">
+        <div>这里是第1条</div>
+        <div>这里是第2条</div>
+        <div>这里是第3条</div>
+    </ui-section>
+</section>
+<section class="section">
+    <h1>size</h1>
+    <ui-section small>
+        <div slot="header">small section</div>
+        <div>line1</div>
+        <div>line2</div>
+        <div>line3</div>
+    </ui-section>
+    <ui-section large header="large section">
+        <div>line1</div>
+        <div>line2</div>
+        <div>line3</div>
+    </ui-section>
+    <ui-section huge>
+        <div slot="header">huge section</div>
+        <div>line1</div>
+        <div>line2</div>
+        <div>line3</div>
+    </ui-section>
+</section>
+<section class="section">
+    <h1>custom</h1>
+    <ui-section class="custom">
+        <div slot="header">attribute header text</div>
+        <div>这里是第1条</div>
+        <div>这里是第2条</div>
+        <div>这里是第3条</div>
+    </ui-section>
+</section>
+<section>
+    <h1>结合ui-prop使用</h1>
+    <ui-section header="ui-prop">
+        <ui-prop label="string" type="string" value="kkkkk"> </ui-prop>
+        <ui-prop label="int" type="int" value="22"></ui-prop>
+        <ui-prop label="vec2" type="vec2" value='{"x":22.2,"y":33.3}'></ui-prop>
+        <ui-prop label="string" type="string" value='tips测试' tips="很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长很长的提示文本"></ui-prop>
+    </ui-section>
+    <ui-section header="readonly" readonly>
+        <ui-prop label="boolean" type="boolean" value="true"></ui-prop>
+        <ui-prop label="vec2" type="vec2" value='{"x":22.2,"y":33.3}'></ui-prop>
+        <ui-prop label="vec3" type="vec3" value='{"x":22.2,"y":33.3,"z":55.5}'></ui-prop>
+        <ui-prop label="enums" type="enums" value='{"option":["test1","test2","test3"],"type":"enums","value":"test2"}'></ui-prop>
+    </ui-section>
+    <ui-section header="disabled" disabled expand>
+        <ui-prop label="boolean" type="boolean" value="true"></ui-prop>
+        <ui-prop label="vec2" type="vec2" value='{"x":22.2,"y":33.3}'></ui-prop>
+    </ui-section>
+</section>
 </div>

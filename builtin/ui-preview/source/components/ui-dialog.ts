@@ -134,7 +134,7 @@ export const methods = {
           console.log('取消选择');
           return;
         }
-        console.log('选中了某文件夹' + path);
+        console.log('保存的文件路径' + path);
       },
     });
   }

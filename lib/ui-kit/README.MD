@@ -40,6 +40,11 @@ npm start .\example\
      <ui-prop label="number" type="number" value="22.888" slot = 'child'></ui-prop>
  </ui-prop>
 ```
+需要可折叠的ui-prop可以section结合使用
+### ui-section
+1.header文本有2种方式，一种是用属性header，一种是标签嵌套，设置属性slot='header'；同时存在时后者将覆盖前者；
+2.子代元素将默认作为子项节点使用
+
 ## 开发指南
 
 

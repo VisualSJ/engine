@@ -5,6 +5,12 @@
   --right-width:70%;
   .wrap {
     display: flex;
+    position: relative;
+    ui-hint {
+      bottom: 100%;
+      max-width: 40%;
+      left:-5%;
+    }
   }
   .label {
     width: var(--left-width, 35%);
@@ -28,4 +34,12 @@
   .text {
     color:palevioletred;
   }
+}
+
+:host([type='number']:hover) {
+  cursor: ew-resize;
+}
+
+:host([type='int']:hover) {
+  cursor: ew-resize;
 }

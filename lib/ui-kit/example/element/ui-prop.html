@@ -1,17 +1,18 @@
 <section>
   <h1>Standard</h1>
-  <ui-prop label="string" type="string"  value="kkkkk"> </ui-prop>
-  <ui-prop label="number" type="number" value="22.888"></ui-prop>
+  <ui-prop label="Group" type="string" value="string" ></ui-prop>
+  <ui-prop label="number" type="number" value="22.888" tips="这里是一段说明文字"></ui-prop>
   <ui-prop label="int" type="int" value="22"></ui-prop>
   <ui-prop label="boolean" type="boolean" value="true"></ui-prop>
   <ui-prop label="vec2" type="vec2" value='{"x":22.2,"y":33.3}'></ui-prop>
   <ui-prop label="vec3" type="vec3" value='{"x":22.2,"y":33.3,"z":55.5}'></ui-prop>
   <ui-prop label="enums" type="enums" value='1' options='["test1","test2","test3"]'></ui-prop>
   <h1>Group</h1>
-  <ui-prop label="Group" type="string" value="Group">
+  <ui-prop label="Group">
     <ui-prop label="number" type="number" value="22.888"></ui-prop>
     <ui-prop label="number" type="number" value="22.668"></ui-prop>
   </ui-prop>
+  <p>如果需要在点击内部 props 时，标题也可以有 seleted 高亮效果可以使用该方法</p>
 </section>
 <section>
   <h1>readonly</h1>

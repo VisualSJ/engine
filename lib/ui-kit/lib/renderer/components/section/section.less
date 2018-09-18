@@ -1,12 +1,12 @@
 @import '../base/base.less';
 :host {
     all: initial;
-    font-size: 12px;
+    font-size: 14px;
     header {
         position: relative;
         cursor: pointer;
-        padding: 0.04em 0.7em;
-        margin-bottom: 0.2em;
+        padding: 0.04rem 0.7rem;
+        margin-bottom: 0.2rem;
         border-bottom: 1px solid var(--border-color, @border-color);
         i {
             position: absolute;
@@ -15,9 +15,9 @@
             bottom: 0;
             margin: auto;
             display: inline-block;
-            margin-right: 0.2em;
-            width: .5em;
-            height: .5em;
+            margin-right: 0.2rem;
+            width: .5rem;
+            height: .5rem;
             background-color: var(--border-color, @border-color);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
         }
@@ -27,6 +27,10 @@
     }
     .content {
         padding: 3px 4px;
+        &>* {
+            height: 1em;
+            display: none;
+        }
     }
     color: var(--color, @font-color);
     & > .content {
@@ -34,13 +38,13 @@
     }
 }
 :host([small]) {
-    font-size: 0.75em;
+    font-size: 0.75rem;
 }
 :host([large]) {
-    font-size: 1.5em;
+    font-size: 1.5rem;
 }
 :host([huge]) {
-    font-size: 2em;
+    font-size: 2rem;
 }
 :host([focused]) {
     header {
@@ -50,7 +54,7 @@
 }
 :host([expand]) {
     & > .content {
-        display: flex;
+        display: block;
     }
     header {
         i {

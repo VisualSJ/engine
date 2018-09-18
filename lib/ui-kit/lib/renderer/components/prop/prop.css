@@ -6,6 +6,12 @@
 }
 :host .wrap {
   display: flex;
+  position: relative;
+}
+:host .wrap ui-hint {
+  bottom: 100%;
+  max-width: 40%;
+  left: -5%;
 }
 :host .label {
   width: var(--left-width, 35%);
@@ -26,4 +32,10 @@
 }
 :host([selected]) .text {
   color: palevioletred;
+}
+:host([type='number']:hover) {
+  cursor: ew-resize;
+}
+:host([type='int']:hover) {
+  cursor: ew-resize;
 }
