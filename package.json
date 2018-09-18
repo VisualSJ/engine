@@ -22,6 +22,7 @@
         "@base/electron-menu": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-menu.tgz",
         "@base/electron-profile": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-profile.tgz",
         "@base/electron-windows": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-windows.tgz",
+        "@base/electron-worker": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-worker.tgz",
         "@editor/dock": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/dock.tgz",
         "@editor/ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/ipc.tgz",
         "@editor/package": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@editor/package.tgz",

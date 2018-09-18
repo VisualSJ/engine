@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
+import { openAsset } from './openAsset';
 
 export const template = readFileSync(
     join(__dirname, '../../static/template/tree.html'),
@@ -28,16 +29,7 @@ export const methods = {
      * @param uuid
      */
     async openAsset(event: Event, item: ItreeAsset) {
-        const asset = await Editor.Ipc.requestToPackage(
-            'asset-db',
-            'query-asset-info',
-            item.uuid
-        );
-
-        const ext = extname(asset.source);
-        if (ext === '.scene') {
-            Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
-        }
+        openAsset(item);
     },
     /**
      * 右击菜单
