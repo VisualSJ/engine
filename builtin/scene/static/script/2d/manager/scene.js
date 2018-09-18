@@ -3,15 +3,14 @@
 const nodeUtils = require('../utils/node');
 const dumpUtils = require('../utils/dump');
 
+const ipc = require('../../ipc/webview');
 const { promisify } = require('util');
-
-const path = require('path');
 
 let uuid2node = {};
 
 /**
  * 打开一个场景
- * @param {*} file 
+ * @param {*} file
  */
 async function open(uuid) {
     cc.view.resizeWithBrowserSize(true);
@@ -29,12 +28,16 @@ async function open(uuid) {
 
     // 爬取节点树上的所有节点数据
     await nodeUtils.walk(uuid2node, cc.director._scene);
+
+    ipc.send('broadcast', 'scene:ready');
 }
 
 /**
  * 保存场景
  */
 async function serialize() {
+    ipc.send('broadcast', 'scene:close');
+
     let asset = new cc.SceneAsset();
     asset.scene = cc.director._scene;
     cc.Object._deferredDestroy();
@@ -50,7 +53,7 @@ function close() {
 
 /**
  * 查询一个节点的实例
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function query(uuid) {
     return uuid2node[uuid] || null;
@@ -58,7 +61,7 @@ function query(uuid) {
 
 /**
  * 查询节点的 dump 数据
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function queryNode(uuid) {
     let node = query(uuid);
@@ -70,7 +73,7 @@ function queryNode(uuid) {
 
 /**
  * 查询节点数的信息
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function queryNodeTree(uuid) {
     /**
@@ -93,12 +96,16 @@ function queryNodeTree(uuid) {
         return step(node);
     }
 
+    if (!cc.director._scene) {
+        return null;
+    }
+
     return step(cc.director._scene);
 }
 
 /**
  * 查询一个节点相对于场景的搜索路径
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function queryNodePath(uuid) {
     let node = query(uuid);
@@ -106,21 +113,23 @@ function queryNodePath(uuid) {
         return '';
     }
     let names = [node.name];
-    while(node = node.parent) {
+    node = node.parent;
+    while (node) {
         if (!node) {
             break;
         }
         names.splice(0, 0, node.name);
+        node = node.parent;
     }
     return names.join('/');
 }
 
 /**
  * 设置一个节点的属性
- * @param {*} uuid 
- * @param {*} path 
- * @param {*} key 
- * @param {*} dump 
+ * @param {*} uuid
+ * @param {*} path
+ * @param {*} key
+ * @param {*} dump
  */
 function setProperty(uuid, path, key, dump) {
     const node = query(uuid);
@@ -145,13 +154,13 @@ function setProperty(uuid, path, key, dump) {
 
 /**
  * 创建一个新节点
- * @param {*} uuid 
- * @param {*} name 
- * @param {*} data 
+ * @param {*} uuid
+ * @param {*} name
+ * @param {*} data
  */
 async function createNode(uuid, name = 'New Node', data) {
     if (!cc.director._scene) {
-        return;        
+        return;
     }
 
     const parent = query(uuid);
@@ -167,7 +176,7 @@ async function createNode(uuid, name = 'New Node', data) {
 
 /**
  * 删除一个节点
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function removeNode(uuid) {
     const node = query(uuid);
@@ -194,7 +203,7 @@ module.exports = {
     // insertArrayProperty,
     // moveArrayProperty,
     // removeArrayProperty,
-    
+
     // createComponent,
     // removeComponent,
 

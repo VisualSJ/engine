@@ -3,6 +3,7 @@
 import { statSync } from 'fs';
 import { ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
 import { basename, extname, join, relative } from 'path';
+import { parse } from 'url';
 import { getName } from './utils';
 
 const worker = require('@base/electron-worker');
@@ -180,10 +181,11 @@ module.exports = {
             if (!assetWorker) {
                 return;
             }
-            const dir = join(Editor.Project.path, 'assets');
-            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
 
-            const file = join(dir, info.source);
+            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+            const uri = parse(info.source);
+            const data = await assetWorker.send('asset-worker:query-database-info', uri.host);
+            const file = join(data.target, decodeURIComponent(uri.path || ''));
 
             await remove(file);
             await remove(file + '.meta');

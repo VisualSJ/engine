@@ -19,7 +19,21 @@ class View extends window.HTMLElement {
             return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         });
 
-        this.uuid = '';
+        // 查询当前的数据信息（webview）刷新的时候，需要数据重置自身状态
+        this.ipc.on('query-scene-info', () => {
+            return {
+                path: this.info.path,
+                utils: this.info.utils,
+                uuid: this.uuid,
+            };
+        });
+
+        // 转发广播消息
+        this.ipc.on('broadcast', (...args) => {
+            Editor.Ipc.sendToAll(...args);
+        });
+
+        this.uuid = null;
         this.version = null;
     }
 
@@ -36,26 +50,15 @@ class View extends window.HTMLElement {
         this.appendChild(this.$scene);
 
         // 查询引擎数据, 并指定 webview 加载
-        const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+        this.info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
 
-        this.version = info.version;
+        this.version = this.info.version;
 
         // 载入指定页面
         this.$scene.loadURL(`packages://scene/static/template/${Editor.Project.type}-webview.html`);
 
         // 打开调试工具
         // this.$scene.openDevTools();
-
-        // 等待页面载入成功
-        await new Promise((resolve) => {
-            this.$scene.addEventListener('dom-ready', () => {
-                requestAnimationFrame(resolve);
-            });
-        });
-
-
-        // 设置当前的引擎
-        await this.ipc.send('init-engine', info).promise();
     }
 
     /**
@@ -81,7 +84,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'open',
             params: [asset ? uuid : null],
-        }).promise();
+        });
     }
 
     /**
@@ -92,7 +95,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'serialize',
             params: [],
-        }).promise();
+        });
 
         // 如果 uuid 不存在，则是一个新场景
         if (this.uuid) {
@@ -123,7 +126,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'close',
             params: [],
-        }).promise();
+        });
     }
 
     ///////////////////
@@ -136,7 +139,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'setProperty',
             params: [options.uuid, options.path, options.key, options.dump],
-        }).promise();
+        });
     }
 
     ///////////////////
@@ -149,7 +152,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'insertArrayElement',
             params: [options.uuid, options.path, options.key, options.index, options.dump],
-        }).promise();
+        });
     }
 
     /**
@@ -160,7 +163,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'moveArrayElement',
             params: [options.uuid, options.path, options.key, options.target, options.offset],
-        }).promise();
+        });
     }
 
     /**
@@ -171,7 +174,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'removeArrayElement',
             params: [options.uuid, options.path, options.key, options.index],
-        }).promise();
+        });
     }
 
     ///////////////////
@@ -184,7 +187,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'createNode',
             params: [options.parent, options.name],
-        }).promise();
+        });
     }
 
     /**
@@ -195,7 +198,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'removeNode',
             params: [options.uuid],
-        }).promise();
+        });
     }
 
     ///////////////////
@@ -208,7 +211,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'createComponent',
             params: [options.uuid, options.component],
-        }).promise();
+        });
     }
 
     /**
@@ -219,7 +222,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'removeComponent',
             params: [options.uuid, options.component],
-        }).promise();
+        });
     }
 
     ///////////////////
@@ -233,7 +236,7 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'queryNode',
             params: [uuid],
-        }).promise();
+        });
     }
 
     /**
@@ -244,19 +247,19 @@ class View extends window.HTMLElement {
             module: 'Scene',
             handler: 'queryNodeTree',
             params: [],
-        }).promise();
+        });
     }
 
     /**
      * 查询一个节点在场景内的搜索路径
-     * @param {*} uuid 
+     * @param {*} uuid
      */
     async queryNodePath(uuid) {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'queryNodePath',
             params: [uuid],
-        }).promise();
+        });
     }
 }
 

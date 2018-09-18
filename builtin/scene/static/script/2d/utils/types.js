@@ -17,9 +17,9 @@ const types = {
 
 /**
  * 获取一个对象的类型
- * @param {*} obj 
+ * @param {*} obj
  */
-function getTypeId (obj) {
+function getTypeId(obj) {
     if (typeof obj === 'object') {
         obj = obj.constructor;
     }
@@ -28,21 +28,21 @@ function getTypeId (obj) {
 
 /**
  * 获取一个对象上的继承链
- * @param {*} klass 
+ * @param {*} klass
  */
 function getInheritanceChain(klass) {
     return cc.Class.getInheritanceChain(klass)
-        .map(x => {
+        .map((x) => {
             return getTypeId(x);
         })
-        .filter(x => !!x);
+        .filter((x) => !!x);
 }
 
 /**
  * 获取一个数据的默认值
- * @param {*} defaultVal 
+ * @param {*} defaultVal
  */
-function getDefault (defaultVal) {
+function getDefault(defaultVal) {
     if (typeof defaultVal === 'function') {
         try {
             return defaultVal();

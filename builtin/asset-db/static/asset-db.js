@@ -33,37 +33,30 @@ const AssetInfo = {
 
 /**
  * 绝对路径转成相对路径
- * @param {*} db 
- * @param {*} source 
+ * @param {*} db
+ * @param {*} source
  */
 const source2url = (name, source) => {
     const db = AssetWorker[name];
-    return `db://${name}/${relative(db.options.target, source)}`;
+
+    // 将 windows 上的 \ 转成 /，统一成 url 格式
+    let path = relative(db.options.target, source);
+    path = path.replace(/\\/g, '/');
+
+    return `db://${name}/${path}`;
 };
 
 /**
  * 根据 uuid 查询资源
- * @param {*} uuid 
+ * @param {*} uuid
  */
 const queryAsset = (uuid) => {
-    const paths = uuid.split('@');
-    const id = paths.shift();
     const keys = Object.keys(AssetWorker);
-
-    for (let i=0; i<keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
         let key = keys[i];
         let db = AssetWorker[key];
-        if (db.uuid2asset[id]) {
-            let asset = db.uuid2asset[id];
-            
-            while (paths.length) {
-                const subId = paths.shift();
-                asset = asset.subAssets[subId];
-                if (!asset) {
-                    return null;
-                }
-            }
-
+        let asset = db.getAsset(uuid || '');
+        if (asset) {
             return {
                 db: key,
                 asset: asset,
@@ -143,6 +136,16 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     }
 });
 
+// 返回一个 db 的具体数据
+Worker.Ipc.on('asset-worker:query-database-info', async (event, name) => {
+    const db = AssetWorker[name];
+    if (!db) {
+        event.reply(null, null);
+        return;
+    }
+    event.reply(null, db.options);
+});
+
 // 查询所有资源的列表
 Worker.Ipc.on('asset-worker:query-assets', async (event) => {
 
@@ -151,27 +154,34 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
     let assets = [];
 
     // 返回所有的资源的基础数据
-    Object.keys(AssetWorker).forEach((name) => {
-        const db = AssetWorker[name];
+    let names = Object.keys(AssetWorker);
 
-        Object.keys(db.uuid2asset).forEach((uuid) => {
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i];
+        const db = AssetWorker[name];
+        const uuids = Object.keys(db.uuid2asset);
+
+        for (let j = 0; j < uuids.length; j++) {
+            const uuid = uuids[j];
             const asset = db.uuid2asset[uuid];
             const info = {
                 source: source2url(name, asset.source),
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
+                isDirectory: await asset.isDirectory(),
                 files: asset.meta.files.map((ext) => {
                     return asset.library + ext;
                 })
             };
 
             assets.push(info);
-        });
-    });
+        }
+    }
 
     event.reply(null, assets);
 });
 
+// 传入一个 db:// 地址，返回对应的 uuid 数据
 Worker.Ipc.on('asset-worker:query-asset-uuid', async (event, source) => {
     const uri = parse(source);
     if (uri.protocol !== 'db:') {
@@ -210,6 +220,7 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
         source: asset.source ? source2url(assetInfo.db, asset.source) : null,
         uuid: asset.uuid,
         importer: asset.meta.importer,
+        isDirectory: await asset.isDirectory(),
         files: asset.meta.files.map((ext) => {
             return asset.library + ext;
         })

@@ -1,26 +1,15 @@
 'use strict';
 
-const path = require('path');
 const ipc = require('../ipc/webview');
-const assets = require('./assets');
 
 let isReady = false;
-let waitTask = [];
-function waitReady() {
-    return new Promise((resolve) => {
-        if (isReady) {
-            return resolve();
-        }
-        waitTask.push(() => {
-            return resolve();
-        });
-    });
-}
+let isInit = false;
 
 // 放到全局, 便于调试
 // 不能放到主页面内, 应该避免主页内的全局参数污染
 window.Manager = {
     Ipc: ipc,
+    Init: require('./manager/init'),
     Scene: require('./manager/scene'),
     get serialize() {
         return this._serialize();
@@ -28,75 +17,31 @@ window.Manager = {
 };
 
 // 初始化指定版本的引擎, 成功后通知 host
-ipc.on('init-engine', async (info) => {
-    const file = info.path;
-
-    Manager._serialize = function () {
-        return require(info.utils + '/serialize');
-    }
-
-    // 防止多次加载引擎
-    const id = path.basename(file, '.js');
-    if (document.getElementById(id)) {
+ipc.on('init', async (info) => {
+    // 防止重复初始化
+    if (isInit) {
         return;
     }
+    isInit = true;
 
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = `file://${file}`;
-    document.body.appendChild(script);
+    // 初始化引擎
+    await Manager.Init.engine(info.path);
 
-    await new Promise((resolve) => {
-        script.addEventListener('load', () => {
+    // 重写引擎的部分方法
+    await Manager.Init.utils(info.utils);
 
-            // 设置资源目录地址
-            let dirname = 'import://';
-            cc.AssetLibrary.init({
-                libraryPath: dirname,
-            });
-            cc.url._rawAssets = dirname;
-            cc.game.config = {};
+    (typeof info.uuid === 'string') && Manager.Scene.open(info.uuid);
 
-            cc.AssetLibrary.queryAssetInfo = async function (uuid, callback) {
-
-                const info = await ipc.send('query-asset-info', uuid).promise();
-                let url = info.files[0]
-                    .replace(/^\S+(\/|\\)library(\/|\\)/, '')
-                    .replace(/\.\S+$/, '.json');
-
-                callback(null, `import://${url}`, false, assets.getCtor(info.importer));
-            };
-
-            cc.error = function (...args) {
-                console.error(...args);
-            }
-
-            var option = {
-                id: 'GameCanvas',
-                debugMode: cc.debug.DebugMode.INFO,
-                showFPS: false,
-                frameRate: 60,
-            }
-        
-            var onStart = function () {
-                resolve();
-            };
-
-            cc.game.run(option, onStart);
-
-        });
-        isReady = true;
-        while (waitTask.length > 0) {
-            let func = waitTask.shift();
-            func();
-        }
-    });
+    // 标记已经准备就绪
+    isReady = true;
 });
 
 // host 调用 scene 的指定方法
 ipc.on('call-method', async (options) => {
-
-    await waitReady();
+    // 防止初始化之前使用接口
+    if (!isReady) {
+        return;
+    }
 
     const mod = Manager[options.module];
 
@@ -109,4 +54,14 @@ ipc.on('call-method', async (options) => {
     }
 
     return await mod[options.handler](...options.params);
+});
+
+// 延迟一帧发送，否则有几率 host 收不到消息
+requestAnimationFrame(async () => {
+    const info = await Manager.Ipc.send('query-scene-info');
+    try {
+        Manager.Ipc.emit('init', info);
+    } catch (error) {
+        console.error(error);
+    }
 });

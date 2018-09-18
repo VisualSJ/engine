@@ -41,7 +41,6 @@ export const methods = {
      */
     async openScene(uuid: string) {
         await panel.$.scene.openScene(uuid);
-        panel.$.loading.hidden = true;
         Editor.Ipc.sendToAll('scene:ready');
     },
 
@@ -58,12 +57,19 @@ export const methods = {
      */
     async closeScene() {
         await panel.$.scene.closeScene();
-        panel.$.loading.hidden = false;
         Editor.Ipc.sendToAll('scene:close');
     }
 };
 
 export const messages = {
+
+    'scene:ready'() {
+        panel.$.loading.hidden = true;
+    },
+    'scene:close'() {
+        panel.$.loading.hidden = false;
+    },
+
     /**
      * 资源数据库准备就绪
      */
@@ -130,7 +136,6 @@ export const messages = {
             return;
         }
         await panel.openScene(uuid);
-        panel.$.loading.hidden = true;
 
         // 保存最后一个打开的场景
         profile.set('current-scene', uuid);

@@ -1,58 +1,64 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { Options, HostSender, decodeError, encodeError } = require('./utils');
+const { serializeError, deserializeError } = require('./utils');
 
 class HostIpc extends EventEmitter {
 
     constructor(webview) {
         super();
+        // webview element
         this.$webview = webview;
 
-        this.$webview.addEventListener('ipc-message', async (event) => {
-            
-            if (event.channel === 'scene-webview:send') {
-                let [options] = event.args;
-                let handler = this._events[options.message];
+        // webview 内是否已经准备好接收数据
+        this.isReady = false;
 
-                // 如果不是数组, 则只监听了一个函数
-                if (!Array.isArray(handler)) {
-                    let rError = null;
-                    let rData = null;
-                    try {
-                        rData = await handler(...options.arguments);
-                    } catch (error) {
-                        rError = error
-                        rData = null;
-                    }
-                    if (options.needCallback) {
-                        this.$webview.send('scene-webview:send-reply', options.cid, encodeError(rError), JSON.stringify([rData]));
-                    }
+        // 发送到 webview 的消息的队列
+        this.sendQueue = [];
+
+        this.$webview.addEventListener('ipc-message', async (event) => {
+            // webview 主动发送的 ipc 消息
+            if (event.channel === 'webview-ipc:send') {
+                const [options] = event.args;
+                const handler = this._events[options.message];
+
+                let data;
+                try {
+                    data = handler(...options.arguments);
+                } catch (error) {
+                    console.error(error);
+                    this.$webview.send('webview-ipc:send-reply', serializeError(error));
                     return;
                 }
 
-                // todo
+                if (data instanceof Promise) {
+                    data
+                        .then((data) => {
+                            this.$webview.send('webview-ipc:send-reply', null, data);
+                        })
+                        .catch((error) => {
+                            this.$webview.send('webview-ipc:send-reply', serializeError(error));
+                        });
+                    return;
+                }
+                this.$webview.send('webview-ipc:send-reply', null, data);
             }
 
-            if (event.channel === 'scene-webview:send-reply') {
-                let [id, error, args2json] = event.args;
-
-                let sender = HostSender.query(id);
-                // 如果数据不存在，则有两种可能
-                //   1. 多次响应，数据已经被删除
-                //   2. 数据不需要返回
-                if (!sender) {
-                    console.warn(`Sender does not exist`);
+            // host 发送给 webview 的消息的反馈
+            if (event.channel === 'webview-ipc:send-reply') {
+                const [error, data] = event.args;
+                const item = this.sendQueue.shift();
+                if (!item) {
                     return;
                 }
+                item.callback(deserializeError(error), data);
+                this.step();
+            }
 
-                // 如果含有回调函数，则触发回调
-                if (sender._callback) {
-                    sender._callback(decodeError(error), ...JSON.parse(args2json));
-                }
-
-                // 移除索引
-                HostSender.remove(id);
+            // webview ipc 准备就绪的消息
+            if (event.channel === 'webview-ipc:ready') {
+                this.isReady = true;
+                this.step();
             }
 
         });
@@ -60,13 +66,42 @@ class HostIpc extends EventEmitter {
 
     /**
      * 从主页面发送消息到 webview 内
-     * @param {*} message 
-     * @param  {...any} args 
+     * @param {*} message
+     * @param  {...any} args
      */
     send(message, ...args) {
-        let options = new Options(message, args || []);
-        let sender = new HostSender(options, this.$webview);
-        return sender;
+        return new Promise((resolve, reject) => {
+            const callback = function(error, data) {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                resolve(data);
+            };
+
+            this.sendQueue.push({
+                message,
+                arguments: args,
+                callback,
+            });
+
+            this.step();
+        });
+    }
+
+    /**
+     * 执行发送消息任务
+     * 如果没有准备就绪，会等到准备就绪后执行
+     */
+    step() {
+        if (!this.isReady) {
+            return;
+        }
+        const item = this.sendQueue[0];
+        if (!item) {
+            return;
+        }
+        this.$webview.send('webview-ipc:send', item);
     }
 }
 

@@ -2,61 +2,90 @@
 
 const { EventEmitter } = require('events');
 const { ipcRenderer } = require('electron');
-const { Options, WebviewSender, decodeError, encodeError } = require('./utils');
+const { serializeError, deserializeError } = require('./utils');
 
 class WebviewIpc extends EventEmitter {
 
     constructor() {
         super();
 
+        // 发送到 webview 的消息的队列
+        this.sendQueue = [];
     }
 
+    /**
+     * 从当前页面发送到 host 内
+     * @param {*} message
+     * @param  {...any} args
+     */
     send(message, ...args) {
-        let options = new Options(message, args);
-        return new WebviewSender(options);
+        return new Promise((resolve, reject) => {
+            const callback = function(error, data) {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                resolve(data);
+            };
+
+            this.sendQueue.push({
+                message,
+                arguments: args,
+                callback,
+            });
+
+            this.step();
+        });
+    }
+
+    /**
+     * 执行发送消息任务
+     * 如果没有准备就绪，会等到准备就绪后执行
+     */
+    step() {
+        const item = this.sendQueue[0];
+        if (!item) {
+            return;
+        }
+        ipcRenderer.sendToHost('webview-ipc:send', item);
     }
 }
 
-let ipc = module.exports = new WebviewIpc();
+const ipc = module.exports = new WebviewIpc();
 
 // host 发送过来的消息
-ipcRenderer.on('scene-webview:send', async (event, options) => {
+ipcRenderer.on('webview-ipc:send', async (event, options) => {
     let handler = ipc._events[options.message];
 
-    // 如果不是数组, 则只监听了一个函数
-    if (!Array.isArray(handler)) {
-        let rError = null;
-        let rData = null;
-        try {
-            rData = await handler(...options.arguments);
-        } catch (error) {
-            rError = error;
-            rData = null;
-        }
-        if (options.needCallback) {
-            ipcRenderer.sendToHost('scene-webview:send-reply', options.cid, encodeError(rError), JSON.stringify([rData]));
-        }
+    let data;
+    try {
+        data = handler(...options.arguments);
+    } catch (error) {
+        console.error(error);
+        ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
         return;
     }
 
-    // todo
+    if (data instanceof Promise) {
+        data
+            .then((data) => {
+                ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
+            })
+            .catch((error) => {
+                ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
+            });
+        return;
+    }
+    ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
 });
 
-ipcRenderer.on('scene-webview:send-reply', (event, id, error, args2json) => {
-    let sender = WebviewSender.query(id);
-    // 如果数据不存在，则有两种可能
-    //   1. 多次响应，数据已经被删除
-    //   2. 数据不需要返回
-    if (!sender) {
-        console.warn(`Sender does not exist`);
-        return;
-    }
+// 当前页面发给 host 的返回消息
+ipcRenderer.on('webview-ipc:send-reply', (event, error, args) => {
+    const item = ipc.sendQueue.shift();
+    item.callback(deserializeError(error), args);
+    ipc.step();
+});
 
-    // 如果含有回调函数，则触发回调
-    if (sender._callback) {
-        sender._callback(decodeError(error), ...JSON.parse(args2json));
-    }
-
-    // 移除索引
-    WebviewSender.remove(id);
+requestAnimationFrame(() => {
+    ipcRenderer.sendToHost('webview-ipc:ready');
 });
