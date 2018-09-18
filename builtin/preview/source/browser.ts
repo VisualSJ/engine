@@ -1,35 +1,45 @@
 'use strict';
-const { shell } = require('electron');
-const server = require('./server');
+
+import { shell } from 'electron';
+import { getPort, start, stop } from './express';
+import { emitReload } from './socket';
+
 let pkg: any = null;
 
 export const messages = {
     /**
-     * 刷新浏览器预览页面
+     * 场景保存的时候发送的消息
      */
-    'browser-reload'() {
-        server.browserReload();
+    'scene:save'() {
+        emitReload();
     },
+
+    //////////////////////////
+
     /**
      * 根据 type 类型打开对应终端预览界面
      * @param {string} type
      */
     'open-terminal'(type: string) {
         if (type === 'browser') {
-            shell.openExternal(`http://localhost:${server.previewPort}`);
+            shell.openExternal(`http://localhost:${getPort()}`);
         }
     },
-    'scene:save'() {
-        server.browserReload();
-    }
+
+    /**
+     * 刷新浏览器预览页面
+     */
+    'reload-terminal'() {
+        emitReload();
+    },
 };
 
-export function load() {
+export async function load() {
     // @ts-ignore
     pkg = this;
-    server.start();
+    await start();
 }
 
 export function unload() {
-    server.stop();
+    stop();
 }
