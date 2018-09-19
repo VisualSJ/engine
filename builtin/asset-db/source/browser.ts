@@ -10,6 +10,7 @@ const worker = require('@base/electron-worker');
 
 let isReady: boolean = false;
 let assetWorker: any = null;
+const assetProtocol = 'db://assets';
 
 module.exports = {
     /**
@@ -92,14 +93,13 @@ module.exports = {
             if (!assetWorker) {
                 return;
             }
-            const flag = 'db://assets';
-            if (!url.startsWith(flag)) {
+            if (!url.startsWith(assetProtocol)) {
                 throw new Error('Must be prefixed with db://assets');
             }
 
             // 文件目录路径
             const dirname = join(Editor.Project.path, 'assets');
-            let file = join(dirname, url.substr(flag.length));
+            let file = join(dirname, url.substr(assetProtocol.length));
 
             // 获取可以使用的文件名
             file = getName(file);
@@ -133,8 +133,8 @@ module.exports = {
             };
 
             const path = {
-                source: join(assets.dirname, assets.source.source),
-                target: join(assets.dirname, assets.target.source),
+                source: join(assets.dirname, assets.source.source.replace(assetProtocol, '')),
+                target: join(assets.dirname, assets.target.source.replace(assetProtocol, '')),
             };
 
             // 如果其中一个数据是错误的，则停止操作
@@ -142,7 +142,7 @@ module.exports = {
                 assets.source.source === assets.target.source ||
                 !existsSync(path.source) ||
                 !existsSync(path.target) ||
-                !statSync(join(assets.dirname, assets.target.source)).isDirectory()
+                !statSync(path.target).isDirectory()
             ) {
                 return;
             }
@@ -186,6 +186,10 @@ module.exports = {
             const uri = parse(info.source);
             const data = await assetWorker.send('asset-worker:query-database-info', uri.host);
             const file = join(data.target, decodeURIComponent(uri.path || ''));
+            // 如果不存在，停止操作
+            if (!existsSync(file)) {
+                return;
+            }
 
             await remove(file);
             await remove(file + '.meta');

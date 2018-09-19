@@ -33,10 +33,12 @@
             @multiple="multipleSelect"
         ></tree>
         <section class="dirShadow" 
-            v-if="shadowOffset[1]>0"
             :style="{ top: shadowOffset[0] + 'px', height: shadowOffset[1] + 'px' }"
         >
         </section>
+    </div>
+    <div class="sourcepath">
+        {{current.source}}
     </div>
 
 </div>

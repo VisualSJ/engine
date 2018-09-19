@@ -22,7 +22,8 @@
         <i class="folder i-folder"
             v-if="item.isDirectory" 
         ></i>
-        <i class="i-temp-file-ext"
+        <i 
+            :class="item.icon"
             v-else
         ></i>
         <label class="name"

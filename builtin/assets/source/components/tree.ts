@@ -2,7 +2,8 @@
 
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
-import { openAsset } from './openAsset';
+
+const openAsset = require('./openAsset');
 
 export const template = readFileSync(
     join(__dirname, '../../static/template/tree.html'),
@@ -17,9 +18,7 @@ export const props: string[] = [
 export const name = 'tree';
 
 export function data() {
-    return {
-        dragover: false
-    };
+    return {};
 }
 
 export const methods = {
@@ -29,7 +28,9 @@ export const methods = {
      * @param uuid
      */
     async openAsset(event: Event, item: ItreeAsset) {
-        openAsset(item);
+        if (openAsset[item.fileext]) {
+            openAsset[item.fileext]();
+        }
     },
     /**
      * 右击菜单
@@ -216,8 +217,6 @@ export const methods = {
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
-
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
     },
     /**
      * 拖动到元素的上面
@@ -238,10 +237,7 @@ export const methods = {
 
         // 拖动中感知当前所处的文件夹，高亮此文件夹
         // @ts-ignore
-        if (!this.dragover) {
-            // @ts-ignore
-            this.$emit('dragover', item.uuid);
-        }
+        this.$emit('dragover', item.uuid);
     },
     /**
      * 拖动移开
@@ -256,7 +252,7 @@ export const methods = {
 
         // 拖动中感知当前所处的文件夹，离开后取消高亮
         // @ts-ignore
-        this.$emit('dragleave', item.uuid);
+        // this.$emit('dragleave', item.uuid);
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
@@ -268,7 +264,7 @@ export const methods = {
 
         // @ts-ignore
         const target: any = event.currentTarget;
-        const  insert = target.getAttribute('insert');
+        const insert = target.getAttribute('insert');
         target.setAttribute('insert', ''); // 还原节点状态
         target.setAttribute('drag', '');
 
@@ -318,13 +314,11 @@ export const methods = {
 export function mounted() {
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
+        // 取消选中，避免样式重叠
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+
         // @ts-ignore
-        this.dragover = true;
+        this.$emit('dragover', this.list[0].uuid); // 根节点
     });
 
-    // @ts-ignore
-    this.$el.addEventListener('dragleave', () => {
-        // @ts-ignore
-        this.dragover = false;
-    });
 }

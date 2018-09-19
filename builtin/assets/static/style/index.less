@@ -85,27 +85,42 @@
         height: 0;
         overflow: auto;
     }
+    .dirShadow {
+        opacity: 0;
+        position: absolute;
+        z-index: 0;
+        pointer-events: none;
+        width: 100%;
+        border-left: 3px solid @drag-bgcolor;
+        border-right: 3px solid @drag-bgcolor;
+        border-bottom: 3px solid @drag-bgcolor;
+        box-sizing: border-box;
+        transition: 0.3s all;
+        transition-delay: 0.2s;
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: @drag-bgcolor;
+        }
+    }
 }
 
-.dirShadow {
-    display: none;
-    position: absolute;
-    z-index: 0;
-    pointer-events: none;
-    width: 100%;
-    border-left: 3px solid @drag-bgcolor;
-    border-right: 3px solid @drag-bgcolor;
-    border-bottom: 3px solid @drag-bgcolor;
+.sourcepath{
+    position: relative;
+    display: flex;
+    align-items: center;
     box-sizing: border-box;
-    &:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20px;
-        background-color: @drag-bgcolor;
-    }
+    padding: 2px;
+    overflow: hidden;
+    font-size: 12px;
+    background-color: #474747;
+    color: #bdbdbd;
+    white-space: nowrap;
+    height: 20px;
 }
 
 @import './tree';

@@ -14,18 +14,12 @@
     min-height: 100%;
     &[hoving] {
         >.node {
-            &[drag="over"] {
-                color: #fff !important;
-            }
-            &[state="over"] {
-                color: #fff !important;
-            }
             &[insert="inside"] {
                 color: @active-color;
             }
         }
-        & + .dirShadow{
-            display: block;
+        &+.dirShadow {
+            opacity: 1;
         }
     }
     >.node {
@@ -56,7 +50,6 @@
             }
         }
         .folder {
-            font-size: 11px !important;
             transition: none !important;
             text-align: left !important;
         }
@@ -68,8 +61,12 @@
         }
         [class^="i-"],
         [class*=" i-"] {
-            font-size: 9px;
             width: 18px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .arrow {
+            height: 14px;
             text-align: center;
             cursor: pointer;
         }

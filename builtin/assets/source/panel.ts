@@ -3,6 +3,8 @@
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 
+const fileicon = require('./components/fileicon');
+
 let panel: any = null;
 
 let vm: any = null;
@@ -16,9 +18,6 @@ let treeData: ItreeAsset; // 树形结构的数据，含 children
 const positionMap: Map<number, ItreeAsset> = new Map();
 
 const treeNodeHeight: number = 20; // 配置每个资源的高度，需要与css一致
-
-let dragOverNode: any; // 拖拽时鼠标处于哪个节点上
-let timeIdShadowHide: any; // 延时取消高亮，避免高亮与不高亮之间的操作闪烁
 
 const Vue = require('vue/dist/vue.js');
 
@@ -88,6 +87,7 @@ export const messages = {
         const index = vm.select.indexOf(uuid);
         if (index === -1) {
             vm.select.push(uuid);
+            vm.current = getAssetFromPositionMap(uuid);
         }
     },
 
@@ -122,6 +122,7 @@ export const messages = {
         addTreeData(treeData.children, 'pathname', 'parent', newNode);
         // 触发节点数据已变动
         vm.changeTreeData();
+
     },
 
     /**
@@ -134,7 +135,6 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-
         // 删除当前数据
         removeTreeData(uuid);
 
@@ -155,11 +155,12 @@ export async function ready() {
             ready: isReady,
             expand: false, // 是否全部展开
             select: [],
+            current: {}, // 当前选中项
             viewHeight: 0, // 当前树形的可视区域高度
             scrollTop: 0, // 当前树形的滚动数据
             search: '', // 搜索资源名称
             nodes: [], // 当前树形在可视区域的资源数据
-            shadowOffset: {}, // 拖动时高亮的目录区域位置
+            shadowOffset: [], // 拖动时高亮的目录区域位置 [top, height]
         },
         components: {
             tree: require('./components/tree'),
@@ -331,13 +332,6 @@ export async function ready() {
                     node.state = 'over';
                 }
 
-                if (node !== dragOverNode) {
-                    if (dragOverNode) {
-                        dragOverNode.state = '';
-                    }
-                    dragOverNode = node;
-                }
-                clearTimeout(timeIdShadowHide);
                 // @ts-ignore
                 this.shadowOffset = [node.top + 4, node.height > treeNodeHeight ? (node.height + 3) : node.height];
             },
@@ -352,18 +346,9 @@ export async function ready() {
                     node = getAssetFromPositionMap(node.parent);
                 }
 
-                if (node !== dragOverNode) {
-                    // @ts-ignore
-                    this.shadowOffset = [0, 0];
-                    node.state = '';
-                }
-
-                clearTimeout(timeIdShadowHide);
-                timeIdShadowHide = setTimeout(() => {
-                    // @ts-ignore
-                    this.shadowOffset = [0, 0];
-                    node.state = '';
-                }, 100);
+                // @ts-ignore
+                this.shadowOffset = [0, 0];
+                node.state = '';
             },
             /**
              * 资源拖动
@@ -531,12 +516,13 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
     const tree = obj.children;
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
-
         const one = {
             pathname: json.pathname,
             name: json.name,
             filename: json.filename,
             fileext: json.fileext,
+            source: json.source,
+            icon: fileicon[json.fileext] || 'i-file',
             uuid: json.uuid,
             children: json.children,
             top: start,
@@ -570,7 +556,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             positionMap.set(start, Object.assign(one, { // 平级保存
                 depth,
                 isParent: json.children && json.children.length > 0 ? true : json.isDirectory ? true : false,
-                isExpand: json.children && json.isExpand ? true : false,
+                isExpand: json.isExpand ? true : false,
             }));
 
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
@@ -589,7 +575,6 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
                 index = calcAssetPosition(json, index, 0);
             }
         }
-
     });
     // 返回序号
     return index;
@@ -680,41 +665,6 @@ function getAssetFromPositionMap(uuid = '') {
 }
 
 /**
- * 改变现有资源数据
- * @param uuid 现有资源的uuid
- * @param dumpData 新的数据包
- */
-function changeTreeData(uuid: string, dumpData: any) {
-    // 现有的资源数据
-    const nodeData = getAssetFromTreeData(treeData, uuid)[0];
-
-    // 属性是值类型的修改
-    ['name'].forEach((key) => {
-        if (nodeData[key] !== dumpData[key].value) {
-            nodeData[key] = dumpData[key].value;
-        }
-    });
-
-    // 属性值是对象类型的修改， 如 children
-    const childrenKeys: string[] = nodeData.children.map((one: ItreeAsset) => one.uuid);
-    const newChildren: ItreeAsset[] = [];
-    dumpData.children.value.forEach((json: any, i: number) => {
-        const id: string = json.value;
-        const index = childrenKeys.findIndex((uid) => id === uid);
-        let one;
-        if (index !== -1) { // 平级移动
-            one = nodeData.children[index]; // 原来的父级资源有该元素
-        } else { // 跨级移动
-            const arrInfo = getAssetFromTreeData(treeData, id); // 从全部数据中找出被移动的数据
-            one = arrInfo[2].splice(arrInfo[1], 1)[0];
-        }
-        one.isExpand = false;
-        newChildren.push(one);
-    });
-    nodeData.children = newChildren;
-}
-
-/**
  * 添加资源后，增加树形节点数据
  */
 function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
@@ -734,7 +684,6 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
         rt.push(item);
         sortData(rt, false);
     }
-
 }
 
 /**
@@ -861,7 +810,7 @@ function legalData(arr: IsourceAsset[]) {
         const [filename, fileext] = a.name.split('.');
 
         a.filename = filename;
-        a.fileext = fileext || '';
+        a.fileext = (fileext || '').toLowerCase();
         a.parent = paths.length === 0 ? 'root' : paths.join('/');
         a.isExpand = a.parent === 'root' ? true : false;
 
