@@ -12,9 +12,9 @@ function dumpComponent(component, options) {
     const result = {};
 
     props.forEach((key) => {
-        if (!component.hasOwnProperty(key)) {
-            return;
-        }
+        // if (!component.hasOwnProperty(key)) {
+        //     return;
+        // }
         result[key] = dumpProperty(component[key], {
             klass: options.klass,
             name: key,
@@ -216,10 +216,10 @@ function dumpNode(node) {
         skew: dumpProperty(new cc.Vec2(node.skewX, node.skewY), { klass: cc.Node, name: 'skew', target: node }),
         group: dumpProperty(node.group, { klass: cc.Node, name: 'group', target: node }),
 
-        comps: dumpProperty(node._components, { klass: cc.Node, name: '_components', target: node }),
-
         parent: dumpProperty(node.parent, { klass: cc.Node, name: 'parent', target: node }),
         children: dumpProperty(node._children, { klass: cc.Node, name: '_children', target: node }),
+
+        __comps__: dumpProperty(node._components, { klass: cc.Node, name: '_components', target: node }),
     };
 
     return dump;
