@@ -28,19 +28,34 @@ npm start .\example\
 需要调用该方式显示组件才可以保证colorPresets颜色值的实时一致性
 
 ### ui-prop组件
-使用方式：
-需要让prop直接渲染数据的，直接传递label、type、value值即可；
+#### 使用方式：
+1. 需要让prop直接渲染数据的，直接传递label、type、value值即可；
 ```
   <ui-prop label="number" type="number" value="22.888"></ui-prop>
 ```
-在ui-prop里面直接嵌套标签
+注意：这种情况下，给内部label的宽度可以直接用css变量
+
+2. 在ui-prop里面直接嵌套标签
 
 ```
  <ui-prop label="number" type="number" value="22.888">
      <ui-prop label="number" type="number" value="22.888" slot = 'child'></ui-prop>
  </ui-prop>
 ```
-需要可折叠的ui-prop可以section结合使用
+3. 需要可折叠的ui-prop可以section结合使用
+#### 样式控制
+1. 使用第1种用法时，label宽度用--right-width控制，但ui组件需要直接写子代div[slot='content']的样式控制
+例如：
+
+```
+ui-prop> div[slot='content']{
+    width: 120px;
+}
+```
+
+2. 使用第2种用法时，label与ui组件的宽度可以使用
+--right-width，与--left-width控制
+关于样式
 ### ui-section
 1.header文本有2种方式，一种是用属性header，一种是标签嵌套，设置属性slot='header'；同时存在时后者将覆盖前者；
 2.子代元素将默认作为子项节点使用

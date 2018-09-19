@@ -105,3 +105,23 @@ ui-drag-area.wrap {
   color: var(--text-color, #333);
   border-bottom: 1px solid var(--border-color, #333333);
 }
+
+ui-prop> div[slot='content']{
+  width: 100%;
+  flex-wrap: wrap;
+  display: flex;
+}
+ui-prop> div[slot='content']>ui-prop {
+  --left-width:15%;
+  --right-width:85%;
+  max-width: 48%;
+  width: 200px;
+  height: 2em;
+  flex-grow: 1;
+  margin-right: 2%;
+  margin-bottom: 5px;
+}
+
+ui-prop.vector> div[slot='content']{
+  margin-right: -1.5%;
+}

@@ -1,6 +1,30 @@
 <section>
+  <style>
+    /* 注意：为了便于内部生成的ui组件也能被外部操控，故新生成的组件放置在外部，样式需要在外部指定 */
+    ui-prop> div[slot='content']{
+      width: 100%;
+      flex-wrap: wrap;
+      display: flex;
+    }
+    ui-prop> div[slot='content']>ui-prop {
+      --left-width:15%;
+      --right-width:85%;
+      max-width: 48%;
+      width: 200px;
+      height: 2em;
+      flex-grow: 1;
+      margin-right: 2%;
+      margin-bottom: 5px;
+    }
+    ui-prop.vector {
+      margin-bottom: -5px;
+    }
+    ui-prop.vector> div[slot='content']{
+      margin-right: -1.5%;
+    }
+  </style>
   <h1>Standard</h1>
-  <ui-prop label="Group" type="string" value="string" ></ui-prop>
+  <ui-prop label="Group" type="string" value="string"></ui-prop>
   <ui-prop label="number" type="number" value="22.888" tips="这里是一段说明文字"></ui-prop>
   <ui-prop label="int" type="int" value="22"></ui-prop>
   <ui-prop label="boolean" type="boolean" value="true"></ui-prop>
