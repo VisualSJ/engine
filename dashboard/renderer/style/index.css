@@ -1,0 +1,420 @@
+::-webkit-scrollbar {
+  height: 11px;
+  width: 11px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  border: 4px solid transparent;
+  background: #7d7d7d;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  border-radius: 5px;
+  border: 3px solid transparent;
+  background: var(--main-color, #3d85c6);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  display: none;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+html {
+  height: 100%;
+  background: #474747;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'Microsoft YaHei';
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.window {
+  overflow: hidden;
+  height: 100%;
+  min-width: 800px;
+  --main-color: #3d85c6;
+  --mian-bg-color: #262626;
+  background: var(--mian-bg-color, #262626);
+}
+
+.dashboard {
+  overflow: hidden;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0;
+}
+
+.window-row {
+  height: 56px;
+  border-bottom: #366086 2px solid;
+  display: flex;
+  -webkit-app-region: drag;
+  line-height: 30px;
+}
+
+.window-title {
+  margin: auto 0 auto 20px;
+  color: #ccc;
+}
+
+.window-title .logo-img {
+  height: 30px;
+  vertical-align: bottom;
+}
+
+.window-title .logo-title {
+  vertical-align: bottom;
+}
+
+.window-control {
+  margin: auto 20px auto 0;
+  text-align: right;
+}
+
+.window-control .iconfont {
+  color: #999;
+  height: 30px;
+  padding: 0 10px;
+  width: 16px;
+  -webkit-app-region: no-drag;
+}
+
+.window-control .iconfont::before {
+  -webkit-app-region: no-drag;
+}
+
+.window-control .iconfont:hover {
+  cursor: pointer;
+  color: #ccc;
+}
+
+.types {
+  display: flex;
+  justify-content: center;
+}
+
+.types .item {
+  padding: 70px 50px;
+  font-size: 40px;
+  margin: 0 20px;
+  background: #333;
+  color: #999;
+  border-radius: 4px;
+  border: 1px solid #666;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dashboard {
+  display: flex;
+  color: #999;
+  height: 100%;
+}
+
+.tab {
+  width: 15%;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  padding-top: 155px;
+  box-sizing: border-box;
+  background: #343435;
+}
+
+.tab-item {
+  line-height: 3.2em;
+}
+
+.tab-item:hover {
+  cursor: pointer;
+  background-color: rgba(204, 204, 204, 0.15);
+}
+
+.tab-item.active {
+  color: var(--main-color, #3d85c6);
+  background-color: rgba(31, 29, 29, 0.52);
+}
+
+.tab-content {
+  width: 85%;
+  text-align: left;
+  padding: 10px;
+}
+
+.project-wrap {
+  height: 60vh;
+  overflow-y: auto;
+  border-bottom: 2px solid #343435;
+}
+
+.project-group {
+  display: flex;
+  text-align: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.btn {
+  border: 1px solid #ccc;
+  border-radius: 1em;
+  line-height: 1.4em;
+  font-size: 12px;
+  padding: 5px 15px;
+}
+
+.btn:hover {
+  border: 1px solid white;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-group {
+  padding: 10px 10px;
+  margin-top: 5px;
+}
+
+.btn-group .btn {
+  margin: 0 2px;
+}
+
+.pro-wrap {
+  width: 245px;
+  height: 174px;
+  border-radius: 4px;
+  margin: 10px;
+  /* flex-grow:1; */
+  background-color: #434344;
+  position: relative;
+  padding: 10px;
+  border: 1px solid #262626;
+  box-sizing: border-box;
+}
+
+.pro-wrap:hover {
+  border-color: white;
+}
+
+.pro-wrap:focus {
+  border-color: var(--main-color, #3d85c6);
+  outline: none;
+}
+
+.pro-wrap .name {
+  height: 1.4em;
+  line-height: 1.4em;
+  font-size: 12px;
+  text-align: left;
+  padding: 0 10px;
+  margin-top: 5px;
+  color: #ccc;
+}
+
+.pro-wrap .time {
+  font-size: 12px;
+}
+
+.img-wrap {
+  text-align: center;
+  height: 134px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.39);
+}
+
+.img-wrap img {
+  width: 100%;
+}
+
+.template .img-wrap img {
+  width: 45%;
+  margin: 15%;
+}
+
+.title {
+  line-height: 1.8em;
+  color: #ccc;
+  font-weight: 700;
+  font-size: 12px;
+  margin: 10px 0;
+  padding: 0 40px 0 4px;
+}
+
+.toolBar {
+  min-height: 24px;
+  float: right;
+}
+
+.toolBar .filters {
+  float: right;
+  position: relative;
+}
+
+.toolBar .filters input {
+  line-height: 1.4em;
+  line-height: 1.4em;
+  border-radius: 1em;
+  font-size: 12px;
+  padding: 2px;
+  user-select: none;
+  outline: none;
+  background: inherit;
+  color: white;
+  border: 1px solid transparent;
+  width: 0;
+  transition: all 0.5s;
+}
+
+.toolBar .filters:hover {
+  cursor: pointer;
+}
+
+.toolBar .filters.ani input {
+  border-color: white;
+  border: 1px solid #ccc;
+  padding: 2px 20px;
+  width: auto;
+}
+
+.toolBar .filters .icon-search {
+  display: inline-block;
+  position: absolute;
+  font-size: 11px;
+  top: 1px;
+  left: 5px;
+}
+
+.title-item {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.title-item:hover {
+  color: white;
+  cursor: pointer;
+}
+
+.title-item.active {
+  border-bottom: 2px solid var(--main-color, #3d85c6);
+}
+
+.pro-wrap .hover-wrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  background-color: rgba(31, 29, 29, 0.22);
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.pro-wrap .hover-wrap .btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  height: 1.4em;
+  line-height: 1.4em;
+  font-size: 13px;
+  color: white;
+  background: #5A97CF;
+  width: 50%;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.pro-wrap .hover-wrap .btn:hover {
+  background: var(--main-color, #3d85c6);
+}
+
+.project-detail {
+  margin-top: 10px;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.project-detail .detail-line .label {
+  display: inline-block;
+  width: 60px;
+  font-weight: 600;
+  text-align-last: justify;
+}
+
+/* help模块 */
+.help {
+  display: flex;
+  padding-top: 20px;
+}
+
+.help .help-line {
+  font-size: 12px;
+  color: var(--main-color, #3d85c6);
+  padding-left: 20px;
+}
+
+.help .title {
+  font-size: 14px;
+}
+
+.help .help-line:hover {
+  cursor: pointer;
+}
+
+.help .logo-wrap {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px;
+  width: 30%;
+  position: relative;
+}
+
+.help .help-con {
+  width: 70%;
+  padding-top: 40px;
+}
+
+.help .logo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  height: 108px;
+}
+
+.help .logo>div {
+  padding-top: 25px;
+}
+
+.help .help-item {
+  margin-bottom: 50px;
+}

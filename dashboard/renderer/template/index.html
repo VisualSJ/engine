@@ -1,30 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Dashboard</title>
-        <style>
-            html { height: 100%; background: #474747; }
-            body { margin: 0; height: 100%; display: flex; flex-direction: column; justify-content:center; }
-            .types { display: flex; justify-content: center; }
-            .types .item { padding: 70px 50px; font-size: 40px; margin: 0 20px; background: #333; color: #999; border-radius: 4px; border: 1px solid #666; cursor: pointer; user-select: none; }
-        </style>
-    </head>
-    
-    <body>
-        <div class="types">
-            <div class="item" onclick="openProject('2d')">2D</div>
-            <div class="item"onclick="openProject('3d')">3D</div>
+
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./../style/index.css">
+    <link rel="stylesheet" href="./../style/icon-font.css">
+</head>
+
+<body>
+    <div class="window">
+        <div class="window-row" id="window-row">
+            <div class="window-title flex-1">
+                <img class="logo-img" src="./../img/logo_white.png" alt="dashboard">
+                <span class="logo-title">
+                    Dashboard
+                </span>
+            </div>
+            <div class="window-control flex-1" id="windowContron">
+                <span class="iconfont icon-mini" name="mini"></span>
+                <span class="iconfont icon-maxi" name="maxi"></span>
+                <span class="iconfont icon-close" name="close"></span>
+            </div>
         </div>
-    </body>
+        <div class="dashboard" id="dashboard">
+            <div class="tab">
+                <div class="tab-item" :class="[activeTab === index ? 'active' : '']" v-for="(item, index) in nav"
+                    @click="activeTab = index; searchValue = ''">{{item}}</div>
+            </div>
+            <div class="tab-content">
+                <div class="btn-group">
+                    <span class="btn">新建...</span>
+                    <span class="btn" @click="enterProject">打开...</span>
+                </div>
+                <div class="title">
+                    <span class="title-item" :class="[activeTitle === index ? 'active' : '']" v-for="(item, index) in titleTab"
+                        @click="activeTitle = index; searchValue = ''">{{item}}</span>
+                    <div class="toolBar">
+                        <div class="filters ani" v-if="showSearch">
+                            <span class="iconfont icon-search"></span>
+                            <input type="text" placeholder="查找..." v-model="searchValue">
+                        </div>
+                    </div>
+                </div>
+                <div class="content" v-if="activeTitle === 0">
+                    <div class="project-wrap">
+                        <div class="project-group">
+                            <div class="pro-wrap" v-for="(item, index) in recentData" @mouseenter="recentShowIndex = index"
+                                @mouseleave="recentShowIndex = -1" tabindex="0">
+                                <div class="img-wrap">
+                                    <img src="./../img/picture-holer.jpg" alt="item.name">
+                                </div>
+                                <div class="name">{{item.name}}</div>
+                                <div class="hover-wrap" v-if="recentShowIndex === index">
+                                    <span class="btn" @click="openProject(item.src)">打开</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-detail" v-if="recentShowIndex !== -1">
+                        <div class="detail-line"><span class="label">地址 </span>:
+                            {{recentData[recentShowIndex].src}}</div>
+                        <div class="detail-line"><span class="label">创建时间 </span>:
+                            {{recentData[recentShowIndex].src}}</div>
+                    </div>
+                </div>
+                <div class="content template" v-if="activeTitle === 1">
+                    <div class="project-wrap">
+                        <div class="project-group">
+                            <div class="pro-wrap" tabindex="0" v-for="(item, index) in templateData" @mouseenter="tempShowIndex = index"
+                                @mouseleave="tempShowIndex = -1">
+                                <div class="img-wrap">
+                                    <img src="./../img/empty-project.png" alt="item.name">
+                                </div>
+                                <div class="name">{{item.name}}</div>
+                                <div class="hover-wrap" v-if="tempShowIndex === index">
+                                    <span class="btn" @click="creatNewProject(item.name)">新建</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-detail" v-if="tempShowIndex !== -1">
+                        <div class="detail-line">{{templateData[tempShowIndex].describe}}</div>
+                    </div>
+                </div>
+                <div class="content help" v-if="activeTitle === 2">
+                    <div class="logo-wrap">
+                        <div class="logo">
+                            <img src="./../img/logo_white.png" alt="cocos">
+                            <div>cocos editor3d</div>
+                        </div>
+                    </div>
+                    <div class="help-con">
+                        <div class="help-item">
+                            <div class="title">欢迎使用 Cocos Creator，你可以采取下列行动来开始游戏开发工作：</div>
+                            <p class="help-line" @click="activeTitle = 0">打开最近编辑过的项目</p>
+                            <p class="help-line" @click="activeTitle = 1">使用项目模板创建新项目</p>
+                        </div>
+                        <div class="help-item">
+                            <div class="title">欢迎使用 Cocos Creator，你可以采取下列行动来开始游戏开发工作：</div>
+                            <p class="help-line" @click="activeTitle = 0">打开最近编辑过的项目</p>
+                            <p class="help-line" @click="activeTitle = 1">使用项目模板创建新项目</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 
-    <script>
-        const ps = require('path');
-        const ipc = require('@base/electron-base-ipc');
+<script src="./../script/main.js"></script>
 
-        function openProject(type) {
-            const project = ps.resolve(type === '2d' ? '.project-2d' : '.project');
-            ipc.send('open-project', project);
-        }
-    </script>
 </html>
