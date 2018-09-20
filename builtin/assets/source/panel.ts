@@ -379,7 +379,7 @@ export async function ready() {
                     console.log(json);
                     // @ts-ignore
                     json.files.forEach((one) => {
-                        insertAsset(target.uuid, one.path);
+                        importAsset(target.uuid, one.path);
                     });
                     return;
                 } else { // 常规内部节点拖拽
@@ -848,6 +848,8 @@ function newAsset(uuid: string, json: IaddAsset) {
  * @param uuid 创建的位置
  * @param path 资源路径
  */
-function insertAsset(uuid: string, path: string) {
-    Editor.Ipc.sendToPackage('asset-db', 'insert-asset', uuid, path);
+function importAsset(uuid: string, path: string) {
+    const one = getAssetFromTreeData(treeData, uuid);
+    const url = one[0].source;
+    Editor.Ipc.sendToPackage('asset-db', 'import-asset', url, path);
 }

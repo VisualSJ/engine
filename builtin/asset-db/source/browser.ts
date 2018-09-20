@@ -1,7 +1,7 @@
 'use stirct';
 
 import { statSync } from 'fs';
-import { ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
+import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
 import { basename, extname, join, relative } from 'path';
 import { parse } from 'url';
 import { getName } from './utils';
@@ -89,7 +89,7 @@ module.exports = {
          * @param url db://assets/abc.json
          * @param data
          */
-        async 'create-asset'(url: string, data: Buffer | string) {
+        async 'create-asset'(url: string, data: Buffer | string, isImport = false) {
             if (!assetWorker) {
                 return;
             }
@@ -112,6 +112,37 @@ module.exports = {
 
             // 返回插入的文件地址
             return 'db://' + relative(Editor.Project.path, file);
+        },
+
+        /**
+         * 从外部拖拽，导入文件
+         * @param url
+         * @param path 系统的文件路径
+         */
+        async 'import-asset'(url: string, path: string) {
+            if (!assetWorker) {
+                return;
+            }
+            if (!url.startsWith(assetProtocol)) {
+                throw new Error('Must be prefixed with db://assets');
+            }
+
+            // 文件目录路径
+            const dirname = join(Editor.Project.path, 'assets');
+            const dest = join(dirname, url.substr(assetProtocol.length));
+
+            // 如果其中一个数据是错误的，则停止操作
+            if (
+                !existsSync(dest) ||
+                !statSync(dest).isDirectory() ||
+                !existsSync(path)
+            ) {
+                return;
+            }
+
+            // 复制文件
+            const name = basename(path);
+            copy(path, join(dest, name), { overwrite: true });
         },
 
         /**

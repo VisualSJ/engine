@@ -11,7 +11,7 @@
         @dragleave="dragLeave($event, item)" 
         @drop="drop($event, item)" 
         :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
-        v-bind:class="{'parent':item.isParent}"
+        :class="{'parent':item.isParent}"
         :expand="item.isExpand"
         :state="item.state"
     >
@@ -22,7 +22,7 @@
         <i class="folder i-folder"
             v-if="item.isDirectory" 
         ></i>
-        <i 
+        <i class="file"
             :class="item.icon"
             v-else
         ></i>

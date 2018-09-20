@@ -29,7 +29,7 @@ export const methods = {
      */
     async openAsset(event: Event, item: ItreeAsset) {
         if (openAsset[item.fileext]) {
-            openAsset[item.fileext]();
+            openAsset[item.fileext](item.uuid);
         }
     },
     /**
