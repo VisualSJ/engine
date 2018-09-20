@@ -48,18 +48,35 @@ async function engine(path) {
         callback(null, `import://${url}`, false, assets.getCtor(info.importer));
     };
 
+    // canvas 透明模式
+    cc.macro.ENABLE_TRANSPARENT_CANVAS = true;
+
     // 启动引擎
     const option = {
         id: 'GameCanvas',
-        debugMode: cc.debug.DebugMode.INFO,
         showFPS: false,
+        debugMode: cc.debug.DebugMode.INFO,
         frameRate: 60,
+        renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
+        registerSystemEvent: false,
+        jsList: [],
+        noCache: false,
+        groupList: [],
+        collisionMatrix: null,
     };
 
     // 等待引擎启动
     await new Promise((resolve) => {
         cc.game.run(option, resolve);
     });
+
+    cc.view.enableRetina(false);
+    cc.game.canvas.style.imageRendering = 'pixelated';
+    // cc.view.setDesignResolutionSize(options.designWidth, options.designHeight, cc.ResolutionPolicy.SHOW_ALL);
+    // cc.view.setCanvasSize(config.width, config.height);
+
+    cc.game.canvas.setAttribute('tabindex', -1);
+    cc.game.canvas.style.backgroundColor = '';
 
     await new Promise((resolve) => {
         setTimeout(resolve, 100);

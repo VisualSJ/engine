@@ -26,6 +26,9 @@ async function open(uuid) {
         cc.director.runSceneImmediate(scene);
     }
 
+    // 设置摄像机颜色
+    cc.Camera.main.backgroundColor = cc.color(0, 0, 0, 0);
+
     // 爬取节点树上的所有节点数据
     await nodeUtils.walk(uuid2node, cc.director._scene);
 

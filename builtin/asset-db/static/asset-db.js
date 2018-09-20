@@ -211,10 +211,12 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
 
     // 查询资源
     const assetInfo = queryAsset(uuid);
-    const asset = assetInfo.asset;
-    if (!asset) {
+    if (!assetInfo || !assetInfo.asset) {
         return event.reply(new Error('File does not exist.'), null);
     }
+
+    // asset 对象
+    const asset = assetInfo.asset;
 
     const info = {
         source: asset.source ? source2url(assetInfo.db, asset.source) : null,
