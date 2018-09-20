@@ -1,13 +1,6 @@
 <section class="loading">
     <ui-loading></ui-loading>
 </section>
-
-<!-- <section>
-    <ui-select class="language">
-        <option value="zh">中文</option>
-        <option value="en">English</option>
-    </ui-select>
-</section> -->
 <div class="preferences">
     <nav class="left-side">
         <ul class="tabs" >
@@ -19,19 +12,10 @@
             <h1>{{t('nav', activeNav)}}</h1>
             <div class="tan-con" v-show="activeNav === 'gneneral'" @confirm="change">
                 <div class="line" v-for="(item, key) in interface[activeNav]" >
-                    <ui-prop v-if="item === 'enums'" :type="item" :label="t('gneneral', key, 'label')" :name="key" :value="preferences.gneneral[key]" :options="JSON.stringify(t('gneneral', key, 'option'))" :tips="t('gneneral', key, 'label')"></ui-prop>
-                    <ui-prop v-else :type="item" :label="t('gneneral', key, 'label')" :value="preferences.gneneral[key]" :name="key" :tips="t('gneneral', key, 'label')"></ui-prop>
+                    <ui-prop v-if="item === 'enums'" :type="item" :label="t('gneneral', key, 'label')" :path="key" :value="preferences.gneneral[key]" :options="JSON.stringify(t('gneneral', key, 'option'))" :tips="t('gneneral', key, 'label')"></ui-prop>
+                    <ui-prop v-else :type="item" :label="t('gneneral', key, 'label')" :value="preferences.gneneral[key]" :path="key" :tips="t('gneneral', key, 'label')"></ui-prop>
                 </div>
-            </div>                    
-            <!-- <div class="tan-con" v-show="activeNav === 'dataEditor'">
-                    <div class="line" v-for="(item, key) in staticData.dataEditor">
-                        <ui-prop v-if="item.type === 'enums'" :type="item.type" :label="t('dataEditor', key, 'label')" :value="preferences.dataEditor[key]" :options="JSON.stringify(item.option)" :tips="item.label"></ui-prop>
-                        <ui-prop v-else :type="item.type" :label="item.label" :value="preferences.dataEditor[key]"  :tips="item.label"></ui-prop>
-                    </div>
-                    <div class="line">
-                        <ui-prop label="External Script Editor" tips="External Script Editor"></ui-prop>
-                    </div>
-                </div> -->
+            </div>    
         </div>
     </section>
 </div>

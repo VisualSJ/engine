@@ -43,6 +43,7 @@ npm start .\example\
  </ui-prop>
 ```
 3. 需要可折叠的ui-prop可以section结合使用
+
 #### 样式控制
 1. 使用第1种用法时，label宽度用--right-width控制，但ui组件需要直接写子代div[slot='content']的样式控制
 例如：
@@ -55,7 +56,29 @@ ui-prop> div[slot='content']{
 
 2. 使用第2种用法时，label与ui组件的宽度可以使用
 --right-width，与--left-width控制
-关于样式
+
+可使用的默认样式：
+```
+ui-prop> div[slot='content']{
+  width: 100%;
+  flex-wrap: wrap;
+  display: flex;
+}
+ui-prop> div[slot='content']>ui-prop {
+  --left-width:15%; // 内部嵌套ui-prop组件的label长度
+  --right-width:85%; // 内部嵌套ui-prop组件的ui组件长度
+  max-width: 48%; // 内部嵌套ui-prop组件的最大宽度
+  width: 200px;
+  height: 2em;
+  flex-grow: 1; // 设置为可伸缩
+  margin-right: 2%;
+  margin-bottom: 5px; // 内部组件的margin-bottom
+}
+
+ui-prop.vector> div[slot='content']{
+  margin-right: -1.5%;
+}
+```
 ### ui-section
 1.header文本有2种方式，一种是用属性header，一种是标签嵌套，设置属性slot='header'；同时存在时后者将覆盖前者；
 2.子代元素将默认作为子项节点使用

@@ -3,6 +3,8 @@
   height: 1.8em;
   --left-width:30%; // 控制label的宽度比例
   --right-width:70%; // 控制内部组件的宽度比例
+  --label-min-width:100px; // 控制label的最小宽度
+  --margin-bottom: 5px;
   .wrap {
     display: flex;
     position: relative;
@@ -15,6 +17,7 @@
   }
   .label {
     width: var(--left-width, 35%);
+    min-width:var(--label-min-width);
     height: 100%;
     span {
       display: inline-block;

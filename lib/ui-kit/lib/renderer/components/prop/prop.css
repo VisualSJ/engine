@@ -3,6 +3,8 @@
   height: 1.8em;
   --left-width: 30%;
   --right-width: 70%;
+  --label-min-width: 100px;
+  --margin-bottom: 5px;
 }
 :host .wrap {
   display: flex;
@@ -16,6 +18,7 @@
 }
 :host .label {
   width: var(--left-width, 35%);
+  min-width: var(--label-min-width);
   height: 100%;
 }
 :host .label span {
