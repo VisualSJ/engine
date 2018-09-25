@@ -244,10 +244,23 @@ input::-webkit-inner-spin-button {
   height: 134px;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.39);
+  position: relative;
 }
 
 .img-wrap img {
   width: 100%;
+}
+
+.img-wrap .icon-folder-open {
+  font-size: 54px;
+  height: 54px;
+  color:#999;
+  position: absolute;
+  margin:auto;
+  top:0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 .template .img-wrap img {
@@ -256,22 +269,31 @@ input::-webkit-inner-spin-button {
 }
 
 .title {
-  line-height: 1.8em;
   color: #ccc;
-  font-weight: 700;
   font-size: 12px;
-  margin: 10px 0;
+  margin: 10px 0 20px;
   padding: 0 40px 0 4px;
+  display: flex;
+}
+
+.toolBar , .title-tab{
+  min-height: 24px;
+  flex:1;
+  display: flex;
+  align-items: center;
+}
+
+.title-tab {
+  font-weight: 700;
 }
 
 .toolBar {
-  min-height: 24px;
-  float: right;
+  justify-content: flex-end;
 }
 
-.toolBar .filters {
-  float: right;
+.toolBar .filters{
   position: relative;
+  margin-right: 10px;
 }
 
 .toolBar .filters input {
@@ -286,14 +308,18 @@ input::-webkit-inner-spin-button {
   color: white;
   border: 1px solid transparent;
   width: 0;
-  transition: all 0.5s;
+  display: none;
+  transition: all 1s;
 }
 
 .toolBar .filters:hover {
   cursor: pointer;
 }
 
-.toolBar .filters.ani input {
+.toolBar .filters.ani > input {
+  display: inline-block;
+  visibility: visible;
+  width: 80px;
   border-color: white;
   border: 1px solid #ccc;
   padding: 2px 20px;
@@ -302,10 +328,38 @@ input::-webkit-inner-spin-button {
 
 .toolBar .filters .icon-search {
   display: inline-block;
+}
+
+.toolBar .filters.ani .icon-search {
   position: absolute;
   font-size: 11px;
-  top: 1px;
+  top: 5px;
   left: 5px;
+}
+
+.toolBar .options {
+  position: absolute;
+  list-style: none;
+  z-index:1;
+  margin: 0;
+  padding:0 5px 0 22px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.toolBar .filters .option-value {
+  display: inline-block;  padding: 0 5px;
+  border-bottom: 1px solid;
+  width: 0;
+  visibility: hidden;
+  display: none;
+  transition: all 1s;
+}
+
+.toolBar .filters.ani > .option-value {
+  display: inline-block;
+  visibility: visible;
+  width: 80px;
 }
 
 .title-item {
@@ -323,6 +377,7 @@ input::-webkit-inner-spin-button {
 }
 
 .pro-wrap .hover-wrap {
+  visibility: hidden;
   position: absolute;
   width: 100%;
   height: 100%;
@@ -331,6 +386,10 @@ input::-webkit-inner-spin-button {
   background-color: rgba(31, 29, 29, 0.22);
   box-sizing: border-box;
   border-radius: 5px;
+}
+
+.pro-wrap:hover .hover-wrap {
+  visibility: visible;
 }
 
 .pro-wrap .hover-wrap .btn {
@@ -352,6 +411,25 @@ input::-webkit-inner-spin-button {
 
 .pro-wrap .hover-wrap .btn:hover {
   background: var(--main-color, #3d85c6);
+}
+
+.pro-wrap .hover-wrap .iconfont {
+  color:#999;
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  top:15px;
+  right: 15px;
+}
+
+.pro-wrap .hover-wrap .iconfont:hover {
+  cursor: pointer;
+  color:white;
+  /* height: 16px;
+  width: 16px;
+  transition: all 1s;
+  top:14px;
+  right: 14px; */
 }
 
 .project-detail {

@@ -5,6 +5,7 @@ const { app, Tray, Menu, BrowserWindow } = require('electron');
 const { spawn } = require('child_process');
 const ipc = require('@base/electron-base-ipc');
 const setting = require('@editor/setting');
+const proManager = require('./../lib/project');
 
 let window = null;
 
@@ -133,5 +134,11 @@ exports.listener = function() {
     // 监听控制最小化窗口事件
     ipc.on('dashboard:mini', (event) => {
         window.minimize();
+    });
+
+    // 监听查询模板的消息事件
+    ipc.on('dashboard:getTemplate', (event, type) => {
+        let template = proManager.getTemplate(type);
+        event.reply(null, template);
     });
 };

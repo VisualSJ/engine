@@ -24,28 +24,51 @@
             </div>
         </div>
         <div class="dashboard" id="dashboard">
+            <!-- 2D与3d切换导航 -->
             <div class="tab">
                 <div class="tab-item" :class="[activeTab === index ? 'active' : '']" v-for="(item, index) in nav"
                     @click="activeTab = index; searchValue = ''">{{item}}</div>
             </div>
+            <!-- 菜单栏 -->
             <div class="tab-content">
-                <div class="btn-group">
-                    <span class="btn">新建...</span>
-                    <span class="btn" @click="enterProject">打开...</span>
-                </div>
                 <div class="title">
-                    <span class="title-item" :class="[activeTitle === index ? 'active' : '']" v-for="(item, index) in titleTab"
+                    <div class="title-tab">
+                        <span class="title-item" :class="[activeTitle === index ? 'active' : '']" v-for="(item, index) in titleTab"
                         @click="activeTitle = index; searchValue = ''">{{item}}</span>
-                    <div class="toolBar">
-                        <div class="filters ani" v-if="showSearch">
-                            <span class="iconfont icon-search"></span>
-                            <input type="text" placeholder="查找..." v-model="searchValue">
+                    </div>
+                    <div class="toolBar"  v-if="showFilter">
+                        <div class="filters">
+                            <span class="iconfont icon-rise"></span>
+                        </div>
+                        <div class="filters" :class="[filter === 0 ? 'ani' : '']">
+                            <span class="iconfont icon-filter" @click="filter = 0"></span>
+                            <div class="option-value" @click="showFilterOption = true">
+                                {{filterCondetions[filterIndex]}}
+                            </div>
+                            <ul class="options" v-show="showFilterOption && filter === 0">
+                                <li class="option-item" v-for="(item, index) of filterCondetions"  @click="showFilterOption = false, filterIndex = index">{{item}}</li>
+                            </ul>
+                        </div>
+                        <div class="filters" :class="[filter === 1 ? 'ani' : '']">
+                            <span class="iconfont icon-search"  @click="filter = 1"></span>
+                            <input type="search" placeholder="查找..." v-model="searchValue">
                         </div>
                     </div>
                 </div>
+                <!-- 打开最近项目 --> 
                 <div class="content" v-if="activeTitle === 0">
                     <div class="project-wrap">
-                        <div class="project-group">
+                        <div class="project-group"  @mouseenter="recentShowIndex = 'open'"
+                        @mouseleave="recentShowIndex = -1">
+                                <div class="pro-wrap" tabindex="0">
+                                        <div class="img-wrap">
+                                            <span class="iconfont icon-folder-open"></span>
+                                        </div>
+                                        <div class="name">打开</div>
+                                        <div class="hover-wrap">
+                                            <span class="btn" @click="openProject(null)">打开</span>
+                                        </div>
+                                    </div>
                             <div class="pro-wrap" v-for="(item, index) in recentData" @mouseenter="recentShowIndex = index"
                                 @mouseleave="recentShowIndex = -1" tabindex="0">
                                 <div class="img-wrap">
@@ -53,18 +76,24 @@
                                 </div>
                                 <div class="name">{{item.name}}</div>
                                 <div class="hover-wrap" v-if="recentShowIndex === index">
-                                    <span class="btn" @click="openProject(item.src)">打开</span>
+                                    <span class="iconfont icon-del-b" @click="removePro(index, item.path)"></span>
+                                    <span class="btn" @click="openProject(item.path)">打开</span>
                                 </div>
                             </div>
+                            
                         </div>
                     </div>
-                    <div class="project-detail" v-if="recentShowIndex !== -1">
+                    <div class="project-detail" v-if="recentShowIndex !== -1 && recentShowIndex !== 'open'">
                         <div class="detail-line"><span class="label">地址 </span>:
-                            {{recentData[recentShowIndex].src}}</div>
+                            {{recentData[recentShowIndex].path}}</div>
                         <div class="detail-line"><span class="label">创建时间 </span>:
-                            {{recentData[recentShowIndex].src}}</div>
+                            {{recentData[recentShowIndex].path}}</div>
+                    </div>
+                    <div class="project-detail">
+                        <div class="detail-line" v-if="recentShowIndex === 'open'">打开项目文件夹</div>
                     </div>
                 </div>
+                <!-- 基于模板新建 -->
                 <div class="content template" v-if="activeTitle === 1">
                     <div class="project-wrap">
                         <div class="project-group">
@@ -74,16 +103,18 @@
                                     <img src="./../img/empty-project.png" alt="item.name">
                                 </div>
                                 <div class="name">{{item.name}}</div>
-                                <div class="hover-wrap" v-if="tempShowIndex === index">
-                                    <span class="btn" @click="creatNewProject(item.name)">新建</span>
+                                <div class="hover-wrap">
+                                    <span class="btn" @click="creatNewProject(item.path)">新建</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="project-detail" v-if="tempShowIndex !== -1">
                         <div class="detail-line">{{templateData[tempShowIndex].describe}}</div>
+                        <div class="detail-line" v-if="tempShowIndex === 'new'">打开项目文件夹</div>
                     </div>
                 </div>
+                <!-- 帮助 -->
                 <div class="content help" v-if="activeTitle === 2">
                     <div class="logo-wrap">
                         <div class="logo">
