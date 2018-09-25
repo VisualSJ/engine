@@ -3,13 +3,9 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-export const template = readFileSync(join(__dirname, '../../../static/template/meta-header.html'), 'utf8');
+export const template = readFileSync(join(__dirname, '../../../static/2d/meta-header.html'), 'utf8');
 
 export const props: string[] = ['meta', 'icon'];
-
-export const components = {
-    'my-prop': require('../prop')
-};
 
 export function data() {
     return {

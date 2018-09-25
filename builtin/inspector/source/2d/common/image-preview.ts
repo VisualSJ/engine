@@ -3,15 +3,11 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { eventBus } from './event-bus';
+import { eventBus } from '../../utils/event-bus';
 
-export const template = readFileSync(join(__dirname, '../../../static/template/image-preview.html'), 'utf8');
+export const template = readFileSync(join(__dirname, '../../../static/2d/image-preview.html'), 'utf8');
 
 export const props: string[] = ['meta'];
-
-export const components = {
-    'my-prop': require('../prop')
-};
 
 export function data() {
     return {
@@ -213,6 +209,6 @@ export const watch = {
 };
 
 export function destroyed(this: any) {
-    eventBus.off('panel:resize', this.updateImage);
+    eventBus.removeListener('panel:resize', this.updateImage);
     this._destroyed = true;
 }

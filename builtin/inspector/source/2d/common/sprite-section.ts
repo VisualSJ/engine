@@ -3,13 +3,9 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-export const template = readFileSync(join(__dirname, '../../../static/template/sprite-section.html'), 'utf8');
+export const template = readFileSync(join(__dirname, '../../../static/2d/sprite-section.html'), 'utf8');
 
 export const props: string[] = ['meta'];
-
-export const components = {
-    'my-prop': require('../prop')
-};
 
 export function data() {
     return {};

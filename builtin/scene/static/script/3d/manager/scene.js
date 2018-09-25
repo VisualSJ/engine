@@ -10,7 +10,7 @@ let uuid2node = {};
 
 /**
  * 打开一个场景文件
- * @param {*} file 
+ * @param {*} file
  */
 function open(file) {
     const $canvas = document.createElement('canvas');
@@ -28,7 +28,7 @@ function open(file) {
     if (file) {
         try {
             require(result);
-        } catch (error) {}
+        } catch (error) { }
     }
 
     // 爬取所有的节点数据
@@ -62,7 +62,7 @@ function query(uuid) {
 
 /**
  * 查询 uuid 对应节点的 dump 数据
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function queryNode(uuid) {
     let node = query(uuid);
@@ -102,7 +102,7 @@ function queryNodeTree(uuid) {
 
 /**
  * 查询从场景到某个节点的搜索路径
- * @param {*} uuid 
+ * @param {*} uuid
  */
 function queryNodePath(uuid) {
     let node = query(uuid);
@@ -110,10 +110,9 @@ function queryNodePath(uuid) {
         return '';
     }
     let names = [node.name];
-    while(node = node.parent) {
-        if (!node) {
-            break;
-        }
+
+    while (node.parent) {
+        node = node.parent;
         names.splice(0, 0, node.name);
     }
     return names.join('/');
@@ -121,12 +120,12 @@ function queryNodePath(uuid) {
 
 /**
  * 设置属性
- * @param {*} uuid 
- * @param {*} path 
- * @param {*} key 
- * @param {*} dump 
+ * @param {*} uuid
+ * @param {*} path
+ * @param {*} key
+ * @param {*} dump
  */
-function setProperty(uuid, path, key, dump) {
+function setProperty(uuid, path, dump) {
     const node = query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
@@ -199,7 +198,7 @@ function insertArrayProperty(uuid, path, key, index, dump) {
         dumpUtils.restoreComponent(dump.value, comp);
         value = comp;
     } else {
-        const temp = {value: null};
+        const temp = { value: null };
         dumpUtils.restoreProperty(dump, temp, 'value');
         value = temp.value;
     }
@@ -326,7 +325,6 @@ function removeNode(uuid) {
     node.remove();
 }
 
-
 /**
  * 创建一个组件并挂载到指定的 entity 上
  * @param uuid entity 的 uuid
@@ -375,10 +373,10 @@ module.exports = {
     insertArrayProperty,
     moveArrayProperty,
     removeArrayProperty,
-    
+
     createComponent,
     removeComponent,
 
     createNode,
-    removeNode,
+    removeNode
 };

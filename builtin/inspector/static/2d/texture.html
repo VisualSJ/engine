@@ -1,0 +1,26 @@
+<div>
+
+    <meta-header id="header" :meta="meta"></meta-header>
+
+    <div class="props flex-1">
+
+        <ui-prop label="Type" type="enums" path="type" :value="meta.type" :options='JSON.stringify(["Raw", "Sprite"])'>
+        </ui-prop>
+
+        <ui-prop label="Wrap Mode" type="enums" path="wrapMode" :value="meta.wrapMode" options='["Clamp", "Repeat" ]'>
+        </ui-prop>
+
+        <ui-prop label="Filter Mode" type="enums" path="filterMode" :value="meta.filterMode" options='["Point", "Bilinear" ,
+            "Trilinear" ]'>
+        </ui-prop>
+
+        <ui-section v-if="meta.type === 'sprite'" expand>
+            <div slot="header" class="header">Sprite</div>
+            <sprite-section :meta="meta.subMetas[0]"></sprite-section>
+        </ui-section>
+
+    </div>
+
+    <image-preview :meta="meta"></image-preview>
+
+</div>

@@ -21,7 +21,7 @@ export const $ = {
     scene: '.scene',
 
     path: 'footer .path',
-    version: 'footer .version',
+    version: 'footer .version'
 };
 
 export const listeners = {
@@ -31,7 +31,7 @@ export const listeners = {
     resize() {
         // @ts-ignore
         window.app && window.app.resize();
-    },
+    }
 };
 
 export const methods = {
@@ -62,7 +62,6 @@ export const methods = {
 };
 
 export const messages = {
-
     'scene:ready'() {
         panel.$.loading.hidden = true;
     },
@@ -165,9 +164,9 @@ export const messages = {
      */
     async 'set-property'(options: SetPropertyOptions) {
         await panel.$.scene.setProperty(options);
-
+        const key = (options.path || '').split('.').pop();
         // 广播节点被修改的消息
-        if (options.key === 'parent') {
+        if (key === 'parent') {
             const node = await panel.$.scene.queryNode(options.uuid);
             Editor.Ipc.sendToAll('node-changed', node.parent.value);
         }
@@ -256,7 +255,7 @@ export const messages = {
      */
     async 'query-node-tree'(uuid: string) {
         return await panel.$.scene.queryNodeTree(uuid);
-    },
+    }
 };
 
 export async function ready() {

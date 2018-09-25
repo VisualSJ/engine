@@ -1,14 +1,9 @@
 <div class="content">
-
-    <section class="loading" v-if="loading || !isReady">
+    <section class="loading" v-if="!isReady">
         <ui-loading></ui-loading>
     </section>
-
-    <section v-else-if="!loading && isReady">
-
-        <asset v-if="type === 'asset'" :meta="asset.meta" :on-meta-change="onMetaChange"></asset>
-
-        <node :on-node-property-change="onNodePropertyChange" v-if="type === 'node'" :node="node"></node>
-
+    <section v-else>
+        <component :is="currentComponent" :type="type" :node="node" :meta="meta" :on-node-property-change="onNodePropertyChange"
+            :on-meta-change="onMetaChange"></component>
     </section>
 </div>

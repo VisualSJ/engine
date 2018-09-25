@@ -1,0 +1,20 @@
+<div class="node" v-if="node">
+    <div class="header">
+        <ui-checkbox class="node-toggle" :value="node.active.value"></ui-checkbox>
+        <ui-input class="flex-1" :value="node.name.value"></ui-input>
+    </div>
+    <ui-section v-on:confirm.prevent="onNodePropertyChange" expand>
+        <div slot="header">Node</div>
+        <ui-prop v-for="(item, index) in getRenderKeys(node)" :type="handleType(node, item)" :path="item" :label="item"
+            :value="JSON.stringify(node[item].value)" :key="index"></ui-prop>
+    </ui-section>
+    <ui-section v-if="node.__comps__ && node.__comps__.value" v-for="({value: item, type}, index) in node.__comps__.value"
+        :key="index" v-on:confirm.prevent="onNodePropertyChange($event, index)" expand>
+        <div slot="header">
+            <ui-checkbox class="node-toggle" :value="node.active.value"></ui-checkbox>
+            <span>{{type}}</span>
+        </div>
+        <ui-prop v-for="(k, val) in getCompKeys(index)" :type="handleType(item, k)" :label="k" :path="k" :value="JSON.stringify(item[k].value)"
+            :key="val"></ui-prop>
+    </ui-section>
+</div>

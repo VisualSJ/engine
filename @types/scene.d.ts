@@ -2,7 +2,7 @@
 interface SetPropertyOptions {
     uuid: string; // 修改属性的对象的 uuid
     path: string; // 属性挂载对象的搜索路径
-    key: string; // 属性的 key
+    // key: string; // 属性的 key
     dump: PropertyDump; // 属性 dump 出来的数据
 }
 

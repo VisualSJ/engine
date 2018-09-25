@@ -11,6 +11,12 @@
             "../../@types/editor",
             "../../@types/scene"
         ],
+        "lib": [
+            "dom",
+            "es7",
+            "dom.iterable",
+            "scripthost"
+        ],
         "esModuleInterop": true
     }
 }

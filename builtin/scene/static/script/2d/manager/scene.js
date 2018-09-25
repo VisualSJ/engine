@@ -5,6 +5,7 @@ const dumpUtils = require('../utils/dump');
 
 const ipc = require('../../ipc/webview');
 const { promisify } = require('util');
+const { get } = require('lodash');
 
 let uuid2node = {};
 
@@ -50,9 +51,7 @@ async function serialize() {
 /**
  * 关闭一个场景
  */
-function close() {
-
-}
+function close() { }
 
 /**
  * 查询一个节点的实例
@@ -87,7 +86,7 @@ function queryNodeTree(uuid) {
         return {
             name: node.name,
             uuid: node._id,
-            children: node._children ? node._children.map(step) : null,
+            children: node._children ? node._children.map(step) : null
         };
     };
 
@@ -134,15 +133,17 @@ function queryNodePath(uuid) {
  * @param {*} key
  * @param {*} dump
  */
-function setProperty(uuid, path, key, dump) {
+function setProperty(uuid, path, dump) {
     const node = query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
     }
-
+    const keys = (path || '').split('.');
+    const key = keys.length > 2 ? keys.pop() : path;
+    path = keys.join('.');
     // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('comps.', '_comps.');
+    path = path.replace('__comps__.', '_components.');
 
     // 找到指定的 data 数据
     const data = path ? get(node, path) : node;
@@ -153,6 +154,36 @@ function setProperty(uuid, path, key, dump) {
 
     // 恢复数据
     dumpUtils.restoreProperty(dump, data, key);
+}
+
+/**
+ * 创建一个组件并挂载到指定的 entity 上
+ * @param uuid entity 的 uuid
+ * @param component 组件的名字
+ */
+function createComponent(uuid, component) {
+    const node = query(uuid);
+    if (!node) {
+        console.warn(`create component failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    node.addComp(component);
+}
+
+/**
+ * 移除一个 entity 上的指定组件
+ * @param uuid entity 的 uuid
+ * @param component 组件的名字
+ */
+function removeComponent(uuid, component) {
+    const node = query(uuid);
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    node._removeComp(component);
 }
 
 /**
@@ -207,10 +238,9 @@ module.exports = {
     // moveArrayProperty,
     // removeArrayProperty,
 
-    // createComponent,
-    // removeComponent,
+    createComponent,
+    removeComponent,
 
     createNode,
-    removeNode,
-
+    removeNode
 };

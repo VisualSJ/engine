@@ -3,14 +3,15 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const typeToComponent: any = {
-    '*': 'default-type',
-    image: 'sprite-frame'
-};
-
-export const template = readFileSync(join(__dirname, '../../static/template/asset.html'), 'utf8');
+export const template = readFileSync(join(__dirname, '../../static/2d/asset.html'), 'utf8');
 
 export const props: string[] = ['meta', 'onMetaChange'];
+
+const importer2component: any = {
+    '*': 'default-type',
+    'sprite-frame': 'sprite-frame',
+    texture: 'texture'
+};
 
 export function data() {
     return {};
@@ -18,6 +19,7 @@ export function data() {
 
 export const components = {
     'sprite-frame': require('./asset-types/sprite-frame'),
+    texture: require('./asset-types/texture'),
     'default-type': require('./asset-types/default-type')
 };
 
@@ -28,8 +30,9 @@ export const computed = {
      * @returns
      */
     currentAssetType(this: any) {
-        if (this.meta && this.meta.importer) {
-            return typeToComponent[this.meta.importer];
+        const importer = this.meta && this.meta.__assetType__;
+        if (importer && importer2component[importer]) {
+            return importer2component[importer];
         }
         return 'default-type';
     }

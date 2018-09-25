@@ -1,0 +1,42 @@
+<div v-if="meta">
+
+    <ui-prop label="Rotated" type="boolean" path="rotated" :value="JSON.stringify(meta.userData.rotated)">
+    </ui-prop>
+
+    <ui-prop label="Offset X" type="number" path="offsetX" :value="JSON.stringify(meta.userData.offsetX)">
+    </ui-prop>
+
+    <ui-prop label="Offset Y" type="number" path="offsetY" :value="JSON.stringify(meta.userData.offsetY)">
+    </ui-prop>
+
+    <ui-prop label="Trim Type" type="enums" path="trimType" :value="JSON.stringify(meta.userData.trimType)" options='["Auto", "Custom" ]'>
+    </ui-prop>
+
+    <ui-prop label="Trim Threshold" type="number" path="trimThreshold" :value="JSON.stringify(meta.userData.trimThreshold)">
+    </ui-prop>
+
+    <ui-prop label="Trim X" type="number" path="trimX" :value="JSON.stringify(meta.userData.trimX)">
+    </ui-prop>
+
+    <ui-prop label="Trim Y" type="number" path="trimY" :value="JSON.stringify(meta.userData.trimY)">
+    </ui-prop>
+
+    <ui-prop label="Trim Width" type="number" path="width" :value="JSON.stringify(meta.userData.trimY)">
+    </ui-prop>
+
+    <ui-prop label="Trim Height" type="number" path="height" :value="JSON.stringify(meta.userData.height)">
+    </ui-prop>
+
+    <ui-prop label="Border Top" type="number" path="borderTop" :value="JSON.stringify(meta.userData.borderTop)">
+    </ui-prop>
+
+    <ui-prop label="Border Bottom" type="number" path="borderBottom" :value="JSON.stringify(meta.userData.borderBottom)">
+    </ui-prop>
+
+    <ui-prop label="Border Left" type="number" path="borderLeft" :value="JSON.stringify(meta.userData.borderLeft)">
+    </ui-prop>
+
+    <ui-prop label="Border Right" type="number" path="borderRight" :value="JSON.stringify(meta.userData.borderRight)">
+    </ui-prop>
+
+</div>

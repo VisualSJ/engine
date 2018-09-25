@@ -1,15 +1,15 @@
 'use strict';
 
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { basename, extname, join } from 'path';
 
-import { eventBus } from './components/common/event-bus';
+import { eventBus } from './utils/event-bus';
+
+const Vue = require('vue/dist/vue.js');
+const { getByPath, diffpatcher, repairPath } = require('./utils');
 
 let panel: any = null;
 let vm: any = null;
-
-const Vue = require('vue/dist/vue.js');
-const { getByPath, diffpatcher } = require('./utils');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
@@ -26,25 +26,32 @@ export const methods = {
      * @param {*} info
      * @returns
      */
-    getMetaData(meta: any, info: any) {
-        const { source, files } = info;
-        meta.__name__ = source;
+    getMetaData() {
+        const { originInfo, originMeta } = vm;
+        const { source = '', files = [] } = originInfo;
+        const meta: any = {};
+        meta.__name__ = basename(source, extname(source));
         meta.__src__ = files[0];
-        meta.__assetType__ = meta.importer === 'image' ? 'sprite-frame' : '';
-        if (meta.subMetas) {
-            const arr = [];
-            const keys = Object.keys(meta.subMetas);
+        meta.__assetType__ = originMeta.importer;
+        if (originMeta.userData) {
+            const { userData } = originMeta;
+            const keys = Object.keys(userData);
             for (const key of keys) {
-                const value = meta.subMetas[key];
+                meta[key] = userData[key];
+            }
+        }
+        if (originMeta.subMetas) {
+            const arr = [];
+            const { subMetas } = originMeta;
+            const keys = Object.keys(subMetas);
+            for (const key of keys) {
+                const value = subMetas[key];
                 value.__name__ = key;
                 arr.push(value);
             }
             meta.subMetas = arr;
         }
         return meta;
-    },
-    tearMetaData(meta: any) {
-        // todo
     },
     /**
      * inspector 根据当前选中对象的 type 以及 uuid 进行对应的界面渲染
@@ -58,21 +65,35 @@ export const methods = {
 
         vm.loading = true;
         vm.type = type;
+        vm.currentUuid = uuid;
 
         if (type === 'asset') {
-            const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-            const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
-
-            vm.asset.meta = this.getMetaData(meta, info);
+            try {
+                const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+                const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
+                vm.node = null;
+                vm.originMeta = meta;
+                vm.originInfo = info;
+                vm.meta = panel.getMetaData();
+            } catch (err) {
+                vm.type = '';
+                vm.currentUuid = '';
+                console.error(err);
+            }
         } else if (type === 'node') {
-            const node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-
-            vm.node = node;
+            try {
+                const node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+                vm.meta = null;
+                vm.node = node;
+            } catch (err) {
+                vm.type = '';
+                vm.currentUuid = '';
+                console.error(err);
+            }
         } else {
             vm.type = '';
         }
 
-        vm.currentUuid = uuid;
         vm.loading = false;
     }
 };
@@ -83,7 +104,7 @@ export const messages = {
      * @param type 选中物体的类型
      * @param uuid 选中物体的 uuid
      */
-    async 'selection:select'(this: any, type: string, uuid: string) {
+    async 'selection:select'(type: string, uuid: string) {
         panel.handleSelect(type, uuid);
     },
     /**
@@ -91,12 +112,18 @@ export const messages = {
      * @param {string} uuid
      */
     async 'scene:node-changed'(uuid: string) {
-        const { currentUuid } = vm;
-        if (uuid === currentUuid) {
-            const node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-            const delta = diffpatcher.diff(vm.node, node);
-            if (delta) {
-                diffpatcher.patch(vm.node, delta);
+        if (vm) {
+            const { currentUuid } = vm;
+            if (uuid === currentUuid) {
+                try {
+                    const node = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+                    const delta = diffpatcher.diff(vm.node, node);
+                    if (delta) {
+                        diffpatcher.patch(vm.node, delta);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
             }
         }
     },
@@ -104,7 +131,7 @@ export const messages = {
      * 场景已准备
      */
     'scene:ready'() {
-        vm.isReady = true;
+        vm && (vm.isSceneReady = true);
     }
 };
 
@@ -126,28 +153,36 @@ export async function ready() {
         el: panel.$.content,
         data: {
             // 标记场景是否 ready
-            isReady: false,
+            isSceneReady: false,
             loading: true,
             type: '',
             currentUuid: '',
-            asset: {
-                info: null,
-                meta: null
-            },
-            node: {}
+            meta: null,
+            node: null,
+            currentComponent: 'component-2d'
         },
-        components: {
-            asset: require('./components/asset'),
-            node: require('./components/node')
-        },
+        components: { 'component-2d': require('./2d') },
         async mounted() {
-            const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
-            const uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
+            try {
+                const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
+                const uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
 
-            vm.isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
+                vm.isSceneReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
 
-            if (uuid) {
-                panel.handleSelect(type, uuid);
+                if (uuid) {
+                    panel.handleSelect(type, uuid);
+                }
+            } catch (err) {
+                console.error('error');
+            }
+        },
+        computed: {
+            /**
+             * 判断 inspector 是否可以显示界面
+             * @returns {boolean}
+             */
+            isReady(this: any): boolean {
+                return !this.loading && this.isSceneReady && (this.node || this.meta);
             }
         },
         methods: <any>{
@@ -167,16 +202,32 @@ export async function ready() {
              * 监听属性变更
              * @param {*} event
              * @param {(number | undefined)} index
-             */
-            async onNodePropertyChange(event: any, index: number | undefined) {
+             */ async onNodePropertyChange(event: any, index: number | undefined) {
                 let prefix;
                 if (index !== undefined) {
-                    prefix = `comps.${index}`;
+                    prefix = `__comps__.${index}`;
                 }
                 const option: SetPropertyOptions | null = this.getPropertyOption(event, prefix);
                 if (option) {
                     this.setProperty(option);
                 }
+            },
+            /**
+             * 返回可能嵌套的 ui-prop 的 path 值
+             * @param {*} event
+             * @param {(string | undefined)} prefix
+             * @returns
+             */
+            getPath(event: any, prefix: string | undefined) {
+                const { path } = event;
+                const paths = path
+                    .filter((item: HTMLElement) => item.tagName === 'UI-PROP')
+                    .reduceRight((prev: any, next: HTMLElement, i: number, arr: HTMLElement[]) => {
+                        const path = next.getAttribute('path');
+                        return path ? `${prev && prev + '.'}${path}` : prev;
+                    }, '');
+
+                return prefix ? `${prefix}.${paths}` : paths;
             },
             /**
              * 获取设置node属性需要的选项,path不存在则返回null
@@ -188,10 +239,8 @@ export async function ready() {
                 const node: NodeDump = this.node;
                 const { value } = event.target;
                 const { value: uuid } = node.uuid;
-                const path = event.target.getAttribute('path') || '';
-                const keys = prefix ? `${prefix}.${path}`.split('.') : path.split('.');
-                const { type = typeof value } = getByPath(node, keys) || {};
-                const key: string = keys.pop();
+                const path = this.getPath(event, prefix);
+                const { type = typeof value } = getByPath(node, path) || {};
                 const dump: PropertyDump = { type, value, extends: [] };
                 // path不存在则返回 null
                 if (!path) {
@@ -203,28 +252,22 @@ export async function ready() {
                         (item: number, index: number) => (index === 3 ? item : Math.round((item * 10) / 255) / 10)
                     );
                 }
-
                 return {
-                    uuid,
-                    path: keys.join('.'),
-                    key,
+                    uuid, // 对dump属性名进行恢复
+                    path: repairPath(path),
                     dump
                 };
             },
             /**
              * 监听 meta 数据变更
              * @param {*} event
-             */
-            onMetaChange(event: any) {
-                const { value } = event.target;
-                const path = event.target.getAttribute('path');
-
-                this.asset.meta[path] = value;
+             */ onMetaChange(event: any) {
+                // todo
             }
         }
     });
 }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
-export async function close() {}
+export async function close() { }

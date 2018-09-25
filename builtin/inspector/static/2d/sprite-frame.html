@@ -4,7 +4,7 @@
 
     <div class="props flex-1">
 
-        <sprite-section :meta="meta"></sprite-section>
+        <sprite-section :meta="meta.subMetas[0]" v-if="meta.subMetas"></sprite-section>
 
     </div>
 
