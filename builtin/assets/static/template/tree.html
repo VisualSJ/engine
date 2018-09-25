@@ -25,7 +25,11 @@
         <i class="file"
             :class="item.icon"
             v-else
-        ></i>
+        >
+        <img class="thumbnail" 
+            v-if="item.icon==='thumbnail'"
+            :src="item.thumbnail">
+        </i>
         <label class="name"
             v-if="item.state!=='input'"
             @dblclick="openAsset($event, item)"

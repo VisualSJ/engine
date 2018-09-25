@@ -15,7 +15,6 @@ declare interface ItreeAsset {
     name: string;
     filename: string;
     fileext: string;
-    uuid: string;
     children: ItreeAsset[];
     top: number; // top 位置
     _height?: number; // 整个节点包括children的高度
@@ -26,10 +25,13 @@ declare interface ItreeAsset {
     isParent?: boolean; // 是否是父节点
     isExpand?: boolean; // 是否展开显示
     state?: string; // 状态
+    icon?: string,
+    thumbnail?: string,
 
     files?: Array<string>; // 以下数据来自 assets-db 查询
     importer?: string;
     source?: string;
+    uuid: string;
 
 }
 
@@ -38,6 +40,7 @@ declare interface IsourceAsset {
     importer: string;
     source: string;
 
+    thumbnail: string,
     pathname: string;
     name: string;
     filename: string;

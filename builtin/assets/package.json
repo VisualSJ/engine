@@ -19,6 +19,33 @@
         "min-width": 200,
         "min-height": 200,
         "width": 400,
-        "height": 600
+        "height": 600,
+        "shortcuts": {
+            "ctrl+a": "selectAll",
+            "command+a": "selectAll",
+            
+            "ctrl+f": "find",
+            "command+f": "find",
+
+            "ctrl+c": "copy",
+            "command+c": "copy",
+            "ctrl+d": "copy",
+            "command+d": "copy",
+
+            "ctrl+v": "paste",
+            "command+v": "paste",
+
+            "command+backspace": "delete",
+            "ctrl+backspace": "delete",
+            "del": "delete",
+
+            "up": "up",
+            "down": "down",
+            "left": "left",
+            "right": "right",
+
+            "shift+up": "shiftUp",
+            "shift+down": "shiftDown"
+        }
     }
 }

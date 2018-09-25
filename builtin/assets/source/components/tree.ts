@@ -43,6 +43,8 @@ export const methods = {
             return;
         }
 
+        event.stopPropagation();
+
         const self = this;
 
         Editor.Menu.popup({
@@ -78,11 +80,17 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.copy'),
-                    click() { }
+                    click() {
+                        // @ts-ignore
+                        self.$emit('copy', item.uuid);
+                    }
                 },
                 {
                     label: Editor.I18n.t('assets.menu.paste'),
-                    click() { }
+                    click() {
+                        // @ts-ignore
+                        self.$emit('paste', item.uuid);
+                    }
                 },
                 {
                     type: 'separator'
@@ -135,22 +143,22 @@ export const methods = {
         const uuid = item.uuid;
         // @ts-ignore
         if (event.ctrlKey || event.metaKey) {
-            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
             if (uuids.includes(uuid)) {
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
             } else {
-                Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
             }
             return;
         }
 
         // @ts-ignore
         if (event.shiftKey) {
-            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
             // 如果之前没有选中节点，则只要选中当前点击的节点
 
             if (uuids.length === 0) {
-                Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
                 return;
             } else {
                 // @ts-ignore

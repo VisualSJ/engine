@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
+import { thumbnail } from './components/thumbnail';
 
 const fileicon = require('./components/fileicon');
 
@@ -10,6 +11,13 @@ let panel: any = null;
 let vm: any = null;
 
 let treeData: ItreeAsset; // 树形结构的数据，含 children
+
+let copyAssetUUID: string[] = []; // 用于存放已复制资源的 uuid
+
+const needToThumbnail = { // 需要生成缩略图的图片资源
+    '2d': ['png', 'jpg', 'jpge', 'webp'],
+    '3d': ['png', 'jpg', 'jpge', 'webp'],
+};
 
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
@@ -50,7 +58,55 @@ export const methods = {
             treeData = transformData(initData);
             vm.changeTreeData();
         }
-    }
+    },
+    /**
+     * 以下是键盘事件
+     */
+    /**
+     * 全选
+     */
+    async selectAll(event: Event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        for (const [top, json] of positionMap) {
+            Editor.Ipc.sendToPackage('selection', 'select', 'asset', json.uuid);
+        }
+
+    },
+    /**
+     * 焦点面板搜索
+     */
+    async find() {
+        vm.$refs.searchInput.focus();
+    },
+    /**
+     * 复制资源
+     */
+    async copy() {
+        vm.copyAsset();
+    },
+    /**
+     * 粘贴资源
+     */
+    async paste() {
+        vm.pasteAsset();
+    },
+    /**
+     * 删除资源
+     */
+    async delete() {
+        vm.deleteAsset();
+    },
+    async up() { },
+    async down() { },
+    async left() { },
+    async right() { },
+    async shiftUp() { },
+    async shiftDown() { },
 };
 
 export const messages = {
@@ -117,12 +173,13 @@ export const messages = {
             return;
         }
 
-        const source = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        const newNode = legalData([source])[0];
-        addTreeData(treeData.children, 'pathname', 'parent', newNode);
+        const one = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        const newNode = legalData([one])[0];
+        const parent = addTreeData(treeData.children, 'pathname', 'parent', newNode);
+        parent.isExpand = true;
+
         // 触发节点数据已变动
         vm.changeTreeData();
-
     },
 
     /**
@@ -220,11 +277,7 @@ export async function ready() {
              */
             newAsset(uuid: string, json: IaddAsset) {
                 if (uuid === '') {
-                    if (!vm.select[0]) { // 当前没有选中的资源
-                        uuid = treeData.uuid; // 根资源
-                    } else {
-                        uuid = vm.select[0]; // 当前选中的资源
-                    }
+                    uuid = vm.getFirstSelect();
                 }
 
                 newAsset(uuid, json);
@@ -233,13 +286,18 @@ export async function ready() {
              * 删除资源
              * @param item
              */
-            deleteAsset(uuid: string) {
-                // 如果当前资源已被选中，先取消选择
-                if (vm.select.includes(uuid)) {
-                    Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+            async deleteAsset(uuid: string) {
+                if (uuid && !vm.select.includes(uuid)) { // 如果该资源没有被选中
+                    Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+                    Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
+                } else { // 删除所有选中项
+                    const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
+                    uuids.forEach((uuid: string) => {
+                        Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+                        Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
+                    });
                 }
 
-                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
             },
             /**
              * 资源的折叠切换
@@ -398,6 +456,27 @@ export async function ready() {
                 }
             },
             /**
+             * 复制资源
+             * @param uuid
+             */
+            copyAsset(uuid: string) {
+                copyAssetUUID = vm.select.slice();
+                if (uuid !== undefined && !vm.select.includes(uuid)) { // 来自右击菜单的单个选中
+                    copyAssetUUID = [uuid];
+                }
+            },
+            pasteAsset(uuid: string) {
+                if (!uuid) {
+                    uuid = vm.getFirstSelect();
+                }
+                copyAssetUUID.forEach((id: string) => {
+                    const arr = getAssetFromTreeData(treeData, id);
+                    if (arr[0]) {
+                        importAsset(uuid, arr[0].source);
+                    }
+                });
+            },
+            /**
              * 树形数据已改变
              * 如资源增删改，是较大的变动，需要重新计算各个配套数据
              */
@@ -446,7 +525,6 @@ export async function ready() {
              * @param scrollTop
              */
             scrollTree(scrollTop = 0) {
-
                 const mode = scrollTop % treeNodeHeight;
                 let top = scrollTop - mode;
                 if (mode === 0 && scrollTop !== 0) {
@@ -483,6 +561,59 @@ export async function ready() {
                         },
                     ]
                 });
+            },
+            /**
+             * 面板的右击菜单
+             * @param event
+             * @param item
+             */
+            contextMenuPopup(event: Event) {
+                // @ts-ignore
+                if (event.button !== 2) {
+                    return;
+                }
+
+                const self = this;
+
+                Editor.Menu.popup({
+                    // @ts-ignore
+                    x: event.pageX,
+                    // @ts-ignore
+                    y: event.pageY,
+                    menu: [
+                        {
+                            label: Editor.I18n.t('assets.menu.new'),
+                            submenu: [
+                                {
+                                    label: Editor.I18n.t('assets.menu.newFolder'),
+                                    click() {
+                                        // @ts-ignore
+                                        vm.newAsset('', { type: 'folder' });
+                                    }
+                                },
+                                {
+                                    type: 'separator'
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newJavascript'),
+                                    click() {
+                                        // @ts-ignore
+                                        vm.newAsset('', { type: 'javascript' });
+                                    }
+                                },
+                            ]
+                        },
+                    ]
+                });
+            },
+            /**
+             * 以下是工具函数：
+             */
+            getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
+                if (!vm.select[0]) {
+                    return treeData.children[0].uuid; // asset 节点资源
+                }
+                return vm.select[0]; // 当前选中的资源
             }
         },
     });
@@ -523,6 +654,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             fileext: json.fileext,
             source: json.source,
             icon: fileicon[json.fileext] || 'i-file',
+            thumbnail: json.thumbnail,
             uuid: json.uuid,
             children: json.children,
             top: start,
@@ -684,6 +816,7 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
         rt.push(item);
         sortData(rt, false);
     }
+    return one;
 }
 
 /**
@@ -691,8 +824,9 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
  */
 function removeTreeData(uuid: string) {
     const nodeData = getAssetFromTreeData(treeData, uuid);
-    const index = nodeData[1];
-    nodeData[2].splice(index, 1);
+    if (nodeData[2]) {
+        nodeData[2].splice(nodeData[1], 1);
+    }
 }
 /**
  * 从一个扁平的数组的转换为含有 children 字段的树形
@@ -813,6 +947,16 @@ function legalData(arr: IsourceAsset[]) {
         a.fileext = (fileext || '').toLowerCase();
         a.parent = paths.length === 0 ? 'root' : paths.join('/');
         a.isExpand = a.parent === 'root' ? true : false;
+        a.thumbnail = '';
+
+        // 生成缩略图
+        // @ts-ignore
+        if (needToThumbnail[Editor.Project.type].includes(fileext)) {
+            (async (one: IsourceAsset) => {
+                one.thumbnail = await thumbnail(one);
+                vm.changeTreeData();
+            })(a);
+        }
 
         return a;
     });

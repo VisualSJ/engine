@@ -4,10 +4,12 @@
  * 文件对应的图标
  * 文件的后缀
  */
-exports.apng =
+
 exports.png =
 exports.jpge =
-exports.jpg =
+exports.jpg = 'thumbnail';
+
+exports.apng =
 exports.gif = 'i-image';
 
 exports.scene =

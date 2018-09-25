@@ -117,7 +117,7 @@ module.exports = {
         /**
          * 从外部拖拽，导入文件
          * @param url
-         * @param path 系统的文件路径
+         * @param path 系统文件路径或者 asset-db 资源路径
          */
         async 'import-asset'(url: string, path: string) {
             if (!assetWorker) {
@@ -129,10 +129,16 @@ module.exports = {
 
             // 文件目录路径
             const dirname = join(Editor.Project.path, 'assets');
-            const dest = join(dirname, url.substr(assetProtocol.length));
+            let dest = join(dirname, url.substr(assetProtocol.length));
+
+            // 判断是否是资源路径
+            if (path.startsWith(assetProtocol)) {
+                path = join(dirname, path.substr(assetProtocol.length));
+            }
 
             // 如果其中一个数据是错误的，则停止操作
             if (
+                dest === path ||
                 !existsSync(dest) ||
                 !statSync(dest).isDirectory() ||
                 !existsSync(path)
@@ -142,7 +148,14 @@ module.exports = {
 
             // 复制文件
             const name = basename(path);
-            copy(path, join(dest, name), { overwrite: true });
+            dest = join(dest, name);
+            copy(path, dest, {
+                // @ts-ignore
+                overwrite: true,
+                filter(a, b) {
+                    return extname(a) !== '.meta';
+                }
+            });
         },
 
         /**
