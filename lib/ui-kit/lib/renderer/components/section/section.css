@@ -7,7 +7,7 @@
 }
 :host {
   all: initial;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--color, #333);
 }
 :host header {

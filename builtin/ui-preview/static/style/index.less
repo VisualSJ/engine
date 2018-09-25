@@ -13,18 +13,23 @@
 section {
   padding: 10px;
   border-bottom: 1px #ccc solid;
+
   &>* {
     margin: 5px;
   }
+
   h5 {
     font-size: 14px;
   }
+
   .size-12 {
     font-size: 12px;
   }
+
   .size-16 {
     font-size: 16px;
   }
+
   .size-20 {
     font-size: 20px;
   }
@@ -106,14 +111,17 @@ ui-drag-area.wrap {
   border-bottom: 1px solid var(--border-color, #333333);
 }
 
-ui-prop> div[slot='content']{
+ui-prop>div[slot='content'] {
   width: 100%;
   flex-wrap: wrap;
   display: flex;
+  align-items: center;
 }
-ui-prop> div[slot='content']>ui-prop {
-  --left-width:15%; // 内部嵌套ui-prop组件的label长度,如若不希望面板变宽时label变得越来越宽，可以给它指定一个固定值
-  --right-width:85%; // 内部嵌套ui-prop组件的ui组件长度，不指定默认就是占满除了lebel以外的宽度
+
+ui-prop>div[slot='content']>ui-prop {
+  --left-width: 20px; // 内部嵌套ui-prop组件的label长度,如若不希望面板变宽时label变得越来越宽，可以给它指定一个固定值
+  --right-width: 85%; // 内部嵌套ui-prop组件的ui组件长度，不指定默认就是占满除了lebel以外的宽度
+  --label-max-width: 20px;
   max-width: 48%; // 内部嵌套ui-prop组件的最大宽度
   width: 200px;
   height: 2em;
@@ -122,6 +130,6 @@ ui-prop> div[slot='content']>ui-prop {
   margin-bottom: 5px; // 内部组件的margin-bottom
 }
 
-ui-prop.vector> div[slot='content']{
+ui-prop.vector>div[slot='content'] {
   margin-right: -1.5%;
 }

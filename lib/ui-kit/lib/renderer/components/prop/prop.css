@@ -18,7 +18,7 @@
 }
 :host .label {
   width: var(--left-width, 35%);
-  min-width: var(--label-min-width);
+  max-width: var(--label-max-width);
   height: 100%;
 }
 :host .label span {
@@ -30,6 +30,7 @@
   text-overflow: ellipsis;
   box-sizing: border-box;
   padding-right: 25%;
+  vertical-align: middle;
 }
 :host .content > * {
   width: var(--right-width, 75%);
