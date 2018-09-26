@@ -1,123 +1,38 @@
-const ps = require('path');
 const ipc = require('@base/electron-base-ipc');
 const Vue = require('vue/dist/vue.js');
 const proManager = require('./../../../lib/project');
 const dialog = require('./../../../lib/dialog');
+const { dirname } = require('path');
+
+// 定义相关常量数组
+const SORT = ['name', 'ctime', 'otime'];
+const TYPES = ['2d', '3d'];
+const ORDER = ['desc', 'asc'];
 
 let vm = new Vue({
     el: '#dashboard',
     data: {
-        activeTab: 1, // 当前 2d 或 3d 项目 tab 项的 index
+        activeTab: 0, // 当前 2d 或 3d 项目 tab 项的 index
         recentShowIndex: -1, // 当前 hover 的'最近'项目的 index
         tempShowIndex: -1, // 当前 hover 的模板项目的 index
         activeTitle: 0, // 当前选择最近或模板的 index
         nav: ['2D项目', '3D项目'], // 侧边菜单项的文本内容
-        TYPES: ['2d', '3d'],
         titleTab: ['最近', '模板', '帮助'], // 顶部菜单项
         searchValue: '',
         templateSrc: '', //模板路径
         recentPro: [ // 2d 与 3d
-            [{
-                    name: '2d项目1',
-                    path: '../../../tester/2d项目1',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '2d项目2',
-                    path: '../../../tester/2d项目2',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '2d项目3',
-                    path: '../../../tester/2d项目3',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '2d项目1',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-                {
-                    name: '2d项目2',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-                {
-                    name: '2d项目3',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-            ],
-            [{
-                    name: '3d项目1',
-                    path: '../../../tester/3d项目1',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '3d项目2',
-                    path: '../../../tester/3d项目2',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '3d项目3',
-                    path: '../../../tester/3d项目3',
-                    lastTime: '2018.09.17',
-                    cover: './../img/picture-holer.jpg'
-                },
-                {
-                    name: '3d项目1',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-                {
-                    name: '3d项目2',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-                {
-                    name: '3d项目3',
-                    path: '../../../tester/index.js',
-                    lastTime: '2018.09.17'
-                },
-            ]
+            [],
+            []
         ],
         templatePro: [ //  2d 与 3d 项目模板
-            [{
-                    name: 'Hello World',
-                    describe: '新建一个 Cocos Creator 项目的默认模板，包括了一个项目中最基础的三个组成部分：场景、图片资源和脚本。'
-                },
-                {
-                    name: '范例集合',
-                    describe: '用一个个独立的范例展示组件和资源的使用方法，以及脚本编程和添加游戏性的实战策略。每个范例场景都附有说明文档，包括相关功能的使用方法和工作流程。推荐新手用来上手学习。'
-                },
-                {
-                    name: 'Hello TypeScript',
-                    describe: '新建一个使用 TypeScript 作为脚本语言的项目，包括类的继承、装饰器等语言功能的展示。'
-                }
-            ],
-            [{
-                    name: 'Hello World3d',
-                    describe: '新建一个 Cocos Creator 项目的默认模板，包括了一个项目中最基础的三个组成部分：场景、图片资源和脚本。'
-                },
-                {
-                    name: '范例集合3d',
-                    describe: '用一个个独立的范例展示组件和资源的使用方法，以及脚本编程和添加游戏性的实战策略。每个范例场景都附有说明文档，包括相关功能的使用方法和工作流程。推荐新手用来上手学习。'
-                },
-                {
-                    name: 'Hello TypeScript3d',
-                    describe: '新建一个使用 TypeScript 作为脚本语言的项目，包括类的继承、装饰器等语言功能的展示。'
-                }
-            ]
+            [],
+            []
         ],
-        filterCondetions: ['none', 'create time', 'desc'], // 筛选条件
+        filterCondetions: ['name', 'create time', 'open time'], // 筛选条件
         filterIndex: 0, // 选中的筛选选项
         showFilterOption: false, // 是否显示选中的项
-        filter: -1,
+        filter: -1, // 当前筛选种类 0 为排序，1 为搜索
+        slortFlag: 0, // 当前排序升降顺序，升为 1 ,降为 0
     },
     computed: {
         showFilter() { // 是否显示搜索按钮
@@ -140,10 +55,9 @@ let vm = new Vue({
                 return item.name.indexOf(this.searchValue) !== -1;
             });
             return result;
-        }
+        },
     },
     created() {
-        // 待数据完善后开放此功能
         this.init();
     },
     methods: {
@@ -151,11 +65,11 @@ let vm = new Vue({
         init() {
             let templateData = [];
             let recentData = [];
-            this.TYPES.forEach((item, index) => {
+            TYPES.forEach((item, index) => {
                 ipc.send('dashboard:getTemplate', item).callback((error, template) => {
                     templateData[index] = template;
                 });
-                recentData[index] = proManager.getList({type: item});
+                recentData[index] = proManager.getList({type: item, ...this.getSearch()});
             });
             this.templatePro = templateData;
             this.recentPro = recentData;
@@ -164,51 +78,40 @@ let vm = new Vue({
         openProject(path) {
             let that = this;
             if (!path) {
-                // todo 打开项目文件夹,（新增）项目
                 dialog.openDirectory({
                     title: '打开项目',
                     onOk(filePath) {
-                        that.enterProject(); // 进入编辑器，之后需要移除
-                        return; // 待数据完善后移除
                         if (!filePath) {
                             return;
                         }
-                        proManager.add(that.TYPES[that.activeTab], filePath[0]);
+                        proManager.add(TYPES[that.activeTab], filePath[0]);
                         proManager.open(filePath[0]);
+                        that.init();
                     }
                 });
                 return;
             }
-            this.enterProject(); // 进入编辑器，之后需要移除
-            return; // 待数据完善后移除
             proManager.open(path);
         },
+
         /**
          * 基于模板新建项目
          * @param {*} path
          */
         creatNewProject(path) {
-            let that = this;
             if (!path) {
                 return;
             }
             dialog.openDirectory({
                 title: '新建项目',
                 onOk(filePath) {
-                    // 待数据完善后开放此功能
-                    that.enterProject(); // 待数据完善后移除
-                    return; // 待数据完善后移除
                     if (!filePath) {
                         return;
                     }
                     proManager.create(filePath[0], path);
-                    proManager.open(filePath[0]);
+                    pkgJson.name = name;
                 }
             });
-        },
-
-        controlWindow(cmd) { // 控制窗口关闭、最小化等
-            ipc.send(`dashboard:${cmd}`);
         },
 
         /**
@@ -217,25 +120,53 @@ let vm = new Vue({
          * @param {String} path 项目路径
          */
         removePro(index, path) {
+            this.recentShowIndex = -1;
             this.recentPro[this.activeTab].splice(index, 1);
-            return;
-            // todo 从最近项目中移除
             proManager.remove(path);
         },
 
-        enterProject() { // 进入编辑器，临时使用函数
-            const project = ps.resolve(this.activeTab === 0 ? '.project-2d' : '.project');
-            ipc.send('open-project', project);
-        }
+        // 时间戳转日期
+        t(timestemp) {
+            let time = new Date(timestemp);
+            return `${time.toLocaleDateString()} ${time.toLocaleTimeString()}`;
+        },
 
-        // todo 排序、筛选功能
+        // 更新 project数据
+        updatePro() {
+            let recentData = [];
+            TYPES.forEach((item, index) => {
+                recentData[index] = proManager.getList({type: item, ...this.getSearch()});
+            });
+            this.recentPro = recentData;
+        },
+
+        // 选择筛选项
+        choose(index) {
+            this.showFilterOption = false;
+            this.filterIndex = index;
+            this.updatePro();
+        },
+
+        // 计算筛选条件
+        getSearch() {
+            let obj = {};
+            obj.order = ORDER[this.slortFlag];
+            obj.sort = SORT[this.filterIndex];
+            return obj;
+        },
     },
 });
 
 const $windowContron = document.getElementById('windowContron');
-let maxiFlag = false;
+const $windoeRow = document.getElementById('window-row');
 
-// 控制窗口关闭、最小化等(由于 vue 绑定的时机问题，使用 vue 无法接收到在可拖拽区域的点击事件)
+// 存储是否已经最大化的flag变量
+let maxiFlag = false;
+// vue无法绑定可拖拽区域，故针对mac的样式需要操作dom添加
+if (process.platform === 'darwin') {
+    $windoeRow.className = 'window-row mac';
+}
+// 控制窗口关闭、最小化等(由于 vue 绑定的时机问题，使用 vue 绑定click无法接收到在可拖拽区域的点击事件)
 $windowContron.addEventListener('click', (event) => {
     let name = event.target.getAttribute('name');
     if (!name) {

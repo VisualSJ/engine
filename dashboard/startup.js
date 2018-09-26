@@ -46,6 +46,8 @@ exports.window = function() {
         window.hide();
         app.dock && app.dock.hide();
     });
+    // 临时全局变量，便于其他插件访问
+    global.dashboard = window;
 };
 
 let tray = null;
@@ -81,40 +83,6 @@ exports.tray = async function() {
  * 开始监听 ipc 消息
  */
 exports.listener = function() {
-    let children = [];
-    // 监听打开项目事件
-    ipc.on('open-project', (event, project) => {
-        // electron 程序地址
-        const exePath = app.getPath('exe');
-
-        // 拼接参数
-        const args = [ps.resolve()];
-        if (setting.dev) {
-            args.push('--dev');
-        }
-
-        args.push('--project');
-        args.push(project);
-
-        // 实际启动
-        const child = spawn(exePath, args);
-        children.push(child);
-
-        child.on('exit', () => {
-            const index = children.indexOf(child);
-            children.splice(index, 1);
-
-            if (children.length <= 0) {
-                // 如果关闭最后一个项目，需要显示 dashboard
-                window.show();
-                app.dock && app.dock.show();
-            }
-        });
-
-        // 隐藏 Dashboard
-        window.hide();
-        app.dock && app.dock.hide();
-    });
 
     // 监听关闭窗口事件
     ipc.on('dashboard:close', (event) => {
