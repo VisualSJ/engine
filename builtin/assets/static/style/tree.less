@@ -12,6 +12,14 @@
     box-sizing: border-box;
     overflow: hidden;
     min-height: 100%;
+    &[state="search"] {
+        >.node {
+            .file {
+                margin-left: -2px;
+                padding-right: 2px;
+            }
+        }
+    }
     &[hoving] {
         >.node {
             &[insert="inside"] {
@@ -49,7 +57,7 @@
                 transition: 0.2s transform;
             }
         }
-        img{
+        img {
             border: none;
         }
         .file {
@@ -59,7 +67,7 @@
             height: 14px;
             padding-right: 4px;
             vertical-align: middle;
-            .thumbnail{
+            .thumbnail {
                 width: 100%;
                 height: 100%;
                 border: none;

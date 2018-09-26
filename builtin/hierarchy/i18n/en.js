@@ -10,6 +10,8 @@ module.exports = {
         newNode: 'Node',
         newNodeEmpty: 'Empty Node',
 
+        copy: 'Copy',
+        paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
     }

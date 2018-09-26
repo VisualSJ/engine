@@ -211,8 +211,9 @@ module.exports = {
 
             const file = join(dir, info.source.replace(assetProtocol, ''));
             const base = basename(file);
-
             const target = file.replace(base, name);
+
+            await remove(file + '.meta');
             rename(file, target);
         },
 

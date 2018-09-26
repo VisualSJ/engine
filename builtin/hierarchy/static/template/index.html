@@ -18,7 +18,9 @@
         ></i>
     </div>
 
-    <div class="viewBox" ref="viewBox">
+    <div class="viewBox" ref="viewBox"
+        @mousedown="contextMenuPopup($event)"
+    >
         <div class=scrollBar ref="scrollBar"></div>
         <tree ref="tree"
             :list="nodes"
@@ -30,6 +32,8 @@
             @new="newNode"
             @delete="deleteNode"
             @multiple="multipleSelect"
+            @copy="copyNode"
+            @paste="pasteNode"
         ></tree>
     </div>
 </div>

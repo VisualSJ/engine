@@ -42,7 +42,9 @@
             "up": "up",
             "down": "down",
             "left": "left",
+            "backspace": "left",
             "right": "right",
+            "enter": "right",
 
             "shift+up": "shiftUp",
             "shift+down": "shiftDown"

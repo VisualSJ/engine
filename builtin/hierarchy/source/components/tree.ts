@@ -30,6 +30,8 @@ export const methods = {
             return;
         }
 
+        event.stopPropagation();
+
         const self = this;
 
         Editor.Menu.popup({
@@ -45,10 +47,27 @@ export const methods = {
                             label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('new', item.uuid, { type: 'empty' });
+                                self.$emit('new', item.uuid, { type: 'emptyNode' });
                             }
                         }
                     ]
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.copy'),
+                    click() {
+                        // @ts-ignore
+                        self.$emit('copy', item.uuid);
+                    }
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.paste'),
+                    click() {
+                        // @ts-ignore
+                        self.$emit('paste', item.uuid);
+                    }
                 },
                 {
                     type: 'separator'

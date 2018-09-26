@@ -158,6 +158,7 @@ export const methods = {
             // 如果之前没有选中节点，则只要选中当前点击的节点
 
             if (uuids.length === 0) {
+                Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
                 Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
                 return;
             } else {

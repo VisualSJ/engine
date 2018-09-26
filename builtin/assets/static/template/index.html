@@ -23,6 +23,7 @@
     >
         <div class=scrollBar ref="scrollBar"></div>
         <tree ref="tree"
+            :state="state"
             :list="nodes"
             :select="select"
             @toggle="toggleAsset"
