@@ -1,9 +1,8 @@
 'use strict';
 
-export async function thumbnail(asset: IsourceAsset) {
+export async function thumbnail(asset: ItreeAsset) {
     // @ts-ignore
     const base64: string = await toDataURL(asset.files[0], 20, 20);
-    // console.log('%c', 'padding:50px 300px;line-height:120px;background:url(' + base64 + ') no-repeat;');
     return base64;
 }
 

@@ -19,6 +19,8 @@ const needToThumbnail = { // 需要生成缩略图的图片资源
     '3d': ['png', 'jpg', 'jpge', 'webp'],
 };
 
+const dbProtocol = 'db://';
+
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
  * 将所有资源按照 key = position.top 排列，value = ItreeAsset
@@ -174,9 +176,11 @@ export const messages = {
         }
 
         const one = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        const newNode = legalData([one])[0];
-        const parent = addTreeData(treeData.children, 'pathname', 'parent', newNode);
-        parent.isExpand = true;
+        const arr = legalData([one]);
+        arr.forEach((newNode: ItreeAsset) => {
+            const parent = addTreeData(treeData.children, 'pathname', 'parent', newNode);
+            parent.isExpand = true;
+        });
 
         // 触发节点数据已变动
         vm.changeTreeData();
@@ -268,6 +272,10 @@ export async function ready() {
              * 刷新数据
              */
             refresh() {
+                // 清空原数据
+                // @ts-ignore
+                treeData = null;
+
                 vm.ready && panel.refresh();
             },
             /**
@@ -434,7 +442,7 @@ export async function ready() {
 
                 if (json.from === 'osFile') { // 从外部拖文件进来
                     // TODO 面板需要有等待的遮罩效果
-                    console.log(json);
+                    // console.log(json);
                     // @ts-ignore
                     json.files.forEach((one) => {
                         importAsset(target.uuid, one.path);
@@ -758,23 +766,30 @@ function resetAssetProperty(obj: ItreeAsset, props: any) {
  * @param arr
  * @param uuid
  */
-function getAssetFromTreeData(obj: ItreeAsset, uuid = ''): any {
+function getAssetFromTreeData(obj: ItreeAsset, value: string = '', key: string = 'uuid'): any {
     let rt = [];
 
-    if (obj.uuid === uuid) {
+    if (!obj) {
+        return [];
+    }
+    // @ts-ignore
+    if (obj[key] === value) {
         return [obj]; // 根资源比较特殊
     }
 
-    const arr = obj.children;
+    let arr = obj.children;
+    if (Array.isArray(obj)) {
+        arr = obj;
+    }
     for (let i = 0, ii = arr.length; i < ii; i++) {
         const one = arr[i];
-
-        if (one.uuid === uuid) { // uuid全等匹配
-            return [one, i, arr, obj];
+        // @ts-ignore
+        if (one[key] === value) { // 全等匹配
+            return [one, i, arr, obj]; // 找到后返回的数据格式
         }
 
         if (one.children && one.children.length !== 0) { // 如果还有children的继续迭代查找
-            rt = getAssetFromTreeData(one, uuid);
+            rt = getAssetFromTreeData(one, value, key);
 
             if (rt.length > 0) { // 找到了才返回，找不到，继续循环
                 return rt;
@@ -800,13 +815,22 @@ function getAssetFromPositionMap(uuid = '') {
  * 添加资源后，增加树形节点数据
  */
 function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
+    // 如果现有数据中有相同 pathname 的数据，清除现有数据
+    const existOne: any = getAssetFromTreeData(treeData, item.pathname, 'pathname');
+    if (existOne.length > 0) {
+        if (item.uuid !== '') {
+            existOne[0] = Object.assign(existOne[0], item);
+        }
+        return;
+    }
+
     // 找出父级
     const one = deepFindParent(rt, key, item[parentKey]);
-
     if (one) {
         if (!Array.isArray(one.children)) {
             one.children = [];
         }
+
         one.children.push(item);
 
         item.parent = one.uuid;
@@ -814,7 +838,6 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
         sortData(one.children, false);
     } else {
         rt.push(item);
-        sortData(rt, false);
     }
     return one;
 }
@@ -913,7 +936,7 @@ function sortData(arr: ItreeAsset[], loop = true) {
  * 初始的请求数据转换为可用的面板树形数据
  * @param arr
  */
-function transformData(arr: IsourceAsset[]) {
+function transformData(arr: ItreeAsset[]) {
     return {
         name: 'root',
         filename: 'root',
@@ -934,9 +957,9 @@ function transformData(arr: IsourceAsset[]) {
  * 处理原始数据
  * @param arr
  */
-function legalData(arr: IsourceAsset[]) {
-    return arr.filter((a) => a.pathname !== '').map((a: IsourceAsset) => {
-        const paths: string[] = a.source.replace('db://', '').split(/\/|\\/).filter((b) => b !== '');
+function legalData(arr: ItreeAsset[]) {
+    let rt = arr.filter((a) => a.pathname !== '').map((a: ItreeAsset) => {
+        const paths: string[] = a.source.replace(dbProtocol, '').split(/\/|\\/).filter((b) => b !== '');
         a.pathname = paths.join('/');
 
         // 赋予新字段用于子父层级关联
@@ -952,14 +975,55 @@ function legalData(arr: IsourceAsset[]) {
         // 生成缩略图
         // @ts-ignore
         if (needToThumbnail[Editor.Project.type].includes(fileext)) {
-            (async (one: IsourceAsset) => {
+            (async (one: ItreeAsset) => {
                 one.thumbnail = await thumbnail(one);
+                // TODO 这个地方需要优化，减少触发频率
                 vm.changeTreeData();
             })(a);
         }
 
         return a;
     });
+
+    // 确保父级路径存在
+    rt.forEach((a: ItreeAsset) => {
+        rt = ensureDir(rt, a.parent.split('/'));
+    });
+    sortData(rt, false);
+    return rt;
+}
+
+/**
+ * 确保树形数据的路径存在
+ * 例如 /a/b/c/d.js 需要确保 /a/b/c 都存在
+ */
+function ensureDir(arr: ItreeAsset[], paths: string[]) {
+    const pathname = paths.join('/');
+
+    if (pathname === 'root') {
+        return arr;
+    }
+
+    const source = dbProtocol + pathname;
+    // @ts-ignore
+    const one = getAssetFromTreeData(arr, pathname, 'pathname');
+    const existOne = getAssetFromTreeData(treeData, pathname, 'pathname');
+
+    if (one.length === 0 && existOne.length === 0) {
+        const newOne = {
+            name: pathname,
+            source,
+            pathname,
+            uuid: '',
+            isDirectory: true,
+            files: [],
+            importer: 'unknown',
+        };
+        // @ts-ignore
+        arr = arr.concat(legalData([newOne]));
+    }
+
+    return arr;
 }
 
 /**

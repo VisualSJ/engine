@@ -30,21 +30,7 @@ declare interface ItreeAsset {
 
     files?: Array<string>; // 以下数据来自 assets-db 查询
     importer?: string;
-    source?: string;
+    source: string;
     uuid: string;
 
-}
-
-declare interface IsourceAsset {
-    files: Array<string>;
-    importer: string;
-    source: string;
-
-    thumbnail: string,
-    pathname: string;
-    name: string;
-    filename: string;
-    fileext: string;
-    parent: string;
-    isExpand: boolean;
 }

@@ -209,9 +209,8 @@ module.exports = {
             const dir = join(Editor.Project.path, 'assets');
             const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
 
-            const file = join(dir, info.source);
-            const ext = extname(file);
-            const base = basename(file, ext);
+            const file = join(dir, info.source.replace(assetProtocol, ''));
+            const base = basename(file);
 
             const target = file.replace(base, name);
             rename(file, target);
