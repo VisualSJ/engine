@@ -12,7 +12,7 @@ exports.props = [
     'type',
 ];
 
-exports.data = function () {
+exports.data = function() {
     // 获取版本列表
     let list = fse.readJSONSync(path.join(__dirname, '../version.json'));
 
@@ -58,6 +58,6 @@ exports.methods = {
     },
 };
 
-exports.mounted = function () {
+exports.mounted = function() {
     // debugger;
 };

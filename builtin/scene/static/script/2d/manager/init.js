@@ -6,29 +6,25 @@
 const { basename } = require('path');
 const assets = require('../assets');
 
+let inited = false;
+
 /**
  * 初始化引擎
  * @param {*} path 引擎路径
  */
-async function engine(path) {
-    // 防止多次加载引擎
-    const id = basename(path, '.js');
-    if (document.getElementById(id)) {
+async function engine(info) {
+    if (inited) {
         return;
     }
+    inited = true;
 
-    // 创建引擎脚本对象
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = `file://${path}`;
-    document.body.appendChild(script);
-
-    // 等待脚本加载完成
-    await new Promise((resolve) => {
-        script.addEventListener('load', () => {
-            resolve();
-        });
-    });
+    if (!info.compile) {
+        // 加载单文件引擎
+        require(info.path);
+    } else {
+        // 加载多文件引擎
+        require(info.path + '/bin/.cache/dev');
+    }
 
     // 设置（HACK）资源目录地址
     let dirname = 'import://';

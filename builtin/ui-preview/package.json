@@ -3,10 +3,9 @@
     "version": "0.0.1",
 
     "menu": {
-        "i18n:menu.panel/i18n:ui-preview.title": {
-            "icon": "./static/icon.png",
+        "i18n:menu.develop/i18n:ui-preview.title": {
             "message": "open",
-            "accelerator": "CmdOrCtrl+5"
+            "group": "preview"
         }
     },
 

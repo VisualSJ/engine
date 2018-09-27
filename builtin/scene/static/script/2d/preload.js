@@ -25,7 +25,7 @@ ipc.on('init', async (info) => {
     isInit = true;
 
     // 初始化引擎
-    await Manager.Init.engine(info.path);
+    await Manager.Init.engine(info);
 
     // 重写引擎的部分方法
     await Manager.Init.utils(info.utils);

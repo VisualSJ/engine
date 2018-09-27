@@ -4,6 +4,10 @@
             "version": "2.0.0-alpha",
             "url": "http://192.168.52.109/TestBuilds/Editor-3d/resources/2d-engine/2.0.0-alpha.js",
             "builtin": true
+        },
+        {
+            "version": "2.1.0-alpha",
+            "builtin": true
         }
     ],
     "3d": [

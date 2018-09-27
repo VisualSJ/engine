@@ -23,6 +23,7 @@ class View extends window.HTMLElement {
             return {
                 path: this.info.path,
                 utils: this.info.utils,
+                compile: this.info.compile,
                 uuid: this.uuid
             };
         });

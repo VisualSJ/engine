@@ -12,8 +12,15 @@
 <body>
     <!-- 进度条 -->
     <div class="loading-mask" :hidden="hidden">
-        <div>
-            <span :style="`width: ${process * 100}%;`"></span>
+        <div class="message"
+            :startup="startup"
+        >
+            {{message}}
+        </div>
+        <div class="progress">
+            <span
+                :style="`width: ${process * 100}%;`"
+            ></span>
         </div>
     </div>
 

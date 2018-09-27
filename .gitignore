@@ -5,7 +5,6 @@ node_modules
 /**/package-lock.json
 
 # 临时文件
-_*
 .*
 
 # 插件内的构建后目录
