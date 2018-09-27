@@ -6,6 +6,9 @@ const Vue = require('vue/dist/vue.js');
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
 new Vue({
 
     el: '#dashboard',

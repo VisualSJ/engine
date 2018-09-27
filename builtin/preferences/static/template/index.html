@@ -1,21 +1,22 @@
-<section class="loading">
-    <ui-loading></ui-loading>
-</section>
 <div class="preferences">
-    <nav class="left-side">
-        <ul class="tabs" >
-            <li class="tabs-item" :class="[activeNav === key ? 'active' : '']"  v-for="(item, key) in interface" @click="activeNav = key">{{t('nav', key)}} <span class="icon icon-arrow"></span></li>
-        </ul>
-    </nav>
-    <section class="right-side">
-        <div class="container" >
-            <h1>{{t('nav', activeNav)}}</h1>
-            <div class="tan-con" v-show="activeNav === 'gneneral'" @confirm="change">
-                <div class="line" v-for="(item, key) in interface[activeNav]" >
-                    <ui-prop v-if="item === 'enums'" :type="item" :label="t('gneneral', key, 'label')" :path="key" :value="preferences.gneneral[key]" :options="JSON.stringify(t('gneneral', key, 'option'))"></ui-prop>
-                    <ui-prop v-else :type="item" :label="t('gneneral', key, 'label')" :value="preferences.gneneral[key]" :path="key" ></ui-prop>
-                </div>
-            </div>    
-        </div>
+
+    <div class="slider">
+        <div
+            :active="tab === 0"
+            @click="_selectTab(0)"
+        >{{t('nav.general', general.language)}}</div>
+    </div>
+
+    <section>
+
+        <header
+            v-if="tab === 0"
+        >{{t('nav.general', general.language)}}</header>
+
+        <content-general
+            v-if="tab === 0"
+            :general="general"
+        ></content-general>
+
     </section>
 </div>

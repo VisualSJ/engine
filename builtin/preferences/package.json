@@ -17,7 +17,7 @@
         "main": "./dist/panel.js",
         "min-width": 400,
         "min-height": 200,
-        "width": 800,
+        "width": 550,
         "height": 600
     }
 }

@@ -1,0 +1,26 @@
+<div class="general">
+
+        <div>
+            <div class="name">{{t('language')}}</div>
+            <div class="value">
+                <ui-select
+                    :value="general.language"
+                    @confirm="_onGeneralChanged($event, 'language')"
+                >
+                    <option value="zh">中文</option>
+                    <option value="en">English</option>
+                </ui-select>
+            </div>
+        </div>
+
+        <div>
+            <div class="name">{{t('step')}}</div>
+            <div class="value">
+                <ui-num-input
+                    :value="general.step"
+                    @confirm="_onGeneralChanged($event, 'step')"
+                    step="0.01"
+                ></ui-num-input>
+            </div>
+        </div>
+</div>
