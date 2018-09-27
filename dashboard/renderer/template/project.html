@@ -1,0 +1,61 @@
+<div class="content">
+
+    <div class="project-wrap">
+
+        <div class="project-group">
+
+            <div class="pro-wrap" tabindex="0">
+                <div class="img-wrap">
+                    <span class="iconfont icon-folder-open"></span>
+                </div>
+                <div class="name">打开已有项目</div>
+                <div class="hover-wrap">
+                    <span class="btn"
+                        @click="openProject($event)"
+                    >打开</span>
+                </div>
+            </div>
+
+            <div class="pro-wrap" tabindex="0"
+                v-for="(item, index) in list"
+                @mouseenter="_onMouseEnter($event, item)"
+                @mouseleave="_onMouseLeave($event)"
+            >
+                <div class="img-wrap">
+                    <img src="./../img/picture-holer.jpg"
+                        :alt="item.name"
+                    >
+                </div>
+                <div class="name">{{item.name}}</div>
+                <div class="hover-wrap">
+                    <span class="iconfont icon-del-b"
+                        @click="removeProject($event, item.path)"
+                    ></span>
+                    <span class="btn"
+                        @click="openProject($event, item.path)"
+                    >打开</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="project-detail"
+        v-if="hover"
+    >
+        <div class="detail-line">
+            <span class="label">项目路径 </span>:
+            {{hover.path}}
+        </div>
+        <div class="detail-line">
+            <span class="label">创建时间 </span>: {{stamp2time(hover.ctime)}}
+        </div>
+        <div class="detail-line">
+            <span class="label">最近更新 </span>: {{stamp2time(hover.otime)}}
+        </div>
+    </div>
+    <!-- <div class="project-detail">
+        <div class="detail-line"
+            v-if="recentShowIndex === 'open'"
+        >打开新项目</div>
+    </div> -->
+</div>

@@ -2,9 +2,7 @@
 
 const ps = require('path'); // path system
 const { app, Tray, Menu, BrowserWindow } = require('electron');
-const { spawn } = require('child_process');
 const ipc = require('@base/electron-base-ipc');
-const setting = require('@editor/setting');
 const proManager = require('./../lib/project');
 
 let window = null;
@@ -46,6 +44,7 @@ exports.window = function() {
         window.hide();
         app.dock && app.dock.hide();
     });
+
     // 临时全局变量，便于其他插件访问
     global.dashboard = window;
 };

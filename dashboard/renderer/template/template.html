@@ -1,0 +1,29 @@
+<div class="content template">
+    <div class="project-wrap">
+        <div class="project-group">
+            <div class="pro-wrap" tabindex="0"
+                v-for="(item, index) in list"
+            >
+                <div class="img-wrap">
+                    <img src="./../img/empty-project.png"
+                        :alt="item.name"
+                    >
+                </div>
+                <div class="name">{{item.name}}</div>
+                <div class="hover-wrap">
+                    <span class="btn"
+                        @click="createProject($event, item.path)"
+                    >新建</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="project-detail"
+        v-if="tempShowIndex !== -1"
+    >
+        <div class="detail-line">{{templateData[tempShowIndex].describe}}</div>
+        <div class="detail-line"
+            v-if="tempShowIndex === 'new'"
+        >打开项目文件夹</div>
+    </div> -->
+</div>

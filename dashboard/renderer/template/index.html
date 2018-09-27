@@ -24,144 +24,46 @@
             </div>
         </div>
         <div class="dashboard" id="dashboard">
-            <!-- 2D与3d切换导航 -->
-            <div class="tab">
-                <div class="tab-item" :class="[activeTab === index ? 'active' : '']" v-for="(item, index) in nav"
-                    @click="activeTab = index; searchValue = ''">{{item}}</div>
-            </div>
+
+            <!-- 2D 与 3D 切换导航 -->
+            <silder-type
+                :type="type"
+                :types="types"
+            ></silder-type>
+
             <!-- 菜单栏 -->
             <div class="tab-content">
-                <div class="title">
-                    <div class="title-tab">
-                        <span class="title-item" :class="[activeTitle === index ? 'active' : '']" v-for="(item, index) in titleTab"
-                            @click="activeTitle = index; searchValue = ''">{{item}}</span>
-                    </div>
-                    <div class="toolBar" v-if="showFilter">
-                        <div class="filters" :class="[filter === 1 ? 'ani' : '']">
-                            <span class="iconfont icon-search" @click="filter = 1"></span>
-                            <input type="search" placeholder="查找name..." autofocus v-model="searchValue">
-                        </div>
-                        <div class="filters ani" v-if="activeTitle === 0">
-                            <span class="iconfont" :class="[slortFlag === 1 ? 'icon-rise' : 'icon-drop']" @click="slortFlag=1-slortFlag; updatePro();"></span>
-                            <div class="option-value" @click="showFilterOption = true">
-                                {{filterCondetions[filterIndex]}}
-                            </div>
-                            <ul class="options" v-show="showFilterOption">
-                                <li class="option-item" v-for="(item, index) of filterCondetions" @click="choose(index)">{{item}}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- 打开最近项目 -->
-                <div class="content" v-if="activeTitle === 0">
-                    <div class="project-wrap">
-                        <div class="project-group" @mouseenter="recentShowIndex = 'open'" @mouseleave="recentShowIndex = -1">
-                            <div class="pro-wrap" tabindex="0">
-                                <div class="img-wrap">
-                                    <span class="iconfont icon-folder-open"></span>
-                                </div>
-                                <div class="name">打开</div>
-                                <div class="hover-wrap">
-                                    <span class="btn" @click="openProject(null)">打开</span>
-                                </div>
-                            </div>
-                            <div class="pro-wrap" v-for="(item, index) in recentData" @mouseenter="recentShowIndex = index"
-                                @mouseleave="recentShowIndex = -1" tabindex="0">
-                                <div class="img-wrap">
-                                    <img src="./../img/picture-holer.jpg" alt="item.name">
-                                </div>
-                                <div class="name">{{item.name}}</div>
-                                <div class="hover-wrap">
-                                    <span class="iconfont icon-del-b" @click="removePro(index, item.path)"></span>
-                                    <span class="btn" @click="openProject(item.path)">打开</span>
-                                </div>
-                            </div>
 
-                        </div>
-                    </div>
-                    <div class="project-detail" v-if="recentShowIndex !== -1 && recentShowIndex !== 'open'">
-                        <div class="detail-line"><span class="label">项目路径 </span>:
-                            {{recentData[recentShowIndex].path}}</div>
-                        <div class="detail-line">
-                            <span class="label">创建时间 </span>: {{t(recentData[recentShowIndex].ctime)}}
-                        </div>
-                        <div class="detail-line">
-                            <span class="label">最近更新 </span>: {{t(recentData[recentShowIndex].otime)}}
-                        </div>
-                    </div>
-                    <div class="project-detail">
-                        <div class="detail-line" v-if="recentShowIndex === 'open'">打开新项目</div>
-                    </div>
-                </div>
+                <!-- 顶部的项目、模版、帮助选择 -->
+                <content-header
+                    :tab="tab"
+                    :tabs="tabs"
+                ></content-header>
+                
+                <!-- 打开最近项目 -->
+                <content-project
+                    v-if="tab === 0"
+                    :type="type"
+                ></content-project>
+
                 <!-- 基于模板新建 -->
-                <div class="content template" v-if="activeTitle === 1">
-                    <div class="project-wrap">
-                        <div class="project-group">
-                            <div class="pro-wrap" tabindex="0" v-for="(item, index) in templateData" @mouseenter="tempShowIndex = index"
-                                @mouseleave="tempShowIndex = -1">
-                                <div class="img-wrap">
-                                    <img src="./../img/empty-project.png" alt="item.name">
-                                </div>
-                                <div class="name">{{item.name}}</div>
-                                <div class="hover-wrap">
-                                    <span class="btn" @click="creatNewProject(item.path)">新建</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-detail" v-if="tempShowIndex !== -1">
-                        <div class="detail-line">{{templateData[tempShowIndex].describe}}</div>
-                        <div class="detail-line" v-if="tempShowIndex === 'new'">打开项目文件夹</div>
-                    </div>
-                </div>
+                <content-template
+                    v-if="tab === 1"
+                    :type="type"
+                ></content-template>
+
                 <!-- 帮助 -->
-                <div class="content help" v-if="activeTitle === 2">
-                    <div class="logo-wrap">
-                        <div class="logo">
-                            <img src="./../img/logo_white.png" alt="cocos">
-                            <div>Cocos Creator</div>
-                        </div>
-                    </div>
-                    <div class="help-con-wrap">
-                        <div class="help-con" v-if="activeTab === 0">
-                            <div class="help-item">
-                                <div class="title">欢迎使用 Cocos Creator，你可以采取下列行动来开始游戏开发工作：</div>
-                                <p class="help-line" @click="activeTitle = 0">打开最近编辑过的项目或者新项目</p>
-                                <p class="help-line" @click="activeTitle = 1">使用项目模板创建新项目</p>
-                            </div>
-                            <div class="help-item">
-                                <div class="title">要学习使用 Cocos Creator，可以使用下面的学习资源：</div>
-                                <p class="help-line"><a href="http://docs.cocos.com/creator/manual/zh/getting-started/quick-start.html">教程：制作第一个游戏</a></p>
-                                <p class="help-line"><a href="http://docs.cocos.com/creator/manual/zh/">查看用户手册</a></p>
-                                <p class="help-line"><a href="http://docs.cocos.com/creator/api/zh/">查看 API 文档</a></p>
-                            </div>
-                            <div class="help-item">
-                                <div class="title">教程和范例项目：</div>
-                                <p class="help-line"><a href="https://github.com/cocos-creator/example-cases">范例集合</a></p>
-                                <p class="help-line"><a href="https://github.com/cocos-creator/tutorial-first-game">简单的动作游戏 Star
-                                        Catcher </a></p>
-                                <p class="help-line"><a href="https://github.com/cocos-creator/tutorial-blackjack">有完整菜单和复杂数据表现逻辑的21点游戏</a></p>
-                            </div>
-                        </div>
-                        <div class="help-con" v-else>
-                            <div class="help-item">
-                                <div class="title">欢迎使用 Cocos Editor 3D，你可以采取下列行动来开始游戏开发工作：</div>
-                                <p class="help-line" @click="activeTitle = 0">打开最近编辑过的项目或者新项目</p>
-                                <p class="help-line" @click="activeTitle = 1">使用项目模板创建新项目</p>
-                            </div>
-                            <div class="help-item">
-                                <div class="title">欢迎使用 Cocos Editor 3D，你可以采取下列行动来开始游戏开发工作：</div>
-                                <p class="help-line" @click="activeTitle = 0">打开最近编辑过的项目</p>
-                                <p class="help-line" @click="activeTitle = 1">使用项目模板创建新项目</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <content-help
+                    v-if="tab === 2"
+                    :type="type"
+                ></content-help>
             </div>
         </div>
     </div>
 </body>
 
-<script src="./../script/main.js"></script>
+<script>
+    require('./../script/main.js');
+</script>
 
 </html>

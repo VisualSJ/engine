@@ -116,21 +116,29 @@ input::-webkit-inner-spin-button {
 }
 
 .window-row.mac {
-  flex-direction: row-reverse;
+  height: 38px;
 }
 
-.window-row.mac .window-control {
+.window-row.mac > .window-control {
+  display: none;
+}
+
+.window-row.mac > .window-control {
   visibility: hidden;
 }
 
-.window-row.mac .window-title {
-  margin: auto 20px auto 0;
+.window-row.mac > .window-title {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
-.window-row.mac .window-title .logo-title{
-  padding-left: 10px;
+.window-row.mac > .window-title > .logo-img {
+  height: 18px;
+}
+
+.window-row.mac > .window-title > .logo-title{
+  line-height: 22px;
+  padding-left: 6px;
 }
 
 .types {
@@ -175,7 +183,7 @@ input::-webkit-inner-spin-button {
   background-color: rgba(204, 204, 204, 0.15);
 }
 
-.tab-item.active {
+.tab-item[active] {
   color: var(--main-color, #3d85c6);
   background-color: rgba(31, 29, 29, 0.52);
 }
@@ -404,7 +412,7 @@ input::-webkit-inner-spin-button {
   cursor: pointer;
 }
 
-.title-item.active {
+.title-item[active] {
   border-bottom: 2px solid var(--main-color, #3d85c6);
 }
 

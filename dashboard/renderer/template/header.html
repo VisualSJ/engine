@@ -1,0 +1,43 @@
+<div class="title">
+    <div class="title-tab">
+        <span class="title-item"
+            v-for="(item, index) in tabs"
+
+            :active="tab === index"
+            @click="_onTabClick($event, index)"
+        >{{item}}</span>
+    </div>
+    <!-- <div class="toolBar"
+        v-if="showFilter"
+    >
+        <div class="filters"
+            :class="[filter === 1 ? 'ani' : '']"
+        >
+            <span class="iconfont icon-search"
+                @click="filter = 1"
+            ></span>
+            <input type="search" placeholder="查找name..." autofocus
+                v-model="searchValue"
+            >
+        </div>
+        <div class="filters ani" v-if="activeTitle === 0">
+            <span class="iconfont"
+                :class="[slortFlag === 1 ? 'icon-rise' : 'icon-drop']"
+                @click="slortFlag=1-slortFlag; updatePro();"
+            ></span>
+            <div class="option-value"
+                @click="showFilterOption = true"
+            >
+                {{filterCondetions[filterIndex]}}
+            </div>
+            <ul class="options"
+                v-show="showFilterOption"
+            >
+                <li class="option-item"
+                    v-for="(item, index) of filterCondetions"
+                    @click="choose(index)"
+                >{{item}}</li>
+            </ul>
+        </div>
+    </div> -->
+</div>
