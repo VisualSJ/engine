@@ -2,7 +2,7 @@
 
 /**
  * 创建一个 canvas 节点，并等待图片加载完成绘制到其上
- * @param {*} file 
+ * @param {*} file
  */
 let getImageData = async function(file) {
     const $img = document.createElement('img');

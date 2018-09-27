@@ -38,17 +38,17 @@ export default class ImageImporter extends Importer {
 
         // 如果当前资源没有导入，则开始导入当前资源
         if (!(await asset.existsInLibrary(ext))) {
+            asset.userData.type = 'sprite';
+            asset.userData.wrapMode = 'clamp';
+            asset.userData.filterMode = 'bilinear';
+            asset.userData.premultiplyAlpha = false;
+
             await asset.copyToLibrary(ext, asset.source);
             updated = true;
         }
 
         // 如果当前资源没有生成 texture，则开始生成 texture
         if (!(await asset.existsInLibrary('.json'))) {
-            asset.userData.type = 'sprite';
-            asset.userData.wrapMode = 'clamp';
-            asset.userData.filterMode = 'bilinear';
-            asset.userData.premultiplyAlpha = false;
-
             const texture = this.createTexture(asset);
             asset.saveToLibrary('.json', JSON.stringify({
                 __type__: 'cc.Texture2D',

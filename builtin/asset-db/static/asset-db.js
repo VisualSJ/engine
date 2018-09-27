@@ -31,6 +31,12 @@ const AssetInfo = {
     dist: '',
 };
 
+window.Manager = {
+    get serialize() {
+        return this._serialize();
+    }
+};
+
 /**
  * 绝对路径转成相对路径
  * @param {*} db
@@ -72,6 +78,11 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
     AssetInfo.type = info.type;
     AssetInfo.dist = info.dist;
     AssetInfo.utils = info.utils;
+
+    Manager._serialize = function() {
+        return require(info.utils + '/serialize');
+    };
+
     // 加载引擎
     require(info.engine);
 });

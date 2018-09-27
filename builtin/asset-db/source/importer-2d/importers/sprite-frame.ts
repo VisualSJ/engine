@@ -2,9 +2,9 @@
 
 import { Asset, Importer, VirtualAsset } from 'asset-db';
 import { existsSync } from 'fs';
-import { clamp, getTrimRect } from './utils';
+import { clamp, getTrimRect } from '../utils';
 
-const imageUtils = require('../../static/utils/image');
+const imageUtils = require('../../../static/utils/image');
 
 export default class SpriteImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
@@ -33,15 +33,17 @@ export default class SpriteImporter extends Importer {
      * 如果返回 true，则会更新依赖这个资源的所有资源
      * @param asset
      */
-    public async import(asset: VirtualAsset | Asset) {
+    public async import(asset: Asset) {
         let updated = false;
         // 如果没有生成 json 文件，则重新生成
-        if (!(await asset.existsInLibrary('.json'))) {
-            let file = '';
-            if (asset.parent) {
-                // @ts-ignore
-                file = asset.parent.library + (asset.parent.extname || '');
-            }
+        if (await asset.existsInLibrary('.json') || !asset.parent) {
+            return updated;
+        }
+
+        // 如果是 texture 导入的，则自动识别一些配置参数
+        if (asset.parent.meta.importer === 'image') {
+            // @ts-ignore
+            const file = asset.parent.library + (asset.parent.extname || '');
 
             if (!file || !existsSync(file)) {
                 throw new Error(
@@ -73,19 +75,20 @@ export default class SpriteImporter extends Importer {
             userData.borderRight = clamp(userData.borderRight, 0, userData.width - userData.borderLeft);
 
             userData.vertices = undefined;
-
-            const sprite = this.createSpriteFrame(asset);
-            asset.saveToLibrary('.json', JSON.stringify({
-                __type__: 'cc.SpriteFrame',
-                content: this.serialize(sprite, asset),
-            }, null, 2));
-
-            updated = true;
         }
+
+        const sprite = this.createSpriteFrame(asset);
+        asset.saveToLibrary('.json', JSON.stringify({
+            __type__: 'cc.SpriteFrame',
+            content: this.serialize(sprite, asset),
+        }, null, 2));
+
+        updated = true;
+
         return updated;
     }
 
-    private createSpriteFrame(asset: VirtualAsset | Asset) {
+    private createSpriteFrame(asset: Asset) {
         const userData = asset.userData;
 
         // @ts-ignore

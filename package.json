@@ -40,6 +40,8 @@
         "jsondiffpatch": "^0.3.11",
         "lodash": "^4.17.10",
         "mousetrap": "^1.6.2",
+        "node-uuid": "^1.4.8",
+        "plist": "^3.0.1",
         "socket.io": "^2.1.1",
         "v-message": "^0.1.1",
         "vue": "^2.5.16"
