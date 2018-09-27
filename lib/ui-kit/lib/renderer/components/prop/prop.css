@@ -5,6 +5,7 @@
   --right-width: 70%;
   --label-min-width: 100px;
   --margin-bottom: 5px;
+  user-select: none;
 }
 :host .wrap {
   display: flex;
@@ -45,6 +46,18 @@
 }
 :host([type='int']:hover) {
   cursor: ew-resize;
+}
+:host([type='asset']:hover) > div {
+  display: flex;
+  flex-wrap: nowrap;
+}
+:host([type='asset']:hover) > div > ui-drag-object {
+  flex: 4;
+  height: 1.8em;
+}
+:host([type='asset']:hover) > div > ui-button {
+  width: 60px;
+  margin-left: 10px;
 }
 ui-prop > div[slot='content'] {
   width: 100%;

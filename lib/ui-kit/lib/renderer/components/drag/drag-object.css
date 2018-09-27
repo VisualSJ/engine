@@ -3,10 +3,12 @@
   outline: none;
   display: inline-block;
   position: relative;
+  box-sizing: border-box;
 }
 :host {
   display: inline-block;
   outline: none;
+  height: 1.8em;
 }
 :host .type {
   position: absolute;
@@ -26,6 +28,8 @@
   background: #999;
   border: 1px solid #333;
   border-radius: 0 2px 2px 2px;
+  box-sizing: border-box;
+  height: 100%;
 }
 :host .area > ui-drag-area {
   flex: 1;

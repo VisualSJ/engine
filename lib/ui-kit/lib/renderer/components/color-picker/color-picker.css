@@ -113,10 +113,13 @@
   width: 150px;
   background-position: -40px 0;
 }
-.alpha {
+.alpha-wrap {
   position: relative;
+}
+.alpha {
   width: 20px;
   background: linear-gradient(black, rgba(0, 0, 0, 0));
+  margin: 0;
 }
 .vbox {
   flex-direction: column;
@@ -154,7 +157,8 @@
   flex: 1;
 }
 .color-box,
-.color-block {
+.color-block,
+.alpha-wrap {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRFsbGx1dXVfSyRngAAABdJREFUeNpiYAABRhBgIIVJug4QAAgwAAssADPMKGOzAAAAAElFTkSuQmCC);
 }
 .hex-field {

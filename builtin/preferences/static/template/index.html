@@ -12,8 +12,8 @@
             <h1>{{t('nav', activeNav)}}</h1>
             <div class="tan-con" v-show="activeNav === 'gneneral'" @confirm="change">
                 <div class="line" v-for="(item, key) in interface[activeNav]" >
-                    <ui-prop v-if="item === 'enums'" :type="item" :label="t('gneneral', key, 'label')" :path="key" :value="preferences.gneneral[key]" :options="JSON.stringify(t('gneneral', key, 'option'))" :tips="t('gneneral', key, 'label')"></ui-prop>
-                    <ui-prop v-else :type="item" :label="t('gneneral', key, 'label')" :value="preferences.gneneral[key]" :path="key" :tips="t('gneneral', key, 'label')"></ui-prop>
+                    <ui-prop v-if="item === 'enums'" :type="item" :label="t('gneneral', key, 'label')" :path="key" :value="preferences.gneneral[key]" :options="JSON.stringify(t('gneneral', key, 'option'))"></ui-prop>
+                    <ui-prop v-else :type="item" :label="t('gneneral', key, 'label')" :value="preferences.gneneral[key]" :path="key" ></ui-prop>
                 </div>
             </div>    
         </div>

@@ -5,7 +5,7 @@
   --right-width: 70%; // 控制内部组件的宽度比例
   --label-min-width: 100px; // 控制label的最小宽度
   --margin-bottom: 5px;
-
+  user-select: none;
   .wrap {
     display: flex;
     position: relative;
@@ -38,7 +38,6 @@
 
   .content>* {
     width: var(--right-width, 75%);
-    ;
     height: 100%;
     min-width: 100px;
   }
@@ -56,6 +55,21 @@
 
 :host([type='int']:hover) {
   cursor: ew-resize;
+}
+
+:host([type='asset']:hover) { 
+  &>div {
+    display: flex;
+    flex-wrap: nowrap;
+    &>ui-drag-object {
+      flex: 4;
+      height: 1.8em;
+    }
+    &>ui-button {
+      width: 60px;
+      margin-left: 10px;
+    }
+  }
 }
 
 ui-prop>div[slot='content'] {

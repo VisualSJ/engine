@@ -45,7 +45,7 @@ export async function ready() {
                     treeState: 'enums',
                     ipAdress: 'enums',
                     showBuildLog: 'boolean',
-                    step: 'number',
+                    step: 'int',
                     showDialog: 'boolean',
                     autoTrim: 'boolean',
                 },
@@ -78,13 +78,18 @@ export async function ready() {
             change(event: Event) {
                 const $target = event.target;
                 // @ts-ignore
-                if (!($target && $target.name && event.target.value)) {
+                let $parent = $target.parentNode;
+                while ($parent.tagName !== 'UI-PROP') {
+                    $parent = $parent.parentNode;
+                }
+                // @ts-ignore
+                if (!($target && $parent.path && event.target.value)) {
                     return;
                 }
                 // @ts-ignore
-                this.preferences[$target.name] = $target.value;
+                this.preferences[this.activeNav][$parent.path] = $target.value;
                 // @ts-ignore
-                switch ($target.name) {
+                switch ($parent.path) {
                     case 'language':
                         // @ts-ignore
                         this.preferences.language = event.target.value;
@@ -93,6 +98,10 @@ export async function ready() {
                         profile.save();
                         break;
                     case 'theme':
+                        break;
+                    case 'step':
+                        // @ts-ignore
+                        Editor.UI.NumInput.updateStep(event.target.value);
                         break;
                 }
             },

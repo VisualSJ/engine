@@ -133,3 +133,19 @@ ui-prop>div[slot='content']>ui-prop {
 ui-prop.vector>div[slot='content'] {
   margin-right: -1.5%;
 }
+
+// asset类型样式
+ui-prop[type="asset"] { 
+  &>div[slot="content"] {
+    display: flex;
+    flex-wrap: nowrap;
+    &>ui-drag-object {
+      flex: 4;
+      height: 1.8em;
+    }
+    &>ui-button {
+      width: 60px;
+      margin-left: 10px;
+    }
+  }
+}
