@@ -149,6 +149,14 @@ export const messages = {
     },
 
     /**
+     * 查询一个节点的 dump 信息
+     * @param uuid 查询节点的 uuid
+     */
+    async 'query-node-path'(uuid: string) {
+        return await Editor.Ipc.requestToPanel('scene', 'query-node-path', uuid);
+    },
+
+    /**
      * 查询当前场景内的节点树
      */
     async 'query-node-tree'() {

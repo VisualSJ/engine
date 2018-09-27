@@ -6,13 +6,14 @@ module.exports = {
     menu: {
         searchPlaceholder: '搜索...',
         search: '搜索',
-        
+
         newNode: '创建节点',
         newNodeEmpty: '空节点',
-        
+
         copy: '复制',
         paste: '粘贴',
         delete: '删除',
         rename: '重名命',
+        info: '显示节点信息',
     }
 };

@@ -6,7 +6,7 @@ module.exports = {
     menu: {
         searchPlaceholder: 'Search...',
         search: 'Search',
-        
+
         newNode: 'Node',
         newNodeEmpty: 'Empty Node',
 
@@ -14,5 +14,6 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
+        info: 'Display information',
     }
 };

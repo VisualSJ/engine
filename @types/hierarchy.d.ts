@@ -11,9 +11,13 @@ declare interface IaddNode {
 }
 
 declare interface ItreeNode {
-    name: string;
-    uuid: string;
-    children: ItreeNode[];
+    // 逻辑相关的参数
+    name: string; // 节点名字
+    uuid: string; // 节点的唯一 id
+    children: ItreeNode[]; // 子节点数组
+    path: string;
+
+    // 渲染相关参数
     top: number; // top 位置
     isLock: boolean; // 是否锁定
     depth?: number;

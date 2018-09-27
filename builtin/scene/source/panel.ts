@@ -249,6 +249,14 @@ export const messages = {
     },
 
     /**
+     * 查询一个节点的 dump 信息
+     * @param uuid 查询节点的 uuid
+     */
+    async 'query-node-path'(uuid: string) {
+        return await panel.$.scene.queryNodePath(uuid);
+    },
+
+    /**
      * 查询当前场景内的节点树
      * 节点树并不会显示所有的 dump 数据
      * @param uuid 查询节点的 uuid

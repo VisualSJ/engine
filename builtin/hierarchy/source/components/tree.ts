@@ -19,6 +19,7 @@ export function data() {
 }
 
 export const methods = {
+
     /**
      * 右击菜单
      * @param event
@@ -69,9 +70,7 @@ export const methods = {
                         self.$emit('paste', item.uuid);
                     }
                 },
-                {
-                    type: 'separator'
-                },
+                { type: 'separator' },
                 {
                     label: Editor.I18n.t('hierarchy.menu.rename'),
                     click(event: Event) {
@@ -86,9 +85,17 @@ export const methods = {
                         self.$emit('delete', item.uuid);
                     }
                 },
+                { type: 'separator' },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.info'),
+                    click() {
+                        console.info(`Path: ${item.path}, UUID: ${item.uuid}`);
+                    },
+                },
             ]
         });
     },
+
     /**
      * 选中某个节点
      * 区分单选 和 多选
@@ -112,6 +119,7 @@ export const methods = {
             target.removeAttribute('animate');
         }, 500);
     },
+
     /**
      * 多选
      * 按下 ctrl 或 shift
@@ -144,6 +152,7 @@ export const methods = {
             }
         }
     },
+
     /**
      * 锁定 / 解锁节点
      * @param item
@@ -152,6 +161,7 @@ export const methods = {
         // @ts-ignore
         this.$emit('lock', item.uuid);
     },
+
     /**
      * 节点折叠切换
      * @param uuid
@@ -160,6 +170,7 @@ export const methods = {
         // @ts-ignore
         this.$emit('toggle', item.uuid);
     },
+
     /**
      * 节点重名命
      * @param event
@@ -177,6 +188,7 @@ export const methods = {
             this.$refs.input[0].setSelectionRange(0, item.name.lastIndexOf('.'));
         });
     },
+
     /**
      * 提交重名命
      * @param item
@@ -195,6 +207,7 @@ export const methods = {
         // @ts-ignore
         this.$emit('rename', item, newName);
     },
+
     /**
      * 开始拖动
      * 只能传字符，所以用了.stringify
@@ -212,6 +225,7 @@ export const methods = {
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
     },
+
     /**
      * 拖动到元素的上面
      * 一个元素仍然识别为上中下三个区域
@@ -238,6 +252,7 @@ export const methods = {
             target.setAttribute('insert', 'inside'); // 中间位置
         }
     },
+
     /**
      * 拖动移开
      * @param event
@@ -249,6 +264,7 @@ export const methods = {
         target.setAttribute('insert', '');
         target.setAttribute('drag', '');
     },
+
     /**
      * 放开鼠标，识别为 drop 事件后回调
      * @param event

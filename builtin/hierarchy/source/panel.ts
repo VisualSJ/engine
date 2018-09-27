@@ -90,10 +90,10 @@ export const messages = {
     async 'scene:node-created'(uuid: string) {
         // 获取该节点最新数据
         const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        // console.log('node-created', dumpData);
+        const nodePath = await Editor.Ipc.requestToPackage('scene', 'query-node-path', uuid);
 
         // 更新当前数据
-        const newNodeUUID = addTreeNodeData(dumpData);
+        const newNodeUUID = addTreeNodeData(dumpData, nodePath);
 
         // 新节点被选中
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
@@ -592,8 +592,9 @@ export const listeners = {
  * @param obj
  * @param index 节点的序号
  * @param depth 节点的层级
+ * @param path 节点的搜索路径
  */
-function calcNodePosition(obj = treeData, index = 0, depth = 0) {
+function calcNodePosition(obj = treeData, index = 0, depth = 0, path = '') {
     const tree = obj.children;
     tree.forEach((json) => {
         const start = index * treeNodeHeight;  // 起始位置
@@ -608,13 +609,16 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
                 depth,
                 isParent: json.children && json.children.length > 0 ? true : false,
                 isExpand: json.children && json.isExpand ? true : false,
-                state: ''
+                state: '',
+                path: path ? `${path}/${json.name}` : json.name,
             });
 
-            index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+            // index 是平级的编号，即使在 children 中也会被按顺序计算
+            index++;
 
             if (json.children && json.isExpand === true) {
-                index = calcNodePosition(json, index, depth + 1); // depth 是该节点的层级
+                // depth 是该节点的层级
+                index = calcNodePosition(json, index, depth + 1, json.name);
             }
         } else { // 有搜索
             if (json.name.indexOf(vm.search) !== -1) {
@@ -627,13 +631,16 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
                     depth: 0, // 都保持在第一层
                     isParent: false,
                     isExpand: true,
-                    state: ''
+                    state: '',
+                    path: path ? `${path}/${json.name}` : json.name,
                 });
-                index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+
+                // index 是平级的编号，即使在 children 中也会被按顺序计算
+                index++;
             }
 
             if (json.children) {
-                index = calcNodePosition(json, index, 0);
+                index = calcNodePosition(json, index, 0, json.name);
             }
         }
 
@@ -755,7 +762,7 @@ function changeTreeNodeData(uuid: string, dumpData: any) {
  * 添加新的节点数据
  * @param dumpData
  */
-function addTreeNodeData(dumpData: any) {
+function addTreeNodeData(dumpData: any, path: string) {
     const uuid = dumpData.uuid.value;
 
     // 父级节点
@@ -768,7 +775,8 @@ function addTreeNodeData(dumpData: any) {
         uuid,
         children: dumpData.children.value,
         top: 0,
-        isLock: false
+        isLock: false,
+        path,
     };
 
     // 添加入父级
