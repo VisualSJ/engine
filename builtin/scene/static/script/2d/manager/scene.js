@@ -51,7 +51,7 @@ async function serialize() {
 /**
  * 关闭一个场景
  */
-function close() { }
+function close() {}
 
 /**
  * 查询一个节点的实例
@@ -139,11 +139,11 @@ function setProperty(uuid, path, dump) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
     }
+    // 因为 path 内的 __comps__ 实际指向的是 _components
+    path = path.replace('__comps__', '_components');
     const keys = (path || '').split('.');
-    const key = keys.length > 2 ? keys.pop() : path;
+    const key = keys.pop();
     path = keys.join('.');
-    // 因为 path 内的 comp 实际指向的是 _comp
-    path = path.replace('__comps__.', '_components.');
 
     // 找到指定的 data 数据
     const data = path ? get(node, path) : node;
@@ -154,6 +154,83 @@ function setProperty(uuid, path, dump) {
 
     // 恢复数据
     dumpUtils.restoreProperty(dump, data, key);
+}
+
+/**
+ * 调整一个数组类型的数据内某个 item 的位置
+ * @param uuid 节点的 uuid
+ * @param path 数组的搜索路径
+ * @param target 目标 item 原来的索引
+ * @param offset 偏移量
+ */
+function moveArrayElement(uuid, path, target, offset) {
+    const node = query(uuid);
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    // 因为 path 内的 __comps__ 实际指向的是 _components
+    path = path.replace('__comps__', '_components');
+
+    // 找到指定的 data 数据
+    let data = path ? get(node, path) : node;
+    if (!data) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    if (!Array.isArray(data)) {
+        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return false;
+    }
+
+    // 移动顺序
+    const temp = data.splice(target, 1);
+    data.splice(target + offset, 0, temp[0]);
+
+    return true;
+}
+
+/**
+ * 删除一个数组元素
+ * @param uuid 节点的 uuid
+ * @param path 元素所在数组的搜索路径
+ * @param index 目标 item 原来的索引
+ */
+function removeArrayElement(uuid, path, index) {
+    const node = query(uuid);
+    const key = (path || '').split('.').pop();
+
+    if (key === 'children') {
+        console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
+        return false;
+    }
+
+    if (!node) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    // 因为 path 内的 __comps__ 实际指向的是 _components
+    path = path.replace('__comps__', '_components');
+
+    // 找到指定的 data 数据
+    let data = path ? get(node, path) : node;
+    if (!data) {
+        console.warn(`Move property failed: ${uuid} does not exist`);
+        return false;
+    }
+
+    if (!Array.isArray(data)) {
+        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        return false;
+    }
+
+    // 删除某个 item
+    const temp = data.splice(index, 1);
+
+    return true;
 }
 
 /**
@@ -168,7 +245,7 @@ function createComponent(uuid, component) {
         return false;
     }
 
-    node.addComp(component);
+    node.addComponent(component);
 }
 
 /**
@@ -183,7 +260,7 @@ function removeComponent(uuid, component) {
         return false;
     }
 
-    node._removeComp(component);
+    node.removeComponent(component);
 }
 
 /**
@@ -235,8 +312,8 @@ module.exports = {
 
     setProperty,
     // insertArrayProperty,
-    // moveArrayProperty,
-    // removeArrayProperty,
+    moveArrayElement,
+    removeArrayElement,
 
     createComponent,
     removeComponent,

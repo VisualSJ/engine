@@ -19,7 +19,6 @@ interface InsertArrayOptions {
 interface MoveArrayOptions {
     uuid: string;
     path: string;
-    key: string;
     target: number;
     offset: number;
 }
@@ -28,7 +27,6 @@ interface MoveArrayOptions {
 interface RemoveArrayOptions {
     uuid: string;
     path: string;
-    key: string;
     index: number;
 }
 

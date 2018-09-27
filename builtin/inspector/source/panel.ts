@@ -15,6 +15,16 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
+/**
+ * 配置 inspector 的 iconfont 图标
+ */
+export const fonts = [
+    {
+        name: 'inspector',
+        file: 'packages://inspector/static/iconfont.woff'
+    }
+];
+
 export const $ = {
     content: '.content'
 };
@@ -30,9 +40,11 @@ export const methods = {
         const { originInfo, originMeta } = vm;
         const { source = '', files = [] } = originInfo;
         const meta: any = {};
+
         meta.__name__ = basename(source, extname(source));
         meta.__src__ = files[0];
         meta.__assetType__ = originMeta.importer;
+
         if (originMeta.userData) {
             const { userData } = originMeta;
             const keys = Object.keys(userData);
@@ -51,8 +63,10 @@ export const methods = {
             }
             meta.subMetas = arr;
         }
+
         return meta;
     },
+
     /**
      * inspector 根据当前选中对象的 type 以及 uuid 进行对应的界面渲染
      * @param {string} type
@@ -107,11 +121,11 @@ export const messages = {
     async 'selection:select'(type: string, uuid: string) {
         panel.handleSelect(type, uuid);
     },
+
     /**
      * 比对节点根据diff结果修改
      * @param {string} uuid
-     */
-    async 'scene:node-changed'(uuid: string) {
+     */ async 'scene:node-changed'(uuid: string) {
         if (vm) {
             const { currentUuid } = vm;
             if (uuid === currentUuid) {
@@ -127,11 +141,60 @@ export const messages = {
             }
         }
     },
+
     /**
      * 场景已准备
      */
     'scene:ready'() {
         vm && (vm.isSceneReady = true);
+    },
+
+    /**
+     * 移除数组元素
+     * @param {RemoveArrayOptions} options
+     */
+    async 'remove-array-element'(options: RemoveArrayOptions) {
+        try {
+            const result = await Editor.Ipc.requestToPackage('scene', 'remove-array-element', options);
+        } catch (err) {
+            console.error(err);
+        }
+    },
+
+    /**
+     * 移动一个数组类型的元素位置
+     * @param {MoveArrayOptions} options
+     */
+    async 'move-array-element'(options: MoveArrayOptions) {
+        try {
+            const result = await Editor.Ipc.requestToPackage('scene', 'move-array-element', options);
+        } catch (err) {
+            console.error(err);
+        }
+    },
+
+    /**
+     * 创建一个组件并挂载到指定的 entity 上
+     * @param {CreateComponentOptions} options
+     */
+    async 'create-component'(options: CreateComponentOptions) {
+        try {
+            const result = await Editor.Ipc.requestToPackage('scene', 'create-component', options);
+        } catch (err) {
+            console.error(err);
+        }
+    },
+
+    /**
+     * 移除一个 entity 上的指定组件
+     * @param {RemoveComponentOptions} options
+     */
+    async 'remove-component'(options: RemoveComponentOptions) {
+        try {
+            const result = await Editor.Ipc.requestToPackage('scene', 'create-component', options);
+        } catch (err) {
+            console.error(err);
+        }
     }
 };
 
@@ -151,6 +214,7 @@ export async function ready() {
     // 初始化 vue
     vm = new Vue({
         el: panel.$.content,
+
         data: {
             // 标记场景是否 ready
             isSceneReady: false,
@@ -161,7 +225,9 @@ export async function ready() {
             node: null,
             currentComponent: 'component-2d'
         },
+
         components: { 'component-2d': require('./2d') },
+
         async mounted() {
             try {
                 const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
@@ -176,6 +242,7 @@ export async function ready() {
                 console.error('error');
             }
         },
+
         computed: {
             /**
              * 判断 inspector 是否可以显示界面
@@ -185,6 +252,7 @@ export async function ready() {
                 return !this.loading && this.isSceneReady && (this.node || this.meta);
             }
         },
+
         methods: <any>{
             /**
              * 发送属性修改请求
@@ -198,6 +266,7 @@ export async function ready() {
                     console.error(err);
                 }
             },
+
             /**
              * 监听属性变更
              * @param {*} event
@@ -212,6 +281,7 @@ export async function ready() {
                     this.setProperty(option);
                 }
             },
+
             /**
              * 返回可能嵌套的 ui-prop 的 path 值
              * @param {*} event
@@ -219,16 +289,21 @@ export async function ready() {
              * @returns
              */
             getPath(event: any, prefix: string | undefined) {
-                const { path } = event;
-                const paths = path
-                    .filter((item: HTMLElement) => item.tagName === 'UI-PROP')
-                    .reduceRight((prev: any, next: HTMLElement, i: number, arr: HTMLElement[]) => {
-                        const path = next.getAttribute('path');
-                        return path ? `${prev && prev + '.'}${path}` : prev;
-                    }, '');
+                const { path: eventPath } = event;
+                let paths = event.target.getAttribute('path');
+
+                if (!paths || eventPath.some((item: HTMLElement) => item.tagName === 'UI-PROP')) {
+                    paths = (event.path || [])
+                        .filter((item: HTMLElement) => item.tagName === 'UI-PROP')
+                        .reduceRight((prev: any, next: HTMLElement, i: number, arr: HTMLElement[]) => {
+                            const path = next.getAttribute('path');
+                            return path ? `${prev && prev + '.'}${path}` : prev;
+                        }, '');
+                }
 
                 return prefix ? `${prefix}.${paths}` : paths;
             },
+
             /**
              * 获取设置node属性需要的选项,path不存在则返回null
              * @param {object} event
@@ -253,11 +328,13 @@ export async function ready() {
                     );
                 }
                 return {
-                    uuid, // 对dump属性名进行恢复
+                    // 对dump属性名进行恢复
                     path: repairPath(path),
+                    uuid,
                     dump
                 };
             },
+
             /**
              * 监听 meta 数据变更
              * @param {*} event
@@ -268,6 +345,6 @@ export async function ready() {
     });
 }
 
-export async function beforeClose() { }
+export async function beforeClose() {}
 
-export async function close() { }
+export async function close() {}

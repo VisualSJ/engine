@@ -187,7 +187,7 @@ export const messages = {
      * @param options 移动节点的参数
      */
     async 'move-array-element'(options: MoveArrayOptions) {
-        await panel.$.scene.moveArrayProperty(options);
+        await panel.$.scene.moveArrayElement(options);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -196,7 +196,7 @@ export const messages = {
      * @param options 移动节点的参数
      */
     async 'remove-array-element'(options: RemoveArrayOptions) {
-        await panel.$.scene.removeArrayProperty(options);
+        await panel.$.scene.removeArrayElement(options);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 

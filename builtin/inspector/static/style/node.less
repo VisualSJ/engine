@@ -1,24 +1,27 @@
 .node {
-    & > header {
+    .header {
         padding: 4px 8px 6px 8px;
     }
 
-    & > section {
-        border-top: 1px solid #666;
+    border-top: 1px solid #666;
 
-        .flex {
-            display: flex;
-        }
-
-        .flex-1 {
-            flex: 1;
-        }
-
-        ui-input,
-        ui-num-input {
-            color: #fff;
-        }
+    .flex {
+        display: flex;
     }
+
+    .align-item {
+        align-items: center;
+    }
+
+    .flex-1 {
+        flex: 1;
+    }
+
+    ui-input,
+    ui-num-input {
+        color: #fff;
+    }
+
     ui-prop > div[slot='content'] {
         margin: 3px 0;
         width: 100%;
@@ -60,5 +63,15 @@
     .header {
         display: flex;
         align-items: center;
+    }
+    .mt20 {
+        margin-top: 20px;
+    }
+    .mb20 {
+        margin-bottom: 20px;
+    }
+    .center-center {
+        align-items: center;
+        justify-content: center;
     }
 }

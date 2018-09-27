@@ -160,7 +160,7 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'moveArrayElement',
-            params: [options.uuid, options.path, options.key, options.target, options.offset]
+            params: [options.uuid, options.path, options.target, options.offset]
         });
     }
 
@@ -171,7 +171,7 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'removeArrayElement',
-            params: [options.uuid, options.path, options.key, options.index]
+            params: [options.uuid, options.path, options.index]
         });
     }
 
