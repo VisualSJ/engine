@@ -14,7 +14,7 @@ section {
   padding: 10px;
   border-bottom: 1px #ccc solid;
 
-  &>* {
+  & > * {
     margin: 5px;
   }
 
@@ -33,6 +33,10 @@ section {
   .size-20 {
     font-size: 20px;
   }
+}
+
+ui-input, ui-num-input , ui-color{
+  width: 100%;
 }
 
 ///////////////////////////////////////////////
@@ -111,39 +115,40 @@ ui-drag-area.wrap {
   border-bottom: 1px solid var(--border-color, #333333);
 }
 
-ui-prop>div[slot='content'] {
+ui-prop > div[slot="content"] {
   width: 100%;
   flex-wrap: wrap;
   display: flex;
   align-items: center;
 }
 
-ui-prop>div[slot='content']>ui-prop {
-  --left-width: 20px; // 内部嵌套ui-prop组件的label长度,如若不希望面板变宽时label变得越来越宽，可以给它指定一个固定值
-  --right-width: 85%; // 内部嵌套ui-prop组件的ui组件长度，不指定默认就是占满除了lebel以外的宽度
-  --label-max-width: 20px;
-  max-width: 48%; // 内部嵌套ui-prop组件的最大宽度
+ui-prop > div[slot="content"] > ui-prop {
+  --left-width: 20%; // 内部嵌套 ui-prop 组件的 label 长度,如若不希望面板变宽时 label 变得越来越宽，可以给它指定一个固定值
+  --right-width: 85%; // 内部嵌套 ui-prop 组件的 ui 组件长度，不指定默认就是占满除了 label 以外的宽度
+  --label-max-width: 15px;
+  --label-min-width: 10px;
+  max-width: 48%; // 内部嵌套 ui-prop 组件的最大宽度
   width: 200px;
   height: 2em;
   flex-grow: 1; // 设置为可伸缩
   margin-right: 2%;
-  margin-bottom: 5px; // 内部组件的margin-bottom
+  margin-bottom: 5px; // 内部组件的 margin-bottom
 }
 
-ui-prop.vector>div[slot='content'] {
+ui-prop.vector > div[slot="content"] {
   margin-right: -1.5%;
 }
 
-// asset类型样式
-ui-prop[type="asset"] { 
-  &>div[slot="content"] {
+// asset 类型样式
+ui-prop[type="asset"] {
+  & > div[slot="content"] {
     display: flex;
     flex-wrap: nowrap;
-    &>ui-drag-object {
+    & > ui-drag-object {
       flex: 4;
       height: 1.8em;
     }
-    &>ui-button {
+    & > ui-button {
       width: 60px;
       margin-left: 10px;
     }

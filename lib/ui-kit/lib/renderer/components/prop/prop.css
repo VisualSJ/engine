@@ -4,6 +4,7 @@
   --left-width: 30%;
   --right-width: 70%;
   --label-min-width: 100px;
+  --label-max-width: 120px;
   --margin-bottom: 5px;
   user-select: none;
 }
@@ -20,6 +21,7 @@
 :host .label {
   width: var(--left-width, 35%);
   max-width: var(--label-max-width);
+  min-width: var(--label-min-width);
   height: 100%;
 }
 :host .label span {

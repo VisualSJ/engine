@@ -1,14 +1,21 @@
 <main>
+    <section class="section">
+        <h1>Standard</h1>
+        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
+        <h5>事件/Event ： {{eventName}}</h5>
+        <ui-prop @change = "changeValue" @confirm = "confirmValue" label="number" type="number" value="22.888"></ui-prop>
+        <div v-html="itemHtmls"></div>
+    </section>
   <section>
     <h1>Standard</h1>
-    <ui-prop label="string" type="string" value="kkkkk" tips="来点说明文字"> </ui-prop>
+    <ui-prop label="string" type="string" value="kkkkk"> </ui-prop>
     <ui-prop label="number" type="number" value="22.888"></ui-prop>
     <ui-prop label="int" type="int" value="22"></ui-prop>
     <ui-prop label="boolean" type="boolean" value="true"></ui-prop>
     <ui-prop label="color" type="color" value='["22", "244", "233", "124"]'></ui-prop>
     <ui-prop label="color4" type="color4" value='["0.2", "0.3", "0.5", "0.8"]'></ui-prop>
     <ui-prop label="color3" type="color3" value='["0.2", "0.3", "0.5"]'></ui-prop>
-    <ui-prop label="size" type="vec2" value='{"width":22.2,"height":33.3}'></ui-prop>
+    <ui-prop label="size" type="size" value='{"width":22.2,"height":33.3}'></ui-prop>
     <ui-prop label="vec2" type="vec2" value='{"x":22.2,"y":33.3}'></ui-prop>
     <ui-prop label="vec3" type="vec3" value='{"x":22.2,"y":33.3,"z":55.5}'></ui-prop>
     <ui-prop label="带有path=text" type="vec3" value='{"x":22.2,"y":33.3,"z":55.5}' path="text"></ui-prop>

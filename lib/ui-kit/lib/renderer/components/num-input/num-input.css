@@ -14,7 +14,6 @@ input::-webkit-inner-spin-button {
   display: inline-flex;
   position: relative;
   padding: 0;
-  width: 100%;
   border: 1px solid #333;
 }
 :host > input {
@@ -26,7 +25,7 @@ input::-webkit-inner-spin-button {
   font-size: inherit;
   padding: 0.2em 0.2em 0.2em 0.5em;
   flex: 1;
-  width: 0;
+  width: 100%;
 }
 :host > input::-webkit-inner-spin-button {
   display: none;

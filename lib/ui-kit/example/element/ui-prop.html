@@ -1,6 +1,6 @@
 <section>
   <style>
-    /* 注意：为了便于内部生成的ui组件也能被外部操控，故新生成的组件放置在外部，样式需要在外部指定 */
+    /* 注意：为了便于内部生成的 ui 组件也能被外部操控，故新生成的组件放置在外部，样式需要在外部指定 */
   ui-prop>div[slot='content'] {
     width: 100%;
     flex-wrap: wrap;
@@ -8,10 +8,16 @@
     align-items: center;
   }
 
+  ui-prop div[slot="content"]  ui-input,
+  ui-prop div[slot="content"]  ui-num-input {
+    width: 100%;
+  }
+
   ui-prop>div[slot='content']>ui-prop {
     --left-width: 15%;
     --right-width: 85%;
     --label-max-width: 20px;
+    --label-min-width: 15px;
     max-width: 48%;
     width: 200px;
     height: 2em;
