@@ -1,24 +1,23 @@
 'use strict';
 
 import { readFileSync } from 'fs';
-import { extname, join } from 'path';
+import { join } from 'path';
 import { thumbnail } from './components/thumbnail';
 
 const fileicon = require('./components/fileicon');
+const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
 
 let panel: any = null;
-
 let vm: any = null;
-
 let treeData: ItreeAsset; // 树形结构的数据，含 children
-
 let copyAssetUUID: string[] = []; // 用于存放已复制资源的 uuid
-
 const needToThumbnail = { // 需要生成缩略图的图片资源
     '2d': ['png', 'jpg', 'jpge', 'webp'],
     '3d': ['png', 'jpg', 'jpge', 'webp'],
 };
-
 const dbProtocol = 'db://';
 
 /**
@@ -28,8 +27,6 @@ const dbProtocol = 'db://';
 const positionMap: Map<number, ItreeAsset> = new Map();
 
 const treeNodeHeight: number = 20; // 配置每个资源的高度，需要与css一致
-
-const Vue = require('vue/dist/vue.js');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 

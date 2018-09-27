@@ -80,6 +80,7 @@ interface Logger {
     on: Function;
     removeListener: Function;
     query: Function;
+    clear: Function;
 }
 
 interface Profile {

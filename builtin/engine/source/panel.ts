@@ -1,15 +1,18 @@
 'use strict';
 
-import { existsSync, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+
+const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
 
 const profile = {
     global: Editor.Profile.load('profile://global/packages/engine.json'),
     local: Editor.Profile.load('profile://local/packages/engine.json'),
 };
 let panel: any = null;
-
-const Vue = require('vue/dist/vue.js');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 

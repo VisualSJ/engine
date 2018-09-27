@@ -8,6 +8,9 @@ import { eventBus } from './utils/event-bus';
 const Vue = require('vue/dist/vue.js');
 const { getByPath, diffpatcher, repairPath } = require('./utils');
 
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
 let panel: any = null;
 let vm: any = null;
 

@@ -79,6 +79,9 @@
             const panelManager = require('@editor/panel');
             const ipc = require('@base/electron-base-ipc');
 
+            Vue.config.productionTip = false;
+            Vue.config.devtools = false;
+
             let name = windows.userData.name;
             let sender = {};
             try {

@@ -3,12 +3,14 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
 let panel: any = null;
-
 let vm: any = null;
-
 let treeData: ItreeNode; // 树形结构的数据，含 children
-
 let copyNodeUUID: string[] = []; // 用于存放已复制资源的 uuid
 
 /**
@@ -16,10 +18,7 @@ let copyNodeUUID: string[] = []; // 用于存放已复制资源的 uuid
  * 将所有节点按照 key = position.top 排列，value = ItreeNode
  */
 const positionMap: Map<number, ItreeNode> = new Map();
-
 const treeNodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
-
-const Vue = require('vue/dist/vue.js');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 

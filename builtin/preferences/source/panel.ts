@@ -1,12 +1,18 @@
 'use strict';
 
-import { readFileSync , writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
+const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+const LANGUAGE = ['en', 'zh'];
 let panel: any = null;
 let vm: any = null;
-const Vue = require('vue/dist/vue.js');
-const LANGUAGE = ['en', 'zh'];
+
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));

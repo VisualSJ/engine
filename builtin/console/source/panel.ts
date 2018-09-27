@@ -3,10 +3,14 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-let panel: any = null;
-let vm: any = null;
 const manager = require('./manager');
 const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
+let panel: any = null;
+let vm: any = null;
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
@@ -72,6 +76,7 @@ export async function ready() {
                 }
             },
             onClear() {
+                Editor.Logger.clear();
                 manager.clear();
             },
             onCollapse(event: any) {

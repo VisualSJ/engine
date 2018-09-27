@@ -1,11 +1,16 @@
 'use strict';
 
-import { readFileSync , existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+
+const Vue = require('vue/dist/vue.js');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
 
 let panel: any = null;
 let vm: any = null;
-const Vue = require('vue/dist/vue.js');
+
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));

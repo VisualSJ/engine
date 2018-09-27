@@ -1,4 +1,5 @@
 @import '../iconfont.less';
+
 .console-panel {
     display: flex;
     flex-direction: column;
@@ -8,6 +9,7 @@
     width: 100%;
     font-family: Menlo, monospace;
 }
+
 .header {
     display: flex;
     padding: 4px;
@@ -16,20 +18,27 @@
     align-items: center;
 }
 
+.console {
+    border: 1px solid #666;
+}
+
 .clear {
     cursor: pointer;
     --color: #ffffff;
-    padding: 0.4em 0.6em;
+    padding: 0.2em 0.3em;
     margin-right: 0.25em;
     background: transparent;
     border: none;
+    border-radius: 4px;
+
     i {
         width: 1em;
         height: 1em;
-        border: 2px solid var(--color);
+        border: 2px solid #DDD;
         border-radius: 50%;
         display: block;
         position: relative;
+
         &:after {
             content: '';
             position: absolute;
@@ -39,13 +48,15 @@
             width: 2px;
             left: 50%;
             transform: translateX(-50%) rotate(45deg);
-            background: var(--color);
+            background: #DDD;
         }
     }
+
     &:hover {
-        background: #0077dd;
+        background: #585858;
     }
 }
+
 .filter {
     display: inline-block;
     padding: 0.2em 0.5em;
@@ -54,16 +65,29 @@
     background: none;
     outline: none;
     color: #0077dd;
-    &:hover,
-    &:focus {
+
+    &:hover, &:focus {
         border-color: #0077dd;
     }
 }
+
+ui-input {
+    width: auto;
+    margin: 0 10px 0 5px;
+}
+
+// hack 因为 checkbox 现在无法同一行显示文字
+ui-checkbox {
+    white-space: nowrap;
+
+    &:last-child {
+        margin-right: 90px;
+    }
+}
+
 .collapse {
     position: absolute;
     right: 0;
 }
-ui-checkbox {
-    padding: 3px 4px;
-}
+
 @import 'list.less';

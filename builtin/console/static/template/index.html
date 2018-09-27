@@ -1,10 +1,23 @@
 <div class="console-panel">
     <header class="header">
-        <span class="clear" @click="onClear">
+        <!-- 清除的按钮 -->
+        <span class="clear"
+            @click="onClear"
+        >
             <i></i>
         </span>
-        <input class="filter" type="text" @input="onFilterText" />
-        <ui-checkbox v-on:confirm="onFilterRegex">Regex</ui-checkbox>
+
+        <!-- 过滤条件 -->
+        <ui-input
+            @input="onFilterText"
+        ></ui-input>
+
+        <!-- 是否启用正则 -->
+        <ui-checkbox
+            @confirm="onFilterRegex"
+        >
+            <span>Regex</span>
+        </ui-checkbox>
         <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox>
     </header>
     <console-list v-model="change" :font-size="fontSize" :line-height="lineHeight"></console-list>
