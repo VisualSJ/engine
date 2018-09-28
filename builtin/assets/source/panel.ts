@@ -53,8 +53,10 @@ export const methods = {
         const initData = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
         if (initData) { // 容错处理，数据可能为空
             // 数据格式需要转换一下
-            // console.log(initData); return;
+            // initData.shift();
             treeData = transformData(initData);
+            // console.log(treeData);
+
             vm.changeTreeData();
         }
     },
@@ -459,7 +461,7 @@ export async function ready() {
                 let node: ItreeAsset = getAssetFromPositionMap(uuid);
                 if (!node.isDirectory) {
                     // @ts-ignore
-                    node = getAssetFromPositionMap(node.parent);
+                    node = getAssetFromPositionMap(node.parentUuid);
                     node.state = 'over';
                 }
 
@@ -474,7 +476,7 @@ export async function ready() {
                 let node: ItreeAsset = getAssetFromPositionMap(uuid);
                 if (!node.isDirectory) {
                     // @ts-ignore
-                    node = getAssetFromPositionMap(node.parent);
+                    node = getAssetFromPositionMap(node.parentUuid);
                 }
 
                 // @ts-ignore
@@ -487,6 +489,10 @@ export async function ready() {
              * @param json
              */
             dropAsset(item: ItreeAsset, json: IdragAsset) {
+                if (item.state === 'disabled') {
+                    return;
+                }
+
                 if (json.insert !== 'inside') {
                     return false; // 不是拖动的话，取消
                 }
@@ -497,6 +503,9 @@ export async function ready() {
 
                 // @ts-ignore
                 const toNode: ItreeAsset = getAssetFromPositionMap(toData[0].uuid);
+                if (item.state === 'disabled') {
+                    return;
+                }
 
                 if (toNode.isDirectory) {
                     target = toNode;
@@ -729,6 +738,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             icon: fileicon[json.fileext] || 'i-file',
             thumbnail: json.thumbnail,
             uuid: json.uuid,
+            parentUuid: json.parentUuid,
             children: json.children,
             top: start,
             _height: treeNodeHeight,
@@ -741,7 +751,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
 
                     // 触发其父级高度也增加
                     for (const [top, json] of positionMap) {
-                        if (json.uuid === this.parent) {
+                        if (json.uuid === this.parentUuid) {
                             json.height = 1; // 大于 0 就可以，实际计算在内部的setter
                         }
                     }
@@ -754,7 +764,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             isDirectory: json.isDirectory || false,
             isParent: json.isParent,
             isExpand: true,
-            state: '',
+            state: json.state ? json.state : '',
         };
 
         if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
@@ -797,7 +807,7 @@ function calcAssetHeight() {
 
     for (const [top, json] of positionMap) {
         for (const [t, j] of positionMap) {
-            if (j.uuid === json.parent) {
+            if (j.uuid === json.parentUuid) {
                 j.height = 1; // 大于 0 就可以，实际计算在内部的 setter 函数
             }
         }
@@ -911,11 +921,12 @@ function getSiblingsFromPositionMap(uuid = '') {
  * 添加资源后，增加树形节点数据
  */
 function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
-    // 如果现有数据中有相同 pathname 的数据，清除现有数据
+    // 如果现有数据中有相同 pathname 的数据，可能需要合并现有数据
     const existOne: any = getAssetFromTreeData(treeData, item.pathname, 'pathname');
     if (existOne.length > 0) {
-        if (item.uuid !== '') {
-            existOne[0] = Object.assign(existOne[0], item);
+        if (existOne.state === 'disabled' && item.state !== 'disabled') { // 说明之前这条数据是由于路径缺失而临时补上的
+            existOne.uuid = item.uuid;
+            existOne.state = '';
         }
         return;
     }
@@ -927,11 +938,11 @@ function addTreeData(rt: ItreeAsset[], key: string, parentKey: any, item: any) {
             one.children = [];
         }
 
+        item.parentUuid = one.uuid;
         one.children.push(item);
         one.isParent = true;
-        item.parent = one.uuid;
 
-        sortData(one.children, false);
+        // sortData(one.children, false);
     } else {
         rt.push(item);
     }
@@ -954,7 +965,6 @@ function removeTreeData(uuid: string) {
  * @param parentKey 父级的字段名称
  */
 function toTreeData(arr: any[], key: string, parentKey: string) {
-
     const tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
     // 重新排序
     sortData(tree);
@@ -1013,7 +1023,7 @@ function sortData(arr: ItreeAsset[], loop = true) {
         } else if (!a.isDirectory && b.isDirectory === true) {
             return 1;
         } else {
-            return a.name > b.name;
+            return a.name.localeCompare(b.name);
         }
     });
 
@@ -1054,14 +1064,13 @@ function transformData(arr: ItreeAsset[]) {
  * @param arr
  */
 function legalData(arr: ItreeAsset[]) {
-    let rt = arr.filter((a) => a.pathname !== '').map((a: ItreeAsset) => {
+    const rt = arr.filter((a) => a.source !== '').map((a: ItreeAsset) => {
         const paths: string[] = a.source.replace(dbProtocol, '').split(/\/|\\/).filter((b) => b !== '');
-        a.pathname = paths.join('/');
 
         // 赋予新字段用于子父层级关联
-        a.name = paths.pop() || '';
+        a.pathname = paths.join('/');
+        a.name = paths.pop() || ''; // 注意这里的 pop() 操作已经改变了 paths
         const [filename, fileext] = a.name.split('.');
-
         a.filename = filename;
         a.fileext = (fileext || '').toLowerCase();
         a.parent = paths.length === 0 ? 'root' : paths.join('/');
@@ -1082,11 +1091,11 @@ function legalData(arr: ItreeAsset[]) {
         return a;
     });
 
-    // 确保父级路径存在
-    rt.forEach((a: ItreeAsset) => {
-        rt = ensureDir(rt, a.parent.split('/'));
+    // 确保父级路径存在;
+    rt.slice().forEach((a: ItreeAsset) => {
+        ensureDir(rt, a.parent.split('/'));
     });
-    sortData(rt, false);
+
     return rt;
 }
 
@@ -1101,26 +1110,26 @@ function ensureDir(arr: ItreeAsset[], paths: string[]) {
         return arr;
     }
 
-    const source = dbProtocol + pathname;
     // @ts-ignore
     const one = getAssetFromTreeData(arr, pathname, 'pathname');
-    const existOne = getAssetFromTreeData(treeData, pathname, 'pathname');
 
-    if (one.length === 0 && existOne.length === 0) {
+    if (one.length === 0) {
         const newOne = {
             name: pathname,
-            source,
-            pathname,
-            uuid: '',
+            source: dbProtocol + pathname,
             isDirectory: true,
+            uuid: pathname,
+            state: 'disabled',
             files: [],
             importer: 'unknown',
         };
         // @ts-ignore
-        arr = arr.concat(legalData([newOne]));
+        legalData([newOne]).forEach((a) => {
+            if (!arr.some((b) => b.pathname === a.pathname)) {
+                arr.push(a);
+            }
+        });
     }
-
-    return arr;
 }
 
 /**

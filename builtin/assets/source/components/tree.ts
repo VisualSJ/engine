@@ -28,6 +28,10 @@ export const methods = {
      * @param uuid
      */
     async openAsset(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
+
         if (openAsset[item.fileext]) {
             openAsset[item.fileext](item.uuid);
         }
@@ -40,6 +44,10 @@ export const methods = {
     mouseDown(event: Event, item: ItreeAsset) {
         // @ts-ignore
         if (event.button !== 2) {
+            return;
+        }
+
+        if (item.state === 'disabled') {
             return;
         }
 
@@ -118,6 +126,10 @@ export const methods = {
      * @param item
      */
     selectAsset(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
+
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             this.multipleSelect(event, item);
@@ -140,6 +152,10 @@ export const methods = {
      * ctrl 支持取消已选中项
      */
     async multipleSelect(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
+
         const uuid = item.uuid;
         // @ts-ignore
         if (event.ctrlKey || event.metaKey) {
@@ -181,6 +197,10 @@ export const methods = {
      * @param item
      */
     renameAsset(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
+
         // 改变节点状态
         item.state = 'input';
 
@@ -234,6 +254,9 @@ export const methods = {
      * @param uuid
      */
     dragOver(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -254,6 +277,9 @@ export const methods = {
      * @param uuid
      */
     dragLeave(event: Event, item: ItreeAsset) {
+        if (item.state === 'disabled') {
+            return;
+        }
         // @ts-ignore
         const target: any = event.currentTarget;
         target.setAttribute('insert', '');

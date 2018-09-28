@@ -27,6 +27,7 @@ declare interface ItreeAsset {
     state?: string; // 状态
     icon?: string,
     thumbnail?: string,
+    parentUuid?: string, // 其父级的 uuid
 
     files?: Array<string>; // 以下数据来自 assets-db 查询
     importer?: string;

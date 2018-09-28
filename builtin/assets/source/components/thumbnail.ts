@@ -3,6 +3,10 @@
 export async function thumbnail(asset: ItreeAsset) {
     // @ts-ignore
     const base64: string = await toDataURL(asset.files[0], 20, 20);
+    // @ts-ignore
+    if (asset.importer !== 'texture' || asset.files[0] === '') {
+
+    }
     return base64;
 }
 
@@ -23,7 +27,7 @@ async function toDataURL(src: string, width: number, height: number, bgColor = '
             resolve(img);
         });
         img.addEventListener('error', () => {
-            reject();
+            reject('thumbnail load fail');
         });
     });
 

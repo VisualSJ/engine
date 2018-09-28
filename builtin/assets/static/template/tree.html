@@ -2,7 +2,7 @@
     <ui-drag-item class="node" type="asset"
         :key="index"
         v-for="(item,index) in list" 
-        :draggable="item.rename?false:true"
+        :draggable="item.state==='disabled'?false:true"
         :active="select.indexOf(item.uuid) !== -1" 
         @mousedown="mouseDown($event, item)"
         @click="selectAsset($event, item)" 
