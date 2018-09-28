@@ -110,6 +110,7 @@ class View extends window.HTMLElement {
                 return;
             }
         }
+
         // todo 弹窗
         const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', 'db://assets/NewScene.scene', txt);
         this.uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);

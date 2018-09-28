@@ -182,8 +182,34 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
                 isDirectory: await asset.isDirectory(),
                 files: asset.meta.files.map((ext) => {
                     return asset.library + ext;
-                })
+                }),
+                subAssets: {},
             };
+
+            /**
+             * 扫描资源
+             * @param {*} assets
+             * @param {*} asset
+             */
+            function searchSubAssets(assets, asset) {
+                const names = Object.keys(asset.subAssets);
+                for (const name of names) {
+                    const subAsset = asset.subAssets[name];
+                    assets[name] = {
+                        source: null,
+                        uuid: subAsset.uuid,
+                        importer: subAsset.meta.importer,
+                        isDirectory: false,
+                        files: subAsset.meta.files.map((ext) => {
+                            return subAsset.library + ext;
+                        }),
+                        subAssets: {},
+                    };
+                    searchSubAssets(assets[name].subAssets, subAsset);
+                }
+            }
+
+            searchSubAssets(info.subAssets, asset);
 
             assets.push(info);
         }

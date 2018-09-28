@@ -40,8 +40,6 @@ async function open(uuid) {
  * 保存场景
  */
 async function serialize() {
-    ipc.send('broadcast', 'scene:close');
-
     let asset = new cc.SceneAsset();
     asset.scene = cc.director._scene;
     cc.Object._deferredDestroy();
