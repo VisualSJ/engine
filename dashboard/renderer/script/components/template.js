@@ -2,11 +2,21 @@
 
 const fs = require('fs');
 const ps = require('path');
-
+const fse = require('fs-extra');
 const ipc = require('@base/electron-base-ipc');
 const project = require('./../../../../lib/project');
 const dialog = require('./../../../../lib/dialog');
+const profile = require('./../../../../lib/profile');
+const setting = require('@editor/setting');
 
+// 存放 dashboard 数据的 json 路径
+const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
+
+if (!fse.existsSync(filePath)) {
+    const obj = {recentProPath: ''};
+    fse.writeJsonSync(filePath, obj, 'utf8');
+}
+const dashProfile = profile.load('profile://global/editor/dashboard.json');
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/template.html'), 'utf-8');
 
 exports.props = [
@@ -16,6 +26,8 @@ exports.props = [
 exports.data = function() {
     return {
         list: [],
+        activeIndex: 0,
+        directoryPath: '', // 存储input选择的路径
     };
 };
 
@@ -36,20 +48,26 @@ exports.methods = {
 
     /**
      * 从一个模版新建项目
-     * @param {*} event
-     * @param {*} template 模版路径
      */
-    createProject(event, template) {
-        if (!template) {
-            return;
-        }
+    createProject() {
+        let template = this.list[this.activeIndex];
+        project.create(this.directoryPath, template.path);
+        project.add(this.type, this.directoryPath);
+        project.open(this.directoryPath);
+    },
+
+    // 打开文件夹弹框
+    chooseProSrc() {
+        let that = this;
         dialog.openDirectory({
-            title: '新建项目',
+            title: '选择项目路径',
             onOk(array) {
                 if (!array || !array[0]) {
                     return;
                 }
-                project.create(array[0], template);
+                that.directoryPath = array[0] + '\\NewProject';
+                dashProfile.set('recentProPath', array[0]);
+                dashProfile.save();
             }
         });
     }
@@ -61,4 +79,5 @@ exports.mounted = function() {
         .callback((error, templates) => {
             this.list = templates;
         });
+    this.directoryPath = dashProfile.get('recentProPath') + '\\NewProject';
 };
