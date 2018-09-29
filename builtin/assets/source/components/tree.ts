@@ -3,28 +3,21 @@
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 
-import { SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION } from 'constants';
-import { thumbnail } from './thumbnail';
-const fileicon = require('./fileicon');
+const db = require('./db');
 
 let vm: any = null;
 
-const dbProtocol = 'db://';
 const assetHeight: number = 20; // 配置每个资源的高度，需要与css一致
+
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
  * 将所有资源按照 key = position.top 排列，value = ItreeAsset
  */
 const assetsMap: Map<number, ItreeAsset> = new Map();
 
-let treeData: ItreeAsset; // 树形结构的数据，含 children
+let treeData: any; // 树形结构的数据，含 children
 
 let copyAsset: string[] = []; // 用于存放已复制资源的 uuid
-
-const extToThumbnail = { // 需要生成缩略图的图片资源
-    '2d': ['png', 'jpg', 'jpge', 'webp'],
-    '3d': ['png', 'jpg', 'jpge', 'webp'],
-};
 
 export const name = 'tree';
 
@@ -113,15 +106,20 @@ export const methods = {
      * 刷新树形
      */
     async refresh() {
-        const initData = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-        if (initData) { // 容错处理，数据可能为空
-            // 数据格式需要转换一下
-            // initData.shift();
-            treeData = transformData(initData);
-            // console.log(treeData);
-
-            this.changeData();
+        const dbdata = await db.refresh();
+        if (!dbdata) { // 容错处理，数据可能为空
+            return;
         }
+        // console.log(dbdata); return;
+        //
+        treeData = {
+            depth: 0,
+            state: 'invalid',
+            children: toTree(dbdata, 'source', 'parentSource'),
+        };
+        // console.log(treeData);
+
+        this.changeData();
     },
 
     /**
@@ -131,7 +129,7 @@ export const methods = {
         vm.allExpand = !vm.allExpand;
 
         // 修改所有树形节点的数据
-        resetAssetProperty(treeData, { isExpand: vm.allExpand });
+        resetTreeProps({ isExpand: vm.allExpand });
 
         this.changeData();
     },
@@ -176,13 +174,11 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        const one = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        const arr = legalData([one]);
+        const arr = db.ipcAdd(uuid);
         arr.forEach((newNode: ItreeAsset) => {
-            const parent = addAssettoTreeData(treeData.children, 'pathname', 'parent', newNode);
+            const parent = addAssetIntoTree(treeData.children, 'source', 'parentSource', newNode);
             parent.isExpand = true;
         });
-
         // 触发节点数据已变动
         this.changeData();
     },
@@ -191,7 +187,7 @@ export const methods = {
      * 从树形删除资源节点
      */
     delete(uuid: string) {
-        const arr = getAssetFromtreeData(treeData, uuid);
+        const arr = getAssetFromTree(treeData, uuid);
         if (arr[2]) {
             arr[2].splice(arr[1], 1);
         }
@@ -205,26 +201,26 @@ export const methods = {
      * @param asset
      * @param json
      */
-    ipcAdd(uuid: string, json: IaddAsset) {
+    ipcAdd(json: IaddAsset, uuid: string) {
         if (uuid === '') {
             uuid = this.getFirstSelect();
         }
 
         // 获取该资源
-        const one = getAssetFromtreeData(treeData, uuid);
+        const one = getAssetFromTree(treeData, uuid);
         let url = one[0].pathname;
 
         if (one[0].isDirectory !== true) { // 不是目录，指向父级级
-        url = one[3].pathname;
-    }
+            url = one[3].pathname;
+        }
 
         let content;
         switch (json.type) {
-        case 'folder': url += '/New Folder'; break;
-        case 'javascript': url += '/NewScript.js'; content = ''; break;
-    }
+            case 'folder': url += '/New Folder'; break;
+            case 'javascript': url += '/NewScript.js'; content = ''; break;
+        }
 
-        url = dbProtocol + join(url);
+        url = db.protocol + join(url);
 
         Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
     },
@@ -251,7 +247,7 @@ export const methods = {
      * @param uuid
      */
     toggle(uuid: string, value: boolean) {
-        const one = getAssetFromtreeData(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
+        const one = getAssetFromTree(treeData, uuid)[0]; // 获取该资源的数据，包含子资源
 
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
@@ -361,7 +357,7 @@ export const methods = {
      */
     rename(asset: ItreeAsset, name = '') {
 
-        const one = getAssetFromtreeData(treeData, asset.uuid)[0]; // 获取该资源的数据
+        const one = getAssetFromTree(treeData, asset.uuid)[0]; // 获取该资源的数据
 
         if (!one || name === '') {
             // name存在才能重名命，否则还原状态
@@ -421,7 +417,7 @@ export const methods = {
             return false; // 不是拖动的话，取消
         }
 
-        const toData = getAssetFromtreeData(treeData, json.to); // 将被注入数据的对象
+        const toData = getAssetFromTree(treeData, json.to); // 将被注入数据的对象
 
         let target: ItreeAsset;
 
@@ -447,7 +443,7 @@ export const methods = {
             });
             return;
         } else { // 常规内部节点拖拽
-            const fromData = getAssetFromtreeData(treeData, json.from);
+            const fromData = getAssetFromTree(treeData, json.from);
 
             if (target.uuid === fromData[3].uuid) {
                 return false; // 资源移动仍在原来的目录内，不需要移动
@@ -482,7 +478,7 @@ export const methods = {
             uuid = this.getFirstSelect();
         }
         copyAsset.forEach((id: string) => {
-            const arr = getAssetFromtreeData(treeData, id);
+            const arr = getAssetFromTree(treeData, id);
             if (arr[0]) {
                 importAsset(uuid, arr[0].source);
             }
@@ -499,7 +495,7 @@ export const methods = {
 
         calcAssetPosition(); // 重算排位
 
-        calcAssetHeight(); // 计算文件夹的高度
+        calcDirectoryHeight(); // 计算文件夹的高度
 
         this.render(); // 重新渲染出树形
 
@@ -566,19 +562,10 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
     }
 
     const tree = obj.children;
-    tree.forEach((json) => {
+    tree.forEach((json: ItreeAsset) => {
         const start = index * assetHeight;  // 起始位置
-        const one = {
-            pathname: json.pathname,
-            name: json.name,
-            filename: json.filename,
-            fileext: json.fileext,
-            source: json.source,
-            icon: fileicon[json.fileext] || 'i-file',
-            thumbnail: json.thumbnail,
-            uuid: json.uuid,
-            parentUuid: json.parentUuid,
-            children: json.children,
+        const one = Object.assign(json, {
+            depth: 1, // 第二层，默认给搜索状态下赋值
             top: start,
             _height: assetHeight,
             get height() {
@@ -589,28 +576,22 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
                     this._height += assetHeight;
 
                     // 触发其父级高度也增加
-                    for (const [top, json] of assetsMap) {
-                        if (json.uuid === this.parentUuid) {
-                            json.height = 1; // 大于 0 就可以，实际计算在内部的setter
+                    for (const [top, asset] of assetsMap) {
+                        // @ts-ignore
+                        if (asset.uuid === this.parentUuid) {
+                            asset.height = 1; // 大于 0 就可以，实际计算在内部的setter
                         }
                     }
                 } else {
                     this._height = assetHeight;
                 }
             },
-            parent: json.parent,
-            depth: 1, // 第二层，默认给搜索状态下赋值
-            isDirectory: json.isDirectory || false,
-            isParent: json.isParent,
-            isExpand: true,
-            state: json.state ? json.state : '',
-        };
+        });
 
         if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
             vm.state = '';
             assetsMap.set(start, Object.assign(one, { // 平级保存
                 depth,
-                isExpand: json.isExpand ? true : false,
             }));
 
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
@@ -622,7 +603,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             vm.state = 'search';
 
             // @ts-ignore
-            if (!['root'].includes(json.parent) && json.name.search(vm.search) !== -1) { // 平级保存
+            if (!['invalid'].includes(json.state) && json.name.search(vm.search) !== -1) { // 平级保存
                 assetsMap.set(start, one);
                 index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
             }
@@ -639,7 +620,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
 /**
  * 计算一个文件夹的完整高度
  */
-function calcAssetHeight() {
+function calcDirectoryHeight() {
     for (const [top, json] of assetsMap) {
         json.height = 0;
     }
@@ -658,15 +639,15 @@ function calcAssetHeight() {
  * @param obj
  * @param props
  */
-function resetAssetProperty(obj: ItreeAsset, props: any) {
-    const tree = obj.children;
-    tree.forEach((json: any) => {
+function resetTreeProps(props: any, tree: ItreeAsset[] = treeData.children) {
+    tree.forEach((asset: ItreeAsset) => {
         for (const k of Object.keys(props)) {
-            json[k] = props[k];
+            // @ts-ignore
+            asset[k] = props[k];
         }
 
-        if (json.children) {
-            resetAssetProperty(json, props);
+        if (asset.children) {
+            resetTreeProps(props, asset.children);
         }
     });
 }
@@ -681,7 +662,7 @@ function resetAssetProperty(obj: ItreeAsset, props: any) {
  * @param arr
  * @param uuid
  */
-function getAssetFromtreeData(obj: ItreeAsset, value: string = '', key: string = 'uuid'): any {
+function getAssetFromTree(obj: ItreeAsset, value: string = '', key: string = 'uuid'): any {
     let rt = [];
 
     if (!obj) {
@@ -703,8 +684,8 @@ function getAssetFromtreeData(obj: ItreeAsset, value: string = '', key: string =
             return [one, i, arr, obj]; // 找到后返回的数据格式
         }
 
-        if (one.children && one.children.length !== 0) { // 如果还有children的继续迭代查找
-            rt = getAssetFromtreeData(one, value, key);
+        if (one.children && one.children.length !== 0) { // 如果还有 children 的继续迭代查找
+            rt = getAssetFromTree(one, value, key);
 
             if (rt.length > 0) { // 找到了才返回，找不到，继续循环
                 return rt;
@@ -759,9 +740,9 @@ function getSiblingsFromMap(uuid = '') {
 /**
  * 添加资源后，增加树形节点数据
  */
-function addAssettoTreeData(rt: ItreeAsset[], key: string, parentKey: any, asset: any) {
+function addAssetIntoTree(tree: ItreeAsset[], key: string, parentKey: any, asset: any) {
     // 如果现有数据中有相同 pathname 的数据，可能需要合并现有数据
-    const existOne: any = getAssetFromtreeData(treeData, asset.pathname, 'pathname');
+    const existOne: any = getAssetFromTree(treeData, asset.source, 'parentSource');
     if (existOne.length > 0) {
         if (existOne.state === 'disabled' && asset.state !== 'disabled') { // 说明之前这条数据是由于路径缺失而临时补上的
             existOne.uuid = asset.uuid;
@@ -771,7 +752,7 @@ function addAssettoTreeData(rt: ItreeAsset[], key: string, parentKey: any, asset
     }
 
     // 找出父级
-    const one = deepFindParent(rt, key, asset[parentKey]);
+    const one = deepFindParent(key, asset[parentKey], tree);
     if (one) {
         if (!Array.isArray(one.children)) {
             one.children = [];
@@ -780,12 +761,37 @@ function addAssettoTreeData(rt: ItreeAsset[], key: string, parentKey: any, asset
         asset.parentUuid = one.uuid;
         one.children.push(asset);
         one.isParent = true;
-
-        // sortData(one.children, false);
     } else {
-        rt.push(asset);
+        tree.push(asset);
     }
     return one;
+}
+
+/**
+ * 找出父级，深度查找对应关系，类似 id === parentId 确定子父关系
+ * @param arr
+ * @param key
+ * @param parentValue
+ */
+function deepFindParent(key: string, parentValue: any, arr: ItreeAsset[] = treeData.children) {
+    // @ts-ignore
+    const one: ItreeAsset = arr.find((a: ItreeAsset) => {
+        // @ts-ignore
+        return a[key] === parentValue;
+    });
+
+    if (one) {
+        return one;
+    }
+
+    for (let i = 0, ii = arr.length; i < ii; i++) {
+        const rt: any = deepFindParent(key, parentValue, arr[i].children);
+        if (rt) {
+            return rt;
+        }
+    }
+
+    return;
 }
 
 /**
@@ -794,7 +800,7 @@ function addAssettoTreeData(rt: ItreeAsset[], key: string, parentKey: any, asset
  * @param key 唯一标识的字段
  * @param parentKey 父级的字段名称
  */
-function totreeData(arr: any[], key: string, parentKey: string) {
+function toTree(arr: any[], key: string, parentKey: string) {
     const tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
     // 重新排序
     sortData(tree);
@@ -808,35 +814,11 @@ function totreeData(arr: any[], key: string, parentKey: string) {
                 asset.children = [];
             }
 
-            addAssettoTreeData(rt, key, parentKey, asset);
+            addAssetIntoTree(rt, key, parentKey, asset);
         });
 
         return rt;
     }
-}
-/**
- * 找出父级，深度查找对应关系，类似 id === parentId 确定子父关系
- * @param arr
- * @param key
- * @param parentValue
- */
-function deepFindParent(arr: any[], key: string, parentValue: any) {
-    const one: any = arr.find((a) => {
-        return a[key] === parentValue;
-    });
-
-    if (one) {
-        return one;
-    }
-
-    for (let i = 0, ii = arr.length; i < ii; i++) {
-        const rt: any = deepFindParent(arr[i].children, key, parentValue);
-        if (rt) {
-            return rt;
-        }
-    }
-
-    return;
 }
 
 /**
@@ -869,106 +851,12 @@ function sortData(arr: ItreeAsset[], loop = true) {
 }
 
 /**
- * 初始的请求数据转换为可用的面板树形数据
- * @param arr
- */
-function transformData(arr: ItreeAsset[]) {
-    return {
-        name: 'root',
-        filename: 'root',
-        fileext: '',
-        uuid: 'root',
-        children: totreeData(legalData(arr), 'pathname', 'parent'),
-        state: '',
-        source: '',
-        pathname: '',
-        top: 0,
-        parent: '',
-        isDirectory: true,
-        isExpand: true,
-    };
-}
-
-/**
- * 处理原始数据
- * @param arr
- */
-function legalData(arr: ItreeAsset[]) {
-    const rt = arr.filter((a) => a.source !== '').map((a: ItreeAsset) => {
-        const paths: string[] = a.source.replace(dbProtocol, '').split(/\/|\\/).filter((b) => b !== '');
-
-        // 赋予新字段用于子父层级关联
-        a.pathname = paths.join('/');
-        a.name = paths.pop() || ''; // 注意这里的 pop() 操作已经改变了 paths
-        const [filename, fileext] = a.name.split('.');
-        a.filename = filename;
-        a.fileext = (fileext || '').toLowerCase();
-        a.parent = paths.length === 0 ? 'root' : paths.join('/');
-        a.isExpand = a.parent === 'root' ? true : false;
-        a.isParent = a.isDirectory ? true : false;
-        a.thumbnail = '';
-
-        // 生成缩略图
-        // @ts-ignore
-        if (extToThumbnail[Editor.Project.type].includes(fileext)) {
-            (async (one: ItreeAsset) => {
-                one.thumbnail = await thumbnail(one);
-                // TODO 这个地方需要优化，减少触发频率
-                vm.changeData();
-            })(a);
-        }
-
-        return a;
-    });
-
-    // 确保父级路径存在;
-    rt.slice().forEach((a: ItreeAsset) => {
-        ensureDir(rt, a.parent.split('/'));
-    });
-
-    return rt;
-}
-
-/**
- * 确保树形数据的路径存在
- * 例如 /a/b/c/d.js 需要确保 /a/b/c 都存在
- */
-function ensureDir(arr: ItreeAsset[], paths: string[]) {
-    const pathname = paths.join('/');
-
-    if (pathname === 'root') {
-        return arr;
-    }
-
-    // @ts-ignore
-    const one = getAssetFromtreeData(arr, pathname, 'pathname');
-
-    if (one.length === 0) {
-        const newOne = {
-            name: pathname,
-            source: dbProtocol + pathname,
-            isDirectory: true,
-            uuid: pathname,
-            state: 'disabled',
-            files: [],
-            importer: 'unknown',
-        };
-        // @ts-ignore
-        legalData([newOne]).forEach((a) => {
-            if (!arr.some((b) => b.pathname === a.pathname)) {
-                arr.push(a);
-            }
-        });
-    }
-}
-
-/**
  * 外部文件系统拖进资源
  * @param uuid 创建的位置
  * @param path 资源路径
  */
 function importAsset(uuid: string, path: string) {
-    const one = getAssetFromtreeData(treeData, uuid);
+    const one = getAssetFromTree(treeData, uuid);
     const url = one[0].source;
     Editor.Ipc.sendToPackage('asset-db', 'import-asset', url, path);
 }

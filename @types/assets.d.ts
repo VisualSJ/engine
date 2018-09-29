@@ -11,27 +11,31 @@ declare interface IaddAsset {
 }
 
 declare interface ItreeAsset {
-    pathname: string; // 来自 source 数据，去掉协议头 db://
-    name: string;
-    filename: string;
-    fileext: string;
-    children: ItreeAsset[];
-    top: number; // top 位置
-    _height?: number; // 整个节点包括children的高度
-    height?: number; // 整个节点包括children的高度
-    parent: string; // 它的父级的uuid
-    isDirectory: boolean; // 是否是文件夹
-    depth?: number;
-    isParent?: boolean; // 是否是父节点
-    isExpand?: boolean; // 是否展开显示
-    state?: string; // 状态
-    icon?: string,
-    thumbnail?: string,
-    parentUuid?: string, // 其父级的 uuid
-
-    files?: Array<string>; // 以下数据来自 assets-db 查询
-    importer?: string;
+    files: Array<string>; // 来自 assets-db 查询数据的字段
+    importer: string;
+    isDirectory: boolean;
     source: string;
+    subAssets: any;
     uuid: string;
 
+    protocol: string; // url 的 protocol 带有两斜杆
+    hostname: string; // url 的 host
+    host: string; // 带有 protocol + hostname
+    pathname: string; // url 的 pathname, 含文件名
+    dirname: string; // path 的 dir 去掉 protocol 和 hostname
+    name: string; // path 的 base
+    filename: string; // path 的 name
+    fileext: string; // path 的 ext 去掉点号
+    parentSource: string; // 父级的 source
+    parentUuid: string, // 父级的 uuid
+    isExpand: boolean; // 是否展开显示
+    isParent: boolean; // 是否是父节点
+    thumbnail: string, // 图片缩略图的 base64 地址
+    icon: string, // 文件图标
+    state: string; // 状态: ['invalid', '']
+    depth: number; // 树形层级
+    top: number; // top 位置
+    _height: number; // 整个节点包括children的高度
+    height: number; // 整个节点包括children的高度
+    children: ItreeAsset[];
 }

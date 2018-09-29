@@ -70,7 +70,7 @@ export const methods = {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('add', asset.uuid, { type: 'folder' });
+                                self.$emit('ipcAdd', { type: 'folder' }, asset.uuid);
                             }
                         },
                         {
@@ -80,7 +80,7 @@ export const methods = {
                             label: Editor.I18n.t('assets.menu.newJavascript'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('add', asset.uuid, { type: 'javascript' });
+                                self.$emit('ipcAdd', { type: 'javascript' }, asset.uuid);
                             }
                         },
                     ]
@@ -116,7 +116,7 @@ export const methods = {
                     label: Editor.I18n.t('assets.menu.delete'),
                     click() {
                         // @ts-ignore
-                        self.$emit('delete', asset.uuid);
+                        self.$emit('ipcDelete', asset.uuid);
                     }
                 }
             ]
@@ -181,7 +181,7 @@ export const methods = {
                 return;
             } else {
                 // @ts-ignore
-                this.$emit('multiple', asset.uuid);
+                this.$emit('multipleSelect', asset.uuid);
             }
         }
     },
@@ -271,7 +271,7 @@ export const methods = {
 
         // 拖动中感知当前所处的文件夹，高亮此文件夹
         // @ts-ignore
-        this.$emit('dragover', asset.uuid);
+        this.$emit('dragOver', asset.uuid);
     },
     /**
      * 拖动移开
@@ -289,7 +289,7 @@ export const methods = {
 
         // 拖动中感知当前所处的文件夹，离开后取消高亮
         // @ts-ignore
-        this.$emit('dragleave', asset.uuid);
+        this.$emit('dragLeave', asset.uuid);
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
@@ -341,7 +341,7 @@ export const methods = {
             }
         }
         // @ts-ignore
-        this.$emit('dragleave', asset.uuid); // 取消拖动的高亮效果
+        this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
         // @ts-ignore
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', selectId);
@@ -355,6 +355,6 @@ export function mounted() {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
 
         // @ts-ignore
-        this.$emit('dragover', this.list[0].uuid); // 根节点
+        this.$emit('dragOver', this.list[0].uuid); // 根节点
     });
 }

@@ -11,7 +11,7 @@ export async function thumbnail(asset: ItreeAsset) {
     return base64;
 }
 
-async function toDataURL(src: string, width: number, height: number, bgColor = '#fff') {
+async function toDataURL(src: string, width: number, height: number) {
     const img = document.createElement('img');
     img.src = src;
 
@@ -19,9 +19,6 @@ async function toDataURL(src: string, width: number, height: number, bgColor = '
     canvas.width = width;
     canvas.height = height;
     const context: any = canvas.getContext('2d');
-    context.fillStyle = bgColor;
-    context.rect(0, 0, width, height);
-    context.fill();
 
     await new Promise((resolve, reject) => {
         img.addEventListener('load', () => {
@@ -73,6 +70,6 @@ async function toDataURL(src: string, width: number, height: number, bgColor = '
         sy = 0;
     }
     context.drawImage(img, sx, sy, dx, dy, canvasx, canvasy, canvasw, canvash);
-    return canvas.toDataURL('image/jpeg');
+    return canvas.toDataURL('image/png');
 
 }

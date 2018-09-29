@@ -244,13 +244,14 @@ export async function ready() {
                 vm.$refs.tree.delete(uuid);
             },
             /**
-             *  ipc select 最近一次返回的项
+             * ipc select 最近一次返回的项
              */
             select(uuid: string) {
                 vm.current = vm.$refs.tree.select(uuid);
             },
             /**
-             *  ipc select 最近一次返回的项
+             * ipc unselect 最近一次取消选择
+             * 此时 vm.current = {}
              */
             unselect(uuid: string) {
                 vm.current = vm.$refs.tree.unselect(uuid);
@@ -268,7 +269,7 @@ export async function ready() {
                         {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
-                                vm.$refs.tree.new('', { type: 'folder' });
+                                vm.$refs.tree.ipcAdd({ type: 'folder' });
                             }
                         },
                         {
@@ -277,7 +278,7 @@ export async function ready() {
                         {
                             label: Editor.I18n.t('assets.menu.newJavascript'),
                             click() {
-                                vm.$refs.tree.new('', { type: 'javascript' });
+                                vm.$refs.tree.ipcAdd({ type: 'javascript' });
                             }
                         },
                     ]
@@ -306,8 +307,7 @@ export async function ready() {
                                 {
                                     label: Editor.I18n.t('assets.menu.newFolder'),
                                     click() {
-                                        // @ts-ignore
-                                        self.new('', { type: 'folder' });
+                                        vm.$refs.tree.ipcAdd({ type: 'folder' });
                                     }
                                 },
                                 {
@@ -316,8 +316,7 @@ export async function ready() {
                                 {
                                     label: Editor.I18n.t('assets.menu.newJavascript'),
                                     click() {
-                                        // @ts-ignore
-                                        self.new('', { type: 'javascript' });
+                                        vm.$refs.tree.ipcAdd({ type: 'javascript' });
                                     }
                                 },
                             ]
