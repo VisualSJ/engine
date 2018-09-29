@@ -4,23 +4,28 @@
   display: inline-block;
   position: relative;
   box-sizing: border-box;
+  font-family: inherit;
 }
 :host {
   contain: content;
   cursor: pointer;
-  user-select: none;
-  outline: none;
-  display: inline-block;
-  position: relative;
-  --box-width: 1.2em;
   --box-height: 1.2em;
+  --c-border-default: #333;
+  height: var(--box-height);
+  line-height: var(--box-height);
+}
+:host .default-checkbox,
+:host label {
+  display: inline-block;
+  vertical-align: top;
+  height: var(--box-height, 1.2em);
+  line-height: inherit;
 }
 :host .default-checkbox {
   position: relative;
-  display: inline-block;
-  width: var(--box-width, 1.2em);
-  height: var(--box-height, 1.2em);
-  border: 1px solid #333;
+  width: var(--box-height, 1.2em);
+  border: 1px solid var(--c-border-default);
+  box-sizing: border-box;
 }
 :host .default-checkbox i {
   visibility: hidden;
@@ -30,13 +35,8 @@
   background: #07d;
   clip-path: polygon(8% 55%, 20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
 }
-:host div {
-  display: inline-block;
-  vertical-align: middle;
-}
-:host label {
+:host label:hover {
   cursor: pointer;
-  vertical-align: middle;
 }
 :host([focused]) label {
   color: #07d;

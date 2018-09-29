@@ -50,24 +50,17 @@ section {
     .details ~ .stack {
         margin-left: 40px;
     }
-    // .arrow {
-    //     display: inline-block;
-    //     background: #555555;
-    //     width: 0.5em;
-    //     height: 0.7em;
-    //     clip-path: polygon(0 0, 100% 50%, 0 100%);
-    // }
     .i-arrow-right {
         display: inline-block;
         font-size: 0.6em;
     }
-    .arrow-unfold {
+    .i-arrow-right[unfold] {
         transform: rotate(90deg);
     }
-    &.dark {
+    &:nth-child(odd) {
         background: #222222;
     }
-    &.light {
+    &:nth-child(odd){
         background: #292929;
     }
     &:hover {

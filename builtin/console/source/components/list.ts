@@ -38,7 +38,12 @@ export const watch: any = {
             this.renderList();
             this.$emit('input', false);
         }
-    }
+    },
+    lineHeight(val: number) {
+        if (val) {
+            this.renderList();
+        }
+    },
 };
 
 export const methods: any = {

@@ -2,6 +2,7 @@ const list: any[] = (exports.list = []);
 let outputList: IMessageItem[] = (exports.outputList = []);
 let updateFn: any;
 let lineHeight: number;
+let fontSize: number;
 let collapse: boolean = true;
 let filterType: string = '';
 let filterText: string = '';
@@ -22,7 +23,17 @@ exports.setUpdateFn = (fn: any) => {
  */
 exports.setLineHeight = (h: number) => {
     lineHeight = exports.lineHeight = h;
+    exports.update();
 };
+
+/**
+ * 设置字体大小
+ * @param {number} size
+ */
+exports.setFontSize = (size: number) => {
+    fontSize = exports.fontSize = size;
+};
+
 /**
  * 添加log消息数组
  * @param {any[]} items
@@ -32,6 +43,7 @@ exports.addItems = (items: any[]) => {
         exports.addItem(item);
     });
 };
+
 /**
  * 添加单个log消息
  * @param {*} item
@@ -42,15 +54,16 @@ exports.addItem = (item: any) => {
         (text) => '' !== text
     );
     newItem.type = item.type;
-    newItem.rows = messageArr.length + item.stack.length;
+    newItem.stack = item.stack.filter((d: any) => d); // 清除 stack 里的空值假值
+    newItem.rows = messageArr.length + newItem.stack.length;
     newItem.title = messageArr[0];
     newItem.content = messageArr.splice(1);
-    newItem.stack = item.stack;
     newItem.fold = true;
     newItem.count = 1;
     list.push(newItem);
     exports.update();
 };
+
 /**
  * 设置log消息是否折叠
  * @param {boolean} bool
@@ -65,7 +78,7 @@ exports.setCollapse = (bool: boolean) => {
  * @param {string} type
  */
 exports.setFilterType = (type: string) => {
-    filterType = type;
+    filterType = type === 'all' ? '' : type;
     exports.update();
 };
 
@@ -148,7 +161,7 @@ exports.update = () => {
                     : (height += item.rows * (lineHeight - 2) + 14);
             });
 
-            updateFn();
+            typeof updateFn === 'function' && updateFn();
             updateLocker = false;
         });
 };

@@ -5,6 +5,7 @@ import { join } from 'path';
 
 const manager = require('./manager');
 const Vue = require('vue/dist/vue.js');
+const menu = require('@base/electron-menu');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -65,7 +66,7 @@ export async function ready() {
         data() {
             return {
                 change: false,
-                fontSize: 14,
+                fontSize: 12,
                 lineHeight: 26
             };
         },
@@ -87,7 +88,57 @@ export async function ready() {
             },
             onFilterText(event: any) {
                 manager.setFilterText(event.target.value);
-            }
+            },
+
+            // 设置字体大小
+            setFontSize(event: any) {
+                this.fontSize = parseInt(event.target.value, 10);
+                manager.setFontSize(this.fontSize);
+            },
+
+            // 设置行间距
+            setLineHeight(event: any) {
+                this.lineHeight = parseInt(event.target.value, 10);
+                manager.setLineHeight(this.lineHeight);
+            },
+
+            // 点击生成右键菜单
+            onOpenMenu(event: any) {
+                menu.popup({
+                    x: event.pageX,
+                    y: event.pageY,
+                    menu: [
+                        {
+                            label: 'editor log',
+                            click() {
+                                // todo 打开文件对应处理
+                            }
+                        },
+                        {
+                            label: 'cocos console log',
+                            click() {
+                                // todo 打开文件对应处理
+                            }
+                        }
+                    ]
+                });
+            },
+            /**
+             * 根据 type 筛选日志
+             * @param event
+             */
+            onFilterType(event: any) {
+                manager.setFilterType(event.target.value);
+            },
+
+            /**
+             * 翻译
+             * @param key
+             */
+            t(key: string) {
+                const name = `preferences.${key}`;
+                return Editor.I18n.t(name);
+            },
         },
         components: {
             'console-list': require('./components/list')

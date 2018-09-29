@@ -4,6 +4,7 @@
   .default-checkbox {
     border-color: @c-border;
     background-color: @c-dark-bg;
+    border-radius: 2px;
     i {
       background-color: @c-border-focus;
     }
@@ -21,8 +22,13 @@
   }
 }
 
-:host([focused])  .default-checkbox {
-  border-color: @c-border-focus;
+:host([focused]) {
+  label {
+    color: @c-border-focus;
+  }
+  .default-checkbox {
+    border-color: @c-border-focus;
+  }
 }
 
 // disabled需在hover之后设置

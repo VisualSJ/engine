@@ -4,19 +4,23 @@
   display: inline-block;
   position: relative;
   box-sizing: border-box;
+  font-family: inherit;
 }
 :host {
   cursor: pointer;
   transition: opacity 0.3s;
   border: 1px solid #333;
   background: #eee;
+  font-size: inherit;
+  line-height: 1em;
 }
 :host > span {
   background: none;
   border: none;
   font-size: inherit;
   display: inline-block;
-  padding: 0.2em 1em;
+  padding: 0.5em;
+  line-height: inherit;
   outline: none;
   text-align: center;
   width: 100%;
