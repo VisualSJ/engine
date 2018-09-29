@@ -161,6 +161,7 @@ export const methods = {
         const uuid = asset.uuid;
         // @ts-ignore
         if (event.ctrlKey || event.metaKey) {
+            // @ts-ignore
             if (this.selects.includes(uuid)) {
                 Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
             } else {
@@ -173,7 +174,7 @@ export const methods = {
         if (event.shiftKey) {
             // const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
             // 如果之前没有选中节点，则只要选中当前点击的节点
-
+            // @ts-ignore
             if (this.selects.length === 0) {
                 Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
                 Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);

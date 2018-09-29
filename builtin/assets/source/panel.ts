@@ -105,8 +105,7 @@ export const messages = {
      * 打开 loading 状态，并隐藏资源树
      */
     'asset-db:close'() {
-        vm.ready = false;
-        vm.list = [];
+        vm.clear();
     },
 
     /**
