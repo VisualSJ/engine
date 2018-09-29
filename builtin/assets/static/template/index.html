@@ -6,12 +6,12 @@
 
     <div class="tools">
         <i class="i-add"
-            @click="menuPopupNew($event)"
+            @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="searchInput"></ui-input>
+        <ui-input tabindex="-1" ref="search"></ui-input>
         <i class="expand"
-            v-bind:class="{'i-full':!expand, 'i-full-over':expand}"
-            @click="toggleAll"
+            :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
+            @click="allToggle"
         ></i>
         <i class="i-refresh"
             @click="refresh"
@@ -19,30 +19,19 @@
     </div>
 
     <div class="viewBox" ref="viewBox"
-        @mousedown="contextMenuPopup($event)"
+        @mousedown="popupContextMenu($event)"
     >
-        <div class=scrollBar ref="scrollBar"></div>
         <tree ref="tree"
-            :state="state"
-            :list="nodes"
-            :select="select"
-            @toggle="toggleAsset"
-            @rename="renameAsset"
-            @dragover="overAsset"
-            @dragleave="leaveAsset"
-            @drop="dropAsset"
-            @new="newAsset"
-            @delete="deleteAsset"
-            @multiple="multipleSelect"
-            @copy="copyAsset"
-            @paste="pasteAsset"
         ></tree>
-        <section class="dirShadow" 
-            :style="{ top: shadowOffset[0] + 'px', height: shadowOffset[1] + 'px' }"
+        <div class=scrollBar
+            :style="{ height: treeHeight + 'px'}"
+        ></div>
+        <div class="dirBox" 
+            :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
         >
-        </section>
+        </div>
     </div>
     <div class="sourcepath">
-        {{current.source}}
+        {{current && current.source}}
     </div>
 </div>

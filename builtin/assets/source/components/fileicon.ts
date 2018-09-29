@@ -5,6 +5,7 @@
  * 文件的后缀
  */
 
+exports.webp =
 exports.png =
 exports.jpge =
 exports.jpg = 'thumbnail';

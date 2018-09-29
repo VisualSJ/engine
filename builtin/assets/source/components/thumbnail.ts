@@ -5,7 +5,8 @@ export async function thumbnail(asset: ItreeAsset) {
     const base64: string = await toDataURL(asset.files[0], 20, 20);
     // @ts-ignore
     if (asset.importer !== 'texture' || asset.files[0] === '') {
-
+        console.error(`asset ${asset.source} load thumbnail fail.`);
+        return '';
     }
     return base64;
 }

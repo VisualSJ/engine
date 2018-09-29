@@ -1,0 +1,134 @@
+@orange:#f90;
+@blue:#09f;
+@green:#0f0;
+
+.treenode {
+    display: block;
+    position: relative;
+    padding: 2px 8px 2px 0;
+    height: 16px;
+    font-size: 12px;
+    white-space: nowrap;
+    &[active="true"] {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    &[state="disabled"] {
+        color: #717171 !important
+    }
+    &[state="input"] {
+        background-color: transparent !important;
+    }
+    &[state=""] {
+        &:hover {
+            color: @orange;
+            background-color: rgba(255, 255, 255, 0.1);
+            .lock {
+                display: inline-block;
+            }
+        }
+    }
+    &[animate] {
+        .arrow {
+            transition: 0.2s transform;
+        }
+    }
+    img {
+        border: none;
+    }
+    .file {
+        display: inline-block;
+        margin-left: 16px;
+        width: 16px;
+        height: 14px;
+        padding-right: 4px;
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 2px;
+            vertical-align: bottom;
+        }
+    }
+    .folder {
+        transition: none !important;
+        text-align: left !important;
+    }
+    &[expand="true"] {
+        .arrow {
+            transform: rotate(90deg);
+            padding-top: 2px;
+        }
+    }
+    [class^="i-"],
+    [class*=" i-"] {
+        width: 16px;
+        text-align: center;
+    }
+    .arrow {
+        height: 14px;
+        text-align: center;
+        cursor: pointer;
+    }
+    .lock {
+        display: none;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 100;
+        font-size: 12px;
+        color: #ccc !important;
+        &:hover {
+            color: @orange  !important;
+        }
+        &.i-lock {
+            display: inline-block;
+        }
+    }
+    .name {
+        cursor: default;
+    }
+    .loading {
+        display: inline-block;
+        position: relative;
+        top: -3px;
+        left: 5px;
+        transform: scale(0.8);
+    }
+    .rename {
+        font-size: 12px;
+        outline: 1px solid @blue;
+        outline-offset: 0;
+        background-color: #252525;
+        border: none;
+        color: #ccc;
+        padding-left: 4px;
+        width: ~'calc(100% - 50px)';
+        vertical-align: middle;
+    }
+}
+
+.tree {
+    &[state="search"] {
+        >.treenode {
+            .file {
+                margin-left: -2px;
+                padding-right: 2px;
+            }
+        }
+    }
+    &[hoving] {
+        >.treenode {
+            &[insert="inside"] {
+                color: @orange;
+            }
+        }
+    }
+}
+
+:host([focused]) {
+    .tree {
+        .treenode[active="true"] {
+            background-color: #059;
+        }
+    }
+}

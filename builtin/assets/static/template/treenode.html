@@ -1,0 +1,44 @@
+<ui-drag-item class="treenode" type="asset"
+    :draggable="asset.state==='disabled'?false:true"
+    :active="selects.indexOf(asset.uuid) !== -1" 
+    :style="{ paddingLeft: (asset.depth * 16 + 4) + 'px' }"
+    :class="{'parent':asset.isParent}"
+    :expand="asset.isExpand"
+    :state="asset.state"
+    @mousedown="mouseDown($event, asset)"
+    @click="click($event, asset)" 
+    @dragstart="dragStart($event, asset)" 
+    @dragover="dragOver($event, asset)" 
+    @dragleave="dragLeave($event, asset)" 
+    @drop="drop($event, asset)" 
+>
+    <i class="arrow i-arrow-right"
+        v-if="asset.isParent" 
+        @click="toggle(asset)"
+    ></i>
+    <i class="folder i-folder"
+        v-if="asset.isDirectory" 
+    ></i>
+    <i class="file"
+        :class="asset.icon"
+        v-else
+    >
+    <img class="thumbnail" 
+        v-if="asset.icon==='thumbnail'"
+        :src="asset.thumbnail">
+    </i>
+    <label class="name"
+        v-if="asset.state!=='input'"
+        @dblclick="open($event, asset)"
+    >{{asset.name}}</label>
+    <input class="rename" ref='input'
+        v-else-if="asset.state==='input'"
+        :value="asset.name"
+        @blur="renameBlur(asset)"
+    >
+    <section class="loading"
+        v-if="asset.state==='loading'"
+    >
+        <ui-loading></ui-loading>
+    </section>
+</ui-drag-item>

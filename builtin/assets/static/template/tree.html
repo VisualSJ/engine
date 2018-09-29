@@ -1,48 +1,22 @@
-<ui-drag-area class="tree" dropable="asset,file">
-    <ui-drag-item class="node" type="asset"
+<ui-drag-area class="tree" dropable="asset,file"
+    :state="state"
+    :style="{ top: top + 'px' }"
+>
+    <treenode class="node" type="asset"
+        v-for="(asset,index) in assets" 
         :key="index"
-        v-for="(item,index) in list" 
-        :draggable="item.state==='disabled'?false:true"
-        :active="select.indexOf(item.uuid) !== -1" 
-        @mousedown="mouseDown($event, item)"
-        @click="selectAsset($event, item)" 
-        @dragstart="dragStart($event, item)" 
-        @dragover="dragOver($event, item)" 
-        @dragleave="dragLeave($event, item)" 
-        @drop="drop($event, item)" 
-        :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
-        :class="{'parent':item.isParent}"
-        :expand="item.isExpand"
-        :state="item.state"
+        :asset="asset"
+        :selects="selects"
+        @delete="ipcDelete"
+        @add="ipcAdd"
+        @copy="copy"
+        @paste="paste"
+        @multiple="multipleSelect"
+        @rename="rename"
+        @dragover="dragOver"
+        @dragleave="dragLeave"
+        @drop="drop"
     >
-        <i class="arrow i-arrow-right"
-            v-if="item.isParent" 
-            @click="toggleAsset(item)"
-        ></i>
-        <i class="folder i-folder"
-            v-if="item.isDirectory" 
-        ></i>
-        <i class="file"
-            :class="item.icon"
-            v-else
-        >
-        <img class="thumbnail" 
-            v-if="item.icon==='thumbnail'"
-            :src="item.thumbnail">
-        </i>
-        <label class="name"
-            v-if="item.state!=='input'"
-            @dblclick="openAsset($event, item)"
-        >{{item.name}}</label>
-        <input class="rename" ref='input'
-            v-else-if="item.state==='input'"
-            :value="item.name"
-            @blur="renameBlur(item)"
-        >
-        <section class="loading"
-            v-if="item.state==='loading'"
-        >
-            <ui-loading></ui-loading>
-        </section>
-    </ui-drag-item>
+    </treenode>
 </ui-drag-area>
+
