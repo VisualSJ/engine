@@ -5,6 +5,7 @@
     :class="{'parent':asset.isParent}"
     :expand="asset.isExpand"
     :state="asset.state"
+    :invalid="asset.invalid"
     @mousedown="mouseDown($event, asset)"
     @click="click($event, asset)" 
     @dragstart="dragStart($event, asset)" 

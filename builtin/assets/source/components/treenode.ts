@@ -355,12 +355,5 @@ export const methods = {
 };
 
 export function mounted() {
-    // @ts-ignore
-    this.$el.addEventListener('dragenter', () => {
-        // 取消选中，避免样式重叠
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
 
-        // @ts-ignore
-        this.$emit('dragOver', this.list[0].uuid); // 根节点
-    });
 }

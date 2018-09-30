@@ -88,7 +88,7 @@ export function mounted() {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
 
         // @ts-ignore
-        this.$emit('dragover', this.list[0].uuid); // 根节点
+        this.$emit('dragover', this.assets[0].uuid); // 根节点
     });
 }
 

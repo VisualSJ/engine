@@ -20,6 +20,9 @@ async function refresh() {
     if (!arr) { // 数据可能为空
         return;
     }
+    // arr.shift();
+    // console.log(arr);
+    // return;
 
     return legalData(arr);
 }
@@ -44,16 +47,18 @@ function legalData(arr: ItreeAsset[]) {
         a.host = a.protocol + a.hostname;
         a.pathname = unescape(pathname || '') || '';
         // @ts-ignore
-        a.dirname = ['/', null].includes(pathname) ? '' : a.isDirectory ? a.pathname : dirname(a.pathname);
+        a.dirname = ['/', null].includes(pathname) ? '' : dirname(a.pathname);
         a.name = base;
         a.filename = name;
         a.fileext = ext.toLowerCase().split('.').pop() || '';
-        a.parentSource = a.host + (a.dirname === '' ? '/' : dirname(a.dirname));
+        a.parentSource = a.host + (a.dirname === '' ? '/' : a.dirname);
+        a.topSource = a.host + '/';
         a.isExpand = a.dirname === '' ? true : false;
         a.isParent = a.isDirectory ? true : false;
         a.thumbnail = '';
         a.icon = fileicon[a.fileext] || 'i-file';
-        a.invalid = a.dirname === '' ? true : false;
+        a.invalid = a.dirname === '' ? false : !a.uuid ? true : false;
+        a.source = a.dirname === '' ? a.topSource : a.source; // 统一顶层节点出现 db://assets/ 或 db://assets 为 db://assets/
         a.state = '';
 
         // 生成缩略图
@@ -100,10 +105,9 @@ function ensureDir(arr: ItreeAsset[], parentSource: string) {
             isDirectory: true,
             source: parentSource,
             subAssets: {},
-            state: 'invalid'
         };
         // @ts-ignore
-        arr.push(newOne);
+        arr.push(...legalData([newOne]));
 
         // 继续迭代
         ensureDir(arr, dirname(parentSource));
