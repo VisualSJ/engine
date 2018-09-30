@@ -28,7 +28,7 @@ export const methods = {
      * @param uuid
      */
     async open(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
 
@@ -49,7 +49,7 @@ export const methods = {
             return;
         }
 
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
 
@@ -128,7 +128,7 @@ export const methods = {
      * @param asset
      */
     click(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
 
@@ -154,7 +154,7 @@ export const methods = {
      * ctrl 支持取消已选中项
      */
     multipleSelect(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
 
@@ -199,7 +199,7 @@ export const methods = {
      * @param asset
      */
     rename(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
 
@@ -209,9 +209,9 @@ export const methods = {
         // @ts-ignore
         this.$nextTick(() => {
             // @ts-ignore
-            this.$refs.input[0].focus();
+            this.$refs.input.focus();
             // @ts-ignore
-            this.$refs.input[0].setSelectionRange(0, asset.name.lastIndexOf('.'));
+            this.$refs.input.setSelectionRange(0, asset.name.lastIndexOf('.'));
         });
     },
     /**
@@ -220,7 +220,7 @@ export const methods = {
      */
     renameBlur(asset: ItreeAsset) {
         // @ts-ignore
-        let newName = this.$refs.input[0].value.trim();
+        let newName = this.$refs.input.value.trim();
 
         // 文件的名称不能为空
         if (asset.name.lastIndexOf('.') !== -1) {
@@ -256,9 +256,10 @@ export const methods = {
      * @param uuid
      */
     dragOver(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
+
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -279,9 +280,10 @@ export const methods = {
      * @param uuid
      */
     dragLeave(event: Event, asset: ItreeAsset) {
-        if (asset.state === 'disabled') {
+        if (asset.invalid) {
             return;
         }
+
         // @ts-ignore
         const target: any = event.currentTarget;
         target.setAttribute('insert', '');
@@ -297,6 +299,10 @@ export const methods = {
      * @param uuid
      */
     drop(event: Event, asset: ItreeAsset) {
+        if (asset.invalid) {
+            return;
+        }
+
         event.preventDefault();
 
         // @ts-ignore

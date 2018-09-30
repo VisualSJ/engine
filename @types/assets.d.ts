@@ -32,7 +32,8 @@ declare interface ItreeAsset {
     isParent: boolean; // 是否是父节点
     thumbnail: string, // 图片缩略图的 base64 地址
     icon: string, // 文件图标
-    state: string; // 状态: ['invalid', '']
+    state: string; // 状态: ['', 'input', 'loading']
+    invalid: boolean; // 是否可用
     depth: number; // 树形层级
     top: number; // top 位置
     _height: number; // 整个节点包括children的高度

@@ -97,6 +97,7 @@ export const messages = {
      * 刷新数据
      */
     'asset-db:ready'() {
+        vm.ready = true;
         vm.refresh();
     },
 
@@ -106,6 +107,7 @@ export const messages = {
      */
     'asset-db:close'() {
         vm.clear();
+        vm.ready = false;
     },
 
     /**
@@ -114,7 +116,7 @@ export const messages = {
      * @param uuid 选中物体的 uuid
      */
     'selection:select'(type: string, uuid: string) {
-        if (type !== 'asset') {
+        if (type !== 'asset' || !vm.ready) {
             return;
         }
         vm.select(uuid);
@@ -126,7 +128,7 @@ export const messages = {
      * @param uuid 选中物体的 uuid
      */
     'selection:unselect'(type: string, uuid: string) {
-        if (type !== 'asset') {
+        if (type !== 'asset' || !vm.ready) {
             return;
         }
         vm.unselect(uuid);
@@ -208,10 +210,6 @@ export async function ready() {
             async refresh() {
                 // 清空原数据
                 vm.clear();
-
-                if (!vm.ready) {
-                    return;
-                }
 
                 vm.$refs.tree.refresh();
             },
@@ -334,8 +332,10 @@ export async function ready() {
     });
 
     // db 就绪状态才需要查询数据
-    const isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-    isReady && vm.refresh();
+    vm.ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    if (vm.ready) {
+        vm.refresh();
+    }
 }
 
 export async function beforeClose() { }

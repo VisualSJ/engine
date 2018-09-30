@@ -114,7 +114,7 @@ export const methods = {
         //
         treeData = {
             depth: 0,
-            state: 'invalid',
+            invalid: true,
             children: toTree(dbdata, 'source', 'parentSource'),
         };
         // console.log(treeData);
@@ -134,6 +134,9 @@ export const methods = {
         this.changeData();
     },
 
+    /**
+     * 全部选中
+     */
     allSelect() {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
         for (const [top, asset] of assetsMap) {
@@ -174,10 +177,15 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        const arr = db.ipcAdd(uuid);
+        const arr = await db.ipcAdd(uuid);
+        console.log(arr);
         arr.forEach((newNode: ItreeAsset) => {
-            const parent = addAssetIntoTree(treeData.children, 'source', 'parentSource', newNode);
-            parent.isExpand = true;
+            let parent = addAssetIntoTree(treeData.children, 'source', 'parentSource', newNode);
+            if (!parent) {
+                parent = treeData;
+            }
+            parent.state = ''; // 还原状态
+            parent.isExpand = true; // 展开显示
         });
         // 触发节点数据已变动
         this.changeData();
@@ -409,53 +417,45 @@ export const methods = {
      * @param json
      */
     drop(asset: ItreeAsset, json: IdragAsset) {
-        if (asset.state === 'disabled') {
-            return;
-        }
-
         if (json.insert !== 'inside') {
             return false; // 不是拖动的话，取消
         }
 
-        const toData = getAssetFromTree(treeData, json.to); // 将被注入数据的对象
-
-        let target: ItreeAsset;
-
-        // @ts-ignore
-        const toNode: ItreeAsset = getAssetFromMap(toData[0].uuid);
-        if (asset.state === 'disabled') {
+        const fromData = getAssetFromTree(treeData, json.from);
+        const fromNode = fromData[0]; // 被移动的对象
+        if (!fromNode || fromNode.invalid) {
             return;
         }
 
-        if (toNode.isDirectory) {
-            target = toNode;
-        } else {
+        const toData = getAssetFromTree(treeData, json.to);
+        let toNode = toData[0]; // 将被注入数据的对象
+        if (!toNode) {
+            return;
+        }
+
+        if (!toNode.isDirectory) {
             // @ts-ignore
-            target = getAssetFromMap(toData[3].uuid); // 树形节点的父级
+            toNode = getAssetFromTree(treeData, toData[3].uuid)[0]; // 节点的父级
+        }
+
+        if (toNode.invalid) {
+            return;
         }
 
         if (json.from === 'osFile') { // 从外部拖文件进来
-            // TODO 面板需要有等待的遮罩效果
-            // console.log(json);
             // @ts-ignore
             json.files.forEach((one) => {
-                importAsset(target.uuid, one.path);
+                importAsset(toNode.uuid, one.path);
             });
-            return;
-        } else { // 常规内部节点拖拽
-            const fromData = getAssetFromTree(treeData, json.from);
-
-            if (target.uuid === fromData[3].uuid) {
-                return false; // 资源移动仍在原来的目录内，不需要移动
+        } else {
+            if (toNode.uuid === fromData[3].uuid) { // 资源移动仍在原来的目录内，不需要移动
+                return;
             }
 
             // 移动资源
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, target.uuid);
-
-            if (target) {
-                target.state = 'loading'; // 显示 loading 效果
-            }
+            Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, toNode.uuid);
         }
+        toNode.state = 'loading'; // 显示 loading 效果
     },
 
     /**
@@ -603,7 +603,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             vm.state = 'search';
 
             // @ts-ignore
-            if (!['invalid'].includes(json.state) && json.name.search(vm.search) !== -1) { // 平级保存
+            if (!json.invalid && json.name.search(vm.search) !== -1) { // 平级保存
                 assetsMap.set(start, one);
                 index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
             }
@@ -653,12 +653,13 @@ function resetTreeProps(props: any, tree: ItreeAsset[] = treeData.children) {
 }
 
 /**
- * 获取节点对象 node,
+ * 获取资源节点对象 node,
  * 对象所在数组索引 index，
  * 所在数组 array，
  * 所在数组其所在的对象 object
  * 返回 [node, index, array, object]
  *
+ * 资源节点不可用的情况返回 []
  * @param arr
  * @param uuid
  */
@@ -681,6 +682,9 @@ function getAssetFromTree(obj: ItreeAsset, value: string = '', key: string = 'uu
         const one = arr[i];
         // @ts-ignore
         if (one[key] === value) { // 全等匹配
+            if (one.invalid) { // 资源不可用
+                return [];
+            }
             return [one, i, arr, obj]; // 找到后返回的数据格式
         }
 
@@ -698,6 +702,8 @@ function getAssetFromTree(obj: ItreeAsset, value: string = '', key: string = 'uu
 
 /**
  * 更快速地找到树形节点
+ * 只用于树形内部操作，不能用于获取节点数据发送 ipc 操作，
+ * 因为节点数据对于树形来说都是可用的，但资源节点存在不可用的情况
  */
 function getAssetFromMap(uuid = '') {
     for (const [top, json] of assetsMap) {
@@ -744,11 +750,11 @@ function addAssetIntoTree(tree: ItreeAsset[], key: string, parentKey: any, asset
     // 如果现有数据中有相同 pathname 的数据，可能需要合并现有数据
     const existOne: any = getAssetFromTree(treeData, asset.source, 'parentSource');
     if (existOne.length > 0) {
-        if (existOne.state === 'disabled' && asset.state !== 'disabled') { // 说明之前这条数据是由于路径缺失而临时补上的
+        if (existOne.invalid && !asset.invalid && asset.uuid) { // 说明之前这条数据是由于路径缺失而临时补上的
             existOne.uuid = asset.uuid;
-            existOne.state = '';
+            existOne.invalid = true;
         }
-        return;
+        return existOne;
     }
 
     // 找出父级
@@ -761,10 +767,11 @@ function addAssetIntoTree(tree: ItreeAsset[], key: string, parentKey: any, asset
         asset.parentUuid = one.uuid;
         one.children.push(asset);
         one.isParent = true;
+        return one;
     } else {
         tree.push(asset);
+        return;
     }
-    return one;
 }
 
 /**

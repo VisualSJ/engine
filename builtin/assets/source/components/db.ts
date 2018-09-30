@@ -53,7 +53,8 @@ function legalData(arr: ItreeAsset[]) {
         a.isParent = a.isDirectory ? true : false;
         a.thumbnail = '';
         a.icon = fileicon[a.fileext] || 'i-file';
-        a.state = a.dirname === '' ? 'invalid' : '';
+        a.invalid = a.dirname === '' ? true : false;
+        a.state = '';
 
         // 生成缩略图
         // @ts-ignore
