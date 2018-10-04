@@ -48,12 +48,11 @@ export const methods = {
         if (event.button !== 2) {
             return;
         }
+        event.stopPropagation();
 
-        if (asset.invalid) {
+        if (asset.invalid) { // 需要
             return;
         }
-
-        event.stopPropagation();
 
         const self = this;
 
@@ -109,7 +108,7 @@ export const methods = {
                     label: Editor.I18n.t('assets.menu.rename'),
                     click(event: Event) {
                         // @ts-ignore
-                        self.rename(event, asset);
+                        self.rename(asset);
                     }
                 },
                 {
@@ -136,8 +135,7 @@ export const methods = {
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             this.multipleSelect(event, asset);
         } else { // 单选
-            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', asset.uuid);
+            this.singleSelect(asset.uuid);
         }
 
         // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
@@ -147,6 +145,14 @@ export const methods = {
         setTimeout(() => {
             target.removeAttribute('animate');
         }, 500);
+    },
+    /**
+     * 选中节点
+     * @param uuid
+     */
+    singleSelect(uuid: string) {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
     },
     /**
      * 多选
@@ -176,8 +182,7 @@ export const methods = {
             // 如果之前没有选中节点，则只要选中当前点击的节点
             // @ts-ignore
             if (this.selects.length === 0) {
-                Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+                this.singleSelect(uuid);
                 return;
             } else {
                 // @ts-ignore
@@ -198,10 +203,9 @@ export const methods = {
      * @param event
      * @param asset
      */
-    rename(event: Event, asset: ItreeAsset) {
-        if (asset.invalid) {
-            return;
-        }
+    rename(asset: ItreeAsset) {
+        // 选中该节点
+        this.singleSelect(asset.uuid);
 
         // 改变节点状态
         asset.state = 'input';
@@ -220,13 +224,18 @@ export const methods = {
      */
     renameBlur(asset: ItreeAsset) {
         // @ts-ignore
-        let newName = this.$refs.input.value.trim();
+        const newName = this.$refs.input.value.trim();
 
-        // 文件的名称不能为空
-        if (asset.name.lastIndexOf('.') !== -1) {
-            if (newName.substring(0, newName.lastIndexOf('.')) === '') {
-                newName = '';
-            }
+        // 文件名称带有后缀，此时不能只发后缀
+        if (newName.toLowerCase() === asset.ext) {
+            asset.state = '';
+            return;
+        }
+
+        // 与原名称一样
+        if (newName === asset.name) {
+            asset.state = '';
+            return;
         }
 
         // @ts-ignore
@@ -256,10 +265,6 @@ export const methods = {
      * @param uuid
      */
     dragOver(event: Event, asset: ItreeAsset) {
-        if (asset.invalid) {
-            return;
-        }
-
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -280,10 +285,6 @@ export const methods = {
      * @param uuid
      */
     dragLeave(event: Event, asset: ItreeAsset) {
-        if (asset.invalid) {
-            return;
-        }
-
         // @ts-ignore
         const target: any = event.currentTarget;
         target.setAttribute('insert', '');
@@ -299,10 +300,7 @@ export const methods = {
      * @param uuid
      */
     drop(event: Event, asset: ItreeAsset) {
-        if (asset.invalid) {
-            return;
-        }
-
+        // 需要取消默认行为才能获取 dataTransfer 数据
         event.preventDefault();
 
         // @ts-ignore
@@ -350,7 +348,7 @@ export const methods = {
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
         // @ts-ignore
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', selectId);
+        this.singleSelect(selectId);
     }
 };
 

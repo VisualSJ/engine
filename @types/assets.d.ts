@@ -23,12 +23,13 @@ declare interface ItreeAsset {
     host: string; // 带有 protocol + hostname
     pathname: string; // url 的 pathname, 含文件名
     dirname: string; // path 的 dir 去掉 protocol 和 hostname
-    name: string; // path 的 base
+    name: string; // path 的 base 即包含后缀
+    ext: string; // path 的 ext
     filename: string; // path 的 name
     fileext: string; // path 的 ext 去掉点号
     parentSource: string; // 父级的 source
+    parentUuid: string; // 父级的 uuid
     topSource: string; // 顶层父级的 source，如 db://assets/
-    parentUuid: string, // 父级的 uuid
     isExpand: boolean; // 是否展开显示
     isParent: boolean; // 是否是父节点
     thumbnail: string, // 图片缩略图的 base64 地址

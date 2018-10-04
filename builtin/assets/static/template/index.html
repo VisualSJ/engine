@@ -23,13 +23,13 @@
     >
         <tree ref="tree"
         ></tree>
-        <div class=scrollBar
-            :style="{ height: treeHeight + 'px'}"
-        ></div>
         <div class="dirBox" 
             :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
         >
         </div>
+        <div class=scrollBar
+            :style="{ height: treeHeight + 'px'}"
+        ></div>
     </div>
     <div class="sourcepath">
         {{current && current.source}}

@@ -20,8 +20,11 @@ async function refresh() {
     if (!arr) { // 数据可能为空
         return;
     }
-    // arr.shift();
-    // console.log(arr);
+    arr.shift();
+    arr.shift();
+    arr.shift();
+    // const rt = legalData(arr);
+    // console.log(rt);
     // return;
 
     return legalData(arr);
@@ -49,16 +52,18 @@ function legalData(arr: ItreeAsset[]) {
         // @ts-ignore
         a.dirname = ['/', null].includes(pathname) ? '' : dirname(a.pathname);
         a.name = base;
+        a.ext = ext.toLowerCase();
         a.filename = name;
-        a.fileext = ext.toLowerCase().split('.').pop() || '';
-        a.parentSource = a.host + (a.dirname === '' ? '/' : a.dirname);
+        a.fileext = a.ext.split('.').pop() || '';
+        a.parentSource = a.dirname === '' ? '' : a.host + (a.dirname === '' ? '/' : a.dirname);
         a.topSource = a.host + '/';
         a.isExpand = a.dirname === '' ? true : false;
         a.isParent = a.isDirectory ? true : false;
         a.thumbnail = '';
         a.icon = fileicon[a.fileext] || 'i-file';
-        a.invalid = a.dirname === '' ? false : !a.uuid ? true : false;
-        a.source = a.dirname === '' ? a.topSource : a.source; // 统一顶层节点出现 db://assets/ 或 db://assets 为 db://assets/
+        a.invalid = !a.uuid ? true : false; // 不可用是指不在db中，但在树形结构中它依然是一个正常的节点
+        a.source = a.dirname === '' ? a.topSource : a.source; // 统一顶层节点出现的两种情况 db://assets/ 或 db://assets 为 db://assets/
+        a.uuid = !a.uuid ? a.source : a.uuid; // 注意放在 a.invalid 和 a.source 赋值的下方；对于不可用的资源，指定一个模拟的 uuid
         a.state = '';
 
         // 生成缩略图
@@ -93,7 +98,8 @@ function legalData(arr: ItreeAsset[]) {
  */
 function ensureDir(arr: ItreeAsset[], parentSource: string) {
 
-    if (parentSource === 'db:/') { // 数据开始错误
+    // @ts-ignore
+    if (['', 'db:/'].includes(parentSource)) { // 数据开始错误
         return;
     }
 
@@ -107,7 +113,11 @@ function ensureDir(arr: ItreeAsset[], parentSource: string) {
             subAssets: {},
         };
         // @ts-ignore
-        arr.push(...legalData([newOne]));
+        legalData([newOne]).forEach((a) => {
+            if (!arr.some((b: ItreeAsset) => a.source === b.source)) {
+                arr.push(a);
+            }
+        });
 
         // 继续迭代
         ensureDir(arr, dirname(parentSource));

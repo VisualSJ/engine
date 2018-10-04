@@ -11,8 +11,11 @@
     &[active="true"] {
         background-color: rgba(255, 255, 255, 0.1);
     }
-    &[state="disabled"] {
-        color: #717171 !important
+    &[invalid="true"] {
+        color: #717171
+    }
+    &[depth="0"] {
+        color: inherit;
     }
     &[state="input"] {
         background-color: transparent !important;
@@ -36,10 +39,10 @@
     }
     .file {
         display: inline-block;
-        margin-left: 16px;
+        margin-left: 18px;
         width: 16px;
         height: 14px;
-        padding-right: 4px;
+        padding-right: 2px;
         .thumbnail {
             width: 100%;
             height: 100%;
@@ -89,7 +92,8 @@
     .loading {
         display: inline-block;
         position: relative;
-        top: -3px;
+        vertical-align: middle;
+        top: -2px;
         left: 5px;
         transform: scale(0.8);
     }
