@@ -1,4 +1,4 @@
-'use stirct';
+'use strict';
 
 import { statSync } from 'fs';
 import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
@@ -85,6 +85,34 @@ module.exports = {
         },
 
         /**
+         * 保存资源的 meta 信息
+         * @param {string} uuid
+         * @param {*} data
+         * @returns
+         */
+        async 'save-asset-meta'(uuid: string, data: any) {
+            if (!assetWorker) {
+                return;
+            }
+            const dir = join(Editor.Project.path, 'assets');
+            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+
+            const file = join(dir, info.source.replace(assetProtocol, ''));
+            // 如果不存在，停止操作
+            if (!existsSync(file)) {
+                return;
+            }
+            try {
+                await outputFile(`${file}.meta`, data);
+                console.info('asset meta saved');
+                return true;
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+        },
+
+        /**
          * 创建一个新的资源
          * @param url db://assets/abc.json
          * @param data
@@ -137,12 +165,7 @@ module.exports = {
             }
 
             // 如果其中一个数据是错误的，则停止操作
-            if (
-                dest === path ||
-                !existsSync(dest) ||
-                !statSync(dest).isDirectory() ||
-                !existsSync(path)
-            ) {
+            if (dest === path || !existsSync(dest) || !statSync(dest).isDirectory() || !existsSync(path)) {
                 return;
             }
 
@@ -173,12 +196,12 @@ module.exports = {
                 // 被移动的资源信息
                 source: await assetWorker.send('asset-worker:query-asset-info', uuid),
                 // 移动到这个资源内
-                target: await assetWorker.send('asset-worker:query-asset-info', target),
+                target: await assetWorker.send('asset-worker:query-asset-info', target)
             };
 
             const path = {
                 source: join(assets.dirname, assets.source.source.replace(assetProtocol, '')),
-                target: join(assets.dirname, assets.target.source.replace(assetProtocol, '')),
+                target: join(assets.dirname, assets.target.source.replace(assetProtocol, ''))
             };
 
             // 如果其中一个数据是错误的，则停止操作
@@ -281,13 +304,13 @@ async function createWorker() {
             engine: info.path,
             type: Editor.Project.type,
             dist: join(__dirname, '../dist'),
-            utils: info.utils,
+            utils: info.utils
         });
 
         assetWorker.send('asset-worker:startup-database', {
             name: 'assets',
             assets: join(Editor.Project.path, 'assets'),
-            library: join(Editor.Project.path, 'library'),
+            library: join(Editor.Project.path, 'library')
         });
     });
 

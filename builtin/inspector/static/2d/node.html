@@ -1,42 +1,33 @@
-<div class="node" v-if="node">
+<div class="node layout vertical" v-if="node" v-on:confirm.prevent="onNodePropertyChange">
 
-    <div class="header align-item">
-        <ui-checkbox class="node-toggle" :value="node.active.value"></ui-checkbox>
-        <ui-input v-on:confirm.prevent="onNodePropertyChange" path="name" class="flex-1" :value="node.name.value"></ui-input>
-        <ui-button @confirm.stop.prevent="addCompPopup" class="transparent"><i class="iconfont icon-add"></i></ui-button>
+    <div class="top-header">
+        <ui-checkbox class="rgap" @click.prevent.stop="" path="active" :value="node.active.value"></ui-checkbox>
+        <ui-input class="flex-1" path="name" :value="node.name.value"></ui-input>
+        <ui-button class="transparent tiny" @confirm.stop="addCompPopup"><i class="iconfont icon-add"></i></ui-button>
     </div>
 
-    <ui-section v-on:confirm.prevent="onNodePropertyChange" expand>
+    <ui-section expand>
 
         <div slot="header" class="flex align-item">
             <span class="flex-1 flex">Node</span>
-            <!-- <ui-button @click.prevent.stop="" @confirm.stop.prevent="getContextMenu($event)" class="transparent"><i
+            <!-- todo
+                <ui-button @click.prevent.stop="" @confirm.stop.prevent="getContextMenu" class="transparent"><i
                     class="iconfont icon-setting"></i></ui-button> -->
         </div>
 
-        <ui-prop v-for="(item, index) in getRenderKeys(node)" :type="handleType(node, item)" :path="item" :label="item"
-            :value="JSON.stringify(node[item].value)" :key="index" :presi="'number' === handleType(node, item) ? 2 : false"></ui-prop>
+        <ui-prop v-for="(item, index) in getRenderKeys(node)" :type="getType(node[item])" :path="item" :label="item"
+            :value="JSON.stringify(node[item].value)" :key="index" :presi="'number' === getType(node[item]) ? 2 : false"></ui-prop>
 
     </ui-section>
 
-    <ui-section v-if="node.__comps__ && node.__comps__.value" v-for="(comp, index) in node.__comps__.value" :key="comp.value.uuid.value"
-        v-on:confirm.prevent="onNodePropertyChange($event, index)" expand>
+    <comp-section v-for="(comp, index) in node.__comps__.value" :on-node-property-change="onNodePropertyChange" :type="comp.type"
+        :target="comp" v-if="node.__comps__ && node.__comps__.value" :key="comp.value.uuid.value" :total="node.__comps__.value.length"
+        :index="index">
+    </comp-section>
 
-        <div slot="header" class="flex align-item">
-            <ui-checkbox class="node-toggle" path="enabled" :value="comp.value.enabled.value"></ui-checkbox>
-            <span class="flex-1">{{comp.type}}</span>
-            <ui-button @click.prevent.stop="" @confirm.stop.prevent="getContextMenu($event, index)" class="transparent"><i
-                    class="iconfont icon-setting"></i></ui-button>
-        </div>
-
-        <ui-prop v-for="(k, val) in getCompKeys(index)" :type="handleType(comp.value, k)" :label="k" :path="k" :value="JSON.stringify(comp.value[k].value)"
-            :key="val">
-        </ui-prop>
-
-    </ui-section>
 
     <div class="flex center-center mt20 mb20">
-        <ui-button @click.stop.prevent="addCompPopup">{{t('add_component')}}</ui-button>
+        <ui-button @click.stop.prevent="addCompPopup">{{T('add_component')}}</ui-button>
     </div>
 
 </div>

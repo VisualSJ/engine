@@ -1,4 +1,4 @@
-'use stirct';
+'use strict';
 
 import { Asset, Importer, VirtualAsset } from 'asset-db';
 import { existsSync } from 'fs';
@@ -36,12 +36,12 @@ export default class SpriteImporter extends Importer {
     public async import(asset: Asset) {
         let updated = false;
         // 如果没有生成 json 文件，则重新生成
-        if (await asset.existsInLibrary('.json') || !asset.parent) {
+        if ((await asset.existsInLibrary('.json')) || !asset.parent) {
             return updated;
         }
 
         // 如果是 texture 导入的，则自动识别一些配置参数
-        if (asset.parent.meta.importer === 'image') {
+        if (asset.parent.meta.importer === 'texture') {
             // @ts-ignore
             const file = asset.parent.library + (asset.parent.extname || '');
 
@@ -78,10 +78,17 @@ export default class SpriteImporter extends Importer {
         }
 
         const sprite = this.createSpriteFrame(asset);
-        asset.saveToLibrary('.json', JSON.stringify({
-            __type__: 'cc.SpriteFrame',
-            content: this.serialize(sprite, asset),
-        }, null, 2));
+        asset.saveToLibrary(
+            '.json',
+            JSON.stringify(
+                {
+                    __type__: 'cc.SpriteFrame',
+                    content: this.serialize(sprite, asset)
+                },
+                null,
+                2
+            )
+        );
 
         updated = true;
 
@@ -128,12 +135,7 @@ export default class SpriteImporter extends Importer {
         // }
 
         let capInsets;
-        if (
-            sprite.insetLeft ||
-            sprite.insetTop ||
-            sprite.insetRight ||
-            sprite.insetBottom
-        ) {
+        if (sprite.insetLeft || sprite.insetTop || sprite.insetRight || sprite.insetBottom) {
             capInsets = [sprite.insetLeft, sprite.insetTop, sprite.insetRight, sprite.insetBottom];
         }
 
@@ -151,7 +153,7 @@ export default class SpriteImporter extends Importer {
         return {
             name: sprite._name,
             texture: uuid || undefined,
-            atlas: sprite._atlasUuid || '',  // strip from json if exporting
+            atlas: sprite._atlasUuid || '', // strip from json if exporting
             rect: rect ? [rect.x, rect.y, rect.width, rect.height] : undefined,
             offset: offset ? [offset.x, offset.y] : undefined,
             originalSize: size ? [size.width, size.height] : undefined,

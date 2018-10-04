@@ -23,6 +23,70 @@
     left: 50%;
     margin: -0.5em;
 }
+/*------------------ layout --------------*/
+.fit {
+    position: absolute;
+    top: 0;
+}
+.fit,
+.fixed-bottom,
+.fixed-left {
+    bottom: 0;
+    left: 0;
+}
+.fit,
+.fixed-bottom,
+.fixed-top {
+    right: 0;
+}
+.layout.vertical {
+    flex-direction: column;
+}
+.layout.horizontal,
+.layout.horizontal-reverse,
+.layout.vertical,
+.layout.vertical-reverse {
+    display: flex;
+}
+
+ui-checkbox {
+    margin-right: 0.25em;
+}
+
+ui-prop {
+    ui-input,
+    ui-num-input,
+    ui-select,
+    ui-color {
+        flex: 1;
+    }
+    & > div[slot='content'] {
+        width: 100%;
+        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        & > ui-prop {
+            --left-width: 20%;
+            --right-width: 85%;
+            --label-max-width: 15px;
+            --label-min-width: 10px;
+            max-width: 48%;
+            width: 200px;
+            height: 2em;
+            flex-grow: 1;
+            margin-right: 2%;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+ui-prop.vector > div[slot='content'] {
+    margin-right: -1.5%;
+}
+.indent {
+    padding-left: 13px;
+}
+
 @import '../iconfont.less';
 @import './asset';
 @import './node';

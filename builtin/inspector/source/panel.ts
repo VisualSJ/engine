@@ -6,6 +6,7 @@ import { basename, extname, join } from 'path';
 import { eventBus } from './utils/event-bus';
 
 const Vue = require('vue/dist/vue.js');
+const { get, set } = require('lodash');
 const { getByPath, diffpatcher, repairPath } = require('./utils');
 
 Vue.config.productionTip = false;
@@ -33,41 +34,78 @@ export const $ = {
 };
 
 export const methods = {
+    refresh() {
+        // todo
+    },
+
     /**
      * 通过结合 meta 和 info 数据返回最终需要的 meta 信息
      * @param {*} meta
      * @param {*} info
      * @returns
      */
-    getMetaData() {
-        const { originInfo, originMeta } = vm;
-        const { source = '', files = [] } = originInfo;
-        const meta: any = {};
+    getMetaData(meta: any = {}, info: any = {}) {
+        const { source = '', files = [] } = info;
 
+        meta.__dirty__ = false;
         meta.__name__ = basename(source, extname(source));
         meta.__src__ = files[0];
-        meta.__assetType__ = originMeta.importer;
+        meta.__assetType__ = meta.importer;
 
-        if (originMeta.userData) {
-            const { userData } = originMeta;
-            const keys = Object.keys(userData);
-            for (const key of keys) {
-                meta[key] = userData[key];
-            }
-        }
-        if (originMeta.subMetas) {
+        if (meta.subMetas) {
             const arr = [];
-            const { subMetas } = originMeta;
+            const { subMetas } = meta;
             const keys = Object.keys(subMetas);
+
             for (const key of keys) {
                 const value = subMetas[key];
                 value.__name__ = key;
                 arr.push(value);
             }
+
             meta.subMetas = arr;
         }
 
         return meta;
+    },
+
+    /**
+     * 保存资源的 meta 数据到 asset-db
+     */
+    async saveMeta() {
+        const { meta, currentUuid: uuid } = vm;
+        const subMetas: any = {};
+        let data;
+
+        // 还原 subMetas 数据
+        if (meta.subMetas) {
+            meta.subMetas.forEach((meta: any) => {
+                subMetas[meta.__name__] = meta;
+                delete meta.__name__;
+            });
+        }
+        meta.subMetas = subMetas;
+
+        data = JSON.stringify(meta);
+
+        // 构造 subMetas 数据
+        const subMetasArray = [];
+        const keys = Object.keys(meta.subMetas);
+        for (const key of keys) {
+            const subMeta = meta.subMetas[key];
+            subMeta.__name__ = key;
+            subMetasArray.push(subMeta);
+        }
+        meta.subMetas = subMetasArray;
+
+        try {
+            const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', uuid, data);
+            if (result) {
+                panel.refresh();
+            }
+        } catch (err) {
+            console.error(err);
+        }
     },
 
     /**
@@ -89,9 +127,9 @@ export const methods = {
                 const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
                 const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
                 vm.node = null;
-                vm.originMeta = meta;
-                vm.originInfo = info;
-                vm.meta = panel.getMetaData();
+                // vm.originMeta = meta;
+                // vm.originInfo = info;
+                vm.meta = panel.getMetaData(meta, info);
             } catch (err) {
                 vm.type = '';
                 vm.currentUuid = '';
@@ -153,6 +191,18 @@ export const messages = {
     },
 
     /**
+     * 场景已准备
+     */
+    'scene:close'() {
+        if (vm) {
+            vm.node = null;
+            vm.meta = null;
+            vm.type = '';
+            vm.isSceneReady = false;
+        }
+    },
+
+    /**
      * 移除数组元素
      * @param {RemoveArrayOptions} options
      */
@@ -198,6 +248,20 @@ export const messages = {
         } catch (err) {
             console.error(err);
         }
+    },
+
+    /**
+     * 界面 meta 数据保存
+     */
+    'meta-apply'() {
+        panel.saveMeta();
+    },
+
+    /**
+     * 资源数据修改
+     */
+    'asset-db:asset-change'() {
+        // todo
     }
 };
 
@@ -275,11 +339,9 @@ export async function ready() {
              * @param {*} event
              * @param {(number | undefined)} index
              */ async onNodePropertyChange(event: any, index: number | undefined) {
-                let prefix;
-                if (index !== undefined) {
-                    prefix = `__comps__.${index}`;
-                }
+                const prefix = index === undefined ? index : `__comps__.${index}`;
                 const option: SetPropertyOptions | null = this.getPropertyOption(event, prefix);
+
                 if (option) {
                     this.setProperty(option);
                 }
@@ -320,6 +382,7 @@ export async function ready() {
                 const path = this.getPath(event, prefix);
                 const { type = typeof value } = getByPath(node, path) || {};
                 const dump: PropertyDump = { type, value, extends: [] };
+
                 // path不存在则返回 null
                 if (!path) {
                     return null;
@@ -330,6 +393,7 @@ export async function ready() {
                         (item: number, index: number) => (index === 3 ? item : Math.round((item * 10) / 255) / 10)
                     );
                 }
+
                 return {
                     // 对dump属性名进行恢复
                     path: repairPath(path),
@@ -341,8 +405,19 @@ export async function ready() {
             /**
              * 监听 meta 数据变更
              * @param {*} event
-             */ onMetaChange(event: any) {
-                // todo
+             */
+            onMetaChange(this: any, event: any) {
+                const { value } = event.target;
+                const path = this.getPath(event);
+                const { meta } = this;
+
+                if (path) {
+                    meta.__dirty__ = true;
+                    const val = get(meta, path);
+                    if (val !== value) {
+                        set(meta, path, value);
+                    }
+                }
             }
         }
     });

@@ -1,0 +1,24 @@
+<ui-section expand @confirm.stop="onNodePropertyChange($event, index)">
+    <div slot="header" class="header flex-1 layout horizontal center-center">
+        <ui-checkbox :value="target.value.enabled.value" @click.stop="" path="enabled"></ui-checkbox>
+        {{target.type}}
+        <span class="flex-1"></span>
+        <ui-button class="tiny transparent" @click.stop="openHelpClick">
+            <i class="iconfont icon-book"></i>
+        </ui-button>
+        <ui-button class="tiny transparent" @click.stop="getContextMenu">
+            <i class="iconfont icon-setting"></i>
+        </ui-button>
+    </div>
+    <template v-if="!customDraw()">
+        <ui-prop v-for="(key, index) in getCompKeys()" :path="key" :type="getType(target.value[key])" :label="key"
+            :value="JSON.stringify(target.value[key].value)" :key="index">
+        </ui-prop>
+    </template>
+    <!-- todo
+        <template v-if="!customDraw()">
+        <ui-prop v-if="item.visible !== false" v-for="(item, key) of target.properties" :type="getType(item)" :label="item.displayName"
+            :path="key" :value="JSON.stringify(target.value[key].value)" :key="key">
+        </ui-prop>
+    </template> -->
+</ui-section>

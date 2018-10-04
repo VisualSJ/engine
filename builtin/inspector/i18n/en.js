@@ -9,5 +9,7 @@ module.exports = {
     remove: 'Remove',
     reset: 'Reset',
     reset_node: 'Reset Node',
-    reset_all: 'Reset All'
+    reset_all: 'Reset All',
+    sprite_select_button: 'Select In Atlas',
+    sprite_edit_button: 'Edit'
 };

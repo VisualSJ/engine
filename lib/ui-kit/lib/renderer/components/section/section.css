@@ -6,6 +6,7 @@
   box-sizing: border-box;
 }
 :host {
+  --header-space: 5px 0;
   all: initial;
   font-size: 12px;
   color: var(--color, #333);
@@ -14,7 +15,7 @@
   position: relative;
   cursor: pointer;
   padding: 0.04em 0 0.04em 0.7em;
-  margin-bottom: 0.2em;
+  margin: var(--header-space, 0);
   border-bottom: 1px solid var(--border-color, #333);
 }
 :host header i {
@@ -25,8 +26,8 @@
   margin: auto;
   display: inline-block;
   margin-right: 0.2em;
-  width: .5em;
-  height: .5em;
+  width: 0.5em;
+  height: 0.5em;
   background-color: var(--border-color, #333);
   clip-path: polygon(0 0, 0 100%, 100% 50%);
 }

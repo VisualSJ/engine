@@ -1,9 +1,13 @@
 .node {
-    .header {
-        padding: 4px 8px 6px 8px;
+    .rgap {
+        margin-right: 0.25em;
     }
-
-    border-top: 1px solid #666;
+    .top-header {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+        overflow: hidden;
+    }
 
     .flex {
         display: flex;
@@ -17,49 +21,22 @@
         flex: 1;
     }
 
+    ui-section {
+        .header {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            flex: 1;
+        }
+    }
+
     ui-input,
     ui-num-input {
         color: #fff;
     }
 
-    ui-prop > div[slot='content'] {
-        margin: 3px 0;
-        width: 100%;
-        flex-wrap: wrap;
-        display: flex;
-    }
-    ui-prop > div[slot='content'] > ui-prop {
-        --left-width: auto;
-        --right-width: auto;
-        --label-min-width: 1em;
-        max-width: 48%;
-        flex-grow: 1;
-        margin-right: 2%;
-        margin-bottom: 5px;
-    }
-
-    ui-prop.vector > div[slot='content'] {
-        margin-right: -1.5%;
-    }
-    ui-prop > div[slot='content'] {
-        margin: 3px 0;
-        width: 100%;
-        flex-wrap: wrap;
-        display: flex;
-    }
-    ui-prop > div[slot='content'] > ui-prop {
-        --left-width: auto;
-        --right-width: auto;
-        --label-min-width: 1em;
-        max-width: 48%;
-        flex-grow: 1;
-        margin-right: 2%;
-        margin-bottom: 5px;
-    }
-
-    ui-prop.vector > div[slot='content'] {
-        margin-right: -1.5%;
-    }
     .header {
         display: flex;
         align-items: center;

@@ -1,33 +1,34 @@
 @import '../base/base.less';
 :host {
+    --header-space: 5px 0;
     all: initial;
     font-size: 12px;
     header {
         position: relative;
         cursor: pointer;
         padding: 0.04em 0 0.04em 0.7em;
-        margin-bottom: 0.2em;
+        margin: var(--header-space, 0);
         border-bottom: 1px solid var(--border-color, @border-color);
         i {
             position: absolute;
             left: 0;
-            top:0;
+            top: 0;
             bottom: 0;
             margin: auto;
             display: inline-block;
             margin-right: 0.2em;
-            width: .5em;
-            height: .5em;
+            width: 0.5em;
+            height: 0.5em;
             background-color: var(--border-color, @border-color);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
         }
-        slot{
+        slot {
             display: inline-block;
         }
     }
     .content {
         padding: 3px 4px;
-        &>* {
+        & > * {
             height: 1em;
             display: none;
         }

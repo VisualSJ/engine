@@ -62,6 +62,7 @@ export const methods = <any>{
         };
         this._image.src = src;
     },
+
     /**
      * 根据加载的图片资源进行更新
      */
@@ -70,6 +71,7 @@ export const methods = <any>{
         this.info = `${width} x ${height}`;
         this.resize();
     },
+
     /**
      * 根据 asset 类型返回对应的图片宽高
      * @returns [{width: number, height: number}]
@@ -81,14 +83,15 @@ export const methods = <any>{
             width = this._image.width;
             height = this._image.height;
         } else if (this.meta.__assetType__ === 'sprite-frame') {
-            width = this.meta.width;
-            height = this.meta.height;
+            width = this.meta.userData.width;
+            height = this.meta.userData.height;
         }
         return {
             width,
             height
         };
     },
+
     /**
      * 根据容器缩放
      */
@@ -96,13 +99,14 @@ export const methods = <any>{
         const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
         const { width: imgWidth, height: imgHeight } = this.getSize();
         const [width, height] = this.getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
-        if (this.meta.rotated) {
+        if (this.meta.userData.rotated) {
             this._scalingSize = { width: Math.ceil(height), height: Math.ceil(width) };
         }
         this.$refs.canvas.width = Math.ceil(width);
         this.$refs.canvas.height = Math.ceil(height);
         this.repaint();
     },
+
     /**
      * 根据最新的数据进行重绘
      */
@@ -116,10 +120,16 @@ export const methods = <any>{
             canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
             this.meta.subMetas &&
                 this.meta.subMetas.forEach((item: any) => {
+                    const { userData = {} } = item;
                     const ratioX = canvasWidth / this._image.width;
                     const ratioY = canvasHeight / this._image.height;
                     canvas.beginPath();
-                    canvas.rect(item.trimX * ratioX, item.trimY * ratioY, item.width * ratioX, item.height * ratioY);
+                    canvas.rect(
+                        userData.trimX * ratioX,
+                        userData.trimY * ratioY,
+                        userData.width * ratioX,
+                        userData.height * ratioY
+                    );
                     canvas.lineWidth = 1;
                     canvas.strokeStyle = '#ff00ff';
                     canvas.stroke();
@@ -132,7 +142,7 @@ export const methods = <any>{
             let dWidth;
             let dHeight;
 
-            if (this.meta.rotated) {
+            if (this.meta.userData.rotated) {
                 const centerX = canvasWidth / 2;
                 const centerY = canvasHeight / 2;
 
@@ -142,21 +152,32 @@ export const methods = <any>{
 
                 dx = centerX - this._scalingSize.width / 2;
                 dy = centerY - this._scalingSize.height / 2;
-                sWidth = this.meta.height;
-                sHeight = this.meta.width;
+                sWidth = this.meta.userData.height;
+                sHeight = this.meta.userData.width;
                 dWidth = canvasHeight;
                 dHeight = canvasWidth;
             } else {
                 dx = 0;
                 dy = 0;
-                sWidth = this.meta.width;
-                sHeight = this.meta.height;
+                sWidth = this.meta.userData.width;
+                sHeight = this.meta.userData.height;
                 dWidth = canvasWidth;
                 dHeight = canvasHeight;
             }
-            canvas.drawImage(this._image, this.meta.trimX, this.meta.trimY, sWidth, sHeight, dx, dy, dWidth, dHeight);
+            canvas.drawImage(
+                this._image,
+                this.meta.userData.trimX,
+                this.meta.userData.trimY,
+                sWidth,
+                sHeight,
+                dx,
+                dy,
+                dWidth,
+                dHeight
+            );
         }
     },
+
     /**
      * 比对图片和容器的宽高返回合适的尺寸
      * @param {number} imgWidth
@@ -168,6 +189,7 @@ export const methods = <any>{
     getFitSize(imgWidth: number, imgHeight: number, boxWidth: number, boxHeight: number): number[] {
         let width = imgWidth;
         let height = imgHeight;
+
         if (imgWidth > boxWidth && imgHeight > boxHeight) {
             // 图片宽高均大于容器
             width = boxWidth;

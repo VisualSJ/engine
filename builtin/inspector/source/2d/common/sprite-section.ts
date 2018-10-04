@@ -19,6 +19,7 @@ export const methods = <any>{
     isCustom(): boolean {
         return this.meta.trimType === 'custom';
     },
+
     /**
      * 图片编辑
      */

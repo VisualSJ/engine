@@ -1,10 +1,10 @@
-<div>
+<div class="fit layout vertical">
 
     <meta-header id="header" :meta="meta" icon=""></meta-header>
 
     <div class="props flex-1">
 
-        <sprite-section :meta="meta.subMetas[0]" v-if="meta.subMetas"></sprite-section>
+        <sprite-section :meta="meta.subMetas[0].userData" v-if="meta.subMetas && meta.subMetas[0]"></sprite-section>
 
     </div>
 

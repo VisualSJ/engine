@@ -38,11 +38,13 @@ export const methods = {
     revert(this: any) {
         // todo
     },
+
     /**
      * 应用修改
      * @param {*} this
      */
     apply(this: any) {
         // todo
+        Editor.Ipc.requestToPanel('inspector', 'meta-apply');
     }
 };

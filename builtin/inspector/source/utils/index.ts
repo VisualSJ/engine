@@ -52,6 +52,7 @@ module.exports = {
             }
         }, object);
     },
+
     /**
      * 还原 dumpProperty 根据节点属性创建的字段
      * @param {string} path
@@ -69,6 +70,56 @@ module.exports = {
             return keys.join('.');
         }
         return path;
+    },
+
+    /**
+     * 根据数据返回对应的 type 类型
+     * @param {*} target
+     * @returns
+     */
+    getType(target: any) {
+        if (target && target.type) {
+            const prefix = 'cc.';
+
+            return target.type.replace(prefix, '').toLowerCase();
+        }
+        return false;
+    },
+
+    /**
+     * 根据数据返回 options 选项
+     * @param {*} properties
+     * @param {string} key
+     * @returns
+     */
+    getOptions(properties: any, key: string) {
+        if (properties && properties[key]) {
+            return JSON.stringify(properties[key].enumList);
+        }
+    },
+
+    /**
+     * 分割 camel case 字符串为首字符大写的单词
+     * @param {string} str
+     */
+    splitLowerCamelCase(str: string) {
+        const reg = /(?<=[a-z])(?=[A-Z])/g;
+        str.replace(/^([a-z])/, (match: string, ...rest: any[]) => {
+            return match.toUpperCase();
+        })
+            .split(reg)
+            .join(' ');
+    },
+
+    /**
+     * 提供 Editor 的多语言功能
+     * @param {...string[]} rest
+     * @returns
+     */
+    T(...rest: string[]) {
+        const prefix = 'inspector';
+        rest.unshift(prefix);
+        return Editor.I18n.t(rest.join('.'));
     },
     diffpatcher
 };
