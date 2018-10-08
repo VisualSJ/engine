@@ -1,7 +1,7 @@
 'use strict';
 
 const { parse } = require('url');
-const { join, relative } = require('path');
+const { join, relative, isAbsolute } = require('path');
 const { ensureDirSync } = require('fs-extra');
 const { AssetDB } = require('asset-db');
 
@@ -147,6 +147,26 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     }
 });
 
+// 翻译 url
+Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
+    if (isAbsolute(url)) {
+        return event.reply(null, url);
+    }
+
+    const uri = parse(url);
+
+    if (uri.protocol !== 'db:') {
+        return event.reply(null, '');
+    }
+
+    let db = AssetWorker[uri.host];
+    if (!db) {
+        return event.reply(null, '');
+    }
+
+    event.reply(null, join(db.options.target, uri.path || ''));
+});
+
 // 返回一个 db 的具体数据
 Worker.Ipc.on('asset-worker:query-database-info', async (event, name) => {
     const db = AssetWorker[name];
@@ -235,6 +255,17 @@ Worker.Ipc.on('asset-worker:query-asset-uuid', async (event, source) => {
         return event.reply(null, null);
     }
     event.reply(null, asset.uuid);
+});
+
+// 传入一个 db:// 地址，返回对应的 uuid 数据
+Worker.Ipc.on('asset-worker:query-asset-url', async (event, uuid) => {
+    // 查询资源
+    const assetInfo = queryAsset(uuid);
+    if (!assetInfo || !assetInfo.asset) {
+        return event.reply(new Error('File does not exist.'), null);
+    }
+
+    event.reply(null, assetInfo.asset.source);
 });
 
 // 查询资源的信息

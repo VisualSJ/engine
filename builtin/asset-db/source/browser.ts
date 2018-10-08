@@ -1,9 +1,8 @@
 'use strict';
 
 import { statSync } from 'fs';
-import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
-import { basename, extname, join, relative } from 'path';
-import { parse } from 'url';
+import { copy, ensureDir, existsSync, move, outputFile, remove } from 'fs-extra';
+import { basename, join, relative } from 'path';
 import { getName } from './utils';
 
 const worker = require('@base/electron-worker');
@@ -42,6 +41,9 @@ module.exports = {
             assetWorker.debug(true);
         },
 
+        /////////////
+        // 查询
+
         /**
          * 查询资源树
          */
@@ -60,6 +62,17 @@ module.exports = {
                 return null;
             }
             return await assetWorker.send('asset-worker:query-asset-uuid', source);
+        },
+
+        /**
+         * 查询资源的 url 路径
+         * @param uuid 资源 uuid
+         */
+        async 'query-asset-url'(uuid: string) {
+            if (!assetWorker) {
+                return null;
+            }
+            return await assetWorker.send('asset-worker:query-asset-url', uuid);
         },
 
         /**
@@ -84,13 +97,16 @@ module.exports = {
             return await assetWorker.send('asset-worker:query-asset-meta', uuid);
         },
 
+        ///////////////
+        // 操作
+
         /**
          * 保存资源的 meta 信息
          * @param {string} uuid
          * @param {*} data
          * @returns
          */
-        async 'save-asset-meta'(uuid: string, data: any) {
+        async 'save-asset-meta'(uuid: string, meta: any) {
             if (!assetWorker) {
                 return;
             }
@@ -103,7 +119,7 @@ module.exports = {
                 return;
             }
             try {
-                await outputFile(`${file}.meta`, data);
+                await outputFile(`${file}.meta`, meta);
                 console.info('asset meta saved');
                 return true;
             } catch (err) {
@@ -115,9 +131,9 @@ module.exports = {
         /**
          * 创建一个新的资源
          * @param url db://assets/abc.json
-         * @param data
+         * @param data 写入文件的 buffer 或者 string
          */
-        async 'create-asset'(url: string, data: Buffer | string, isImport = false) {
+        async 'create-asset'(url: string, data: Buffer | string) {
             if (!assetWorker) {
                 return;
             }
@@ -143,116 +159,80 @@ module.exports = {
         },
 
         /**
-         * 从外部拖拽，导入文件
-         * @param url
-         * @param path 系统文件路径或者 asset-db 资源路径
+         * 复制一个资源到指定位置
+         * @param url db://assets/abc.json
+         * @param to db://assets/abc
          */
-        async 'import-asset'(url: string, path: string) {
+        async 'copy-asset'(url: string, to: string) {
             if (!assetWorker) {
                 return;
             }
-            if (!url.startsWith(assetProtocol)) {
+
+            if (!to.startsWith(assetProtocol)) {
                 throw new Error('Must be prefixed with db://assets');
             }
 
-            // 文件目录路径
             const dirname = join(Editor.Project.path, 'assets');
-            let dest = join(dirname, url.substr(assetProtocol.length));
 
-            // 判断是否是资源路径
-            if (path.startsWith(assetProtocol)) {
-                path = join(dirname, path.substr(assetProtocol.length));
+            to = join(dirname, to.substr(assetProtocol.length));
+
+            if (url.startsWith(assetProtocol)) {
+                url = join(dirname, url.substr(assetProtocol.length));
             }
 
-            // 如果其中一个数据是错误的，则停止操作
-            if (dest === path || !existsSync(dest) || !statSync(dest).isDirectory() || !existsSync(path)) {
-                return;
-            }
+            // 获取可以使用的文件名
+            to = getName(to);
 
-            // 复制文件
-            const name = basename(path);
-            dest = join(dest, name);
-            copy(path, dest, {
-                // @ts-ignore
-                overwrite: true,
-                filter(a, b) {
-                    return extname(a) !== '.meta';
-                }
-            });
+            await copy(url, to);
+
+            // 返回插入的文件地址
+            return 'db://' + relative(Editor.Project.path, to);
         },
 
         /**
          * 将一个资源移动到某个地方
-         * @param uuid
-         * @param target
+         * @param url 需要移动的源资源
+         * @param to 移动到某个路境内
          */
-        async 'move-asset'(uuid: string, target: string) {
+        async 'move-asset'(url: string, to: string) {
             if (!assetWorker) {
                 return;
             }
-            const assets = {
-                // assets 目录
-                dirname: join(Editor.Project.path, 'assets'),
-                // 被移动的资源信息
-                source: await assetWorker.send('asset-worker:query-asset-info', uuid),
-                // 移动到这个资源内
-                target: await assetWorker.send('asset-worker:query-asset-info', target)
-            };
 
-            const path = {
-                source: join(assets.dirname, assets.source.source.replace(assetProtocol, '')),
-                target: join(assets.dirname, assets.target.source.replace(assetProtocol, ''))
+            const assets = {
+                // 被移动的资源信息
+                source: await assetWorker.send('asset-worker:translate-url', url),
+                // 移动到这个资源内
+                target: await assetWorker.send('asset-worker:translate-url', to),
             };
 
             // 如果其中一个数据是错误的，则停止操作
             if (
-                assets.source.source === assets.target.source ||
-                !existsSync(path.source) ||
-                !existsSync(path.target) ||
-                !statSync(path.target).isDirectory()
+                assets.source === assets.target ||
+                !existsSync(assets.source) ||
+                !existsSync(assets.target) ||
+                !statSync(assets.target).isDirectory()
             ) {
                 return;
             }
 
             // 实际移动逻辑，首先移动 meta 文件，再移动实际文件
-            const name = basename(path.source);
-            move(path.source + '.meta', join(path.target, name) + '.meta');
-            move(path.source, join(path.target, name));
-        },
-
-        /**
-         * 资源重名命 rename
-         * @param uuid
-         * @param target
-         */
-        async 'rename-asset'(uuid: string, name: string) {
-            if (!assetWorker) {
-                return;
-            }
-            const dir = join(Editor.Project.path, 'assets');
-            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
-
-            const file = join(dir, info.source.replace(assetProtocol, ''));
-            const base = basename(file);
-            const target = file.replace(base, name);
-
-            await remove(file + '.meta');
-            rename(file, target);
+            const name = basename(assets.source);
+            move(assets.source + '.meta', join(assets.target, name) + '.meta');
+            move(assets.source, join(assets.target, name));
         },
 
         /**
          * 删除某个资源
-         * @param uuid
+         * @param url 一个资源的 url 路径
          */
-        async 'delete-asset'(uuid: string) {
+        async 'delete-asset'(url: string) {
             if (!assetWorker) {
                 return;
             }
 
-            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
-            const uri = parse(info.source);
-            const data = await assetWorker.send('asset-worker:query-database-info', uri.host);
-            const file = join(data.target, decodeURIComponent(uri.path || ''));
+            const file = await assetWorker.send('asset-worker:translate-url', url);
+
             // 如果不存在，停止操作
             if (!existsSync(file)) {
                 return;
@@ -260,7 +240,7 @@ module.exports = {
 
             await remove(file);
             await remove(file + '.meta');
-        }
+        },
     },
 
     /**
