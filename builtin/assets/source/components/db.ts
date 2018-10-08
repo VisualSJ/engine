@@ -20,9 +20,9 @@ async function refresh() {
     if (!arr) { // 数据可能为空
         return;
     }
-    arr.shift();
-    arr.shift();
-    arr.shift();
+    // arr.shift();
+    // arr.shift();
+    // arr.shift();
     // const rt = legalData(arr);
     // console.log(rt);
     // return;
@@ -30,7 +30,7 @@ async function refresh() {
     return legalData(arr);
 }
 
-async function ipcAdd(uuid: string) {
+async function ipcQuery(uuid: string) {
     const one = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
     const arr = legalData([one]);
     return arr;
@@ -61,7 +61,8 @@ function legalData(arr: ItreeAsset[]) {
         a.isParent = a.isDirectory ? true : false;
         a.thumbnail = '';
         a.icon = fileicon[a.fileext] || 'i-file';
-        a.invalid = !a.uuid ? true : false; // 不可用是指不在db中，但在树形结构中它依然是一个正常的节点
+        a.invalid = !a.uuid ? a.dirname === '' ? false : true : false; // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
+        a.readonly = a.dirname === '' ? true : false;
         a.source = a.dirname === '' ? a.topSource : a.source; // 统一顶层节点出现的两种情况 db://assets/ 或 db://assets 为 db://assets/
         a.uuid = !a.uuid ? a.source : a.uuid; // 注意放在 a.invalid 和 a.source 赋值的下方；对于不可用的资源，指定一个模拟的 uuid
         a.state = '';
@@ -126,4 +127,4 @@ function ensureDir(arr: ItreeAsset[], parentSource: string) {
 
 exports.protocol = protocol;
 exports.refresh = refresh;
-exports.ipcAdd = ipcAdd;
+exports.ipcQuery = ipcQuery;

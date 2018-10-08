@@ -34,7 +34,7 @@ export function data() {
     return {
         state: '',
         assets: [], // 当前树形在可视区域的资源数据
-        selects: [],
+        selects: [], // 已选中项的 uuid
         search: '', // 搜索资源名称
         allExpand: false, // 是否全部展开
         current: {}, // 当前选中项
@@ -89,6 +89,44 @@ export function mounted() {
 
         // @ts-ignore
         this.dragOver(this.assets[0].uuid);
+    });
+    // @ts-ignore
+    this.$el.addEventListener('drop', () => {
+        // @ts-ignore
+        const dragData = event.dataTransfer.getData('dragData');
+        let data: IdragAsset;
+        // @ts-ignore
+        const rootUuid = this.assets[0].uuid;
+
+        if (dragData === '') {
+            // @ts-ignore
+            data = {};
+        } else {
+            data = JSON.parse(dragData);
+        }
+
+        // @ts-ignore
+        const localFiles = Array.from(event.dataTransfer.files);
+        if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
+                data.from = 'osFile';
+                data.insert = 'inside';
+                // @ts-ignore
+                data.files = localFiles;
+        }
+
+        if (!data.to) { // 没有在其他节点释放
+            data.to = rootUuid; // 都归于根节点
+            data.insert = 'inside';
+        }
+
+        if (data.from) {  // 如果从根节点移动，则不需要移动
+            const arr = getGroupFromTree(treeData, data.from, 'uuid');
+            if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
+                return;
+            }
+        }
+        // @ts-ignore
+        this.drop(data);
     });
 }
 
@@ -178,7 +216,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        const arr = await db.ipcAdd(uuid);
+        const arr = await db.ipcQuery(uuid);
         arr.forEach((newNode: ItreeAsset) => {
             const parent = addAssetIntoTree(treeData.children, newNode);
             if (!parent) {
@@ -211,16 +249,16 @@ export const methods = {
      * @param json
      */
     ipcAdd(json: IaddAsset, uuid: string) {
-        if (uuid === '') {
+        if (!uuid) {
             uuid = this.getFirstSelect();
         }
 
         // 获取该资源
         const one = getGroupFromTree(treeData, uuid);
-        let url = one[0].pathname;
+        let url = one[0].source;
 
         if (one[0].isDirectory !== true) { // 不是目录，指向父级级
-            url = one[3].pathname;
+            url = one[3].source;
         }
 
         let content;
@@ -228,8 +266,6 @@ export const methods = {
             case 'folder': url += '/New Folder'; break;
             case 'javascript': url += '/NewScript.js'; content = ''; break;
         }
-
-        url = db.protocol + join(url);
 
         Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
     },
@@ -239,15 +275,25 @@ export const methods = {
      * @param asset
      */
     async ipcDelete(uuid: string) {
-        if (uuid && !vm.selects.includes(uuid)) { // 如果该资源没有被选中
+        if (uuid && !vm.selects.includes(uuid)) { // 如果该资源没有被选中，则只是删除此单个
+            const asset = getValidAsset(uuid);
+            if (!asset) { // 删除的节点不可用，不允许删除
+                return;
+            }
+
             Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-            Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
-        } else { // 删除所有选中项
+            Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
+        } else { // 如果该资源是被选中了，表明要删除所有选中项
             const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
             uuids.forEach((uuid: string) => {
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', uuid);
+                const asset = getValidAsset(uuid);
+                if (asset) {
+                    Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+                    Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
+                }
             });
+            // 重置所有选中
+            vm.selects = [];
         }
     },
 
@@ -406,12 +452,6 @@ export const methods = {
             node = getAssetFromMap(node.parentUuid);
         }
         node.state = '';
-
-        // @ts-ignore
-        if (this.$el.hasAttribute('hoving')) {
-            // @ts-ignore
-            this.dragOver(this.assets[0].uuid);
-        }
     },
 
     /**
@@ -419,15 +459,9 @@ export const methods = {
      *
      * @param json
      */
-    drop(asset: ItreeAsset, json: IdragAsset) {
+    drop(json: IdragAsset) {
         if (json.insert !== 'inside') {
             return; // 不是拖动的话，取消
-        }
-
-        const fromData = getGroupFromTree(treeData, json.from);
-        const fromNode = fromData[0]; // 被移动的对象
-        if (!fromNode || fromNode.invalid) {
-            return;
         }
 
         const toData = getGroupFromTree(treeData, json.to);
@@ -452,12 +486,17 @@ export const methods = {
                 importAsset(toNode.uuid, one.path);
             });
         } else {
-            if (toNode.uuid === fromData[3].uuid) { // 资源移动仍在原来的目录内，不需要移动
+            const fromData = getGroupFromTree(treeData, json.from);
+            const fromNode = fromData[0]; // 被移动的对象
+            if (!fromNode || fromNode.invalid) {
                 return;
             }
 
+            if (toNode.uuid === fromData[3].uuid) { // 资源移动仍在原来的目录内，不需要移动
+                return;
+            }
             // 移动资源
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', json.from, toNode.uuid);
+            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromNode.source, toNode.source);
         }
         toNode.state = 'loading'; // 显示 loading 效果
     },
@@ -482,9 +521,9 @@ export const methods = {
             uuid = this.getFirstSelect();
         }
         copyAsset.forEach((id: string) => {
-            const arr = getGroupFromTree(treeData, id);
-            if (arr[0]) {
-                importAsset(uuid, arr[0].source);
+            const asset = getValidAsset(id);
+            if (asset) {
+                importAsset(uuid, asset.source);
             }
         });
     },
@@ -607,7 +646,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             vm.state = 'search';
 
             // @ts-ignore
-            if (!one.invalid && one.name.search(vm.search) !== -1) { // 平级保存
+            if (!one.invalid && !one.readonly && one.name.search(vm.search) !== -1) { // 平级保存
                 one.depth = 1; // 平级保存
                 assetsMap.set(start, one);
                 index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
@@ -703,6 +742,11 @@ function getGroupFromTree(obj: ItreeAsset, value: string = '', key: string = 'uu
     return rt;
 }
 
+/**
+ * 获取一个可操作的资源节点
+ * 不可用表现在无右击菜单，不能复制，拖拽，粘贴，新建子文件等操作
+ * @param uuid
+ */
 function getValidAsset(uuid: string) {
     const one = getAssetFromMap(uuid);
     if (!one || one.invalid) { // 资源不可用
@@ -757,8 +801,8 @@ function getSiblingsFromMap(uuid = '') {
  * 添加资源后，增加树形节点数据
  */
 function addAssetIntoTree(tree: ItreeAsset[], asset: any) {
-    // 如果现有数据中有相同 pathname 的数据，可能需要合并现有数据
-    const arr: any = getGroupFromTree(treeData, asset.source, 'parentSource');
+    // 如果现有数据中有相同 source 的数据，可能需要合并现有数据
+    const arr: any = getGroupFromTree(treeData, asset.source, 'source');
     const one = arr[0];
     if (one) {
         if (one.invalid && !asset.invalid && asset.uuid) { // 说明之前这条数据是由于路径缺失而临时补上的
@@ -771,16 +815,18 @@ function addAssetIntoTree(tree: ItreeAsset[], asset: any) {
 
             // 再修改自己的 uuid
             one.uuid = asset.uuid;
-            one.invalid = true;
+            one.invalid = false;
+            return arr[3]; // 返回节点所在的父级
         }
-        return arr[3];
+        // 已存在合法的数据，不需要返回
+        return;
     }
 
     // 找出父级
     const parent = deepFindParent('source', asset.parentSource, tree);
     if (parent) {
         if (!Array.isArray(parent.children)) {
-            one.children = [];
+            parent.children = [];
         }
 
         asset.parentUuid = parent.uuid;
@@ -881,8 +927,10 @@ function sortData(arr: ItreeAsset[], loop = true) {
  * @param uuid 创建的位置
  * @param path 资源路径
  */
-function importAsset(uuid: string, path: string) {
-    const one = getGroupFromTree(treeData, uuid);
-    const url = one[0].source;
-    Editor.Ipc.sendToPackage('asset-db', 'import-asset', url, path);
+function importAsset(uuid: string, source: string) {
+    const dest = getValidAsset(uuid);
+    if (!dest) {
+        return;
+    }
+    Editor.Ipc.sendToPackage('asset-db', 'copy-asset', source, dest.source);
 }

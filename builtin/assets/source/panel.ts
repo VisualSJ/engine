@@ -144,7 +144,6 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-
         vm.add(uuid);
     },
 

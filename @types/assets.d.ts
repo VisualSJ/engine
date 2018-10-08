@@ -2,6 +2,7 @@ declare interface IdragAsset {
     from: string; // 被拖动的节点
     to: string; // 被指向的节点
     insert: string; // 插入方式，有三种：inside, before, after
+    files?: string[]; 
 }
 
 declare interface IaddAsset {
@@ -35,7 +36,8 @@ declare interface ItreeAsset {
     thumbnail: string, // 图片缩略图的 base64 地址
     icon: string, // 文件图标
     state: string; // 状态: ['', 'input', 'loading']
-    invalid: boolean; // 是否可用
+    invalid: boolean; // 是否可用，原始数据中缺少 uuid 的都属于不可用 
+    readonly: boolean; // 是否只读，一般是根节点，db://assets/ 级别，可以选中和粘贴，其他的操作不允许，如重名命，删除，拖拽
     depth: number; // 树形层级
     top: number; // top 位置
     _height: number; // 整个节点包括children的高度

@@ -18,8 +18,19 @@ export const props: string[] = [
 ];
 
 export function data() {
-    return {};
+    return {
+        draggable: true
+    };
 }
+
+export const watch = {
+    state() {
+        // @ts-ignore
+        const asset = this.asset;
+        // @ts-ignore
+        this.draggable = asset.state !== '' ? false : true;
+    },
+};
 
 export const methods = {
     /**
@@ -50,7 +61,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        if (asset.invalid) { // 需要
+        if (asset.invalid || asset.readonly) { // 需要
             return;
         }
 
@@ -302,6 +313,7 @@ export const methods = {
     drop(event: Event, asset: ItreeAsset) {
         // 需要取消默认行为才能获取 dataTransfer 数据
         event.preventDefault();
+        // event.stopPropagation();
 
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -311,7 +323,11 @@ export const methods = {
 
         // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
         // @ts-ignore
-        if (!this.$el.hasAttribute('hoving')) {
+        if (!this.$parent.$el.hasAttribute('hoving')) {
+            return;
+        }
+
+        if (asset.invalid) { // 不可用节点，比如 uuid 不存在
             return;
         }
 
@@ -320,29 +336,23 @@ export const methods = {
 
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
-
-        if (dragData === '') { // 是从外部拖文件进来
+        let data: IdragAsset;
+        if (dragData === '') {
             // @ts-ignore
-            this.$emit('drop', asset, {
-                from: 'osFile',
-                insert: 'inside',
-                to: asset.uuid,
-                // @ts-ignore
-                files: Array.from(event.dataTransfer.files),
-            });
-        } else { // 常规内部节点拖拽
-            const data = JSON.parse(dragData);
+            data = {};
+        } else {
+            data = JSON.parse(dragData);
+        }
 
-            if (asset.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
-                data.to = asset.uuid; // 被瞄准的节点
-                data.insert = insert; // 在重新排序前获取数据
+        if (asset.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
+            data.to = asset.uuid; // 被瞄准的节点
+            data.insert = insert; // 在重新排序前获取数据
 
-                // @ts-ignore
-                this.$emit('drop', asset, data);
+            // @ts-ignore
+            this.$emit('drop', data);
 
-                // 重新选中被移动的节点
-                selectId = data.from;
-            }
+            // 重新选中被移动的节点
+            selectId = data.from;
         }
         // @ts-ignore
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
@@ -353,5 +363,10 @@ export const methods = {
 };
 
 export function mounted() {
-
+    // @ts-ignore
+    const asset = this.asset;
+    if (asset.state !== '' || asset.invalid || asset.readonly) {
+        // @ts-ignore
+        this.draggable = false;
+    }
 }

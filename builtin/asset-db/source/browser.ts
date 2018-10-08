@@ -2,7 +2,7 @@
 
 import { statSync } from 'fs';
 import { copy, ensureDir, existsSync, move, outputFile, remove } from 'fs-extra';
-import { basename, join, relative } from 'path';
+import { basename, extname, join, relative } from 'path';
 import { getName } from './utils';
 
 const worker = require('@base/electron-worker');
@@ -160,7 +160,7 @@ module.exports = {
 
         /**
          * 复制一个资源到指定位置
-         * @param url db://assets/abc.json
+         * @param url db://assets/abc.json 或者 系统路径 如 C:\Users\**
          * @param to db://assets/abc
          */
         async 'copy-asset'(url: string, to: string) {
@@ -174,16 +174,34 @@ module.exports = {
 
             const dirname = join(Editor.Project.path, 'assets');
 
-            to = join(dirname, to.substr(assetProtocol.length));
+            let dest = join(dirname, to.substr(assetProtocol.length));
 
             if (url.startsWith(assetProtocol)) {
                 url = join(dirname, url.substr(assetProtocol.length));
             }
 
-            // 获取可以使用的文件名
-            to = getName(to);
+            // 如果其中一个数据是错误的，则停止操作
+            if (
+                    dest === url ||
+                    !existsSync(dest) ||
+                    !statSync(dest).isDirectory() ||
+                    !existsSync(url)
+                ) {
+                    return;
+                }
 
-            await copy(url, to);
+            // 复制文件
+            const name = basename(url);
+            dest = join(dest, name);
+            // 获取可以使用的文件名
+            dest = getName(dest);
+            await copy(url, dest, {
+                // @ts-ignore
+                overwrite: true,
+                filter(a, b) {
+                    return extname(a) !== '.meta';
+                }
+            });
 
             // 返回插入的文件地址
             return 'db://' + relative(Editor.Project.path, to);
@@ -218,8 +236,9 @@ module.exports = {
 
             // 实际移动逻辑，首先移动 meta 文件，再移动实际文件
             const name = basename(assets.source);
-            move(assets.source + '.meta', join(assets.target, name) + '.meta');
-            move(assets.source, join(assets.target, name));
+            const dest = join(assets.target, name);
+            move(assets.source + '.meta', dest + '.meta');
+            move(assets.source, dest);
         },
 
         /**
