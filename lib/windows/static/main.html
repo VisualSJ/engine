@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <title>Editor</title>
     <link href="./style/base.css" rel="stylesheet" />
-    <link href="./style/font/iconfont.css" rel="stylesheet" />
+    <link href="./style/iconfont.css" rel="stylesheet" />
     <link href="./style/main.css" rel="stylesheet" />
 </head>
 
@@ -31,31 +31,26 @@
     </div>
 
     <!-- 顶部工具条 -->
-    <header>
+    <header id="toolBar">
         <div class="tools"></div>
         <div class="preview">
-            <!--
-            <div id="platforms" class="flex platform-wrap">
-                <svg viewBox="0 0 448 512">
-                    <path d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path>
-                </svg>
-                <select>
-                    <option>Mobile</option>
-                </select>
-            </div>
-            -->
-            <div id="preview-play" class="flex play-wrap"
-                onclick="startPreview()"
+            <div id="preview-play" class="info-btn"
+                @click="startPreview()"
             >
-                <i class="preview-play-btn icon-play iconfont"></i>
+                <i class="iconfont i-arrow-right "></i>
             </div>
-            <div id="preview-reload" class="flex reload-wrap"
-                onclick="refreshPreview()"
+            <div id="preview-reload" class="info-btn"
+                @click="refreshPreview()"
             >
-                <i class="preview-reload-btn icon-refresh iconfont"></i>
+                <i class="i-refresh iconfont"></i>
             </div>
         </div>
-        <div class="info"></div>
+        <div class="info flex">
+            <span class="info-wifi">{{ipAddress}}<i class="iconfont i-wifi"></i><div class="QRcode-wrap"> <canvas class="QRcode" id='codeCanvas'></canvas> <span>扫一扫直接预览</span></div></span>
+            <span class="info-notice">0</span>
+            <span class="info-btn" @click="openFolder('project')"><i class="iconfont i-folder"></i> 项目路径</span>
+            <span class="info-btn" @click="openFolder('app')"><i class="iconfont i-folder"></i>安装路径</span>
+        </div>
     </header>
 
     <!-- 实际的插件布局 -->

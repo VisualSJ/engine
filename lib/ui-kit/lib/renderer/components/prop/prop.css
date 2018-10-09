@@ -7,6 +7,7 @@
   --label-max-width: 120px;
   --margin-bottom: 5px;
   user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe WPC, Segoe UI, HelveticaNeue-Light, Noto Sans, Microsoft YaHei, PingFang SC, Hiragino Sans GB, Source Han Sans SC, Source Han Sans CN, Source Han Sans, sans-serif;
 }
 :host .wrap {
   display: flex;

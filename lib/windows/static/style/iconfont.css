@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'window';
+    src: url('iconfont.woff');
+}
+
+.iconfont {
+    font-family: 'window' !important;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.i-wifi:before { content: "\e60f"; }
+
+.i-arrow-right:before { content: "\e6df"; }
+
+.i-folder:before { content: "\e616"; }
+
+.i-refresh:before { content: "\e60e"; }

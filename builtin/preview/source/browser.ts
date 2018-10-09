@@ -3,6 +3,7 @@
 import { shell } from 'electron';
 import { getPort, start, stop } from './express';
 import { emitReload } from './socket';
+const ipc = require('@base/electron-base-ipc');
 
 let pkg: any = null;
 
@@ -43,3 +44,7 @@ export async function load() {
 export function unload() {
     stop();
 }
+
+ipc.on('package-preview:get-port', (event: any) => {
+    event.reply(null, getPort());
+});

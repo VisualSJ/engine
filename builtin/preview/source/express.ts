@@ -1,6 +1,7 @@
 'use stirct';
 
 import { createReadStream, stat } from 'fs-extra';
+const ipc = require('@base/electron-base-ipc');
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';

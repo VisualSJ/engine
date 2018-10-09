@@ -41,10 +41,26 @@
   background: #999;
 }
 
+
+.info-btn {
+    margin-left: 5px;
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+    background-color: #444;
+    border-radius: 4px;
+}
+
+.info-btn:hover {
+    cursor: pointer;
+    background-color: #555;
+}
+
 header {
     display: flex;
     text-align: center;
     margin: 5px 0 10px 0;
+    color: #bdbdbd;
 }
 
 header .tools {
@@ -53,8 +69,6 @@ header .tools {
 
 header .preview {
     display: flex;
-    /* height: 20px; */
-    /* width: 100px; */
 }
 
 header .preview svg {
@@ -62,6 +76,10 @@ header .preview svg {
     height: 20px;
     fill: #999;
     cursor: pointer;
+}
+
+header .preview .info-btn {
+    width: 45px;
 }
 
 header .preview select {
@@ -76,11 +94,16 @@ header .preview select {
 
 header .info {
     flex: 1;
+    line-height: 1.8em;
+    font-size: 0.8em;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .flex {
     display: flex;
     margin-right: 5px;
+    align-items: center;
 }
 
 .platform-wrap {
@@ -90,24 +113,45 @@ header .info {
     box-sizing: border-box;
 }
 
-.preview-play-btn,
-.preview-reload-btn {
-    border-radius: 4px;
-    border: 1px solid #444;
+.info-wifi {
+    color: green;
+    font-weight: 600;
+    position: relative;
+}
+
+.QRcode-wrap {
+    position: absolute;
+    display: none;
+    background-color: white;
+    border-radius: 5px;
+    top:4em;
+    z-index: 2;
+    padding: 10px;
+    flex-direction: column;
+    right: -10px;
+}
+
+.QRcode-wrap .QRcode {
+    border-radius: 5px;
+    width: 150px !important;
+    height: 150px !important;
+}
+
+.info-wifi:hover {
+    cursor: default;
+}
+
+.info-wifi:hover .QRcode-wrap {
+    display: flex;
+}
+
+.info-notice {
     display: inline-block;
-    box-sizing: border-box;
-    font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    font-size: 1em;
-    font-weight: 700;
-    margin: 0;
-    padding: 0.3rem 1rem;
-    min-width: 35px;
-    text-align: center;
-    white-space: nowrap;
-    flex-grow: 1;
-    align-items: center;
-    overflow: hidden;
-    cursor: pointer;
-    background-color: #444;
-    color: #bdbdbd;
+    background-color: #e69138;
+    margin-left: 4px;
+    color: white;
+    padding: 3px;
+    width: 0.6em;
+    line-height: 1em;
+    border-radius: 4px;
 }
