@@ -1,4 +1,26 @@
 <ul>
+
+    <!-- 自定义引擎 -->
+    <li>
+        <div class="name">
+            <ui-input disabled
+                :value="custom[type]"
+                :title="custom[type]"
+            ></ui-input>
+            <ui-button
+                @click="_onSelectCustom($event)"
+            >Custom</ui-button>
+        </div>
+
+        <div class="button">
+            <i class="icon check"
+                :use="current[type] === 'custom'"
+                @click="_onClickUseEngine($event, { version: 'custom', })"
+            ></i>
+        </div>
+    </li>
+
+    <!-- 内置引擎 -->
     <li
         v-for="item in list[type]"
     >

@@ -28,20 +28,26 @@ export const messages = {
         const version = current[type];
         let compile = false;
 
-        let file = path.join(Editor.App.home, './engine', type, `${version}.js`);
-
-        if (!fs.existsSync(file)) {
-            file = path.join(__dirname, '../resources', type, `${version}.js`);
-        }
-
-        if (!fs.existsSync(file)) {
-            file = path.join(Editor.App.home, './engine', type, `${version}`);
+        let file: string = '';
+        if (version === 'custom') {
+            file = profile.local.get('custom')[type];
             compile = true;
-        }
+        } else {
+            file = path.join(Editor.App.home, './engine', type, `${version}.js`);
 
-        if (!fs.existsSync(file)) {
-            file = path.join(__dirname, '../resources', type, `${version}`);
-            compile = true;
+            if (!fs.existsSync(file)) {
+                file = path.join(__dirname, '../resources', type, `${version}.js`);
+            }
+
+            if (!fs.existsSync(file)) {
+                file = path.join(Editor.App.home, './engine', type, `${version}`);
+                compile = true;
+            }
+
+            if (!fs.existsSync(file)) {
+                file = path.join(__dirname, '../resources', type, `${version}`);
+                compile = true;
+            }
         }
 
         return {
@@ -61,25 +67,27 @@ export async function load() {
     const current = profile.local.get('current') || {};
 
     if (
-        !current['2d'] ||
+        current['2d'] !== 'custom' &&
+        (!current['2d'] ||
         !(
             fs.existsSync(path.join(Editor.App.home, './engine', '2d', `${current['2d']}.js`)) ||
             fs.existsSync(path.join(__dirname, '../resources', '2d', `${current['2d']}.js`)) ||
             fs.existsSync(path.join(Editor.App.home, './engine', '2d', `${current['2d']}`)) ||
             fs.existsSync(path.join(__dirname, '../resources', '2d', `${current['2d']}`))
-        )
+        ))
     ) {
         current['2d'] = '2.0.0-alpha';
     }
 
     if (
-        !current['3d'] ||
+        current['3d'] !== 'custom' &&
+        (!current['3d'] ||
         !(
             fs.existsSync(path.join(Editor.App.home, './engine', '3d', `${current['3d']}.js`)) ||
             fs.existsSync(path.join(__dirname, '../resources', '3d', `${current['3d']}.js`)) ||
             fs.existsSync(path.join(Editor.App.home, './engine', '3d', `${current['3d']}`)) ||
             fs.existsSync(path.join(__dirname, '../resources', '3d', `${current['3d']}`))
-        )
+        ))
     ) {
         current['3d'] = '0.15.0';
     }

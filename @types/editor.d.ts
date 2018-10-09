@@ -97,9 +97,9 @@ interface History {
 
 interface Dialog {
     show: Function,
-    openFiles: Function,
+    openFile: Function,
     openDirectory: Function,
-    saveFiles: Function
+    saveFile: Function
 }
 
 declare const IPCEvent: IPCEvent;

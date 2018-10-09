@@ -9,6 +9,7 @@ exports.template = fse.readFileSync(path.join(__dirname, '../template/engine.htm
 exports.props = [
     'pt', // project type
     'current',
+    'custom',
     'type',
 ];
 
@@ -56,6 +57,16 @@ exports.methods = {
     _onClickUseEngine(event, item) {
         this.current[this.type] = item.version;
     },
+
+    async _onSelectCustom(event) {
+        const paths = await Editor.Dialog.openDirectory({
+            root: Editor.Project.path,
+        });
+
+        if (paths[0] && fse.existsSync(paths[0])) {
+            this.$root.$emit('change-custom', paths[0]);
+        }
+    }
 };
 
 exports.mounted = function() {

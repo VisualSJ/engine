@@ -37,12 +37,17 @@ export async function ready() {
     // @ts-ignore
     panel = this;
 
-    const current = profile.local.get('current') || {};
+    const current = profile.local.get('current') || { '2d': '', '3d': '', };
+    let custom = profile.local.get('custom') || { '2d': '', '3d': '', };
+    if (typeof custom !== 'object') {
+        custom = { '2d': '', '3d': '', };
+    }
 
     const vm = new Vue({
         el: panel.$.section,
         data: {
             pt: Editor.Project.type,
+            custom,
             current: {
                 '2d': current['2d'] || '2.0.0-alpha',
                 '3d': current['3d'] || '0.15.0',
@@ -60,6 +65,13 @@ export async function ready() {
                     profile.local.save();
                 },
             },
+            custom: {
+                deep: true,
+                handler() {
+                    profile.local.set('custom', vm.custom);
+                    profile.local.save();
+                },
+            }
         },
         components: {
             engine: require('../static/components/engine'),
@@ -79,6 +91,10 @@ export async function ready() {
                 vm.type = type;
             },
         }
+    });
+
+    vm.$on('change-custom', (path: string) => {
+        vm.custom[vm.type] = path;
     });
 }
 

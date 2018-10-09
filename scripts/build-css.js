@@ -2,7 +2,6 @@
 
 const ps = require('path'); // path system
 const exec = require('child_process').exec;
-const util = require('util');
 const fs = require('fs');
 
 /////////////////////////
@@ -49,9 +48,9 @@ Promise.all(lessDirnames.map(async (dir) => {
 
     /**
      * 查询所有的 less 文件
-     * @param {*} dirname 
+     * @param {*} dirname
      */
-    const walk = function (dirname) {
+    const walk = function(dirname) {
         if (!fs.existsSync(dirname)) {
             console.error(`path is not exists: ${dirname}`);
             return [];
