@@ -180,6 +180,13 @@ export async function ready() {
             treeHeight: 0, // 完整树形的全部高度
             dirBox: [], // 拖动时高亮的目录区域位置 [top, height]
         },
+        watch: {
+            treeHeight() {
+                if (vm.treeHeight < vm.viewHeight) {
+                    vm.$refs.tree.scroll(0);
+                }
+            }
+        },
         mounted() {
             // 组件已准备就绪，与请求数据无关
             this.ready = true;

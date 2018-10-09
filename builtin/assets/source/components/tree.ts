@@ -11,7 +11,8 @@ const assetHeight: number = 20; // 配置每个资源的高度，需要与css一
 
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
- * 将所有资源按照 key = position.top 排列，value = ItreeAsset
+ * 将所有有展开的资源按照 key = position.top 排列，value = ItreeAsset
+ * 注意：仅包含有展开显示的资源
  */
 const assetsMap: Map<number, ItreeAsset> = new Map();
 
@@ -41,7 +42,8 @@ export function data() {
         viewHeight: 0, // 当前树形的可视区域高度
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
-        dirBox: [], // 拖动时高亮的目录区域 [top, height]
+        dirBox: [], // 拖动时高亮的目录区域 [top, height] 或者 false 不显示
+        newAssetNeedToRename: false // 由于是异步，存在新建，拖拽进新文件，移动资源这三个过程的新建无法区分，所以需要用第三方变量记录该 rename 的时候
     };
 }
 
@@ -69,6 +71,10 @@ export const watch = {
      */
     search() {
         vm.changeData();
+
+        if (vm.search === '') { // 重新定位到选中项
+            selectsIntoView();
+        }
     },
     /**
      * 当前选中项变动
@@ -92,6 +98,9 @@ export function mounted() {
     });
     // @ts-ignore
     this.$el.addEventListener('drop', () => {
+        // @ts-ignore 隐藏高亮框
+        this.dirBox = false;
+
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
         let data: IdragAsset;
@@ -108,10 +117,10 @@ export function mounted() {
         // @ts-ignore
         const localFiles = Array.from(event.dataTransfer.files);
         if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
-                data.from = 'osFile';
-                data.insert = 'inside';
-                // @ts-ignore
-                data.files = localFiles;
+            data.from = 'osFile';
+            data.insert = 'inside';
+            // @ts-ignore
+            data.files = localFiles;
         }
 
         if (!data.to) { // 没有在其他节点释放
@@ -127,6 +136,7 @@ export function mounted() {
         }
         // @ts-ignore
         this.drop(data);
+
     });
 }
 
@@ -156,9 +166,11 @@ export const methods = {
             children: toTree(dbdata),
         };
 
-        // console.log(treeData);
-
         this.changeData();
+
+        vm.$nextTick(() => {
+            selectsIntoView();
+        });
     },
 
     /**
@@ -169,6 +181,11 @@ export const methods = {
 
         // 修改所有树形节点的数据
         resetTreeProps({ isExpand: vm.allExpand });
+
+        // 根节点始终保持展开
+        treeData.children.forEach((root: ItreeAsset) => {
+            root.isExpand = true;
+        });
 
         this.changeData();
     },
@@ -225,6 +242,11 @@ export const methods = {
             parent.state = ''; // 还原状态
             parent.isExpand = true; // 展开显示
             sortData(parent.children, false);
+
+            // @ts-ignore 检查是否需要重名命
+            if (this.newAssetNeedToRename && !newNode.invalid && !newNode.readonly) {
+                newNode.state = 'input';
+            }
         });
         // 触发节点数据已变动
         this.changeData();
@@ -268,6 +290,9 @@ export const methods = {
         }
 
         Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
+
+        // @ts-ignore 新建成功后需要 rename
+        this.newAssetNeedToRename = true;
     },
 
     /**
@@ -411,7 +436,10 @@ export const methods = {
      * @param name
      */
     rename(asset: ItreeAsset, name = '') {
-        const one = getGroupFromTree(treeData, asset.uuid)[0]; // 获取该资源的数据
+        // @ts-ignore 还原需要 rename 的状态，手动新增资源的时候会先标注为 true
+        this.newAssetNeedToRename = false;
+
+        const one = getValidAsset(asset.uuid); // 获取该资源的数据
 
         if (!one || name === '' || name === asset.name) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
@@ -933,4 +961,62 @@ function importAsset(uuid: string, source: string) {
         return;
     }
     Editor.Ipc.sendToPackage('asset-db', 'copy-asset', source, dest.source);
+}
+
+/**
+ * 展开选中项并处于视角中
+ */
+function selectsIntoView() {
+    if (vm.selects.length > 0) { // 展开所有选中项
+        vm.selects.forEach((id: string) => {
+            expandAsset(id);
+        });
+        vm.changeData();
+    }
+
+    vm.$nextTick(() => {
+        scrollIntoView(vm.getFirstSelect());
+    });
+}
+
+/**
+ * 滚动节点到可视范围内
+ * @param uuid
+ */
+function scrollIntoView(uuid: string) {
+    if (!uuid) {
+        return;
+    }
+    // 情况 A ：判断是否已在展开的节点中，
+    const one = getAssetFromMap(uuid);
+    if (one) { // 如果 A ：存在，
+        // 情况 B ：判断是否在可视范围，
+        if (
+            (vm.scrollTop - assetHeight) < one.top &&
+            one.top < (vm.scrollTop + vm.viewHeight - assetHeight)
+        ) {
+            return; // 如果 B：是，则终止
+        } else { // 如果 B：不是，则滚动到可视的居中范围内
+            const top = one.top - vm.viewHeight / 2;
+            vm.$parent.$refs.viewBox.scrollTo(0, top);
+        }
+    } else { // 如果 A ：不存在，展开其父级节点，迭代循环展开其祖父级节点，滚动到可视的居中范围内
+        expandAsset(uuid);
+        vm.changeData();
+        scrollIntoView(uuid);
+    }
+}
+
+/**
+ * 展开树形资源节点
+ */
+function expandAsset(uuid: string) {
+    const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
+    if (!asset) {
+        return;
+    }
+    asset.isExpand = true;
+    if (parent.uuid) {
+        expandAsset(parent.uuid);
+    }
 }

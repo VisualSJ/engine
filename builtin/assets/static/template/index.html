@@ -24,6 +24,7 @@
         <tree ref="tree"
         ></tree>
         <div class="dirBox" 
+            v-if="dirBox!==false"
             :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
         >
         </div>

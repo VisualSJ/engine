@@ -19,17 +19,27 @@ export const props: string[] = [
 
 export function data() {
     return {
-        draggable: true
+        draggable: true,
     };
 }
 
 export const watch = {
-    state() {
+    'asset.state'() {
         // @ts-ignore
-        const asset = this.asset;
-        // @ts-ignore
-        this.draggable = asset.state !== '' ? false : true;
-    },
+        this.$nextTick(() => {
+            // @ts-ignore
+            const asset = this.asset;
+            // @ts-ignore
+            this.draggable = (asset.state !== '' || asset.invalid || asset.readonly) ? false : true;
+            // @ts-ignore
+            if (asset.state === 'input') {
+                // @ts-ignore
+                this.$refs.input.focus();
+                // @ts-ignore
+                this.$refs.input.setSelectionRange(0, asset.name.lastIndexOf('.'));
+            }
+        });
+    }
 };
 
 export const methods = {
@@ -220,14 +230,6 @@ export const methods = {
 
         // 改变节点状态
         asset.state = 'input';
-
-        // @ts-ignore
-        this.$nextTick(() => {
-            // @ts-ignore
-            this.$refs.input.focus();
-            // @ts-ignore
-            this.$refs.input.setSelectionRange(0, asset.name.lastIndexOf('.'));
-        });
     },
     /**
      * 提交重名命
@@ -235,18 +237,11 @@ export const methods = {
      */
     renameBlur(asset: ItreeAsset) {
         // @ts-ignore
-        const newName = this.$refs.input.value.trim();
+        let newName = this.$refs.input.value.trim();
 
         // 文件名称带有后缀，此时不能只发后缀
         if (newName.toLowerCase() === asset.ext) {
-            asset.state = '';
-            return;
-        }
-
-        // 与原名称一样
-        if (newName === asset.name) {
-            asset.state = '';
-            return;
+            newName = '';
         }
 
         // @ts-ignore
