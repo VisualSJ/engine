@@ -30,6 +30,9 @@ ipc.on('init', async (info) => {
     // 重写引擎的部分方法
     await Manager.Init.utils(info.utils);
 
+    // 改动部分
+    await Manager.Init.system();
+
     if (typeof info.uuid === 'string') {
         await Manager.Scene.open(info.uuid);
     }

@@ -212,7 +212,7 @@ Object.assign(Compiler.prototype, {
             TEMP_NODE_MODULE_PATH,
             path.slice(path.indexOf('/node_modules/') + '/node_modules/'.length)
         );
-        relative = Path.stripExt(relative) + '.js';
+        // relative = Path.stripExt(relative) + '.js';
         return Path.join(this.out, relative);
     },
 

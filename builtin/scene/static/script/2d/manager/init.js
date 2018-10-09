@@ -3,8 +3,8 @@
 ///////////////
 // 初始化管理器
 
-const { basename } = require('path');
 const assets = require('../assets');
+const camera = require('./camera');
 
 let inited = false;
 
@@ -51,7 +51,7 @@ async function engine(info) {
     const option = {
         id: 'GameCanvas',
         showFPS: false,
-        debugMode: cc.debug.DebugMode.INFO,
+        debugMode: cc.debug.DebugMode.ERROR_FOR_WEB_PAGE,
         frameRate: 60,
         renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
         registerSystemEvent: false,
@@ -95,7 +95,15 @@ function utils(path) {
     };
 }
 
+/**
+ * 初始化编辑器内使用的 camera
+ */
+async function system() {
+    // await camera.init();
+}
+
 module.exports = {
     engine,
     utils,
+    system,
 };
