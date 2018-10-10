@@ -1,6 +1,7 @@
 @import '../base//variable';
 :host {
   color: @c-default-text;
+  font-family: inherit;
   header {
     border-bottom: 1px solid var(--border-color, @c-default-text);
     i {
@@ -15,7 +16,6 @@
 :host(:hover) {
   header {
     color: @c-border-hover;
-    // border-bottom: 1px solid var(--border-color, @c-border-hover);
     i {
       background-color: var(--border-color, @c-border-hover);
     }

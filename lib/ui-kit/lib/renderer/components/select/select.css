@@ -1,6 +1,19 @@
+:host {
+  min-width: 80px;
+}
 ::slotted(option) {
   display: none;
 }
 ::slotted(optgroup) {
   display: none;
+}
+#placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.2em 2em 0.2em 0.8em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }

@@ -23,6 +23,13 @@
     <ui-prop label="enums" type="enums" value='test3' options='[{"name":"test1","value":"test1"},{"name":"test2","value":"test2"},{"name":"test3","value":"test3"}]'></ui-prop>
   </section>
   <section>
+    <h1>config</h1>
+    <ui-prop label="placeholder" type="string" value="kkkkk" config='{"placeholder":"请输入任意字符"}'> </ui-prop>
+    <ui-prop label="min,max" type="int" value="22" config='{"min":0,"max":255}'></ui-prop>
+    <ui-prop label="min,max,step,preci" type="number" value="15.555" config='{"min":0,"max":20,"step":2,"preci":2}'></ui-prop>
+    <ui-prop label="placeholder" type="enums" options='["test1","test2","test3"]' config='{"placeholder":"请选择"}'></ui-prop>
+  </section>
+  <section>
     <h1>Group</h1>
     <ui-prop label="Group" type="string" value="Group">
       <ui-prop label="number" type="number" value="22.888"></ui-prop>

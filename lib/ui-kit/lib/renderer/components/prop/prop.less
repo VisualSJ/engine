@@ -1,5 +1,4 @@
 :host {
-  width: 100%;
   height: 1.8em;
   --left-width: 30%; // 控制label的宽度比例
   --right-width: 70%; // 控制内部组件的宽度比例
@@ -86,4 +85,8 @@ ui-prop>div[slot='content'] {
 
 :host(:focus) {
   outline: none;
+}
+
+:host([disabled]:hover) {
+  cursor: default
 }

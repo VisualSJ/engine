@@ -1,5 +1,4 @@
 :host {
-  width: 100%;
   height: 1.8em;
   --left-width: 30%;
   --right-width: 70%;
@@ -71,4 +70,7 @@ ui-prop > div[slot='content'] {
 }
 :host(:focus) {
   outline: none;
+}
+:host([disabled]:hover) {
+  cursor: default;
 }

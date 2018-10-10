@@ -4,6 +4,7 @@
   display: inline-block;
   position: relative;
   box-sizing: border-box;
+  font-family: inherit;
 }
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -47,16 +48,16 @@ input::-webkit-inner-spin-button {
   flex-direction: column;
   top: 0;
   right: 0;
-  width: 0.8em;
+  width: 10px;
   background: #999;
 }
 .slider > div {
   flex: 1;
   overflow: hidden;
   text-align: center;
-  line-height: 0.7em;
   cursor: pointer;
   border-left: 1px solid #999;
+  line-height: 0.5em;
 }
 .slider svg {
   width: 0.4em;
