@@ -79,7 +79,7 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
     AssetInfo.dist = info.dist;
     AssetInfo.utils = info.utils;
 
-    Manager._serialize = function() {
+    Manager._serialize = function () {
         return require(info.utils + '/serialize');
     };
 
@@ -206,29 +206,6 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
                 subAssets: {},
             };
 
-            /**
-             * 扫描资源
-             * @param {*} assets
-             * @param {*} asset
-             */
-            function searchSubAssets(assets, asset) {
-                const names = Object.keys(asset.subAssets);
-                for (const name of names) {
-                    const subAsset = asset.subAssets[name];
-                    assets[name] = {
-                        source: null,
-                        uuid: subAsset.uuid,
-                        importer: subAsset.meta.importer,
-                        isDirectory: false,
-                        files: subAsset.meta.files.map((ext) => {
-                            return subAsset.library + ext;
-                        }),
-                        subAssets: {},
-                    };
-                    searchSubAssets(assets[name].subAssets, subAsset);
-                }
-            }
-
             searchSubAssets(info.subAssets, asset);
 
             assets.push(info);
@@ -293,8 +270,12 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
         isDirectory: await asset.isDirectory(),
         files: asset.meta.files.map((ext) => {
             return asset.library + ext;
-        })
+        }),
+        subAssets: {},
     };
+
+    searchSubAssets(info.subAssets, asset);
+
     event.reply(null, info);
 });
 
@@ -313,3 +294,26 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
     }
     event.reply(null, asset.meta);
 });
+
+/**
+ * 扫描资源
+ * @param {*} assets
+ * @param {*} asset
+ */
+function searchSubAssets(assets, asset) {
+    const names = Object.keys(asset.subAssets);
+    for (const name of names) {
+        const subAsset = asset.subAssets[name];
+        assets[name] = {
+            source: null,
+            uuid: subAsset.uuid,
+            importer: subAsset.meta.importer,
+            isDirectory: false,
+            files: subAsset.meta.files.map((ext) => {
+                return subAsset.library + ext;
+            }),
+            subAssets: {},
+        };
+        searchSubAssets(assets[name].subAssets, subAsset);
+    }
+}

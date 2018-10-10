@@ -1,8 +1,8 @@
 'use strict';
-
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
 
+const { shell } = require('electron');
 const openAsset = require('./open');
 
 export const name = 'treenode';
@@ -71,7 +71,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        if (asset.invalid || asset.readonly) { // 需要
+        if (asset.invalid || asset.isSubAsset) { // 不需要右击菜单的情况
             return;
         }
 
@@ -90,17 +90,71 @@ export const methods = {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('ipcAdd', { type: 'folder' }, asset.uuid);
+                                self.$emit('ipcAdd', { ext: 'folder' }, asset.uuid);
                             }
                         },
                         {
                             type: 'separator'
                         },
                         {
-                            label: Editor.I18n.t('assets.menu.newJavascript'),
+                            label: Editor.I18n.t('assets.menu.newJavaScript'),
                             click() {
                                 // @ts-ignore
-                                self.$emit('ipcAdd', { type: 'javascript' }, asset.uuid);
+                                self.$emit('ipcAdd', { ext: 'js' }, asset.uuid);
+                            }
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newTypeScript'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'ts' }, asset.uuid);
+                            }
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newCoffeeScript'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'coffee' }, asset.uuid);
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newScene'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'fire' }, asset.uuid);
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newAnimationClip'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'anim' }, asset.uuid);
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newAutoAtlas'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'pac' }, asset.uuid);
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newLabelAtlas'),
+                            click() {
+                                // @ts-ignore
+                                self.$emit('ipcAdd', { ext: 'labelatlas' }, asset.uuid);
                             }
                         },
                     ]
@@ -110,6 +164,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.copy'),
+                    enabled: asset.readonly ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('copy', asset.uuid);
@@ -117,6 +172,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.paste'),
+                    enabled: asset.readonly ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('paste', asset.uuid);
@@ -127,6 +183,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.rename'),
+                    enabled: asset.readonly ? false : true,
                     click(event: Event) {
                         // @ts-ignore
                         self.rename(asset);
@@ -134,11 +191,33 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.delete'),
+                    enabled: asset.readonly ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('ipcDelete', asset.uuid);
                     }
-                }
+                },
+                { type: 'separator', },
+                {
+                    label: Editor.I18n.t('assets.menu.openInlibrary'),
+                    click() {
+                        const path = join(Editor.Project.path, 'library', asset.uuid.substr(0, 2));
+                        shell.openItem(path);
+                    },
+                },
+                {
+                    label: Editor.I18n.t('assets.menu.openInExplorer'),
+                    click() {
+                        const path = join(Editor.Project.path, asset.source.substr(5));
+                        shell.showItemInFolder(path);
+                    },
+                },
+                {
+                    label: Editor.I18n.t('assets.menu.consoleLog'),
+                    click() {
+                        console.info(`UUID: ${asset.uuid}, PATH: ${asset.source}`);
+                    },
+                },
             ]
         });
     },
@@ -308,7 +387,6 @@ export const methods = {
     drop(event: Event, asset: ItreeAsset) {
         // 需要取消默认行为才能获取 dataTransfer 数据
         event.preventDefault();
-        // event.stopPropagation();
 
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -340,7 +418,7 @@ export const methods = {
         }
 
         if (asset.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
-            data.to = asset.uuid; // 被瞄准的节点
+            data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
             data.insert = insert; // 在重新排序前获取数据
 
             // @ts-ignore

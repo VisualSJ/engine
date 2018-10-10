@@ -6,7 +6,7 @@ declare interface IdragAsset {
 }
 
 declare interface IaddAsset {
-    type: string; // 一个节点的类型，默认空节点，值为 'empty'
+    ext: string; // 新文件的后缀，文件夹为 folder
     name: string;
     value: string;
 }
@@ -33,6 +33,7 @@ declare interface ItreeAsset {
     topSource: string; // 顶层父级的 source，如 db://assets/
     isExpand: boolean; // 是否展开显示
     isParent: boolean; // 是否是父节点
+    isSubAsset: boolean; // 是否是 subAsset, 是的话：无右击菜单，可拖动到 scene 或 hierarchy, 但 asset 面板里面的不能移动
     thumbnail: string, // 图片缩略图的 base64 地址
     icon: string, // 文件图标
     state: string; // 状态: ['', 'input', 'loading']

@@ -23,8 +23,8 @@ async function refresh() {
     // arr.shift();
     // arr.shift();
     // arr.shift();
-    // const rt = legalData(arr);
-    // console.log(rt);
+    // expandSubAssets(arr);
+    // console.log(arr);
     // return;
 
     return legalData(arr);
@@ -41,7 +41,14 @@ async function ipcQuery(uuid: string) {
  * @param arr
  */
 function legalData(arr: ItreeAsset[]) {
-    const rt = arr.filter((a) => a.source !== '').map((a: ItreeAsset) => {
+    // 展平里面的 subAssets
+    expandSubAssets(arr);
+    //
+    const rt = arr.filter((a) => !!a.source).map((a: ItreeAsset) => {
+        if (a.isSubAsset) {
+            return a;
+        }
+
         const { protocol, hostname, pathname } = urlParse(a.source);
         const { base, dir, name, ext } = pathParse(a.source);
 
@@ -58,11 +65,12 @@ function legalData(arr: ItreeAsset[]) {
         a.parentSource = a.dirname === '' ? '' : a.host + (a.dirname === '' ? '/' : a.dirname);
         a.topSource = a.host + '/';
         a.isExpand = a.dirname === '' ? true : false;
-        a.isParent = a.isDirectory ? true : false;
+        a.isParent = a.isParent ? true : a.isDirectory ? true : false; // 树形的父级三角形依据此字段
         a.thumbnail = '';
         a.icon = fileicon[a.fileext] || 'i-file';
-        a.invalid = !a.uuid ? a.dirname === '' ? false : true : false; // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
-        a.readonly = a.dirname === '' ? true : false;
+        // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
+        a.invalid = a.invalid ? true : !a.uuid ? a.dirname === '' ? false : true : false;
+        a.readonly = a.dirname === '' ? true : false; // 根节点和 subAssets 都只读
         a.source = a.dirname === '' ? a.topSource : a.source; // 统一顶层节点出现的两种情况 db://assets/ 或 db://assets 为 db://assets/
         a.uuid = !a.uuid ? a.source : a.uuid; // 注意放在 a.invalid 和 a.source 赋值的下方；对于不可用的资源，指定一个模拟的 uuid
         a.state = '';
@@ -72,8 +80,6 @@ function legalData(arr: ItreeAsset[]) {
         if (extToThumbnail[Editor.Project.type].includes(a.fileext)) {
             (async (one: ItreeAsset) => {
                 one.thumbnail = await thumbnail(one);
-                // TODO 这个地方需要优化，减少触发频率
-                // vm.changeData();
             })(a);
         }
 
@@ -122,6 +128,38 @@ function ensureDir(arr: ItreeAsset[], parentSource: string) {
 
         // 继续迭代
         ensureDir(arr, dirname(parentSource));
+    }
+}
+
+/**
+ * 展开末级 subAssets 资源，使之平级在数组中
+ * @param arr
+ */
+function expandSubAssets(arr: ItreeAsset[]) {
+    // 这里使用 for 有不断执行尾部新进元素的作用
+    for (const asset of arr) {
+        if (!asset.subAssets) {
+            continue;
+        }
+        const keys = Object.keys(asset.subAssets);
+        if (keys.length === 0) {
+            continue;
+        }
+
+        keys.forEach((key) => {
+            const subAsset = asset.subAssets[key];
+            subAsset.parentSource = asset.source; // 重要
+            subAsset.parentUuid = asset.uuid; // 重要
+            subAsset.source = asset.source + '@' + key; // 这个数据只用于识别为树形节点
+            subAsset.name = key; // 树形节点的名称
+            subAsset.state = ''; // 激活可以被拖拽
+            subAsset.icon = 'i-file'; // 默认图标
+            subAsset.isSubAsset = true; // 重要
+
+            asset.isParent = true; // 父级是父节点
+            // 插入到队列
+            arr.push(subAsset);
+        });
     }
 }
 

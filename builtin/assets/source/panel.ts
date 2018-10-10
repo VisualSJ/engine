@@ -273,16 +273,64 @@ export async function ready() {
                         {
                             label: Editor.I18n.t('assets.menu.newFolder'),
                             click() {
-                                vm.$refs.tree.ipcAdd({ type: 'folder' });
+                                vm.$refs.tree.ipcAdd({ ext: 'folder' });
                             }
                         },
                         {
                             type: 'separator'
                         },
                         {
-                            label: Editor.I18n.t('assets.menu.newJavascript'),
+                            label: Editor.I18n.t('assets.menu.newJavaScript'),
                             click() {
-                                vm.$refs.tree.ipcAdd({ type: 'javascript' });
+                                vm.$refs.tree.ipcAdd({ ext: 'js' });
+                            }
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newTypeScript'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'ts' });
+                            }
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newCoffeeScript'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'coffee' });
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newScene'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'fire' });
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newAnimationClip'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'anim' });
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newAutoAtlas'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'pac' });
+                            }
+                        },
+                        {
+                            type: 'separator'
+                        },
+                        {
+                            label: Editor.I18n.t('assets.menu.newLabelAtlas'),
+                            click() {
+                                vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
                             }
                         },
                     ]
@@ -311,16 +359,64 @@ export async function ready() {
                                 {
                                     label: Editor.I18n.t('assets.menu.newFolder'),
                                     click() {
-                                        vm.$refs.tree.ipcAdd({ type: 'folder' });
+                                        vm.$refs.tree.ipcAdd({ ext: 'folder' });
                                     }
                                 },
                                 {
                                     type: 'separator'
                                 },
                                 {
-                                    label: Editor.I18n.t('assets.menu.newJavascript'),
+                                    label: Editor.I18n.t('assets.menu.newJavaScript'),
                                     click() {
-                                        vm.$refs.tree.ipcAdd({ type: 'javascript' });
+                                        vm.$refs.tree.ipcAdd({ ext: 'js' });
+                                    }
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newTypeScript'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'ts' });
+                                    }
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newCoffeeScript'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'coffee' });
+                                    }
+                                },
+                                {
+                                    type: 'separator'
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newScene'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'fire' });
+                                    }
+                                },
+                                {
+                                    type: 'separator'
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newAnimationClip'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'anim' });
+                                    }
+                                },
+                                {
+                                    type: 'separator'
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newAutoAtlas'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'pac' });
+                                    }
+                                },
+                                {
+                                    type: 'separator'
+                                },
+                                {
+                                    label: Editor.I18n.t('assets.menu.newLabelAtlas'),
+                                    click() {
+                                        vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
                                     }
                                 },
                             ]

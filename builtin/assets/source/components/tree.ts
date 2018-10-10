@@ -234,6 +234,7 @@ export const methods = {
      */
     async add(uuid: string) {
         const arr = await db.ipcQuery(uuid);
+
         arr.forEach((newNode: ItreeAsset) => {
             const parent = addAssetIntoTree(treeData.children, newNode);
             if (!parent) {
@@ -283,13 +284,12 @@ export const methods = {
             url = one[3].source;
         }
 
-        let content;
-        switch (json.type) {
+        switch (json.ext) {
             case 'folder': url += '/New Folder'; break;
-            case 'javascript': url += '/NewScript.js'; content = ''; break;
+            default: url += '/New File.' + json.ext; break;
         }
 
-        Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, content);
+        Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, json.ext === 'folder' ? null : '');
 
         // @ts-ignore 新建成功后需要 rename
         this.newAssetNeedToRename = true;
@@ -516,7 +516,7 @@ export const methods = {
         } else {
             const fromData = getGroupFromTree(treeData, json.from);
             const fromNode = fromData[0]; // 被移动的对象
-            if (!fromNode || fromNode.invalid) {
+            if (!fromNode || fromNode.invalid || fromNode.isSubAsset) {
                 return;
             }
 

@@ -30,10 +30,11 @@ export function getName(file: string) {
                 strC = '0' + num;
             }
             return `-${strC}`;
+
         });
 
         file = join(dir, name);
-    } while (!!existsSync(file));
+    } while (!!existsSync(file + ext));
 
     return file + ext;
 }
