@@ -10,6 +10,8 @@ module.exports = {
     reset: 'Reset',
     reset_node: 'Reset Node',
     reset_all: 'Reset All',
-    sprite_select_button: '选择',
-    sprite_edit_button: '编辑'
+    select_button: '选择',
+    edit_button: '编辑',
+    resize_to_target: 'Resize To Target',
+    difference: 'Difference'
 };

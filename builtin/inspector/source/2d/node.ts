@@ -18,7 +18,8 @@ export function data() {
 }
 
 export const components = {
-    'comp-section': require('./common/comp-section')
+    'comp-section': require('./common/comp-section'),
+    'node-section': require('./common/node-section')
 };
 
 export const methods = {

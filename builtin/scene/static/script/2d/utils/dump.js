@@ -18,7 +18,7 @@ function dumpComponent(component, options) {
         result[key] = dumpProperty(component[key], {
             klass: options.klass,
             name: key,
-            target: component,
+            target: component
         });
     });
 
@@ -46,12 +46,12 @@ function dumpAttr(attrs) {
             data.default = null;
         } else if (data.default != null && !data.type) {
             // 为 inspector 提供类型信息
-            let type = ({
+            let type = {
                 number: 'Float',
                 string: 'String',
                 boolean: 'Boolean',
                 object: 'Object'
-            })[typeof data.default];
+            }[typeof data.default];
 
             if (type) {
                 if (type !== 'Object' || data.default.constructor === Object) {
@@ -113,11 +113,12 @@ function dumpAttr(attrs) {
 function dumpProperty(property, options) {
     const result = {
         type: '',
-        value: '',
+        value: ''
     };
 
     // 拿出当前类型的 attr 定义数据
     const attr = cc.Class.attr(options.klass, options.name);
+    // console.log(attr, property, options.name);
 
     // 判断当前的类型，如果 options 没有 name 字段，则说明是正在序列化一个 Compoennt
     let propertyType;
@@ -141,7 +142,7 @@ function dumpProperty(property, options) {
     }
 
     // 取出序列化数据的构造函数
-    let ctor = attr.ctor || ((property && typeof property === 'object') ? property.constructor : property);
+    let ctor = attr.ctor || (property && typeof property === 'object' ? property.constructor : property);
 
     // 如果数据有继承链，则生成 extends 数组
     if (ctor) {
@@ -158,10 +159,7 @@ function dumpProperty(property, options) {
             let childAttr = cc.Class.attr(ctor, name);
             properties[name] = childAttr ? dumpAttr(childAttr) : {};
         });
-        if (
-            cc.js.isChildClassOf(ctor, cc._BaseNode) ||
-            cc.js.isChildClassOf(ctor, cc.Component)
-        ) {
+        if (cc.js.isChildClassOf(ctor, cc._BaseNode) || cc.js.isChildClassOf(ctor, cc.Component)) {
             properties._id = {
                 type: cc.String,
                 visible: false
@@ -180,7 +178,7 @@ function dumpProperty(property, options) {
     } else if (result.type === 'Array') {
         result.value = property.map((item) => {
             return dumpProperty(item, {
-                klass: item.constructor,
+                klass: item.constructor
             });
         });
     } else if (ctor && ctor.__props__) {
@@ -211,7 +209,7 @@ function dumpNode(node) {
         scale: dumpProperty(new cc.Vec2(node.scaleX, node.scaleY), { klass: cc.Node, name: 'scale', target: node }),
         anchor: dumpProperty(new cc.Vec2(node.anchorX, node.anchorY), { klass: cc.Node, name: 'anchor', target: node }),
         size: dumpProperty(new cc.Size(node.width, node.height), { klass: cc.Node, name: 'size', target: node }),
-        color: dumpProperty(node.color, { klass: cc.Node, name: 'color', target: node }),
+        color: dumpProperty(node.color.setA(node.opacity), { klass: cc.Node, name: 'color', target: node }),
         opacity: dumpProperty(node.opacity, { klass: cc.Node, name: 'opacity', target: node }),
         skew: dumpProperty(new cc.Vec2(node.skewX, node.skewY), { klass: cc.Node, name: 'skew', target: node }),
         group: dumpProperty(node.group, { klass: cc.Node, name: 'group', target: node }),
@@ -219,7 +217,7 @@ function dumpNode(node) {
         parent: dumpProperty(node.parent, { klass: cc.Node, name: 'parent', target: node }),
         children: dumpProperty(node._children, { klass: cc.Node, name: '_children', target: node }),
 
-        __comps__: dumpProperty(node._components, { klass: cc.Node, name: '_components', target: node }),
+        __comps__: dumpProperty(node._components, { klass: cc.Node, name: '_components', target: node })
     };
 
     return dump;
@@ -261,10 +259,9 @@ function restoreProperty(dump, property, key) {
             property[key].y = dump.value.y;
             break;
         case 'cc.Color':
-            property[key].r = dump.value.r;
-            property[key].g = dump.value.g;
-            property[key].b = dump.value.b;
-            property[key].a = dump.value.a;
+            const { a: opacity, r, g, b } = dump.value;
+            property[key] = new cc.Color(r, g, b, 255);
+            property.opacity = Math.floor(opacity * 255);
             break;
         default:
             property[key] = dump.value;
@@ -306,5 +303,5 @@ module.exports = {
     dumpNode,
     restoreComponent,
     restoreProperty,
-    restoreNode,
+    restoreNode
 };

@@ -338,7 +338,8 @@ export async function ready() {
              * 监听属性变更
              * @param {*} event
              * @param {(number | undefined)} index
-             */ async onNodePropertyChange(event: any, index: number | undefined) {
+             */
+            async onNodePropertyChange(event: any, index: number | undefined) {
                 const prefix = index === undefined ? index : `__comps__.${index}`;
                 const option: SetPropertyOptions | null = this.getPropertyOption(event, prefix);
 
@@ -392,6 +393,12 @@ export async function ready() {
                     dump.value = dump.value.map(
                         (item: number, index: number) => (index === 3 ? item : Math.round((item * 10) / 255) / 10)
                     );
+                }
+                if (type === 'cc.Color') {
+                    dump.value = ['r', 'g', 'b', 'a'].reduce((prev: any, next: string, index: number) => {
+                        prev[next] = dump.value[index];
+                        return prev;
+                    }, {});
                 }
 
                 return {

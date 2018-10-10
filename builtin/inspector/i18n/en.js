@@ -10,6 +10,8 @@ module.exports = {
     reset: 'Reset',
     reset_node: 'Reset Node',
     reset_all: 'Reset All',
-    sprite_select_button: 'Select In Atlas',
-    sprite_edit_button: 'Edit'
+    select_button: 'Select In Atlas',
+    edit_button: 'Edit',
+    resize_to_target: 'Resize To Target',
+    difference: 'Difference'
 };

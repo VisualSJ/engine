@@ -7,7 +7,7 @@ const Vue = require('vue/dist/vue.js');
 
 const { getType, T } = require('../../utils');
 
-const customDrawItems = ['cc.Sprite'];
+const customDrawItems = ['cc.Sprite', 'cc.Button'];
 
 const defaultOmitKey = ['uuid', 'name', 'active', 'children', 'parent', '__comps__'];
 
@@ -117,8 +117,9 @@ export const methods = {
 
 export function mounted(this: any) {
     if (this.customDraw()) {
+        const type = this.getType(this);
         const div = document.createElement('div');
-        const path = join(__dirname, '../comps/sprite.js');
+        const path = join(__dirname, `../comps/${type}.js`);
         const ComponentClass: any = Vue.extend(require(path));
         const instance = new ComponentClass({ propsData: { target: this.target }, parent: this });
         instance.$mount();
