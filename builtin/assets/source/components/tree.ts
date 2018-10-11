@@ -98,9 +98,6 @@ export function mounted() {
     });
     // @ts-ignore
     this.$el.addEventListener('drop', () => {
-        // @ts-ignore 隐藏高亮框
-        this.dirBox = false;
-
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
         let data: IdragAsset;
@@ -123,10 +120,8 @@ export function mounted() {
             data.files = localFiles;
         }
 
-        if (!data.to) { // 没有在其他节点释放
-            data.to = rootUuid; // 都归于根节点
-            data.insert = 'inside';
-        }
+        data.to = rootUuid; // 都归于根节点
+        data.insert = 'inside';
 
         if (data.from) {  // 如果从根节点移动，则不需要移动
             const arr = getGroupFromTree(treeData, data.from, 'uuid');
@@ -214,6 +209,68 @@ export const methods = {
     },
 
     /**
+     * 选中单节点
+     * @param uuid
+     */
+    ipcSingleSelect(uuid: string) {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+    },
+
+    /**
+     * 多选
+     * 按下 ctrl 或 shift
+     * ctrl 支持取消已选中项
+     */
+    async ipcMultipleSelect(shiftKey: boolean, uuid: string) {
+        // @ts-ignore
+        if (shiftKey) {
+            // 如果之前没有选中节点，则只要选中当前点击的节点
+            // @ts-ignore
+            if (this.selects.length === 0) {
+                this.ipcSingleSelect(uuid);
+                return;
+            } else {
+                if (Array.isArray(uuid)) {
+                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+                    return;
+                }
+                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
+                if (uuids.length === 0) {
+                    return;
+                }
+                const one = getAssetFromMap(uuid); // 当前给定的元素
+                const first = getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
+                if (one !== undefined && first !== undefined) {
+                    const selects: string[] = [];
+                    const min = one.top < first.top ? one.top : first.top;
+                    const max = min === one.top ? first.top : one.top;
+                    for (const [top, json] of assetsMap) {
+                        if (min <= top && top <= max) {
+                            selects.push(json.uuid);
+                        }
+                    }
+                    selects.splice(selects.findIndex((id) => id === first.uuid), 1);
+                    selects.unshift(first.uuid);
+                    selects.splice(selects.findIndex((id) => id === one.uuid), 1);
+                    selects.push(one.uuid);
+
+                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
+                }
+            }
+        } else { // event.ctrlKey || event.metaKey
+            // @ts-ignore
+            if (this.selects.includes(uuid)) {
+                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+            } else {
+                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+            }
+        }
+    },
+
+    /**
      * 取消选中项
      * @param uuid
      */
@@ -254,19 +311,6 @@ export const methods = {
     },
 
     /**
-     * 从树形删除资源节点
-     */
-    delete(uuid: string) {
-        const arr = getGroupFromTree(treeData, uuid);
-        if (arr[2]) {
-            arr[2].splice(arr[1], 1);
-        }
-
-        // 触发节点数据已变动
-        this.changeData();
-    },
-
-    /**
      * ipc 发起创建资源
      * @param asset
      * @param json
@@ -293,6 +337,19 @@ export const methods = {
 
         // @ts-ignore 新建成功后需要 rename
         this.newAssetNeedToRename = true;
+    },
+
+    /**
+     * 从树形删除资源节点
+     */
+    delete(uuid: string) {
+        const arr = getGroupFromTree(treeData, uuid);
+        if (arr[2]) {
+            arr[2].splice(arr[1], 1);
+        }
+
+        // 触发节点数据已变动
+        this.changeData();
     },
 
     /**
@@ -390,48 +447,13 @@ export const methods = {
                 break;
         }
         if (current) {
-            this.multipleSelect(current.uuid);
+            this.ipcMultipleSelect(true, current.uuid);
         }
     },
 
     /**
-     * 节点多选
-     */
-    async multipleSelect(uuid: string | string[]) {
-        if (Array.isArray(uuid)) {
-            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-            return;
-        }
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-        if (uuids.length === 0) {
-            return;
-        }
-        const one = getAssetFromMap(uuid); // 当前给定的元素
-        const first = getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
-        if (one !== undefined && first !== undefined) {
-            const selects: string[] = [];
-            const min = one.top < first.top ? one.top : first.top;
-            const max = min === one.top ? first.top : one.top;
-            for (const [top, json] of assetsMap) {
-                if (min <= top && top <= max) {
-                    selects.push(json.uuid);
-                }
-            }
-            selects.splice(selects.findIndex((id) => id === first.uuid), 1);
-            selects.unshift(first.uuid);
-            selects.splice(selects.findIndex((id) => id === one.uuid), 1);
-            selects.push(one.uuid);
-
-            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
-        }
-    },
-
-    /**
-     * 修改资源属性
+     * 资源重名命
      * 这是异步的，只做发送
-     * 获取在另外ipc 'assets-db:node-changed' 处理数据替换和刷新视图
      * @param asset
      * @param name
      */
@@ -488,8 +510,12 @@ export const methods = {
      * @param json
      */
     drop(json: IdragAsset) {
+        // @ts-ignore 隐藏高亮框
+        this.dirBox = false;
+
+        // 不是拖动的话，取消
         if (json.insert !== 'inside') {
-            return; // 不是拖动的话，取消
+            return;
         }
 
         const toData = getGroupFromTree(treeData, json.to);
@@ -627,15 +653,14 @@ export const methods = {
  * @param depth 资源的层级
  */
 function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
-    if (!obj) {
+    if (!obj || !Array.isArray(obj.children)) {
         return index;
     }
 
-    const tree = obj.children;
-    tree.forEach((one: ItreeAsset) => {
+    obj.children.forEach((one: ItreeAsset) => {
         const start = index * assetHeight;  // 起始位置
 
-        // 补充属性
+        // 扩展属性
         one.depth = depth;
         one.top = start;
         one._height = assetHeight;
@@ -662,12 +687,12 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             },
         });
 
-        if (vm.search === '') { // 没有搜索，不存在数据过滤的情况
+        if (vm.search === '') { // 没有搜索
             vm.state = '';
             assetsMap.set(start, one);
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
-            if (one.children && one.isExpand === true) {
+            if (one.isParent && one.isExpand === true) {
                 index = calcAssetPosition(one, index, depth + 1); // depth 是该资源的层级
             }
         } else { // 有搜索
@@ -675,12 +700,12 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
 
             // @ts-ignore
             if (!one.invalid && !one.readonly && one.name.search(vm.search) !== -1) { // 平级保存
-                one.depth = 1; // 平级保存
+                one.depth = 0; // 平级保存
                 assetsMap.set(start, one);
-                index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+                index++;
             }
 
-            if (one.children) {
+            if (one.isParent) {
                 index = calcAssetPosition(one, index, 0);
             }
         }
@@ -732,7 +757,7 @@ function resetTreeProps(props: any, tree: ItreeAsset[] = treeData.children) {
  * 所在数组其所在的对象 object
  * 返回 [node, index, array, object]
  *
- * 资源节点不可用的情况返回 []
+ * 找不到资源 返回 []
  * @param arr
  * @param uuid
  */
@@ -1016,7 +1041,7 @@ function expandAsset(uuid: string) {
         return;
     }
     asset.isExpand = true;
-    if (parent.uuid) {
+    if (parent && parent.uuid) {
         expandAsset(parent.uuid);
     }
 }

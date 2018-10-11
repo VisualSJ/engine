@@ -2,7 +2,7 @@
     :state="state"
     :style="{ top: top + 'px' }"
 >
-    <treenode class="node" type="asset"
+    <treenode type="asset"
         v-for="(asset,index) in assets" 
         :key="index"
         :asset="asset"
@@ -11,7 +11,8 @@
         @ipcAdd="ipcAdd"
         @copy="copy"
         @paste="paste"
-        @multipleSelect="multipleSelect"
+        @ipcMultipleSelect="ipcMultipleSelect"
+        @ipcSingleSelect="ipcSingleSelect"
         @rename="rename"
         @dragOver="dragOver"
         @dragLeave="dragLeave"

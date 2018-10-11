@@ -234,27 +234,27 @@ export async function ready() {
                 vm.$refs.tree.allToggle();
             },
             /**
-             * 添加资源到树形
+             * ipc 消息后：添加资源到树形
              * @param uuid
              */
             add(uuid: string) {
                 vm.$refs.tree.add(uuid);
             },
             /**
-             * 从树形删除资源
+             * ipc 消息后：将资源从树形上删除
              * @param uuid
              */
             delete(uuid: string) {
                 vm.$refs.tree.delete(uuid);
             },
             /**
-             * ipc select 最近一次返回的项
+             * ipc 消息后：选中节点，并返回的该选中项
              */
             select(uuid: string) {
                 vm.current = vm.$refs.tree.select(uuid);
             },
             /**
-             * ipc unselect 最近一次取消选择
+             * ipc 消息后：取消选中项
              * 此时 vm.current = {}
              */
             unselect(uuid: string) {

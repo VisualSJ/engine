@@ -22,6 +22,6 @@ module.exports = {
         rename: 'Rename',
         openInlibrary: 'Open in library',
         openInExplorer: 'Open in explorer',
-        consoleLog: 'Console log uuid and path',
+        consoleLog: 'Console log UUID and PATH',
     },
 };

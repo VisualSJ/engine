@@ -2,13 +2,13 @@ declare interface IdragAsset {
     from: string; // 被拖动的节点
     to: string; // 被指向的节点
     insert: string; // 插入方式，有三种：inside, before, after
-    files?: string[]; 
+    files?: string[]; // 拖拽中带上外部系统文件
 }
 
 declare interface IaddAsset {
     ext: string; // 新文件的后缀，文件夹为 folder
-    name: string;
-    value: string;
+    name: string; // 文件名称
+    content: string; // 文件的内容
 }
 
 declare interface ItreeAsset {
@@ -19,6 +19,7 @@ declare interface ItreeAsset {
     subAssets: any;
     uuid: string;
 
+    // 以下是扩展的数据
     protocol: string; // url 的 protocol 带有两斜杆
     hostname: string; // url 的 host
     host: string; // 带有 protocol + hostname

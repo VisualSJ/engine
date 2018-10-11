@@ -1,47 +1,18 @@
-<ui-drag-area class="tree" dropable="node">
-
-    <ui-drag-item class="node" type="node"
-        v-for="(item, index) in list"
-
-        :class="{'parent':item.isParent}"
-        :style="{ paddingLeft: (item.depth * 16 + 4) + 'px' }"
+<ui-drag-area class="tree" dropable="node"
+    :state="state"
+    :style="{ top: top + 'px' }"
+>
+    <treenode type="node"
+        v-for="(node,index) in nodes" 
         :key="index"
-        :draggable="item.rename?false:true"
-        :active="select.indexOf(item.uuid) !== -1"
-        :expand="item.isExpand"
-        :state="item.state"
-
-        @mousedown="mouseDown($event, item)"
-        @click="selectNode($event, item)"
-        @dragstart="dragStart($event, item)" 
-        @dragover="dragOver($event, item)"
-        @dragleave="dragLeave($event, item)"
-        @drop="drop($event, item)"
+        :node="node"
+        :selects="selects"
+        @copy="copy"
+        @paste="paste"
+        @ipcMultipleSelect="ipcMultipleSelect"
+        @ipcSingleSelect="ipcSingleSelect"
+        @rename="rename"
+        @drop="drop"
     >
-        <i class="lock"
-            :class="{'i-lock':item.isLock, 'i-unlock':!item.isLock}"
-            :lock="item.isLock"
-            @click="lockNode(item)"
-        ></i>
-        <i class="arrow i-arrow-right"
-            v-if="item.isParent" 
-            @click="toggleNode(item)"
-        ></i>
-        <i class="i-temp-file-ext"
-            v-else
-        ></i>
-        <label class="name"
-            v-if="item.state!=='input'"
-        >{{item.name}}</label>
-        <input class="rename" ref='input'
-            v-else-if="item.state==='input'"
-            :value="item.name"
-            @blur="renameBlur(item)"
-        >
-        <section class="loading"
-            v-if="item.state==='loading'"
-        >
-            <ui-loading></ui-loading>
-        </section>
-    </ui-drag-item>
+    </treenode>
 </ui-drag-area>

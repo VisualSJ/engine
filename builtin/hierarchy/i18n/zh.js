@@ -14,6 +14,6 @@ module.exports = {
         paste: '粘贴',
         delete: '删除',
         rename: '重名命',
-        info: '显示节点信息',
+        consoleLog: '控制台输出 UUID',
     }
 };

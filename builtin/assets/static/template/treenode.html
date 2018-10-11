@@ -1,7 +1,7 @@
 <ui-drag-item class="treenode" type="asset"
     :draggable="draggable"
     :active="selects.indexOf(asset.uuid) !== -1" 
-    :style="{ paddingLeft: (asset.depth * 18) + 'px' }"
+    :style="{ paddingLeft: (asset.depth * 18 + 4) + 'px' }"
     :class="{'parent':asset.isParent}"
     :expand="asset.isExpand"
     :state="asset.state"
@@ -33,7 +33,7 @@
         @dblclick="open($event, asset)"
     >{{asset.name}}</label>
     <input class="rename" ref='input'
-        v-else-if="asset.state==='input'"
+        v-else
         :value="asset.name"
         @blur="renameBlur(asset)"
     >

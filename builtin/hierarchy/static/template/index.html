@@ -6,12 +6,12 @@
 
     <div class="tools">
         <i class="i-add"
-            @click="menuPopupNew($event)"
+            @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="searchInput"></ui-input>
+        <ui-input tabindex="-1" ref="search"></ui-input>
         <i class="expand"
-            v-bind:class="{'i-full':!expand, 'i-full-over':expand}"
-            @click="toggleAll"
+            :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
+            @click="allToggle"
         ></i>
         <i class="i-refresh"
             @click="refresh"
@@ -19,21 +19,17 @@
     </div>
 
     <div class="viewBox" ref="viewBox"
-        @mousedown="contextMenuPopup($event)"
+        @mousedown="popupContextMenu($event)"
     >
-        <div class=scrollBar ref="scrollBar"></div>
         <tree ref="tree"
-            :list="nodes"
-            :select="select"
-            @lock="lockNode"
-            @toggle="toggleNode"
-            @rename="renameNode"
-            @drop="dropNode"
-            @new="newNode"
-            @delete="deleteNode"
-            @multiple="multipleSelect"
-            @copy="copyNode"
-            @paste="pasteNode"
         ></tree>
+        <div class="dirBox" 
+            v-if="dirBox!==false"
+            :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
+        >
+        </div>
+        <div class=scrollBar
+            :style="{ height: treeHeight + 'px'}"
+        ></div>
     </div>
 </div>

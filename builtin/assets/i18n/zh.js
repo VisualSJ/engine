@@ -23,6 +23,6 @@ module.exports = {
         rename: '重名命',
         openInlibrary: '在 library 文件夹中显示',
         openInExplorer: '在资源管理器中显示',
-        consoleLog: '控制台输出 uuid 和 path',
+        consoleLog: '控制台输出 UUID 和 PATH',
     },
 };

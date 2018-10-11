@@ -33,6 +33,8 @@ export const watch = {
             this.draggable = (asset.state !== '' || asset.invalid || asset.readonly) ? false : true;
             // @ts-ignore
             if (asset.state === 'input') {
+                // @ts-ignore 选中该节点
+                this.$emit('ipcSingleSelect', asset.uuid);
                 // @ts-ignore
                 this.$refs.input.focus();
                 // @ts-ignore
@@ -233,9 +235,11 @@ export const methods = {
 
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
-            this.multipleSelect(event, asset);
+            // @ts-ignore
+            this.$emit('ipcMultipleSelect', event.shiftKey ? true : false, asset.uuid);
         } else { // 单选
-            this.singleSelect(asset.uuid);
+            // @ts-ignore
+            this.$emit('ipcSingleSelect', asset.uuid);
         }
 
         // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
@@ -245,50 +249,6 @@ export const methods = {
         setTimeout(() => {
             target.removeAttribute('animate');
         }, 500);
-    },
-    /**
-     * 选中节点
-     * @param uuid
-     */
-    singleSelect(uuid: string) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-    },
-    /**
-     * 多选
-     * 按下 ctrl 或 shift
-     * ctrl 支持取消已选中项
-     */
-    multipleSelect(event: Event, asset: ItreeAsset) {
-        if (asset.invalid) {
-            return;
-        }
-
-        const uuid = asset.uuid;
-        // @ts-ignore
-        if (event.ctrlKey || event.metaKey) {
-            // @ts-ignore
-            if (this.selects.includes(uuid)) {
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-            } else {
-                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-            }
-            return;
-        }
-
-        // @ts-ignore
-        if (event.shiftKey) {
-            // const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-            // 如果之前没有选中节点，则只要选中当前点击的节点
-            // @ts-ignore
-            if (this.selects.length === 0) {
-                this.singleSelect(uuid);
-                return;
-            } else {
-                // @ts-ignore
-                this.$emit('multipleSelect', asset.uuid);
-            }
-        }
     },
     /**
      * 节点折叠切换
@@ -304,9 +264,6 @@ export const methods = {
      * @param asset
      */
     rename(asset: ItreeAsset) {
-        // 选中该节点
-        this.singleSelect(asset.uuid);
-
         // 改变节点状态
         asset.state = 'input';
     },
@@ -358,8 +315,6 @@ export const methods = {
 
         target.setAttribute('insert', 'inside');
 
-        target.setAttribute('active', '');
-
         // 拖动中感知当前所处的文件夹，高亮此文件夹
         // @ts-ignore
         this.$emit('dragOver', asset.uuid);
@@ -381,12 +336,14 @@ export const methods = {
     },
     /**
      * 放开鼠标，识别为 drop 事件后回调
+     * 由于 dataTransfer 不能在 drop 事件中 setData，事件不能冒泡到 tree drop 环节再执行，这里就需要 $emit
      * @param event
      * @param uuid
      */
     drop(event: Event, asset: ItreeAsset) {
         // 需要取消默认行为才能获取 dataTransfer 数据
         event.preventDefault();
+        event.stopPropagation();
 
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -405,7 +362,7 @@ export const methods = {
         }
 
         // 尾部结束时重新选中的节点，默认为 drop 节点
-        let selectId = asset.uuid;
+        // let selectId = asset.uuid;
 
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
@@ -416,6 +373,14 @@ export const methods = {
         } else {
             data = JSON.parse(dragData);
         }
+        // @ts-ignore
+        const localFiles = Array.from(event.dataTransfer.files);
+        if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
+            data.from = 'osFile';
+            data.insert = 'inside';
+            // @ts-ignore
+            data.files = localFiles;
+        }
 
         if (asset.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
             data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
@@ -425,13 +390,13 @@ export const methods = {
             this.$emit('drop', data);
 
             // 重新选中被移动的节点
-            selectId = data.from;
+            // selectId = data.from;
         }
         // @ts-ignore
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
         // @ts-ignore
-        this.singleSelect(selectId);
+        // this.singleSelect(selectId);
     }
 };
 

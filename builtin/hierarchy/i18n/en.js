@@ -14,6 +14,6 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
-        info: 'Display information',
+        consoleLog: 'Console log UUID',
     }
 };

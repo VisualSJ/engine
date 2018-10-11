@@ -23,33 +23,15 @@
         &:hover {
             color: @orange;
             background-color: rgba(255, 255, 255, 0.1);
+            .lock {
+                display: inline-block;
+            }
         }
     }
     &[animate] {
         .arrow {
             transition: 0.2s transform;
         }
-    }
-    img {
-        border: none;
-    }
-    .file {
-        display: inline-block;
-        margin-left: 18px;
-        width: 16px;
-        height: 14px;
-        padding-right: 2px;
-        .thumbnail {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 2px;
-            vertical-align: bottom;
-        }
-    }
-    .folder {
-        transition: none !important;
-        text-align: left !important;
     }
     &[expand="true"] {
         .arrow {
@@ -66,12 +48,31 @@
         height: 14px;
         text-align: center;
         cursor: pointer;
-        &+.file {
+        &+.name {
             margin-left: 0;
+        }
+        &+.rename {
+            margin-left: 0;
+        }
+    }
+    .lock {
+        display: none;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 100;
+        font-size: 12px;
+        color: #ccc !important;
+        &:hover {
+            color: @orange  !important;
+        }
+        &.i-lock {
+            display: inline-block;
         }
     }
     .name {
         cursor: default;
+        margin-left: 20px;
     }
     .loading {
         display: inline-block;
@@ -89,16 +90,17 @@
         border: none;
         color: #ccc;
         padding-left: 4px;
-        width: ~'calc(100% - 50px)';
+        width: ~'calc(100% - 30px)';
+        margin-left: 19px;
+
     }
 }
 
 .tree {
     &[state="search"] {
         >.treenode {
-            .file {
-                margin-left: -2px;
-                padding-right: 2px;
+            .name {
+                margin-left: 6px;
             }
             .arrow {
                 display: none;

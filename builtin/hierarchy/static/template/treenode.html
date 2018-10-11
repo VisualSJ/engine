@@ -1,0 +1,38 @@
+<ui-drag-item class="treenode" type="node"
+    :draggable="draggable"
+    :active="selects.indexOf(node.uuid) !== -1"
+    :style="{ paddingLeft: (node.depth * 18 + 4) + 'px' }"
+    :class="{'parent':node.isParent}"
+    :expand="node.isExpand"
+    :state="node.state"
+    :invalid="node.invalid"
+    @mousedown="mouseDown($event, node)"
+    @click="click($event, node)"
+    @dragstart="dragStart($event, node)" 
+    @dragover="dragOver($event, node)"
+    @dragleave="dragLeave($event, node)"
+    @drop="drop($event, node)"
+>
+    <i class="arrow i-arrow-right"
+        v-if="node.isParent" 
+        @click="toggle(node)"
+    ></i>
+    <label class="name"
+        v-if="node.state!=='input'"
+    >{{node.name}}</label>
+    <input class="rename" ref='input'
+        v-else
+        :value="node.name"
+        @blur="renameBlur($event, node)"
+    >
+    <section class="loading"
+        v-if="node.state==='loading'"
+    >
+        <ui-loading></ui-loading>
+    </section>
+    <i class="lock"
+        :class="{'i-lock':node.isLock, 'i-unlock':!node.isLock}"
+        :lock="node.isLock"
+        @click="lock(node)"
+    ></i>
+</ui-drag-item>

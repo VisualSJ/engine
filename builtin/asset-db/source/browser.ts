@@ -1,7 +1,7 @@
 'use strict';
 
 import { statSync } from 'fs';
-import { copy, ensureDir, existsSync, move, outputFile, remove } from 'fs-extra';
+import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
 import { basename, extname, join, relative } from 'path';
 import { getName } from './utils';
 
@@ -239,6 +239,25 @@ module.exports = {
             const dest = join(assets.target, name);
             move(assets.source + '.meta', dest + '.meta');
             move(assets.source, dest);
+        },
+
+        /**
+         * 资源重名命 rename
+         * @param uuid
+         * @param target
+         */
+        async 'rename-asset'(uuid: string, name: string) {
+            if (!assetWorker) {
+                return;
+            }
+            const dir = join(Editor.Project.path, 'assets');
+            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+
+            const file = join(dir, info.source.replace(assetProtocol, ''));
+            const base = basename(file);
+
+            const target = file.replace(base, name);
+            rename(file, target);
         },
 
         /**

@@ -5,23 +5,21 @@ declare interface IdragNode {
 }
 
 declare interface IaddNode {
-    type: string; // 一个节点的类型，默认空节点，值为 'empty'
-    name: string;
-    value: string;
+    type: string; // 一个节点的类型
+    name: string; // 节点的名称
 }
 
 declare interface ItreeNode {
-    // 逻辑相关的参数
-    name: string; // 节点名字
-    uuid: string; // 节点的唯一 id
-    children: ItreeNode[]; // 子节点数组
-    path: string;
+    name: string; // 来自 scene 场景的查询数据
+    uuid: string;
+    children: ItreeNode[];
 
-    // 渲染相关参数
-    top: number; // top 位置
+    // 以下是扩展的数据
+    invalid: boolean; // 是否可用
     isLock: boolean; // 是否锁定
-    depth?: number;
-    isParent?: boolean; // 是否是父节点
-    isExpand?: boolean; // 是否展开显示
-    state?: string; // 状态
+    top: number; // top 位置
+    depth: number; // 树形层级
+    isParent: boolean; // 是否是父节点
+    isExpand: boolean; // 是否展开显示
+    state: string; // 状态
 }
