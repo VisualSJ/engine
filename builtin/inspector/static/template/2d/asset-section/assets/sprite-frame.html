@@ -1,0 +1,96 @@
+
+<div>
+
+    <!-- 头部工具栏 -->
+    <header
+        v-if="!child"
+        :style="cssHost"
+    >
+        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <div
+            :style="cssTitle"
+        >
+            {{meta ? meta.importer : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!dirty"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!dirty"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <section
+        v-if="meta"
+    >
+        <ui-prop label="Rotated" type="boolean" path="meta.userData.rotated"
+            :value="JSON.stringify(meta.userData.rotated)"
+        ></ui-prop>
+    
+        <ui-prop label="Offset X" type="number" path="meta.userData.offsetX"
+            :value="JSON.stringify(meta.userData.offsetX)"
+        ></ui-prop>
+    
+        <ui-prop label="Offset Y" type="number" path="meta.userData.offsetY"
+            :value="JSON.stringify(meta.userData.offsetY)"
+        ></ui-prop>
+    
+        <ui-prop label="Trim Type" type="enums" path="meta.userData.trimType"
+            :value="JSON.stringify(meta.userData.trimType)"
+            :options='JSON.stringify([{name: "Auto", value: "auto"}, {name: "Custom", value: "custom"}])'
+        ></ui-prop>
+    
+        <ui-prop label="Trim Threshold" type="number" path="meta.userData.trimThreshold"
+            :value="JSON.stringify(meta.userData.trimThreshold)"
+        ></ui-prop>
+    
+        <ui-prop label="Trim X" type="number" path="meta.userData.trimX"
+            :value="JSON.stringify(meta.userData.trimX)"
+            :disabled="!isCustom()"
+        ></ui-prop>
+    
+        <ui-prop label="Trim Y" type="number" path="meta.userData.trimY"
+            :value="JSON.stringify(meta.userData.trimY)"
+            :disabled="!isCustom()"
+        ></ui-prop>
+    
+        <ui-prop label="Trim Width" type="number" path="meta.userData.width"
+            :value="JSON.stringify(meta.userData.width)"
+            :disabled="!isCustom()"
+        ></ui-prop>
+    
+        <ui-prop label="Trim Height" type="number" path="meta.userData.height"
+            :value="JSON.stringify(meta.userData.height)"
+            :disabled="!isCustom()"
+        ></ui-prop>
+    
+        <ui-prop label="Border Top" type="number" path="meta.userData.borderTop"
+            :value="JSON.stringify(meta.userData.borderTop)"
+        ></ui-prop>
+    
+        <ui-prop label="Border Bottom" type="number" path="meta.userData.borderBottom"
+            :value="JSON.stringify(meta.userData.borderBottom)"
+        ></ui-prop>
+    
+        <ui-prop label="Border Left" type="number" path="meta.userData.borderLeft"
+            :value="JSON.stringify(meta.userData.borderLeft)"
+        ></ui-prop>
+    
+        <ui-prop label="Border Right" type="number" path="meta.userData.borderRight"
+            :value="JSON.stringify(meta.userData.borderRight)"
+        ></ui-prop>
+    
+    </section>
+
+</div>
+
+<!-- <image-preview :meta="meta"></image-preview> -->

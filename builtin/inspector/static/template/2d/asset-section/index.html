@@ -1,0 +1,11 @@
+<section class="asset"
+    @confirm="onMetaChanged($event)"
+>
+    <component
+        v-if="info"
+        :is="getAsset(info.importer)"
+        :info="info"
+        :meta="meta"
+        :dirty="dirty"
+    ></component>
+</section>

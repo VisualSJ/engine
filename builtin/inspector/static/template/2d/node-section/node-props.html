@@ -1,0 +1,80 @@
+<ui-section expand
+    v-if="node"
+>
+
+    <div slot="header" class="header flex-1 layout horizontal center-center">
+        <span>Node</span>
+        <span class="flex-1"></span>
+        <!-- todo
+            <ui-button class="transparent"
+                @click.prevent.stop=""
+                @confirm.stop.prevent="getContextMenu"
+            >
+                <i class="iconfont icon-setting"></i>
+            </ui-button>
+        -->
+    </div>
+    <!-- position -->
+    <ui-prop label="Position" path="position" type="vec2"
+        v-if="node.position"
+        :value="JSON.stringify(node.position.value)"
+        :config="JSON.stringify({step: 1})"
+    ></ui-prop>
+
+    <!-- rotation -->
+    <ui-prop label="Rotation" path="rotation" type="number"
+        v-if="node.rotation"
+        :value="JSON.stringify(node.rotation.value)"
+        :config="JSON.stringify({step: 1})"
+    ></ui-prop>
+    <ui-prop label="Angle" path="angle" type="number"
+        v-if="node.angle"
+        :value="JSON.stringify(node.angle.value)"
+        :config="JSON.stringify({step: 1})"
+    ></ui-prop>
+
+    <ui-prop label="Scale" path="scale" type="vec2"
+        :value="JSON.stringify(node.scale.value)"
+        :config="JSON.stringify({step: 0.1})"
+    ></ui-prop>
+
+    <ui-prop label="Anchor" path="anchor" type="vec2" step="0.1"
+        :value="JSON.stringify(node.anchor.value)"
+    ></ui-prop>
+
+    <ui-prop label="Size" path="size" type="size"
+        :value="JSON.stringify(node.size.value)"
+        :config="JSON.stringify({step: 1})"
+    ></ui-prop>
+
+    <ui-prop label="Color" key="color" path="color" type="color"
+        :value="JSON.stringify(node.color.value)"
+    ></ui-prop>
+
+    <ui-prop label="Opacity" path="opacity" type="number"
+        :value="JSON.stringify(node.opacity.value)"
+        :config="JSON.stringify({step: 1, min: 0, max: 255})"
+    ></ui-prop>
+
+    <ui-prop label="Skew" path="skew" type="vec2"
+        :value="JSON.stringify(node.skew.value)"
+        :config="JSON.stringify({step: 1})"
+    ></ui-prop>
+
+    <!-- <ui-prop label="Group" path="group">
+        <div slot="content">
+            <ui-select class="flex-1"
+                :value="JSON.stringify(node.group.value)"
+            >
+                <option
+                    v-for="item in groupList"
+                    :value="item"
+                >{{item}}</option>
+            </ui-select>
+            <ui-button class="tiny blue"
+                @confirm.stop.prevent="openGroupSetting"
+            >Edit Button</ui-button>
+        </div>
+    </ui-prop> -->
+
+</ui-section>

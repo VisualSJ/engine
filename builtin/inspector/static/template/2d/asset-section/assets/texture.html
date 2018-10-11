@@ -1,0 +1,67 @@
+<div>
+
+    <!-- 头部工具栏 -->
+    <header
+        :style="cssHost"
+    >
+        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <div
+            :style="cssTitle"
+        >
+            {{meta ? meta.importer : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!dirty"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!dirty"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <!-- 实际显示数据 -->
+    <div class="flex-1"
+        v-if="meta"
+    >
+
+        <ui-prop label="Type" type="enums" path="userData.type"
+            :value="meta.userData.type"
+            :options='JSON.stringify([{name: "Raw", value: "raw"}, {name:"Sprite", value: "sprite"}])'
+        ></ui-prop>
+
+        <ui-prop label="Wrap Mode" type="enums" path="userData.wrapMode"
+            :value="meta.userData.wrapMode"
+            :options='JSON.stringify([{name: "Clamp",value: "clamp"}, {name: "Repeat", value: "repeat"} ])'
+        ></ui-prop>
+
+        <ui-prop label="Filter Mode" type="enums" path="userData.filterMode"
+            :value="meta.userData.filterMode" :options='JSON.stringify([{name: "Point", value: "point"}, {name: "Bilinear", value: "bilinear"} ,{name: "Trilinear", value: "trilinear"}])'
+        ></ui-prop>
+
+        <ui-section expand path="meta.subMetas.sprite-frame"
+            v-if="meta.userData.type === 'sprite'"
+        >
+            <div slot="header" class="header">Sprite</div>
+            <sprite-frame
+                v-if="meta.subMetas && meta.subMetas['sprite-frame']"
+                :meta="meta.subMetas['sprite-frame']"
+                :child="true"
+            ></sprite-frame>
+        </ui-section>
+
+    </div>
+
+    <image-preview
+        v-if="meta"
+        :meta="meta"
+    ></image-preview>
+
+</div>

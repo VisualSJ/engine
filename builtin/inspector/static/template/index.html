@@ -1,9 +1,19 @@
 <div class="content">
-    <section class="loading" v-if="!isReady">
+    <section class="loading"
+        v-if="false"
+    >
         <ui-loading></ui-loading>
     </section>
-    <section v-else>
-        <component :is="currentComponent" :type="type" :node="node" :meta="meta" :on-node-property-change="onNodePropertyChange"
-            :on-meta-change="onMetaChange"></component>
+
+    <section
+        v-else
+    >
+
+        <inspector-2d ref="inspector2d"
+            v-if="type === '2d'"
+            :type="element"
+            :uuid="uuid"
+        ></inspector-2d>
+
     </section>
 </div>

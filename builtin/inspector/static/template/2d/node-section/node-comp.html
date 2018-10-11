@@ -1,0 +1,54 @@
+<ui-section expand
+    @confirm.stop="onPropertyChanged($event)"
+>
+    <div slot="header" class="header flex-1 layout horizontal center-center">
+        <ui-checkbox path="enabled"
+            :value="comp.value.enabled.value"
+            @click.stop=""
+        ></ui-checkbox>
+
+        {{comp.type}}
+
+        <span class="flex-1"></span>
+
+        <ui-button class="tiny transparent"
+            @click.stop="onOpenHelpClick($event)"
+        >
+            <i class="iconfont icon-book"></i>
+        </ui-button>
+
+        <ui-button class="tiny transparent"
+            @click.stop="onContextMenuClick($event)"
+        >
+            <i class="iconfont icon-setting"></i>
+        </ui-button>
+    </div>
+
+    <component
+        :is="getComponent(comp.type)"
+        :target="comp.value"
+    ></component>
+    <!-- <ui-prop
+        v-for="(key, index) in getCompKeys()"
+        :path="key"
+        :type="getType(comp.value[key])"
+        :label="key"
+        :value="JSON.stringify(comp.value[key].value)"
+        :key="index"
+    >
+    </ui-prop> -->
+    <!-- todo
+        <template
+            v-if="!customDraw()"
+        >
+            <ui-prop
+                v-if="item.visible !== false"
+                v-for="(item, key) of comp.properties"
+                :type="getType(item)"
+                :label="item.displayName"
+                :path="key" :value="JSON.stringify(comp.value[key].value)"
+                :key="key"
+            ></ui-prop>
+        </template>
+    -->
+</ui-section>

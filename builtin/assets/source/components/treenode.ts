@@ -291,9 +291,7 @@ export const methods = {
      */
     dragStart(event: Event, asset: ItreeAsset) {
         // @ts-ignore
-        event.dataTransfer.setData('dragData', JSON.stringify({
-            from: asset.uuid
-        }));
+        event.dataTransfer.setData('value', asset.uuid);
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';

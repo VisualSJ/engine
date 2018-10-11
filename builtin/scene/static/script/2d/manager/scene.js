@@ -138,20 +138,20 @@ function setProperty(uuid, path, dump) {
         return;
     }
     // 因为 path 内的 __comps__ 实际指向的是 _components
-    path = path.replace('__comps__', '_components');
-    const keys = (path || '').split('.');
-    const key = keys.pop();
-    path = keys.join('.');
+    // path = path.replace('__comps__', '_components');
+    // const keys = (path || '').split('.');
+    // const key = keys.pop();
+    // path = keys.join('.');
 
     // 找到指定的 data 数据
-    const data = path ? get(node, path) : node;
-    if (!data) {
-        console.warn(`Set property failed: ${uuid} does not exist`);
-        return;
-    }
+    // const data = path ? get(node, path) : node;
+    // if (!data) {
+    //     console.warn(`Set property failed: ${uuid} does not exist`);
+    //     return;
+    // }
 
     // 恢复数据
-    dumpUtils.restoreProperty(dump, data, key);
+    dumpUtils.restoreProperty(node, path, dump);
 }
 
 /**

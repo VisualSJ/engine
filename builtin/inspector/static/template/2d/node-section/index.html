@@ -1,0 +1,45 @@
+<div class="node layout vertical"
+    v-if="node"
+    @confirm="onPropertyChanged($event)"
+>
+
+    <!-- 头部的 active 与节点名称等 -->
+    <div class="top-header">
+        <ui-checkbox class="rgap" path="active"
+            :value="node.active.value"
+            @click.prevent.stop=""
+        ></ui-checkbox>
+        <ui-input class="flex-1" path="name"
+            :value="node.name.value"
+        ></ui-input>
+        <ui-button class="transparent tiny"
+            @confirm.stop="addCompPopup"
+        >
+            <i class="iconfont icon-add"></i>
+        </ui-button>
+    </div>
+
+    <!-- node 上挂载的可修改数据 -->
+    <node-props
+        :node="node"
+    ></node-props>
+
+    <template
+        v-for="item,index in node.__comps__"
+    >
+        <node-comp
+            :uuid="uuid"
+            :index="index"
+            :total="node.__comps__.length"
+            :comp="item"
+        ></node-comp>
+    </template>
+
+
+    <div class="flex center-center mt20 mb20">
+        <ui-button style="width: 50%"
+            @click.stop.prevent="addCompPopup($event)"
+        >Add Component</ui-button>
+    </div>
+
+</div>
