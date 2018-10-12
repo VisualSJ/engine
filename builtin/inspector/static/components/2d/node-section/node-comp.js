@@ -1,9 +1,8 @@
 'use strict';
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readTemplate } = require('../../../utils');
 
-exports.template = readFileSync(join(__dirname, '../../../template', '/2d/node-section/node-comp.html'), 'utf8');
+exports.template = readTemplate('2d', './node-section/node-comp.html');
 
 exports.props = [
     'uuid',

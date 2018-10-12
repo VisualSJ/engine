@@ -1,9 +1,8 @@
 'use strict';
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readTemplate, readComponent } = require('../../utils');
 
-exports.template = readFileSync(join(__dirname, '../../template', '/2d/index.html'), 'utf8');
+exports.template = readTemplate('2d', './index.html');
 
 exports.props = [
     'type', // 当前显示的类型 node | asset
@@ -11,8 +10,8 @@ exports.props = [
 ];
 
 exports.components = {
-    'asset-section': require('./asset-section'),
-    'node-section': require('./node-section'),
+    'asset-section': readComponent(__dirname, './asset-section'),
+    'node-section': readComponent(__dirname, './node-section'),
 };
 
 exports.data = function() {

@@ -1,13 +1,9 @@
 'use strict';
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
-// const { eventBus } = require('../../utils/event-bus');
+const { readTemplate } = require('../../../../utils');
 
-exports.template = readFileSync(
-    join(__dirname, '../../../../template', '/2d/asset-section/public/image-preview.html'),
-    'utf8',
-);
+exports.template = readTemplate('2d', './asset-section/public/image-preview.html');
+
 exports.props = [
     'meta',
 ];

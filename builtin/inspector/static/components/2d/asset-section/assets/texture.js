@@ -1,12 +1,8 @@
 'use strict';
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readTemplate } = require('../../../../utils');
 
-exports.template = readFileSync(
-    join(__dirname, '../../../../template', '/2d/asset-section/assets/texture.html'),
-    'utf8',
-);
+exports.template = readTemplate('2d', './asset-section/assets/texture.html');
 
 exports.props = [
     'info',

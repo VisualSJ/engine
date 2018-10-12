@@ -93,7 +93,7 @@ function restoreProperty(node, path, dump) {
     path = path.replace('__comps__', '_components');
 
     // path 如果是是 position.x || position.y 实际修改的应该是 node.x || node.y
-    path = path.replace(/^position\./, '');
+    path = path.replace(/^position(\.)?/, '');
     // 如果修改的是 scale.x || scale.y 实际修改的应该是 node.scaleX || node.scaleY
     path = path === 'scale.x' ? 'scaleX' : path;
     path = path === 'scale.y' ? 'scaleY' : path;
@@ -124,13 +124,55 @@ function restoreProperty(node, path, dump) {
             }
             break;
         case 'cc.Vec3':
-            property[key].x = dump.value.x;
-            property[key].y = dump.value.y;
-            property[key].z = dump.value.z;
+            if (key) {
+                property[key].x = dump.value.x;
+                property[key].y = dump.value.y;
+                property[key].z = dump.value.z;
+            } else {
+                property.x = dump.value.x;
+                property.y = dump.value.y;
+                property.z = dump.value.z;
+            }
             break;
         case 'cc.Vec2':
-            property[key].x = dump.value.x;
-            property[key].y = dump.value.y;
+
+            if (key === 'scale') {
+                property.scaleX = dump.value.x;
+                property.scaleY = dump.value.y;
+                break;
+            } else if (key === 'anchor') {
+                property.anchorX = dump.value.x;
+                property.anchorY = dump.value.y;
+                break;
+            } else if (key === 'skew') {
+                property.skewX = dump.value.x;
+                property.skewY = dump.value.y;
+                break;
+            }
+
+            if (key) {
+                property[key].x = dump.value.x;
+                property[key].y = dump.value.y;
+            } else {
+                property.x = dump.value.x;
+                property.y = dump.value.y;
+            }
+            break;
+        case 'cc.Size':
+
+            if (key === 'size') {
+                property.width = dump.value.width;
+                property.height = dump.value.height;
+                break;
+            }
+
+            if (key) {
+                property[key].width = dump.value.width;
+                property[key].height = dump.value.height;
+            } else {
+                property.width = dump.value.width;
+                property.height = dump.value.height;
+            }
             break;
         case 'cc.Color':
             const { a: opacity, r, g, b } = dump.value;

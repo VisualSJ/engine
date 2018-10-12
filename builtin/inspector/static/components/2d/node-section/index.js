@@ -1,17 +1,16 @@
 'use strict';
 
-const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readTemplate, readComponent } = require('../../../utils');
 
-exports.template = readFileSync(join(__dirname, '../../../template', '/2d/node-section/index.html'), 'utf8');
+exports.template = readTemplate('2d', './node-section/index.html');
 
 exports.props = [
     'uuid',
 ];
 
 exports.components = {
-    'node-props': require('./node-props'),
-    'node-comp': require('./node-comp'),
+    'node-props': readComponent(__dirname, './node-props'),
+    'node-comp': readComponent(__dirname, './node-comp'),
 };
 
 exports.data = function() {
@@ -33,7 +32,23 @@ exports.methods = {
      */
     async refresh() {
         // todo diff
-        this.node = await Editor.Ipc.requestToPackage('scene', 'query-node', this.uuid);
+        const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', this.uuid);
+
+        Object.keys(dump).forEach((key) => {
+            if (key[0] === '_') {
+                return;
+            }
+
+            dump[key].path = key;
+        });
+
+        dump.__comps__.forEach((comp, index) => {
+            Object.keys(comp.value).forEach((key) => {
+                comp.value[key].path = `__comps__.${index}.${key}`;
+            });
+        });
+
+        this.node = dump;
     },
 
     /**
@@ -41,41 +56,15 @@ exports.methods = {
      * @param {*} event
      */
     onPropertyChanged(event) {
-        // 获取属性的类型
-        let type = '';
-        event.path.some((item) => {
-            if (item.tagName === 'UI-PROP') {
-                type = item.type;
-                return true;
-            }
-        });
-        type = type === 'vec2' ? 'cc.Vec2' : type;
-        type = type === 'vec3' ? 'cc.Vec3' : type;
-        type = type === 'color' ? 'cc.Color' : type;
-        type = type === 'node' ? 'cc.Node' : type;
-        type = type === 'scene' ? 'cc.Scene' : type;
-
-        // 获取属性的搜索路径
-        let path = '';
-        event.path.forEach((item) => {
-            if (item.path) {
-                path = path ? `${item.path}.${path}` : item.path;
-            }
-        });
-
-        if (!path) {
-            return;
-        }
-
-        let value = event.target.value;
-        if (type === 'cc.Color') {
-            value = { r: value[0], g: value[1], b: value[2], a: value[3], };
-        }
+        const dump = event.target.__vue__.dump;
 
         Editor.Ipc.sendToPanel('scene', 'set-property', {
-            path,
             uuid: this.uuid,
-            dump: { type, value, },
+            path: dump.path,
+            dump: {
+                type: dump.type,
+                value: JSON.parse(JSON.stringify(dump.value)),
+            },
         });
     },
 
