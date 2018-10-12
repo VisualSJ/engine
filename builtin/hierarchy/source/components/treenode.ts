@@ -111,7 +111,7 @@ export const methods = {
                     label: Editor.I18n.t('hierarchy.menu.delete'),
                     click() {
                         // @ts-ignore
-                        self.$emit('delete', node.uuid);
+                        self.$emit('ipcDelete', node.uuid);
                     }
                 },
                 { type: 'separator' },
@@ -212,19 +212,21 @@ export const methods = {
         // @ts-ignore
         const target: any = event.currentTarget;
 
-        target.setAttribute('drag', 'over');
-
         const offset = target.getBoundingClientRect();
-
-        // @ts-ignore
+        let position = 'inside'; // 中间位置
+         // @ts-ignore
         if (event.clientY - offset.top <= 4) {
-            target.setAttribute('insert', 'before'); // 偏上位置
+            position = 'before'; // 偏上位置
             // @ts-ignore
         } else if (offset.bottom - event.clientY <= 4) {
-            target.setAttribute('insert', 'after'); // 偏下位置
-        } else {
-            target.setAttribute('insert', 'inside'); // 中间位置
+            position = 'after'; // 偏下位置
         }
+        target.setAttribute('drag', 'over');
+        target.setAttribute('insert', position);
+
+        // 拖动中感知当前所处的位置
+        // @ts-ignore
+        this.$emit('dragOver', node.uuid, position);
     },
     /**
      * 拖动移开
@@ -234,8 +236,8 @@ export const methods = {
     dragLeave(event: Event, node: ItreeNode) {
         // @ts-ignore
         const target: any = event.currentTarget;
-        target.setAttribute('insert', '');
-        target.setAttribute('drag', '');
+        target.removeAttribute('insert');
+        target.removeAttribute('drag');
 
         // 拖动中感知当前所处的文件夹，离开后取消高亮
         // @ts-ignore
@@ -249,12 +251,13 @@ export const methods = {
     drop(event: Event, node: ItreeNode) {
         // 需要取消默认行为才能获取 dataTransfer 数据
         event.preventDefault();
+        event.stopPropagation();
 
         // @ts-ignore
         const target: any = event.currentTarget;
         const insert = target.getAttribute('insert');
-        target.setAttribute('insert', ''); // 还原节点状态
-        target.setAttribute('drag', '');
+        target.removeAttribute('insert'); // 还原节点状态
+        target.removeAttribute('drag');
 
         // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
         // @ts-ignore
@@ -266,9 +269,6 @@ export const methods = {
             return;
         }
 
-        // 尾部结束时重新选中的节点，默认为 drop 节点
-        let selectId = node.uuid;
-
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
         let data: IdragNode;
@@ -279,20 +279,21 @@ export const methods = {
             data = JSON.parse(dragData);
         }
 
-        if (node.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
-            data.to = node.uuid; // 被瞄准的节点
-            data.insert = insert; // 在重新排序前获取数据
-
-            // @ts-ignore
-            this.$emit('drop', data);
-
-            // 重新选中被移动的节点
-            selectId = data.from;
-        }
+        data.to = node.uuid; // 被瞄准的节点
+        data.insert = insert; // 在重新排序前获取数据
 
         // @ts-ignore
-        this.singleSelect(selectId);
-    }
+        this.$emit('drop', data);
+    },
+
+    /**
+     * 锁定 / 解锁节点
+     * @param item
+     */
+    lock(node: ItreeNode) {
+        // @ts-ignore
+        this.$emit('lock', node.uuid);
+    },
 };
 
 export function mounted() {

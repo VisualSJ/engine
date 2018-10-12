@@ -35,7 +35,7 @@ export function data() {
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
         search: '', // 搜索节点名称
-        allExpand: false, // 是否全部展开
+        allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
         viewHeight: 0, // 当前树形的可视区域高度
         top: 0, // 当前树形的定位 top
@@ -93,45 +93,7 @@ export function mounted() {
     });
     // @ts-ignore
     this.$el.addEventListener('drop', () => {
-        // @ts-ignore 隐藏高亮框
-        this.dirBox = false;
-
-        // @ts-ignore
-        const dragData = event.dataTransfer.getData('dragData');
-        let data: IdragNode;
-        // @ts-ignore
-        const rootUuid = this.nodes[0].uuid;
-
-        if (dragData === '') {
-            // @ts-ignore
-            data = {};
-        } else {
-            data = JSON.parse(dragData);
-        }
-
-        // @ts-ignore
-        const localFiles = Array.from(event.dataTransfer.files);
-        if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
-            data.from = 'osFile';
-            data.insert = 'inside';
-            // @ts-ignore
-            data.files = localFiles;
-        }
-
-        if (!data.to) { // 没有在其他节点释放
-            data.to = rootUuid; // 都归于根节点
-            data.insert = 'inside';
-        }
-
-        if (data.from) {  // 如果从根节点移动，则不需要移动
-            const arr = getGroupFromTree(treeData, data.from, 'uuid');
-            if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
-                return;
-            }
-        }
-        // @ts-ignore
-        this.drop(data);
-
+        // TODO:
     });
     // @ts-ignore
     this.$el.addEventListener('click', () => {
@@ -168,7 +130,8 @@ export const methods = {
         vm.$nextTick(() => {
             selectsIntoView();
         });
-        console.log(treeData);
+        // TODO: scene ready 会触发三次
+        // console.log(treeData);
     },
 
     /**
@@ -179,11 +142,6 @@ export const methods = {
 
         // 修改所有树形节点的数据
         resetTreeProps({ isExpand: vm.allExpand });
-
-        // 根节点始终保持展开
-        treeData.children.forEach((root: ItreeNode) => {
-            root.isExpand = true;
-        });
 
         this.changeData();
     },
@@ -504,7 +462,7 @@ export const methods = {
         setTimeout(() => {
             // @ts-ignore
             this.state = '';
-        }, 1000);
+        }, 500);
 
         const one = getValidNode(node.uuid); // 获取该节点的数据
 
@@ -528,86 +486,120 @@ export const methods = {
     },
 
     /**
+     * 拖动中感知当前所处的文件夹，高亮此文件夹
+     */
+    dragOver(uuid: string, position: string) {
+        // @ts-ignore
+        const node: ItreeNode = getNodeFromMap(uuid);
+        let top = node.top + 4;
+        let height = nodeHeight;
+        switch (position) {
+            case 'before':
+                height = 3;
+                break;
+            case 'after':
+                top += nodeHeight;
+                height = 3;
+                break;
+        }
+
+        // @ts-ignore
+        this.dirBox = [top, height];
+    },
+
+    /**
      * 节点拖动
      *
      * @param json
      */
     drop(json: IdragNode) {
-        const fromData = getGroupFromTree(treeData, json.from);
+        // @ts-ignore 隐藏高亮框
+        this.dirBox = false;
 
-        const toData = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
+        const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, json.from);
+
+        const [toNode, toIndex, toArr, toParent] = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
 
         let offset = 0;
-        let loadingItem;
+        let affectNode;
 
         // 内部平级移动
-        if (fromData[3].uuid === toData[3].uuid && ['before', 'after'].indexOf(json.insert) !== -1) {
+        // @ts-ignore
+        if (fromParent.uuid === toParent.uuid && ['before', 'after'].includes(json.insert)) {
             // @ts-ignore
-            loadingItem = getNodeFromPositionMap(fromData[3].uuid); // 元素的父级
+            affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
 
-            offset = toData[1] - fromData[1]; // 目标索引减去自身索引
-            if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+            offset = toIndex - fromIndex; // 目标索引减去自身索引
+            if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
                 offset += 1;
             } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
                 offset -= 1;
             }
 
             Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                uuid: fromData[3].uuid,  // 被移动的节点的父级 uuid
-                path: '',
-                key: 'children',
-                target: fromData[1], // 被移动的节点所在的索引
+                uuid: fromParent.uuid,  // 被移动的节点的父级 uuid
+                path: 'children',
+                target: fromIndex, // 被移动的节点所在的索引
                 offset,
             });
         } else { // 跨级移动
-
             if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
                 // @ts-ignore
-                loadingItem = getNodeFromPositionMap(toData[0].uuid); // 元素自身
+                affectNode = getNodeFromMap(toNode.uuid); // 元素自身
 
                 Editor.Ipc.sendToPackage('scene', 'set-property', {
-                    uuid: fromData[0].uuid,
-                    path: '',
-                    key: 'parent',
+                    uuid: fromNode.uuid,
+                    path: 'parent',
                     dump: {
                         type: 'entity',
-                        value: toData[0].uuid // 被 drop 的元素就是父级
+                        value: toNode.uuid // 被 drop 的元素就是父级
                     }
                 });
-            } else { // 跨级插入
+            } else { // 跨级插入 'before', 'after'
                 // @ts-ignore
-                loadingItem = getNodeFromPositionMap(toData[3].uuid); // 元素的父级
+                affectNode = getNodeFromMap(toParent); // 元素的父级
 
                 Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                    uuid: fromData[0].uuid,
-                    path: '',
-                    key: 'parent',
+                    uuid: fromNode.uuid,
+                    path: 'parent',
                     dump: {
                         type: 'entity',
-                        value: toData[3].uuid // 被 drop 的元素的父级
+                        value: toParent.uuid // 被 drop 的元素的父级
                     }
                 });
 
-                offset = toData[1] - toData[2].length; // 目标索引减去自身索引
+                offset = toIndex - toArr.length; // 目标索引减去自身索引
                 if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
                     offset += 1;
                 } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
                     offset -= 1;
                 }
 
-                // 再在父级里平移
+                // 在父级里平移
                 Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                    uuid: toData[3].uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
-                    path: '',
-                    key: 'children',
-                    target: toData[2].length,
+                    uuid: toParent.uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
+                    path: 'children',
+                    target: toArr.length,
                     offset,
                 });
             }
 
-            if (loadingItem) {
-                loadingItem.state = 'loading'; // 显示 loading 效果
+            if (affectNode) {
+                affectNode.state = 'loading'; // 显示 loading 效果
             }
+        }
+    },
+
+    /**
+     * 锁定 / 解锁节点
+     * @param uuid
+     */
+    lock(uuid: string) {
+        const one = getGroupFromTree(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
+        if (one) {
+            // TODO 是否需要 ipc scene 修改数据
+            one.isLock = !one.isLock;
+            vm.changeData();
         }
     },
 

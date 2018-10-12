@@ -359,9 +359,6 @@ export const methods = {
             return;
         }
 
-        // 尾部结束时重新选中的节点，默认为 drop 节点
-        // let selectId = asset.uuid;
-
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
         let data: IdragAsset;
@@ -380,21 +377,15 @@ export const methods = {
             data.files = localFiles;
         }
 
-        if (asset.uuid !== data.from) {  // 如果移动到自身节点，则不需要移动
-            data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
-            data.insert = insert; // 在重新排序前获取数据
+        data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
+        data.insert = insert; // 在重新排序前获取数据
 
             // @ts-ignore
-            this.$emit('drop', data);
+        this.$emit('drop', data);
 
-            // 重新选中被移动的节点
-            // selectId = data.from;
-        }
         // @ts-ignore
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
-        // @ts-ignore
-        // this.singleSelect(selectId);
     }
 };
 

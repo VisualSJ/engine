@@ -7,12 +7,16 @@
         :key="index"
         :node="node"
         :selects="selects"
+        @ipcAdd="ipcAdd"
+        @ipcDelete="ipcDelete"
         @copy="copy"
         @paste="paste"
         @ipcMultipleSelect="ipcMultipleSelect"
         @ipcSingleSelect="ipcSingleSelect"
         @rename="rename"
+        @dragOver="dragOver"
         @drop="drop"
+        @lock="lock"
     >
     </treenode>
 </ui-drag-area>

@@ -142,8 +142,7 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-
-        // vm.delete(uuid);
+        vm.delete(uuid);
     },
     /**
      * 选中了某个物体
@@ -178,7 +177,7 @@ export async function ready() {
         data: {
             ready: false,
             state: '',
-            allExpand: false,
+            allExpand: true,
             current: null, // 选中项
             viewHeight: 0, // 当前树形的可视区域高度
             treeHeight: 0, // 完整树形的全部高度
