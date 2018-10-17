@@ -59,22 +59,19 @@ exports.methods = {
         }
 
         const vm = this;
-        dialog.openDirectory({
-            title: '打开项目',
-            onOk(array) {
-                if (!array || !array[0]) {
-                    return;
-                }
-                const path = array[0];
-                project.add(vm.type, path);
-                project.open(path);
-
-                setTimeout(() => {
-                    vm.list = project.getList({
-                        type: vm.type,
-                    });
-                }, 500);
+        dialog.openDirectory({title: '打开项目'}).then((array) => {
+            if (!array || !array[0]) {
+                return;
             }
+            const path = array[0];
+            project.add(vm.type, path);
+            project.open(path);
+
+            setTimeout(() => {
+                vm.list = project.getList({
+                    type: vm.type,
+                });
+            }, 500);
         });
     },
 

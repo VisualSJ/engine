@@ -59,18 +59,15 @@ exports.methods = {
     // 打开文件夹弹框
     chooseProSrc() {
         let that = this;
-        dialog.openDirectory({
-            title: '选择项目路径',
-            onOk(array) {
-                if (!array || !array[0]) {
-                    return;
-                }
+        dialog.openDirectory({ title: '选择项目路径'})
+        .then((array) => {
+            if (array && array[0]) {
                 that.directoryPath = array[0] + '\\NewProject';
                 dashProfile.set('recentProPath', array[0]);
                 dashProfile.save();
             }
         });
-    }
+    },
 };
 
 exports.mounted = function() {
