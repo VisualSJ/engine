@@ -1,39 +1,50 @@
 'use strict';
 
+const { join, basename, extname } = require('path');
 const { readTemplate } = require('../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/index.html');
 
-exports.props = [
-    'uuid',
-];
+exports.props = ['uuid'];
 
 exports.components = {
     none: require('./assets/none'),
     texture: require('./assets/texture'),
     'sprite-frame': require('./assets/sprite-frame'),
+    javascript: require('./assets/javascript')
 };
 
 exports.data = function() {
     return {
-        dirty: false,
-
+        dataReady: false,
         info: null,
-        meta: null,
+        meta: null
     };
 };
 
 exports.watch = {
     uuid() {
         this.refresh();
-    },
+    }
 };
 
 exports.methods = {
-
     async refresh() {
-        this.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid);
-        this.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid);
+        this.$root.toggleLoading(true);
+        this.dataReady = false;
+
+        const [info, meta] = await Promise.all([
+            Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
+            Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid)
+        ]);
+
+        if (info && meta) {
+            this.info = info;
+            this.meta = buildMeta(meta, info);
+        }
+
+        this.$root.toggleLoading(false);
+        this.dataReady = true;
     },
 
     /**
@@ -53,7 +64,7 @@ exports.methods = {
      * @param {*} event
      */
     onMetaChanged(event) {
-        this.dirty = true;
+        this.meta.__dirty__ = true;
 
         // 获取属性的搜索路径
         let path = '';
@@ -74,22 +85,42 @@ exports.methods = {
         }
 
         data[key] = event.target.value;
-    },
+    }
 };
 
-exports.mounted = function() {
+exports.mounted = async function() {
     this.refresh();
 
     this.$on('reset', () => {
         this.meta = null;
         this.info = null;
         this.refresh();
-        this.dirty = false;
+        // this.dirty = false;
     });
 
     this.$on('apply', () => {
         const meta = JSON.parse(JSON.stringify(this.meta));
         Editor.Ipc.sendToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
-        this.dirty = false;
+        // this.dirty = false;
     });
 };
+
+function buildMeta(meta, info) {
+    const { source = '', files = [] } = info;
+    meta.__dirty__ = false;
+    meta.__name__ = source && basename(source, extname(source));
+    meta.__src__ = files[0];
+    meta.__assetType__ = meta.importer;
+    // if (meta.subMetas) {
+    //     const arr = [];
+    //     const { subMetas } = meta;
+    //     const keys = Object.keys(subMetas);
+    //     for (const key of keys) {
+    //         const value = subMetas[key];
+    //         value.__name__ = key;
+    //         arr.push(value);
+    //     }
+    //     meta.subMetas = arr;
+    // }
+    return meta;
+}

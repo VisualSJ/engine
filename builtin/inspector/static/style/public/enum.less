@@ -1,0 +1,18 @@
+.enum {
+    margin: 5px 0;
+    display: flex;
+    line-height: 22px;
+
+    & > .name {
+        flex: 1;
+    }
+
+    & > .value {
+        flex: 3;
+        display: flex;
+
+        & > ui-select {
+            flex: 1;
+        }
+    }
+}

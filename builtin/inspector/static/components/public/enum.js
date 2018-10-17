@@ -1,17 +1,25 @@
 'use strict';
 
 exports.template = `
-<div class="number">
+<div class="enum">
     <div class="name"
         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
     <div class="value">
-        <ui-num-input
+        <ui-select
             :value="dump.value"
-            @confirm.stop="_onConfirm($event)"
-        ></ui-num-input>
+            @confirm.stop="_onConfirm"
+        >
+            <option
+                :key="index"
+                v-for="(item, index) in dump.enumList"
+                :value="JSON.stringify(item.value)"
+            >
+                {{item.name || item.value}}
+            </option>
+        </ui-select>
     </div>
 </div>
 `;
@@ -44,7 +52,7 @@ exports.methods = {
     },
 
     /**
-     * 数值修改
+     * value 修改
      */
     _onConfirm(event) {
         this.dump.value = event.target.value;

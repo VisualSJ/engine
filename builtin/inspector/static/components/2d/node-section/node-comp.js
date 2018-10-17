@@ -1,19 +1,15 @@
 'use strict';
 
-const { readTemplate } = require('../../../utils');
+const { readTemplate, readComponent } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/node-comp.html');
 
-exports.props = [
-    'uuid',
-    'index',
-    'total',
-    'comp',
-];
+exports.props = ['uuid', 'index', 'total', 'comp'];
 
 exports.components = {
     none: require('./comps/none'),
-    'cc-sprite': require('./comps/sprite'),
+    'cc-sprite': readComponent(__dirname, './comps/sprite'),
+    'cc-button': readComponent(__dirname, './comps/button')
 };
 
 exports.data = function() {
@@ -64,15 +60,15 @@ exports.methods = {
 
         let value = event.target.value;
         if (type === 'cc.Color') {
-            value = { r: value[0], g: value[1], b: value[2], a: value[3], };
+            value = { r: value[0], g: value[1], b: value[2], a: value[3] };
         } else if (type === 'cc.Asset') {
-            value = {uuid: value};
+            value = { uuid: value };
         }
 
         Editor.Ipc.sendToPanel('scene', 'set-property', {
             path: `__comps__.${this.index}.${path}`,
             uuid: this.uuid,
-            dump: { type, value, },
+            dump: { type, value }
         });
     },
 
@@ -107,11 +103,11 @@ exports.methods = {
                         Editor.Ipc.sendToPanel('scene', 'remove-array-element', {
                             uuid: uuid,
                             path: '__comps__',
-                            index: index,
+                            index: index
                         });
-                    },
+                    }
                 },
-                { type: 'separator', },
+                { type: 'separator' },
                 {
                     label: 'Move Up',
                     enabled: index !== 0,
@@ -120,13 +116,13 @@ exports.methods = {
                             uuid: uuid,
                             path: '__comps__',
                             target: index,
-                            offset: -1,
+                            offset: -1
                         });
-                    },
+                    }
                 },
                 {
                     label: 'Move Down',
-                    enabled : index !== total - 1,
+                    enabled: index !== total - 1,
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'move-array-element', {
                             uuid: uuid,
@@ -134,11 +130,11 @@ exports.methods = {
                             target: index,
                             offset: 1
                         });
-                    },
+                    }
                 }
             ]
         });
-    },
+    }
 };
 
 exports.mounted = async function() {};

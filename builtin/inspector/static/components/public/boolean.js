@@ -1,17 +1,25 @@
 'use strict';
 
 exports.template = `
-<div class="number">
+<div class="boolean">
     <div class="name"
         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
-    <div class="value">
-        <ui-num-input
+    <div class="value" v-if="dump">
+        <ui-checkbox
             :value="dump.value"
-            @confirm.stop="_onConfirm($event)"
-        ></ui-num-input>
+            @confirm.stop="_onConfirm"
+        ></ui-checkbox>
+    </div>
+    <div class="value"
+        v-else
+    >
+        <ui-checkbox
+            :value="value"
+            @confirm.stop="_onConfirm"
+        ></ui-checkbox>
     </div>
 </div>
 `;
@@ -19,7 +27,8 @@ exports.template = `
 exports.props = [
     'name',
     'dump', // dump 数据
-    'indent' // 是否需要缩进
+    'indent', // 是否需要缩进
+    'value'
 ];
 
 exports.data = function() {
@@ -44,10 +53,15 @@ exports.methods = {
     },
 
     /**
-     * 数值修改
+     * value 修改
      */
     _onConfirm(event) {
-        this.dump.value = event.target.value;
-        this.dispactch();
+        if (this.dump) {
+            this.dump.value = event.target.value;
+            this.dispactch();
+        } else {
+            this.value = event.target.value;
+            this.dispactch();
+        }
     }
 };

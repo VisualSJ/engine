@@ -1,0 +1,42 @@
+<div class="fit layout vertical">
+
+    <!-- 头部工具栏 -->
+    <header
+        :style="cssHost"
+    >
+        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <div
+            :style="cssTitle"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <div class="props">
+        <ui-prop :label="T('javascript', 'plugin')" type="boolean" :value="JSON.stringify(meta.isPlugin)"></ui-prop>
+        <div class="indent" v-if="meta.isPlugin">
+            <ui-prop :label="T('javascript', 'loadPluginInWeb')" type="boolean" :value="meta.loadPluginInWeb"></ui-prop>
+            <ui-prop v-if="meta.loadPluginInWeb" :label="T('javascript', 'loadPluginInEditor')" type="boolean" :value="JSON.stringify(meta.loadPluginInEditor)"></ui-prop>
+            <ui-prop v-if="!meta.loadPluginInWeb" :label="T('javascript', 'loadPluginInEditor')" type="boolean" :value="JSON.stringify(false)"></ui-prop>
+            <ui-prop :label="T('javascript', 'loadPluginInNative')" type="boolean" :value="JSON.stringify(meta.loadPluginInNative)"></ui-prop>
+        </div>
+    </div>
+
+    <code-preview :type="meta.__assetType__" :path="path"></code-preview>
+
+</div>

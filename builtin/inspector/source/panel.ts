@@ -30,19 +30,18 @@ export const $ = {
 };
 
 export const messages = {
-
     /**
      * 场景已准备
      */
     'scene:ready'() {
-        vm.sready = true;
+        vm && (vm.sready = true);
     },
 
     /**
      * 场景已准备
      */
     'scene:close'() {
-        vm.sready = false;
+        vm && (vm.sready = false);
     },
 
     /**
@@ -60,9 +59,10 @@ export const messages = {
      * @param {string} uuid
      */
     async 'scene:node-changed'(uuid: string) {
-        vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
-    },
-
+        if (vm) {
+            vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
+        }
+    }
 };
 
 export const listeners = {};
@@ -76,17 +76,18 @@ export async function ready() {
         el: panel.$.content,
 
         data: {
+            loading: false,
             sready: false, // 场景是否准备就绪
             aready: false, // db 是否准备就绪
 
             type: Editor.Project.type, // 项目类型
 
             element: '', // 最后选中的物体 asset | node
-            uuid: '', // 选中的物体的 uuid
+            uuid: '' // 选中的物体的 uuid
         },
 
         components: {
-            'inspector-2d': require('../static/components/2d'),
+            'inspector-2d': require('../static/components/2d')
         },
 
         async mounted() {
@@ -96,6 +97,11 @@ export async function ready() {
             this.element = type;
             this.uuid = uuid;
         },
+        methods: {
+            toggleLoading(val: boolean) {
+                vm.loading = val;
+            }
+        }
     });
 }
 

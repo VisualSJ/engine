@@ -2,7 +2,11 @@
 
 exports.template = `
 <div class="cc-color">
-    <div class="name">{{name ? name : 'Unknown'}}</div>
+    <div class="name"
+        :style="paddingStyle"
+    >
+        {{name ? name : 'Unknown'}}
+    </div>
     <div class="value">
         <ui-color
             :value="t(dump.value)"
@@ -15,10 +19,18 @@ exports.template = `
 exports.props = [
     'name',
     'dump', // dump 数据
+    'indent' // 是否需要缩进
 ];
 
 exports.data = function() {
-    return {};
+    return {
+        paddingStyle:
+            this.indent !== undefined
+                ? {
+                      'padding-left': `${this.indent * 13}px`
+                  }
+                : ''
+    };
 };
 
 exports.methods = {
@@ -45,5 +57,5 @@ exports.methods = {
         color.a = value[3];
 
         this.dispactch();
-    },
+    }
 };

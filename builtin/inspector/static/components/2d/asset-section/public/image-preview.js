@@ -1,12 +1,11 @@
 'use strict';
 
+const { join } = require('path');
 const { readTemplate } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/public/image-preview.html');
 
-exports.props = [
-    'meta',
-];
+exports.props = ['meta'];
 
 exports.data = function() {
     return {
@@ -25,6 +24,7 @@ exports.data = function() {
             left: '15px'
         },
         cssCanvas: {
+            // 'max-width': '100%',
             margin: 'auto',
             display: 'block',
             backgroundImage: "url('packages://inspector/static/checkerboard-32x32.png')",
@@ -45,7 +45,7 @@ exports.data = function() {
             color: '#fff',
             background: '#4281b6'
         },
-        info: '0 x 0',
+        info: '0 x 0'
     };
 };
 
@@ -118,7 +118,7 @@ exports.methods = {
         if (this.meta.__assetType__ === 'texture') {
             canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
             this.meta.subMetas &&
-                this.meta.subMetas.forEach((item) => {
+                [this.meta.subMetas['sprite-frame']].forEach((item) => {
                     const { userData = {} } = item;
                     const ratioX = canvasWidth / this._image.width;
                     const ratioY = canvasHeight / this._image.height;
@@ -215,7 +215,7 @@ exports.methods = {
 
 exports.mounted = function() {
     let file = join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), this.meta.uuid);
-    file += this.meta.files[0];
+    file += this.meta.files.filter((file) => !file.includes('json'))[0];
     // const { __src__ } = this.meta;
     this.loadImage(file);
     // eventBus.on('panel:resize', this.updateImage);

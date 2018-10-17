@@ -1,66 +1,67 @@
 <section>
 
     <!-- atlas -->
-    <ui-prop label="Atlas" path="_atlas" type="asset">
-        <div slot="content" style="padding-top: 10px">
-            <ui-drag-object class="flex-1" type="sprite-atlas" disabled></ui-drag-object>
-            <!-- <ui-button class="blue tiny">Select Button</ui-button> -->
-        </div>
-    </ui-prop>
+    <cc-dragable 
+        name="Atlas" 
+        :dump="target._atlas"
+    ></cc-dragable>
 
     <!-- sprite frame -->
-    <ui-prop label="Sprite Frame" path="spriteFrame" type="asset">
-        <div slot="content" style="padding-top: 10px">
-            <ui-drag-object class="flex-1" dropable="asset,sprite-frame"
-                :value="target._spriteFrame.value.uuid"
-            ></ui-drag-object>
-            <!-- <ui-button class="blue tiny">Edit Button</ui-button> -->
-        </div>
-    </ui-prop>
+    <cc-dragable 
+        name="Sprite Frame" 
+        :dump="target.spriteFrame"
+    ></cc-dragable>
 
     <!-- type -->
-    <ui-prop label="type" path="type" type="enums"
-        :value="JSON.stringify(target.type.value)"
-        :options="JSON.stringify(target.type.enumList)"
-    ></ui-prop>
+    <enum 
+        name="Type" 
+        :dump="target.type"
+    ></enum>
 
     <!-- type === 'filled' -->
     <template
-        v-if="target.type === 3"
+        v-if="String(target.type.value) === '3'"
     >
-        <ui-prop label="Fill Type" path="fillType" type="enums"
-            :value="JSON.stringify(target.fillType.value)"
-            :options="JSON.stringify(target.fillType.enumList)"
-        ></ui-prop>
-        <ui-prop label="Fill Center" path="fillCenter" type="vec2"
-            :value="JSON.stringify(target.fillCenter.value)"
-        ></ui-prop>
-        <ui-prop label="Fill Start" path="fillStart" type="number"
-            :value="JSON.stringify(target.fillStart.value)"
-        ></ui-prop>
-        <ui-prop label="Fill Range" path="fillRange" type="number"
-            :value="JSON.stringify(target.fillRange.value)"
-        ></ui-prop>
+    
+        <enum 
+            name="Fill Type" 
+            :dump="target.fillType"
+        ></enum>
+        <cc-vec2 
+            name="Fill Center" 
+            :dump="target.fillCenter"
+        ></cc-vec2>
+        <number 
+            name="Fill Start" 
+            :dump="target.fillStart"
+        ></number>
+        <number 
+            name="Fill Range" 
+            :dump="target.fillRange"
+        ></number>
+
     </template>
 
-    <ui-prop label="Size Mode" path="sizeMode" type="enums"
-        :value="JSON.stringify(target.sizeMode.value)"
-        :options="JSON.stringify(target.sizeMode.enumList)"
-    ></ui-prop>
-    <ui-prop label="Trim" path="trim" type="boolean"
-        :value="JSON.stringify(target.trim.value)"
-    ></ui-prop>
+    <enum 
+        name="Size Mode" 
+        :dump="target.sizeMode"
+    ></enum>
 
-    <ui-prop label="Blend">
-        <div class="indent">
-            <ui-prop indent label="Src Blend Factor" path="srcBlendFactor" type="enums"
-                :value="JSON.stringify(target.srcBlendFactor.value)"
-                :options="JSON.stringify(target.srcBlendFactor.enumList)"
-            ></ui-prop>
-            <ui-prop indent label="dst Blend Factor" path="dstBlendFactor" type="enums"
-                :value="JSON.stringify(target.dstBlendFactor.value)"
-                :options="JSON.stringify(target.dstBlendFactor.enumList)"
-            ></ui-prop>
-        </div>
-    </ui-prop>
+    <boolean 
+        name="Trim" 
+        :dump="target.trim"
+    ></boolean>
+
+    <div>
+        <label>Blend</label>
+        <enum :indent="1" 
+            name="Src Blend Factor" 
+            :dump="target.srcBlendFactor"
+        ></enum>
+        <enum :indent="1" 
+            name="Dst Blend Factor" 
+            :dump="target.dstBlendFactor"
+        ></enum>
+    </div>
+
 </section>

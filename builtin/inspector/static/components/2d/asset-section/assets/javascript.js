@@ -1,14 +1,10 @@
 'use strict';
+const { join } = require('path');
+const { readTemplate, T } = require('../../../../utils');
 
-const { readTemplate } = require('../../../../utils');
+exports.template = readTemplate('2d', './asset-section/assets/javascript.html');
 
-exports.template = readTemplate('2d', './asset-section/assets/sprite-frame.html');
-
-exports.props = ['info', 'meta', 'dirty', 'child'];
-
-exports.components = {
-    'image-preview': require('../public/image-preview')
-};
+exports.props = ['meta', 'info'];
 
 exports.data = function() {
     return {
@@ -27,10 +23,12 @@ exports.data = function() {
     };
 };
 
+exports.components = {
+    'code-preview': require('../public/code-preview')
+};
+
 exports.methods = {
-    isCustom() {
-        return false;
-    },
+    T,
 
     /**
      * 重置
@@ -47,4 +45,10 @@ exports.methods = {
     }
 };
 
-exports.mounted = async function() {};
+exports.computed = {
+    path() {
+        if (this.meta) {
+            return join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), `${this.meta.uuid}.js`);
+        }
+    }
+};

@@ -13,5 +13,8 @@ module.exports = {
     select_button: 'Select In Atlas',
     edit_button: 'Edit',
     resize_to_target: 'Resize To Target',
-    difference: 'Difference'
+    difference: 'Difference',
+    javascript: {
+        plugin: 'Import As Plugin'
+    }
 };

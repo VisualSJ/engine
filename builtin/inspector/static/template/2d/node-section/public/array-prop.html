@@ -1,0 +1,21 @@
+<!-- todo 
+    <ui-prop :label="target.name" :readonly="target.attrs.readonly">
+    <template v-if="!target.values || target.values.length <= 1">
+        <ui-num-input class="flex-1" :value="target.value.length" @confirm="arraySizeChanged"></ui-num-input>
+        <div class="child">
+            <component v-for="prop in target.value" :is="prop.compType" :target="prop" :key="prop.compType"></component>
+        </div>
+    </template>
+    <template v-else>
+        <span>{{T('difference')}}</span>
+    </template>
+</ui-prop> -->
+<div>
+    <number :name="target.name":dump="target" v-if=""></number>
+    <template v-if="!target.values || target.values.length <= 1">
+        <span>todo</span>
+    </template>
+    <template v-else>
+        <span>{{T('difference')}}</span>
+    </template>
+</div>

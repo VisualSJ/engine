@@ -1,16 +1,27 @@
 'use strict';
 
 exports.template = `
-<div class="number">
+<div class="cc-vec3">
     <div class="name"
         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
     <div class="value">
+        <span>X</span>
         <ui-num-input
-            :value="dump.value"
-            @confirm.stop="_onConfirm($event)"
+            :value="dump ? dump.value.x : 0"
+            @confirm.stop="_onXConfirm"
+        ></ui-num-input>
+        <span>Y</span>
+        <ui-num-input
+            :value="dump ? dump.value.y : 0"
+            @confirm.stop="_onYConfirm"
+        ></ui-num-input>
+        <span>Z</span>
+        <ui-num-input
+            :value="dump ? dump.value.z : 0"
+            @confirm.stop="_onZConfirm"
         ></ui-num-input>
     </div>
 </div>
@@ -44,10 +55,26 @@ exports.methods = {
     },
 
     /**
-     * 数值修改
+     * x 值修改
      */
-    _onConfirm(event) {
-        this.dump.value = event.target.value;
+    _onXConfirm(event) {
+        this.dump.value.x = event.target.value;
+        this.dispactch();
+    },
+
+    /**
+     * y 值修改
+     */
+    _onYConfirm(event) {
+        this.dump.value.y = event.target.value;
+        this.dispactch();
+    },
+
+    /**
+     * z 值修改
+     */
+    _onZConfirm(event) {
+        this.dump.value.z = event.target.value;
         this.dispactch();
     }
 };

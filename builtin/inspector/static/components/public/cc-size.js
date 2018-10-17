@@ -2,7 +2,11 @@
 
 exports.template = `
 <div class="cc-size">
-    <div class="name">{{name ? name : 'Unknown'}}</div>
+    <div class="name"
+        :style="paddingStyle"
+    >
+        {{name ? name : 'Unknown'}}
+    </div>
     <div class="value">
         <span>W</span>
         <ui-num-input
@@ -21,10 +25,18 @@ exports.template = `
 exports.props = [
     'name',
     'dump', // dump 数据
+    'indent' // 是否需要缩进
 ];
 
 exports.data = function() {
-    return {};
+    return {
+        paddingStyle:
+            this.indent !== undefined
+                ? {
+                      'padding-left': `${this.indent * 13}px`
+                  }
+                : ''
+    };
 };
 
 exports.methods = {
@@ -51,5 +63,5 @@ exports.methods = {
     _onHeightConfirm(event) {
         this.dump.value.height = event.target.value;
         this.dispactch();
-    },
+    }
 };

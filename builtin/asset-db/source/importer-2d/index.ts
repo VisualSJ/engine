@@ -4,6 +4,7 @@ import AnimationImporter from './importers/animation-clip';
 import AudioImporter from './importers/audio-clip';
 import AutoAtlasImporter from './importers/auto-atlas';
 import BitmapFontImporter from './importers/bitmap-font';
+import JavascriptImporter from './importers/javascript';
 import JsonImporter from './importers/json';
 import LabelAtlasImporter from './importers/label-atlas';
 import MarkdownImporter from './importers/markdown';
@@ -17,21 +18,32 @@ import TTFFontImporter from './importers/ttf-font';
 import UnknownImporter from './importers/unknown';
 
 export function register(database: any) {
-
     // 未知类型导入（不处理）
     database.register(new UnknownImporter(), '*');
 
     // text 导入
     database.register(new TextImporter(), [
         '.txt',
-        '.html', '.htm', '.xml',
-        '.css', '.less', '.scss', '.stylus',
-        'yaml', '.ini', '.csv', '.proto',
-        '.ts', '.tsx',
+        '.html',
+        '.htm',
+        '.xml',
+        '.css',
+        '.less',
+        '.scss',
+        '.stylus',
+        'yaml',
+        '.ini',
+        '.csv',
+        '.proto',
+        '.ts',
+        '.tsx'
     ]);
 
     // json 导入
     database.register(new JsonImporter(), ['.json']);
+
+    // javascript 导入
+    database.register(new JavascriptImporter(), '.js');
 
     // text 导入
     database.register(new MarkdownImporter(), ['.md', '.markdown']);

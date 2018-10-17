@@ -1,16 +1,16 @@
 <div class="content">
     <section class="loading"
-        v-if="false"
+        v-show="loading"
     >
         <ui-loading></ui-loading>
     </section>
 
     <section
-        v-else
+        v-show="!loading"
     >
 
         <inspector-2d ref="inspector2d"
-            v-if="type === '2d'"
+            v-if="type === '2d' && uuid"
             :type="element"
             :uuid="uuid"
         ></inspector-2d>

@@ -10,19 +10,19 @@
         <div
             :style="cssTitle"
         >
-            {{meta ? meta.importer : ''}}
+            {{meta ? meta.__name__  : ''}}
         </div>
         <span class="flex-1"></span>
     
         <ui-button class="tiny red transparent"
-            :disabled="!dirty"
+            :disabled="!meta.__dirty__"
             @confirm="reset($event)"
         >
             <i class="iconfont icon-close-b"></i>
         </ui-button>
     
         <ui-button class="tiny green transparent"
-            :disabled="!dirty"
+            :disabled="!meta.__dirty__"
             @confirm="apply($event)"
         >
             <i class="iconfont icon-check-b"></i>
@@ -91,6 +91,6 @@
     
     </section>
 
-</div>
+    <!-- <image-preview :meta="meta" v-if="!child"></image-preview> -->
 
-<!-- <image-preview :meta="meta"></image-preview> -->
+</div>

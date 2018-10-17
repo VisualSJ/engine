@@ -4,20 +4,15 @@ const { readTemplate } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/assets/texture.html');
 
-exports.props = [
-    'info',
-    'meta',
-    'dirty',
-];
+exports.props = ['info', 'meta'];
 
 exports.components = {
     'sprite-frame': require('./sprite-frame'),
-    'image-preview': require('../public/image-preview'),
+    'image-preview': require('../public/image-preview')
 };
 
 exports.data = function() {
     return {
-
         cssHost: {
             display: 'flex',
             flex: 'none',
@@ -35,7 +30,7 @@ exports.data = function() {
             fontWeight: 'bold',
             textOverflow: 'ellipsis',
             overflow: 'hidden'
-        },
+        }
     };
 };
 
@@ -52,8 +47,7 @@ exports.methods = {
      */
     apply() {
         this.$parent.$emit('apply');
-    },
-
+    }
 };
 
 exports.mounted = async function() {};

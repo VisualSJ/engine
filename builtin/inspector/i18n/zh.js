@@ -13,5 +13,8 @@ module.exports = {
     select_button: '选择',
     edit_button: '编辑',
     resize_to_target: 'Resize To Target',
-    difference: 'Difference'
+    difference: 'Difference',
+    javascript: {
+        plugin: '导入为插件'
+    }
 };

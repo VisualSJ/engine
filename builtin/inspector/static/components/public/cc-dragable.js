@@ -1,17 +1,17 @@
 'use strict';
 
 exports.template = `
-<div class="number">
+<div class="cc-dragable">
     <div class="name"
-        :style="paddingStyle"
+         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
     <div class="value">
-        <ui-num-input
-            :value="dump.value"
-            @confirm.stop="_onConfirm($event)"
-        ></ui-num-input>
+        <ui-drag-object
+            :type="dump.type"
+            :value="dump.value.uuid"
+        ></ui-drag-object>
     </div>
 </div>
 `;
@@ -44,10 +44,10 @@ exports.methods = {
     },
 
     /**
-     * 数值修改
+     * value 修改
      */
     _onConfirm(event) {
-        this.dump.value = event.target.value;
+        this.dump.value.uuid = event.target.value;
         this.dispactch();
     }
 };

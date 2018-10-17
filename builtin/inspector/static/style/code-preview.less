@@ -1,0 +1,27 @@
+pre.code {
+    position: relative;
+    overflow: auto;
+
+    border: 1px solid #212121;
+    background: #333;
+
+    margin: 0px;
+    padding: 10px;
+    font-size: 12px;
+    font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+    -webkit-user-select: text;
+    cursor: auto;
+}
+
+pre.code::selection {
+    background: #007acc;
+}
+
+pre.code * {
+    -webkit-user-select: text;
+}
+
+pre.code *::selection {
+    background: #007acc;
+}

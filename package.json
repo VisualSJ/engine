@@ -47,9 +47,11 @@
         "escodegen": "^1.11.0",
         "esprima": "^4.0.1",
         "estraverse": "^4.2.0",
+        "event-stream": "^4.0.1",
         "express": "^4.16.3",
         "fs-extra": "^6.0.1",
         "globby": "^8.0.1",
+        "highlight.js": "^9.12.0",
         "jade": "^1.11.0",
         "jsondiffpatch": "^0.3.11",
         "lodash": "^4.17.10",
@@ -65,6 +67,7 @@
         "xtend": "^4.0.1"
     },
     "devDependencies": {
+        "@types/babel-core": "^6.25.5",
         "@types/fs-extra": "^5.0.4",
         "@types/node": "^10.5.2",
         "gulp": "^3.9.1",

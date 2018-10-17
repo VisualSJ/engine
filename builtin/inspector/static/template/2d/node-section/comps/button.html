@@ -1,0 +1,98 @@
+<div>
+    <cc-dragable
+        name="Target" 
+        :dump="target.target"
+    ></cc-dragable>
+
+    <boolean
+        name="Interactable" 
+        :dump="target.interactable"
+    ></boolean>
+
+    <boolean
+        name="EnableAutoGrayEffect" 
+        :dump="target.enableAutoGrayEffect"
+    ></boolean>
+
+    <enum
+        name="Transition" 
+        :dump="target.transition"
+    ></enum>
+    
+    <!-- color -->
+    <div v-if="checkTransition(target.transition, 1)">
+        <cc-color 
+            :indent="1"
+            name="Normal" 
+            :dump="target.normalColor"
+        ></cc-color> 
+        <cc-color 
+            :indent="1"
+            name="Pressed" 
+            :dump="target.pressedColor"
+        ></cc-color> 
+        <cc-color 
+            :indent="1"
+            name="Hover" 
+            :dump="target.hoverColor"
+        ></cc-color> 
+        <cc-color 
+            :indent="1"
+            name="Disabled" 
+            :dump="target.disabledColor"
+        ></cc-color> 
+        <cc-color 
+            :indent="1"
+            name="Disabled" 
+            :dump="target.disabledColor"
+        ></cc-color>
+        <number 
+            :indent="1"
+            name="Duration" 
+            :dump="target.duration"
+        ></number>
+    </div>
+
+    <!-- sprite -->
+    <div v-if="checkTransition(target.transition, 2)">
+        <cc-dragable 
+            :indent="1"
+            name="Normal" 
+            :dump="target.normalSprite"
+        ></cc-dragable>
+        <cc-dragable 
+            :indent="1"
+            name="Pressed" 
+            :dump="target.pressedSprite"
+        ></cc-dragable>
+        <cc-dragable 
+            :indent="1"
+            name="Hover" 
+            :dump="target.hoverSprite"
+        ></cc-dragable>
+        <cc-dragable 
+            :indent="1"
+            name="Disabled" 
+            :dump="target.disabledSprite"
+        ></cc-dragable>
+    </div>
+
+    <!-- scale -->
+    <div v-if="checkTransition(target.transition, 3)">
+        <number 
+            :indent="1"
+            name="Duration" 
+            :dump="target.duration"
+        ></number>
+        <number 
+            :indent="1"
+            name="Zoom Scale"
+            :dump="target.zoomScale"
+        ></number>
+    </div>
+
+    <array-prop 
+        :target="target.clickEvents"
+    ></array-prop>	
+
+</div> 
