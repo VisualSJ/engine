@@ -14,6 +14,7 @@ import SpriteFrameImporter from './importers/sprite-frame';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
 import TexturePackerImporter from './importers/texture-packer';
+import TiledMapImporter from './importers/tiled-map';
 import TTFFontImporter from './importers/ttf-font';
 import UnknownImporter from './importers/unknown';
 
@@ -80,6 +81,9 @@ export function register(database: any) {
 
     // 虚拟的 sprite-frame 导入
     database.register(new SpriteFrameImporter());
+
+    // tiled-map tmx 导入
+    database.register(new TiledMapImporter(), '.tmx');
 
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
