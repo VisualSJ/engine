@@ -68,7 +68,7 @@ export const methods = {
      * 删除资源
      */
     async delete() {
-        vm.$refs.tree.delete();
+        vm.$refs.tree.ipcDelete();
     },
     async up() {
         vm.$refs.tree.upDownLeftRight('up');

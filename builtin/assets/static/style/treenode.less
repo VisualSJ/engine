@@ -1,5 +1,6 @@
 @orange: #f90;
 @blue: #09f;
+@blue-bg: #059;
 @green: #0f0;
 .treenode {
     display: block;
@@ -21,6 +22,7 @@
     }
     &[draging] {
         color: #fff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
     }
     &[state=""] {
         &:hover {
@@ -57,7 +59,6 @@
     &[expand="true"] {
         .arrow {
             transform: rotate(90deg);
-            padding-top: 2px;
         }
     }
     [class^="i-"],
@@ -120,7 +121,7 @@
 :host([focused]) {
     .tree {
         .treenode[active="true"] {
-            background-color: #059;
+            background-color: @blue-bg;
         }
     }
 }

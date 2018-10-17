@@ -516,78 +516,87 @@ export const methods = {
         // @ts-ignore 隐藏高亮框
         this.dirBox = false;
 
-        const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, json.from);
-
         const [toNode, toIndex, toArr, toParent] = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
 
-        let offset = 0;
-        let affectNode;
+        if (!json.from) {
+            return;
+        }
+        const uuids = json.from.split(',');
+        uuids.forEach((fromId: string) => {
 
-        // 内部平级移动
-        // @ts-ignore
-        if (fromParent.uuid === toParent.uuid && ['before', 'after'].includes(json.insert)) {
+            const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
+
+            // 移动的索引变动
+            let offset = 0;
+            // 受变动的节点
+            let affectNode;
+
+            // 内部平级移动
             // @ts-ignore
-            affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
-
-            offset = toIndex - fromIndex; // 目标索引减去自身索引
-            if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
-                offset += 1;
-            } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                offset -= 1;
-            }
-
-            Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                uuid: fromParent.uuid,  // 被移动的节点的父级 uuid
-                path: 'children',
-                target: fromIndex, // 被移动的节点所在的索引
-                offset,
-            });
-        } else { // 跨级移动
-            if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+            if (fromParent.uuid === toParent.uuid && ['before', 'after'].includes(json.insert)) {
                 // @ts-ignore
-                affectNode = getNodeFromMap(toNode.uuid); // 元素自身
+                affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
 
-                Editor.Ipc.sendToPackage('scene', 'set-property', {
-                    uuid: fromNode.uuid,
-                    path: 'parent',
-                    dump: {
-                        type: 'entity',
-                        value: toNode.uuid // 被 drop 的元素就是父级
-                    }
-                });
-            } else { // 跨级插入 'before', 'after'
-                // @ts-ignore
-                affectNode = getNodeFromMap(toParent); // 元素的父级
-
-                Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                    uuid: fromNode.uuid,
-                    path: 'parent',
-                    dump: {
-                        type: 'entity',
-                        value: toParent.uuid // 被 drop 的元素的父级
-                    }
-                });
-
-                offset = toIndex - toArr.length; // 目标索引减去自身索引
-                if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                offset = toIndex - fromIndex; // 目标索引减去自身索引
+                if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
                     offset += 1;
                 } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
                     offset -= 1;
                 }
 
-                // 在父级里平移
-                Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                    uuid: toParent.uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
+                Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
+                    uuid: fromParent.uuid,  // 被移动的节点的父级 uuid
                     path: 'children',
-                    target: toArr.length,
+                    target: fromIndex, // 被移动的节点所在的索引
                     offset,
                 });
-            }
+            } else { // 跨级移动
+                if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+                    // @ts-ignore
+                    affectNode = getNodeFromMap(toNode.uuid); // 元素自身
 
-            if (affectNode) {
-                affectNode.state = 'loading'; // 显示 loading 效果
+                    Editor.Ipc.sendToPackage('scene', 'set-property', {
+                        uuid: fromNode.uuid,
+                        path: 'parent',
+                        dump: {
+                            type: 'entity',
+                            value: toNode.uuid // 被 drop 的元素就是父级
+                        }
+                    });
+                } else { // 跨级插入 'before', 'after'
+                    // @ts-ignore
+                    affectNode = getNodeFromMap(toParent); // 元素的父级
+
+                    Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
+                        uuid: fromNode.uuid,
+                        path: 'parent',
+                        dump: {
+                            type: 'entity',
+                            value: toParent.uuid // 被 drop 的元素的父级
+                        }
+                    });
+
+                    offset = toIndex - toArr.length; // 目标索引减去自身索引
+                    if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                        offset += 1;
+                    } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                        offset -= 1;
+                    }
+
+                    // 在父级里平移
+                    Editor.Ipc.sendToPackage('scene', 'move-array-element', {
+                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
+                        path: 'children',
+                        target: toArr.length,
+                        offset,
+                    });
+                }
+
+                if (affectNode) {
+                    affectNode.state = 'loading'; // 显示 loading 效果
+                }
             }
-        }
+        });
     },
 
     /**
@@ -609,7 +618,9 @@ export const methods = {
      */
     copy(uuid: string) {
         copyNode = vm.selects.slice();
-        if (uuid !== undefined && !vm.selects.includes(uuid)) { // 来自右击菜单的单个选中
+
+        // 来自右击菜单的单个选中，右击节点不在已选项目里
+        if (uuid !== undefined && !vm.selects.includes(uuid)) {
             copyNode = [uuid];
         }
     },

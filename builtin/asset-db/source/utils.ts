@@ -16,22 +16,18 @@ export function getName(file: string) {
     const ext = extname(file);
     let name = basename(file, ext);
 
-    if (!(/\-\d{3}&/.test(name))) {
-        name += '-000';
-    }
-
     do {
-        name = name.replace(/(\-(\d{3})?)/, (strA, strB, strC) => {
-            let num = strC ? parseInt(strC, 10) : 0;
-            num += 1;
-            if (num < 10) {
-                strC = '00' + num;
-            } else if (num < 100) {
-                strC = '0' + num;
-            }
-            return `-${strC}`;
-
-        });
+        if ((/\-\d{3}/.test(name))) {
+            name = name.replace(/(\-(\d{3})$)/, (strA, strB, strC) => {
+                let num = parseInt(strC, 10);
+                num += 1;
+                // @ts-ignore
+                num = num.toString().padStart(3, '0');
+                return `-${num}`;
+            });
+        } else {
+            name += '-001';
+        }
 
         file = join(dir, name);
     } while (!!existsSync(file + ext));

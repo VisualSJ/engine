@@ -236,7 +236,8 @@ module.exports = {
 
             // 实际移动逻辑，首先移动 meta 文件，再移动实际文件
             const name = basename(assets.source);
-            const dest = join(assets.target, name);
+            let dest = join(assets.target, name);
+            dest = getName(dest); // 避免目标位置上已有相同名称的文件
             move(assets.source + '.meta', dest + '.meta');
             move(assets.source, dest);
         },

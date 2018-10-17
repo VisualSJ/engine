@@ -7,7 +7,7 @@ module.exports = {
         searchPlaceholder: 'Search...',
         search: 'Search',
 
-        newNode: 'Node',
+        newNode: 'Create',
         newNodeEmpty: 'Empty Node',
 
         copy: 'Copy',

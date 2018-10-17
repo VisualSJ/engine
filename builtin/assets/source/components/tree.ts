@@ -480,13 +480,14 @@ export const methods = {
      */
     dragOver(uuid: string) {
         // @ts-ignore
-        let node: ItreeAsset = getAssetFromMap(uuid);
+        const node: ItreeAsset = getAssetFromMap(uuid);
         if (!node.isDirectory) {
             // @ts-ignore
-            node = getAssetFromMap(node.parentUuid);
-            node.state = 'over';
+            this.dragOver(node.parentUuid);
+            return;
         }
 
+        node.state = 'over';
         // @ts-ignore
         this.dirBox = [node.top + 4, node.height > assetHeight ? (node.height + 3) : node.height];
     },
@@ -533,26 +534,39 @@ export const methods = {
             return;
         }
 
+        let doIpc = false;
         if (json.from === 'osFile') { // 从外部拖文件进来
             // @ts-ignore
             json.files.forEach((one) => {
                 // @ts-ignore
                 importAsset(toNode.uuid, one.path);
+                doIpc = true;
             });
         } else {
-            const fromData = getGroupFromTree(treeData, json.from);
-            const fromNode = fromData[0]; // 被移动的对象
-            if (!fromNode || fromNode.invalid || fromNode.isSubAsset) {
+            if (!json.from) {
                 return;
             }
 
-            if (toNode.uuid === fromData[3].uuid) { // 资源移动仍在原来的目录内，不需要移动
-                return;
-            }
-            // 移动资源
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromNode.source, toNode.source);
+            const uuids = json.from.split(',');
+            uuids.forEach((fromId: string) => {
+                const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
+                if (!fromNode || fromNode.invalid || fromNode.isSubAsset) {
+                    return;
+                }
+
+                // @ts-ignore
+                if (toNode.uuid === fromParent.uuid) { // 资源移动仍在原来的目录内，不需要移动
+                    return;
+                }
+                // @ts-ignore 移动资源
+                Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromNode.source, toNode.source);
+                doIpc = true;
+            });
         }
-        toNode.state = 'loading'; // 显示 loading 效果
+
+        if (doIpc) {
+            toNode.state = 'loading'; // 显示 loading 效果
+        }
     },
 
     /**
@@ -561,7 +575,9 @@ export const methods = {
      */
     copy(uuid: string) {
         copyAsset = vm.selects.slice();
-        if (uuid !== undefined && !vm.selects.includes(uuid)) { // 来自右击菜单的单个选中
+
+        // 来自右击菜单的单个选中，右击节点不在已选项目里
+        if (uuid !== undefined && !vm.selects.includes(uuid)) {
             copyAsset = [uuid];
         }
     },
@@ -802,7 +818,7 @@ function getGroupFromTree(obj: ItreeAsset, value: string = '', key: string = 'uu
  */
 function getValidAsset(uuid: string) {
     const one = getAssetFromMap(uuid);
-    if (!one || one.invalid) { // 资源不可用
+    if (!one || one.invalid || one.isSubAsset) { // 资源不可用
         return;
     }
     return one;
@@ -926,6 +942,10 @@ function deepFindParent(key: string, parentValue: any, arr: ItreeAsset[] = treeD
  * @param parentKey 父级的字段名称
  */
 function toTree(arr: any[], key: string = 'source', parentKey: string = 'parentSource') {
+    // 先排序一下原数据，然后 正向 和 反向 检查合并数据，避免子节点先于父级出现
+    arr.sort((a: ItreeAsset, b: ItreeAsset) => {
+        return a.source.localeCompare(b.source);
+    });
     const tree = loopOne(loopOne(arr, key, parentKey).reverse(), key, parentKey);
     // 重新排序
     sortData(tree);

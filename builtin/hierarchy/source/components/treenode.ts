@@ -192,9 +192,14 @@ export const methods = {
      */
     dragStart(event: Event, node: ItreeNode) {
         // @ts-ignore
-        event.dataTransfer.setData('dragData', JSON.stringify({
-            from: node.uuid
-        }));
+        let from = node.uuid;
+        // @ts-ignore
+        if (this.selects.includes(from)) {
+            // @ts-ignore
+            from = this.selects.join(',');
+        }
+        // @ts-ignore
+        event.dataTransfer.setData('dragData', JSON.stringify({ from }));
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
@@ -214,7 +219,7 @@ export const methods = {
 
         const offset = target.getBoundingClientRect();
         let position = 'inside'; // 中间位置
-         // @ts-ignore
+        // @ts-ignore
         if (event.clientY - offset.top <= 4) {
             position = 'before'; // 偏上位置
             // @ts-ignore
