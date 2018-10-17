@@ -23,6 +23,9 @@ ipc.on('init', async (info) => {
         return;
     }
     isInit = true;
+    
+    // 适配 Editor
+    require('./polyfills/editor');
 
     // 初始化引擎
     await Manager.Init.engine(info);

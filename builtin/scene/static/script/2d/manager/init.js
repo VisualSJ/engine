@@ -93,6 +93,16 @@ function utils(path) {
     cc.error = function(...args) {
         console.error(...args);
     };
+
+    // 打印日志
+    cc.log = function (...args) {
+        console.log(...args);
+    };
+
+    // 警告处理
+    cc.warn = function (...args) {
+        console.warn(...args);
+    };
 }
 
 /**
@@ -100,6 +110,7 @@ function utils(path) {
  */
 async function system() {
     // await camera.init();
+    require('../polyfills');
 }
 
 module.exports = {
