@@ -1,96 +1,90 @@
-@import '../base/base';
-@import '../base//variable';
+@import "../base/base";
+@import "../base//variable";
 :host {
-  border-color: @c-border-dark;
-  background-image: linear-gradient(#585858, #444);
-  color:@c-default-text;
-  box-sizing: border-box;
+  border-color: var(--border-dark-c);
+  background-image: var(--image-bg);
 }
 
 :host(:hover) {
-  background-image: linear-gradient(#626262, #4e4e4e);
-  color: #d1d1d1;
+  background-image: var(--image-light-bg);
+  color: var(--hover-c);
 }
 
 :host([pressed]) {
-  background-color: #3E3E3E;
-  color:@c-default-text;
-}
-
-// focus的border颜色设置需在hover之后
-:host([focused]){
-  border-color: @c-border-focus;
+  background-image: var(--image-bg);
 }
 
 // focus的颜色设置需在Hover之后
-:host([disabled]){
+
+:host([focused]) {
+  border-color: var(--focus-c);
+}
+
+:host([disabled]) {
   cursor: default;
-  color:@c-default-text;
-  opacity: @n-disabled-opacity;
+  opacity: var(--opacity-n, 0.6);
   background-image: linear-gradient(#585858, #444);
+  border-color: var(--disabled-c);
+}
+
+:host(.red), :host(.blue), :host(.green) {
+  --border-dark-c: transparent;
+  --default-text-c: white;
 }
 
 // red
 :host(.red:hover) {
-  background-image: linear-gradient(#FF8080, @c-red-light);
-  color:white;
+  background-image: linear-gradient(#ff8080, @c-red-light);
 }
 
 :host(.red[pressed]) {
   background-image: linear-gradient(@c-red-dark, @c-red);
-  color:#ddd;
 }
 
-:host(.red), :host(.red[disabled]) {
+:host(.red),
+:host(.red[disabled]) {
   background-image: linear-gradient(@c-red-light, @c-red);
-  color:#ddd;
 }
 
 // green
 :host(.green:hover) {
-  background-image: linear-gradient(#5ADD94, @c-green-light);
-  color:white;
+  background-image: linear-gradient(#5add94, @c-green-light);
 }
 
 :host(.green[pressed]) {
   background-image: linear-gradient(@c-green-dark, @c-green);
-  color:#ddd;
 }
 
-:host(.green), :host(.green[disabled]) {
+:host(.green),
+:host(.green[disabled]) {
   background-image: linear-gradient(@c-green-light, @c-green);
-  color:#ddd;
 }
 // blue
 :host(.blue:hover) {
-  background-image: linear-gradient(#A1BFFC, @c-blue-light);
-  color:white;
+  background-image: linear-gradient(#a1bffc, @c-blue-light);
 }
 
 :host(.blue[pressed]) {
   background-image: linear-gradient(@c-blue-dark, @c-blue);
-  color:#ddd;
 }
 
-:host(.blue), :host(.blue[disabled]) {
+:host(.blue),
+:host(.blue[disabled]) {
   background-image: linear-gradient(@c-blue-light, @c-blue);
-  color:#ddd;
 }
 
 // yellow
 :host(.yellow:hover) {
-  background-image: linear-gradient(#FFD96B, @c-yellow-light);
-  color:white;
+  background-image: linear-gradient(#ffd96b, @c-yellow-light);
 }
 
 :host(.yellow[pressed]) {
   background-image: linear-gradient(@c-yellow-dark, @c-yellow);
-  color:#ddd;
 }
 
-:host(.yellow), :host(.yellow[disabled]) {
+:host(.yellow),
+:host(.yellow[disabled]) {
   background-image: linear-gradient(@c-yellow-light, @c-yellow);
-  color:#ddd;
 }
 
 // 带透明背景的按钮
@@ -109,40 +103,39 @@
 }
 
 :host(.transparent.red) {
-  color:@c-red;
+  color: @c-red;
 }
 
 :host(.transparent.red:hover) {
-  color:@c-red-light;
-  background:@c-red-tran;
+  color: @c-red-light;
+  background: @c-red-tran;
 }
 
 :host(.transparent.green) {
-  color:@c-green;
+  color: @c-green;
 }
 
 :host(.transparent.green:hover) {
-  color:@c-green-light;
-  background:@c-green-tran;
+  color: @c-green-light;
+  background: @c-green-tran;
 }
 
 :host(.transparent.blue) {
-  color:@c-blue;
+  color: @c-blue;
 }
 
 :host(.transparent.blue:hover) {
-  color:@c-blue-light;
-  background:@c-blue-tran;
+  color: @c-blue-light;
+  background: @c-blue-tran;
 }
 
-
 :host(.transparent.yellow) {
-  color:@c-yellow;
+  color: @c-yellow;
 }
 
 :host(.transparent.yellow:hover) {
-  color:@c-yellow-light;
-  background:@c-yellow-tran;
+  color: @c-yellow-light;
+  background: @c-yellow-tran;
 }
 
 // disabled的颜色设置需在Hover之后
@@ -150,9 +143,8 @@
 :host(.transparent.red[disabled]),
 :host(.transparent.green[disabled]),
 :host(.transparent.blue[disabled]),
-:host(.transparent.yellow[disabled]),{
+:host(.transparent.yellow[disabled]) {
   cursor: default;
-  opacity: @n-disabled-opacity;
   background: none;
-  border:1px solid transparent;
+  border: 1px solid transparent;
 }

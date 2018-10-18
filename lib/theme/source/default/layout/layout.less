@@ -14,7 +14,7 @@
 ::-webkit-scrollbar-thumb:hover {
   border-radius: 5px;
   border: 3px solid transparent;
-  background: @c-border-focus;
+  background: var(--focus-c);
   background-clip: content-box;
 }
 
@@ -36,13 +36,12 @@
 
 :host {
   display: flex;
-  color: @c-default-text;
   font-size: 12px;
 }
 
 dock-layout[direction="none"] {
   border-radius: 2px;
-  border-color: #212121;
+  border-color: var(--border-dark-c);
 }
 
 dock-groups {
@@ -56,36 +55,36 @@ dock-groups {
 dock-tabs {
   height: 24px;
   line-height: 24px;
-  background: @c-dark-bg;
-  border-bottom: 1px solid #212121;
-  box-shadow: 0px 1px 0px #444 inset;
+  background: var(--main-dark-bg);
+  border-bottom: 1px solid var(--border-dark-c);
+  box-shadow: 0px 1px 0px var(--border-dark-c) inset;
 }
 
 dock-tabs>div:hover>svg {
-  fill: @c-border-hover;
+  fill: var(--hover-c);
 }
 
 dock-tabs>div>svg {
   width: 0.8em;
-  fill: @c-default-text;
+  fill: var(--default-text-c);
 }
 
 dock-tab {
   height: 25px;
   padding: 0 6px;
-  border-color: #212121;
-  font-size: 14px;
-  color: @c-default-text;
+  border-color: var(--border-dark-c);
+  background: var(--main-bg);
+  box-sizing: border-box;
   &:hover {
-    color: @c-border-hover;
+    color: var(--hover-c);
   }
 }
 
 dock-tab[active] {
-  background: #474747;
+  background: var(--main-bg);
   height: 25px;
   box-shadow: 0px 1px 0px #585858 inset;
-  border-bottom: 1px solid #474747;
+  border-bottom: 1px solid var(--main-bg);
   z-index: 1;
 }
 
@@ -116,7 +115,7 @@ dock-tab>.img img {
 
 panel-frame {
   flex: 1;
-  background: #474747;
   border:1px solid transparent;
   box-sizing: border-box;
+  color: var(--default-text-c);
 }

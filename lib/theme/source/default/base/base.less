@@ -1,6 +1,12 @@
 @import './variable.less';
 //通用样式
 :host {
-  border-color: @c-border;
+  border-color: var(--border-c);
   border-radius: @n-border-radius;
+}
+
+:host([disabled]) {
+  cursor: default;
+  color: var(--disaled-c);
+  opacity: var(--opacity-n);
 }

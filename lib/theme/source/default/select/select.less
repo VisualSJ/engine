@@ -10,10 +10,10 @@
   margin: 0 .25em 0 0;
   width: auto;
   min-width: 20px;
-  border: 1px solid #171717;
-  border-radius: @n-border-radius;
+  border: 1px solid var(--border-dark-c);
+  border-radius: var(--border-radius-n);
   cursor: pointer;
-  background-image: linear-gradient(#585858, #444)
+  background-image: var(--image-bg);
 }
 
 :host(:last-child) {
@@ -29,26 +29,23 @@ select {
   border: 0;
   margin: 0;
   padding: .2em 2em .2em .8em;
-  border-top: 1px solid rgba(255, 255, 255, .1);
-  border-bottom: 1px solid rgba(0, 0, 0, .1);
   border-radius: @n-border-radius;
   text-decoration: none;
   text-overflow: ellipsis;
-  color: #bdbdbd;
-  background: 0 0;
-  width: 100%
+  background-image: var(--image-bg);
+  width: 100%;
+  color: inherit;
 }
 
 select option {
-  color: #bdbdbd;
-  background: #4e4e4e
+  background: var(--main-bg);
 }
 
 select optgroup {
-  color: #bdbdbd;
-  background: #585858
+  background: var(--main-bg);
 }
 
+// 自定义箭头样式
 :host::after {
   display: block;
   content: ' ';
@@ -60,35 +57,31 @@ select optgroup {
   height: 0;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 7px solid #bdbdbd;
+  border-top: 7px solid var(--border-c);
   margin-top: -3px
 }
 
 :host(:hover) {
-  border-color: @c-border-hover;
-  background-image: linear-gradient(#626262, #4e4e4e);
+  border-color: var(--hover-c);
+  background-image: var(--image-light-bg);
   &::after {
-    border-top-color: #d1d1d1
-  }
-  select {
-    color: #d1d1d1
+    border-top-color: var(--hover-c);
   }
 }
 
 :host([focused]) {
-  border-color: #fd942b
+  border-color: var(--focus-c);
 }
 
 :host([disabled]) {
   cursor: default;
-  border-color: #171717;
-  background-image: linear-gradient(#585858, #444);
-  opacity: @n-disabled-opacity;
+  border-color: var(--disabled-c);
+  background-image: var(--image-bg);
+  opacity: var(--opacity-n);
   select {
     cursor: default;
-    color: #bdbdbd
   }
   &::after {
-    border-top-color: #bdbdbd
+    border-top-color: var(--border-c)
   }
 }

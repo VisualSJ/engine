@@ -1,0 +1,127 @@
+<style>
+    section.input {
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    section.input:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<section class="input" id="testWrap">
+    <h1>Standard</h1>
+    <button id="toggleElem">移除/添加元素</button> 
+    <h5>事件/Event
+        <span id="testEvent"></span>
+    </h5>
+    <span id="showWrap"></span>
+    <ui-textarea id="uiTextarea" value="Standard1"></ui-textarea>
+</section>
+
+<section class="input">
+    <h1>Placeholder</h1>
+    <ui-textarea placeholder="placeholder"></ui-textarea>
+</section>
+
+<section class="input">
+    <h1>autofocus</h1>
+    <ui-textarea></ui-textarea>
+</section>
+
+<section class="input">
+    <h1>Readonly</h1>
+    <ui-textarea value="readonly" readonly></ui-textarea>
+</section>
+
+<section class="input">
+    <h1>Disabled</h1>
+    <ui-textarea value="disabled" disabled></ui-textarea>
+</section>
+
+<section class="input">
+    <h1>Password</h1>
+    <ui-textarea value="password" password></ui-textarea>
+</section>
+
+<section class="input size">
+    <h1>Size</h1>
+    <style>
+        .size div {
+            margin-bottom: 10px;
+        }
+
+        .size div span {
+            display: inline-block;
+            width: 60px;
+        }
+
+        .size-12 {
+            font-size: 12px;
+        }
+
+        .size-16 {
+            font-size: 16px;
+        }
+
+        .size-20 {
+            font-size: 20px;
+        }
+    </style>
+    <div class="size-12">
+        <ui-textarea value="12px"></ui-textarea>
+    </div>
+    <div class="size-16">
+        <ui-textarea value="16px"></ui-textarea>
+    </div>
+    <div class="size-20">
+        <ui-textarea value="20px"></ui-textarea>
+    </div>
+</section>
+
+<section class="input">
+    <h1>Style</h1>
+    <style>
+        .transparent {
+            transition: all 0.2s;
+            color: #333;
+            background: none;
+            border: 1px solid #4281b6;
+            border-radius: 2px;
+        }
+
+        .transparent[focused] {
+            background: #4281b6;
+            color: #a6e5ff;
+        }
+
+        .transparent[pressed] {
+            color: #4281b6;
+            background: #104f84;
+        }
+    </style>
+    <ui-textarea class="transparent">Button</ui-textarea>
+</section>
+<script>
+    (function () {
+        let $uiTextarea = document.getElementById('uiTextarea');
+        let $testEvent = document.getElementById('testEvent');
+        let $showWrap = document.getElementById('showWrap');
+        let $testWrap = document.getElementById('testWrap');
+        let $toggleElem = document.getElementById('toggleElem');
+        
+        let eventArr = ['confirm', 'change', 'cancel'];
+        let hideFlag = false;
+        $showWrap.innerHTML = $uiTextarea.value;
+        addNormalEvent(eventArr, $uiTextarea, $testEvent, $showWrap);
+
+        $toggleElem.addEventListener('click', (e) => {
+            hideFlag = !hideFlag;
+            if (hideFlag) {
+                $testWrap.removeChild($uiTextarea);
+            } else {
+                $testWrap.appendChild($uiTextarea);
+            }
+        })
+    })();
+</script>

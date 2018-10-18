@@ -1,126 +1,71 @@
 @import '../base/base.less';
+// --focus-c: focus 颜色设定
+// --hover-c hover 颜色设定
+// --default-c 默认字体颜色
+
 :host {
-    display: inline-block;
     position: relative;
-    box-sizing: border-box;
-    contain: content;
-    outline: 0;
-    flex: none;
-    height: 1.5em;
+    height: 1.8em;
     min-width: 150px;
-    margin: var(--margin, 0 0.25em 0 0);
     padding: 0.1em;
     white-space: nowrap;
-    cursor: default;
-    --track-size:1.6em;
     .wrap {
-        // display: flex;
         height: 100%;
     }
     .track {
         position: relative;
-        display: inline-block;
-        vertical-align: middle;
-        outline: 0;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: top;
         width: 65%;
         cursor: pointer;
-        margin-left: 5%;
+        margin-left: 0.35em; // 遗留出拖拽按钮的 1/2 大小，防止宽度固定时拖拽最左边将会有部分超出组件范围
         height: 100%;
     }
     .wrapper {
-        position: relative;
-        box-sizing: border-box;
-        background: #333;
+        width: 100%;
+        background: var(--main-dark-bg, #333);
         height: 4px;
-        top: 45%;
-        border-radius: 3px;
-        border-top: 1px solid #000;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .bar {
-        height: var(--track-size);
-        background-color: var(--active-color, #409eff);
-        // border-top-left-radius: calc(var(--track-size) / 2);
-        // border-bottom-left-radius: calc(var(--track-size) / 2);
-        position: absolute;
     }
     .cursor {
         position: absolute;
-        top: 20%;
-        margin-left: -6px;
+        margin-left: -0.35em;
         div {
             box-sizing: border-box;
-            background: #333;
-            width: 0.8em;
-            height: 0.8em;
+            background: var(--main-dark-bg, #333);
+            width: 0.7em;
+            height: 0.7em;
             box-shadow: 0 1px 3px 1px #000 inset, 0 1px 1px 0 rgba(0, 0, 0, 0.9);
             border-radius: 100%;
             border: 2px solid #949494;
         }
     }
     .input {
-        --control-display:none;
+        --ctrl-btn-display: none;
         width: 25%;
         height: 100%;
         margin-left: 3%;
         margin-right: 1%;
         right: 0;
-        border: 1px solid transparent;
         box-shadow: inset 0 0 3px 1px rgba(0, 0, 0, 0.3);
-        background: #252525;
-        color: #fd942b;
         font-size: 12px;
         vertical-align: top;
         min-width: 20px;
-        box-sizing: border-box;
-        &:hover {
-            border-color: #888;
-        }
     }
 }
 
-:host([vertical]) {
-    padding: 8px 6px 40px;
-    .track {
-        width: 16px;
-    }
-    .wrapper {
-        top: auto;
-        left: 6px;
-        width: 4px;
-        height: 100%;
-        border-top: none;
-        border-bottom: none;
-        border-left: 1px solid #000;
-        border-right: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .bar {
-        width: 16px;
-        height: auto;
-        // border-radius: 0 0 calc(var(--track-size) / 2) calc(var(--track-size) / 2);
-    }
-}
 :host([disabled]) {
     pointer-events: none;
     opacity: 0.5;
-    .wrapper {
-        background: #474747;
-        border-top: 1px solid rgba(0, 0, 0, 0.5);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .input {
-        color: #636363;
-    }
 }
 
 :host([focused]:not([disabled])) {
-    .input {
-        border-color: #fd942b;
-    }
     .cursor {
         div {
-            border-color: #fd942b;
-            box-shadow: 0 1px 3px 1px rgba(255, 128, 0, 0.2) inset, 0 1px 1px 0 rgba(0, 0, 0, 0.9);
+            border-color: var(--focus-c);
         }
+    }
+    .input {
+        border-color: var(--focus-c);
     }
 }

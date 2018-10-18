@@ -1,25 +1,20 @@
 @import '../base/base';
 @import '../base/variable';
 :host {
-  background-color: @c-dark-bg;
-  border-radius: @n-border-radius;
-  input {
-    color:@c-font-color;
-  }
+  background-color: var(--main-dark-bg);
+  border-radius: var(--border-radius-n);
 }
 
 :host(:hover) {
-  border-color: @c-border-hover;
+  border-color:var(--hover-c);
 }
 
 // focus的border颜色设置须在hover之后
 :host([focused]) {
-  border-color: @c-border-focus;
+  border-color: var(--focus-c);
 }
 
 // focus的颜色设置需在Hover之后
 :host([disabled]){
-  cursor: default;
-  border-color: @c-border;
-  opacity: @n-disabled-opacity;
+  border-color: var(--disabled-c);
 }

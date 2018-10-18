@@ -1,6 +1,9 @@
 @import '../base/base.less';
+// --ctrl-btn-display 控制 control button 的显示效果，在需要隐藏 控制按钮时使用
+// --ctrl-btn-c 控制 control button 的按钮颜色
+// --hover-c 控制 hover 的颜色值 （ctrl-btn 的高亮颜色、边框等等）
 
-@slider-color: #999;
+@control-btns-color: #999;
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button{
     -webkit-appearance: none !important;
@@ -9,18 +12,18 @@ input::-webkit-inner-spin-button{
 :host {
     display: inline-flex;
     position: relative;
-    padding: 0;
-    border: 1px solid #333;
+    border: 1px solid var(--border-dark-c, #333);
+    padding: 0.2em 0.6em 0.2em 0.5em;
     & > input {
         display: block;
-        color: inherit;
+        color: var(--focus-c, #fd942b);
         outline: none;
         border: none;
         background: none;
         font-size: inherit;
-        padding: 0.2em 0.2em 0.2em 0.5em;
         flex: 1;
         width: 100%;
+        padding: 0;
         &::-webkit-inner-spin-button {
             display: none;
         }
@@ -43,46 +46,48 @@ input::-webkit-inner-spin-button{
     }
 }
 
-.slider {
-    display: var(--control-display,flex);
+.control-btns {
+    position: absolute;
+    height: 100%;
+    display: var(--ctrl-btn-display, flex);
     flex-direction: column;
     top: 0;
     right: 0;
     width: 10px;
-    background: @slider-color;
+    background: @control-btns-color;
 }
 
-.slider > div {
+.control-btns > div {
     flex: 1;
     overflow: hidden;
     text-align: center;
     cursor: pointer;
-    border-left: 1px solid @slider-color;
+    border-left: 1px solid var(--ctrl-btn-c);
     line-height: 0.5em;
 }
 
-.slider svg {
+.control-btns svg {
     width: 0.4em;
     fill: #555;
     transition: all 0.2s;
 }
 
 .up {
-    border-bottom: 1px solid @slider-color * 0.8;
+    border-bottom: 1px solid @control-btns-color * 0.8;
 
     &:hover {
         svg {
-            fill: #fff;
+            fill: var(--hover-c);
         }
     }
 }
 
 .down {
-    border-top: 1px solid @slider-color * 1.2;
+    border-top: 1px solid @control-btns-color * 1.2;
 
     &:hover {
         svg {
-            fill: #fff;
+            fill: var(--hover-c);
         }
     }
 }

@@ -30,8 +30,8 @@ export async function ready() {
         el: panel.$['ui-preview'],
         data: {
             uiCollectors: ['dialog', 'button', 'input', 'num-input', 'checkbox', 'slider',
-             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop'],
-            chooseIndex: 'dialog'
+             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop', 'textarea'],
+            chooseIndex: 'textarea'
         },
         beforeCreate() {
 
@@ -58,6 +58,7 @@ export async function ready() {
             'test-loading': require('./components/ui-loading'),
             'test-drag': require('./components/ui-drag'),
             'test-prop': require('./components/ui-prop'),
+            'test-textarea': require('./components/ui-textarea'),
 
             'test-dialog': require('./components/ui-dialog'),
         },

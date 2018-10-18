@@ -1,28 +1,15 @@
 @import '../base//base';
 @import '../base/variable';
 :host {
-  background-color: @c-dark-bg;
-  border-radius: @n-border-radius;
+  background-color: var(--main-dark-bg);
+  border-radius: var(--border-radius-n);
   .slider {
-    border-top-right-radius: @n-border-radius;
-    border-bottom-right-radius: @n-border-radius;
+    border-top-right-radius: var(--border-radius-n);
+    border-bottom-right-radius: var(--border-radius-n);
   }
-  input {
-    color:@c-font-color;
-  }
-}
-
-:host(:hover) {
-  border-color: @c-border-hover;
-}
-
-//focus的border颜色设置须在hover之后
-:host([focused]) {
-  border-color: @c-border-focus;
 }
 
 .unit {
-  color: @c-default-text;
   padding: 0;
   span {
     font-size: 1.2em;
@@ -32,11 +19,19 @@
   }
 }
 
-.slider svg {
-  fill: @c-dark-bg;
+:host(:hover) {
+  border-color: var(--hover-c);
 }
 
-// focus的颜色设置需在Hover之后
+:host([focused]) {
+  border-color: var(--focus-c);
+}
+
+// .slider svg {
+//   fill: @c-dark-bg;
+// }
+
+// // focus的颜色设置需在Hover之后
 :host([disabled]){
   cursor: default;
   border-color: @c-border;

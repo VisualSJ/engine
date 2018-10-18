@@ -1,32 +1,13 @@
-@import "../base/base.less";
+@import '../base/base.less';
+// --focus-c 高亮颜色
+// --pressed-bg 按钮按下时的背景颜色
+// --default-text-c 默认字体
 
 :host {
+    --pressed-bg: @background-color * 0.9;
+    border: 1px solid var(--border-c, @border-color);
+    padding: 0.3em 0.5em;
     cursor: pointer;
-    background: #eee;
-    transition: opacity 0.3s;
-    border: 1px solid @border-color;
-    background: @background-color;
-    font-size: inherit;
-    line-height: 1em;
-    & > span {
-        background: none;
-        border: none;
-        font-size: inherit;
-        display: inline-block;
-        padding: 0.5em;
-        line-height: inherit;
-        outline: none;
-        text-align: center;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
+    text-align: center;
 }
 
-:host([focused]) {
-    border-color: @focused-color;
-}
-
-:host([pressed]) {
-    background: @background-color * 0.9;
-}

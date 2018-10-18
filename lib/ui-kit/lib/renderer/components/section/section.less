@@ -1,14 +1,14 @@
 @import '../base/base.less';
+// --focus-c 高亮颜色
+
 :host {
     --header-space: 5px 0;
-    all: initial;
-    font-size: 12px;
     header {
         position: relative;
         cursor: pointer;
         padding: 0.04em 0 0.04em 0.7em;
         margin: var(--header-space, 0);
-        border-bottom: 1px solid var(--border-color, @border-color);
+        border-bottom: 1px solid var(--focus-c, @border-color);
         i {
             position: absolute;
             left: 0;
@@ -19,7 +19,7 @@
             margin-right: 0.2em;
             width: 0.5em;
             height: 0.5em;
-            background-color: var(--border-color, @border-color);
+            background-color: var(--focus-c, @border-color);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
         }
         slot {
@@ -33,7 +33,6 @@
             display: none;
         }
     }
-    color: var(--color, @font-color);
     & > .content {
         display: none;
     }
@@ -48,10 +47,7 @@
     font-size: 2rem;
 }
 :host([focused]) {
-    header {
-        color: var(--color, @focused-color);
-    }
-    --border-color: @focused-color;
+    --focus-c: @focused-color;
 }
 :host([expand]) {
     & > .content {

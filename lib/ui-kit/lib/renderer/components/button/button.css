@@ -2,33 +2,16 @@
   user-select: none;
   outline: none;
   display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  font-size: inherit;
+  line-height: inherit;
   font-family: inherit;
+  color: var(--default-text-c, #949494);
 }
 :host {
+  --pressed-bg: #d6d6d6;
+  border: 1px solid var(--border-c, #333);
+  padding: 0.3em 0.5em;
   cursor: pointer;
-  transition: opacity 0.3s;
-  border: 1px solid #333;
-  background: #eee;
-  font-size: inherit;
-  line-height: 1em;
-}
-:host > span {
-  background: none;
-  border: none;
-  font-size: inherit;
-  display: inline-block;
-  padding: 0.5em;
-  line-height: inherit;
-  outline: none;
   text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-}
-:host([focused]) {
-  border-color: #07d;
-}
-:host([pressed]) {
-  background: #d6d6d6;
 }

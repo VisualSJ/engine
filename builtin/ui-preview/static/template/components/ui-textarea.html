@@ -1,0 +1,52 @@
+<div class="input-wrap">
+    <section>
+        <h1>Standard</h1>
+        <ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button>
+        <h5>事件/Event:{{eventName}}</h5>
+        <ui-textarea name="uiTest" value = "test"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-textarea>{{value}}
+        <div v-html="itemHtmls"></div>
+    </section>
+
+    <section>
+        <h1>Placeholder</h1>
+        <ui-textarea placeholder="placeholder"></ui-textarea>
+    </section>
+
+    <section>
+        <h1>autofocus</h1>
+        <ui-textarea autofocus></ui-textarea>
+    </section>
+
+    <section>
+        <h1>Readonly</h1>
+        <ui-textarea value="readonly" readonly></ui-textarea>
+    </section>
+
+    <section>
+        <h1>Disabled</h1>
+        <ui-textarea value="disabled" disabled></ui-textarea>
+    </section>
+
+    <section>
+        <h1>Password</h1>
+        <ui-textarea value="password" password></ui-textarea>
+    </section>
+
+    <section class="section size">
+        <h1>Size</h1>
+        <div class="size-12">
+            <ui-textarea value="12px"></ui-textarea>
+        </div>
+        <div class="size-16">
+            <ui-textarea value="16px"></ui-textarea>
+        </div>
+        <div class="size-20">
+            <ui-textarea value="20px"></ui-textarea>
+        </div>
+    </section>
+
+    <section >
+        <h1>Style</h1>
+        <ui-textarea class="transparent">Button</ui-textarea>
+    </section>
+</div>

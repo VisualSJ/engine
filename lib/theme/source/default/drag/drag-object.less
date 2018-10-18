@@ -1,36 +1,39 @@
 @import '../base//variable';
 :host {
-  width: 100%;
-  color: white;
-  .type {
-    background-color: @c-dark-bg;
-    border-radius: @n-border-radius @n-border-radius 0 0;
-    border-color:@c-border;
-  }
-  .area {
-    background-color: @c-dark-bg;
-    border-radius: 0  @n-border-radius  @n-border-radius  @n-border-radius;
-    border-color:@c-border;
-  }
-  ui-drag-area {
-    width: 90%;
-    box-sizing: border-box;
-  }
-  .value {
-    max-width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
+    width: 100%;
+    position: relative;
+    .type {
+        background-color: var(--main-dark-bg);
+        border-top-right-radius: var(--border-radius-n);
+        border-top-left-radius: var(--border-radius-n);
+        border-color: var(--border-c);
+    }
+    .area {
+        background-color: @c-dark-bg;
+        border-bottom-left-radius: var(--border-radius-n);
+        border-bottom-right-radius: var(--border-radius-n);
+        border-top-right-radius: var(--border-radius-n);
+        border-color: var(--border-c);
+    }
+    ui-drag-area {
+        width: 90%;
+        box-sizing: border-box;
+    }
+    .value {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 :host[draging] {
-  border: 1px solid #0f0;
-  background: #090;
+    border: 1px solid #0f0;
+    background: #090;
 }
 
 :host(:hover) {
-  ui-drag-area {
-    background-color: #ccc;
-  }
+    ui-drag-area {
+        background-color: var(--hover-c);
+    }
 }

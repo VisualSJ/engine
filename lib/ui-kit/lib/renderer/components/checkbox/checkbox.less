@@ -1,64 +1,55 @@
 @import '../base/base.less';
+// --box-height 控制 checkbox 整体高度与 lineheight
+// --border-c 控制 checkbox 单选框的边框颜色
+// --focus-c checkbox 选中的高亮颜色
+// --box-visi 单选框选中效果是否显示
+// --cursor 鼠标上移效果
+
 :host {
-    contain: content;
-    cursor: pointer;
-    --box-height:1.2em;
-    --c-border-default:#333;
+    --box-height: 1.2em;
     height: var(--box-height);
     line-height: var(--box-height);
-    .default-checkbox , label {
+    cursor: var(--cursor, pointer);
+    .default-checkbox,
+    label {
         display: inline-block;
         vertical-align: top;
-        height: var(--box-height,1.2em);
+        height: var(--box-height, 1.2em);
         line-height: inherit;
     }
     .default-checkbox {
         position: relative;
-        width: var(--box-height,1.2em);
-        border: 1px solid var(--c-border-default);
+        width: var(--box-height, 1.2em);
+        border: 1px solid var(--border-c, #333);
         box-sizing: border-box;
+        background-color: var(--main-dark-bg);
+        border-radius: 2px;
         i {
-            visibility: hidden;
+            visibility: var(--box-visi, hidden);
             position: absolute;
             width: 100%;
             height: 100%;
-            background: @focused-color;
-            clip-path: polygon(8% 55%,20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
+            background: var(--focus-c, @focused-color);
+            clip-path: polygon(8% 55%, 20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
         }
     }
-    label:hover{
-        cursor: pointer;
+    label:hover {
+        cursor: var(--cursor, pointer);
     }
 }
 
 :host([focused]) {
+    --focus-c: @focused-color;
     label {
-        color: @focused-color;
-    }
-    .default-checkbox {
-        border-color: @focused-color;
+        color: var(--focus-c);
     }
 }
+
 :host([checked]) {
-    .default-checkbox {
-        i {
-          visibility: visible;
-        }
-    }
+    --box-visi: visible;
 }
+
+:host([disabled]),
 :host([readOnly]) {
-    cursor: default;
-    label {
-        cursor: default;
-    }
-}
-:host([disabled]) {
-    cursor: default;
-    label {
-        cursor: default;
-    }
-    input {
-        cursor: default;
-        opacity: 0.4;
-    }
+    --cursor: default;
 }

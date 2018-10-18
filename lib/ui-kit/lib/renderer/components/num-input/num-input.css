@@ -2,9 +2,11 @@
   user-select: none;
   outline: none;
   display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  font-size: inherit;
+  line-height: inherit;
   font-family: inherit;
+  color: var(--default-text-c, #949494);
 }
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -14,19 +16,19 @@ input::-webkit-inner-spin-button {
 :host {
   display: inline-flex;
   position: relative;
-  padding: 0;
-  border: 1px solid #333;
+  border: 1px solid var(--border-dark-c, #333);
+  padding: 0.2em 0.6em 0.2em 0.5em;
 }
 :host > input {
   display: block;
-  color: inherit;
+  color: var(--focus-c, #fd942b);
   outline: none;
   border: none;
   background: none;
   font-size: inherit;
-  padding: 0.2em 0.2em 0.2em 0.5em;
   flex: 1;
   width: 100%;
+  padding: 0;
 }
 :host > input::-webkit-inner-spin-button {
   display: none;
@@ -43,23 +45,25 @@ input::-webkit-inner-spin-button {
   font-size: 0.7em;
   padding: 0.2em 0.3em;
 }
-.slider {
-  display: var(--control-display, flex);
+.control-btns {
+  position: absolute;
+  height: 100%;
+  display: var(--ctrl-btn-display, flex);
   flex-direction: column;
   top: 0;
   right: 0;
   width: 10px;
   background: #999;
 }
-.slider > div {
+.control-btns > div {
   flex: 1;
   overflow: hidden;
   text-align: center;
   cursor: pointer;
-  border-left: 1px solid #999;
+  border-left: 1px solid var(--ctrl-btn-c);
   line-height: 0.5em;
 }
-.slider svg {
+.control-btns svg {
   width: 0.4em;
   fill: #555;
   transition: all 0.2s;
@@ -68,11 +72,11 @@ input::-webkit-inner-spin-button {
   border-bottom: 1px solid #7a7a7a;
 }
 .up:hover svg {
-  fill: #fff;
+  fill: var(--hover-c);
 }
 .down {
   border-top: 1px solid #b8b8b8;
 }
 .down:hover svg {
-  fill: #fff;
+  fill: var(--hover-c);
 }

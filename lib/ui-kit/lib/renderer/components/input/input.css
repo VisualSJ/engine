@@ -2,12 +2,14 @@
   user-select: none;
   outline: none;
   display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  font-size: inherit;
+  line-height: inherit;
   font-family: inherit;
+  color: var(--default-text-c, #949494);
 }
 :host {
-  border: 1px solid #333;
+  border: 1px solid var(--border-c, #333);
   padding: 0.2em 0.5em;
 }
 :host > input {
@@ -20,7 +22,5 @@
   border: none;
   background: none;
   font-size: inherit;
-}
-:host([focused]) {
-  border-color: #07d;
+  color: var(--focus-c, #fd942b);
 }

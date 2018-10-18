@@ -1,40 +1,26 @@
 @import '../base/base';
 @import '../base/variable';
-:host {
-  .default-checkbox {
-    border-color: @c-border;
-    background-color: @c-dark-bg;
-    border-radius: 2px;
-    i {
-      background-color: @c-border-focus;
-    }
-  }
-  div,
-  label {
-    display: inline-block;
-  }
-}
 
-// hover变化
-:host(:hover) {
-  .default-checkbox {
-    border-color: @c-border-hover;
-  }
-}
+// // hover变化
+// :host(:hover) {
+//   .default-checkbox {
+//     border-color: @c-border-hover;
+//   }
+// }
 
-:host([focused]) {
-  label {
-    color: @c-border-focus;
-  }
-  .default-checkbox {
-    border-color: @c-border-focus;
-  }
-}
+// :host([focused]) {
+//   label {
+//     color: @c-border-focus;
+//   }
+//   .default-checkbox {
+//     border-color: @c-border-focus;
+//   }
+// }
 
-// disabled需在hover之后设置
-:host([disabled]) {
-  cursor: default;
-  .default-checkbox {
-    border-color: @c-border;
-  }
-}
+// // disabled需在hover之后设置
+// :host([disabled]) {
+//   cursor: default;
+//   .default-checkbox {
+//     border-color: @c-border;
+//   }
+// }

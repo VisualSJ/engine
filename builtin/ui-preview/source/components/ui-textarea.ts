@@ -3,7 +3,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-export const template = readFileSync(join(__dirname, '../../static/template/components/ui-input.html'), 'utf8');
+export const template = readFileSync(join(__dirname, '../../static/template/components/ui-textarea.html'), 'utf8');
 export function data() {
     return {
         value: 'test',
@@ -52,7 +52,7 @@ export const methods = {
      */
     addItem() {
         // @ts-ignore
-        this.newItems.push(`<ui-input value='test'></ui-input>`);
+        this.newItems.push(`<ui-textarea value='test'></ui-textarea>`);
         // @ts-ignore
         this.itemHtmls = this.newItems.toString().replace(/,/g, '');
     },

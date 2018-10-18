@@ -1,7 +1,8 @@
-@import "../base/base.less";
+@import '../base/base.less';
+// --focus-c 高亮颜色
 
 :host {
-    border: 1px solid @border-color;
+    border: 1px solid var(--border-c, #333);
     padding: 0.2em 0.5em;
     & > input {
         display: block;
@@ -13,9 +14,7 @@
         border: none;
         background: none;
         font-size: inherit;
+        color: var(--focus-c, #fd942b);
     }
 }
 
-:host([focused]) {
-    border-color: @focused-color;
-}

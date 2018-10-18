@@ -4,15 +4,20 @@
     display: inline-block;
     outline: none;
     height: 1.8em;
+    position: relative;
 
     .type {
         position: absolute;
-        border: 1px solid #333;
+        border: 1px solid var(--border-c, #999);
         border-bottom: none;
         border-radius: 0.1em 0.1em 0 0;
         padding: 0 4px;
-        background: #999;
+        background: var(--main-dark-c, #333);
         top: -0.8em;
+        max-width: 80%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
 
         & > .name {
             font-size: 0.7em;
@@ -22,8 +27,8 @@
     .area {
         display: flex;
         padding: 2px;
-        background: #999;
-        border: 1px solid #333;
+        background: var(--main-dark-c, #333);
+        border: 1px solid var(--border-c, #999);
         border-radius: 0 2px 2px 2px;
         box-sizing: border-box;
         height: 100%;
@@ -53,7 +58,7 @@
             position: relative;
             top: 1px;
             cursor: pointer;
-            fill: #b54344;
+            fill: var(--red-c, #b54344);
         }
     }
 }
@@ -88,28 +93,28 @@
 
 :host([state='allow']) {
     .type {
-        border-color: #6b9e51;
+        border-color: var(--green-c, #6b9e51);
     }
 
     .area {
-        border-color: #6b9e51;
+        border-color: var(--green-c, #6b9e51);
 
         & > ui-drag-area {
-            background: #6b9e51;
+            background: var(--green-c, #6b9e51);
         }
     }
 }
 
 :host([state='refused']) {
     .type {
-        border-color: #b54344;
+        border-color: var(--red-c, #b54344);
     }
 
     .area {
-        border-color: #b54344;
+        border-color: var(--red-c, #b54344);
 
         & > ui-drag-area {
-            background: #b54344;
+            background: var(--red-c, #b54344);
         }
     }
 }

@@ -2,22 +2,21 @@
   user-select: none;
   outline: none;
   display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  font-size: inherit;
+  line-height: inherit;
   font-family: inherit;
+  color: var(--default-text-c, #949494);
 }
 :host {
   --header-space: 5px 0;
-  all: initial;
-  font-size: 12px;
-  color: var(--color, #333);
 }
 :host header {
   position: relative;
   cursor: pointer;
   padding: 0.04em 0 0.04em 0.7em;
   margin: var(--header-space, 0);
-  border-bottom: 1px solid var(--border-color, #333);
+  border-bottom: 1px solid var(--focus-c, #333);
 }
 :host header i {
   position: absolute;
@@ -29,7 +28,7 @@
   margin-right: 0.2em;
   width: 0.5em;
   height: 0.5em;
-  background-color: var(--border-color, #333);
+  background-color: var(--focus-c, #333);
   clip-path: polygon(0 0, 0 100%, 100% 50%);
 }
 :host header slot {
@@ -55,10 +54,7 @@
   font-size: 2rem;
 }
 :host([focused]) {
-  --border-color: #07d;
-}
-:host([focused]) header {
-  color: var(--color, #07d);
+  --focus-c: #fd942b;
 }
 :host([expand]) > .content {
   display: block;
