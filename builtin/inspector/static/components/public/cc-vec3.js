@@ -1,26 +1,51 @@
 'use strict';
 
 exports.template = `
-<div class="cc-vec3">
+<div class="cc-vec3 vue-com-ui">
     <div class="name"
         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
-    <div class="value">
+    <div class="value" v-if="dump">
         <span>X</span>
         <ui-num-input
             :value="dump ? dump.value.x : 0"
+            :disabled="disabled"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
         <span>Y</span>
         <ui-num-input
             :value="dump ? dump.value.y : 0"
+            :disabled="disabled"
             @confirm.stop="_onYConfirm"
         ></ui-num-input>
         <span>Z</span>
         <ui-num-input
             :value="dump ? dump.value.z : 0"
+            :disabled="disabled"
+            @confirm.stop="_onZConfirm"
+        ></ui-num-input>
+    </div>
+
+
+    <div class="value" v-else>
+        <span>X</span>
+        <ui-num-input
+            :value="metaVal ? metaVal.x : 0"
+            :disabled="disabled"
+            @confirm.stop="_onXConfirm"
+        ></ui-num-input>
+        <span>Y</span>
+        <ui-num-input
+            :value="metaVal ? metaVal.y : 0"
+            :disabled="disabled"
+            @confirm.stop="_onYConfirm"
+        ></ui-num-input>
+        <span>Z</span>
+        <ui-num-input
+            :value="metaVal ? metaVal.z : 0"
+            :disabled="disabled"
             @confirm.stop="_onZConfirm"
         ></ui-num-input>
     </div>
@@ -30,7 +55,10 @@ exports.template = `
 exports.props = [
     'name',
     'dump', // dump 数据
-    'indent' // 是否需要缩进
+    'indent', // 是否需要缩进
+    'meta',
+    'path',
+    'disabled'
 ];
 
 exports.data = function() {
@@ -44,13 +72,52 @@ exports.data = function() {
     };
 };
 
+exports.computed = {
+    metaVal: {
+        get() {
+            if (this.path) {
+                return this.path.split('.').reduce((prev, next) => {
+                    if (prev) {
+                        try {
+                            return prev[next];
+                        } catch (err) {
+                            console.error(err);
+                            return void 0;
+                        }
+                    }
+                }, this.meta);
+            }
+        },
+        set(newVal) {
+            if (this.path) {
+                const paths = this.path.split('.');
+                const key = paths.pop();
+                const target = paths.reduce((prev, next) => {
+                    if (prev) {
+                        try {
+                            return prev[next];
+                        } catch (err) {
+                            console.error(err);
+                            return void 0;
+                        }
+                    }
+                }, this.meta);
+                if (target) {
+                    target.hasOwnProperty(key) ? (target[key] = newVal) : this.$set(target, key, newVal);
+                }
+            }
+        }
+    }
+};
+
 exports.methods = {
     /**
      * 向上传递修改事件
      */
-    dispactch() {
-        let evt = document.createEvent('HTMLEvents');
-        evt.initEvent('property-changed', true, true);
+    dispatch() {
+        const eventType = this.dump ? 'property-changed' : 'meta-changed';
+        const evt = document.createEvent('HTMLEvents');
+        evt.initEvent(eventType, true, true);
         this.$el.dispatchEvent(evt);
     },
 
@@ -58,23 +125,26 @@ exports.methods = {
      * x 值修改
      */
     _onXConfirm(event) {
-        this.dump.value.x = event.target.value;
-        this.dispactch();
+        const target = this.dump ? this.dump.value : this.metaVal;
+        target.x = event.target.value;
+        this.dispatch();
     },
 
     /**
      * y 值修改
      */
     _onYConfirm(event) {
-        this.dump.value.y = event.target.value;
-        this.dispactch();
+        const target = this.dump ? this.dump.value : this.metaVal;
+        target.y = event.target.value;
+        this.dispatch();
     },
 
     /**
      * z 值修改
      */
     _onZConfirm(event) {
-        this.dump.value.z = event.target.value;
-        this.dispactch();
+        const target = this.dump ? this.dump.value : this.metaVal;
+        target.z = event.target.value;
+        this.dispatch();
     }
 };

@@ -17,22 +17,32 @@
 
     <cc-vec2 name="Position"
         :dump="node.position"
+        :step="1"
     ></cc-vec2>
 
     <number name="Angle"
-        :dump="node.angle"
+        :dump="node.angle" v-if="node.angle"
+        :step="1"
+    ></number>
+
+    <number name="Rotation"
+        :dump="node.angle" v-else-if="node.rotation"
+        :step="1"
     ></number>
 
     <cc-vec2 name="Scale"
         :dump="node.scale"
+        :step="0.1"
     ></cc-vec2>
 
     <cc-vec2 name="Anchor"
         :dump="node.anchor"
+        :step="0.1"
     ></cc-vec2>
 
     <cc-size name="Size"
         :dump="node.size"
+        :step="1"
     ></cc-size>
 
     <cc-color name="Color"
@@ -41,60 +51,18 @@
 
     <number name="Opacity"
         :dump="node.opacity"
+        :step="1"
+        :min="0"
+        :max="255"
     ></number>
 
     <cc-vec2 name="Skew"
         :dump="node.skew"
+        :step="1"
     ></cc-vec2>
 
-    <!-- position -->
-    <!-- <ui-prop label="Position" path="position" type="vec2"
-        v-if="node.position"
-        :value="JSON.stringify(node.position.value)"
-        :config="JSON.stringify({step: 1})"
-    ></ui-prop> -->
-
-    <!-- rotation -->
-    <!-- <ui-prop label="Rotation" path="rotation" type="number"
-        v-if="node.rotation"
-        :value="JSON.stringify(node.rotation.value)"
-        :config="JSON.stringify({step: 1})"
-    ></ui-prop>
-    <ui-prop label="Angle" path="angle" type="number"
-        v-if="node.angle"
-        :value="JSON.stringify(node.angle.value)"
-        :config="JSON.stringify({step: 1})"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Scale" path="scale" type="vec2"
-        :value="JSON.stringify(node.scale.value)"
-        :config="JSON.stringify({step: 0.1})"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Anchor" path="anchor" type="vec2" step="0.1"
-        :value="JSON.stringify(node.anchor.value)"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Size" path="size" type="size"
-        :value="JSON.stringify(node.size.value)"
-        :config="JSON.stringify({step: 1})"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Color" key="color" path="color" type="color"
-        :value="JSON.stringify(node.color.value)"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Opacity" path="opacity" type="number"
-        :value="JSON.stringify(node.opacity.value)"
-        :config="JSON.stringify({step: 1, min: 0, max: 255})"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Skew" path="skew" type="vec2"
-        :value="JSON.stringify(node.skew.value)"
-        :config="JSON.stringify({step: 1})"
-    ></ui-prop> -->
-
-    <!-- <ui-prop label="Group" path="group">
+    <!-- todo 
+        <ui-prop label="Group" path="group">
         <div slot="content">
             <ui-select class="flex-1"
                 :value="JSON.stringify(node.group.value)"

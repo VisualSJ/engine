@@ -216,8 +216,8 @@ exports.methods = {
 exports.mounted = function() {
     let file = join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), this.meta.uuid);
     file += this.meta.files.filter((file) => !file.includes('json'))[0];
-    // const { __src__ } = this.meta;
     this.loadImage(file);
+    // todo
     // eventBus.on('panel:resize', this.updateImage);
 };
 
@@ -231,6 +231,5 @@ exports.watch = {
 };
 
 exports.destroyed = function() {
-    // eventBus.removeListener('panel:resize', this.updateImage);
     this._destroyed = true;
 };

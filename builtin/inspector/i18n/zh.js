@@ -15,6 +15,9 @@ module.exports = {
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
     javascript: {
-        plugin: '导入为插件'
+        plugin: '导入为插件',
+        loadPluginInWeb: '允许 Web 平台加载',
+        loadPluginInEditor: '允许编辑器加载',
+        loadPluginInNative: '允许 Native 平台加载'
     }
 };

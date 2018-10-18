@@ -86,6 +86,13 @@ ui-prop.vector > div[slot='content'] {
     padding-left: 13px;
 }
 
+.vue-comp-ui {
+    & > .name {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
 @import '../iconfont.less';
 @import './asset';
 @import './node';

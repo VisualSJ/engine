@@ -32,62 +32,92 @@
     <section
         v-if="meta"
     >
-        <ui-prop label="Rotated" type="boolean" path="meta.userData.rotated"
-            :value="JSON.stringify(meta.userData.rotated)"
-        ></ui-prop>
-    
-        <ui-prop label="Offset X" type="number" path="meta.userData.offsetX"
-            :value="JSON.stringify(meta.userData.offsetX)"
-        ></ui-prop>
-    
-        <ui-prop label="Offset Y" type="number" path="meta.userData.offsetY"
-            :value="JSON.stringify(meta.userData.offsetY)"
-        ></ui-prop>
-    
-        <ui-prop label="Trim Type" type="enums" path="meta.userData.trimType"
-            :value="JSON.stringify(meta.userData.trimType)"
-            :options='JSON.stringify([{name: "Auto", value: "auto"}, {name: "Custom", value: "custom"}])'
-        ></ui-prop>
-    
-        <ui-prop label="Trim Threshold" type="number" path="meta.userData.trimThreshold"
-            :value="JSON.stringify(meta.userData.trimThreshold)"
-        ></ui-prop>
-    
-        <ui-prop label="Trim X" type="number" path="meta.userData.trimX"
-            :value="JSON.stringify(meta.userData.trimX)"
+        <boolean
+            name="Rotated"
+            path="userData.rotated"
+            :meta="meta"
+        ></boolean>
+
+        <number
+            name="Offset X"
+            path="userData.offsetX"
+            :meta="meta"
+        ></number>
+        
+        <number
+            name="Offset Y"
+            path="userData.offsetY"
+            :meta="meta"
+        ></number>
+        
+        <enum
+            name="Trim Type"
+            path="userData.trimType"
+            :meta="meta">
+                <option 
+                    v-for='(item) in [{name: "Auto", value: "auto"}, {name: "Custom", value: "custom"}]'
+                    :value="item.value" 
+                >{{item.name}}</option>
+        </enum>
+
+        <number
+            name="Trim Threshold"
+            path="userData.trimThreshold"
+            :meta="meta"
+        ></number>
+        
+        <number
+            name="Trim X"
+            path="userData.trimX"
+            :meta="meta"
             :disabled="!isCustom()"
-        ></ui-prop>
-    
-        <ui-prop label="Trim Y" type="number" path="meta.userData.trimY"
-            :value="JSON.stringify(meta.userData.trimY)"
+        ></number>
+
+        <number
+            name="Trim Y"
+            path="userData.trimY"
+            :meta="meta"
             :disabled="!isCustom()"
-        ></ui-prop>
-    
-        <ui-prop label="Trim Width" type="number" path="meta.userData.width"
-            :value="JSON.stringify(meta.userData.width)"
+        ></number>
+
+        <number
+            name="Trim Width"
+            path="userData.width"
+            :meta="meta"
             :disabled="!isCustom()"
-        ></ui-prop>
-    
-        <ui-prop label="Trim Height" type="number" path="meta.userData.height"
-            :value="JSON.stringify(meta.userData.height)"
+        ></number>
+        
+        <number
+            name="Trim Height"
+            path="userData.height"
+            :meta="meta"
             :disabled="!isCustom()"
-        ></ui-prop>
-    
-        <ui-prop label="Border Top" type="number" path="meta.userData.borderTop"
-            :value="JSON.stringify(meta.userData.borderTop)"
-        ></ui-prop>
-    
-        <ui-prop label="Border Bottom" type="number" path="meta.userData.borderBottom"
-            :value="JSON.stringify(meta.userData.borderBottom)"
-        ></ui-prop>
-    
-        <ui-prop label="Border Left" type="number" path="meta.userData.borderLeft"
-            :value="JSON.stringify(meta.userData.borderLeft)"
-        ></ui-prop>
-    
-        <ui-prop label="Border Right" type="number" path="meta.userData.borderRight"
-            :value="JSON.stringify(meta.userData.borderRight)"
-        ></ui-prop>
+        ></number>
+        
+        <number
+            name="Border Top"
+            path="userData.borderTop"
+            :meta="meta"
+        ></number>
+
+        <number
+            name="Border Bottom"
+            path="userData.borderBottom"
+            :meta="meta"
+        ></number>
+
+        <number
+            name="Border Left"
+            path="userData.borderLeft"
+            :meta="meta"
+        ></number>
+        
+        <number
+            name="Border Right"
+            path="userData.borderRight"
+            :meta="meta"
+        ></number>
+
     
     </section>
 

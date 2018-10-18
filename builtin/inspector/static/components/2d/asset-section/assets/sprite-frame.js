@@ -4,7 +4,7 @@ const { readTemplate } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/assets/sprite-frame.html');
 
-exports.props = ['info', 'meta', 'dirty', 'child'];
+exports.props = ['info', 'meta', 'child'];
 
 exports.components = {
     'image-preview': require('../public/image-preview')
@@ -29,7 +29,7 @@ exports.data = function() {
 
 exports.methods = {
     isCustom() {
-        return false;
+        return this.meta.userData.trimType === 'custom';
     },
 
     /**

@@ -32,19 +32,36 @@
         v-if="meta"
     >
 
-        <ui-prop label="Type" type="enums" path="userData.type"
-            :value="meta.userData.type"
-            :options='JSON.stringify([{name: "Raw", value: "raw"}, {name:"Sprite", value: "sprite"}])'
-        ></ui-prop>
+        <enum
+            name="Type"
+            path="userData.type"
+            :meta="meta">
+                <option 
+                    v-for='(item) in [{name: "Raw", value: "raw"}, {name:"Sprite", value: "sprite"}]'
+                    :value="item.value" 
+                >{{item.name}}</option>
+        </enum>
 
-        <ui-prop label="Wrap Mode" type="enums" path="userData.wrapMode"
-            :value="meta.userData.wrapMode"
-            :options='JSON.stringify([{name: "Clamp",value: "clamp"}, {name: "Repeat", value: "repeat"} ])'
-        ></ui-prop>
+        <enum
+            name="Wrap Mode"
+            path="userData.wrapMode"
+            :meta="meta">
+                <option 
+                    v-for='(item) in [{name: "Clamp",value: "clamp"}, {name: "Repeat", value: "repeat"}]'
+                    :value="item.value" 
+                >{{item.name}}</option>
+        </enum>
 
-        <ui-prop label="Filter Mode" type="enums" path="userData.filterMode"
-            :value="meta.userData.filterMode" :options='JSON.stringify([{name: "Point", value: "point"}, {name: "Bilinear", value: "bilinear"} ,{name: "Trilinear", value: "trilinear"}])'
-        ></ui-prop>
+        <enum
+            name="Filter Mode"
+            path="userData.filterMode"
+            :meta="meta">
+                <option 
+                    v-for='(item) in [{name: "Point", value: "point"}, {name: "Bilinear", value: "bilinear"} ,{name: "Trilinear", value: "trilinear"}]'
+                    :value="item.value" 
+                >{{item.name}}</option>
+        </enum>
+
 
         <ui-section expand path="meta.subMetas.sprite-frame"
             v-if="meta.userData.type === 'sprite'"

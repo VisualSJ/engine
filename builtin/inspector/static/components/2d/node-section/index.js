@@ -4,29 +4,26 @@ const { readTemplate, readComponent } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
 
-exports.props = [
-    'uuid',
-];
+exports.props = ['uuid'];
 
 exports.components = {
     'node-props': readComponent(__dirname, './node-props'),
-    'node-comp': readComponent(__dirname, './node-comp'),
+    'node-comp': readComponent(__dirname, './node-comp')
 };
 
 exports.data = function() {
     return {
-        node: null,
+        node: null
     };
 };
 
 exports.watch = {
     uuid() {
         this.refresh();
-    },
+    }
 };
 
 exports.methods = {
-
     /**
      * 刷新节点
      */
@@ -63,8 +60,8 @@ exports.methods = {
             path: dump.path,
             dump: {
                 type: dump.type,
-                value: JSON.parse(JSON.stringify(dump.value)),
-            },
+                value: JSON.parse(JSON.stringify(dump.value))
+            }
         });
     },
 
@@ -100,7 +97,7 @@ exports.methods = {
                 }
             ]
         });
-    },
+    }
 };
 
 exports.mounted = async function() {

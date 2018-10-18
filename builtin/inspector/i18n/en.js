@@ -15,6 +15,9 @@ module.exports = {
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
     javascript: {
-        plugin: 'Import As Plugin'
+        plugin: 'Import As Plugin',
+        loadPluginInWeb: 'Load In Web',
+        loadPluginInEditor: 'Load In Editor',
+        loadPluginInNative: 'Load In Native'
     }
 };

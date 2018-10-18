@@ -1,7 +1,7 @@
 'use strict';
 
 const { join, basename, extname } = require('path');
-const { readTemplate } = require('../../../utils');
+const { readTemplate, readComponent } = require('../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/index.html');
 
@@ -9,9 +9,9 @@ exports.props = ['uuid'];
 
 exports.components = {
     none: require('./assets/none'),
-    texture: require('./assets/texture'),
-    'sprite-frame': require('./assets/sprite-frame'),
-    javascript: require('./assets/javascript')
+    texture: readComponent(__dirname, './assets/texture'),
+    'sprite-frame': readComponent(__dirname, './assets/sprite-frame'),
+    javascript: readComponent(__dirname, './assets/javascript')
 };
 
 exports.data = function() {
@@ -65,26 +65,6 @@ exports.methods = {
      */
     onMetaChanged(event) {
         this.meta.__dirty__ = true;
-
-        // 获取属性的搜索路径
-        let path = '';
-        event.path.forEach((item) => {
-            if (item.path) {
-                path = path ? `${item.path}.${path}` : item.path;
-            }
-        });
-
-        path = path.replace('.meta.', '.');
-
-        const paths = path.split('.');
-        const key = paths.pop();
-
-        let data = this;
-        while (paths.length) {
-            data = data[paths.shift()];
-        }
-
-        data[key] = event.target.value;
     }
 };
 
@@ -99,7 +79,12 @@ exports.mounted = async function() {
     });
 
     this.$on('apply', () => {
-        const meta = JSON.parse(JSON.stringify(this.meta));
+        const keys = Object.keys(this.meta);
+        const filterMeta = keys.filter((key) => !key.startsWith('__')).reduce((prev, next) => {
+            prev[next] = this.meta[next];
+            return prev;
+        }, {});
+        const meta = JSON.stringify(filterMeta);
         Editor.Ipc.sendToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
         // this.dirty = false;
     });
@@ -109,8 +94,8 @@ function buildMeta(meta, info) {
     const { source = '', files = [] } = info;
     meta.__dirty__ = false;
     meta.__name__ = source && basename(source, extname(source));
-    meta.__src__ = files[0];
     meta.__assetType__ = meta.importer;
+    // todo
     // if (meta.subMetas) {
     //     const arr = [];
     //     const { subMetas } = meta;
