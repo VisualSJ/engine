@@ -158,3 +158,11 @@ interface mat4 {
 }
 
 // asset | rect | entity | component
+
+// history.ts 使用，历史操作记录
+declare interface IhistoryStep {
+    time: string; // 记录时间
+    to: string; // 被指向的节点
+    insert: string; // 插入方式，有三种：inside, before, after
+    files?: string[]; // 拖拽中带上外部系统文件
+}

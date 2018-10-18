@@ -3,6 +3,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+const history = require('./components/history');
+
 window.customElements.define('engine-view', require('../static/script/engine-element.js'));
 
 let isAssetReady: boolean = false;
@@ -263,7 +265,29 @@ export const messages = {
      */
     async 'query-node-tree'(uuid: string) {
         return await panel.$.scene.queryNodeTree(uuid);
-    }
+    },
+
+    /**
+     * 保存一步操作记录
+     */
+    snapshot() {
+        history.save();
+    },
+
+    /**
+     * 撤销一步操作
+     */
+    undo() {
+        history.undo();
+    },
+
+    /**
+     * 重做一步操作
+     */
+    redo() {
+        history.redo();
+    },
+
 };
 
 export async function ready() {
