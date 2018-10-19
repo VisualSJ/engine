@@ -1,6 +1,6 @@
 'use strict';
 
-const { readTemplate, readComponent, T, getType } = require('../../../../utils');
+const { readTemplate, readComponent, T } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './node-section/comps/button.html');
 
@@ -16,7 +16,6 @@ exports.data = function() {
 
 exports.methods = {
     T,
-    getType,
     resetNodeSize() {
         // todo
     },

@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="cc-color vue-com-ui">
+<div class="cc-color vue-comp-ui">
     <div class="name"
         :style="paddingStyle"
     >

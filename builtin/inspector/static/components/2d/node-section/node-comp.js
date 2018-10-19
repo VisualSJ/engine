@@ -7,9 +7,12 @@ exports.template = readTemplate('2d', './node-section/node-comp.html');
 exports.props = ['uuid', 'index', 'total', 'comp'];
 
 exports.components = {
-    none: require('./comps/none'),
+    none: readComponent(__dirname, './comps/none'),
     'cc-sprite': readComponent(__dirname, './comps/sprite'),
-    'cc-button': readComponent(__dirname, './comps/button')
+    'cc-button': readComponent(__dirname, './comps/button'),
+    'cc-camera': readComponent(__dirname, './comps/camera'),
+    'cc-blockinputevents': require('./comps/block-input-events'),
+    'cc-editbox': readComponent(__dirname, './comps/editbox')
 };
 
 exports.data = function() {

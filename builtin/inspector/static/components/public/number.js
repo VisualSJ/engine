@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="number vue-com-ui">
+<div class="number vue-comp-ui">
     <div class="name"
         :style="paddingStyle"
     >

@@ -1,3 +1,10 @@
 <section>
-    none
+    <template v-for="(prop, key) in target">
+        <component
+            v-if="prop.visible !== false && getComponent(prop.type)"
+            :is="getComponent(prop.type)"
+            :name="prop.name || key"
+            :dump="prop"
+        ></component>
+    </template>
 </section>

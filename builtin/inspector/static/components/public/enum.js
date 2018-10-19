@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="enum vue-com-ui">
+<div class="enum vue-comp-ui">
     <div class="name"
         :style="paddingStyle"
     >

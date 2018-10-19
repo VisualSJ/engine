@@ -1,6 +1,6 @@
 'use strict';
 
-const { readTemplate, readComponent } = require('../../../utils');
+const { readTemplate, readComponent, T } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
 
@@ -82,18 +82,128 @@ exports.methods = {
             y,
             menu: [
                 {
-                    label: 'Button',
-                    click() {
-                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                    },
-                    params: { uuid, component: 'cc.Button' }
-                },
-                {
-                    label: 'Sprite',
-                    click() {
-                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                    },
-                    params: { uuid, component: 'cc.Sprite' }
+                    label: T('component', 'ui'),
+                    submenu: [
+                        {
+                            label: 'Block Input Events',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.BlockInputEvents' }
+                        },
+                        {
+                            label: 'Button',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Button' }
+                        },
+                        {
+                            label: 'Canvas',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Canvas' }
+                        },
+                        {
+                            label: 'EditBox',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.EditBox' }
+                        },
+                        {
+                            label: 'Layout',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Layout' }
+                        },
+                        {
+                            label: 'PageView',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.PageView' }
+                        },
+                        {
+                            label: 'PageViewIndicator',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.PageViewIndicator' }
+                        },
+                        {
+                            label: 'ProgressBar',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.ProgressBar' }
+                        },
+                        {
+                            label: 'ScrollBar',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.ScrollBar' }
+                        },
+                        {
+                            label: 'ScrollView',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.ScrollView' }
+                        },
+                        {
+                            label: 'Slider',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Slider' }
+                        },
+                        {
+                            label: 'Toggle',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Toggle' }
+                        },
+                        {
+                            label: 'ToggleContainer',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.ToggleContainer' }
+                        },
+                        {
+                            label: 'ToggleGroup (Legacy)',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.ToggleGroup' }
+                        },
+                        {
+                            label: 'VideoPlayer',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.VideoPlayer' }
+                        },
+                        {
+                            label: 'WebView',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.WebView' }
+                        },
+                        {
+                            label: 'Widget',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.Widget' }
+                        }
+                    ]
                 }
             ]
         });

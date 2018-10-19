@@ -1,0 +1,19 @@
+.string {
+    margin: 5px 0;
+    display: flex;
+    line-height: 22px;
+
+    & > .name {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    & > .value {
+        flex: 3;
+        display: flex;
+
+        & > ui-input {
+            flex: 1;
+        }
+    }
+}

@@ -1,53 +1,25 @@
 'use strict';
 
 exports.template = `
-<div class="cc-vec3 vue-comp-ui">
+<div class="string vue-comp-ui">
     <div class="name"
         :style="paddingStyle"
     >
         {{name ? name : 'Unknown'}}
     </div>
     <div class="value" v-if="dump">
-        <span>X</span>
-        <ui-num-input
-            :value="dump ? dump.value.x : 0"
+        <ui-input
+            :value="dump.value"
             :disabled="disabled"
-            @confirm.stop="_onXConfirm"
-        ></ui-num-input>
-        <span>Y</span>
-        <ui-num-input
-            :value="dump ? dump.value.y : 0"
-            :disabled="disabled"
-            @confirm.stop="_onYConfirm"
-        ></ui-num-input>
-        <span>Z</span>
-        <ui-num-input
-            :value="dump ? dump.value.z : 0"
-            :disabled="disabled"
-            @confirm.stop="_onZConfirm"
-        ></ui-num-input>
+            @confirm.stop="_onConfirm"
+        ></ui-input>
     </div>
-
-
     <div class="value" v-else>
-        <span>X</span>
-        <ui-num-input
-            :value="metaVal ? metaVal.x : 0"
+        <ui-input
+            :value="metaVal"
             :disabled="disabled"
-            @confirm.stop="_onXConfirm"
-        ></ui-num-input>
-        <span>Y</span>
-        <ui-num-input
-            :value="metaVal ? metaVal.y : 0"
-            :disabled="disabled"
-            @confirm.stop="_onYConfirm"
-        ></ui-num-input>
-        <span>Z</span>
-        <ui-num-input
-            :value="metaVal ? metaVal.z : 0"
-            :disabled="disabled"
-            @confirm.stop="_onZConfirm"
-        ></ui-num-input>
+            @confirm.stop="_onConfirm"
+        ></ui-input>
     </div>
 </div>
 `;
@@ -122,29 +94,15 @@ exports.methods = {
     },
 
     /**
-     * x 值修改
+     * value 修改
      */
-    _onXConfirm(event) {
-        const target = this.dump ? this.dump.value : this.metaVal;
-        target.x = event.target.value;
-        this.dispatch();
-    },
-
-    /**
-     * y 值修改
-     */
-    _onYConfirm(event) {
-        const target = this.dump ? this.dump.value : this.metaVal;
-        target.y = event.target.value;
-        this.dispatch();
-    },
-
-    /**
-     * z 值修改
-     */
-    _onZConfirm(event) {
-        const target = this.dump ? this.dump.value : this.metaVal;
-        target.z = event.target.value;
+    _onConfirm(event) {
+        const { value } = event.target;
+        if (this.dump) {
+            this.dump.value = value;
+        } else {
+            this.metaVal = value;
+        }
         this.dispatch();
     }
 };
