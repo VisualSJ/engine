@@ -6,19 +6,19 @@ import { join } from 'path';
 export const template = readFileSync(join(__dirname, '../../static/template/components/ui-button.html'), 'utf8');
 export function data() {
     return {
-        value:'Button',
-        eventName:'',
-        newItems:[], // 新增元素
-        itemHtmls:''
+        value: 'Button',
+        eventName: '',
+        newItems: [], // 新增元素
+        itemHtmls: ''
     };
 }
 
 export const methods = {
      /**
      * 测试元素的confirm监听事件
-     * @param event 
+     * @param event
      */
-    confirmValue(event:Event) {
+    confirmValue(event: Event) {
         // @ts-ignore
         this.eventName = 'confirm';
         // @ts-ignore
@@ -27,9 +27,9 @@ export const methods = {
 
     /**
      * 测试元素的change监听事件
-     * @param event 
+     * @param event
      */
-    changeValue(event:Event) {
+    changeValue(event: Event) {
         // @ts-ignore
         this.eventName = 'change';
         // @ts-ignore
@@ -43,7 +43,7 @@ export const methods = {
         // @ts-ignore
         this.newItems.push(`<ui-button>新按钮</ui-button>`);
         // @ts-ignore
-        this.itemHtmls = this.newItems.toString().replace(/,/g,'')
+        this.itemHtmls = this.newItems.toString().replace(/,/g, '');
     },
 
     /**
@@ -53,7 +53,7 @@ export const methods = {
         // @ts-ignore
         this.newItems.pop();
         // @ts-ignore
-        this.itemHtmls = this.newItems.toString().replace(/,/g,'');
+        this.itemHtmls = this.newItems.toString().replace(/,/g, '');
     }
 };
 

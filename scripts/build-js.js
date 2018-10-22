@@ -17,6 +17,7 @@ let tsDirnames = [
     './builtin/scene',
     './builtin/selection',
     './builtin/ui-preview',
+    './builtin/pkg-manager',
 ];
 
 Promise.all(tsDirnames.map((dir) => {
@@ -28,7 +29,7 @@ Promise.all(tsDirnames.map((dir) => {
             stdio: 'inherit',
         }, (error, stdout, stderr) => {
             if (error) {
-                console.error(`exec db error: ${error}`);
+                console.error(`exec error: ${error}`);
                 console.error(`  ${dir}`);
                 return reject(error);
             }
@@ -37,5 +38,5 @@ Promise.all(tsDirnames.map((dir) => {
         });
     });
 })).catch((error) => {
-    console.log(`exec js  error: ${error}`);
+    console.log(`exec error: ${error}`);
 });

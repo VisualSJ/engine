@@ -1,0 +1,16 @@
+<div class="pkg-item">
+    <header>
+        <div class="name">{{name}}</div>
+        <div class="vertion">Version: {{version}}</div>
+    </header>
+    <div class="detail">{{detail ? detail : 'no detail'}}</div>
+    <div class="author">
+        Author：<span>{{author ? author : 'Cocos Creator'}}</span>
+    </div>
+    <div class="control">
+        <ui-button class="red">Uninstall</ui-button>
+        <ui-button>Disable</ui-button>
+        <ui-button @click="handelPkg('reload')">Reload</ui-button>
+        <ui-button>Test</ui-button>
+    </div>
+</div>

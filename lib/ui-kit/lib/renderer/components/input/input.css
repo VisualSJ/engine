@@ -8,6 +8,9 @@
   font-family: inherit;
   color: var(--default-text-c, #949494);
 }
+input::-webkit-input-placeholder {
+  font-style: italic;
+}
 :host {
   border: 1px solid var(--border-c, #333);
   padding: 0.2em 0.5em;

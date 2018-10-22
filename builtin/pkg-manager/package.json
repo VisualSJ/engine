@@ -1,9 +1,9 @@
 {
-    "name": "ui-preview",
+    "name": "package-manager",
     "version": "0.0.1",
 
     "menu": {
-        "i18n:menu.develop/i18n:ui-preview.title": {
+        "i18n:menu.develop/i18n:package-manager.title": {
             "message": "open",
             "group": "preview"
         }
@@ -12,14 +12,14 @@
     "main": "./dist/browser.js",
 
     "panel": {
-        "title": "i18n:ui-preview.title",
+        "title": "i18n:package-manager.title",
         "main": "./dist/panel.js",
         "icon": "./static/icon.png",
         "min-width": 200,
-        "min-height": 200,
-        "width": 400,
-        "height": 600
+        "min-height": 400,
+        "width": 450,
+        "height": 650
     },
-    "detail": "ui-preview",
-    "author": "cocos 3d"
+    "detail": "A simple package debugger",
+    "author": "Yanna"
 }

@@ -1,0 +1,8 @@
+<div class="package-manager">
+    <div class="search">
+        <ui-input placeholder="Search" @change="query($event)"></ui-input>
+    </div>
+    <div class="pkg-con">
+        <pkg-item v-for="path in packagePath" :path="path"></pkg-item>
+    </div>
+</div>
