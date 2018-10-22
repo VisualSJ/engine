@@ -1,0 +1,72 @@
+<div>
+
+    <cc-dragable
+        name="Content"
+        :dump="target.content"
+    ></cc-dragable>
+
+    <enum
+        name="Size Mode"
+        :dump="target.sizeMode"
+    ></enum>
+
+    <enum
+        name="Direction"
+        :dump="target.direction"
+    ></enum>
+
+    <number
+        name="Scroll Threshold"
+        :dump="target.scrollThreshold"
+    ></number>
+
+    <number
+        name="Auto Page Turning Threshold"
+        :dump="target.autoPageTurningThreshold"
+    ></number>
+
+    <boolean
+        name="Inertia"
+        :dump="target.inertia"
+    ></boolean>
+    
+    <number
+        name="Brake"
+        :dump="target.brake"
+    ></number>
+
+    <boolean
+        name="Elastic"
+        :dump="target.elastic"
+    ></boolean>
+    
+    <number
+        name="Bounce Duration"
+        :dump="target.bounceDuration"
+    ></number>
+
+    <cc-dragable
+        name="Indicator"
+        :dump="target.indicator"
+    ></cc-dragable>
+
+    <number
+        name="Page Turning Speed"
+        :dump="target.pageTurningSpeed"
+    ></number>
+    
+    <number
+        name="Page Turning Event Timing"
+        :dump="target.pageTurningEventTiming"
+    ></number>
+
+    <array-prop
+        :target="target.pageEvents"
+    ></array-prop>
+
+    <boolean
+        name="Cancel Inner Events"
+        :dump="target.cancelInnerEvents"
+    ></boolean>
+
+</div>

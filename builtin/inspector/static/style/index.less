@@ -48,6 +48,13 @@
 .layout.vertical-reverse {
     display: flex;
 }
+.layout.center,
+.layout.center-center {
+    align-items: center;
+}
+.layout.end {
+    align-items: flex-end;
+}
 
 ui-checkbox {
     margin-right: 0.25em;
@@ -94,6 +101,134 @@ ui-prop.vector > div[slot='content'] {
         margin-right: 3px;
     }
 }
+/* -------------- widget start ------------------------------- */
+.cc-widget-container {
+    .h-control-group {
+        height: 26px;
+        position: relative;
+        margin-left: 90px;
+    }
+    .v-control-group {
+        width: 47px;
+        height: 40px;
+    }
+    width: 235px;
+    margin: 0 auto;
+    #upper {
+        margin: 0 auto 12px auto;
+    }
+    #lower {
+        padding-right: 2px;
+    }
+    .h-control-group {
+        height: 26px;
+        position: relative;
+        margin-left: 90;
+    }
+    .v-control-group {
+        width: 47px;
+        height: 40px;
+    }
+    .top-input {
+        position: relative;
+        margin-left: 18px;
+    }
+    .bottom-input {
+        margin-top: 4px;
+    }
+    .right-input {
+        position: relative;
+    }
+    .v-checkbox {
+        margin: 0px;
+    }
+    ui-input {
+        width: 5.4em;
+        margin: 0px;
+    }
+    hr {
+        margin-top: 9px;
+        margin-bottom: 5px;
+    }
+}
+/* -------------- alignment preview start --------------------- */
+.alignment-preview-content {
+    .arrow {
+        position: absolute;
+    }
+    .arrow.left {
+        left: -4px;
+        top: -3px;
+    }
+    .arrow.left:after {
+        border: 4px solid transparent;
+        border-right: 4px solid #ccc;
+        position: absolute;
+        content: ' ';
+    }
+    .arrow.right {
+        right: 4px;
+        top: -3px;
+    }
+    .arrow.right:before {
+        border: 4px solid transparent;
+        border-left: 4px solid #ccc;
+        position: absolute;
+        content: ' ';
+    }
+    .arrow.up {
+        top: -4px;
+        left: -4px;
+    }
+    .arrow.up:after {
+        border: 4px solid transparent;
+        border-bottom: 4px solid #ccc;
+        position: absolute;
+        content: ' ';
+    }
+    .arrow.down {
+        bottom: 4px;
+        left: -4px;
+    }
+    .arrow.down:before {
+        border: 4px solid transparent;
+        border-top: 4px solid #ccc;
+        position: absolute;
+        content: ' ';
+    }
+
+    .h-arrow-line {
+        width: 9px;
+        margin: 0 3px 0 3px;
+        border-top: 1px solid #ccc;
+    }
+    .v-arrow-line {
+        height: 9px;
+        margin: 3px 0 3px 0;
+        border-left: 1px solid #ccc;
+    }
+    #left-arrow {
+        position: absolute;
+        top: 50%;
+        left: -16px;
+    }
+    #right-arrow {
+        position: absolute;
+        top: 50%;
+        right: -16px;
+    }
+    #top-arrow {
+        position: absolute;
+        top: -16px;
+        left: 50%;
+    }
+    #bottom-arrow {
+        position: absolute;
+        left: 50%;
+        bottom: -16px;
+    }
+}
+/* ---------------------- end -------------------------------- */
 
 @import '../iconfont.less';
 @import './asset';

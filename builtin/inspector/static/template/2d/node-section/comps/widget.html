@@ -1,0 +1,105 @@
+<div id="outer" class="cc-widget-container">
+
+    <div id="upper">
+
+        <div class="h-control-group layout horizontal center">
+            <ui-checkbox
+                :value="target.isAlignTop.value"
+                @change="onTopBottomChecked($event, target.isAlignTop)"
+            >Top</ui-checkbox>
+            <ui-input class="top-input small"
+                v-show="checkWidgetInput(target.isAlignTop)"
+                :value="topValue"
+                @confirm="onTopChanged"
+            ></ui-input>
+        </div>
+
+        <div class="layout horizontal center">
+            <div class="v-control-group layout vertical end">
+                <ui-checkbox class="v-checkbox"
+                    :value="target.isAlignLeft.value"
+                    @change="onLeftRightChecked($event, target.isAlignLeft)"
+                >Left</ui-checkbox>
+                <ui-input class="bottom-input small"
+                    v-show="checkWidgetInput(target.isAlignLeft)"
+                    :value="leftValue"
+                    @confirm="onLeftChanged"
+                ></ui-input>
+            </div>
+
+            <alignment-preview
+                :target="target"
+            ></alignment-preview>
+
+            <div class="v-control-group layout vertical">
+                <ui-checkbox class="v-checkbox"
+                    :value="target.isAlignRight.value"
+                    @change="onLeftRightChecked($event, target.isAlignRight)"
+                >Right</ui-checkbox>
+                <ui-input class="bottom-input small"
+                    v-show="checkWidgetInput(target.isAlignRight)"
+                    :value="rightValue"
+                    @confirm="onRightChanged"
+                ></ui-input>
+            </div>
+        </div>
+
+        <div class="h-control-group layout horizontal center">
+             <ui-checkbox
+                :value="target.isAlignBottom.value"
+                @change="onTopBottomChecked($event, target.isAlignBottom)"
+            >Bottom</ui-checkbox>
+            <ui-input class="top-input small"
+                v-show="checkWidgetInput(target.isAlignBottom)"
+                :value="bottomValue"
+                @confirm="onBottomChanged"
+            ></ui-input>
+        </div>
+
+    </div>
+
+    <div class="layout vertical">
+
+        <div class="layout horizontal center">
+            <ui-checkbox
+                :value="target.isAlignHorizontalCenter.value"
+                @change="onHorizontalCenterChecked($event, target.isAlignHorizontalCenter)"
+            >Horizontal Center</ui-checkbox>
+            <span class="flex-1"></span>
+            <ui-input
+                v-show="target.isAlignHorizontalCenter.value === true"
+                :value="horizontalCenterValue"
+                @confirm="onHorizontalCenterChanged"
+            ></ui-input>
+        </div>
+
+        <p style="margin: 3px"></p>
+        
+        <div class="layout horizontal center">
+            <ui-checkbox class="v-checkbox"
+                :value="target.isAlignVerticalCenter.value"
+                @change="onVerticalCenterChecked($event, target.isAlignVerticalCenter)"
+            >Vertical Center</ui-checkbox>
+            <span class="flex-1"></span>
+                <ui-input
+                    v-show="target.isAlignVerticalCenter.value === true"
+                    :value="verticalCenterValue"
+                    @confirm="onVerticalCenterChanged"
+                ></ui-input>
+        </div>
+        
+    </div>
+    
+    <hr />
+
+    <cc-dragable
+        name="target"
+        :dump="target.target"
+    ></cc-dragable>
+    
+    <boolean
+        name="AlignOnce"
+        :dump="target.isAlignOnce"
+    ></boolean>
+
+</div>

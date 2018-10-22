@@ -63,7 +63,7 @@ exports.computed = {
     metaVal: {
         get() {
             if (this.path) {
-                return this.path.split('.').reduce((prev, next) => {
+                return (this.path + '').split('.').reduce((prev, next) => {
                     if (prev) {
                         try {
                             return prev[next];
@@ -77,7 +77,7 @@ exports.computed = {
         },
         set(newVal) {
             if (this.path) {
-                const paths = this.path.split('.');
+                const paths = (this.path + '').split('.');
                 const key = paths.pop();
                 const target = paths.reduce((prev, next) => {
                     if (prev) {

@@ -1,0 +1,40 @@
+<div>
+
+    <enum
+        name="type"
+        :dump="target.type"
+    ></enum>
+
+    <boolean
+        name="inverted"
+        :dump="target.inverted"
+    ></boolean>
+
+    <number
+        v-show="isEllipseType()"
+        name="segements"
+        :dump="target.segements"
+        :min="3"
+    ></number>
+
+    <number
+        v-show="isImageStencilType()"
+        name="alphaThreshold"
+        :dump="target.alphaThreshold"
+    ></number>
+
+    <cc-dragable
+        v-show="isImageStencilType()"
+        name="spriteFrame"
+        :dump="target.spriteFrame"
+    >
+    <div class="horizontal layout end-justified"
+        v-show="target.spriteFrame.value.uuid && isImageStencilType()"
+    >
+        <ui-button
+            @confirm="onAppImageSizeClick"
+        >{{T('resize_to_target')}}</ui-button>
+    </div>
+</cc-dragable>
+
+</div>

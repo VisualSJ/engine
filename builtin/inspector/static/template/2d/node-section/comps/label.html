@@ -1,0 +1,73 @@
+<div>
+
+    <string
+        name="String"
+        :dump="target.string"
+    ></string>
+
+    <enum
+        name="Horizontal Align"
+        :dump="target.horizontalAlign"
+    ></enum>
+
+    <enum
+        name="Vertical Align"
+        :dump="target.verticalAlign"
+    ></enum>
+
+    <number
+        v-show="!hiddenActualFontSize()"
+        name="Actual Font Size"
+        :dump="target.actualFontSize"
+    ></number>
+
+    <number
+        name="Font Size"
+        :dump="target.fontSize"
+    ></number>
+
+    <number
+        v-show="isBMFont()"
+        name="Bm Font Original Size"
+        :dump="target._bmFontOriginalSize"
+    ></number>
+
+    <number
+        name="lineHeight"
+        :dump="target.lineHeight"
+    ></number>
+
+    <number
+        v-show="isBMFont()"
+        name="Spacing X"
+        :dump="target.spacingX"
+    ></number>
+
+    <enum
+        name="Overflow"
+        :dump="target.overflow"
+    ></enum>
+    
+    <boolean
+        v-show="!hiddenWrapText()"
+        name="Enable Wrap Text"
+        :dump="target.enableWrapText"
+    ></boolean>
+
+    <cc-dragable
+        name="Font"
+        :dump="target.font"
+    ></cc-dragable>
+
+    <number
+        v-show="isSystemFont()"
+        name="Font Family"
+        :dump="target.fontFamily"
+    ></number>
+    
+    <boolean
+        name="Use System Font"
+        :dump="target.useSystemFont"
+    ></boolean>
+
+</div>

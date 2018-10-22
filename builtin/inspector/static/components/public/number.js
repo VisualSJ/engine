@@ -7,20 +7,38 @@ exports.template = `
     >
         {{name ? name : 'Unknown'}}
     </div>
-    <div class="value" v-if="dump">
-        <ui-num-input
-            :value="dump.value"
-            :disabled="disabled"
-            @confirm.stop="_onConfirm"
-        ></ui-num-input>
-    </div>
-    <div class="value" v-else>
-        <ui-num-input
-            :value="metaVal"
-            :disabled="disabled"
-            @confirm.stop="_onConfirm"
-        ></ui-num-input>
-    </div>
+    <template v-if="slide || dump.slide">
+        <div class="value" v-if="dump">
+            <ui-slider
+                :value="dump.value"
+                :disabled="disabled"
+                @confirm.stop="_onConfirm"
+            ></ui-slider>
+        </div>
+        <div class="value" v-else>
+            <ui-slider
+                :value="metaVal"
+                :disabled="disabled"
+                @confirm.stop="_onConfirm"
+            ></ui-slider>
+        </div>
+    </template>
+    <template v-else>
+        <div class="value" v-if="dump">
+            <ui-num-input
+                :value="dump.value"
+                :disabled="disabled"
+                @confirm.stop="_onConfirm"
+            ></ui-num-input>
+        </div>
+        <div class="value" v-else>
+            <ui-num-input
+                :value="metaVal"
+                :disabled="disabled"
+                @confirm.stop="_onConfirm"
+            ></ui-num-input>
+        </div>
+    </template>
 </div>
 `;
 
@@ -30,7 +48,8 @@ exports.props = [
     'indent', // 是否需要缩进
     'meta',
     'path',
-    'disabled'
+    'disabled',
+    'slide'
 ];
 
 exports.data = function() {
@@ -48,7 +67,7 @@ exports.computed = {
     metaVal: {
         get() {
             if (this.path) {
-                return this.path.split('.').reduce((prev, next) => {
+                return (this.path + '').split('.').reduce((prev, next) => {
                     if (prev) {
                         try {
                             return prev[next];
@@ -62,7 +81,7 @@ exports.computed = {
         },
         set(newVal) {
             if (this.path) {
-                const paths = this.path.split('.');
+                const paths = (this.path + '').split('.');
                 const key = paths.pop();
                 const target = paths.reduce((prev, next) => {
                     if (prev) {

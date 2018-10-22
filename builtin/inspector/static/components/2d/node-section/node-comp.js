@@ -12,7 +12,17 @@ exports.components = {
     'cc-button': readComponent(__dirname, './comps/button'),
     'cc-camera': readComponent(__dirname, './comps/camera'),
     'cc-blockinputevents': require('./comps/block-input-events'),
-    'cc-editbox': readComponent(__dirname, './comps/editbox')
+    'cc-editbox': readComponent(__dirname, './comps/editbox'),
+    'cc-layout': readComponent(__dirname, './comps/layout'),
+    'cc-pageview': readComponent(__dirname, './comps/pageview'),
+    'cc-toggle': readComponent(__dirname, './comps/toggle'),
+    'cc-videoplayer': readComponent(__dirname, './comps/videoplayer'),
+    'cc-widget': readComponent(__dirname, './comps/widget'),
+
+    'cc-polygoncollider': readComponent(__dirname, './comps/points-base-collider'),
+
+    'cc-label': readComponent(__dirname, './comps/label'),
+    'cc-mask': readComponent(__dirname, './comps/mask')
 };
 
 exports.data = function() {

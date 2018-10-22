@@ -1,0 +1,33 @@
+<div :style="cssContainer">
+      <div :style="cssContainerSize"></div>
+
+      <div :style="[cssLine, cssLineH, cssTopLine]" v-show="target.isAlignTop.value"></div>
+      <div :style="[cssLine, cssLineV, cssLeftLine]" v-show="target.isAlignLeft.value"></div>
+      <div :style="[cssLine, cssLineV, cssRightLine]" v-show="target.isAlignRight.value"></div>
+      <div :style="[cssLine, cssLineH, cssBottomLine]" v-show="target.isAlignBottom.value"></div>
+      <div :style="[cssLine, cssLineV, cssHCLine]" v-show="target.isAlignHorizontalCenter.value"></div>
+      <div :style="[cssLine, cssLineH, cssVCLine]" v-show="target.isAlignVerticalCenter.value"></div>
+
+      <div :style="[cssWidget, alignStyle()]" class="alignment-preview-content">
+        <div id="left-arrow" v-show="target.isAlignLeft.value">
+          <div class="h-arrow-line"></div>
+          <div class="arrow left"></div>
+          <div class="arrow right"></div>
+        </div>
+        <div id="right-arrow" v-show="target.isAlignRight.value">
+          <div class="h-arrow-line"></div>
+          <div class="arrow left"></div>
+          <div class="arrow right"></div>
+        </div>
+        <div id="top-arrow" v-show="target.isAlignTop.value">
+          <div class="v-arrow-line"></div>
+          <div class="arrow up"></div>
+          <div class="arrow down"></div>
+        </div>
+        <div id="bottom-arrow" v-show="target.isAlignBottom.value">
+          <div class="v-arrow-line"></div>
+          <div class="arrow up"></div>
+          <div class="arrow down"></div>
+        </div>
+      </div>
+    </div>
