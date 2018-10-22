@@ -291,6 +291,7 @@ function removeNode(uuid) {
     const node = query(uuid);
     const parent = node.parent;
     parent.removeChild(node);
+    return parent.uuid;
 }
 
 module.exports = {

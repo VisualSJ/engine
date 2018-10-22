@@ -68,6 +68,16 @@ function dumpNode(node) {
 
     const types = {};
     const dump = dumpBackup.dumpNode(types, node);
+    // 补充 children 字段
+    dump.children = {
+        readonly: false,
+        value: node.children.slice()
+    }
+    // 补充 parent 字段
+    dump.parent = {
+        readonly: false,
+        value: { uuid: node.parent ? node.parent.uuid : '' }
+    }
 
     _fillerType(types, dump.__type__, dump);
 
@@ -189,10 +199,45 @@ function restoreProperty(node, path, dump) {
         default:
             property[key] = dump.value;
     }
+
 }
 
-function restoreNode() {
-    // debugger;
+/**
+ * 还原一个节点的全部属性
+ * @param {*} node 
+ * @param {*} dumpdata 
+ */
+function restoreNode(node, dumpdata) {
+    for (const path in dumpdata) {
+        const data = dumpdata[path];
+
+        if (['__type__'].includes(path)) {
+            continue;
+        } else if (path === '__comps__') {
+            data.forEach(compos => {
+                restoreComponent(node, compos);
+            });
+        } else if (path === 'uuid') {
+            if (node.uuid !== data.value) {
+                console.error(`node.uuid is '${node.uuid}' not the same as the data.value '${data.value}'.`);
+            }
+            continue;
+        } else if (path === 'parent') {
+            node.parent = query(data.value.uuid);
+        } else if (path === 'children') {
+            node.children.length = 0;
+            data.value.forEach(uuid => {
+                if (uuid) {
+                    const child = query(uuid);
+                    if (child) {
+                        node.children.push(child);
+                    }
+                }
+            });
+        } else {
+            restoreProperty(node, path, data);
+        }
+    }
 }
 
 module.exports = {

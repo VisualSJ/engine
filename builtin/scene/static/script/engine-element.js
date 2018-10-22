@@ -261,6 +261,61 @@ class View extends window.HTMLElement {
             params: [uuid]
         });
     }
+
+    /**
+     * 操作记录：重置历史记录
+     */
+    async resetHistory(uuid) {
+        return await this.ipc.send('call-method', {
+            module: 'History',
+            handler: 'reset',
+            params: []
+        });
+    }
+
+    /**
+     * 操作记录：保存受影响的 uuid
+     */
+    async recordHistory(uuid) {
+        return await this.ipc.send('call-method', {
+            module: 'History',
+            handler: 'record',
+            params: [uuid]
+        });
+    }
+
+    /**
+     * 操作记录：正式保存一次操作记录
+     */
+    async snapshot() {
+        return await this.ipc.send('call-method', {
+            module: 'History',
+            handler: 'snapshot',
+            params: []
+        });
+    }
+
+    /**
+     * 操作记录：撤销一步操作
+     */
+    async undo() {
+        return await this.ipc.send('call-method', {
+            module: 'History',
+            handler: 'undo',
+            params: []
+        });
+    }
+
+    /**
+     * 操作记录：重做一步操作
+     */
+    async redo() {
+        return await this.ipc.send('call-method', {
+            module: 'History',
+            handler: 'redo',
+            params: []
+        });
+    }
 }
 
 module.exports = View;

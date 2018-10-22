@@ -11,6 +11,7 @@ window.Manager = {
     Ipc: ipc,
     Init: require('./manager/init'),
     Scene: require('./manager/scene'),
+    History: require('./manager/history'),
     get serialize() {
         return this._serialize();
     },

@@ -3,8 +3,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const history = require('./components/history');
-
 window.customElements.define('engine-view', require('../static/script/engine-element.js'));
 
 let isAssetReady: boolean = false;
@@ -43,6 +41,8 @@ export const methods = {
      */
     async openScene(uuid: string) {
         await panel.$.scene.openScene(uuid);
+        // 重置历史操作数据
+        panel.resetHistory();
         Editor.Ipc.sendToAll('scene:ready');
     },
 
@@ -60,7 +60,42 @@ export const methods = {
     async closeScene() {
         await panel.$.scene.closeScene();
         Editor.Ipc.sendToAll('scene:close');
-    }
+    },
+
+    /**
+     * 操作记录：重置历史记录
+     */
+    resetHistory() {
+        panel.$.scene.resetHistory();
+    },
+
+    /**
+     * 操作记录：保存受影响的 uuid
+     */
+    recordHistory(uuid: string) {
+        panel.$.scene.recordHistory(uuid);
+    },
+
+    /**
+     * 操作记录：正式保存一次操作记录
+     */
+    snapshot() {
+        panel.$.scene.snapshot();
+    },
+
+    /**
+     * 操作记录：撤销一步操作
+     */
+    undo() {
+        panel.$.scene.undo();
+    },
+
+    /**
+     * 操作记录：重做一步操作
+     */
+    redo() {
+        panel.$.scene.redo();
+    },
 };
 
 export const messages = {
@@ -166,6 +201,7 @@ export const messages = {
      */
     async 'set-property'(options: SetPropertyOptions) {
         await panel.$.scene.setProperty(options);
+        panel.recordHistory(options.uuid);
         const key = (options.path || '').split('.').pop();
         // 广播节点被修改的消息
         if (key === 'parent') {
@@ -181,6 +217,7 @@ export const messages = {
      */
     async 'insert-array-element'(options: InsertArrayOptions) {
         await panel.$.scene.insertArrayProperty(options);
+        panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -190,6 +227,7 @@ export const messages = {
      */
     async 'move-array-element'(options: MoveArrayOptions) {
         await panel.$.scene.moveArrayElement(options);
+        panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -199,6 +237,7 @@ export const messages = {
      */
     async 'remove-array-element'(options: RemoveArrayOptions) {
         await panel.$.scene.removeArrayElement(options);
+        panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -209,6 +248,7 @@ export const messages = {
      */
     async 'create-node'(options: CreateNodeOptions) {
         const uuid = await panel.$.scene.createNode(options);
+        panel.recordHistory(uuid);
         Editor.Ipc.sendToAll('scene:node-created', uuid);
     },
 
@@ -217,7 +257,8 @@ export const messages = {
      * @param options 删除节点的参数
      */
     async 'remove-node'(options: RemoveNodeOptions) {
-        await panel.$.scene.removeNode(options);
+        const parentUuid = await panel.$.scene.removeNode(options);
+        panel.recordHistory(parentUuid);
         Editor.Ipc.sendToAll('scene:node-removed', options.uuid);
     },
 
@@ -227,6 +268,7 @@ export const messages = {
      */
     async 'create-component'(options: CreateComponentOptions) {
         await panel.$.scene.createComponent(options);
+        panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -236,6 +278,7 @@ export const messages = {
      */
     async 'remove-component'(options: RemoveComponentOptions) {
         await panel.$.scene.removeComponent(options);
+        panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -271,21 +314,21 @@ export const messages = {
      * 保存一步操作记录
      */
     snapshot() {
-        history.save();
+        panel.snapshot();
     },
 
     /**
      * 撤销一步操作
      */
     undo() {
-        history.undo();
+        panel.undo();
     },
 
     /**
      * 重做一步操作
      */
     redo() {
-        history.redo();
+        panel.redo();
     },
 
 };
@@ -312,7 +355,7 @@ export async function ready() {
 /**
  * 检查关闭阶段需要检查是否场景更改了未保存
  */
-export async function beforeClose() {}
+export async function beforeClose() { }
 
 /**
  * 面板关闭的时候，场景也会注销
