@@ -135,6 +135,7 @@ class Camrea {
         this.camera.node.position = this.position;
         this.camera.node.lookAt(this.eye, this.up);
         this.camera._camera.dirty = true;
+        this.camera.beforeDraw && this.camera.beforeDraw();
 
         // 更新设计分辨率框（框绘制的宽度在实际显示时始终要保持1像素）
         this.designResolutionCtx.strokeColor = cc.color('#AA00AA');
