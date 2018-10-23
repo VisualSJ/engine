@@ -27,7 +27,8 @@ function refresh(uuids) {
 
 /**
  * 重置节点树
- * 这个触发的时机在 scene open, 通过 history reset 的时序触发
+ * 这个触发的时机在 scene ready, 通过 history reset 的时序触发
+ * 也在操作记录有截点重置的时候触发
  */
 function reset() {
     dumpTree = {}

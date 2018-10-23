@@ -283,7 +283,10 @@ export const methods = {
             default: name = 'New Node'; break;
         }
 
-        Editor.Ipc.sendToPanel('scene', 'create-node', { // 发送创建节点
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        // 发送创建节点
+        Editor.Ipc.sendToPanel('scene', 'create-node', {
             parent: uuid,
             name,
         });
@@ -322,6 +325,9 @@ export const methods = {
      * @param node
      */
     async ipcDelete(uuid: string) {
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         if (uuid && !vm.selects.includes(uuid)) { // 如果该节点没有被选中，则只是删除此单个
             const node = getValidNode(uuid);
             if (!node) { // 删除的节点不可用，不允许删除
@@ -989,23 +995,25 @@ function scrollIntoView(uuid: string) {
             return;
         }
 
-        expandNode(uuid);
-        vm.changeData();
-        scrollIntoView(uuid);
+        if (expandNode(uuid)) {
+            vm.changeData();
+            scrollIntoView(uuid);
+        }
     }
 }
 
 /**
  * 展开树形节点
  */
-function expandNode(uuid: string) {
+function expandNode(uuid: string): boolean {
     const [node, index, arr, parent] = getGroupFromTree(treeData, uuid);
     if (!node) {
-        return;
+        return false;
     }
     node.isExpand = true;
 
     if (parent && parent.uuid) {
-        expandNode(parent.uuid);
+        return expandNode(parent.uuid);
     }
+    return true;
 }

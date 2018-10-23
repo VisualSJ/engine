@@ -5,7 +5,7 @@ const scene = require('./scene');
 const dump = require('../utils/dump');
 
 let index = -1; // 当前指针
-let method = ''; // 'redo' | 'undo' 已执行过的方法
+let method = 'redo'; // 'redo' | 'undo' 已执行过的方法
 const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
@@ -24,11 +24,16 @@ function record(uuid) {
  */
 function recordSave() {
     if (records.length === 0) {
+        if (index !== steps.length - 1) {
+            dumpnodes.reset(records);
+        }
         return false;
     }
 
     const oldData = dumpnodes.getNodes(records); // 取得旧数据
     const newData = dumpnodes.refresh(records); // 刷新 dumptree, 取得新数据
+
+    records.length = 0;
 
     return {
         undo: oldData,
@@ -58,26 +63,28 @@ function snapshot() {
 
     // 重设指针和方法
     index = steps.length - 1;
-    method = '';
+    method = 'redo';
 }
 
 /**
  * 撤销
  */
 function undo() {
-    if (index === steps.length - 1) {
+    if (records.length !== 0) {
         snapshot();
     }
 
-    if (index < 0) {
-        return;
-    }
-
     if (method === 'undo') {
+        if (index === 0) {
+            return;
+        }
+
         index--;
     } else {
         method = 'undo'
     }
+
+
 
     const state = restore();
 
@@ -88,16 +95,28 @@ function undo() {
             restore();
         }, 500);
     }
+    return state;
 }
 
 /**
  * 重做
  */
 function redo() {
-    if (index === steps.length - 1) {
-        return;
+    if (records.length !== 0) {
+        snapshot();
     }
-    index++;
+
+    if (method === 'redo') {
+        if (index === steps.length - 1) {
+            return;
+        }
+
+        index++;
+    } else {
+        method = 'redo'
+    }
+
+
 
     const state = restore();
 
@@ -108,8 +127,8 @@ function redo() {
             restore();
         }, 500);
     }
+    return state;
 }
-
 
 /**
  * 场景刷新
@@ -132,11 +151,10 @@ function restore() {
         }
     }
 
-    // 保障一次运行
-    setTimeout(() => {
-        isRunning = false;
-        stepData = {};
-    }, 500); // 要比上面 undo, redo 的 setTimeout 时间短，以确保最后一次指令能执行
+    isRunning = false;
+    stepData = {};
+
+    return true;
 }
 
 /**
@@ -144,7 +162,7 @@ function restore() {
  */
 function reset() {
     index = -1;
-    method = '';
+    method = 'redo';
     steps.length = 0;
     clearTimeout(timeId);
     stepData = {};

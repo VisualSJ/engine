@@ -1,7 +1,10 @@
 'use strict';
 
 const dumpBackup = require('./dump-backup');
-const { query } = require('../manager/scene');
+// TODO 这里 dump.js 和 scene.js 有循环引用
+// const {query} = require('../manager/scene');
+let scene;
+
 const { get } = require('lodash');
 
 function dumpComponent() {
@@ -71,7 +74,9 @@ function dumpNode(node) {
     // 补充 children 字段
     dump.children = {
         readonly: false,
-        value: node.children.slice()
+        value: node.children.map(ccNode => {
+            return { value: ccNode.uuid };
+        })
     }
     // 补充 parent 字段
     dump.parent = {
@@ -125,7 +130,7 @@ function restoreProperty(node, path, dump) {
     switch (dump.type) {
         case 'cc.Scene':
         case 'cc.Node':
-            const node = query(dump.value);
+            const node = scene.query(dump.value);
             if (key === 'parent') {
                 property.remove();
                 node.appendChild(property);
@@ -223,21 +228,22 @@ function restoreNode(node, dumpdata) {
             }
             continue;
         } else if (path === 'parent') {
-            node.parent = query(data.value.uuid);
+            node.parent = scene.query(data.value.uuid);
         } else if (path === 'children') {
-            node.children.length = 0;
-            data.value.forEach(uuid => {
-                if (uuid) {
-                    const child = query(uuid);
-                    if (child) {
-                        node.children.push(child);
-                    }
-                }
-            });
+            const uuids = data.value.map(one => one.value);
+            scene.resetNodeChildren(node, uuids);
         } else {
+            if(node instanceof cc.Scene){
+                continue;
+            }
             restoreProperty(node, path, data);
         }
     }
+}
+
+// TODO 临时解决 query 不存在的问题
+function setScene(obj) {
+    scene = obj;
 }
 
 module.exports = {
@@ -246,5 +252,6 @@ module.exports = {
     dumpNode,
     restoreComponent,
     restoreProperty,
-    restoreNode
+    restoreNode,
+    setScene
 };

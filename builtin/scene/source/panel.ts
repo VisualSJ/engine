@@ -86,15 +86,21 @@ export const methods = {
     /**
      * 操作记录：撤销一步操作
      */
-    undo() {
-        panel.$.scene.undo();
+    async undo() {
+        const result = await panel.$.scene.undo();
+        if (result === true) {
+            Editor.Ipc.sendToAll('scene:refresh');
+        }
     },
 
     /**
      * 操作记录：重做一步操作
      */
-    redo() {
-        panel.$.scene.redo();
+    async redo() {
+        const result = await panel.$.scene.redo();
+        if (result === true) {
+            Editor.Ipc.sendToAll('scene:refresh');
+        }
     },
 };
 
@@ -247,9 +253,9 @@ export const messages = {
      * @return {Stirng} 返回新建的节点的 uuid
      */
     async 'create-node'(options: CreateNodeOptions) {
-        const uuid = await panel.$.scene.createNode(options);
-        panel.recordHistory(uuid);
-        Editor.Ipc.sendToAll('scene:node-created', uuid);
+        const rt = await panel.$.scene.createNode(options);
+        panel.recordHistory(rt.parentUuid);
+        Editor.Ipc.sendToAll('scene:node-created', rt.uuid);
     },
 
     /**
