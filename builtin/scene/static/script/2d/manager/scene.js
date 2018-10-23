@@ -14,11 +14,15 @@ let uuid2node = {};
  * @param {*} file
  */
 async function open(uuid) {
-    cc.view.resizeWithBrowserSize(true);
+    // cc.view.resizeWithBrowserSize(true);
 
     if (uuid) {
         // 加载指定的 uuid
-        await promisify(cc.director._loadSceneByUuid)(uuid);
+        try {
+            await promisify(cc.director._loadSceneByUuid)(uuid);
+        } catch (error) {
+            console.error(error);
+        }
     } else {
         const scene = new cc.Scene();
         const canvas = new cc.Node('Canvas');
@@ -28,7 +32,7 @@ async function open(uuid) {
     }
 
     // 设置摄像机颜色
-    cc.Camera.main.backgroundColor = cc.color(0, 0, 0, 0);
+    // cc.Camera.main.backgroundColor = cc.color(0, 0, 0, 0);
 
     // 爬取节点树上的所有节点数据
     await nodeUtils.walk(uuid2node, cc.director._scene);
@@ -144,18 +148,6 @@ function setProperty(uuid, path, dump) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
     }
-    // 因为 path 内的 __comps__ 实际指向的是 _components
-    // path = path.replace('__comps__', '_components');
-    // const keys = (path || '').split('.');
-    // const key = keys.pop();
-    // path = keys.join('.');
-
-    // 找到指定的 data 数据
-    // const data = path ? get(node, path) : node;
-    // if (!data) {
-    //     console.warn(`Set property failed: ${uuid} does not exist`);
-    //     return;
-    // }
 
     // 恢复数据
     dumpUtils.restoreProperty(node, path, dump);

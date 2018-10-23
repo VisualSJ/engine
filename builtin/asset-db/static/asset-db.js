@@ -164,7 +164,7 @@ Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
         return event.reply(null, '');
     }
 
-    event.reply(null, join(db.options.target, unescape(uri.path) || ''));
+    event.reply(null, join(db.options.target, unescape(uri.path || '')));
 });
 
 // 返回一个 db 的具体数据

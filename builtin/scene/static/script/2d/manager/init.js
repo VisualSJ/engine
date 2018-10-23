@@ -95,12 +95,12 @@ function utils(path) {
     };
 
     // 打印日志
-    cc.log = function (...args) {
+    cc.log = function(...args) {
         console.log(...args);
     };
 
     // 警告处理
-    cc.warn = function (...args) {
+    cc.warn = function(...args) {
         console.warn(...args);
     };
 }
@@ -109,8 +109,8 @@ function utils(path) {
  * 初始化编辑器内使用的 camera
  */
 async function system() {
-    // await camera.init();
     require('../polyfills');
+    await camera.init();
 }
 
 module.exports = {

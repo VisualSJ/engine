@@ -1,5 +1,19 @@
 'use strict';
 
+const assetMap = {
+    get scene() {
+        return cc.SceneAsset;
+    },
+
+    get texture() {
+        return cc.Texture2D;
+    },
+
+    get 'sprite-frame'() {
+        return cc.SpriteFrame;
+    },
+};
+
 function getCtor(importer) {
 
     switch (importer) {
@@ -14,4 +28,5 @@ function getCtor(importer) {
 
 module.exports = {
     getCtor,
+    assetMap,
 };
