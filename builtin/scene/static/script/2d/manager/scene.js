@@ -2,6 +2,7 @@
 
 const nodeUtils = require('../utils/node');
 const dumpUtils = require('../utils/dump');
+const camera = require('./camera');
 
 const ipc = require('../../ipc/webview');
 const { promisify } = require('util');
@@ -10,10 +11,10 @@ const { get } = require('lodash');
 let uuid2node = {};
 
 /**
- * 回收站，标记节点的 uuid, 
+ * 回收站，标记节点的 uuid,
  * 如 trash[uuid] = true;
  * 从回收站被重新使用后，删除该标记， trash[uuid] = undefined;
- *  */
+ */
 const trash = {};
 
 /**
@@ -38,8 +39,7 @@ async function open(uuid) {
         cc.director.runSceneImmediate(scene);
     }
 
-    // 设置摄像机颜色
-    // cc.Camera.main.backgroundColor = cc.color(0, 0, 0, 0);
+    camera.setSize(cc.Canvas.instance._designResolution);
 
     // 爬取节点树上的所有节点数据
     await nodeUtils.walk(uuid2node, cc.director._scene);
@@ -289,7 +289,7 @@ async function createNode(uuid, name = 'New Node', data) {
     return {
         uuid: node._id,
         parentUuid: node._parent._id
-    }
+    };
 }
 
 /**
@@ -313,16 +313,16 @@ function removeNode(uuid) {
  */
 function resetNodeChildren(parentNode, childrenIds) {
     // 全部移除
-    const currents = parentNode.children.map(node => node.uuid);
+    const currents = parentNode.children.map((node) => node.uuid);
 
-    currents.forEach(uuid => {
+    currents.forEach((uuid) => {
         const node = query(uuid);
         parentNode.removeChild(node);
         addToTrash(uuid);
     });
 
     // 重新添加
-    childrenIds.forEach(uuid => {
+    childrenIds.forEach((uuid) => {
         const node = query(uuid);
         if (node) {
             parentNode.addChild(node);
@@ -333,7 +333,7 @@ function resetNodeChildren(parentNode, childrenIds) {
 
 /**
  * 节点移到回收站
- * @param {} uuid 
+ * @param {} uuid
  */
 function addToTrash(uuid) {
     trash[uuid] = true;
@@ -341,12 +341,11 @@ function addToTrash(uuid) {
 
 /**
  * 节点从回收站移除
- * @param {} uuid 
+ * @param {} uuid
  */
 function removeFromTrash(uuid) {
     trash[uuid] = undefined;
 }
-
 
 module.exports = {
     get uuid2node() {

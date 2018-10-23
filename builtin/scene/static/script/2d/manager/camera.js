@@ -72,6 +72,12 @@ class Camrea {
         this.apply();
     }
 
+    setSize(size) {
+        this.size.width = size.width;
+        this.size.height = size.height;
+        this.apply();
+    }
+
     setPolicy() {
         const ProportionalToScene = cc.ContainerStrategy.extend({
             apply: function(view, designedResolution) {
@@ -115,6 +121,9 @@ class Camrea {
      * 应用摄像机参数，以及重绘边框网格
      */
     apply() {
+        if (!this.camera) {
+            return;
+        }
         const bcr = document.body.getBoundingClientRect();
         const scale = this.scale || 0.05;
         const size = this.size;
@@ -141,7 +150,7 @@ class Camrea {
         this.designResolutionCtx.strokeColor = cc.color('#AA00AA');
         this.designResolutionCtx.lineWidth = 1 / scale;
         this.designResolutionCtx.clear();
-        this.designResolutionCtx.rect(0, 0, this.size.width, this.size.height);
+        this.designResolutionCtx.rect(0, 0, size.width, size.height);
         this.designResolutionCtx.stroke();
 
         ///////////
@@ -149,13 +158,13 @@ class Camrea {
 
         // 摄像机看到的左下角点的坐标
         const startPoint = {
-            x: (bcr.width - this.size.width * this.scale) / 2 / this.scale + this.offset.x,
-            y: (bcr.height - this.size.height * this.scale) / 2 / this.scale + this.offset.y,
+            x: (bcr.width - size.width * this.scale) / 2 / this.scale + this.offset.x,
+            y: (bcr.height - size.height * this.scale) / 2 / this.scale + this.offset.y,
         };
 
         const endPoint = {
-            x: (bcr.width - this.size.width * this.scale) / 2 / this.scale - this.offset.x + this.size.width,
-            y: (bcr.height - this.size.height * this.scale) / 2 / this.scale - this.offset.y + this.size.height,
+            x: (bcr.width - size.width * this.scale) / 2 / this.scale - this.offset.x + size.width,
+            y: (bcr.height - size.height * this.scale) / 2 / this.scale - this.offset.y + size.height,
         };
 
         this.gridCtx.lineWidth = 1 / scale;
@@ -235,13 +244,14 @@ class Camrea {
      */
     adjustToCenter(margin) {
         const bcr = document.body.getBoundingClientRect();
+        const size = this.size;
 
-        if (this.size.width / this.size.height < bcr.width / bcr.height) {
+        if (size.width / size.height < bcr.width / bcr.height) {
             // height
-            this.scale = (bcr.height - margin * 2) / this.size.height;
+            this.scale = (bcr.height - margin * 2) / size.height;
         } else {
             // width
-            this.scale = (bcr.width - margin * 2) / this.size.width;
+            this.scale = (bcr.width - margin * 2) / size.width;
         }
 
         this.apply();
@@ -251,8 +261,6 @@ class Camrea {
 const camera = module.exports = new Camrea();
 
 document.addEventListener('mousewheel', (event) => {
-    const bcr = document.body.getBoundingClientRect();
-
     let scale = Math.pow(2, event.wheelDelta * 0.002) * camera.scale;
     if (scale < 0.05) {
         scale = 0.05;
@@ -291,6 +299,10 @@ document.addEventListener('mousedown', (event) => {
 });
 
 window.addEventListener('resize', () => {
+    if (!window.cc) {
+        return;
+    }
+
     const bcr = document.body.getBoundingClientRect();
     cc.view.setCanvasSize(bcr.width, bcr.height);
     cc.view.setDesignResolutionSize(bcr.width, bcr.height, camera.policy);
@@ -298,4 +310,4 @@ window.addEventListener('resize', () => {
     camera.apply();
 });
 
-// window.camera = camera;
+window.camera = camera;

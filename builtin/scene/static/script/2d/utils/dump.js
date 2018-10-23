@@ -74,15 +74,15 @@ function dumpNode(node) {
     // 补充 children 字段
     dump.children = {
         readonly: false,
-        value: node.children.map(ccNode => {
+        value: node.children.map((ccNode) => {
             return { value: ccNode.uuid };
         })
-    }
+    };
     // 补充 parent 字段
     dump.parent = {
         readonly: false,
         value: { uuid: node.parent ? node.parent.uuid : '' }
-    }
+    };
 
     _fillerType(types, dump.__type__, dump);
 
@@ -194,6 +194,9 @@ function restoreProperty(node, path, dump) {
             property[key] = new cc.Color(r, g, b, 255);
             property.opacity = Math.floor(opacity * 255);
             break;
+        case 'cc.SpriteFrame':
+        case 'cc.Texture2D':
+        case 'cc.Texture':
         case 'cc.Asset':
             cc.AssetLibrary.loadAsset(dump.value.uuid || '', (err, asset) => {
                 property[key] = asset;
@@ -209,8 +212,8 @@ function restoreProperty(node, path, dump) {
 
 /**
  * 还原一个节点的全部属性
- * @param {*} node 
- * @param {*} dumpdata 
+ * @param {*} node
+ * @param {*} dumpdata
  */
 function restoreNode(node, dumpdata) {
     for (const path in dumpdata) {
@@ -219,7 +222,7 @@ function restoreNode(node, dumpdata) {
         if (['__type__'].includes(path)) {
             continue;
         } else if (path === '__comps__') {
-            data.forEach(compos => {
+            data.forEach((compos) => {
                 restoreComponent(node, compos);
             });
         } else if (path === 'uuid') {
@@ -230,10 +233,10 @@ function restoreNode(node, dumpdata) {
         } else if (path === 'parent') {
             node.parent = scene.query(data.value.uuid);
         } else if (path === 'children') {
-            const uuids = data.value.map(one => one.value);
+            const uuids = data.value.map((one) => one.value);
             scene.resetNodeChildren(node, uuids);
         } else {
-            if(node instanceof cc.Scene){
+            if (node instanceof cc.Scene) {
                 continue;
             }
             restoreProperty(node, path, data);

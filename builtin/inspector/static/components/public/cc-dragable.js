@@ -9,17 +9,19 @@ exports.template = `
     </div>
     <div class="value" v-if="dump">
         <ui-drag-object
-            :type="dump.type"
-            :value="dump.value.uuid"
+            :dropable="dump.type"
+            :value="dump.value.uuid || false"
             :disabled="disabled"
+            @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
         <ui-drag-object
             :type="type"
-            :value="metaVal"
+            :value="metaVal || false"
             :disabled="disabled"
+            @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
     </div>
@@ -102,7 +104,7 @@ exports.methods = {
     _onConfirm(event) {
         const uuid = event.target.value;
         if (this.dump) {
-            dump.value.uuid = uuid;
+            this.dump.value.uuid = uuid;
         } else {
             this.metaVal = uuid;
         }

@@ -5,6 +5,7 @@ const { readFileSync } = require('fs');
 const { join } = require('path');
 
 const create = require('../utils/create');
+const types = require('../utils/types');
 
 const openUtils = require('../utils/open');
 
@@ -80,6 +81,13 @@ exports.watch = {
 };
 
 exports.methods = {
+    /**
+     * 翻译类型
+     * @param {*} type
+     */
+    translateType(type) {
+        return types.map[type] || 'asset';
+    },
 
     /**
      * 弹出右键菜单
