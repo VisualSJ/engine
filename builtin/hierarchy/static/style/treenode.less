@@ -4,8 +4,8 @@
 .treenode {
     display: block;
     position: relative;
-    padding: 1px 0 2px 0;
-    height: 17px;
+    height: 20px;
+    line-height: 20px;
     font-size: 12px;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -42,15 +42,16 @@
         }
     }
     .arrow {
-        height: 14px;
-        width: 17px;
         text-align: center;
         cursor: pointer;
+        font-size: 0.8em;
+        display: inline-block;
+
         &+.name {
-            margin-left: 0;
+            margin-left: 3px;
         }
         &+.rename {
-            margin-left: 0;
+            margin-left: 3px;
         }
     }
     .lock {
@@ -82,15 +83,15 @@
     }
     .rename {
         font-size: 12px;
-        outline: 1px solid @blue;
-        outline-offset: 1px;
+        outline: none;
         background-color: #252525;
-        border: none;
+        border: 1px solid @blue;
         color: #ccc;
         padding-left: 4px;
         width: ~'calc(100% - 30px)';
         margin-left: 19px;
-
+        position: relative;
+        left: -4px;
     }
 }
 

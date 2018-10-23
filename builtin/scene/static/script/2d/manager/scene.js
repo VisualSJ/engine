@@ -81,10 +81,17 @@ function queryNodeTree(uuid) {
      * @param node
      */
     const step = (node) => {
+
+        if (!node.showInEditor) {
+            return null;
+        }
+
+        const children = node._children.map(step).filter(Boolean);
+
         return {
             name: node.name,
             uuid: node._id,
-            children: node._children ? node._children.map(step) : null
+            children: children.length ? children : null,
         };
     };
 

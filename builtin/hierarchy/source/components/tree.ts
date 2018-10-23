@@ -924,7 +924,7 @@ function changeNodeData(newData: any) {
     });
 
     // 属性值是对象类型的修改， 如 children
-    const childrenKeys: string[] = node.children.map((one: ItreeNode) => one.uuid);
+    const childrenKeys: string[] = node.children ? node.children.map((one: ItreeNode) => one.uuid) : [];
     const newChildren: ItreeNode[] = [];
     newData.children.value.forEach((json: any, i: number) => {
         const id: string = json.value;
