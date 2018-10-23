@@ -1,0 +1,20 @@
+{
+    "--focus-c": "#fd942b",
+    "--hover-c": "#d1d1d1",
+    "--disabled-c": "#7d7d7d",
+    "--border-c": "#999",
+    "--border-dark-c": "#171717",
+    "--main-dark-bg": "#333",
+    "--main-bg": "#474747",
+    "--default-text-c": "#bdbdbd",
+  
+    "--red-c": "#FF8080",
+    "--green-c": "#5ADD94",
+    "--blue-c": "#3d85c6",
+  
+    "--border-radius-n": "0.25em",
+    "--opacity-n": "0.6",
+  
+    "--image-bg": "linear-gradient(#585858, #444)",
+    "--image-light-bg": "linear-gradient(#626262, #4e4e4e)"
+}

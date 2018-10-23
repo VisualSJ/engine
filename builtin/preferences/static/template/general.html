@@ -23,4 +23,14 @@
                 ></ui-num-input>
             </div>
         </div>
+
+        <div>
+            <div class="name">{{t('theme')}}</div>
+            <div class="value">
+                <ui-select :value="general.theme || 'default'" @confirm="_onGeneralChanged($event, 'theme')">
+                    <option value="default">default</option>
+                    <option value="light">light</option>
+                </ui-select>
+            </div>
+        </div>
 </div>

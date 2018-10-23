@@ -62,6 +62,7 @@ interface Panel {
 
 interface Theme {
     use: Function;
+    useColor: Function;
 }
 
 interface Ipc {

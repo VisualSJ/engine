@@ -36,6 +36,9 @@ exports.methods = {
             case 'step':
                 Editor.UI.NumInput.updateStep(event.target.value);
                 break;
+            case 'theme':
+                Editor.Theme.useColor(event.target.value);
+                break;
         }
     },
 };
