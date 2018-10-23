@@ -14,7 +14,7 @@ const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
 
 if (!fse.existsSync(filePath)) {
     const obj = {recentProPath: ''};
-    fse.writeJsonSync(filePath, obj, 'utf8');
+    fse.outputJSONSync(filePath, obj, 'utf8');
 }
 const dashProfile = profile.load('profile://global/editor/dashboard.json');
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/template.html'), 'utf-8');
