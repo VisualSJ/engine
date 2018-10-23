@@ -20,6 +20,9 @@ function arrayToTree(array, cache = {}) {
             // 根据搜索路径，补全路径上缺失的所有数据
             data = assets;
             for (const name of paths) {
+                if (!name) {
+                    continue;
+                }
                 // 如果当前的路径不存在，则生成默认的路径
                 data = data.subAssets[name] = data.subAssets[name] || { subAssets: {}, };
             }

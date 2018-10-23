@@ -92,7 +92,12 @@ exports.generateTemplate = generateTemplate;
  * 创建文件的菜单
  */
 exports.popup = async function(x, y, uuid) {
-    const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    let info;
+    try {
+        info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid) || {};
+    } catch (error) {
+        info = {};
+    }
     return new Promise((resolve) => {
         Editor.Menu.popup({
             x, y,

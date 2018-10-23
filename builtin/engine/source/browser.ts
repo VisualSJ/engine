@@ -100,7 +100,7 @@ export async function load() {
 
     if (info.compile) {
 
-        if (fs.existsSync(info.path)) {
+        if (!fs.existsSync(info.path)) {
             return console.warn('engine is not exists.');
         }
 
