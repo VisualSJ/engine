@@ -1,0 +1,29 @@
+<ui-drag-area class="asset-tree" dropable="asset,file"
+    @scroll="_onTreeScroll($event)"
+    @drop="_onTreeDrop($event)"
+    @click="_onTreeClick($event)"
+>
+
+    <div class="content"
+        :style="contentStyle"
+    >
+        <div
+            :style="`transform: translate(0, ${index*20}px);`"
+        >
+            <asset-item
+                v-for="item in list"
+                :selects="selects"
+                :node="item"
+                :fold="fold"
+                :copy="copy"
+                :rename="rename"
+                :filter="filter"
+            ></asset-item>
+        </div>
+        
+    </div>
+
+    <div class="mask"
+        :style="maskStyle"
+    ></div>
+</ui-drag-area>

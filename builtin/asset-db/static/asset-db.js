@@ -79,7 +79,7 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
     AssetInfo.dist = info.dist;
     AssetInfo.utils = info.utils;
 
-    Manager._serialize = function () {
+    Manager._serialize = function() {
         return require(info.utils + '/serialize');
     };
 
@@ -288,6 +288,9 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
     await waitReady();
 
     const assetInfo = queryAsset(uuid);
+    if (!assetInfo) {
+        return event.reply(null, null);
+    }
     const asset = assetInfo.asset;
     if (!asset) {
         return event.reply(new Error('File does not exist.'), null);

@@ -1,0 +1,66 @@
+.asset-item {
+    display: flex;
+    height: 20px;
+    line-height: 20px;
+    overflow: hidden;
+    font-size: 12px;
+    padding: 0 4px;
+    user-select: none;
+    cursor: default;
+
+    & > .fold {
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        transform: rotate(90deg);
+        visibility: hidden;
+
+        & > i {
+            font-size: 0.8em;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        &[fold] {
+            transform: rotate(0deg);
+        }
+
+        &[folder] {
+            visibility: visible;
+        }
+    }
+
+    &[active] {
+        background: #059;
+    }
+
+    & > .name {
+        flex: 1;
+        display: flex;
+
+        & > .asset-icon {
+            // vertical-align: middle;
+
+            & > img {
+                position: relative;
+                top: 1px;
+                width: 12px;
+            }
+        }
+
+        & > .text {
+            padding: 0 4px;
+        }
+
+        & > input {
+            line-height: 20px;
+            border: 1px solid #09f;
+            padding: 0 3px;
+            background: #252525;
+            outline: none;
+            font-size: 12px;
+            color: #fff;
+            flex: 1;
+        }
+    }
+}

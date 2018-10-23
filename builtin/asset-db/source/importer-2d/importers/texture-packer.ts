@@ -108,7 +108,7 @@ export default class TexturePackerImporter extends Importer {
 
             for (const key of keys) {
                 const child = await this.createSubSpriteFrame(asset, key, data.frames[key], info);
-                child.userData.rawTextureUuid = textureUuid;
+                child.userData.textureUuid = textureUuid;
             }
 
             const packer = this.createSpriteAtlas(asset);

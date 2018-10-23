@@ -1,126 +1,71 @@
-@import '../iconfont.less';
-@drag-bgcolor: #0c8a0c;
+@import './icon.less';
+
 :host {
-    position: relative;
     display: flex;
-    color: #ccc;
-    .loading {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 100;
-        &.center {
-            margin: auto;
-        }
-        ui-loading {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            margin: auto;
-            width: 18px;
-            height: 18px;
-        }
-    }
-    .content {
+
+    & > .assets {
         flex: 1;
         display: flex;
         flex-direction: column;
-    }
-}
-
-.tools {
-    position: relative;
-    display: flex;
-    flex: none;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 2px;
-    overflow: hidden;
-    font-size: 12px;
-    background-color: #474747;
-    color: #bdbdbd;
-    white-space: nowrap;
-    [class^="i-"],
-    [class*=" i-"] {
-        margin: 0 2px;
-        border-radius: 2px;
-        cursor: pointer;
-        height: 20px;
-        width: 20px;
-        line-height: 20px;
-        text-align: center;
-        transition: all .2s ease;
         overflow: hidden;
-        &:hover {
-            background-color: #666;
-        }
-    }
-    >ui-input {
-        flex: 1;
-        margin: 0 4px;
-        font-size: 11px;
-    }
-}
 
-.viewBox {
-    flex: 1;
-    position: relative;
-    border: 1px solid #171717;
-    overflow-x: hidden;
-    overflow-y: auto;
-    box-shadow: inset 0 0 8px 2px rgba(0, 0, 0, 0.2);
-    background-color: #333;
-    .scrollBar {
-        position: absolute;
-        right: -12px;
-        top: 0;
-        z-index: 2;
-        width: 12px;
-        height: 0;
-        overflow: auto;
-    }
-    .dirBox {
-        opacity: 0;
-        position: absolute;
-        z-index: 0;
-        pointer-events: none;
-        width: 100%;
-        border-left: 3px solid @drag-bgcolor;
-        border-right: 3px solid @drag-bgcolor;
-        border-bottom: 3px solid @drag-bgcolor;
-        box-sizing: border-box;
-        transition: 0.3s all;
-        transition-delay: 0.1s;
-        &:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        & > header {
+            margin: 2px 0 4px 0;
+            display: flex;
+    
+            & > i {
+                padding: 2px 8px;
+                cursor: pointer;
+                line-height: 18px;
+            }
+    
+            & > ui-input {
+                flex: 1;
+                margin: 0 5px;
+            }
+        }
+    
+        & > section {
+            position: relative;
+            flex: 1;
+            background: #333;
+            border: 1px solid #222;
+            overflow: hidden;
+    
+            & > .loading {
+                position: absolute;
+                background: #333;
+                width: 100%;
+                height: 100%;
+    
+                & > ui-loading {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    margin: -11px;
+                }
+            }
+        }
+    
+        & > footer {
             height: 20px;
-            background-color: @drag-bgcolor;
+            line-height: 22px;
+            padding: 0 6px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            cursor: default;
         }
     }
+
 }
 
-.sourcepath{
-    position: relative;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 2px;
-    overflow: hidden;
-    font-size: 11px;
-    background-color: #474747;
-    color: #bdbdbd;
-    min-height: 20px;
-    word-break: break-all;
-}
+@import './asset-tree.less';
+@import './asset-item.less';
 
-@import './tree';
+.i-javascript { color: rgb(239, 224, 64); }
+.i-image{ color: rgb(157, 113, 179); }
+.i-json { color: rgb(217, 207, 104); }
+.i-typescript { color: rgb(91, 154, 186); }
+.i-folder { color: rgb(43, 131, 211); }
+.i-zitigui-xianxing { color: rgb(144, 195, 70); }

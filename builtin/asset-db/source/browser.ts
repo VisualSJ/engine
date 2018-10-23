@@ -155,7 +155,7 @@ module.exports = {
             }
 
             // 返回插入的文件地址
-            return 'db://' + relative(Editor.Project.path, file);
+            return 'db://' + relative(Editor.Project.path, file).replace(/\\/g, '/');
         },
 
         /**
@@ -204,7 +204,7 @@ module.exports = {
             });
 
             // 返回插入的文件地址
-            return 'db://' + relative(Editor.Project.path, to);
+            return 'db://' + relative(Editor.Project.path, to).replace(/\\/g, '/');
         },
 
         /**
@@ -238,6 +238,14 @@ module.exports = {
             const name = basename(assets.source);
             let dest = join(assets.target, name);
             dest = getName(dest); // 避免目标位置上已有相同名称的文件
+
+            if (existsSync(dest + '.meta')) {
+                await remove(dest + '.meta');
+            }
+            if (existsSync(dest)) {
+                await remove(dest);
+            }
+
             move(assets.source + '.meta', dest + '.meta');
             move(assets.source, dest);
         },

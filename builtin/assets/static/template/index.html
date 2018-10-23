@@ -1,38 +1,54 @@
-<div class="content">
+<div class="assets">
 
-    <section class="loading center" v-if="!ready">
-        <ui-loading></ui-loading>
-    </section>
-
-    <div class="tools">
+    <header>
         <i class="i-add"
-            @click="popupNew($event)"
+            @click="_onCreateClick($event)"
         ></i>
-        <ui-input tabindex="-1" ref="search"></ui-input>
-        <i class="expand"
-            :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
-            @click="allToggle"
+        <ui-input tabindex="-1" ref="filter"
+            :placeholder="t('search_placeholder', language)"
+            @keydown.stop=""    
+            @change="_onFilterChanged($event)"
+        ></ui-input>
+        <i class="i-full"
+            v-if="_getFold()"
+            @click="_onFoldClick($event, true)"
         ></i>
-        <i class="i-refresh"
-            @click="refresh"
+        <i class="i-full-over"
+            v-else
+            @click="_onFoldClick($event, false)"
         ></i>
-    </div>
-
-    <div class="viewBox" ref="viewBox"
-        @mousedown="popupContextMenu($event)"
-    >
-        <tree ref="tree"
-        ></tree>
-        <div class="dirBox" 
-            v-if="dirBox!==false"
-            :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
+        <!-- <i class="i-refresh"></i> -->
+    </header>
+    
+    <section ref="content">
+    
+        <!-- 等待数据使用的菊花标 -->
+        <div class="loading"
+            :hidden="!loading"
         >
+            <ui-loading></ui-loading>
         </div>
-        <div class=scrollBar
-            :style="{ height: treeHeight + 'px'}"
-        ></div>
-    </div>
-    <div class="sourcepath">
-        {{current && current.source}}
-    </div>
+    
+        <!-- 实际使用的树结构 -->
+        <asset-tree ref="tree"
+            :list="list"
+            :fold="fold"
+            :total="total"
+            :index="index"
+            :length="length"
+            :selects="selects"
+            :copy="copy"
+            :rename="rename"
+            :filter="filter"
+
+            :bindex="bindex"
+            :blength="blength"
+        ></asset-tree>
+    </section>
+    
+    <footer
+        :title="info"
+    >
+        {{info}}
+    </footer>
 </div>

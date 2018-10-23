@@ -31,7 +31,8 @@ interface I18n {
     t: Function;
     switch: Function;
     current: Function;
-    on: Function
+    on: Function;
+    removeListener: Function;
 }
 
 interface Menu {

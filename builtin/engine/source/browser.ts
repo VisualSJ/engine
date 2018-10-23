@@ -99,6 +99,11 @@ export async function load() {
     const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
 
     if (info.compile) {
+
+        if (fs.existsSync(info.path)) {
+            return console.warn('engine is not exists.');
+        }
+
         const buildEngine = require('../static/utils/quick-compile/build-engine');
         compiler = await new Promise((resolve) => {
             const engineCompiler = buildEngine({
