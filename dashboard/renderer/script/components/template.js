@@ -17,6 +17,7 @@ if (!fse.existsSync(filePath)) {
     fse.outputJSONSync(filePath, obj, 'utf8');
 }
 const dashProfile = profile.load('profile://global/editor/dashboard.json');
+
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/template.html'), 'utf-8');
 
 exports.props = [
