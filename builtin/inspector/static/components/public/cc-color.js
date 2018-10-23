@@ -13,6 +13,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onConfirm($event)"
         ></ui-color>
+        <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
         <ui-color
@@ -20,6 +21,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onConfirm($event)"
         ></ui-color>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;

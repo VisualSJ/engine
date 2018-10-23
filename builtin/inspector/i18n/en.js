@@ -62,5 +62,57 @@ module.exports = {
         scripts: 'Add Custom Component',
         collider: 'Add Collider Component',
         physics: 'Add Physics Component'
+    },
+    collider: {
+        editing: 'Edit this collider component',
+        category: 'Collider component category',
+        mask: 'The collider mask can collide with this collider',
+        regenerate_points: 'Regenerate Points'
+    },
+    particle_system: {
+        preview: 'Play particle in edit mode',
+        custom: 'If set custom to true, then use custom properties insteadof read particle file',
+        file: 'The plist file',
+        spriteFrame: 'SpriteFrame of Particle System',
+        texture: 'Texture of Particle System, readonly, please use spriteFrame to setup new texture',
+        particleCount: 'Current quantity of particles that are being simulated',
+        srcBlendFactor: 'Specify the source Blend Factor',
+        dstBlendFactor: 'Specify the destination Blend Factor',
+        playOnLoad: 'If set to true, the particle system will automatically start playing on onLoad',
+        autoRemoveOnFinish: 'Indicate whether the owner node will be auto-removed when it has no particles left',
+        duration: 'How many seconds the emitter wil run. -1 means forever',
+        emissionRate: 'Emission rate of the particles',
+        life: 'Life and variation of each particle setter',
+        totalParticles: 'Maximum particles of the system',
+        startColor: 'Start color of each particle',
+        startColorVar: 'Variation of the start color',
+        endColor: 'Ending color of each particle',
+        endColorVar: 'Variation of the end color',
+        angle: 'Angle and variation of each particle setter',
+        startSize: 'Start size and variation in pixels of each particle',
+        endSize: 'End size and variation in pixels of each particle',
+        startSpin: 'Start angle and variation of each particle',
+        endSpin: 'End angle and variation of each particle',
+        sourcePos: 'Source position of the emitter',
+        posVar: 'Variation of source position',
+        positionType: 'Particles movement type',
+        emitterMode: 'Particles emitter modes',
+        gravity: 'Gravity of the emitter',
+        speed: 'Speed and variation of the emitter',
+        tangentialAccel: 'Tangential acceleration and variation of each particle. Only available in Gravity mode ',
+        radialAccel: 'Acceleration and variation of each particle. Only available in Gravity mode',
+        rotationIsDir:
+            'Indicate whether the rotation of each particle equals to its direction. Only available in Gravity mode',
+        startRadius: 'Starting radius and variation of the particles. Only available in Radius mode',
+        endRadius: 'Ending radius and variation of the particles. Only available in Radius mode',
+        rotatePerS: `Number of degress to rotate a particle around the source pos per second and variation.
+            Only available in Radius mode`
+    },
+    particle: {
+        export_title: 'Export custom particle data to plist file.',
+        export: 'Export',
+        export_error: 'This resource does not support exports outside of the project',
+        sync: 'Sync',
+        sync_tips: 'Synchronize the parameters in the File to Custom'
     }
 };

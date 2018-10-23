@@ -141,6 +141,113 @@ exports.methods = {
                         }
                     ]
                 },
+
+                {
+                    label: T('component', 'physics'),
+                    submenu: [
+                        {
+                            label: 'Collider',
+                            submenu: [
+                                {
+                                    label: 'Box',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.PhysicsBoxCollider' }
+                                },
+                                {
+                                    label: 'Chain',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.PhysicsChainCollider' }
+                                },
+                                {
+                                    label: 'Circle',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.PhysicsCircleCollider' }
+                                },
+                                {
+                                    label: 'Polygon',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.PhysicsPolygonCollider' }
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Joint',
+                            submenu: [
+                                {
+                                    label: 'Distance',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.DistanceJoint' }
+                                },
+                                {
+                                    label: 'Motor',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.MotorJoint' }
+                                },
+                                {
+                                    label: 'Mouse',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.MouseJoint' }
+                                },
+                                {
+                                    label: 'Prismatic',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.PrismaticJoint' }
+                                },
+                                {
+                                    label: 'Revolute',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.RevoluteJoint' }
+                                },
+                                {
+                                    label: 'Rope',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.RopeJoint' }
+                                },
+                                {
+                                    label: 'Weld',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.WeldJoint' }
+                                },
+                                {
+                                    label: 'Wheel',
+                                    click() {
+                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                    },
+                                    params: { uuid, component: 'cc.WheelJoint' }
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Rigid Body',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: { uuid, component: 'cc.RigidBody' }
+                        }
+                    ]
+                },
                 {
                     label: T('component', 'renderers'),
                     submenu: [

@@ -13,6 +13,7 @@ exports.template = `
             :value="dump.value.uuid"
             :disabled="disabled"
         ></ui-drag-object>
+        <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
         <ui-drag-object
@@ -20,6 +21,7 @@ exports.template = `
             :value="metaVal"
             :disabled="disabled"
         ></ui-drag-object>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;

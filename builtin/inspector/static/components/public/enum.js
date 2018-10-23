@@ -21,6 +21,7 @@ exports.template = `
                 {{item.name || item.value}}
             </option>
         </ui-select>
+        <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
         <ui-select
@@ -30,6 +31,7 @@ exports.template = `
         >
             <slot></slot>
         </ui-select>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;

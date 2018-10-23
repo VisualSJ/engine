@@ -13,6 +13,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
+        <slot name="suffix"></slot>
     </div>
     <div class="value"
         v-else
@@ -22,6 +23,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;

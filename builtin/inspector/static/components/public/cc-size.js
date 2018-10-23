@@ -20,6 +20,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
+        <slot name="suffix"></slot>
     </div>
 
     <div class="value" v-else>
@@ -35,6 +36,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;

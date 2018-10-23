@@ -8,18 +8,34 @@ exports.template = `
         {{name ? name : 'Unknown'}}
     </div>
     <div class="value" v-if="dump">
+        <ui-textarea
+            v-if="dump.multiline"
+            :value="dump.value"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-textarea>
         <ui-input
+            v-else
             :value="dump.value"
             :disabled="disabled"
             @confirm.stop="_onConfirm"
         ></ui-input>
+        <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
+        <ui-textarea
+            v-if="multiline"
+            :value="metaVal"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-textarea>
         <ui-input
+            v-else
             :value="metaVal"
             :disabled="disabled"
             @confirm.stop="_onConfirm"
         ></ui-input>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;
@@ -30,7 +46,8 @@ exports.props = [
     'indent', // 是否需要缩进
     'meta',
     'path',
-    'disabled'
+    'disabled',
+    'multiline'
 ];
 
 exports.data = function() {

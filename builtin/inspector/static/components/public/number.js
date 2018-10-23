@@ -7,38 +7,36 @@ exports.template = `
     >
         {{name ? name : 'Unknown'}}
     </div>
-    <template v-if="slide || dump.slide">
-        <div class="value" v-if="dump">
-            <ui-slider
-                :value="dump.value"
-                :disabled="disabled"
-                @confirm.stop="_onConfirm"
-            ></ui-slider>
-        </div>
-        <div class="value" v-else>
-            <ui-slider
-                :value="metaVal"
-                :disabled="disabled"
-                @confirm.stop="_onConfirm"
-            ></ui-slider>
-        </div>
-    </template>
-    <template v-else>
-        <div class="value" v-if="dump">
-            <ui-num-input
-                :value="dump.value"
-                :disabled="disabled"
-                @confirm.stop="_onConfirm"
-            ></ui-num-input>
-        </div>
-        <div class="value" v-else>
-            <ui-num-input
-                :value="metaVal"
-                :disabled="disabled"
-                @confirm.stop="_onConfirm"
-            ></ui-num-input>
-        </div>
-    </template>
+    <div class="value" v-if="dump">
+        <ui-slider
+            v-if="dump.slide"
+            :value="dump.value"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-slider>
+        <ui-num-input
+            v-else
+            :value="dump.value"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-num-input>
+        <slot name="suffix"></slot>
+    </div>
+    <div class="value" v-else>
+        <ui-slider
+            v-if="slide"
+            :value="metaVal"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-slider>
+        <ui-num-input
+            v-else
+            :value="metaVal"
+            :disabled="disabled"
+            @confirm.stop="_onConfirm"
+        ></ui-num-input>
+        <slot name="suffix"></slot>
+    </div>
 </div>
 `;
 

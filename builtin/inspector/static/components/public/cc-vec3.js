@@ -26,6 +26,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onZConfirm"
         ></ui-num-input>
+        <slot name="suffix"></slot>
     </div>
 
 
@@ -48,6 +49,7 @@ exports.template = `
             :disabled="disabled"
             @confirm.stop="_onZConfirm"
         ></ui-num-input>
+        <slot name="suffix"></slot>
     </div>
 </div>
 `;
