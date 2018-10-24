@@ -258,6 +258,7 @@ export const messages = {
     async 'create-node'(options: CreateNodeOptions) {
         const rt = await panel.$.scene.createNode(options);
         panel.recordHistory(rt.parentUuid);
+        panel.recordHistory(rt.uuid);
         Editor.Ipc.sendToAll('scene:node-created', rt.uuid);
     },
 

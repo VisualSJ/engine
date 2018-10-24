@@ -25,7 +25,7 @@ function record(uuid) {
 function recordSave() {
     if (records.length === 0) {
         if (index !== steps.length - 1) {
-            dumpnodes.reset(records);
+            dumpnodes.reset();
         }
         return false;
     }
