@@ -38,10 +38,10 @@ export async function ready() {
             tab: 0,
 
             general: {
-                language: profile.get('language'),
-                // theme: profile.get('theme'),
+                language: profile.get('language') || 'en',
+                themeColor: profile.get('themeColor') || 'light',
                 // ip: profile.get('ip'),
-                step: profile.get('step'),
+                step: profile.get('step') || 1,
             },
         },
 
@@ -53,6 +53,8 @@ export async function ready() {
                     profile.set('language', this.general.language);
                     // @ts-ignore
                     profile.set('step', this.general.step);
+                    // @ts-ignore
+                    profile.set('themeColor', this.general.themeColor);
                     profile.save();
                 },
             }

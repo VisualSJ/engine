@@ -4,9 +4,9 @@
     "--disabled-c": "#7d7d7d",
     "--border-c": "#867e7e",
     "--border-dark-c": "#a29e9e",
-    "--main-dark-bg": "#e2e1e1",
+    "--main-dark-bg": "#d6d6d6",
     "--main-bg": "white",
-    "--default-text-c": "#383636",
+    "--default-text-c": "#797474",
   
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",

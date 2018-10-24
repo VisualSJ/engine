@@ -34,10 +34,10 @@
     <header id="toolBar">
         <div class="tools"></div>
         <div class="preview">
-            <ui-select id="platforms" value="browser" @change="changePlatform">
+            <select id="platforms" value="browser" @change="changePlatform">
                 <option value="simulator">模拟器</option>
                 <option value="browser">浏览器</option>
-            </ui-select>
+            </select>
             <div id="preview-play" class="info-btn"
                 @click="startPreview()"
             >

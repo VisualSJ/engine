@@ -25,9 +25,9 @@
         </div>
 
         <div>
-            <div class="name">{{t('theme')}}</div>
+            <div class="name">{{t('themeColor')}}</div>
             <div class="value">
-                <ui-select :value="general.theme || 'default'" @confirm="_onGeneralChanged($event, 'theme')">
+                <ui-select :value="general.themeColor || 'default'" @confirm="_onGeneralChanged($event, 'themeColor')">
                     <option value="default">default</option>
                     <option value="light">light</option>
                 </ui-select>

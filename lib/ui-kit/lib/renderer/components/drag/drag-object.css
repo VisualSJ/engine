@@ -20,7 +20,7 @@
   border-bottom: none;
   border-radius: 0.1em 0.1em 0 0;
   padding: 0 4px;
-  background: var(--main-dark-c, #333);
+  background: var(--main-dark-bg, #333);
   top: -0.8em;
   max-width: 80%;
   text-overflow: ellipsis;

@@ -83,13 +83,40 @@ header .preview .info-btn {
 }
 
 header .preview select {
-    background: none;
-    border: none;
-    color: #999;
-    position: relative;
-    top: -1px;
-    width: 60px;
-    outline: none;
+    cursor: pointer;
+    outline: 0;
+    margin: 0;
+    padding: 0.2em 0.5em;
+    border-radius: var(--border-radius-n);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    border: 1px solid var(--border-dark-c);
+    background-image: var(--image-bg, linear-gradient(#585858, #444));
+    color: inherit;
+
+}
+
+header .preview select option {
+    background: var(--main-bg);
+}
+  
+header .preview select optgroup {
+    background: var(--main-bg);
+}
+
+header .preview select::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  top: 50%;
+  right: .8em;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 7px solid var(--border-c);
+  margin-top: -3px
 }
 
 header .info {

@@ -20,6 +20,10 @@ export function load() {
     // 应用皮肤
     const theme = profile.get('theme') || '';
     Editor.Theme.use(theme);
+
+    // 应用皮肤主题
+    // const color = profile.get('themeColor') || 'default';
+    // Editor.Theme.useColor(color);
 }
 
 export function unload() {}

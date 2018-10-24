@@ -1,7 +1,6 @@
 :host {
     position: relative;
     contain: content;
-    color: #999;
     font-size: 12px;
     display: flex;
     flex-direction: column;
@@ -15,7 +14,7 @@ section {
     flex: 1;
     display: flex;
     overflow-y: auto;
-    background: #333333;
+    background:  var(--main-bg);
 }
 
 .item {
@@ -58,13 +57,11 @@ section {
         transform: rotate(90deg);
     }
     &:nth-child(odd) {
-        background: #222222;
-    }
-    &:nth-child(odd){
-        background: #292929;
+        background: var(--main-dark-bg);
     }
     &:hover {
-        background: #353535;
+        background: rgba(77, 155, 216, 0.78);
+        color: white;
     }
 }
 .item[fold] {

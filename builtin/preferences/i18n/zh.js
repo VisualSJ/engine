@@ -8,6 +8,7 @@ module.exports = {
     general: {
         language: '编辑器语言',
         step: '数值默认步长',
-        theme: '配色主题',
+        theme: '皮肤主题',
+        themeColor: '配色主题',
     }
 };

@@ -6,7 +6,7 @@ const ps = require('path');
 exports.template = fs.readFileSync(ps.join(__dirname, '../template/general.html'), 'utf8');
 
 exports.props = ['general'];
-
+const profile = Editor.Profile.load('profile://global/packages/preferences.json');
 exports.data = function() {
     return {};
 };
@@ -36,11 +36,12 @@ exports.methods = {
             case 'step':
                 Editor.UI.NumInput.updateStep(event.target.value);
                 break;
-            case 'theme':
+            case 'themeColor':
                 Editor.Theme.useColor(event.target.value);
                 break;
         }
     },
 };
 
-exports.mounted = function() {};
+exports.mounted = function() {
+};

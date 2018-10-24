@@ -8,6 +8,7 @@ module.exports = {
     general: {
         language: 'Language',
         step: 'Number step',
-        theme: 'Color theme',
+        theme: 'theme',
+        themeColor: 'Theme Color ',
     },
 };

@@ -13,7 +13,7 @@ const setting = require('@editor/setting');
 const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
 
 if (!fse.existsSync(filePath)) {
-    const obj = {recentProPath: ''};
+    const obj = {recentProPath: ps.join(setting.PATH.APP, './../')};
     fse.outputJSONSync(filePath, obj, 'utf8');
 }
 const dashProfile = profile.load('profile://global/editor/dashboard.json');
@@ -77,5 +77,9 @@ exports.mounted = function() {
         .callback((error, templates) => {
             this.list = templates;
         });
+    if (!dashProfile.get('recentProPath') || !fse.existsSync(filePath)) {
+        dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
+        dashProfile.save();
+    }
     this.directoryPath = dashProfile.get('recentProPath') + '\\NewProject';
 };
