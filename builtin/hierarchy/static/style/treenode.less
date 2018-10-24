@@ -2,14 +2,10 @@
 @blue: #09f;
 @green: #0f0;
 .treenode {
-    display: block;
-    position: relative;
+    display: flex;
     height: 20px;
     line-height: 20px;
     font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     &[active="true"] {
         background-color: rgba(255, 255, 255, 0.1);
     }
@@ -42,19 +38,20 @@
         }
     }
     .arrow {
+        height: 20px;
+        line-height: 20px;
+        width: 20px;
         text-align: center;
         cursor: pointer;
-        font-size: 0.8em;
-        display: inline-block;
-
+        font-size: 0.9em;
         &+.name {
-            margin-left: 3px;
+            margin-left: 2px;
         }
         &+.rename {
-            margin-left: 3px;
+            margin-left: 0;
         }
     }
-    .lock {
+    >.lock {
         display: none;
         position: absolute;
         top: 4px;
@@ -69,11 +66,13 @@
             display: inline-block;
         }
     }
-    .name {
+    >.name {
         cursor: default;
-        margin-left: 20px;
+        margin-left: 22px;
+        white-space: nowrap;
+        padding-right: 20px;
     }
-    .loading {
+    >.loading {
         display: inline-block;
         position: relative;
         vertical-align: middle;
@@ -84,14 +83,12 @@
     .rename {
         font-size: 12px;
         outline: none;
-        background-color: #252525;
         border: 1px solid @blue;
+        background-color: #252525;
         color: #ccc;
         padding-left: 4px;
-        width: ~'calc(100% - 30px)';
-        margin-left: 19px;
-        position: relative;
-        left: -4px;
+        margin-left: 22px;
+        vertical-align: middle;
     }
 }
 

@@ -901,9 +901,12 @@ function addNodeIntoTree(newData: any) {
     };
 
     // 父级节点
-    let parentNode = getGroupFromTree(treeData, newData.parent.value)[0];
+    let parentNode = getGroupFromTree(treeData, newData.parent.value.uuid)[0];
     if (!parentNode) {
         parentNode = treeData;
+    }
+    if (!Array.isArray(parentNode.children)) {
+        parentNode.children = [];
     }
     parentNode.children.push(newNode);
     parentNode.isExpand = true;
