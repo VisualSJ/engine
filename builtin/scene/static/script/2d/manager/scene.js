@@ -40,6 +40,7 @@ async function open(uuid) {
     }
 
     camera.setSize(cc.Canvas.instance._designResolution);
+    camera.adjustToCenter(10);
 
     // 爬取节点树上的所有节点数据
     await nodeUtils.walk(uuid2node, cc.director._scene);

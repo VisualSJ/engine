@@ -31,7 +31,7 @@
     }
 
     &[active] {
-        background: #059;
+        background: rgba(255, 255, 255, 0.1);
     }
 
     & > .name {
@@ -62,5 +62,11 @@
             color: #fff;
             flex: 1;
         }
+    }
+}
+
+:host([focused]) {
+    .asset-item[active] {
+        background: #059;
     }
 }

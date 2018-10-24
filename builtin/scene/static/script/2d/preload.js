@@ -24,7 +24,7 @@ ipc.on('init', async (info) => {
         return;
     }
     isInit = true;
-    
+
     // 适配 Editor
     require('./polyfills/editor');
 
@@ -45,6 +45,20 @@ ipc.on('init', async (info) => {
 
     // 标记已经准备就绪
     isReady = true;
+
+    const backup = {
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+    };
+
+    console.warn = function(...args) {
+        backup.warn(...args);
+        ipc.send('console', 'warn', ...args);
+    };
+    console.error = function(...args) {
+        backup.error(...args);
+        ipc.send('console', 'error', ...args);
+    };
 });
 
 // host 调用 scene 的指定方法

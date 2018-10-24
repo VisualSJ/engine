@@ -246,12 +246,12 @@ class Camrea {
         const bcr = document.body.getBoundingClientRect();
         const size = this.size;
 
-        if (size.width / size.height < bcr.width / bcr.height) {
+        if (size.width / size.height < (bcr.width - 1) / (bcr.height - 1)) {
             // height
-            this.scale = (bcr.height - margin * 2) / size.height;
+            this.scale = (bcr.height - 1 - margin * 2) / size.height;
         } else {
             // width
-            this.scale = (bcr.width - margin * 2) / size.width;
+            this.scale = (bcr.width - 1 - margin * 2) / size.width;
         }
 
         this.apply();

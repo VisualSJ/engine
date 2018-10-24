@@ -51,7 +51,7 @@ async function engine(info) {
     const option = {
         id: 'GameCanvas',
         showFPS: false,
-        debugMode: cc.debug.DebugMode.ERROR_FOR_WEB_PAGE,
+        debugMode: cc.debug.DebugMode.ERROR,
         frameRate: 60,
         renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
         registerSystemEvent: false,
@@ -87,21 +87,6 @@ function utils(path) {
     // 序列化
     Manager._serialize = function() {
         return require(path + '/serialize');
-    };
-
-    // 错误处理
-    cc.error = function(...args) {
-        console.error(...args);
-    };
-
-    // 打印日志
-    cc.log = function(...args) {
-        console.log(...args);
-    };
-
-    // 警告处理
-    cc.warn = function(...args) {
-        console.warn(...args);
     };
 }
 

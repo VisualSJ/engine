@@ -365,7 +365,33 @@ export async function ready() {
 /**
  * 检查关闭阶段需要检查是否场景更改了未保存
  */
-export async function beforeClose() { }
+export async function beforeClose() {
+    if (panel.$.scene.dirty) {
+        const code = await Editor.Dialog.show({
+            title: Editor.I18n.t('scene.messages.waning'),
+            message: Editor.I18n.t('scene.messages.scenario_modified'),
+            detail: Editor.I18n.t('scene.messages.want_to_save'),
+            type: 'warning',
+
+            default: 0,
+            cancel: 2,
+
+            buttons: [
+                Editor.I18n.t('scene.messages.save'),
+                Editor.I18n.t('scene.messages.dont_save'),
+                Editor.I18n.t('scene.messages.cancel'),
+            ],
+        });
+
+        switch (code) {
+            case 2:
+                return false;
+            case 0:
+                await panel.$.scene.saveScene();
+                return true;
+        }
+    }
+}
 
 /**
  * 面板关闭的时候，场景也会注销

@@ -8,6 +8,8 @@ class View extends window.HTMLElement {
     constructor() {
         super();
 
+        this.dirty = false;
+
         this.$scene = document.createElement('webview');
 
         // 封装的 webview 通讯模块
@@ -31,6 +33,10 @@ class View extends window.HTMLElement {
         // 转发广播消息
         this.ipc.on('broadcast', (...args) => {
             Editor.Ipc.sendToAll(...args);
+        });
+
+        this.ipc.on('console', (type, ...args) => {
+            console[type](...args);
         });
 
         this.uuid = null;
@@ -79,6 +85,7 @@ class View extends window.HTMLElement {
         await this.closeScene();
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
 
+        this.dirty = false;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'open',
@@ -115,6 +122,7 @@ class View extends window.HTMLElement {
         const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', 'db://assets/NewScene.scene', txt);
         this.uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid);
+        this.dirty = false;
         console.log(`Save scene: ${asset.source}`);
     }
 
@@ -122,6 +130,7 @@ class View extends window.HTMLElement {
      * 关闭场景
      */
     async closeScene() {
+        this.dirty = false;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'close',
@@ -135,6 +144,7 @@ class View extends window.HTMLElement {
      * 设置某个属性
      */
     async setProperty(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'setProperty',
@@ -148,6 +158,7 @@ class View extends window.HTMLElement {
      * 在数组内插入一个对象
      */
     async insertArrayElement(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'insertArrayElement',
@@ -159,6 +170,7 @@ class View extends window.HTMLElement {
      * 在数组内移动一个对象
      */
     async moveArrayElement(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'moveArrayElement',
@@ -170,6 +182,7 @@ class View extends window.HTMLElement {
      * 在数组内删除一个对象
      */
     async removeArrayElement(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'removeArrayElement',
@@ -183,6 +196,7 @@ class View extends window.HTMLElement {
      * 创建新节点
      */
     async createNode(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'createNode',
@@ -194,6 +208,7 @@ class View extends window.HTMLElement {
      * 删除节点
      */
     async removeNode(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'removeNode',
@@ -207,6 +222,7 @@ class View extends window.HTMLElement {
      * 新建一个组件
      */
     async createComponent(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'createComponent',
@@ -218,6 +234,7 @@ class View extends window.HTMLElement {
      * 删除一个组件
      */
     async removeComponent(options) {
+        this.dirty = true;
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'removeComponent',
