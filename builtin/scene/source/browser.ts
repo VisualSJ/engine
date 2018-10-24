@@ -2,6 +2,7 @@
 
 let isReady: boolean = false;
 let currentSceneUuid: string | null = null;
+
 export const messages = {
     /**
      * 打开面板
@@ -49,6 +50,14 @@ export const messages = {
      */
     'query-is-ready'() {
         return isReady;
+    },
+
+    /**
+     * 打开场景
+     * @param uuid 打开场景的 uuid
+     */
+    async 'change-scene-uuid'(uuid: string) {
+        currentSceneUuid = uuid;
     },
 
     /**

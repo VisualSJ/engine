@@ -161,6 +161,20 @@ canvas {
     background-image: linear-gradient(#333, #222);
 }
 
+#btn-pause.checked {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#btn-step {
+    display: none;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+#btn-step.show {
+    display: inline-block;
+}
+
 .toolbar button:focus {
     outline: none;
 }

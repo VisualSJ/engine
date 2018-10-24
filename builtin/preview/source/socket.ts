@@ -1,9 +1,10 @@
 'use stirct';
 
 const io = require('socket.io');
-
 let app: any = null;
 let reloadTimer: any = null;
+let deviceNum: number = 0; // 连接客户端数量
+const ipc = require('@base/electron-base-ipc');
 
 /**
  * 启动 io 服务器
@@ -11,11 +12,13 @@ let reloadTimer: any = null;
  */
 export function start(server: any) {
     app = io(server);
-    app.on('connection', () => {
-        console.log('connected');
-    });
-    app.on('disconnect', () => {
-        console.log('disconnected');
+    app.on('connection', (socket: any) => {
+        deviceNum = app.eio.clientsCount;
+        ipc.broadcast('package-preview:device-num-change', deviceNum);
+        socket.on('disconnect', () => {
+            deviceNum = app.eio.clientsCount;
+            ipc.broadcast('package-preview:device-num-change', deviceNum);
+        });
     });
 }
 

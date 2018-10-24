@@ -20,6 +20,7 @@ interface Editor {
 interface App {
     home: string;
     path: string;
+    project: string;
 }
 
 interface Project {

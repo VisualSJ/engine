@@ -34,6 +34,10 @@
     <header id="toolBar">
         <div class="tools"></div>
         <div class="preview">
+            <ui-select id="platforms" value="browser" @change="changePlatform">
+                <option value="simulator">模拟器</option>
+                <option value="browser">浏览器</option>
+            </ui-select>
             <div id="preview-play" class="info-btn"
                 @click="startPreview()"
             >
@@ -47,7 +51,7 @@
         </div>
         <div class="info flex">
             <span class="info-wifi">{{ipAddress}}<i class="iconfont i-wifi"></i><div class="QRcode-wrap"> <canvas class="QRcode" id='codeCanvas'></canvas> <span>扫一扫直接预览</span></div></span>
-            <span class="info-notice">0</span>
+            <span class="info-notice">{{deviceNumber}}</span>
             <span class="info-btn" @click="openFolder('project')"><i class="iconfont i-folder"></i> 项目路径</span>
             <span class="info-btn" @click="openFolder('app')"><i class="iconfont i-folder"></i>安装路径</span>
         </div>

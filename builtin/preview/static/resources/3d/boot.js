@@ -70,8 +70,8 @@
         splash.style.height = `${height}px`;
         splash.style.display = '';
         progressBar.style.width = '0%';
-        if (width > height) {
-            splash.style.backgroundImage = `url("./splash_portrait.png")`;
+        if (width < height) {
+            splash.style.backgroundImage = `url("./img/splash_portrait.png")`;
         }
         if (gameContainer) {
             gameContainer.style.visibility = 'visible';

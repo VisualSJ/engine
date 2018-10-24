@@ -1,6 +1,6 @@
 'use strict';
 
-import { shell } from 'electron';
+import { BrowserWindow , shell } from 'electron';
 import { getPort, start, stop } from './express';
 import { emitReload } from './socket';
 const ipc = require('@base/electron-base-ipc');
@@ -24,6 +24,9 @@ export const messages = {
     'open-terminal'(type: string) {
         if (type === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
+        } else {
+            const win = new BrowserWindow({width: 1000, height: 700});
+            win.loadURL(`http://localhost:${getPort()}`);
         }
     },
 
@@ -32,6 +35,13 @@ export const messages = {
      */
     'reload-terminal'() {
         emitReload();
+    },
+
+    /**
+     * 刷新浏览器预览页面
+     */
+    'device-change'(deviceNum: number) {
+        ipc.send('package-preview:device-num-change', deviceNum);
     },
 };
 
