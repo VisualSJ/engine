@@ -81,10 +81,11 @@ function undo() {
 
         index--;
     } else {
+        if (index < 0) {
+            return;
+        }
         method = 'undo'
     }
-
-
 
     const state = restore();
 

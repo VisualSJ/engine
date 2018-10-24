@@ -219,7 +219,7 @@ function restoreNode(node, dumpdata) {
     for (const path in dumpdata) {
         const data = dumpdata[path];
 
-        if (['__type__'].includes(path)) {
+        if (['__type__', 'group'].includes(path)) {
             continue;
         } else if (path === '__comps__') {
             data.forEach((compos) => {
