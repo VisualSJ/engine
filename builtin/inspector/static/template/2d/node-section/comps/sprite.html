@@ -4,13 +4,23 @@
     <cc-dragable 
         name="Atlas" 
         :dump="target._atlas"
-    ></cc-dragable>
+    >
+        <ui-button class="blue tiny"
+            slot="suffix"
+            @confirm="selectAtlas"
+        >{{T('select_button')}}</ui-button>
+    </cc-dragable>
 
     <!-- sprite frame -->
     <cc-dragable 
         name="Sprite Frame" 
         :dump="target.spriteFrame"
-    ></cc-dragable>
+    >
+        <ui-button class="blue tiny"
+            slot="suffix"
+            @confirm="editSprite"
+        >{{T('edit_button')}}</ui-button>
+    </cc-dragable>
 
     <!-- type -->
     <enum 
@@ -30,6 +40,7 @@
         <cc-vec2 
             name="Fill Center" 
             :dump="target.fillCenter"
+            :disabled="String(target.fillType.value) !== '2'"
         ></cc-vec2>
         <number 
             name="Fill Start" 

@@ -8,7 +8,6 @@ exports.props = ['uuid', 'index', 'total', 'comp'];
 
 exports.components = {
     none: readComponent(__dirname, './comps/none'),
-    'cc-sprite': readComponent(__dirname, './comps/sprite'),
     'cc-button': readComponent(__dirname, './comps/button'),
     'cc-camera': readComponent(__dirname, './comps/camera'),
     'cc-blockinputevents': require('./comps/block-input-events'),
@@ -19,10 +18,14 @@ exports.components = {
     'cc-videoplayer': readComponent(__dirname, './comps/videoplayer'),
     'cc-widget': readComponent(__dirname, './comps/widget'),
 
-    'cc-polygoncollider': readComponent(__dirname, './comps/points-base-collider'),
+    'cc-pointsbasecollider': readComponent(__dirname, './comps/points-base-collider'),
+
+    'cc-joint': readComponent(__dirname, './comps/physics/joint'),
 
     'cc-label': readComponent(__dirname, './comps/label'),
-    'cc-mask': readComponent(__dirname, './comps/mask')
+    'cc-mask': readComponent(__dirname, './comps/mask'),
+    'cc-particlesystem': readComponent(__dirname, './comps/particle-system'),
+    'cc-sprite': readComponent(__dirname, './comps/sprite')
 };
 
 exports.data = function() {
@@ -35,6 +38,13 @@ exports.methods = {
      * @param {*} type
      */
     getComponent(type) {
+        if (isBaseCollider(type)) {
+            return 'cc-pointsbasecollider';
+        }
+        if (checkIsJoint(type)) {
+            return 'cc-joint';
+        }
+
         type = type.toLocaleLowerCase();
         type = type.replace(/\./, '-');
         if (!exports.components[type]) {
@@ -150,4 +160,19 @@ exports.methods = {
     }
 };
 
-exports.mounted = async function() {};
+function isBaseCollider(type) {
+    return ['cc.PhysicsChainCollider', 'cc.PhysicsPolygonCollider', 'cc.PolygonCollider'].includes(type);
+}
+
+function checkIsJoint(type) {
+    return [
+        'cc.DistanceJoint',
+        'cc.MotorJoint',
+        'cc.MouseJoint',
+        'cc.PrismaticJoint',
+        'cc.RevoluteJoint',
+        'cc.RopeJoint',
+        'cc.WeldJoint',
+        'cc.WheelJoint'
+    ].includes(type);
+}

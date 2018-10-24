@@ -7,10 +7,10 @@
         <template slot="suffix">
             <ui-button class="blue tiny"
                 @confirm="regeneratePoints"
-            ></ui-button>
+            >{{T('collider', 'regenerate_points')}}</ui-button>
         </template>
     </string>
 
-    <none></none>
+    <none :target="target"></none>
     
 </div>

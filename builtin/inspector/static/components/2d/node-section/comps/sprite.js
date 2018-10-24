@@ -1,23 +1,31 @@
 'use strict';
 
-const { readTemplate } = require('../../../../utils');
+const { readTemplate, T } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './node-section/comps/sprite.html');
 
-exports.props = [
-    'target',
-];
-
-exports.components = {
-    'cc-vec2': require('../../../public/cc-vec2'),
-};
+exports.props = ['target'];
 
 exports.data = function() {
     return {
-        dirty: false,
+        atlasUuid: '',
+        atlasUuids: '',
+        atlasMulti: false,
+
+        spriteUuid: '',
+        spriteUuids: '',
+        spriteMulti: false
     };
 };
 
-exports.methods = {};
+exports.methods = {
+    T,
 
-exports.mounted = async function() {};
+    selectAtlas() {
+        // todo
+    },
+
+    editSprite() {
+        // todo
+    }
+};

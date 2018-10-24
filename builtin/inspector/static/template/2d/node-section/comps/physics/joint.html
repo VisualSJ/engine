@@ -1,0 +1,26 @@
+<div>
+
+    <cc-dragable
+        name="Connected Body"
+        :dump="target.connectedBody"
+    >
+        <template slot="suffix">
+            <ui-button class="blue tiny"
+                @confirm="lastRigidBody"
+            >{{T('physics','rigid_body_last')}}</ui-button>
+            <ui-button class="blue tiny"
+                @confirm="nextRigidBody"
+            >{{T('physics','rigid_body_next')}}</ui-button>
+        </template>
+    </cc-dragable>
+
+    <template v-for="(prop, key) in target">
+        <component
+            v-if="prop.visible !== false && prop.name !== 'Connected Body' && getComponentType(prop, $options)"
+            :is="getComponentType(prop, $options)"
+            :name="prop.name || key"
+            :dump="prop"
+        ></component>
+    </template>
+
+</div>

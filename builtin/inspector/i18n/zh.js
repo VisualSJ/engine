@@ -110,5 +110,65 @@ module.exports = {
         export_error: '该资源不支持导出到项目外',
         sync: '同步',
         sync_tips: '同步 File 中的参数到 Custom'
+    },
+
+    physics: {
+        rigid_body_last: 'Last',
+        rigid_body_next: 'Next',
+        rigidbody: {
+            enabledContactListener:
+                '是否启用接触接听器。当 collider 产生碰撞时，只有开启了接触接听器才会调用相应的回调函数',
+            bullet: '这个刚体是否是一个快速移动的刚体，并且需要禁止穿过其他快速移动的刚体',
+            type:
+                '刚体类型： Static（静态）, Kinematic（不受外力）, Dynamic（动态）和 Animated（通过设置线性速度和角速度驱动）',
+            allowSleep: '如果此刚体永远都不应该进入睡眠，那么设置这个属性为 false。需要注意这将使 CPU 占用率提高',
+            gravityScale: '缩放应用在此刚体上的重力值',
+            linearDamping:
+                'Linear damping 用于衰减刚体的线性速度。衰减系数可以大于 1，但是当衰减系数比较大的时候，衰减的效果会变得比较敏感。',
+            angularDamping:
+                'Angular damping 用于衰减刚体的角速度。衰减系数可以大于 1，但是当衰减系数比较大的时候，衰减的效果会变得比较敏感。',
+            linearVelocity: '刚体在世界坐标下的线性速度',
+            angularVelocity: '刚体的角速度',
+            fixedRotation: '是否禁止此刚体进行旋转',
+            awake: '是否立刻唤醒此刚体'
+        },
+        physics_collider: {
+            density: '密度',
+            sensor: '一个传感器类型的碰撞体会产生碰撞回调，但是不会发生物理碰撞效果。',
+            friction: '摩擦系数，取值一般在 [0, 1] 之间',
+            restitution: '弹性系数，取值一般在 [0, 1]之间',
+            anchor: '刚体的锚点。',
+            connectedAnchor: '关节另一端刚体的锚点。',
+            connectedBody: '关节另一端链接的刚体',
+            collideConnected: '链接到关节上的两个刚体是否应该相互碰撞？',
+            distance: '关节两端的距离',
+            frequency: '弹性系数。',
+            dampingRatio: '阻尼，表示关节变形后，恢复到初始状态受到的阻力。',
+            linearOffset: '关节另一端的刚体相对于起始端刚体的位置偏移量',
+            angularOffset: '关节另一端的刚体相对于起始端刚体的角度偏移量',
+            maxForce: '可以应用于刚体的最大的力值',
+            maxTorque: '可以应用于刚体的最大扭矩值',
+            correctionFactor: '位置矫正系数，范围为 [0, 1]',
+            mouseRegion: '用于注册触摸事件的节点。如果没有设置这个值，那么将会使用关节的节点来注册事件。',
+            target: '目标点，鼠标关节将会移动选中的刚体到指定的目标点',
+            localAxisA: '指定刚体可以移动的方向。',
+            enableLimit: '是否开启关节的距离限制？',
+            enableMotor: '是否开启关节马达？',
+            lowerLimit: '刚体能够移动的最小值',
+            upperLimit: '刚体能够移动的最大值',
+            maxMotorForce: '可以施加到刚体的最大力。',
+            motorSpeed: '期望的马达速度。',
+            referenceAngle: '相对角度。两个物体之间角度为零时可以看作相等于关节角度',
+            lowerAngle: '角度的最低限制。',
+            upperAngle: '角度的最高限制。',
+            maxMotorTorque: '可以施加到刚体的最大扭矩。',
+            maxLength: '最大长度。',
+            offset: '位置偏移量',
+            size: '包围盒大小',
+            radius: '圆形半径',
+            tag:
+                '标签。当一个节点上有多个碰撞组件时，在发生碰撞后，可以使用此标签来判断是节点上的哪个碰撞组件被碰撞了。',
+            points: '多边形顶点数组'
+        }
     }
 };

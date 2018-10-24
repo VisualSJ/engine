@@ -43,18 +43,51 @@ function T(...rest) {
     return Editor.I18n.t(rest.join('.'));
 }
 
+function checkIsAsset(types) {
+    return types.includes('cc.Asset');
+}
+
+function checkIsNumber(type) {
+    return ['Integer', 'Float'].includes(type);
+}
+
+const convertMap = {
+    'cc.Node': 'cc-dragable'
+};
+
 /**
- * 根据数据返回对应的 type 类型
+ * 获取 target 类型对应的 component 类型
  * @param {*} target
- * @returns
  */
-function getType(type) {
-    return (type || '').replace('cc.', '').toLowerCase();
+function getComponentType(target, $options) {
+    if (!target || !target.type) {
+        return false;
+    }
+    let { type, extends: extendTypes = [] } = target;
+
+    if (checkIsNumber(type)) {
+        return 'number';
+    }
+
+    if (checkIsAsset([type, ...extendTypes])) {
+        return 'cc-dragable';
+    }
+
+    type = convertMap[type] || type;
+    type = type.toLocaleLowerCase();
+    type = type.replace(/\./, '-');
+
+    if ($options && $options.components) {
+        return $options.components[type] ? type : false;
+    }
+
+    console.warn(`getComponentType should always pass $options`);
+    return false;
 }
 
 module.exports = {
     readTemplate,
     readComponent,
     T,
-    getType
+    getComponentType
 };
