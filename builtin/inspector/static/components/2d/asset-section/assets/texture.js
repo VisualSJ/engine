@@ -18,7 +18,7 @@ exports.data = function() {
             flex: 'none',
             flexDirection: 'row',
             alignItems: 'center',
-            paddingBottom: '2px',
+            padding: '3px 10px 5px',
             borderBottom: '1px solid #666',
             height: '24px',
             overflow: 'hidden'

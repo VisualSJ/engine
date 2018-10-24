@@ -1,3 +1,28 @@
 <div class="fit layout vertical">
-    none
+    <!-- 头部工具栏 -->
+    <header
+        :style="cssHost"
+    >
+        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <div
+            :style="cssTitle"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
 </div>
