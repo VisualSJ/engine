@@ -117,8 +117,6 @@ function redo() {
         method = 'redo'
     }
 
-
-
     const state = restore();
 
     // 运行中，定时下次运行

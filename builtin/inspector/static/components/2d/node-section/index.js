@@ -56,6 +56,9 @@ exports.methods = {
     onPropertyChanged(event) {
         const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
 
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         Editor.Ipc.sendToPanel('scene', 'set-property', {
             uuid: this.uuid,
             path: dump.path,

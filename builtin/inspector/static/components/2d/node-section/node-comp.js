@@ -88,6 +88,9 @@ exports.methods = {
             value = { uuid: value };
         }
 
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         Editor.Ipc.sendToPanel('scene', 'set-property', {
             path: `__comps__.${this.index}.${path}`,
             uuid: this.uuid,

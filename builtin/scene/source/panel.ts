@@ -211,12 +211,18 @@ export const messages = {
     async 'set-property'(options: SetPropertyOptions) {
         await panel.$.scene.setProperty(options);
         panel.recordHistory(options.uuid);
+
         const key = (options.path || '').split('.').pop();
         // 广播节点被修改的消息
         if (key === 'parent') {
             const node = await panel.$.scene.queryNode(options.uuid);
-            Editor.Ipc.sendToAll('node-changed', node.parent.value);
+            if (node) {
+                const parentUuid = node.parent.value.uuid;
+                panel.recordHistory(parentUuid);
+                Editor.Ipc.sendToAll('scene:node-changed', parentUuid);
+            }
         }
+
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
@@ -225,7 +231,7 @@ export const messages = {
      * @param options
      */
     async 'insert-array-element'(options: InsertArrayOptions) {
-        await panel.$.scene.insertArrayProperty(options);
+        await panel.$.scene.insertArrayElement(options);
         panel.recordHistory(options.uuid);
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },

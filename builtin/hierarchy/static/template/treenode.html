@@ -1,7 +1,7 @@
 <ui-drag-item class="treenode" type="node"
     :draggable="draggable"
     :active="selects.indexOf(node.uuid) !== -1"
-    :style="{ paddingLeft: (node.depth * 20 + 2) + 'px' }"
+    :style="{ paddingLeft: (node.depth * 18 + 2) + 'px' }"
     :class="{'parent':node.isParent}"
     :expand="node.isExpand"
     :state="node.state"

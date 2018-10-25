@@ -16,6 +16,8 @@ const nodesMap: Map<number, ItreeNode> = new Map();
 
 let treeData: any; // 树形结构的数据，含 children
 
+const trash: any = {}; // 回收站，主要用于移动中，异步的先从一个父级删除节点，再添加另一个父级的过程
+
 let copyNode: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
@@ -252,9 +254,9 @@ export const methods = {
      */
     async add(uuid: string) {
         // 获取该节点最新数据
-        const newData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+        const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
         // 更新当前数据
-        const newNode = addNodeIntoTree(newData);
+        const newNode = addNodeIntoTree(dumpData);
 
         // @ts-ignore
         if (this.state === '') {
@@ -313,7 +315,8 @@ export const methods = {
     delete(uuid: string) {
         const arr = getGroupFromTree(treeData, uuid);
         if (arr[2]) {
-            arr[2].splice(arr[1], 1);
+            const nodeInArr = arr[2].splice(arr[1], 1);
+            trash[uuid] = nodeInArr[0];
         }
 
         // 触发节点数据已变动
@@ -528,6 +531,9 @@ export const methods = {
             return;
         }
         const uuids = json.from.split(',');
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         uuids.forEach((fromId: string) => {
 
             const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
@@ -557,27 +563,29 @@ export const methods = {
                     offset,
                 });
             } else { // 跨级移动
+                // 先从原来的父级删除
+                Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid: fromNode.uuid });
+
+                // 再开始移动
                 if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
                     // @ts-ignore
                     affectNode = getNodeFromMap(toNode.uuid); // 元素自身
-
                     Editor.Ipc.sendToPackage('scene', 'set-property', {
                         uuid: fromNode.uuid,
                         path: 'parent',
                         dump: {
-                            type: 'entity',
+                            type: toNode.type,
                             value: toNode.uuid // 被 drop 的元素就是父级
                         }
                     });
                 } else { // 跨级插入 'before', 'after'
                     // @ts-ignore
                     affectNode = getNodeFromMap(toParent); // 元素的父级
-
                     Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
                         uuid: fromNode.uuid,
                         path: 'parent',
                         dump: {
-                            type: 'entity',
+                            type: toParent.type,
                             value: toParent.uuid // 被 drop 的元素的父级
                         }
                     });
@@ -830,11 +838,19 @@ function getGroupFromTree(obj: ItreeNode, value: string = '', key: string = 'uui
  * @param uuid
  */
 function getValidNode(uuid: string) {
-    const one = getNodeFromMap(uuid);
-    if (!one || one.invalid) { // 资源不可用
+    let node = getNodeFromMap(uuid);
+
+    if (!node) {
+        if (trash[uuid]) {
+            node = trash[uuid];
+        }
+    }
+
+    if (!node || node.invalid) { // 资源不可用
         return;
     }
-    return one;
+
+    return node;
 }
 
 /**
@@ -882,18 +898,20 @@ function getSiblingsFromMap(uuid = '') {
 /**
  * 添加资源后，增加树形节点数据
  */
-function addNodeIntoTree(newData: any) {
-    const uuid = newData.uuid.value;
+function addNodeIntoTree(dumpData: any) {
+    const uuid = dumpData.uuid.value;
 
     // 数据转换
     // @ts-ignore
     const newNode: ItreeNode = {
-        name: newData.name.value,
+        name: dumpData.name.value,
         uuid,
-        children: newData.children.value,
+        children: dumpData.children.value,
+        type: dumpData.__type__,
 
         invalid: false,
         isLock: false,
+        isParent: false,
         isExpand: false,
         top: 0,
         depth: 0,
@@ -901,7 +919,7 @@ function addNodeIntoTree(newData: any) {
     };
 
     // 父级节点
-    let parentNode = getGroupFromTree(treeData, newData.parent.value.uuid)[0];
+    let parentNode = getGroupFromTree(treeData, dumpData.parent.value.uuid)[0];
     if (!parentNode) {
         parentNode = treeData;
     }
@@ -923,32 +941,27 @@ function addNodeIntoTree(newData: any) {
 function changeNodeData(newData: any) {
     const uuid = newData.uuid.value;
     // 现有的节点数据
-    const node = getGroupFromTree(treeData, uuid)[0];
+    const node = getValidNode(uuid);
+
+    if (!node) {
+        console.error('Can not find the node.');
+        return;
+    }
 
     // 属性是值类型的修改
     ['name'].forEach((key) => {
+        // @ts-ignore
         if (node[key] !== newData[key].value) {
+            // @ts-ignore
             node[key] = newData[key].value;
         }
     });
 
     // 属性值是对象类型的修改， 如 children
-    const childrenKeys: string[] = node.children ? node.children.map((one: ItreeNode) => one.uuid) : [];
-    const newChildren: ItreeNode[] = [];
-    newData.children.value.forEach((json: any, i: number) => {
-        const id: string = json.value;
-        const index = childrenKeys.findIndex((uid) => id === uid);
-        let one;
-        if (index !== -1) { // 平级移动
-            one = node.children[index]; // 原来的父级节点有该元素
-        } else { // 跨级移动
-            const arrInfo = getGroupFromTree(treeData, id); // 从全部数据中找出被移动的数据
-            one = arrInfo[2].splice(arrInfo[1], 1)[0];
-        }
-        one.isExpand = false;
-        newChildren.push(one);
+    node.children = newData.children.value.map((json: any) => {
+        const uuid: string = json.value;
+        return getValidNode(uuid);
     });
-    node.children = newChildren;
 
     // 触发节点数据已变动
     node.state = ''; // 重置掉 loading 效果

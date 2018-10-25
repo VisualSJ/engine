@@ -102,6 +102,7 @@ function queryNodeTree(uuid) {
 
         return {
             name: node.name,
+            type: node.constructor.name.replace('_', '.'),
             uuid: node._id,
             children: children.length ? children : null,
         };
@@ -318,7 +319,7 @@ function resetNodeChildren(parentNode, childrenIds) {
 
     currents.forEach((uuid) => {
         const node = query(uuid);
-        parentNode.removeChild(node);
+        node.parent = null;
         addToTrash(uuid);
     });
 
@@ -326,6 +327,7 @@ function resetNodeChildren(parentNode, childrenIds) {
     childrenIds.forEach((uuid) => {
         const node = query(uuid);
         if (node) {
+            node.parent = null;
             parentNode.addChild(node);
             removeFromTrash(uuid);
         }
@@ -364,7 +366,6 @@ module.exports = {
     queryNodePath,
 
     setProperty,
-    // insertArrayProperty,
     moveArrayElement,
     removeArrayElement,
 

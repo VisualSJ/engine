@@ -12,6 +12,7 @@ declare interface IaddNode {
 declare interface ItreeNode {
     name: string; // 来自 scene 场景的查询数据
     uuid: string;
+    type: string;
     children: ItreeNode[];
 
     // 以下是扩展的数据

@@ -132,8 +132,7 @@ function restoreProperty(node, path, dump) {
         case 'cc.Node':
             const node = scene.query(dump.value);
             if (key === 'parent') {
-                property.remove();
-                node.appendChild(property);
+                node.addChild(property);
             } else {
                 property[key] = node;
             }
