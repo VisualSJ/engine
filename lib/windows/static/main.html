@@ -34,7 +34,7 @@
     <header id="toolBar">
         <div class="tools"></div>
         <div class="preview">
-            <select id="platforms" value="browser" @change="changePlatform">
+            <select id="platforms" :value="platforms" @change="changePlatform">
                 <option value="simulator">模拟器</option>
                 <option value="browser">浏览器</option>
             </select>
@@ -43,9 +43,9 @@
             >
                 <i class="iconfont i-arrow-right "></i>
             </div>
-            <div id="preview-reload" class="info-btn"
+            <div id="preview-reload" class="info-btn" 
                 @click="refreshPreview()"
-            >
+             v-if="deviceNumber > 0">
                 <i class="i-refresh iconfont"></i>
             </div>
         </div>

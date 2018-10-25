@@ -85,6 +85,7 @@ canvas {
 
 #GameDiv {
     visibility: hidden;
+    overflow: hidden;
 }
 
 .wrapper {

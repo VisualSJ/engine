@@ -8,7 +8,7 @@ const project = require('./../../../../lib/project');
 const dialog = require('./../../../../lib/dialog');
 const profile = require('./../../../../lib/profile');
 const setting = require('@editor/setting');
-
+const {getName} = require('./../util');
 // 存放 dashboard 数据的 json 路径
 const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
 
@@ -81,5 +81,6 @@ exports.mounted = function() {
         dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
         dashProfile.save();
     }
-    this.directoryPath = dashProfile.get('recentProPath') + '\\NewProject';
+    let path = getName(ps.join(dashProfile.get('recentProPath'), '/NewProject'));
+    this.directoryPath = path;
 };

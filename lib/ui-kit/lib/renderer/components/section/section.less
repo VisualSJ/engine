@@ -8,7 +8,7 @@
         cursor: pointer;
         padding: 0.04em 0 0.04em 0.7em;
         margin: var(--header-space, 0);
-        border-bottom: 1px solid var(--focus-c, @border-color);
+        border-bottom: 1px solid var(--border-c);
         i {
             position: absolute;
             left: 0;
@@ -19,7 +19,7 @@
             margin-right: 0.2em;
             width: 0.5em;
             height: 0.5em;
-            background-color: var(--focus-c, @border-color);
+            background-color: var(--focus-c);
             clip-path: polygon(0 0, 0 100%, 100% 50%);
         }
         slot {
@@ -45,9 +45,6 @@
 }
 :host([huge]) {
     font-size: 2rem;
-}
-:host([focused]) {
-    --focus-c: @focused-color;
 }
 :host([expand]) {
     & > .content {

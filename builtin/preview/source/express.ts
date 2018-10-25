@@ -41,7 +41,6 @@ export async function start() {
             enginPath = info.path;
         }
         createReadStream(join(enginPath, req.params[0]), { encoding: 'utf8' }).pipe(res);
-        // res.sendFile(join(enginPath, req.params[0]));
     });
 
     // 获取项目对应类型的脚本文件

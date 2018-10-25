@@ -141,7 +141,7 @@
         q('#sceneIsEmpty').style.display = 'block';
     }
 
-    // 绑定相关按钮处理时间
+    // 绑定相关按钮处理事件
     function handles() {
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;

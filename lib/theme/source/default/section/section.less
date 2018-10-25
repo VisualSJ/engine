@@ -22,9 +22,9 @@
 
 :host([focused]) {
   header {
-    color: var(--focus-c);
+      color: var(--focus-c);
+      border-bottom: 1px solid var(--focus-c);
   }
-  --border-c: var(--focus-c);
 }
 
 :host([disabled]) {
@@ -32,6 +32,6 @@
   color: var(--disaled-c);
   header {
     color: var(--color, @c-border);
+    border-bottom: 1px solid var(--disaled-c);
   }
-  --border-c: var(--disaled-c);
 }

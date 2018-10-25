@@ -31,10 +31,13 @@
     }
 
     &[active] {
-        background: rgba(77, 155, 216, 0.78);
-        color: white;
+        background: var(--panel-focus-c);
+        color: var(--panel-focus-text-c);
     }
 
+    &:hover {
+        background: var(--panel-hover-c);
+    }
     & > .name {
         flex: 1;
         display: flex;
@@ -68,6 +71,7 @@
 
 :host([focused]) {
     .asset-item[active] {
-        background: #059;
+        background: var(--panel-focus-c);
+        color: var(--panel-focus-text-c);
     }
 }

@@ -7,7 +7,11 @@
     "--main-dark-bg": "#333",
     "--main-bg": "#474747",
     "--default-text-c": "#bdbdbd",
-  
+
+    "--panel-focus-c": "#717171",
+    "--panel-hover-c": "#555",
+    "--panel-focus-text-c":"white",
+
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",
     "--blue-c": "#3d85c6",

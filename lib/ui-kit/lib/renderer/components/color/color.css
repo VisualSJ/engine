@@ -2,8 +2,11 @@
   user-select: none;
   outline: none;
   display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  font-size: inherit;
+  line-height: inherit;
+  font-family: inherit;
+  color: var(--default-text-c, #949494);
 }
 :host {
   user-select: none;
@@ -21,11 +24,12 @@
   width: 100%;
 }
 :host .color {
-  height: 85%;
+  height: 80%;
 }
 :host .alpha-line {
   background-color: white;
-  height: 15%;
+  height: 20%;
+  border-top: 1px solid black;
 }
 :host ui-color-picker {
   position: absolute;
@@ -34,5 +38,5 @@
   display: none;
 }
 :host([focused]) {
-  border-color: #07d;
+  border-color: #fd942b;
 }

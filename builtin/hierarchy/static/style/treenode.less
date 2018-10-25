@@ -20,8 +20,8 @@
     }
     &[state] {
         &:hover {
-            color: @orange;
-            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--focus-c);
+            background-color: var(--panel-hover-c);
             .lock {
                 display: inline-block;
             }
@@ -115,8 +115,8 @@
 :host([focused]) {
     .tree {
         .treenode[active="true"] {
-            background-color: rgba(77, 155, 216, 0.78);
-            color: white;
+            background: var(--panel-focus-c);
+            color: var(--panel-focus-text-c);
         }
     }
 }

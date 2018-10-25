@@ -14,7 +14,7 @@ section {
     flex: 1;
     display: flex;
     overflow-y: auto;
-    background:  var(--main-bg);
+    background:  var(--main-dark-bg);
 }
 
 .item {
@@ -57,11 +57,10 @@ section {
         transform: rotate(90deg);
     }
     &:nth-child(odd) {
-        background: var(--main-dark-bg);
+        background: var(--main-bg);
     }
     &:hover {
-        background: rgba(77, 155, 216, 0.78);
-        color: white;
+        background: var(--panel-hover-c);
     }
 }
 .item[fold] {
