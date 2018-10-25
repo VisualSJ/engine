@@ -2,19 +2,17 @@
 
 exports.template = `
 <div class="cc-size vue-comp-ui">
-    <div class="name"
-        :style="paddingStyle"
-    >
-        {{name ? name : 'Unknown'}}
+    <div class="name">
+        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
     <div class="value" v-if="dump">
-        <span>W</span>
+        <span class="label">W</span>
         <ui-num-input
             :value="dump.value.width"
             :disabled="disabled"
             @confirm.stop="_onWidthConfirm"
         ></ui-num-input>
-        <span>H</span>
+        <span class="label">H</span>
         <ui-num-input
             :value="dump.value.height"
             :disabled="disabled"
@@ -24,13 +22,13 @@ exports.template = `
     </div>
 
     <div class="value" v-else>
-        <span>W</span>
+        <span class="label">W</span>
         <ui-num-input
             :value="metaVal.width"
             :disabled="disabled"
             @confirm.stop="_onWidthConfirm"
         ></ui-num-input>
-        <span>H</span>
+        <span class="label">H</span>
         <ui-num-input
             :value="metaVal.height"
             :disabled="disabled"

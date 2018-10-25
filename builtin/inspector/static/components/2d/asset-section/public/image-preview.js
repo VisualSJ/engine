@@ -9,42 +9,6 @@ exports.props = ['meta'];
 
 exports.data = function() {
     return {
-        cssHost: {
-            position: 'relative',
-            height: '300px',
-            overflow: 'hidden',
-            boxShadow: 'inset 0 0 15px 5px rgba(0,0,0,0.5)',
-            background: '#292929'
-        },
-        cssContent: {
-            position: 'absolute',
-            top: '15px',
-            right: '15px',
-            bottom: '15px',
-            left: '15px'
-        },
-        cssCanvas: {
-            // 'max-width': '100%',
-            margin: 'auto',
-            display: 'block',
-            backgroundImage: "url('packages://inspector/static/checkerboard-32x32.png')",
-            backgroundSize: '32px 32px',
-            backgroundPosition: 'center center'
-        },
-        cssLabels: {
-            position: 'absolute',
-            bottom: '10px',
-            width: '100%'
-        },
-        cssLabel: {
-            textAlign: 'center',
-            padding: '2px 10px',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            borderRadius: '3px',
-            color: '#fff',
-            background: '#4281b6'
-        },
         info: '0 x 0'
     };
 };
@@ -118,7 +82,7 @@ exports.methods = {
         if (this.meta.__assetType__ === 'texture') {
             canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
             this.meta.subMetas &&
-                [this.meta.subMetas['sprite-frame']].forEach((item) => {
+                [this.meta.subMetas['sprite-frame']].forEach(item => {
                     const { userData = {} } = item;
                     const ratioX = canvasWidth / this._image.width;
                     const ratioY = canvasHeight / this._image.height;
@@ -215,7 +179,7 @@ exports.methods = {
 
 exports.mounted = function() {
     let file = join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), this.meta.uuid);
-    file += this.meta.files.filter((file) => !file.includes('json'))[0];
+    file += this.meta.files.filter(file => !file.includes('json'))[0];
     this.loadImage(file);
     // todo
     // eventBus.on('panel:resize', this.updateImage);

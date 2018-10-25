@@ -2,19 +2,17 @@
 
 exports.template = `
 <div class="cc-vec2 vue-comp-ui">
-    <div class="name"
-        :style="paddingStyle"
-    >
-        {{name ? name : 'Unknown'}}
+    <div class="name">
+        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
     <div class="value" v-if="dump">
-        <span>X</span>
+        <span class="label">X</span>
         <ui-num-input
             :value="dump ? dump.value.x : 0"
             :disabled="disabled"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
-        <span>Y</span>
+        <span class="label">Y</span>
         <ui-num-input
             :value="dump ? dump.value.y : 0"
             :disabled="disabled"
@@ -23,13 +21,13 @@ exports.template = `
         <slot name="suffix"></slot>
     </div>
     <div class="value" v-else>
-        <span>X</span>
+        <span class="label">X</span>
         <ui-num-input
             :value="metaVal ? metaVal.x : 0"
             :disabled="disabled"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
-        <span>Y</span>
+        <span class="label">Y</span>
         <ui-num-input
             :value="metaVal ? metaVal.y : 0"
             :disabled="disabled"

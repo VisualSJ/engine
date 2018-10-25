@@ -2,10 +2,8 @@
 
 exports.template = `
 <div class="cc-dragable vue-comp-ui">
-    <div class="name"
-         :style="paddingStyle"
-    >
-        {{name ? name : 'Unknown'}}
+    <div class="name">
+        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
     <div class="value" v-if="dump">
         <ui-drag-object

@@ -24,6 +24,22 @@
     margin: -0.5em;
 }
 /*------------------ layout --------------*/
+ui-section {
+    display: block;
+}
+ui-input,
+ui-num-input,
+ui-select,
+ui-checkbox,
+ui-color,
+ui-drag-object,
+ui-button {
+    margin-right: 0.25em;
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
 .fit {
     position: absolute;
     top: 0;
@@ -100,6 +116,82 @@ ui-prop.vector > div[slot='content'] {
         overflow: hidden;
         margin-right: 3px;
     }
+    .tiny {
+        line-height: 0.9;
+    }
+    & > .value {
+        .label {
+            margin-right: 5px;
+        }
+    }
+}
+/* -------------- image preview start ----------------------------- */
+.image-preview {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    box-shadow: inset 0 0 15px 5px rgba(0, 0, 0, 0.5);
+    background: var(--main-dark-bg, #292929);
+    .css-content {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        bottom: 15px;
+        left: 15px;
+    }
+    .css-canvas {
+        max-width: 100%;
+        margin: auto;
+        display: block;
+        background-image: url('packages://inspector/static/checkerboard-32x32.png');
+        background-size: 32px 32px;
+        background-position: center center;
+    }
+    .css-labels {
+        position: absolute;
+        bottom: 10px;
+        width: 100%;
+    }
+    .css-label {
+        text-align: center;
+        padding: 2px 10px;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 3px;
+        color: #fff;
+        background: #4281b6;
+    }
+}
+
+/* -------------- asset header start ----------------------------- */
+
+.asset-header {
+    display: flex;
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #666;
+    height: 24px;
+    overflow: hidden;
+    .css-icon {
+        margin-right: 5px;
+    }
+    .css-title {
+        font-weight: bold;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+/* -------------- texture start ----------------------------- */
+
+/* -------------- block input events start ----------------------------- */
+.block-input-events {
+    background-color: #333;
+    border: 1px solid #666;
+    border-radius: 3px;
+    margin: 10px;
+    padding: 10px;
 }
 /* -------------- widget start ------------------------------- */
 .cc-widget-container {

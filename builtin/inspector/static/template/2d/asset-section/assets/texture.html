@@ -2,13 +2,13 @@
 
     <!-- 头部工具栏 -->
    <header
-        :style="cssHost"
+        class="asset-header"
     >
-        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <!-- <img class="css-icon" :src="icon"></img> -->
         <div
-            :style="cssTitle"
+            class="css-title"
         >
-            {{meta ? meta.__name__  : ''}}
+            {{meta ? meta.__name__ : ''}}
         </div>
         <span class="flex-1"></span>
     
@@ -63,7 +63,7 @@
         </enum>
 
 
-        <ui-section expand path="meta.subMetas.sprite-frame"
+        <ui-section class="block" expand path="meta.subMetas.sprite-frame"
             v-if="meta.userData.type === 'sprite'"
         >
             <div slot="header" class="header">Sprite</div>

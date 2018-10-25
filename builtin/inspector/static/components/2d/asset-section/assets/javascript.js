@@ -7,20 +7,7 @@ exports.template = readTemplate('2d', './asset-section/assets/javascript.html');
 exports.props = ['meta', 'info'];
 
 exports.data = function() {
-    return {
-        cssHost: {
-            display: 'flex',
-            flex: 'none',
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: '3px 10px 5px',
-            borderBottom: '1px solid #666',
-            height: '24px',
-            overflow: 'hidden'
-        },
-        cssIcon: { marginRight: '5px' },
-        cssTitle: { fontWeight: 'bold', textOverflow: 'ellipsis', overflow: 'hidden' }
-    };
+    return {};
 };
 
 exports.components = {

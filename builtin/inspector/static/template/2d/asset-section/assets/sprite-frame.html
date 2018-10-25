@@ -4,13 +4,13 @@
     <!-- 头部工具栏 -->
     <header
         v-if="!child"
-        :style="cssHost"
+        class="asset-header"
     >
-        <!-- <img :style="cssIcon" :src="icon"></img> -->
+        <!-- <img class="css-icon" :src="icon"></img> -->
         <div
-            :style="cssTitle"
+            class="css-title"
         >
-            {{meta ? meta.__name__  : ''}}
+            {{meta ? meta.__name__ : ''}}
         </div>
         <span class="flex-1"></span>
     
