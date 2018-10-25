@@ -1,15 +1,14 @@
-.DS_Store
-.vscode
-# node 模块
-node_modules
-/**/package-lock.json
-
 # 临时文件
 .*
+!.npmrc
+
+# node 模块
+node_modules/
+**/package-lock.json
 
 # 插件内的构建后目录
-builtin/**/dist
-lib/theme/**/dist
+/builtin/**/dist
+/lib/theme/**/dist
 
 # 引擎文件夹
-builtin/engine/resources
+/builtin/engine/resources

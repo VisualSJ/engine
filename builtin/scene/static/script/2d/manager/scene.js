@@ -94,7 +94,7 @@ function queryNodeTree(uuid) {
      */
     const step = (node) => {
 
-        if (!node.showInEditor) {
+        if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
             return null;
         }
 

@@ -43,13 +43,9 @@ class Camrea {
         this.foregroundNode = new cc.Node('Editor Scene Foreground');
         this.backgroundNode = new cc.Node('Editor Scene Background');
 
-        // 编辑器使用的节点不需要存储
-        this.foregroundNode._objFlags |= cc.Object.Flags.DontSave;
-        this.backgroundNode._objFlags |= cc.Object.Flags.DontSave;
-
-        // 编辑器使用的节点不需要显示在层级管理器总
-        this.foregroundNode.showInEditor = false;
-        this.backgroundNode.showInEditor = false;
+        // 编辑器使用的节点不需要存储和显示在层级管理器
+        this.foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+        this.backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
 
         // 设置背景和前景节点的排序
         this.foregroundNode.zIndex = cc.macro.MAX_ZINDEX;
