@@ -40,6 +40,7 @@
   border: 1px solid var(--border-c, #333);
   background: var(--main-dark-bg);
   color: var(--focus-c, #fd942b);
+  border-radius: var(--border-radius-n);
 }
 :host textarea {
   -webkit-appearance: none;

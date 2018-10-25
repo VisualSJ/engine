@@ -1,141 +1,148 @@
-@import "../base/base";
-@import "../base//variable";
+@import '../base/base';
+@import '../base//variable';
 :host {
-  border-color: var(--border-dark-c);
-  background-image: var(--image-bg);
+    border-color: var(--border-dark-c);
+    background-image: var(--image-bg);
 }
 
 :host(:hover) {
-  background-image: var(--image-light-bg);
-  color: var(--hover-c);
+    background-image: var(--image-light-bg);
+    color: white;
 }
 
 :host([pressed]) {
-  background-image: var(--image-bg);
+    background-image: var(--image-bg);
 }
 
 // focus的颜色设置需在Hover之后
 
 :host([focused]) {
-  border-color: var(--focus-c);
+    border-color: var(--focus-c);
 }
 
 :host([disabled]) {
-  cursor: default;
-  opacity: var(--opacity-n, 0.6);
-  background-image: linear-gradient(#585858, #444);
-  border-color: var(--disabled-c);
+    cursor: default;
+    opacity: var(--opacity-n, 0.6);
+    background-image: linear-gradient(#585858, #444);
+    border-color: var(--disabled-c);
 }
 
-:host(.red), :host(.blue), :host(.green) {
-  --border-dark-c: transparent;
-  --default-text-c: white;
+:host(.red),
+:host(.blue),
+:host(.green),
+:host(.yellow) {
+    --border-dark-c: transparent;
+    color: white;
 }
 
 // red
 :host(.red:hover) {
-  background-image: linear-gradient(#ff8080, @c-red-light);
+    background-image: linear-gradient(#ff8080, @c-red-light);
+    color: white;
 }
 
 :host(.red[pressed]) {
-  background-image: linear-gradient(@c-red-dark, @c-red);
+    background-image: linear-gradient(@c-red-dark, @c-red);
 }
 
 :host(.red),
 :host(.red[disabled]) {
-  background-image: linear-gradient(@c-red-light, @c-red);
+    background-image: linear-gradient(@c-red-light, @c-red);
 }
 
 // green
 :host(.green:hover) {
-  background-image: linear-gradient(#5add94, @c-green-light);
+    background-image: linear-gradient(#5add94, @c-green-light);
+    color: white;
 }
 
 :host(.green[pressed]) {
-  background-image: linear-gradient(@c-green-dark, @c-green);
+    background-image: linear-gradient(@c-green-dark, @c-green);
 }
 
 :host(.green),
 :host(.green[disabled]) {
-  background-image: linear-gradient(@c-green-light, @c-green);
+    background-image: linear-gradient(@c-green-light, @c-green);
 }
 // blue
 :host(.blue:hover) {
-  background-image: linear-gradient(#a1bffc, @c-blue-light);
+    background-image: linear-gradient(#99b9d8, @c-blue-light);
+    color: white;
 }
 
 :host(.blue[pressed]) {
-  background-image: linear-gradient(@c-blue-dark, @c-blue);
+    background-image: linear-gradient(@c-blue-dark, @c-blue);
 }
 
 :host(.blue),
 :host(.blue[disabled]) {
-  background-image: linear-gradient(@c-blue-light, @c-blue);
+    background-image: linear-gradient( @c-blue-light, @c-blue);
 }
 
 // yellow
 :host(.yellow:hover) {
-  background-image: linear-gradient(#ffd96b, @c-yellow-light);
+    background-image: linear-gradient(#ffd96b, @c-yellow-light);
+    color: white;
 }
 
 :host(.yellow[pressed]) {
-  background-image: linear-gradient(@c-yellow-dark, @c-yellow);
+    background-image: linear-gradient(@c-yellow-dark, @c-yellow);
 }
 
 :host(.yellow),
 :host(.yellow[disabled]) {
-  background-image: linear-gradient(@c-yellow-light, @c-yellow);
+    background-image: linear-gradient(@c-yellow-light, @c-yellow);
 }
 
 // 带透明背景的按钮
 :host(.transparent) {
-  background: none;
-  border: 1px solid transparent;
-  font-weight: bold;
+    background: none;
+    border: 1px solid transparent;
+    font-weight: bold;
 }
 
 :host(.transparent:hover) {
-  background: #585858;
+    background: #585858;
 }
 
 :host(.transparent[pressed]) {
-  opacity: 0.7;
+    opacity: 0.7;
 }
 
 :host(.transparent.red) {
-  color: @c-red;
+    color: @c-red;
 }
 
 :host(.transparent.red:hover) {
-  color: @c-red-light;
-  background: @c-red-tran;
+    color: @c-red-light;
+    background: @c-red-tran;
 }
 
 :host(.transparent.green) {
-  color: @c-green;
+    color: @c-green;
 }
 
 :host(.transparent.green:hover) {
-  color: @c-green-light;
-  background: @c-green-tran;
+    color: @c-green-light;
+    background: @c-green-tran;
 }
 
 :host(.transparent.blue) {
-  color: @c-blue;
+    color: @c-blue;
 }
 
 :host(.transparent.blue:hover) {
-  color: @c-blue-light;
-  background: @c-blue-tran;
+    color: @c-blue-light;
+    background: @c-blue-tran;
 }
 
 :host(.transparent.yellow) {
-  color: @c-yellow;
+    color: @c-yellow;
 }
 
 :host(.transparent.yellow:hover) {
-  color: @c-yellow-light;
-  background: @c-yellow-tran;
+    color: @c-yellow-light;
+    background: @c-yellow-tran;
 }
 
 // disabled的颜色设置需在Hover之后
@@ -144,7 +151,7 @@
 :host(.transparent.green[disabled]),
 :host(.transparent.blue[disabled]),
 :host(.transparent.yellow[disabled]) {
-  cursor: default;
-  background: none;
-  border: 1px solid transparent;
+    cursor: default;
+    background: none;
+    border: 1px solid transparent;
 }

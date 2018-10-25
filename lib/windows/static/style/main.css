@@ -48,8 +48,12 @@
     padding-right: 12px;
     white-space: nowrap;
     background: var(--image-bg);
-    border: 1px solid var(--main-dark-bg);
+    border: 1px solid var(--border-dark-c);
     border-radius: 4px;
+}
+
+.info-btn .i-folder {
+    margin-right: 5px;
 }
 
 .info-btn:hover {
