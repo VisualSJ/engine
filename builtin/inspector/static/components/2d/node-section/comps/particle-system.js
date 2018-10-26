@@ -20,7 +20,7 @@ exports.methods = {
             //     return item === 0;
             // });
         } else {
-            return emitterMode.value === 0;
+            return +emitterMode.value === 0;
         }
     },
 
@@ -31,7 +31,7 @@ exports.methods = {
             //     return item === 1;
             // });
         } else {
-            return emitterMode.value === 1;
+            return +emitterMode.value === 1;
         }
     },
 

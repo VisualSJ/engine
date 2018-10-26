@@ -2,9 +2,9 @@
     v-if="node"
     @property-changed="onPropertyChanged($event)"
 >
-
+    
     <!-- 头部的 active 与节点名称等 -->
-    <div class="top-header">
+    <cc-structure class="top-header" :dump="node">
         <ui-checkbox class="rgap" path="active"
             :value="node.active.value"
             @click.prevent.stop=""
@@ -17,7 +17,7 @@
         >
             <i class="iconfont icon-add"></i>
         </ui-button>
-    </div>
+    </cc-structure>
 
     <!-- node 上挂载的可修改数据 -->
     <node-props

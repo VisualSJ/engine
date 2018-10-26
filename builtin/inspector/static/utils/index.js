@@ -29,6 +29,7 @@ function readComponent(...paths) {
     comp.components.number = require('../components/public/number');
     comp.components.string = require('../components/public/string');
     comp.components['cc-dragable'] = require('../components/public/cc-dragable');
+    comp.components['cc-structure'] = require('../components/public/cc-structure');
     return comp;
 }
 
