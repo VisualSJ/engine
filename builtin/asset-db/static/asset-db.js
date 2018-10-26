@@ -32,6 +32,8 @@ const AssetInfo = {
 };
 
 window.Manager = {
+    AssetInfo,
+    AssetWorker,
     get serialize() {
         return this._serialize();
     }
@@ -95,6 +97,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     const options = {
         target: info.assets,
         library: info.library,
+        temp: info.temp,
     };
 
     // 保证文件夹存在

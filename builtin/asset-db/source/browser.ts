@@ -265,8 +265,18 @@ module.exports = {
             const file = join(dir, info.source.replace(assetProtocol, ''));
             const base = basename(file);
 
-            const target = file.replace(base, name);
-            rename(file, target);
+            const source = {
+                file,
+                meta: file + '.meta',
+            };
+
+            const target = {
+                file: source.file.replace(base, name),
+                meta: source.meta.replace(base, name),
+            };
+
+            rename(source.meta, target.meta);
+            rename(source.file, target.file);
         },
 
         /**
@@ -337,7 +347,8 @@ async function createWorker() {
         assetWorker.send('asset-worker:startup-database', {
             name: 'assets',
             assets: join(Editor.Project.path, 'assets'),
-            library: join(Editor.Project.path, 'library')
+            library: join(Editor.Project.path, 'library'),
+            temp: join(Editor.Project.path, 'temp/asset-db'),
         });
     });
 
