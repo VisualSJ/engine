@@ -275,14 +275,28 @@ function removeComponent(uuid, component) {
  * @param {*} name
  * @param {*} data
  */
-async function createNode(uuid, name = 'New Node', data) {
+async function createNode(uuid, name = 'New Node', dump) {
     if (!cc.director._scene) {
         return;
     }
 
     const parent = query(uuid);
     const node = new cc.Node();
-    node.name = name;
+
+    if (dump) {
+        const dumpData = queryNode(dump);
+        // 这几个属性不需要赋给一个新节点
+        delete dumpData.uuid;
+        delete dumpData.parent;
+        delete dumpData.children;
+
+        dumpUtils.restoreNode(node, dumpData);
+    }
+
+    if (name) {
+        node.name = name;
+    }
+
     parent.addChild(node);
 
     // 爬取节点树上的所有节点数据

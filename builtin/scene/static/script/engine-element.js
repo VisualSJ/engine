@@ -200,7 +200,7 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'createNode',
-            params: [options.parent, options.name]
+            params: [options.parent, options.name, options.dump]
         });
     }
 

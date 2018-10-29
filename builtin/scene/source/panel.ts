@@ -266,6 +266,7 @@ export const messages = {
         panel.recordHistory(rt.parentUuid);
         panel.recordHistory(rt.uuid);
         Editor.Ipc.sendToAll('scene:node-created', rt.uuid);
+        return rt.uuid;
     },
 
     /**

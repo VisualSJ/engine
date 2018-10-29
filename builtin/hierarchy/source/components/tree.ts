@@ -647,15 +647,35 @@ export const methods = {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
-        copyNode.forEach((id: string) => {
-            const node = getValidNode(id);
-            if (node) {
-                Editor.Ipc.sendToPanel('scene', 'create-node', { // 发送创建节点
-                    parent: uuid,
-                    name: node.name,
-                });
-            }
-        });
+
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
+        _forEach(copyNode, uuid);
+
+        async function _forEach(uuids: string[], parent: string) {
+            uuids.forEach((id: string) => {
+                const node = getValidNode(id);
+                if (node) {
+                    // 循环其子集
+                    let childrenUuids;
+                    if (Array.isArray(node.children)) {
+                        childrenUuids = node.children.map((child) => child.uuid);
+                    }
+
+                    (async (parent, uuid) => {
+                        const newParent = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+                            parent,
+                            dump: uuid,
+                        });
+
+                        if (childrenUuids && childrenUuids.length > 0) {
+                            _forEach(childrenUuids, newParent);
+                        }
+                    })(parent, node.uuid);
+                }
+            });
+        }
     },
 
     /**
@@ -906,7 +926,7 @@ function addNodeIntoTree(dumpData: any) {
     const newNode: ItreeNode = {
         name: dumpData.name.value,
         uuid,
-        children: dumpData.children.value,
+        children: [],
         type: dumpData.__type__,
 
         invalid: false,
