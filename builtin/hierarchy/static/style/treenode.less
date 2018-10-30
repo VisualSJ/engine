@@ -21,7 +21,7 @@
     &[state] {
         &:hover {
             color: var(--focus-c);
-            background-color: var(--panel-hover-c);
+            background-color: var(--item-blur-c);
             .lock {
                 display: inline-block;
             }
@@ -114,7 +114,7 @@
 :host([focused]) {
     .tree {
         .treenode[active="true"] {
-            background: var(--panel-focus-c);
+            background: var(--item-hover-c);
             color: var(--panel-focus-text-c);
         }
     }

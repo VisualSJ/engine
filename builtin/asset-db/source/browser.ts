@@ -337,6 +337,7 @@ async function createWorker() {
 
     // 启动 worker 后的初始化操作
     assetWorker.on('asset-worker:startup', () => {
+        // 初始化自进程
         assetWorker.send('asset-worker:init', {
             engine: info.path,
             type: Editor.Project.type,
@@ -344,6 +345,15 @@ async function createWorker() {
             utils: info.utils
         });
 
+        // 启动内置数据库
+        assetWorker.send('asset-worker:startup-database', {
+            name: 'internal',
+            assets: join(__dirname, '../static/internal', 'assets'),
+            library: join(__dirname, '../static/internal', 'library'),
+            temp: join(__dirname, '../static/internal', 'temp'),
+        });
+
+        // 启动项目数据库
         assetWorker.send('asset-worker:startup-database', {
             name: 'assets',
             assets: join(Editor.Project.path, 'assets'),

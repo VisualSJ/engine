@@ -63,6 +63,23 @@ const queryAsset = (uuid) => {
     for (let i = 0; i < keys.length; i++) {
         let key = keys[i];
         let db = AssetWorker[key];
+
+        if (!db) {
+            return null;
+        }
+
+        // 查找的是数据库
+        if (uuid === `db://${key}`) {
+            return {
+                db: key,
+                asset: {
+                    source: `db://${key}`, uuid: `db://${key}`,
+                    isDirectory() { return false; },
+                    meta: { importer: 'database', files: [], }
+                },
+            };
+        }
+
         let asset = db.getAsset(uuid || '');
         if (asset) {
             return {
@@ -190,11 +207,23 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
     // 返回所有的资源的基础数据
     let names = Object.keys(AssetWorker);
 
+    // 循环每个启动的 db
     for (let i = 0; i < names.length; i++) {
         const name = names[i];
         const db = AssetWorker[name];
         const uuids = Object.keys(db.uuid2asset);
 
+        // 手动添加 db 对象
+        assets.push({
+            source: `db://${name}`,
+            uuid: `db://${name}`,
+            importer: 'database',
+            isDirectory: false,
+            files: [],
+            subAssets: {},
+        });
+
+        // 当前 db 内的所有资源
         for (let j = 0; j < uuids.length; j++) {
             const uuid = uuids[j];
             const asset = db.uuid2asset[uuid];
@@ -307,7 +336,7 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
  * @param {*} asset
  */
 function searchSubAssets(assets, asset) {
-    const names = Object.keys(asset.subAssets);
+    const names = Object.keys(asset.subAssets || {});
     for (const name of names) {
         const subAsset = asset.subAssets[name];
         assets[name] = {

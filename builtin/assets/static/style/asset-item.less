@@ -31,7 +31,7 @@
     }
 
     &[active] {
-        background: var(--panel-focus-c);
+        background: var(--item-blur-c);
         color: var(--panel-focus-text-c);
     }
 
@@ -58,7 +58,7 @@
 
         & > input {
             line-height: 20px;
-            border: 1px solid #09f;
+            border: 1px solid var(--item-hover-c);
             padding: 0 3px;
             background: var(--main-dark-bg);
             outline: none;
@@ -71,7 +71,7 @@
 
 :host([focused]) {
     .asset-item[active] {
-        background: var(--panel-focus-c);
+        background: var(--item-hover-c);
         color: var(--panel-focus-text-c);
     }
 }

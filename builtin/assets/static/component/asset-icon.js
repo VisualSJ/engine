@@ -4,10 +4,10 @@ const { readFileSync, existsSync, outputFileSync } = require('fs-extra');
 const { join } = require('path');
 
 const map = {
+    database: { type: 'font', value: 'i-shujuku', },
     json: { type: 'font', value: 'i-json', },
     scene: { type: 'font', value: 'i-json', },
     directory: { type: 'font', value: 'i-folder', },
-    database: { type: 'font', value: 'i-folder', },
     javascript: { type: 'font', value: 'i-javascript', },
     typescript: { type: 'font', value: 'i-typescript', },
     'texture-packer': { type: 'font', value: 'i-zitigui-xianxing', },
