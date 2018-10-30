@@ -15,30 +15,6 @@ class View extends window.HTMLElement {
         // 封装的 webview 通讯模块
         this.ipc = new HostIpc(this.$scene);
 
-        // 查询 asset 数据
-        this.ipc.on('query-asset-info', async (uuid) => {
-            return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        });
-
-        // 查询当前的数据信息（webview）刷新的时候，需要数据重置自身状态
-        this.ipc.on('query-scene-info', () => {
-            return {
-                path: this.info.path,
-                utils: this.info.utils,
-                compile: this.info.compile,
-                uuid: this.uuid
-            };
-        });
-
-        // 转发广播消息
-        this.ipc.on('broadcast', (...args) => {
-            Editor.Ipc.sendToAll(...args);
-        });
-
-        this.ipc.on('console', (type, ...args) => {
-            console[type](...args);
-        });
-
         this.uuid = null;
         this.version = null;
     }
@@ -56,14 +32,13 @@ class View extends window.HTMLElement {
 
         // 查询引擎数据, 并指定 webview 加载
         this.info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
-
         this.version = this.info.version;
+
+        // 初始化 ipc 监听
+        initIpc(this);
 
         // 载入指定页面
         this.$scene.loadURL(`packages://scene/static/template/${Editor.Project.type}-webview.html`);
-
-        // 打开调试工具
-        // this.$scene.openDevTools();
     }
 
     /**
@@ -193,6 +168,20 @@ class View extends window.HTMLElement {
     ///////////////////
 
     /**
+     * 重新加载某脚本
+     * @param {*} options
+     */
+    async loadScripts(options) {
+        return await this.ipc.send('call-method', {
+            module: 'Script',
+            handler: 'loadScripts',
+            params: [options.uuids]
+        });
+    }
+
+    ///////////////////
+
+    /**
      * 创建新节点
      */
     async createNode(options) {
@@ -279,6 +268,8 @@ class View extends window.HTMLElement {
         });
     }
 
+    ///////////////////
+
     /**
      * 操作记录：重置历史记录
      */
@@ -336,3 +327,59 @@ class View extends window.HTMLElement {
 }
 
 module.exports = View;
+
+//////////////////////
+// 私有方法
+
+/**
+ * 初始化 ipc 消息
+ */
+async function initIpc(elem) {
+    /////////////////////////
+    // 查询消息
+
+    // 查询当前的数据信息（webview）刷新的时候，需要数据重置自身状态
+    elem.ipc.on('query-engine', () => {
+        return {
+            path: elem.info.path,
+            utils: elem.info.utils,
+            compile: elem.info.compile,
+        };
+    });
+
+    // 查询当前启动的场景信息
+    elem.ipc.on('query-scene', () => {
+        return elem.uuid;
+    });
+
+    // 查询当前 asset 数据库使用的脚本文件
+    elem.ipc.on('query-scripts', async () => {
+        // 加载项目脚本
+        const assets = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+        const scripts = assets.map((asset) => {
+            if (asset.importer === 'javascript') {
+                return asset.uuid;
+            }
+        }).filter(Boolean);
+
+        return scripts;
+    });
+
+    //////////////////////////
+    // 转发消息
+
+    // 转发查询 asset 数据消息
+    elem.ipc.on('query-asset-info', async (uuid) => {
+        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    });
+
+    // 转发广播消息
+    elem.ipc.on('broadcast', (...args) => {
+        Editor.Ipc.sendToAll(...args);
+    });
+
+    // 转发控制台信息
+    elem.ipc.on('console', (type, ...args) => {
+        console[type](...args);
+    });
+}

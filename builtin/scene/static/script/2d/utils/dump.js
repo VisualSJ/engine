@@ -87,6 +87,12 @@ function dumpNode(node) {
     _fillerType(types, dump.__type__, dump);
 
     dump.__comps__.forEach((component) => {
+        const type = types[component.type];
+        Object.keys(type).forEach((key) => {
+            if (!component[key]) {
+                component[key] = type[key];
+            }
+        });
         _fillerType(types, component.type, component.value);
     });
 

@@ -63,6 +63,12 @@ class HostIpc extends EventEmitter {
             }
 
         });
+
+        this.$webview.addEventListener('did-start-loading', () => {
+            this.isReady = false;
+            this.isLock = false;
+            this.sendQueue = [];
+        });
     }
 
     /**

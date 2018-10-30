@@ -109,12 +109,21 @@ export const methods = {
 };
 
 export const messages = {
+
+    /**
+     * 场景准备就绪
+     */
     'scene:ready'() {
         panel.$.loading.hidden = true;
     },
+
+    /**
+     * 场景关闭
+     */
     'scene:close'() {
         panel.$.loading.hidden = false;
     },
+
     /**
      * 资源数据库准备就绪
      */
@@ -155,6 +164,16 @@ export const messages = {
         if (panel.__selectUuid === uuid) {
             panel.__selectUuid = '';
             panel.$.path.innerHTML = '';
+        }
+    },
+
+    /**
+     * 资源更改
+     */
+    async 'asset-db:asset-add'(uuid: string) {
+        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        if (info.importer === 'javascript') {
+            panel.$.scene.loadScripts({ uuids: [uuid], });
         }
     },
 

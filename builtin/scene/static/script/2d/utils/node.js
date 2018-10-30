@@ -13,7 +13,7 @@ function walkChild(cache, node) {
 
 /**
  * 爬取 engine 内打开的场景的节点数据
- * @param {*} cache 
+ * @param {*} cache
  * @param {*} level
  */
 function walk(cache, level) {

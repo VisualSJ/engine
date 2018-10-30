@@ -3,12 +3,13 @@
 import { Asset, Importer } from 'asset-db';
 import { transform } from 'babel-core';
 import { readFile } from 'fs-extra';
-import { extname } from 'path';
+
+const uuidUtils = require('../../../static/utils/uuid-utils');
 
 export default class JavascriptImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -37,10 +38,20 @@ export default class JavascriptImporter extends Importer {
         try {
             // 如果当前资源没有导入，则开始导入当前资源
             if (!(await asset.existsInLibrary('.js'))) {
-                const { code, map } = await this.compile(asset);
+                const target = await this.compile(asset);
+
+                const header = `
+'use strict';
+cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
+// ${asset.basename}\n
+                `;
+                const footer = `\ncc._RF.pop();\n`;
+
+                target.code = header + target.code + footer;
+
                 // @ts-ignore
-                asset.saveToLibrary('.js', code);
-                asset.saveToLibrary(`${asset.basename}.js.map`, JSON.stringify(map));
+                asset.saveToLibrary('.js', target.code);
+                asset.saveToLibrary('.js.map', JSON.stringify(target.map));
 
                 updated = true;
             }

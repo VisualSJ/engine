@@ -8,6 +8,10 @@ const ipc = require('../../ipc/webview');
 const { promisify } = require('util');
 const { get } = require('lodash');
 
+const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
+const Reg_NormalizedUuid = /^[0-9a-fA-F]{32}$/;
+const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
+
 let uuid2node = {};
 
 /**
@@ -61,7 +65,13 @@ async function serialize() {
 /**
  * 关闭一个场景
  */
-function close() { }
+function close() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 300);
+    });
+}
 
 /**
  * 查询一个节点的实例
@@ -249,6 +259,10 @@ function createComponent(uuid, component) {
     if (!node) {
         console.warn(`create component failed: ${uuid} does not exist`);
         return false;
+    }
+
+    if (Reg_Uuid.test(component) || Reg_NormalizedUuid.test(component) || Reg_CompressedUuid.test(component)) {
+        component = cc.js._getClassById(component);
     }
 
     node.addComponent(component);

@@ -80,7 +80,7 @@ async function engine(info) {
 }
 
 /**
- * 初始化一些引擎的工具函数
+ * 初始化一些工具函数
  * @param {*} path
  */
 function utils(path) {
@@ -88,13 +88,27 @@ function utils(path) {
     Manager._serialize = function() {
         return require(path + '/serialize');
     };
+
+    const backup = {
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+    };
+
+    console.warn = function(...args) {
+        backup.warn(...args);
+        ipc.send('console', 'warn', ...args);
+    };
+    console.error = function(...args) {
+        backup.error(...args);
+        ipc.send('console', 'error', ...args);
+    };
 }
 
 /**
  * 初始化编辑器内使用的 camera
  */
 async function system() {
-    require('../polyfills');
+    require('../polyfills/engine');
     await camera.init();
 }
 

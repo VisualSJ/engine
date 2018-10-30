@@ -181,6 +181,10 @@ export function load() {
         const result = path.join(Editor.Project.path, 'library', uri.host, uri.path);
         cb({ path: result });
     });
+
+    const projectScripts = require('./protocol/project-scripts');
+    require('electron').protocol
+        .registerStringProtocol('project-scripts', projectScripts.handler, projectScripts.error);
 }
 
 export function unload() {}
