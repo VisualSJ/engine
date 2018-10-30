@@ -11,6 +11,8 @@ class WebviewIpc extends EventEmitter {
 
         // 发送到 webview 的消息的队列
         this.sendQueue = [];
+
+        this.isLock = false;
     }
 
     /**
@@ -44,9 +46,10 @@ class WebviewIpc extends EventEmitter {
      */
     step() {
         const item = this.sendQueue[0];
-        if (!item) {
+        if (this.isLock || !item) {
             return;
         }
+        this.isLock = true;
         ipcRenderer.sendToHost('webview-ipc:send', item);
     }
 
@@ -90,5 +93,6 @@ ipcRenderer.on('webview-ipc:send', async (event, options) => {
 ipcRenderer.on('webview-ipc:send-reply', (event, error, args) => {
     const item = ipc.sendQueue.shift();
     item.callback(deserializeError(error), args);
+    ipc.isLock = false;
     ipc.step();
 });
