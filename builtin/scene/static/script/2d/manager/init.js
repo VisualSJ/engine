@@ -5,6 +5,7 @@
 
 const assets = require('../assets');
 const camera = require('./camera');
+const ipc = require('../../ipc/webview');
 
 let inited = false;
 
