@@ -1,4 +1,4 @@
-@import '../iconfont.less';
+@import './icon.less';
 @drag-bgcolor: #0c8a0c;
 
 :host {
@@ -66,12 +66,12 @@
     }
 }
 
-.viewBox {
+.view-box {
     flex: 1;
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
-    .scrollBar {
+    .scroll-bar {
         position: absolute;
         left: 0;
         top: 0;
@@ -80,7 +80,7 @@
         height: 0;
         overflow: hidden;
     }
-    .dirBox {
+    .select-box {
         opacity: 0;
         height: 3px;
         position: absolute;
@@ -89,8 +89,7 @@
         width: 100%;
         background-color: @drag-bgcolor;
         box-sizing: border-box;
-        transition: 0.3s all;
-        transition-delay: 0.1s;
+        transition: top 0.3s, height 0.3s;
     }
 }
 

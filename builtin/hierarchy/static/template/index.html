@@ -18,17 +18,17 @@
         ></i>
     </div>
 
-    <div class="viewBox" ref="viewBox"
-        @mousedown="popupContextMenu($event)"
+    <div class="view-box" ref="viewBox"
+        @mousedown="popupContext($event)"
     >
         <tree ref="tree"
         ></tree>
-        <div class="dirBox" 
-            v-if="dirBox!==false"
-            :style="{ top: dirBox[0] + 'px', height: dirBox[1] + 'px' }"
+        <div class="select-box" 
+            v-if="selectBox!==false"
+            :style="selectBox"
         >
         </div>
-        <div class=scrollBar
+        <div class=scroll-bar
             :style="{ height: treeHeight + 'px'}"
         ></div>
     </div>

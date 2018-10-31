@@ -19,6 +19,7 @@ declare interface ItreeNode {
     invalid: boolean; // 是否可用
     isLock: boolean; // 是否锁定
     top: number; // top 位置
+    left: number; // 缩进的大小
     depth: number; // 树形层级
     isParent: boolean; // 是否是父节点
     isExpand: boolean; // 是否展开显示

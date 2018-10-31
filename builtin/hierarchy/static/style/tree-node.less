@@ -1,7 +1,7 @@
 @orange: #f90;
 @blue: #09f;
 @green: #0f0;
-.treenode {
+.tree-node {
     display: flex;
     height: 20px;
     line-height: 20px;
@@ -16,7 +16,7 @@
         background-color: transparent !important;
     }
     &[draging] {
-        color: #fff !important;
+        background-color: transparent !important;
     }
     &[state] {
         &:hover {
@@ -93,7 +93,7 @@
 }
 .tree {
     &[state="search"] {
-        >.treenode {
+        >.tree-node {
             .name {
                 margin-left: 6px;
             }
@@ -103,7 +103,7 @@
         }
     }
     &[hoving] {
-        >.treenode {
+        >.tree-node {
             &[insert] {
                 color: @orange;
             }
@@ -113,8 +113,8 @@
 
 :host([focused]) {
     .tree {
-        .treenode[active="true"] {
-            background: var(--item-hover-c);
+        .tree-node[active="true"] {
+            background: var(--panel-focus-c);
             color: var(--panel-focus-text-c);
         }
     }

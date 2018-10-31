@@ -6,7 +6,10 @@ import { extname, join } from 'path';
 let vm: any = null;
 
 const nodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
+const iconWidth: number = 18; // 树形节点 icon 的宽度
+const paddingTop: number = 4; // 树形头部的间隔，为了保持美观
 
+let timeOutId: any;
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
  * 将所有有展开的节点按照 key = position.top 排列，value = ItreeNode
@@ -28,7 +31,7 @@ export const template = readFileSync(
 );
 
 export const components = {
-    treenode: require('./treenode')
+    'tree-node': require('./tree-node')
 };
 
 export function data() {
@@ -42,7 +45,7 @@ export function data() {
         viewHeight: 0, // 当前树形的可视区域高度
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
-        dirBox: [], // 拖动时高亮的目录区域 [top, height] 或者 false 不显示
+        selectBox: false, // 拖动时高亮的目录区域 {top, height} 或者 false 不显示
         newNodeNeedToRename: false // 由于是异步，存在新建，拖拽进新文件，移动节点这三个过程的新建无法区分，所以需要用第三方变量记录该 rename 的时候
     };
 }
@@ -57,8 +60,8 @@ export const watch = {
     /**
      * 高亮的目录区域
      */
-    dirBox() {
-        vm.$parent.dirBox = vm.dirBox;
+    selectBox() {
+        vm.$parent.selectBox = vm.selectBox;
     },
     /**
      * scrollTop 变化，刷新树形
@@ -90,12 +93,25 @@ export function mounted() {
 
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
-        // 取消选中，避免样式重叠
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        clearTimeout(timeOutId);
+        timeOutId = setTimeout(() => {
+            vm.dragOver('', 'after');
+        }, 500);
     });
     // @ts-ignore
-    this.$el.addEventListener('drop', () => {
-        // TODO:
+    this.$el.addEventListener('drop', (event) => {
+        const dragData = event.dataTransfer.getData('dragData');
+        let data: IdragNode;
+        if (dragData === '') {
+            // @ts-ignore
+            data = {};
+        } else {
+            data = JSON.parse(dragData);
+        }
+
+        data.to = treeData.uuid; // cc.Scene 根节点
+        data.insert = 'inside';
+        vm.drop(data);
     });
     // @ts-ignore
     this.$el.addEventListener('click', () => {
@@ -498,22 +514,41 @@ export const methods = {
      * 拖动中感知当前所处的文件夹，高亮此文件夹
      */
     dragOver(uuid: string, position: string) {
+        clearTimeout(timeOutId);
         // @ts-ignore
-        const node: ItreeNode = getNodeFromMap(uuid);
-        let top = node.top + 4;
+        let node: ItreeNode;
+        if (uuid === '') {
+            // @ts-ignore
+            node = {
+                // @ts-ignore
+                top: this.$el.lastElementChild.offsetTop,
+                left: 0
+            };
+        } else {
+            // @ts-ignore
+            node = getNodeFromMap(uuid);
+        }
+
+        let top = node.top + paddingTop;
         let height = nodeHeight;
+        const left = node.left;
         switch (position) {
             case 'before':
                 height = 3;
                 break;
             case 'after':
-                top += nodeHeight;
                 height = 3;
+                top += nodeHeight;
                 break;
         }
 
         // @ts-ignore
-        this.dirBox = [top, height];
+        this.selectBox = {
+            top: top + 'px',
+            height: height + 'px',
+            left: left + 'px',
+        };
+
     },
 
     /**
@@ -523,13 +558,18 @@ export const methods = {
      */
     drop(json: IdragNode) {
         // @ts-ignore 隐藏高亮框
-        this.dirBox = false;
-
-        const [toNode, toIndex, toArr, toParent] = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
+        this.selectBox = false;
 
         if (!json.from) {
             return;
         }
+
+        if (json.from === json.to) { // 移动到原节点
+            return;
+        }
+
+        const [toNode, toIndex, toArr, toParent] = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
+
         const uuids = json.from.split(',');
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
@@ -545,7 +585,7 @@ export const methods = {
 
             // 内部平级移动
             // @ts-ignore
-            if (fromParent.uuid === toParent.uuid && ['before', 'after'].includes(json.insert)) {
+            if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
                 // @ts-ignore
                 affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
 
@@ -660,7 +700,7 @@ export const methods = {
                     // 循环其子集
                     let childrenUuids;
                     if (Array.isArray(node.children)) {
-                        childrenUuids = node.children.map((child) => child.uuid);
+                        childrenUuids = node.children.map((child: ItreeNode) => child.uuid);
                     }
 
                     (async (parent, uuid) => {
@@ -752,11 +792,16 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
     }
 
     obj.children.forEach((one: ItreeNode) => {
+        if (!one) {
+            return;
+        }
+
         const start = index * nodeHeight;  // 起始位置
 
         // 扩展属性
         one.depth = depth;
         one.top = start;
+        one.left = depth * iconWidth + paddingTop;
         one.state = one.state ? one.state : '';
         one.isParent = one.children && one.children.length > 0 ? true : false;
         one.isExpand = one.isExpand !== undefined ? one.isExpand : one.isParent ? true : false;
@@ -835,6 +880,9 @@ function getGroupFromTree(obj: ItreeNode, value: string = '', key: string = 'uui
     }
     for (let i = 0, ii = arr.length; i < ii; i++) {
         const one = arr[i];
+        if (!one) { // 容错处理，在 change 和 add 后，children 存在空值
+            continue;
+        }
         // @ts-ignore
         if (one[key] === value) { // 全等匹配
             return [one, i, arr, obj]; // 找到后返回的数据格式
@@ -858,7 +906,7 @@ function getGroupFromTree(obj: ItreeNode, value: string = '', key: string = 'uui
  * @param uuid
  */
 function getValidNode(uuid: string) {
-    let node = getNodeFromMap(uuid);
+    let node = getGroupFromTree(treeData, uuid)[0];
 
     if (!node) {
         if (trash[uuid]) {
@@ -985,6 +1033,7 @@ function changeNodeData(newData: any) {
 
     // 触发节点数据已变动
     node.state = ''; // 重置掉 loading 效果
+    node.isExpand = true; // 变动节点展开其变动内容
     vm.changeData();
     return node;
 }

@@ -3,10 +3,10 @@ import { readFileSync } from 'fs';
 import { stat } from 'fs-extra';
 import { extname, join } from 'path';
 
-export const name = 'treenode';
+export const name = 'tree-node';
 
 export const template = readFileSync(
-    join(__dirname, '../../static/template/treenode.html'),
+    join(__dirname, '../../static/template/tree-node.html'),
     'utf8'
 );
 
@@ -205,6 +205,9 @@ export const methods = {
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
+
+        // 取消选中，避免样式重叠
+        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
     },
     /**
      * 拖动到元素的上面

@@ -2,7 +2,7 @@
     :state="state"
     :style="{ top: top + 'px' }"
 >
-    <treenode type="node"
+    <tree-node type="node"
         v-for="(node,index) in nodes" 
         :key="index"
         :node="node"
@@ -18,5 +18,5 @@
         @drop="drop"
         @lock="lock"
     >
-    </treenode>
+    </tree-node>
 </ui-drag-area>

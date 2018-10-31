@@ -20,7 +20,7 @@ export const template = readFileSync(join(__dirname, '../static', '/template/ind
  */
 export const fonts = [{
     name: 'hierarchy',
-    file: 'packages://hierarchy/static/iconfont.woff',
+    file: 'packages://hierarchy/static/font.woff',
 }];
 
 export const $ = {
@@ -190,7 +190,7 @@ export async function ready() {
             current: null, // 选中项
             viewHeight: 0, // 当前树形的可视区域高度
             treeHeight: 0, // 完整树形的全部高度
-            dirBox: [], // 拖动时高亮的目录区域位置 [top, height]
+            selectBox: false, // 随组件 tree 中属性 selectBox 值
         },
         watch: {
             treeHeight() {
@@ -303,7 +303,7 @@ export async function ready() {
              * @param event
              * @param item
              */
-            popupContextMenu(event: Event) {
+            popupContext(event: Event) {
                 // @ts-ignore
                 if (event.button !== 2) {
                     return;
