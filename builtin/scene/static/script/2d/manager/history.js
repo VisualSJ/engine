@@ -1,16 +1,17 @@
 'use strict';
 
-const dumpnodes = require('./dumpnodes');
 const scene = require('./scene');
+const historyCache = require('./history-cache');
 const dump = require('../utils/dump');
+
+const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
+const records = []; // 格式为 uuid[]
 
 let index = -1; // 当前指针
 let method = 'redo'; // 'redo' | 'undo' 已执行过的方法
-const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
-const records = []; // 格式为 uuid[]
 
 /**
  * 记录受 ipc 修改指令影响的 uuid
@@ -20,18 +21,18 @@ function record(uuid) {
 }
 
 /**
- * 
+ *
  */
 function recordSave() {
     if (records.length === 0) {
         if (index !== steps.length - 1) {
-            dumpnodes.reset();
+            historyCache.reset();
         }
         return false;
     }
 
-    const oldData = dumpnodes.getNodes(records); // 取得旧数据
-    const newData = dumpnodes.refresh(records); // 刷新 dumptree, 取得新数据
+    const oldData = historyCache.getNodes(records); // 取得旧数据
+    const newData = historyCache.refresh(records); // 刷新 dumptree, 取得新数据
 
     records.length = 0;
 
@@ -84,7 +85,7 @@ function undo() {
         if (index < 0) {
             return;
         }
-        method = 'undo'
+        method = 'undo';
     }
 
     const state = restore();
@@ -114,7 +115,7 @@ function redo() {
 
         index++;
     } else {
-        method = 'redo'
+        method = 'redo';
     }
 
     const state = restore();
@@ -144,6 +145,11 @@ function restore() {
 
     // 数据 stepData 是 {} , key 为 uuid ，有多个，value 为改 uuid 节点的引擎属性值
     for (const uuid in stepData) {
+
+        if (!(uuid in stepData)) {
+            continue;
+        }
+
         const node = scene.query(uuid);
         if (node) {
             dump.restoreNode(node, stepData[uuid]);
@@ -167,7 +173,7 @@ function reset() {
     stepData = {};
     records.length = 0;
 
-    dumpnodes.reset();
+    historyCache.reset();
 }
 
 module.exports = {
@@ -176,4 +182,4 @@ module.exports = {
     snapshot,
     undo,
     redo
-}
+};

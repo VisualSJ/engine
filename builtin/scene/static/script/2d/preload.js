@@ -8,7 +8,11 @@ let isReady = false;
 // 不能放到主页面内, 应该避免主页内的全局参数污染
 window.Manager = {
     Ipc: ipc,
-    Init: require('./manager/init'),
+    Init: {
+        engine: require('./init/engine'),
+        system: require('./init/system'),
+        utils: require('./init/utils'),
+    },
     Scene: require('./manager/scene'),
     Script: require('./manager/scripts'),
     History: require('./manager/history'),

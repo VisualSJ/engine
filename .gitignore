@@ -12,3 +12,7 @@ node_modules/
 
 # 引擎文件夹
 /builtin/engine/resources
+
+# 内置数据库
+/builtin/asset-db/static/internal/library
+/builtin/asset-db/static/internal/temp

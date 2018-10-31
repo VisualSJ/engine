@@ -1,19 +1,14 @@
-'use stirct';
-
-///////////////
-// 初始化管理器
+'use strict';
 
 const assets = require('../assets');
-const camera = require('./camera');
-const ipc = require('../../ipc/webview');
 
 let inited = false;
 
 /**
  * 初始化引擎
- * @param {*} path 引擎路径
+ * @param {*} info 引擎信息
  */
-async function engine(info) {
+module.exports = async function(info) {
     if (inited) {
         return;
     }
@@ -78,43 +73,4 @@ async function engine(info) {
     await new Promise((resolve) => {
         setTimeout(resolve, 100);
     });
-}
-
-/**
- * 初始化一些工具函数
- * @param {*} path
- */
-function utils(path) {
-    // 序列化
-    Manager._serialize = function() {
-        return require(path + '/serialize');
-    };
-
-    const backup = {
-        warn: console.warn.bind(console),
-        error: console.error.bind(console),
-    };
-
-    console.warn = function(...args) {
-        backup.warn(...args);
-        ipc.send('console', 'warn', ...args);
-    };
-    console.error = function(...args) {
-        backup.error(...args);
-        ipc.send('console', 'error', ...args);
-    };
-}
-
-/**
- * 初始化编辑器内使用的 camera
- */
-async function system() {
-    require('../polyfills/engine');
-    await camera.init();
-}
-
-module.exports = {
-    engine,
-    utils,
-    system,
 };

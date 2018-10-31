@@ -68,12 +68,42 @@ class Camrea {
         this.apply();
     }
 
+    /**
+     * 屏幕点击点转换到 canvas 内的像素点
+     * @param {*} vec2
+     */
+    translatePoint(vec2) {
+        const bcr = document.body.getBoundingClientRect();
+        // 1. 屏幕中心到传入点的向量
+        const point = cc.v2(
+            (vec2.x - bcr.width / 2),
+            (vec2.y - bcr.height / 2),
+        );
+
+        // 2. 向量在 canvas 内的实际值
+        point.x /= camera.scale;
+        point.y /= camera.scale;
+
+        // 3. 实际 eye 位置计算出在 canvas 内的位置
+        point.x = this.size.width / 2 + (-(camera.offset.x) + point.x);
+        point.y = this.size.height / 2 + (-(camera.offset.y) - point.y);
+
+        return point;
+    }
+
+    /**
+     * 设置 canvas 的设计分辨率
+     * @param {*} size
+     */
     setSize(size) {
         this.size.width = size.width;
         this.size.height = size.height;
         this.apply();
     }
 
+    /**
+     * 设置引擎的适配模式
+     */
     setPolicy() {
         const ProportionalToScene = cc.ContainerStrategy.extend({
             apply: function(view, designedResolution) {
@@ -264,7 +294,20 @@ document.addEventListener('mousewheel', (event) => {
         scale = 5;
     }
 
+    const point = {
+        x: event.pageX,
+        y: event.pageY,
+    };
+
+    // 缩放前点击的 canvas 实际点
+    const point1 = camera.translatePoint(point);
     camera.scale = scale;
+    // 缩放后点击的 canvas 实际点
+    const point2 = camera.translatePoint(point);
+
+    // 根据鼠标位置计算缩放后视角的偏移量
+    camera.offset.x -= point1.x - point2.x;
+    camera.offset.y -= point1.y - point2.y;
 
     camera.apply();
 });
@@ -305,5 +348,3 @@ window.addEventListener('resize', () => {
 
     camera.apply();
 });
-
-window.camera = camera;

@@ -1,9 +1,6 @@
 'use strict';
 
 const dumpBackup = require('./dump-backup');
-// TODO 这里 dump.js 和 scene.js 有循环引用
-// const {query} = require('../manager/scene');
-let scene;
 
 const { get } = require('lodash');
 
@@ -109,6 +106,7 @@ function restoreComponent() {
  * @param property
  */
 function restoreProperty(node, path, dump) {
+    const scene = require('../manager/scene');
 
     // dump 的时候将 _components 转成了 __comps__
     path = path.replace('__comps__', '_components');
@@ -221,7 +219,13 @@ function restoreProperty(node, path, dump) {
  * @param {*} dumpdata
  */
 function restoreNode(node, dumpdata) {
+    const scene = require('../manager/scene');
     for (const path in dumpdata) {
+
+        if (!(path in dumpdata)) {
+            continue;
+        }
+
         const data = dumpdata[path];
 
         if (['__type__', 'group'].includes(path)) {
@@ -239,7 +243,7 @@ function restoreNode(node, dumpdata) {
             node.parent = scene.query(data.value.uuid);
         } else if (path === 'children') {
             const uuids = data.value.map((one) => one.value);
-            scene.resetNodeChildren(node, uuids);
+            resetNodeChildren(node, uuids);
         } else {
             if (node instanceof cc.Scene) {
                 continue;
@@ -249,9 +253,28 @@ function restoreNode(node, dumpdata) {
     }
 }
 
-// TODO 临时解决 query 不存在的问题
-function setScene(obj) {
-    scene = obj;
+/**
+ * 重设节点的 children
+ * 来自 redo undo 的重置
+ */
+function resetNodeChildren(parentNode, childrenIds) {
+    const scene = require('../manager/scene');
+    // 全部移除
+    const uuids = parentNode.children.map((node) => node.uuid);
+
+    uuids.forEach((uuid) => {
+        const node = scene.query(uuid);
+        node.parent = null;
+    });
+
+    // 重新添加
+    childrenIds.forEach((uuid) => {
+        const node = scene.query(uuid);
+        if (node) {
+            node.parent = null;
+            parentNode.addChild(node);
+        }
+    });
 }
 
 module.exports = {
@@ -261,5 +284,4 @@ module.exports = {
     restoreComponent,
     restoreProperty,
     restoreNode,
-    setScene
 };

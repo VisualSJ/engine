@@ -15,13 +15,6 @@ const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
 let uuid2node = {};
 
 /**
- * 回收站，标记节点的 uuid,
- * 如 trash[uuid] = true;
- * 从回收站被重新使用后，删除该标记， trash[uuid] = undefined;
- */
-const trash = {};
-
-/**
  * 打开一个场景
  * @param {*} file
  */
@@ -330,52 +323,7 @@ function removeNode(uuid) {
     const node = query(uuid);
     const parent = node.parent;
     parent.removeChild(node);
-
-    // 被删除的节点需要移到回收站，做个 uuid 标记
-    addToTrash(uuid);
-
     return parent.uuid;
-}
-
-/**
- * 重设节点的 children
- * 来自 redo undo 的重置
- */
-function resetNodeChildren(parentNode, childrenIds) {
-    // 全部移除
-    const currents = parentNode.children.map((node) => node.uuid);
-
-    currents.forEach((uuid) => {
-        const node = query(uuid);
-        node.parent = null;
-        addToTrash(uuid);
-    });
-
-    // 重新添加
-    childrenIds.forEach((uuid) => {
-        const node = query(uuid);
-        if (node) {
-            node.parent = null;
-            parentNode.addChild(node);
-            removeFromTrash(uuid);
-        }
-    });
-}
-
-/**
- * 节点移到回收站
- * @param {} uuid
- */
-function addToTrash(uuid) {
-    trash[uuid] = true;
-}
-
-/**
- * 节点从回收站移除
- * @param {} uuid
- */
-function removeFromTrash(uuid) {
-    trash[uuid] = undefined;
 }
 
 module.exports = {
@@ -402,9 +350,4 @@ module.exports = {
 
     createNode,
     removeNode,
-
-    resetNodeChildren
 };
-
-// TODO 临时解决 dump.js 循环引用 scene.js 中 query 不存在的问题
-dumpUtils.setScene(module.exports);
