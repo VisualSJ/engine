@@ -39,7 +39,7 @@ function refresh(uuids) {
 function reset() {
     dumpMap = {};
 
-    const uuids = Object.keys(manager.node.queryUuids());
+    const uuids = manager.node.queryUuids();
     uuids.forEach((uuid) => {
         dumpMap[uuid] = manager.scene.queryNode(uuid);
     });

@@ -132,15 +132,6 @@ export const messages = {
     },
 
     /**
-     * 场景刷新
-     * 目前来自 redo undo 的整体覆盖
-     */
-    'scene:refresh'() {
-        vm.refresh();
-
-    },
-
-    /**
      * 节点被修改
      *
      * @param event

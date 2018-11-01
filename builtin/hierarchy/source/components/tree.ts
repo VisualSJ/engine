@@ -499,6 +499,8 @@ export const methods = {
             return;
         }
 
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
         // 重名命节点
         Editor.Ipc.sendToPackage('scene', 'set-property', { // 发送修改数据
             uuid: node.uuid,
@@ -904,8 +906,14 @@ function calcDirectoryHeight() {
 function resetTreeProps(props: any, tree: ItreeNode[] = treeData.children) {
     tree.forEach((node: ItreeNode) => {
         for (const k of Object.keys(props)) {
+            const uuid = node.uuid;
             // @ts-ignore
             node[k] = props[k];
+
+            // 收集全部展开或折叠
+            if (k === 'isExpand') {
+                vm.folds[uuid] = node.isExpand;
+            }
         }
 
         if (node.children) {

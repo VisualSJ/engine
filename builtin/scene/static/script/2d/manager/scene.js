@@ -1,7 +1,7 @@
 'use strict';
 
 const manager = {
-    node: require('./node'),
+    node: require('./node')
 };
 
 const nodeUtils = require('../utils/node');
@@ -43,6 +43,10 @@ async function open(uuid) {
 
     // 爬取节点树上的所有节点数据
     await manager.node.init(cc.director._scene);
+
+    // 重置历史操作数据
+    const historyCache = require('./history/cache');
+    historyCache.reset();
 
     ipc.send('broadcast', 'scene:ready');
 }

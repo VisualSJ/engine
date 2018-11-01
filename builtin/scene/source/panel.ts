@@ -43,8 +43,6 @@ export const methods = {
         currentSceneUuid = uuid;
         Editor.Ipc.requestToPackage('scene', 'change-scene-uuid', currentSceneUuid);
         await panel.$.scene.openScene(uuid);
-        // 重置历史操作数据
-        panel.resetHistory();
     },
 
     /**
@@ -65,13 +63,6 @@ export const methods = {
     },
 
     /**
-     * 操作记录：重置历史记录
-     */
-    resetHistory() {
-        panel.$.scene.resetHistory();
-    },
-
-    /**
      * 操作记录：保存受影响的 uuid
      */
     recordHistory(uuid: string) {
@@ -89,20 +80,14 @@ export const methods = {
      * 操作记录：撤销一步操作
      */
     async undo() {
-        const result = await panel.$.scene.undo();
-        if (result === true) {
-            Editor.Ipc.sendToAll('scene:refresh');
-        }
+        await panel.$.scene.undo();
     },
 
     /**
      * 操作记录：重做一步操作
      */
     async redo() {
-        const result = await panel.$.scene.redo();
-        if (result === true) {
-            Editor.Ipc.sendToAll('scene:refresh');
-        }
+        await panel.$.scene.redo();
     },
 };
 

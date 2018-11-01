@@ -5,6 +5,7 @@ const manager = {
 };
 const historyCache = require('./cache');
 const dump = require('../../utils/dump');
+const ipc = require('../../../ipc/webview');
 
 const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 const records = []; // 格式为 uuid[]
@@ -154,7 +155,10 @@ function restore() {
 
         const node = manager.node.query(uuid);
         if (node) {
+            // 还原节点
             dump.restoreNode(node, stepData[uuid]);
+            // 广播已变动的节点
+            ipc.send('broadcast', 'scene:node-changed', uuid);
         }
     }
 

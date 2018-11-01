@@ -14,5 +14,6 @@ node_modules/
 /builtin/engine/resources
 
 # 内置数据库
-/builtin/asset-db/static/internal/library
-/builtin/asset-db/static/internal/temp
+# /builtin/asset-db/static/internal/library
+# /builtin/asset-db/static/internal/temp
+/builtin/asset-db/static/internal/*
