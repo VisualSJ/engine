@@ -1,6 +1,9 @@
 'use strict';
 
-const scene = require('./scene');
+const manager = {
+    node: require('../node'),
+    scene: require('../scene'),
+};
 
 let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
 
@@ -22,7 +25,7 @@ function getNodes(uuids) {
  */
 function refresh(uuids) {
     uuids.forEach((id) => {
-        dumpMap[id] = scene.queryNode(id);
+        dumpMap[id] = manager.scene.queryNode(id);
     });
 
     return getNodes(uuids);
@@ -36,9 +39,9 @@ function refresh(uuids) {
 function reset() {
     dumpMap = {};
 
-    const uuids = Object.keys(scene.uuid2node);
+    const uuids = Object.keys(manager.node.queryUuids());
     uuids.forEach((uuid) => {
-        dumpMap[uuid] = scene.queryNode(uuid);
+        dumpMap[uuid] = manager.scene.queryNode(uuid);
     });
 }
 

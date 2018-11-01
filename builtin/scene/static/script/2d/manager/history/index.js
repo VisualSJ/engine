@@ -1,8 +1,10 @@
 'use strict';
 
-const scene = require('./scene');
-const historyCache = require('./history-cache');
-const dump = require('../utils/dump');
+const manager = {
+    node: require('../node'),
+};
+const historyCache = require('./cache');
+const dump = require('../../utils/dump');
 
 const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 const records = []; // 格式为 uuid[]
@@ -150,7 +152,7 @@ function restore() {
             continue;
         }
 
-        const node = scene.query(uuid);
+        const node = manager.node.query(uuid);
         if (node) {
             dump.restoreNode(node, stepData[uuid]);
         }

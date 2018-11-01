@@ -399,7 +399,7 @@ function dumpProperty(types, val, klass, propName, obj) {
     if (Array.isArray(val)) {
         res = {
             type: expectedType,
-            value: _.map(val, function (item) {
+            value: _.map(val, function(item) {
                 return dumpField(types, item, klass, propName, attrs);
             })
         };
@@ -439,9 +439,9 @@ function dumpNode(types, node) {
 
     if (node instanceof cc.Scene) { // cc.Scene 节点 dump 数据的时候 active 属性会报错
         const excludes = ['active'];
-        OriginProps.splice(OriginProps.findIndex(name => excludes.includes(name)), 1);
+        OriginProps.splice(OriginProps.findIndex((name) => excludes.includes(name)), 1);
     }
-    
+
     var HasAttrsProps = OriginProps.concat(['position', 'color']);
     var p;
     var propName;

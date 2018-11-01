@@ -373,6 +373,14 @@ async function initIpc(elem) {
         return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
     });
 
+    // 转发选中节点消息
+    elem.ipc.on('select-nodes', (uuids) => {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        uuids.forEach((uuid) => {
+            Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+        });
+    });
+
     // 转发广播消息
     elem.ipc.on('broadcast', (...args) => {
         Editor.Ipc.sendToAll(...args);

@@ -1,6 +1,10 @@
 'use strict';
 
-const dumpBackup = require('./dump-backup');
+const manager = {
+    node: require('../../manager/node'),
+};
+
+const dumpBackup = require('./backup');
 
 const { get } = require('lodash');
 
@@ -106,8 +110,6 @@ function restoreComponent() {
  * @param property
  */
 function restoreProperty(node, path, dump) {
-    const scene = require('../manager/scene');
-
     // dump 的时候将 _components 转成了 __comps__
     path = path.replace('__comps__', '_components');
 
@@ -134,7 +136,7 @@ function restoreProperty(node, path, dump) {
     switch (dump.type) {
         case 'cc.Scene':
         case 'cc.Node':
-            const node = scene.query(dump.value);
+            const node = manager.node.query(dump.value);
             if (key === 'parent') {
                 node.addChild(property);
             } else {
@@ -219,7 +221,6 @@ function restoreProperty(node, path, dump) {
  * @param {*} dumpdata
  */
 function restoreNode(node, dumpdata) {
-    const scene = require('../manager/scene');
     for (const path in dumpdata) {
 
         if (!(path in dumpdata)) {
@@ -240,7 +241,7 @@ function restoreNode(node, dumpdata) {
             }
             continue;
         } else if (path === 'parent') {
-            node.parent = scene.query(data.value.uuid);
+            node.parent = manager.node.query(data.value.uuid);
         } else if (path === 'children') {
             const uuids = data.value.map((one) => one.value);
             resetNodeChildren(node, uuids);
@@ -258,18 +259,17 @@ function restoreNode(node, dumpdata) {
  * 来自 redo undo 的重置
  */
 function resetNodeChildren(parentNode, childrenIds) {
-    const scene = require('../manager/scene');
     // 全部移除
     const uuids = parentNode.children.map((node) => node.uuid);
 
     uuids.forEach((uuid) => {
-        const node = scene.query(uuid);
+        const node = manager.node.query(uuid);
         node.parent = null;
     });
 
     // 重新添加
     childrenIds.forEach((uuid) => {
-        const node = scene.query(uuid);
+        const node = manager.node.query(uuid);
         if (node) {
             node.parent = null;
             parentNode.addChild(node);

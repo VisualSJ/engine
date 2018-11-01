@@ -1,5 +1,9 @@
 'use strict';
 
+const manager = {
+    node: require('./node'),
+};
+
 const nodeUtils = require('../utils/node');
 const dumpUtils = require('../utils/dump');
 const camera = require('./camera');
@@ -11,8 +15,6 @@ const { get } = require('lodash');
 const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
 const Reg_NormalizedUuid = /^[0-9a-fA-F]{32}$/;
 const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
-
-let uuid2node = {};
 
 /**
  * 打开一个场景
@@ -40,7 +42,7 @@ async function open(uuid) {
     camera.adjustToCenter(10);
 
     // 爬取节点树上的所有节点数据
-    await nodeUtils.walk(uuid2node, cc.director._scene);
+    await manager.node.init(cc.director._scene);
 
     ipc.send('broadcast', 'scene:ready');
 }
@@ -67,19 +69,11 @@ function close() {
 }
 
 /**
- * 查询一个节点的实例
- * @param {*} uuid
- */
-function query(uuid) {
-    return uuid2node[uuid] || null;
-}
-
-/**
  * 查询节点的 dump 数据
  * @param {*} uuid
  */
 function queryNode(uuid) {
-    let node = query(uuid);
+    let node = manager.node.query(uuid);
     if (!node) {
         return null;
     }
@@ -112,7 +106,7 @@ function queryNodeTree(uuid) {
     };
 
     if (uuid) {
-        const node = query(uuid);
+        const node = manager.node.query(uuid);
         if (!node) {
             return null;
         }
@@ -131,7 +125,7 @@ function queryNodeTree(uuid) {
  * @param {*} uuid
  */
 function queryNodePath(uuid) {
-    let node = query(uuid);
+    let node = manager.node.query(uuid);
     if (!node) {
         return '';
     }
@@ -155,7 +149,7 @@ function queryNodePath(uuid) {
  * @param {*} dump
  */
 function setProperty(uuid, path, dump) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
         return;
@@ -173,7 +167,7 @@ function setProperty(uuid, path, dump) {
  * @param offset 偏移量
  */
 function moveArrayElement(uuid, path, target, offset) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -213,7 +207,7 @@ function moveArrayElement(uuid, path, target, offset) {
  * @param index 目标 item 原来的索引
  */
 function removeArrayElement(uuid, path, index) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     const key = (path || '').split('.').pop();
 
     if (key === 'children') {
@@ -253,7 +247,7 @@ function removeArrayElement(uuid, path, index) {
  * @param component 组件的名字
  */
 function createComponent(uuid, component) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     if (!node) {
         console.warn(`create component failed: ${uuid} does not exist`);
         return false;
@@ -272,7 +266,7 @@ function createComponent(uuid, component) {
  * @param component 组件的名字
  */
 function removeComponent(uuid, component) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     if (!node) {
         console.warn(`Move property failed: ${uuid} does not exist`);
         return false;
@@ -292,7 +286,7 @@ async function createNode(uuid, name = 'New Node', dump) {
         return;
     }
 
-    const parent = query(uuid);
+    const parent = manager.node.query(uuid);
     const node = new cc.Node();
 
     if (dump) {
@@ -312,7 +306,7 @@ async function createNode(uuid, name = 'New Node', dump) {
     parent.addChild(node);
 
     // 爬取节点树上的所有节点数据
-    await nodeUtils.walk(uuid2node, node);
+    await manager.node.add(node);
 
     return {
         uuid: node._id,
@@ -325,34 +319,42 @@ async function createNode(uuid, name = 'New Node', dump) {
  * @param {*} uuid
  */
 function removeNode(uuid) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
     const parent = node.parent;
     parent.removeChild(node);
     return parent.uuid;
 }
 
 module.exports = {
-    get uuid2node() {
-        return uuid2node;
-    },
 
+    // 打开场景
     open,
-    serialize,
+    // 关闭当前场景（空实现）
     close,
+    // 获取当前场景的序列化数据
+    serialize,
 
-    query,
-
+    // 查询一个节点的 dump 信息
     queryNode,
+    // 查询当前场景内的节点树信息
     queryNodeTree,
+    // 查询一个节点的搜索路径
     queryNodePath,
 
+    // 设置一个节点的属性
     setProperty,
+    // 移动一个数组类型的属性项
     moveArrayElement,
+    // 删除一个数组类型的属性项
     removeArrayElement,
 
+    // 创建一个组件并挂到指定的节点上
     createComponent,
+    // 移除一个节点上的指定组件
     removeComponent,
 
+    // 创建节点
     createNode,
+    // 移除节点
     removeNode,
 };

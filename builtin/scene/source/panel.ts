@@ -45,7 +45,6 @@ export const methods = {
         await panel.$.scene.openScene(uuid);
         // 重置历史操作数据
         panel.resetHistory();
-        Editor.Ipc.sendToAll('scene:ready');
     },
 
     /**
@@ -63,7 +62,6 @@ export const methods = {
         currentSceneUuid = null;
         Editor.Ipc.requestToPackage('scene', 'change-scene-uuid', currentSceneUuid);
         await panel.$.scene.closeScene();
-        Editor.Ipc.sendToAll('scene:close');
     },
 
     /**

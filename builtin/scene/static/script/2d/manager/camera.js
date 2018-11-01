@@ -1,5 +1,14 @@
 'use strict';
 
+/**
+ * 摄像机管理器
+ *
+ * 编辑器视角与实际游戏视角是不同的，所以需要单独管理编辑器摄像机。
+ * 编辑器模式下，游戏内的其他摄像机需要关闭（现阶段是在引擎内 hack 实现）。
+ */
+
+const selectUtils = require('../utils/select');
+
 const scales = [
     0.05, 0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 3, 4, 5
 ];
@@ -313,6 +322,9 @@ document.addEventListener('mousewheel', (event) => {
 });
 
 document.addEventListener('mousedown', (event) => {
+    if (event.button !== 2) {
+        return;
+    }
     const position = { x: event.pageX, y: event.pageY };
 
     const move = (event) => {

@@ -16,6 +16,7 @@ window.Manager = {
     Scene: require('./manager/scene'),
     Script: require('./manager/scripts'),
     History: require('./manager/history'),
+    Select: require('./manager/select'),
     get serialize() {
         return this._serialize();
     },
