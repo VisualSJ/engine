@@ -29,6 +29,21 @@ export const $ = {
 
 export const methods = {
     /**
+     * 暂存页面数据
+     */
+    async staging() {
+        Editor.Ipc.sendToPackage('hierarchy', 'staging-fold', JSON.stringify(vm.$refs.tree.folds));
+    },
+
+    /**
+     * 恢复页面数据
+     */
+    async unstaging() {
+        // 初始化缓存的折叠数据
+        const folds = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging-fold');
+        vm.$refs.tree.folds = JSON.parse(folds);
+    },
+    /**
      * 刷新面板
      */
     async refresh() {
@@ -97,7 +112,13 @@ export const messages = {
      */
     'scene:ready'() {
         vm.ready = true;
-        vm.refresh();
+        clearTimeout(panel.timer);
+        panel.timer = setTimeout(async () => {
+            await panel.unstaging();
+            requestAnimationFrame(() => {
+                vm.refresh();
+            });
+        }, 300);
     },
 
     /**
@@ -105,6 +126,7 @@ export const messages = {
      * 打开 loading 状态
      */
     'scene:close'() {
+        panel.staging();
         vm.clear();
         vm.ready = false;
     },
@@ -352,6 +374,7 @@ export async function ready() {
 export async function beforeClose() { }
 
 export async function close() {
+    panel.staging();
     Editor.Ipc.sendToPackage('selection', 'clear', 'node');
 
 }

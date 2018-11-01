@@ -7,7 +7,7 @@ let vm: any = null;
 
 const nodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
 const iconWidth: number = 18; // 树形节点 icon 的宽度
-const paddingTop: number = 4; // 树形头部的间隔，为了保持美观
+const padding: number = 4; // 树形头部的间隔，为了保持美观
 
 let timeOutId: any;
 /**
@@ -21,7 +21,7 @@ let treeData: any; // 树形结构的数据，含 children
 
 const trash: any = {}; // 回收站，主要用于移动中，异步的先从一个父级删除节点，再添加另一个父级的过程
 
-let copyNode: string[] = []; // 用于存放已复制节点的 uuid
+let copiedNode: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
 
@@ -39,6 +39,7 @@ export function data() {
         state: '',
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
+        folds: {}, // 用于记录已展开的节点
         search: '', // 搜索节点名称
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
@@ -377,6 +378,7 @@ export const methods = {
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
+            vm.folds[uuid] = one.isExpand;
             this.changeData();
         }
     },
@@ -521,24 +523,32 @@ export const methods = {
             // @ts-ignore
             node = {
                 // @ts-ignore
-                top: this.$el.lastElementChild.offsetTop,
-                left: 0
+                top: this.$el.lastElementChild.offsetTop - padding,
+                left: padding
             };
         } else {
             // @ts-ignore
             node = getNodeFromMap(uuid);
         }
 
-        let top = node.top + paddingTop;
+        let top = node.top + padding;
         let height = nodeHeight;
-        const left = node.left;
+        let left = node.left;
+        if (node && node.isParent === false) { // 末级节点
+            left = node.left + iconWidth - padding;
+        }
+
         switch (position) {
             case 'before':
                 height = 3;
                 break;
             case 'after':
                 height = 3;
-                top += nodeHeight;
+                if (node.isParent) {
+                    top += node.height;
+                } else {
+                    top += nodeHeight;
+                }
                 break;
         }
 
@@ -574,82 +584,87 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        uuids.forEach((fromId: string) => {
+        uuids.forEach((uuid: string) => {
+            (async (fromId) => {
+                const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
 
-            const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
+                // 移动的索引变动
+                let offset = 0;
+                // 受变动的节点
+                let affectNode;
 
-            // 移动的索引变动
-            let offset = 0;
-            // 受变动的节点
-            let affectNode;
-
-            // 内部平级移动
-            // @ts-ignore
-            if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
+                // 内部平级移动
                 // @ts-ignore
-                affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
-
-                offset = toIndex - fromIndex; // 目标索引减去自身索引
-                if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
-                    offset += 1;
-                } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                    offset -= 1;
-                }
-
-                Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                    uuid: fromParent.uuid,  // 被移动的节点的父级 uuid
-                    path: 'children',
-                    target: fromIndex, // 被移动的节点所在的索引
-                    offset,
-                });
-            } else { // 跨级移动
-                // 先从原来的父级删除
-                Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid: fromNode.uuid });
-
-                // 再开始移动
-                if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+                if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
                     // @ts-ignore
-                    affectNode = getNodeFromMap(toNode.uuid); // 元素自身
-                    Editor.Ipc.sendToPackage('scene', 'set-property', {
-                        uuid: fromNode.uuid,
-                        path: 'parent',
-                        dump: {
-                            type: toNode.type,
-                            value: toNode.uuid // 被 drop 的元素就是父级
-                        }
-                    });
-                } else { // 跨级插入 'before', 'after'
-                    // @ts-ignore
-                    affectNode = getNodeFromMap(toParent); // 元素的父级
-                    Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                        uuid: fromNode.uuid,
-                        path: 'parent',
-                        dump: {
-                            type: toParent.type,
-                            value: toParent.uuid // 被 drop 的元素的父级
-                        }
-                    });
+                    affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
 
-                    offset = toIndex - toArr.length; // 目标索引减去自身索引
-                    if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                    offset = toIndex - fromIndex; // 目标索引减去自身索引
+                    if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
                         offset += 1;
                     } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
                         offset -= 1;
                     }
 
-                    // 在父级里平移
-                    Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid，此时 scene 接口那边 toData 和 fromData 已同父级
+                    if (offset === 0) {
+                        return;
+                    }
+
+                    Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
+                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid
                         path: 'children',
-                        target: toArr.length,
+                        target: fromIndex, // 被移动的节点所在的索引
                         offset,
                     });
-                }
+                } else { // 跨级移动
+                    // 先从原来的父级删除
+                    await Editor.Ipc.sendToPackage('scene', 'remove-node', { uuid: fromNode.uuid });
 
-                if (affectNode) {
-                    affectNode.state = 'loading'; // 显示 loading 效果
+                    // 再开始移动
+                    if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+                        // @ts-ignore
+                        affectNode = getNodeFromMap(toNode.uuid); // 元素自身
+                        Editor.Ipc.sendToPackage('scene', 'set-property', {
+                            uuid: fromNode.uuid,
+                            path: 'parent',
+                            dump: {
+                                type: toNode.type,
+                                value: toNode.uuid // 被 drop 的元素就是父级
+                            }
+                        });
+                    } else { // 跨级插入 'before', 'after'
+                        // @ts-ignore
+                        affectNode = getNodeFromMap(toParent); // 元素的父级
+                        await Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
+                            uuid: fromNode.uuid,
+                            path: 'parent',
+                            dump: {
+                                type: toParent.type,
+                                value: toParent.uuid // 被 drop 的元素的父级
+                            }
+                        });
+
+                        offset = toIndex - toArr.length; // 目标索引减去自身索引
+                        if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                            offset += 1;
+                        } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                            offset -= 1;
+                        }
+
+                        // 在父级里平移
+                        await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
+                            uuid: toParent.uuid,  // 父级 uuid
+                            path: 'children',
+                            target: toArr.length,
+                            offset,
+                        });
+                    }
+
+                    if (affectNode) {
+                        affectNode.state = 'loading'; // 显示 loading 效果
+                    }
                 }
-            }
+            })(uuid);
         });
     },
 
@@ -671,11 +686,11 @@ export const methods = {
      * @param uuid
      */
     copy(uuid: string) {
-        copyNode = vm.selects.slice();
+        copiedNode = vm.selects.slice();
 
         // 来自右击菜单的单个选中，右击节点不在已选项目里
         if (uuid !== undefined && !vm.selects.includes(uuid)) {
-            copyNode = [uuid];
+            copiedNode = [uuid];
         }
     },
 
@@ -691,7 +706,7 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        _forEach(copyNode, uuid);
+        _forEach(copiedNode, uuid);
 
         async function _forEach(uuids: string[], parent: string) {
             uuids.forEach((id: string) => {
@@ -727,6 +742,8 @@ export const methods = {
         nodesMap.clear(); // 清空数据
 
         calcNodePosition(); // 重算排位
+
+        calcDirectoryHeight(); // 计算文件夹的高度
 
         this.render(); // 重新渲染出树形
 
@@ -801,10 +818,39 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
         // 扩展属性
         one.depth = depth;
         one.top = start;
-        one.left = depth * iconWidth + paddingTop;
+        one.left = depth * iconWidth + padding;
         one.state = one.state ? one.state : '';
         one.isParent = one.children && one.children.length > 0 ? true : false;
-        one.isExpand = one.isExpand !== undefined ? one.isExpand : one.isParent ? true : false;
+        const isExpand = vm.folds[one.uuid];
+        if (isExpand !== undefined) {
+            one.isExpand = isExpand;
+        } else {
+            one.isExpand = one.isParent ? true : false;
+        }
+        one.parentUuid = obj.uuid;
+        one._height = nodeHeight;
+        Object.defineProperty(one, 'height', {
+            configurable: true,
+            enumerable: true,
+            get() {
+                return this._height;
+            },
+            set(add) {
+                if (add) {
+                    this._height += nodeHeight;
+
+                    // 触发其父级高度也增加
+                    for (const [top, asset] of nodesMap) {
+                        // @ts-ignore
+                        if (this.parentUuid === asset.uuid) {
+                            asset.height = 1; // 大于 0 就可以，实际计算在内部的setter
+                        }
+                    }
+                } else {
+                    this._height = nodeHeight;
+                }
+            },
+        });
 
         if (vm.search === '') { // 没有搜索
             vm.state = vm.state === 'search' ? '' : vm.state;
@@ -831,6 +877,23 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
     });
     // 返回序号
     return index;
+}
+
+/**
+ * 计算一个文件夹的完整高度
+ */
+function calcDirectoryHeight() {
+    for (const [top, json] of nodesMap) {
+        json.height = 0;
+    }
+
+    for (const [top, parent] of nodesMap) {
+        for (const [t, asset] of nodesMap) {
+            if (asset.parentUuid === parent.uuid) {
+                asset.height = 1; // 大于 0 就可以，实际计算在内部的 setter 函数
+            }
+        }
+    }
 }
 
 /**

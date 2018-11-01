@@ -195,8 +195,13 @@ function moveArrayElement(uuid, path, target, offset) {
     }
 
     // 移动顺序
-    const temp = data.splice(target, 1);
-    data.splice(target + offset, 0, temp[0]);
+    if (path === 'children') {
+        const child = data[target];
+        child.setSiblingIndex(target + offset);
+    } else {
+        const temp = data.splice(target, 1);
+        data.splice(target + offset, 0, temp[0]);
+    }
 
     return true;
 }

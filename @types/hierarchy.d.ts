@@ -24,4 +24,7 @@ declare interface ItreeNode {
     isParent: boolean; // 是否是父节点
     isExpand: boolean; // 是否展开显示
     state: string; // 状态
+    parentUuid: string; // 父级的 uuid
+    _height: number; // 整个节点包括children的高度
+    height: number; // 整个节点包括children的高度
 }

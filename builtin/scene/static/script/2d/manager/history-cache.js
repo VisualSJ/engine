@@ -34,7 +34,7 @@ function refresh(uuids) {
  * 也在操作记录有截点重置的时候触发
  */
 function reset() {
-    dumpTree = {};
+    dumpMap = {};
 
     const uuids = Object.keys(scene.uuid2node);
     uuids.forEach((uuid) => {

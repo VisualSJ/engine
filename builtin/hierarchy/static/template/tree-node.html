@@ -23,7 +23,9 @@
     <input class="rename" ref='input'
         v-else
         :value="node.name"
-        @blur="renameBlur($event, node)"
+        @blur="renameSubmit($event, node)"
+        @keyup.enter="renameSubmit($event, node)"
+        @keyup.esc="renameCancel($event, node)"
     >
     <section class="loading"
         v-if="node.state==='loading'"

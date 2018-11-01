@@ -177,12 +177,22 @@ export const methods = {
      * 提交重名命
      * @param node
      */
-    renameBlur(event: Event, node: ItreeNode) {
+    renameSubmit(event: Event, node: ItreeNode) {
         // @ts-ignore
         const newName = this.$refs.input.value.trim();
 
         // @ts-ignore
         this.$emit('rename', node, newName);
+    },
+    /**
+     * 取消重名命
+     * @param node
+     */
+    renameCancel(event: Event, node: ItreeNode) {
+        // @ts-ignore 需要这一步是因为 blur 也随即执行，需要保留原值阻止触发
+        this.$refs.input.value = node.name;
+        // @ts-ignore
+        this.$emit('rename', node, node.name);
     },
     /**
      * 开始拖动
@@ -192,14 +202,16 @@ export const methods = {
      */
     dragStart(event: Event, node: ItreeNode) {
         // @ts-ignore
-        let from = node.uuid;
+        let uuid = node.uuid;
         // @ts-ignore
-        if (this.selects.includes(from)) {
+        if (this.selects.includes(uuid)) {
             // @ts-ignore
-            from = this.selects.join(',');
+            uuid = this.selects.join(',');
         }
         // @ts-ignore
-        event.dataTransfer.setData('dragData', JSON.stringify({ from }));
+        event.dataTransfer.setData('dragData', JSON.stringify({ from: uuid }));
+        // @ts-ignore 给其他面板使用
+        event.dataTransfer.setData('value', uuid);
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
