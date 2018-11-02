@@ -11,7 +11,7 @@
     },
 
     "main": "./dist/browser.js",
-
+    "disabled": false,
     "panel": {
         "title": "i18n:assets.title",
         "main": "./dist/panel.js",

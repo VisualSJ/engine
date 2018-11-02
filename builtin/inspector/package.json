@@ -9,6 +9,8 @@
         }
     },
     "main": "./dist/browser.js",
+    "disabled": false,
+    "description": "inspector",
     "panel": {
         "title": "i18n:inspector.title",
         "main": "./dist/panel.js",

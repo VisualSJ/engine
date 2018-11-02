@@ -10,7 +10,8 @@
     },
 
     "main": "./dist/browser.js",
-
+    "disabled": false,
+    "description": "ui-preview about editor",
     "panel": {
         "title": "i18n:ui-preview.title",
         "main": "./dist/panel.js",

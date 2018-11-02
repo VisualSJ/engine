@@ -6,7 +6,6 @@ const ps = require('path');
 exports.template = fs.readFileSync(ps.join(__dirname, '../template/general.html'), 'utf8');
 
 exports.props = ['general'];
-const profile = Editor.Profile.load('profile://global/packages/preferences.json');
 exports.data = function() {
     return {};
 };

@@ -10,14 +10,15 @@
     },
 
     "main": "./dist/browser.js",
-
+    "disabled": false,
+    "description": "preferences about editor",
     "panel": {
         "title": "i18n:preferences.title",
         "icon": "./static/icon.png",
         "main": "./dist/panel.js",
         "min-width": 400,
         "min-height": 200,
-        "width": 550,
-        "height": 600
+        "width": 700,
+        "height": 500
     }
 }

@@ -22,7 +22,8 @@
     },
 
     "main": "./dist/browser.js",
-
+    "disabled": false,
+    "description": "scene about editor",
     "panel": {
         "title": "i18n:scene.title",
         "main": "./dist/panel.js",

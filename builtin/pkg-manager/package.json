@@ -1,9 +1,9 @@
 {
-    "name": "package-manager",
+    "name": "pkg-manager",
     "version": "0.0.1",
 
     "menu": {
-        "i18n:menu.develop/i18n:package-manager.title": {
+        "i18n:menu.develop/i18n:pkg-manager.title": {
             "message": "open",
             "group": "preview"
         }
@@ -12,7 +12,7 @@
     "main": "./dist/browser.js",
 
     "panel": {
-        "title": "i18n:package-manager.title",
+        "title": "i18n:pkg-manager.title",
         "main": "./dist/panel.js",
         "icon": "./static/icon.png",
         "min-width": 200,
@@ -20,6 +20,7 @@
         "width": 450,
         "height": 650
     },
-    "detail": "A simple package debugger",
-    "author": "Yanna"
+    "description": "A simple package debugger",
+    "author": "Yanna",
+    "disabled": false
 }

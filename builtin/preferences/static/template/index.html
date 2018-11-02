@@ -1,22 +1,11 @@
 <div class="preferences">
-
     <div class="slider">
-        <div
-            :active="tab === 0"
-            @click="_selectTab(0)"
-        >{{t('nav.general', general.language)}}</div>
+        <div :active="tab === 0" @click="tab = 0">{{t('nav.general')}}</div>
+        <div :active="tab === 1" @click="tab = 1">{{t('nav.preview')}}</div>
     </div>
-
     <section>
-
-        <header
-            v-if="tab === 0"
-        >{{t('nav.general', general.language)}}</header>
-
-        <content-general
-            v-if="tab === 0"
-            :general="general"
-        ></content-general>
-
+        <!-- <header >{{t('nav.general', general.language)}}</header> -->
+        <content-general v-if="tab === 0" :general="general"></content-general>
+        <content-preview v-if="tab === 1" :preview="preview"></content-preview>
     </section>
 </div>

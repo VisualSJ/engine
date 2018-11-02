@@ -48,9 +48,14 @@ interface Menu {
 
 interface Package {
     // browser
+    packages: Object,
     load: Function;
+    loadFolder: Function;
     unload: Function;
     reload: Function;
+    disabled: Function;
+    enabled: Function;
+    on: Function;
 }
 
 interface Layout {

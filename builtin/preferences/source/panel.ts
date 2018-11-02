@@ -36,13 +36,16 @@ export async function ready() {
 
         data: {
             tab: 0,
-
             general: {
                 language: profile.get('language') || 'en',
                 themeColor: profile.get('themeColor') || 'light',
-                // ip: profile.get('ip'),
                 step: profile.get('step') || 1,
             },
+            preview: {
+                autoRefresh: profile.get('autoRefresh') || true,
+                previewBrowser: profile.get('previewBrowser') || 'default',
+                simulatorPath: profile.get('simulatorPath') || '/simulatorPath/',
+            }
         },
 
         watch: {
@@ -57,11 +60,18 @@ export async function ready() {
                     profile.set('themeColor', this.general.themeColor);
                     profile.save();
                 },
+            },
+            preview: {
+                deep: true,
+                handler() {
+
+                }
             }
         },
 
         components: {
             'content-general': require('../static/components/general'),
+            'content-preview': require('../static/components/preview'),
         },
 
         methods: <any>{
@@ -69,7 +79,7 @@ export async function ready() {
              * 翻译
              * @param key
              */
-            t(key: string, language: string) {
+            t(key: string) {
                 const name = `preferences.${key}`;
                 return Editor.I18n.t(name);
             },

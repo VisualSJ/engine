@@ -19,10 +19,11 @@
             & > div {
                 text-align: center;
                 padding: 15px 20px;
-
+                cursor: pointer;
                 &[active] {
                     background: #999;
                     color: #333;
+                    cursor: default;
                 }
             }
         }
@@ -31,7 +32,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-
+            padding: 25px;
+            padding-top: 40px;
+            
             & > header {
                 font-size: 22px;
                 padding: 15px 20px;
@@ -42,10 +45,26 @@
                 flex: 1;
             }
         }
+        
+        .line {
+            margin: 10px 0;
+            display: flex;
+    
+            & > .name {
+                width: 140px;
+                line-height: 22px;
+                padding: 0 16px;
+            }
+    
+            & > .value {
+                flex: 1;
+            }
+        }
     }
 }
 
 @import "./general.less";
+@import "./preview.less";
 
 // hack
 ui-num-input {

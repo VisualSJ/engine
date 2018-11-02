@@ -1,6 +1,5 @@
 <div class="general">
-
-        <div>
+        <div class="line">
             <div class="name">{{t('language')}}</div>
             <div class="value">
                 <ui-select
@@ -12,8 +11,7 @@
                 </ui-select>
             </div>
         </div>
-
-        <div>
+        <div class="line">
             <div class="name">{{t('step')}}</div>
             <div class="value">
                 <ui-num-input
@@ -23,8 +21,7 @@
                 ></ui-num-input>
             </div>
         </div>
-
-        <div>
+        <div class="line">
             <div class="name">{{t('themeColor')}}</div>
             <div class="value">
                 <ui-select :value="general.themeColor || 'default'" @confirm="_onGeneralChanged($event, 'themeColor')">

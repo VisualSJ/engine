@@ -24,9 +24,10 @@
 属性名 | 类型 | 功能
 ------|--------------|------------ 
 `title` |string（可选）|弹框显示标题文本
-`defaultPath` | string（可选）|默认打开路径，默认为用户当前项目目录
+`root` | string（可选）|默认打开路径，默认为用户当前项目目录
 `filters` | filters 对象（可选）|文件过滤规则，仅打开文件弹框时配置有效，例如：{name: 'Images', extensions: ['jpg', 'png', 'gif']}
 `multi` | boolean （可选）|是否允许多选
+`label` | string （可选）| 保存 按钮的文本替换值
 
 ## 使用示例
 详情可见于 **ui-preview** 面板的 dialog 模块

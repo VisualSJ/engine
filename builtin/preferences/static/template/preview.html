@@ -1,0 +1,59 @@
+<div class="preview">
+    <div class="line">
+        <div class="name">{{t('autoRefresh')}}</div>
+        <div class="value">
+            <ui-checkbox checked></ui-checkbox>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('previewBrowser')}}</div>
+        <div class="value">
+            <ui-select value="0">
+                <option value="0">{{t('options.default')}}</option>
+            </ui-select>
+            <ui-button>浏览</ui-button>
+            <ui-button>移除</ui-button>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('simulatorPath')}}</div>
+        <div class="value">
+            <ui-input class="cocos"></ui-input>
+            <ui-button>打开</ui-button>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('simulatorOrientation')}}</div>
+        <div class="value">
+            <ui-select value="0">
+                <option value="0">{{t('options.vertical')}}</option>
+                <option value="1">{{t('horizontal.default')}}</option>
+            </ui-select>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('simulatorResolution')}}</div>
+        <div class="value">
+            <ui-select value="0">
+                <option value="0">iPhone 3Gs (480x320)</option>
+                <option value="1">iPhone 4 (960x640)</option>
+                <option value="2">iPhone 5 (1136x640)</option>
+                <option value="3">iPhone 6 (1334x750)</option>
+                <option value="4">iPhone 6 Plus (1920x1080)</option>
+                <option value="5">iPad (1024x768)</option>
+                <option value="6">iPad Retina (2048x1536)</option>
+                <option value="7">Android (800x480)</option>
+                <option value="8">Android (854x480)</option>
+                <option value="9">Android (1280x720)</option>
+                <option value="10">自定义</option>
+            </ui-select>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('simulatorCustomResolution')}}</div>
+        <div class="value">
+                {{t('options.width')}}: <ui-input value="960"></ui-input>
+                {{t('options.height')}}: <ui-input value="640"></ui-input>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,7 @@
 {
     "name": "preview",
     "version": "0.0.1",
-    "main": "./dist/browser.js"
+    "main": "./dist/browser.js",
+    "disabled": false,
+    "description": "preview about editor"
 }

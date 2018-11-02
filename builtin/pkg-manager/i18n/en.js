@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-    title: 'package-manager',
+    title: 'pkg-manager',
 };

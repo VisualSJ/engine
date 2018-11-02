@@ -8,6 +8,8 @@
             "accelerator": "CmdOrCtrl+0"
         }
     },
+    "disabled": false,
+    "description": "console log",
     "main": "./dist/browser.js",
     "panel": {
         "title": "i18n:console.title",

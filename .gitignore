@@ -1,6 +1,7 @@
 # 临时文件
 .*
 !.npmrc
+yarn*
 
 # node 模块
 node_modules/
