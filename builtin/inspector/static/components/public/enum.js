@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="enum vue-comp-ui">
+<div :class="{'enum': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
         <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
@@ -20,6 +20,7 @@ exports.template = `
             </option>
         </ui-select>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
     <div class="value" v-else>
         <ui-select
@@ -30,7 +31,9 @@ exports.template = `
             <slot></slot>
         </ui-select>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
+    <slot name="child"></slot>
 </div>
 `;
 

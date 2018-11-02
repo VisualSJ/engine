@@ -1,6 +1,6 @@
 'use strict';
 
-const { readTemplate, readComponent, T } = require('../../../utils');
+const { readTemplate, readComponent, T, buildProp } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
 
@@ -24,6 +24,8 @@ exports.watch = {
 };
 
 exports.methods = {
+    T,
+
     /**
      * 刷新节点
      */
@@ -41,7 +43,9 @@ exports.methods = {
 
         dump.__comps__.forEach((comp, index) => {
             Object.keys(comp.value).forEach((key) => {
-                comp.value[key].path = `__comps__.${index}.${key}`;
+                const path = `__comps__.${index}.${key}`;
+                const item = comp.value[key];
+                buildProp(path, key, item);
             });
         });
 

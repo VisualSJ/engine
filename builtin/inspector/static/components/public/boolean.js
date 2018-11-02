@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="boolean vue-comp-ui">
+<div :class="{'boolean': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
         <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
@@ -12,6 +12,7 @@ exports.template = `
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
     <div class="value"
         v-else
@@ -22,7 +23,9 @@ exports.template = `
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
+    <slot name="child"></slot>
 </div>
 `;
 

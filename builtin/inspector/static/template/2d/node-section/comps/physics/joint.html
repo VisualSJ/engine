@@ -17,9 +17,9 @@
 
     <template v-for="(prop, key) in target">
         <component
-            v-if="prop.visible !== false && prop.name !== 'Connected Body' && getComponentType(prop, $options)"
-            :is="getComponentType(prop, $options)"
-            :name="prop.name || key"
+            v-if="prop.visible !== false && prop.name !== 'Connected Body' && prop.compType"
+            :is="prop.compType"
+            :name="prop.name"
             :dump="prop"
         ></component>
     </template>

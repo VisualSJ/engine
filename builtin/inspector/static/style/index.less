@@ -34,10 +34,26 @@ ui-checkbox,
 ui-color,
 ui-drag-object,
 ui-button {
+    line-height: normal;
     margin-right: 0.25em;
     &:last-child {
         margin-right: 0;
     }
+}
+ui-drag-object {
+    min-width: 10px;
+}
+.ovh {
+    overflow: hidden;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.flex-wrap-reverse {
+    flex-wrap: wrap-reverse;
+}
+.flex-full {
+    flex-basis: 100%;
 }
 
 .fit {
@@ -75,55 +91,65 @@ ui-button {
 ui-checkbox {
     margin-right: 0.25em;
 }
-ui-prop {
-    ui-input,
-    ui-num-input,
-    ui-select,
-    ui-color {
-        flex: 1;
-    }
-    & > div[slot='content'] {
-        width: 100%;
-        flex-wrap: wrap;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        & > ui-prop {
-            --left-width: 20%;
-            --right-width: 85%;
-            --label-max-width: 15px;
-            --label-min-width: 10px;
-            height: 2em;
-            max-width: calc(50% - 10px);
-            flex-grow: 1;
-            margin-bottom: 5px;
-            margin-right: 10px;
-        }
-    }
+.pt10 {
+    padding-top: 10px;
 }
-
-ui-prop.vector > div[slot='content'] {
-    margin-right: -10px;
+.ui-left-gap {
+    margin-left: 0.25em;
 }
 .indent {
     padding-left: 13px;
 }
 
 .vue-comp-ui {
+    display: flex;
+    margin: 5px 0;
+    line-height: 22px;
     & > .name {
+        flex: 1;
+        min-width: 100px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         margin-right: 3px;
     }
+    & > .value {
+        display: flex;
+        flex: 3;
+        & > .label {
+            margin-right: 5px;
+        }
+        & > ui-input,
+        & > ui-num-input,
+        & > ui-select,
+        & > ui-checkbox,
+        & > ui-color,
+        & > ui-drag-object,
+        & > ui-button {
+            flex: 1;
+            align-self: center;
+        }
+        .vue-comp-ui {
+            .name {
+                flex: 0;
+            }
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
     .tiny {
         line-height: 0.9;
     }
-    & > .value {
-        .label {
-            margin-right: 5px;
-        }
-    }
+
+}
+
+/* -------------- event prop start ----------------------------- */
+.event-prop-button {
+    flex: 1;
+    min-width: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 /* -------------- image preview start ----------------------------- */
 .image-preview {

@@ -54,51 +54,6 @@ exports.methods = {
     },
 
     /**
-     * 节点数据被修改
-     * @param {*} event
-     */
-    onPropertyChanged(event) {
-        // 获取属性的类型
-        let type = '';
-        event.path.some((item) => {
-            if (item.tagName === 'UI-PROP') {
-                type = item.type;
-                return true;
-            }
-        });
-        type = type === 'vec2' ? 'cc.Vec2' : type;
-        type = type === 'vec3' ? 'cc.Vec3' : type;
-        type = type === 'color' ? 'cc.Color' : type;
-        type = type === 'node' ? 'cc.Node' : type;
-        type = type === 'scene' ? 'cc.Scene' : type;
-        type = type === 'asset' ? 'cc.Asset' : type;
-
-        // 获取属性的搜索路径
-        let path = '';
-        event.path.forEach((item) => {
-            if (item.path) {
-                path = path ? `${item.path}.${path}` : item.path;
-            }
-        });
-
-        let value = event.target.value;
-        if (type === 'cc.Color') {
-            value = { r: value[0], g: value[1], b: value[2], a: value[3] };
-        } else if (type === 'cc.Asset') {
-            value = { uuid: value };
-        }
-
-        // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
-
-        Editor.Ipc.sendToPanel('scene', 'set-property', {
-            path: `__comps__.${this.index}.${path}`,
-            uuid: this.uuid,
-            dump: { type, value }
-        });
-    },
-
-    /**
      * 打开帮助页面
      * @param {*} event
      */

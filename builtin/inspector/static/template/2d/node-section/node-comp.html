@@ -1,7 +1,5 @@
-<ui-section expand
-    @confirm.stop="onPropertyChanged($event)"
->
-    <div slot="header" class="header flex-1 layout horizontal center-center">
+<ui-section expand>
+    <cc-structure :dump="comp.value" slot="header" class="header flex-1 layout horizontal center-center">
         <ui-checkbox path="enabled"
             :value="comp.value.enabled.value"
             @click.stop=""
@@ -22,10 +20,11 @@
         >
             <i class="iconfont icon-setting"></i>
         </ui-button>
-    </div>
+    </cc-structure>
 
     <component
         :is="getComponent(comp.type)"
         :target="comp.value"
     ></component>
+    
 </ui-section>

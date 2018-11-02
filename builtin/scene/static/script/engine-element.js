@@ -268,6 +268,18 @@ class View extends window.HTMLElement {
         });
     }
 
+    /**
+     * 查询一个节点内挂载的所有组件以及对应的函数
+     * @param {*} uuid
+     */
+    async queryComponentFunctionOfNode(uuid) {
+        return await this.ipc.send('call-method', {
+            module: 'Scene',
+            handler: 'queryComponentFunctionOfNode',
+            params: [uuid]
+        });
+    }
+
     ///////////////////
 
     /**

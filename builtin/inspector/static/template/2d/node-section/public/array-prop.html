@@ -1,21 +1,32 @@
 <!-- todo 
-    <ui-prop :label="target.name" :readonly="target.attrs.readonly">
-    <template v-if="!target.values || target.values.length <= 1">
-        <ui-num-input class="flex-1" :value="target.value.length" @confirm="arraySizeChanged"></ui-num-input>
+    <ui-prop :label="dump.name" :readonly="dump.attrs.readonly">
+    <template v-if="!dump.values || dump.values.length <= 1">
+        <ui-num-input class="flex-1" :value="dump.value.length" @confirm="arraySizeChanged"></ui-num-input>
         <div class="child">
-            <component v-for="prop in target.value" :is="prop.compType" :target="prop" :key="prop.compType"></component>
+            <component v-for="prop in dump.value" :is="prop.compType" :dump="prop" :key="prop.compType"></component>
         </div>
     </template>
     <template v-else>
         <span>{{T('difference')}}</span>
     </template>
 </ui-prop> -->
-<div>
-    <number :name="target.name":dump="target" v-if=""></number>
-    <template v-if="!target.values || target.values.length <= 1">
-        <span>todo</span>
+<div class="number vue-comp-ui flex-wrap">
+    <div class="name">{{dump.name}}</div>
+    <template v-if="!dump.values || dump.values.length <= 1">
+        <div class="value">
+            <ui-num-input :value="dump.value.length" @confirm.stop="arraySizeChanged" min="0"></ui-num-input>
+        </div>
+        <div class="flex-full ovh">
+            <component
+                v-for="(prop, index) in dump.value"
+                :key="index"
+                :is="prop.compType"
+                :dump="prop"
+                :indent="1"
+            ></component>
+        </div>
     </template>
-    <template v-else>
+    <div class="value" v-else>
         <span>{{T('difference')}}</span>
-    </template>
+    </div>
 </div>

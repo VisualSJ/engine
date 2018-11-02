@@ -6,6 +6,7 @@ const manager = {
 
 const nodeUtils = require('../utils/node');
 const dumpUtils = require('../utils/dump');
+const getComponentFunctionOfNode = require('../utils/get-component-function-of-node');
 const camera = require('./camera');
 
 const ipc = require('../../ipc/webview');
@@ -143,6 +144,15 @@ function queryNodePath(uuid) {
         node = node.parent;
     }
     return names.join('/');
+}
+
+function queryComponentFunctionOfNode(uuid) {
+    const node = query(uuid);
+
+    if (!node) {
+        return {};
+    }
+    return getComponentFunctionOfNode(node);
 }
 
 /**
@@ -344,6 +354,7 @@ module.exports = {
     queryNodeTree,
     // 查询一个节点的搜索路径
     queryNodePath,
+    queryComponentFunctionOfNode,
 
     // 设置一个节点的属性
     setProperty,

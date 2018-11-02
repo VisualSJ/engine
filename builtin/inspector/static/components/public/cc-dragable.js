@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="cc-dragable vue-comp-ui">
+<div :class="{'cc-dragable': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
         <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
@@ -22,7 +22,9 @@ exports.template = `
             @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
+    <slot name="child"></slot>
 </div>
 `;
 
@@ -100,7 +102,7 @@ exports.methods = {
      * value 修改
      */
     _onConfirm(event) {
-        const uuid = event.target.value;
+        const {value: uuid} = event.target;
         if (this.dump) {
             this.dump.value.uuid = uuid;
         } else {

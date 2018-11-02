@@ -170,6 +170,14 @@ export const messages = {
      */
     async 'query-node-tree'() {
         return await Editor.Ipc.requestToPanel('scene', 'query-node-tree');
+    },
+
+    /**
+     * 查询一个节点内挂载的所有组件以及对应的函数
+     * @param {*} uuid 查询节点的 uuid
+     */
+    async 'query-component-function-of-node'(uuid: string) {
+        return await Editor.Ipc.requestToPanel('scene', 'query-component-function-of-node', uuid);
     }
 };
 
@@ -187,4 +195,4 @@ export function load() {
         .registerStringProtocol('project-scripts', projectScripts.handler, projectScripts.error);
 }
 
-export function unload() {}
+export function unload() { }

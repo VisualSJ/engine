@@ -6,6 +6,8 @@ const manager = {
 
 const dumpBackup = require('./backup');
 
+const isChildClass = require('../is-child-class');
+
 const { get } = require('lodash');
 
 function dumpComponent() {
@@ -14,6 +16,59 @@ function dumpComponent() {
 
 function dumpProperty() {
     // debugger;
+}
+
+function fillDefaultValue(attrs, array, start, end) {
+    const DefaultMap = {
+        Boolean: false,
+        String: '',
+        Float: 0,
+        Integer: 0
+    };
+
+    let val = attrs.saveUrlAsAsset ? '' : DefaultMap[attrs.type];
+
+    if (val !== undefined) {
+        for (let i = start; i < end; i++) {
+            array[i] = val;
+        }
+
+        return;
+    }
+
+    switch (attrs.type) {
+        case 'Enum': {
+            const list = attrs.enumList;
+            val = (list[0] && list[0].value) || 0;
+            for (let i = start; i < end; i++) {
+                array[i] = val;
+            }
+            break;
+        }
+        case 'Object': {
+            const {ctor: Ctor} = attrs;
+
+            if (isChildClass(Ctor, cc.Asset, cc.Node, cc.Component)) {
+                for (let i = start; i < end; i++) {
+                    array[i] = null;
+                }
+                break;
+            } else {
+                for (let i = start; i < end; i++) {
+                    try {
+                        array[i] = new Ctor();
+                    } catch (err) {
+                        console.error(err);
+                        array[i] = null;
+                    }
+                }
+
+                break;
+            }
+        }
+        default:
+            break;
+    }
 }
 
 /**
@@ -32,7 +87,12 @@ function _fillerType(types, type, dump) {
         if (classType.properties[prop]) {
             const list = classType.properties[prop];
             Object.keys(list).forEach((key) => {
-                property[key] = list[key];
+                // 存在 type 为空情况所以 key 为 type 则需要先判断 type 是否存在再赋值
+                if (key === 'type') {
+                    list[key] && (property[key] = list[key]);
+                } else {
+                    property[key] = list[key];
+                }
             });
         }
 
@@ -56,7 +116,12 @@ function _fillerType(types, type, dump) {
         }
 
         Object.keys(prop).forEach((key) => {
-            dump[property][key] = prop[key];
+                // 存在 type 为空情况所以 key 为 type 需要先判断 type 是否存在再赋值
+                if (key === 'type') {
+                    prop[key] && (dump[property][key] = prop[key]);
+                } else {
+                    dump[property][key] = prop[key];
+                }
         });
     });
 }
@@ -132,6 +197,22 @@ function restoreProperty(node, path, dump) {
     const spath = keys.join('.');
 
     const property = spath ? get(node, spath) : node;
+
+    if (key === 'length' && Array.isArray(property)) {
+        // 修改数组长度需要取上一层的 key 才能有对应的 attr
+        const subKey = keys.pop();
+        const subPath = keys.join('.');
+        const subProperty = subPath ? get(node, subPath) : node;
+        const attr = cc.Class.attr(subProperty, subKey);
+        const array = subProperty[subKey];
+
+        const oldLength = array.length;
+        const {value} = dump;
+
+        array.length = value;
+        fillDefaultValue(attr, array, oldLength, value);
+        return;
+    }
 
     switch (dump.type) {
         case 'cc.Scene':

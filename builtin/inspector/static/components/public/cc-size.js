@@ -1,7 +1,7 @@
 'use strict';
 
 exports.template = `
-<div class="cc-size vue-comp-ui">
+<div :class="{'cc-size': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
         <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
     </div>
@@ -19,6 +19,7 @@ exports.template = `
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
 
     <div class="value" v-else>
@@ -35,7 +36,9 @@ exports.template = `
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
+    <slot name="child"></slot>
 </div>
 `;
 

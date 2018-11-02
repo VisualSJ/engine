@@ -330,6 +330,14 @@ export const messages = {
     },
 
     /**
+     * 查询一个节点内挂载的所有组件以及对应的函数
+     * @param {*} uuid 查询节点的 uuid
+     */
+    async 'query-component-function-of-node'(uuid: string) {
+        return await panel.$.scene.queryComponentFunctionOfNode(uuid);
+    },
+
+    /**
      * 保存一步操作记录
      */
     snapshot() {

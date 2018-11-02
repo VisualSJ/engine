@@ -1,7 +1,7 @@
 'use strict';
 
 const { join, basename, extname } = require('path');
-const { readTemplate, readComponent } = require('../../../utils');
+const { readTemplate, readComponent, T } = require('../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/index.html');
 
@@ -29,6 +29,8 @@ exports.watch = {
 };
 
 exports.methods = {
+    T,
+
     async refresh() {
         this.$root.toggleLoading(true);
         this.dataReady = false;
