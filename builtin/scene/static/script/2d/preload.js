@@ -8,15 +8,21 @@ let isReady = false;
 // 不能放到主页面内, 应该避免主页内的全局参数污染
 window.Manager = {
     Ipc: ipc,
+
     Init: {
         engine: require('./init/engine'),
         system: require('./init/system'),
         utils: require('./init/utils'),
     },
+
+    Camera: require('./manager/camera'),
     Scene: require('./manager/scene'),
+    Node: require('./manager/node'),
     Script: require('./manager/scripts'),
     History: require('./manager/history'),
-    Select: require('./manager/select'),
+    Selection: require('./manager/selection'),
+    Operation: require('./manager/operation'),
+
     get serialize() {
         return this._serialize();
     },
@@ -26,19 +32,15 @@ window.Manager = {
 ipc.on('call-method', async (options) => {
     // 防止初始化之前使用接口
     if (!isReady) {
-        return;
+        throw new Error(`The scene is not ready.`);
     }
-
     const mod = Manager[options.module];
-
     if (!mod) {
-        throw new Error(`Module [${options.module}] does not exist`);
+        throw new Error(`Module [${options.module}] does not exist.`);
     }
-
     if (!mod[options.handler]) {
-        throw new Error(`Method [${options.handler}] does not exist`);
+        throw new Error(`Method [${options.handler}] does not exist.`);
     }
-
     return await mod[options.handler](...options.params);
 });
 

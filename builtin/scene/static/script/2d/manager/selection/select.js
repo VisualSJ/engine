@@ -3,7 +3,7 @@
 const Polygon = require('./polygon');
 
 const intersection = require('./intersection');
-const nodeUtils = require('./node');
+const nodeUtils = require('../../utils/node');
 
 /**
  * 递归传入节点以及其子节点

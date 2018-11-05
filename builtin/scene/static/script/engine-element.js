@@ -49,6 +49,20 @@ class View extends window.HTMLElement {
     }
 
     /**
+     * 转发操作请求给子进程内的各个 manager
+     * @param {*} module manager 名字，以大写开头
+     * @param {*} handler manager 上的方法名字
+     * @param {*} params 执行方法所用的参数
+     */
+    forwarding(module, handler, params = []) {
+        return await this.ipc.send('call-method', {
+            module,
+            handler,
+            params,
+        });
+    }
+
+    /**
      * 打开场景
      */
     async openScene(uuid) {
@@ -387,9 +401,13 @@ async function initIpc(elem) {
 
     // 转发选中节点消息
     elem.ipc.on('select-nodes', (uuids) => {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
         uuids.forEach((uuid) => {
             Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+        });
+    });
+    elem.ipc.on('unselect-nodes', (uuids) => {
+        uuids.forEach((uuid) => {
+            Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
         });
     });
 

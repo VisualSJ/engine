@@ -1,5 +1,9 @@
 'use strict';
 
+const manager = {
+    operation: require('../operation'),
+};
+
 /**
  * 摄像机管理器
  *
@@ -7,7 +11,7 @@
  * 编辑器模式下，游戏内的其他摄像机需要关闭（现阶段是在引擎内 hack 实现）。
  */
 
-const selectUtils = require('../utils/select');
+const Grid = require('./grid');
 
 const scales = [
     0.05, 0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 3, 4, 5
@@ -64,15 +68,16 @@ class Camrea {
         cc.game.addPersistRootNode(this.foregroundNode);
         cc.game.addPersistRootNode(this.backgroundNode);
 
+        // 初始化绘制网格的节点
+        let node = new cc.Node('Scene Grid 2D');
+        const gridCtx = node.addComponent(cc.Graphics);
+        this.grid = new Grid(gridCtx);
+        node.parent = this.backgroundNode;
+
         // 初始化画设计分辨率框的节点
         const wireframe = new cc.Node('Design Resolution');
         this.designResolutionCtx = wireframe.addComponent(cc.Graphics);
         wireframe.parent = this.backgroundNode;
-
-        // 初始化绘制网格的节点
-        let node = new cc.Node('Scene Grid 2D');
-        this.gridCtx = node.addComponent(cc.Graphics);
-        node.parent = this.backgroundNode;
 
         this.apply();
     }
@@ -181,96 +186,32 @@ class Camrea {
         this.camera._camera.dirty = true;
         this.camera.beforeDraw && this.camera.beforeDraw();
 
+        ///////////
+        // 绘制网格
+
+        // 摄像机看到的左下角点的坐标
+        // const startPoint = {
+        //     x: (bcr.width - size.width * this.scale) / 2 / this.scale + this.offset.x,
+        //     y: (bcr.height - size.height * this.scale) / 2 / this.scale + this.offset.y,
+        // };
+
+        // const endPoint = {
+        //     x: (bcr.width - size.width * this.scale) / 2 / this.scale - this.offset.x + size.width,
+        //     y: (bcr.height - size.height * this.scale) / 2 / this.scale - this.offset.y + size.height,
+        // };
+
+        this.grid.update(
+            this.translatePoint({x: 0, y: 0}),
+            this.translatePoint({x: bcr.width, y: bcr.height}),
+            this.scale,
+        );
+
         // 更新设计分辨率框（框绘制的宽度在实际显示时始终要保持1像素）
         this.designResolutionCtx.strokeColor = cc.color('#AA00AA');
         this.designResolutionCtx.lineWidth = 1 / scale;
         this.designResolutionCtx.clear();
         this.designResolutionCtx.rect(0, 0, size.width, size.height);
         this.designResolutionCtx.stroke();
-
-        ///////////
-        // 绘制网格
-
-        // 摄像机看到的左下角点的坐标
-        const startPoint = {
-            x: (bcr.width - size.width * this.scale) / 2 / this.scale + this.offset.x,
-            y: (bcr.height - size.height * this.scale) / 2 / this.scale + this.offset.y,
-        };
-
-        const endPoint = {
-            x: (bcr.width - size.width * this.scale) / 2 / this.scale - this.offset.x + size.width,
-            y: (bcr.height - size.height * this.scale) / 2 / this.scale - this.offset.y + size.height,
-        };
-
-        this.gridCtx.lineWidth = 1 / scale;
-        this.gridCtx.clear();
-
-        const spacing = (1 << 1 /  Math.sqrt(this.scale)) * 20;
-        const num = Math.floor((Math.sqrt(this.scale) / 0.5 % 1) * 5) + 1;
-
-        // 单数索引的竖线
-        let ox = -Math.floor(startPoint.x / spacing) * spacing;
-
-        if (ox / spacing % 2) {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x${num}${num}${num}${num}${num}${num}`);
-        } else {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x555555`);
-        }
-        while (ox < endPoint.x) {
-            this.gridCtx.moveTo(ox, -startPoint.y);
-            this.gridCtx.lineTo(ox, endPoint.y);
-            ox += spacing * 2;
-        }
-        this.gridCtx.stroke();
-
-        // 单数索引的横线
-        let oy = -Math.floor(startPoint.y / spacing) * spacing;
-
-        if (oy / spacing % 2) {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x${num}${num}${num}${num}${num}${num}`);
-        } else {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x555555`);
-        }
-
-        while (oy < endPoint.y) {
-            this.gridCtx.moveTo(-startPoint.x, oy);
-            this.gridCtx.lineTo(endPoint.x, oy);
-            oy += spacing * 2;
-        }
-
-        this.gridCtx.stroke();
-
-        // 双数索引的竖线
-        ox = -Math.floor(startPoint.x / spacing) * spacing;
-
-        if (ox / spacing % 2) {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x555555`);
-        } else {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x${num}${num}${num}${num}${num}${num}`);
-        }
-
-        while (ox < endPoint.x) {
-            this.gridCtx.moveTo(ox + spacing, -startPoint.y);
-            this.gridCtx.lineTo(ox + spacing, endPoint.y);
-            ox += spacing * 2;
-        }
-        this.gridCtx.stroke();
-
-        // 双数索引的横线
-        oy = -Math.floor(startPoint.y / spacing) * spacing;
-
-        if (oy / spacing % 2) {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x555555`);
-        } else {
-            this.gridCtx.strokeColor = cc.color().fromHEX(`0x${num}${num}${num}${num}${num}${num}`);
-        }
-
-        while (oy < endPoint.y) {
-            this.gridCtx.moveTo(-startPoint.x, oy + spacing);
-            this.gridCtx.lineTo(endPoint.x, oy + spacing);
-            oy += spacing * 2;
-        }
-        this.gridCtx.stroke();
     }
 
     /**
@@ -295,24 +236,19 @@ class Camrea {
 
 const camera = module.exports = new Camrea();
 
-document.addEventListener('mousewheel', (event) => {
-    let scale = Math.pow(2, event.wheelDelta * 0.002) * camera.scale;
+manager.operation.on('zoom', (data) => {
+    let scale = Math.pow(2, data.offset * 0.002) * camera.scale;
     if (scale < 0.05) {
         scale = 0.05;
     } else if (scale > 5) {
         scale = 5;
     }
 
-    const point = {
-        x: event.pageX,
-        y: event.pageY,
-    };
-
     // 缩放前点击的 canvas 实际点
-    const point1 = camera.translatePoint(point);
+    const point1 = camera.translatePoint(data);
     camera.scale = scale;
     // 缩放后点击的 canvas 实际点
-    const point2 = camera.translatePoint(point);
+    const point2 = camera.translatePoint(data);
 
     // 根据鼠标位置计算缩放后视角的偏移量
     camera.offset.x -= point1.x - point2.x;
@@ -321,42 +257,23 @@ document.addEventListener('mousewheel', (event) => {
     camera.apply();
 });
 
-document.addEventListener('mousedown', (event) => {
-    if (event.button !== 2) {
-        return;
-    }
-    const position = { x: event.pageX, y: event.pageY };
-
-    const move = (event) => {
-        const offsetX = event.pageX - position.x;
-        const offsetY = event.pageY - position.y;
-
-        camera.offset.x += offsetX / camera.scale;
-        camera.offset.y -= offsetY / camera.scale;
-
-        position.x = event.pageX;
-        position.y = event.pageY;
-
-        camera.apply();
-    };
-
-    const up = () => {
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-    };
-
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
+manager.operation.on('move-start', (data) => {
+    document.body.style.cursor = '-webkit-grabbing';
+});
+manager.operation.on('move-change', (data) => {
+    camera.offset.x += data.offsetX / camera.scale;
+    camera.offset.y -= data.offsetY / camera.scale;
+    camera.apply();
+});
+manager.operation.on('move-end', (data) => {
+    document.body.style.cursor = '';
 });
 
-window.addEventListener('resize', () => {
+manager.operation.on('resize', (data) => {
     if (!window.cc) {
         return;
     }
-
-    const bcr = document.body.getBoundingClientRect();
-    cc.view.setCanvasSize(bcr.width, bcr.height);
-    cc.view.setDesignResolutionSize(bcr.width, bcr.height, camera.policy);
-
+    cc.view.setCanvasSize(data.width, data.height);
+    cc.view.setDesignResolutionSize(data.width, data.height, camera.policy);
     camera.apply();
 });
