@@ -21,7 +21,7 @@ let treeData: any; // 树形结构的数据，含 children
 
 const trash: any = {}; // 回收站，主要用于移动中，异步的先从一个父级删除节点，再添加另一个父级的过程
 
-let copiedNode: string[] = []; // 用于存放已复制节点的 uuid
+let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
 
@@ -178,11 +178,16 @@ export const methods = {
     /**
      * 添加选中项
      * @param uuid
+     * @param show 是否定位显示
      */
-    select(uuid: string) {
+    select(uuid: string, show = false) {
         if (!vm.selects.includes(uuid)) {
             vm.selects.push(uuid);
             vm.current = getNodeFromMap(uuid);
+
+            if (show) {
+                selectsIntoView();
+            }
             return vm.current;
         }
         return;
@@ -330,10 +335,28 @@ export const methods = {
      * 从树形删除节点
      */
     delete(uuid: string) {
-        const arr = getGroupFromTree(treeData, uuid);
+        const throwToTrash = (node: ItreeNode) => {
+            trash[node.uuid] = node;
+            if (Array.isArray(node.children)) {
+                node.children.forEach((child: ItreeNode) => {
+                    throwToTrash(child);
+                });
+            }
+        };
+
+        let arr = getGroupFromTree(treeData, uuid);
+        if (arr.length === 0) { // 现有树形中没有，从回收站再找找
+            const node = trash[uuid];
+            if (node) {
+                const parentNode = trash[node.parentUuid];
+                if (parentNode) {
+                    arr = getGroupFromTree(parentNode, uuid);
+                }
+            }
+        }
         if (arr[2]) {
             const nodeInArr = arr[2].splice(arr[1], 1);
-            trash[uuid] = nodeInArr[0];
+            throwToTrash(nodeInArr[0]);
         }
 
         // 触发节点数据已变动
@@ -378,8 +401,9 @@ export const methods = {
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
-            vm.folds[uuid] = one.isExpand;
-            this.changeData();
+            vm.$nextTick(() => {
+                this.changeData();
+            });
         }
     },
 
@@ -576,7 +600,7 @@ export const methods = {
             return;
         }
 
-        if (json.from === json.to) { // 移动到原节点
+        if (json.from.search(json.to) !== -1) { // 移动的元素有重叠
             return;
         }
 
@@ -586,9 +610,22 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        uuids.forEach((uuid: string) => {
-            (async (fromId) => {
-                const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
+        // 多节点的移动，根据现有排序的顺序执行
+        const groups: any[] = uuids.map((uuid: string) => {
+            return getGroupFromTree(treeData, uuid);
+        }).filter(Boolean).sort((a, b) => {
+            return a[0].top - b[0].top;
+        });
+
+        // 开始执行
+        groups.forEach((group: any) => {
+            (async (group) => {
+                const [fromNode, fromIndex, fromArr, fromParent] = group;
+
+                const isSubChild = getGroupFromTree(fromNode, json.to);
+                if (isSubChild[0]) { // toNode 节点是 fromNode 的子集，所以父不能移到子里面
+                    return;
+                }
 
                 // 移动的索引变动
                 let offset = 0;
@@ -666,7 +703,7 @@ export const methods = {
                         affectNode.state = 'loading'; // 显示 loading 效果
                     }
                 }
-            })(uuid);
+            })(group);
         });
     },
 
@@ -688,11 +725,11 @@ export const methods = {
      * @param uuid
      */
     copy(uuid: string) {
-        copiedNode = vm.selects.slice();
+        copiedUuids = vm.selects.slice();
 
         // 来自右击菜单的单个选中，右击节点不在已选项目里
         if (uuid !== undefined && !vm.selects.includes(uuid)) {
-            copiedNode = [uuid];
+            copiedUuids = [uuid];
         }
     },
 
@@ -708,29 +745,33 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        _forEach(copiedNode, uuid);
+        _forEach(copiedUuids, uuid);
 
         async function _forEach(uuids: string[], parent: string) {
-            uuids.forEach((id: string) => {
-                const node = getValidNode(id);
-                if (node) {
-                    // 循环其子集
-                    let childrenUuids;
-                    if (Array.isArray(node.children)) {
-                        childrenUuids = node.children.map((child: ItreeNode) => child.uuid);
-                    }
+            // 多节点的复制，根据现有排序的顺序执行
+            const nodes: any[] = uuids.map((uuid: string) => {
+                return getGroupFromTree(treeData, uuid)[0];
+            }).filter(Boolean).sort((a, b) => {
+                return a.top - b.top;
+            });
 
-                    (async (parent, uuid) => {
-                        const newParent = await Editor.Ipc.requestToPackage('scene', 'create-node', {
-                            parent,
-                            dump: uuid,
-                        });
-
-                        if (childrenUuids && childrenUuids.length > 0) {
-                            _forEach(childrenUuids, newParent);
-                        }
-                    })(parent, node.uuid);
+            nodes.forEach((node: ItreeNode) => {
+                // 循环其子集
+                let childrenUuids;
+                if (Array.isArray(node.children)) {
+                    childrenUuids = node.children.map((child: ItreeNode) => child.uuid);
                 }
+
+                (async (parent, uuid) => {
+                    const newParent = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+                        parent,
+                        dump: uuid,
+                    });
+
+                    if (childrenUuids && childrenUuids.length > 0) {
+                        _forEach(childrenUuids, newParent);
+                    }
+                })(parent, node.uuid);
             });
         }
     },
@@ -823,14 +864,22 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
         one.left = depth * iconWidth + padding;
         one.state = one.state ? one.state : '';
         one.isParent = one.children && one.children.length > 0 ? true : false;
-        const isExpand = vm.folds[one.uuid];
-        if (isExpand !== undefined) {
-            one.isExpand = isExpand;
-        } else {
-            one.isExpand = one.isParent ? true : false;
+
+        if (vm.folds[one.uuid] === undefined) {
+            vm.folds[one.uuid] = one.isParent ? true : false;
         }
+        Object.defineProperty(one, 'isExpand', {
+            configurable: true,
+            enumerable: true,
+            get() {
+                return vm.folds[one.uuid];
+            },
+            set(val) {
+                vm.folds[one.uuid] = val;
+            },
+        });
+
         one.parentUuid = obj.uuid;
-        one._height = nodeHeight;
         Object.defineProperty(one, 'height', {
             configurable: true,
             enumerable: true,
@@ -849,7 +898,7 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
                         }
                     }
                 } else {
-                    this._height = nodeHeight;
+                    this._height = depth === 0 ? nodeHeight : 0;
                 }
             },
         });
@@ -909,11 +958,6 @@ function resetTreeProps(props: any, tree: ItreeNode[] = treeData.children) {
             const uuid = node.uuid;
             // @ts-ignore
             node[k] = props[k];
-
-            // 收集全部展开或折叠
-            if (k === 'isExpand') {
-                vm.folds[uuid] = node.isExpand;
-            }
         }
 
         if (node.children) {
@@ -937,15 +981,15 @@ function resetTreeProps(props: any, tree: ItreeNode[] = treeData.children) {
 function getGroupFromTree(obj: ItreeNode, value: string = '', key: string = 'uuid'): any {
     let rt = [];
 
-    if (!obj) {
+    if (!obj || !obj.children) {
         return [];
     }
     // @ts-ignore
-    if (obj[key] === value) {
-        return [obj]; // 根节点比较特殊
+    if (obj[key] === value) { // 次要寻找包体 自身对象，比如根节点自身
+        return [obj];
     }
 
-    let arr = obj.children;
+    let arr = obj.children; // 主要寻找包体是 .children
     if (Array.isArray(obj)) {
         arr = obj;
     }
@@ -1086,7 +1130,6 @@ function changeNodeData(newData: any) {
         console.error('Can not find the node.');
         return;
     }
-
     // 属性是值类型的修改
     ['name'].forEach((key) => {
         // @ts-ignore
@@ -1096,16 +1139,34 @@ function changeNodeData(newData: any) {
         }
     });
 
-    // 属性值是对象类型的修改， 如 children
-    node.children = newData.children.value.map((json: any) => {
-        const uuid: string = json.value;
-        return getValidNode(uuid);
-    });
+    if (!Array.isArray(node.children)) {
+        node.children = [];
+    }
+
+    if (node.children.length !== newData.children.value.length) {
+        // 展开其内容有变动的节点
+        node.isExpand = true;
+
+        // 先保存原先的节点，例如在粘贴节点后进行 undo 操作，需要此操作保存已粘贴成功了的节点
+        node.children.map((child: ItreeNode) => {
+            return child.uuid;
+        }).forEach((uuid: string) => {
+            vm.delete(uuid);
+        });
+
+        // 属性值是对象类型的修改， 如 children
+        node.children = newData.children.value.map((json: any) => {
+            const uuid: string = json.value;
+            return getValidNode(uuid);
+        }).filter(Boolean);
+    }
 
     // 触发节点数据已变动
     node.state = ''; // 重置掉 loading 效果
-    node.isExpand = true; // 变动节点展开其变动内容
-    vm.changeData();
+    clearTimeout(timeOutId);
+    timeOutId = setTimeout(() => {
+        vm.changeData();
+    }, 100);
     return node;
 }
 
@@ -1113,16 +1174,7 @@ function changeNodeData(newData: any) {
  * 展开选中项并处于视角中
  */
 function selectsIntoView() {
-    if (vm.selects.length > 0) { // 展开所有选中项
-        vm.selects.forEach((id: string) => {
-            expandNode(id);
-        });
-        vm.changeData();
-    }
-
-    vm.$nextTick(() => {
-        scrollIntoView(vm.getFirstSelect());
-    });
+    scrollIntoView(vm.getFirstSelect());
 }
 
 /**
@@ -1153,7 +1205,9 @@ function scrollIntoView(uuid: string) {
 
         if (expandNode(uuid)) {
             vm.changeData();
-            scrollIntoView(uuid);
+            vm.$nextTick(() => {
+                scrollIntoView(uuid);
+            });
         }
     }
 }

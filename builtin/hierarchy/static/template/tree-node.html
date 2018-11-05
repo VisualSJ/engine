@@ -15,7 +15,7 @@
 >
     <i class="arrow i-arrow-right"
         v-if="node.isParent" 
-        @click.stop="toggle(node)"
+        @click.stop="toggle($event, node)"
     ></i>
     <label class="name"
         v-if="node.state!=='input'"

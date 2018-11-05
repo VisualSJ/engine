@@ -27,11 +27,6 @@
             }
         }
     }
-    &[animate] {
-        .arrow {
-            transition: 0.2s transform;
-        }
-    }
     &[expand="true"] {
         .arrow {
             transform: rotate(90deg);
@@ -44,6 +39,9 @@
         text-align: center;
         cursor: pointer;
         font-size: 0.9em;
+        &[animate] {
+            transition: 0.2s transform;
+        }
         &+.name {
             margin-left: 2px;
         }

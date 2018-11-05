@@ -145,7 +145,13 @@ export const methods = {
             // @ts-ignore
             this.$emit('ipcSingleSelect', node.uuid);
         }
+    },
 
+    /**
+     * 节点折叠切换
+     * @param uuid
+     */
+    toggle(event: Event, node: ItreeNode) {
         // 允许点击的元素有动画，不能直接全部放开动画是因为滚动中vue节点都会变动，导致动画都在执行
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -153,13 +159,7 @@ export const methods = {
         setTimeout(() => {
             target.removeAttribute('animate');
         }, 500);
-    },
 
-    /**
-     * 节点折叠切换
-     * @param uuid
-     */
-    toggle(node: ItreeNode) {
         // @ts-ignore
         this.$parent.toggle(node.uuid);
     },

@@ -141,8 +141,11 @@ function dumpNode(node) {
     dump.children = {
         readonly: false,
         value: node.children.map((ccNode) => {
+            if (ccNode._objFlags & cc.Object.Flags.HideInHierarchy) {
+                return null;
+            }
             return { value: ccNode.uuid };
-        })
+        }).filter(Boolean)
     };
     // 补充 parent 字段
     dump.parent = {
