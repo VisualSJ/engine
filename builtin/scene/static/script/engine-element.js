@@ -54,7 +54,7 @@ class View extends window.HTMLElement {
      * @param {*} handler manager 上的方法名字
      * @param {*} params 执行方法所用的参数
      */
-    forwarding(module, handler, params = []) {
+    async forwarding(module, handler, params = []) {
         return await this.ipc.send('call-method', {
             module,
             handler,
