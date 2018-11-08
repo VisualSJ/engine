@@ -24,7 +24,7 @@ export const fonts = [{
 }];
 
 export const $ = {
-    content: '.content',
+    content: '.hierarchy',
 };
 
 export const methods = {
@@ -111,7 +111,6 @@ export const messages = {
      * 场景准备就绪
      */
     'scene:ready'() {
-        vm.ready = true;
         clearTimeout(panel.timer);
         panel.timer = setTimeout(async () => {
             await panel.unstaging();
@@ -128,7 +127,6 @@ export const messages = {
     'scene:close'() {
         panel.staging();
         vm.clear();
-        vm.ready = false;
     },
 
     /**
@@ -213,9 +211,6 @@ export async function ready() {
             }
         },
         mounted() {
-            // 组件已准备就绪，与请求数据无关
-            this.ready = true;
-
             // 初始化搜索框
             this.$refs.search.placeholder = Editor.I18n.t('hierarchy.menu.searchPlaceholder');
             this.$refs.search.addEventListener('change', (event: Event) => {
@@ -241,8 +236,8 @@ export async function ready() {
             async refresh() {
                 // 清空原数据
                 vm.clear();
-
-                vm.$refs.tree.refresh();
+                await vm.$refs.tree.refresh();
+                vm.ready = true;
             },
             /**
              * 清空
@@ -250,6 +245,7 @@ export async function ready() {
             clear() {
                 vm.$refs.tree.clear();
                 vm.$refs.search.value = '';
+                vm.ready = false;
             },
             /**
              * 全部节点是否展开
@@ -355,9 +351,9 @@ export async function ready() {
     });
 
     // 场景就绪状态才需要查询数据
-    vm.ready = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
-    // console.log(vm.ready);
-    if (vm.ready) {
+    const isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
+
+    if (isReady) {
         vm.refresh();
     }
 }

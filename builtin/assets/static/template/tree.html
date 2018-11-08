@@ -1,11 +1,11 @@
-<ui-drag-area class="tree" dropable="node"
+<ui-drag-area class="tree" dropable="asset,file"
     :state="state"
     :style="{ top: top + 'px' }"
 >
-    <tree-node type="node"
-        v-for="(node,index) in nodes" 
+    <tree-node type="asset"
+        v-for="(asset,index) in assets" 
         :key="index"
-        :node="node"
+        :asset="asset"
         :selects="selects"
         @ipcAdd="ipcAdd"
         @ipcDelete="ipcDelete"
@@ -16,6 +16,7 @@
         @rename="rename"
         @dragOver="dragOver"
         @drop="drop"
-        @lock="lock"
-    ></tree-node>
+    >
+    </tree-node>
 </ui-drag-area>
+

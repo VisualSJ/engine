@@ -1,0 +1,9 @@
+<i class="icon"
+    :class="type !== 'image'? value : type"
+>
+    <!-- 显示图片的缩略图 -->
+    <img class="thumbnail"
+        v-if="type === 'image'"
+        :src="value"
+    >
+</i>

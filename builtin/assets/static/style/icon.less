@@ -1,3 +1,11 @@
+@red:#ec7063;
+@orange:#f0ad4e;
+@yellow: #f4d03f;
+@green:#2ece54;
+@cyan:#00bcd4;
+@blue:#3498db;
+@purple:#9627ba;
+
 [class^="i-"],
 [class*=" i-"] {
     font-family: "assets" !important;
@@ -6,39 +14,105 @@
     font-variant: normal;
     text-transform: none;
     display: inline-block;
-    vertical-align: middle;
 }
 
-.i-shujuku:before { content: "\e62c"; }
+.i-javascript{
+    color: @red;
+}
 
-.i-search:before { content: "\e726"; }
+.i-json {
+    color: @yellow;
+}
 
-.i-arrow-right:before { content: "\e6df"; }
+.i-code {
+    color: @red;
+}
 
-.i-zitigui-xianxing:before { content: "\e886"; }
+.i-database {
+    color: @orange;
+}
 
-.i-add:before { content: "\e64d"; }
+.i-image {
+    color: @purple;
+}
 
-.i-folder:before { content: "\e616"; }
+.i-typescript {
+    color: @cyan;
+}
 
-.i-full-over:before { content: "\e600"; }
+.i-folder {
+    color: @blue;
+}
 
-.i-full:before { content: "\e602"; }
+.i-packer {
+    color: @green;
+}
 
-.i-refresh:before { content: "\ee63"; }
+// 以上是 tree-node-icon 的颜色，不需要频繁变动
+.i-database:before {
+    content: "\e62c";
+}
 
-.i-javascript:before { content: "\e601"; }
+.i-search:before {
+    content: "\e726";
+}
 
-.i-image:before { content: "\e603"; }
+.i-packer:before {
+    content: "\e886";
+}
 
-.i-json:before { content: "\e604"; }
+.i-arrow-right:before {
+    content: "\e6df";
+}
 
-.i-video:before { content: "\e605"; }
+.i-add:before {
+    content: "\e64d";
+}
 
-.i-zip:before { content: "\e606"; }
+.i-folder:before {
+    content: "\e616";
+}
 
-.i-typescript:before { content: "\e607"; }
+.i-full-over:before {
+    content: "\e600";
+}
 
-.i-file:before { content: "\e608"; }
+.i-full:before {
+    content: "\e602";
+}
 
-.i-code:before { content: "\e609"; }
+.i-refresh:before {
+    content: "\ee63";
+}
+
+.i-javascript:before {
+    content: "\e601";
+}
+
+.i-image:before {
+    content: "\e603";
+}
+
+.i-json:before {
+    content: "\e604";
+}
+
+.i-video:before {
+    content: "\e605";
+}
+
+.i-zip:before {
+    content: "\e606";
+}
+
+.i-typescript:before {
+    content: "\e607";
+}
+
+.i-file:before {
+    content: "\e608";
+}
+
+.i-code:before {
+    content: "\e609";
+}

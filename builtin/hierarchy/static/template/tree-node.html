@@ -17,9 +17,11 @@
         v-if="node.isParent" 
         @click.stop="toggle($event, node)"
     ></i>
+
     <label class="name"
         v-if="node.state!=='input'"
     >{{node.name}}</label>
+
     <input class="rename" ref='input'
         v-else
         :value="node.name"
@@ -27,6 +29,7 @@
         @keyup.enter="renameSubmit($event, node)"
         @keyup.esc="renameCancel($event, node)"
     >
+    
     <section class="loading"
         v-if="node.state==='loading'"
     >

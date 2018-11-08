@@ -11,7 +11,7 @@
     },
 
     "main": "./dist/browser.js",
-    "disabled": false,
+
     "panel": {
         "title": "i18n:assets.title",
         "main": "./dist/panel.js",
@@ -21,23 +21,33 @@
         "width": 400,
         "height": 600,
         "shortcuts": {
-            "up": "moveUp",
-            "down": "moveDown",
-            "right": "unFoldCurrent",
-            "left": "foldCurrent",
-
-            "ctrl+c": "copy",
-            "command+c": "copy",
-            "ctrl+v": "paste",
-            "command+v": "paste",
-            "ctrl+d": "duplicate",
-            "command+d": "duplicate",
-
+            "ctrl+a": "selectAll",
+            "command+a": "selectAll",
+            
             "ctrl+f": "find",
             "command+f": "find",
 
-            "ctrl+a": "selectAll",
-            "command+a": "selectAll"
+            "ctrl+c": "copy",
+            "command+c": "copy",
+            "ctrl+d": "copy",
+            "command+d": "copy",
+
+            "ctrl+v": "paste",
+            "command+v": "paste",
+
+            "command+backspace": "delete",
+            "ctrl+backspace": "delete",
+            "del": "delete",
+
+            "up": "up",
+            "down": "down",
+            "left": "left",
+            "backspace": "left",
+            "right": "right",
+            "enter": "right",
+
+            "shift+up": "shiftUp",
+            "shift+down": "shiftDown"
         }
     }
 }

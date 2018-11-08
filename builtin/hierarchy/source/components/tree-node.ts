@@ -1,7 +1,6 @@
 'use strict';
 import { readFileSync } from 'fs';
-import { stat } from 'fs-extra';
-import { extname, join } from 'path';
+import { join } from 'path';
 
 export const name = 'tree-node';
 

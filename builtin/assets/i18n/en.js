@@ -3,19 +3,25 @@
 module.exports = {
     title: 'assets',
 
-    search_placeholder: 'Search...',
-    search: 'Search',
+    menu: {
+        searchPlaceholder: 'Search...',
+        search: 'Search',
 
-    popup: {
-        create: 'Create',
+        new: 'Create',
+        newFolder: 'Folder',
+        newJavaScript: 'JavaScript',
+        newTypeScript: 'TypeScript',
+        newCoffeeScript: 'CoffeeScript',
+        newScene: 'Scene',
+        newAnimationClip: 'Animation Clip',
+        newAutoAtlas: 'Auto Atlas',
+        newLabelAtlas: 'Label Atlas',
         copy: 'Copy',
         paste: 'Paste',
-        rename: 'Rename',
         delete: 'Delete',
-
-        jump_library: 'Reveal In Library',
-        jump_source: 'Reveal In Explorer',
-
-        print_info: 'Show asset UUID and path',
+        rename: 'Rename',
+        openInlibrary: 'Open in library',
+        openInExplorer: 'Open in explorer',
+        consoleLog: 'Console log UUID and PATH',
     },
 };

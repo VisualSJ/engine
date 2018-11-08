@@ -1,27 +1,23 @@
-'use stirct';
+'use strict';
 
 let pkg: any = null;
-let fold: string[] = [];
+let fold: string = '{}';
 
 export const messages = {
-    /**
-     * 打开资源管理器面板
-     */
     open() {
         Editor.Panel.open('assets');
     },
-
     /**
      * 暂存折叠数据
      */
-    'staging-fold'(uuids: string[] = []) {
-        fold = uuids;
+    'staging-fold'(jsonStr: string) {
+        fold = jsonStr;
     },
 
     /**
      * 查询暂存的折叠数据
      */
-    'query-staging-fold'(): string[] {
+    'query-staging-fold'(): string {
         return fold;
     },
 };
@@ -31,4 +27,4 @@ export function load() {
     pkg = this;
 }
 
-export function unload() {}
+export function unload() { }

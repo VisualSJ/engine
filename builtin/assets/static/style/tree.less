@@ -1,0 +1,18 @@
+.tree {
+    flex: 1;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    padding: 4px 0;
+    box-sizing: border-box;
+    min-height: 100%;
+    min-width: 100%;
+    &[hoving] {
+        &+.select-box {
+            opacity: 1;
+        }
+    }
+}
+
+@import './tree-node';

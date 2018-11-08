@@ -1,54 +1,38 @@
 <div class="assets">
-
-    <header>
+    <header class="header">
         <i class="i-add"
-            @click="_onCreateClick($event)"
+            @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="filter"
-            :placeholder="t('search_placeholder', language)"
-            @keydown.stop=""    
-            @change="_onFilterChanged($event)"
-        ></ui-input>
-        <i class="i-full"
-            v-if="_getFold()"
-            @click="_onFoldClick($event, true)"
+        <ui-input tabindex="-1" ref="search"></ui-input>
+        <i class="expand"
+            :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
+            @click="allToggle"
         ></i>
-        <i class="i-full-over"
-            v-else
-            @click="_onFoldClick($event, false)"
+        <i class="i-refresh"
+            @click="refresh"
         ></i>
-        <!-- <i class="i-refresh"></i> -->
     </header>
-    
-    <section ref="content">
-    
-        <!-- 等待数据使用的菊花标 -->
-        <div class="loading"
-            :hidden="!loading"
+
+    <section class="content" ref="viewBox"
+        @mousedown="popupContext($event)"
+    >
+        <div class="loading center" 
+            v-if="!ready"
         >
             <ui-loading></ui-loading>
         </div>
-    
-        <!-- 实际使用的树结构 -->
-        <asset-tree ref="tree"
-            :list="list"
-            :fold="fold"
-            :total="total"
-            :index="index"
-            :length="length"
-            :selects="selects"
-            :copy="copy"
-            :rename="rename"
-            :filter="filter"
 
-            :bindex="bindex"
-            :blength="blength"
-        ></asset-tree>
+        <tree ref="tree"></tree>
+        
+        <div class="select-box" 
+            v-if="selectBox!==false"
+            :style="selectBox"
+        >
+        </div>
+        <div class="scroll-bar"
+            :style="{ height: treeHeight + 'px'}"
+        ></div>
     </section>
-    
-    <footer
-        :title="info"
-    >
-        {{info}}
-    </footer>
+
+    <footer class="footer">{{info}}</footer>
 </div>

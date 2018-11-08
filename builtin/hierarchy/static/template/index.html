@@ -1,10 +1,5 @@
-<div class="content">
-
-    <section class="loading center" v-if="!ready">
-        <ui-loading></ui-loading>
-    </section>
-
-    <div class="tools">
+<div class="hierarchy">
+    <header class="header">
         <i class="i-add"
             @click="popupNew($event)"
         ></i>
@@ -16,20 +11,26 @@
         <i class="i-refresh"
             @click="refresh"
         ></i>
-    </div>
+    </header>
 
-    <div class="view-box" ref="viewBox"
+    <section class="content" ref="viewBox"
         @mousedown="popupContext($event)"
     >
-        <tree ref="tree"
-        ></tree>
+        <div class="loading center"
+            v-if="!ready"
+        >
+            <ui-loading></ui-loading>
+        </div>
+
+        <tree ref="tree"></tree>
+
         <div class="select-box" 
             v-if="selectBox!==false"
             :style="selectBox"
-        >
-        </div>
-        <div class=scroll-bar
+        ></div>
+        
+        <div class="scroll-bar"
             :style="{ height: treeHeight + 'px'}"
         ></div>
-    </div>
+    </section>
 </div>

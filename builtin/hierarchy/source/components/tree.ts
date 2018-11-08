@@ -1,7 +1,7 @@
 'use strict';
 
 import { readFileSync } from 'fs';
-import { extname, join } from 'path';
+import { join } from 'path';
 
 let vm: any = null;
 
@@ -334,7 +334,7 @@ export const methods = {
     /**
      * 从树形删除节点
      */
-    delete(uuid: string) {
+    delete(uuid: string, parentUuid: string) {
         const throwToTrash = (node: ItreeNode) => {
             trash[node.uuid] = node;
             if (Array.isArray(node.children)) {
@@ -354,6 +354,13 @@ export const methods = {
                 }
             }
         }
+
+        if (parentUuid && arr[3]) {
+            if (parentUuid !== arr[3].uuid) {
+                return; // 指定父级，父级不相等，就不执行下步删除
+            }
+        }
+
         if (arr[2]) {
             const nodeInArr = arr[2].splice(arr[1], 1);
             throwToTrash(nodeInArr[0]);
@@ -401,9 +408,7 @@ export const methods = {
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
-            vm.$nextTick(() => {
-                this.changeData();
-            });
+            this.changeData();
         }
     },
 
@@ -781,17 +786,19 @@ export const methods = {
      * 如节点增删改，是较大的变动，需要重新计算各个配套数据
      */
     changeData() {
+        clearTimeout(timeOutId);
+        timeOutId = setTimeout(() => {
+            nodesMap.clear(); // 清空数据
 
-        nodesMap.clear(); // 清空数据
+            calcNodePosition(); // 重算排位
 
-        calcNodePosition(); // 重算排位
+            calcDirectoryHeight(); // 计算文件夹的高度
 
-        calcDirectoryHeight(); // 计算文件夹的高度
+            this.render(); // 重新渲染出树形
 
-        this.render(); // 重新渲染出树形
-
-        // 重新定位滚动条, +1 是为了增加离底距离
-        vm.$parent.treeHeight = (nodesMap.size + 1) * nodeHeight;
+            // 重新定位滚动条, +1 是为了增加离底距离
+            vm.$parent.treeHeight = (nodesMap.size + 1) * nodeHeight;
+        }, 100);
     },
 
     /**
@@ -864,44 +871,35 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
         one.left = depth * iconWidth + padding;
         one.state = one.state ? one.state : '';
         one.isParent = one.children && one.children.length > 0 ? true : false;
+        one.parentUuid = obj.uuid;
 
         if (vm.folds[one.uuid] === undefined) {
             vm.folds[one.uuid] = one.isParent ? true : false;
         }
-        Object.defineProperty(one, 'isExpand', {
-            configurable: true,
-            enumerable: true,
-            get() {
-                return vm.folds[one.uuid];
-            },
-            set(val) {
-                vm.folds[one.uuid] = val;
-            },
-        });
 
-        one.parentUuid = obj.uuid;
-        Object.defineProperty(one, 'height', {
-            configurable: true,
-            enumerable: true,
-            get() {
-                return this._height;
-            },
-            set(add) {
-                if (add) {
-                    this._height += nodeHeight;
+        if (one.isExpand === undefined) {
+            Object.defineProperty(one, 'isExpand', {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return vm.folds[one.uuid];
+                },
+                set(val) {
+                    vm.folds[one.uuid] = val;
+                },
+            });
+        }
 
-                    // 触发其父级高度也增加
-                    for (const [top, asset] of nodesMap) {
-                        // @ts-ignore
-                        if (this.parentUuid === asset.uuid) {
-                            asset.height = 1; // 大于 0 就可以，实际计算在内部的setter
-                        }
-                    }
-                } else {
-                    this._height = depth === 0 ? nodeHeight : 0;
-                }
-            },
-        });
+        if (one.height === undefined) {
+            Object.defineProperty(one, 'height', {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return this._height;
+                },
+                set: addHeight.bind(one),
+            });
+        }
 
         if (vm.search === '') { // 没有搜索
             vm.state = vm.state === 'search' ? '' : vm.state;
@@ -931,18 +929,38 @@ function calcNodePosition(obj = treeData, index = 0, depth = 0) {
 }
 
 /**
+ * 增加文件夹的高度
+ * add 为数字，1 表示有一个 children
+ */
+function addHeight(add: number) {
+    if (add > 0) {
+        // @ts-ignore
+        this._height += nodeHeight * add;
+
+        // 触发其父级高度也增加
+        for (const [top, asset] of nodesMap) {
+            // @ts-ignore
+            if (this.parentUuid === asset.uuid) {
+                asset.height = add;
+                break;
+            }
+        }
+    } else {
+        // @ts-ignore
+        this._height = nodeHeight;
+    }
+}
+
+/**
  * 计算一个文件夹的完整高度
  */
 function calcDirectoryHeight() {
-    for (const [top, json] of nodesMap) {
-        json.height = 0;
-    }
-
     for (const [top, parent] of nodesMap) {
-        for (const [t, asset] of nodesMap) {
-            if (asset.parentUuid === parent.uuid) {
-                asset.height = 1; // 大于 0 就可以，实际计算在内部的 setter 函数
-            }
+        parent.height = 0; // 先还原，0 表示它自己的高度
+
+        if (parent.isExpand && parent.children && parent.children.length > 0) {
+            // 加上子集的高度
+            parent.height = parent.children.length; // 实际计算在内部的 setter 函数
         }
     }
 }
@@ -1095,7 +1113,6 @@ function addNodeIntoTree(dumpData: any) {
         invalid: false,
         isLock: false,
         isParent: false,
-        isExpand: false,
         top: 0,
         depth: 0,
         state: '',
@@ -1143,7 +1160,10 @@ function changeNodeData(newData: any) {
         node.children = [];
     }
 
-    if (node.children.length !== newData.children.value.length) {
+    // children 是否有变动
+    const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
+    const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
+    if (nowChildren !== newChildren) {
         // 展开其内容有变动的节点
         node.isExpand = true;
 
@@ -1151,7 +1171,7 @@ function changeNodeData(newData: any) {
         node.children.map((child: ItreeNode) => {
             return child.uuid;
         }).forEach((uuid: string) => {
-            vm.delete(uuid);
+            vm.delete(uuid, node.uuid);
         });
 
         // 属性值是对象类型的修改， 如 children
@@ -1163,10 +1183,7 @@ function changeNodeData(newData: any) {
 
     // 触发节点数据已变动
     node.state = ''; // 重置掉 loading 效果
-    clearTimeout(timeOutId);
-    timeOutId = setTimeout(() => {
-        vm.changeData();
-    }, 100);
+    vm.changeData();
     return node;
 }
 
@@ -1186,7 +1203,7 @@ function scrollIntoView(uuid: string) {
         return;
     }
     // 情况 A ：判断是否已在展开的节点中，
-    const one = getNodeFromMap(uuid);
+    const [one, index, arr, parent] = getGroupFromTree(treeData, uuid);
     if (one) { // 如果 A ：存在，
         // 情况 B ：判断是否在可视范围，
         if (
@@ -1205,9 +1222,7 @@ function scrollIntoView(uuid: string) {
 
         if (expandNode(uuid)) {
             vm.changeData();
-            vm.$nextTick(() => {
-                scrollIntoView(uuid);
-            });
+            scrollIntoView(uuid);
         }
     }
 }
