@@ -3,19 +3,35 @@
 exports.template = `
 <div :class="{'string': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <ui-textarea
-            v-if="dump.multiline"
+            v-if="dump.multiline || multiline"
             :value="dump.value"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onConfirm"
         ></ui-textarea>
         <ui-input
             v-else
             :value="dump.value"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onConfirm"
         ></ui-input>
         <slot name="suffix"></slot>
@@ -26,12 +42,14 @@ exports.template = `
             v-if="multiline"
             :value="metaVal"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onConfirm"
         ></ui-textarea>
         <ui-input
             v-else
             :value="metaVal"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onConfirm"
         ></ui-input>
         <slot name="suffix"></slot>
@@ -42,17 +60,20 @@ exports.template = `
 `;
 
 exports.props = [
+    'multiline',
     'name',
     'dump', // dump 数据
     'indent', // 是否需要缩进
     'meta',
     'path',
     'disabled',
-    'multiline'
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

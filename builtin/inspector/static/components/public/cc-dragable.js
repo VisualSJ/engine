@@ -3,13 +3,28 @@
 exports.template = `
 <div :class="{'cc-dragable': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <ui-drag-object
             :dropable="dump.type"
             :value="dump.value.uuid || false"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
@@ -19,6 +34,7 @@ exports.template = `
             :type="type"
             :value="metaVal || false"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
@@ -35,11 +51,14 @@ exports.props = [
     'path',
     'meta',
     'type',
-    'disabled'
+    'disabled',
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

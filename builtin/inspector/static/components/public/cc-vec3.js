@@ -3,25 +3,42 @@
 exports.template = `
 <div :class="{'cc-vec3': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <span>X</span>
         <ui-num-input
             :value="dump ? dump.value.x : 0"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
         <span>Y</span>
         <ui-num-input
             :value="dump ? dump.value.y : 0"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onYConfirm"
         ></ui-num-input>
         <span>Z</span>
         <ui-num-input
             :value="dump ? dump.value.z : 0"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onZConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -34,18 +51,21 @@ exports.template = `
         <ui-num-input
             :value="metaVal ? metaVal.x : 0"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
         <span>Y</span>
         <ui-num-input
             :value="metaVal ? metaVal.y : 0"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onYConfirm"
         ></ui-num-input>
         <span>Z</span>
         <ui-num-input
             :value="metaVal ? metaVal.z : 0"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onZConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -61,11 +81,14 @@ exports.props = [
     'indent', // 是否需要缩进
     'meta',
     'path',
-    'disabled'
+    'disabled',
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

@@ -3,12 +3,27 @@
 exports.template = `
 <div :class="{'boolean': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <ui-checkbox
             :value="dump.value"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
         <slot name="suffix"></slot>
@@ -20,6 +35,7 @@ exports.template = `
         <ui-checkbox
             :value="metaVal"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onConfirm"
         ></ui-checkbox>
         <slot name="suffix"></slot>
@@ -35,11 +51,14 @@ exports.props = [
     'indent', // 是否需要缩进
     'path',
     'meta',
-    'disabled'
+    'disabled',
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

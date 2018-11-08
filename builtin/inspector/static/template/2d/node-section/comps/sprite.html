@@ -65,13 +65,27 @@
         :dump="target.trim"
     ></boolean>
 
-    <div>
-        <label>Blend</label>
-        <enum :indent="1" 
+    <div class="vue-comp-ui flex-wrap">
+        <div class="name">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': true,
+                    'icon-fold': false,
+                    'is-visible': false
+                }"
+            ></i>
+            <span>Blend</span>
+        </div>
+        <enum 
+            class="flex-full"
+            :indent="1" 
             name="Src Blend Factor" 
             :dump="target.srcBlendFactor"
         ></enum>
-        <enum :indent="1" 
+        <enum 
+            class="flex-full"
+            :indent="1" 
             name="Dst Blend Factor" 
             :dump="target.dstBlendFactor"
         ></enum>

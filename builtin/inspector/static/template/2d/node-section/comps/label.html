@@ -70,4 +70,30 @@
         :dump="target.useSystemFont"
     ></boolean>
 
+    <div class="vue-comp-ui flex-wrap">
+        <div class="name">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': true,
+                    'icon-fold': false,
+                    'is-visible': false
+                }"
+            ></i>
+            <span>Blend</span>
+        </div>
+        <enum 
+            class="flex-full"
+            :indent="1"
+            :name="target.srcBlendFactor.name"
+            :dump="target.srcBlendFactor"
+        ></enum>
+        <enum 
+            class="flex-full"
+            :indent="1"
+            :name="target.dstBlendFactor.name"
+            :dump="target.dstBlendFactor"
+        ></enum>
+    </div>
+
 </div>

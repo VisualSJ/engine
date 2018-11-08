@@ -111,7 +111,20 @@ ui-checkbox {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        margin-right: 3px;
+        margin-right: 5px;
+        display: flex;
+        & > * {
+            margin-right: 3px;
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+        & > [class^="icon"] {
+            visibility: hidden;
+        }
+        & > .is-visible {
+            visibility: visible;
+        }
     }
     & > .value {
         display: flex;
@@ -137,6 +150,9 @@ ui-checkbox {
                 margin-bottom: 0;
             }
         }
+    }
+    & > .vue-comp-ui:last-child {
+        margin-bottom: 0;
     }
     .tiny {
         line-height: 0.9;

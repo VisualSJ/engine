@@ -22,12 +22,12 @@ exports.methods = {
     },
 
     hiddenWrapText() {
-        let overflow = this.target.overflow.value;
-        return overflow === 0 || overflow === 3;
+        let overflow = String(this.target.overflow.value);
+        return ['0', '3'].includes(overflow);
     },
 
     hiddenActualFontSize() {
-        let overflow = this.target.overflow.value;
-        return overflow !== 2;
+        let overflow = String(this.target.overflow.value);
+        return !['2'].includes(overflow);
     }
 };

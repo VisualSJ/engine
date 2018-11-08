@@ -3,19 +3,35 @@
 exports.template = `
 <div :class="{'cc-size': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <span class="label">W</span>
         <ui-num-input
             :value="dump.value.width"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onWidthConfirm"
         ></ui-num-input>
         <span class="label">H</span>
         <ui-num-input
             :value="dump.value.height"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -27,12 +43,14 @@ exports.template = `
         <ui-num-input
             :value="metaVal.width"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onWidthConfirm"
         ></ui-num-input>
         <span class="label">H</span>
         <ui-num-input
             :value="metaVal.height"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onHeightConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -48,11 +66,14 @@ exports.props = [
     'indent', // 是否需要缩进
     'meta',
     'path',
-    'disabled'
+    'disabled',
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

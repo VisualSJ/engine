@@ -57,11 +57,12 @@ export default class ParticleImporter extends Importer {
                 if (this.assetDB) {
                     // @ts-ignore
                     const textureUuid = this.assetDB.pathToUuid[textureFilePath];
+                    asset.rely(textureFilePath);
                     if (textureUuid) {
                         // @ts-ignore
                         particle.texture = Manager.serialize.asAsset(textureUuid);
                     } else {
-                        console.error('Can not find texture "%s" specified in "%s"', textureFilePath, asset.source);
+                        console.warn('Can not find texture %s specified in %s', textureFilePath, asset.source);
                     }
                 }
             }

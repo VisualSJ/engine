@@ -1,6 +1,6 @@
 'use strict';
 
-const { readTemplate, readComponent } = require('../../../../utils');
+const { readTemplate } = require('../../../../utils');
 
 exports.template = readTemplate('2d', './node-section/comps/pageview.html');
 

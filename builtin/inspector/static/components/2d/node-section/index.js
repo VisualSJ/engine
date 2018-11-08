@@ -45,7 +45,12 @@ exports.methods = {
             Object.keys(comp.value).forEach((key) => {
                 const path = `__comps__.${index}.${key}`;
                 const item = comp.value[key];
-                buildProp(path, key, item);
+                const attrs = comp.properties[key];
+                if (attrs && item) {
+                    buildProp(path, key, item, attrs);
+                } else {
+                    delete comp.value[key];
+                }
             });
         });
 

@@ -2,7 +2,23 @@
 
 exports.template = `
     <div class="vue-comp-ui flex-wrap">
-        <div class="name pt10"><span :style="paddingStyle">{{dump.name}}</span></div>
+        <div class="name pt10">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': !foldUp,
+                    'icon-fold': foldUp,
+                    'is-visible': (dump && dump.foldable) || foldable
+                }"
+                @click="foldUp = !foldUp"
+            ></i>
+            <span :style="paddingStyle">{{dump.name}}</span>
+            <div class="lock"
+                v-if="(dump && dump.readonly) || readonly"
+            >
+                <i class="iconfont icon-lock"></i>
+            </div>
+        </div>
         <div class="value flex-wrap ovh">
             <div class="flex-full flex ovh">
                 <div class="flex-1 flex ovh pt10">
@@ -10,6 +26,7 @@ exports.template = `
                         :path="dump.value.target.path"
                         :value="dump.value.target.value.uuid"
                         :type="dump.value.target.type"
+                        :readonly="dump.readonly || readonly"
                         @confirm.stop="_onConfirm($event, true)"
                     ></ui-drag-object>
                 </div>
@@ -44,12 +61,21 @@ exports.props = {
     indent: {
         type: Number,
         default: 0
+    },
+    readonly: {
+        type: Boolean,
+        default: false
+    },
+    foldable: {
+        type: Boolean,
+        default: false
     }
 };
 
 exports.data = function() {
     return {
         menu: null,
+        foldUp: false,
         paddingStyle:
             this.indent !== 0
                 ? {
@@ -83,10 +109,14 @@ exports.computed = {
 
 exports.methods = {
     getDumpByPath(path) {
+        if (!path) {
+            return false;
+        }
+        path = String(path);
         path = path.startsWith(this.dump.path) ? path.replace(`${this.dump.path}.`, '') : path;
 
-        if ((path + '').includes('.')) {
-            const paths = (path + '').split('.');
+        if (path.includes('.')) {
+            const paths = path.split('.');
             try {
                 return paths.reduce((prev, next) => {
                     if (prev && prev[next]) {
@@ -138,8 +168,8 @@ exports.methods = {
         } else {
             this.menu = null;
         }
-        // 变更 uuid 或 uuid 为空清空 component 和 handler
-        if (oldVal !== newVal || !uuid) {
+        // 变更 uuid 清空 component 和 handler
+        if (oldVal !== newVal && this.dump.value.handler.value !== '') {
             this.updateComponentHandler('', '');
         }
     },

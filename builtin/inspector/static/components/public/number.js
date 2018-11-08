@@ -3,19 +3,35 @@
 exports.template = `
 <div :class="{'number': true, 'vue-comp-ui': true, 'flex-wrap': !!$slots.child}">
     <div class="name">
-        <span :style="paddingStyle">{{name ? name : 'Unknown'}}</span>
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': (dump && dump.foldable) || foldable
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{name ? name : 'Unknown'}}</span>
+        <div class="lock"
+            v-if="(dump && dump.readonly) || readonly"
+        ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
         <ui-slider
             v-if="dump.slide"
             :value="dump.value"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onConfirm"
         ></ui-slider>
         <ui-num-input
             v-else
             :value="dump.value"
             :disabled="disabled"
+            :readonly="dump.readonly || readonly"
             @confirm.stop="_onConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -26,12 +42,14 @@ exports.template = `
             v-if="slide"
             :value="metaVal"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onConfirm"
         ></ui-slider>
         <ui-num-input
             v-else
             :value="metaVal"
             :disabled="disabled"
+            :readonly="readonly"
             @confirm.stop="_onConfirm"
         ></ui-num-input>
         <slot name="suffix"></slot>
@@ -48,11 +66,14 @@ exports.props = [
     'meta',
     'path',
     'disabled',
-    'slide'
+    'slide',
+    'readonly',
+    'foldable'
 ];
 
 exports.data = function() {
     return {
+        foldUp: false,
         paddingStyle:
             this.indent !== undefined
                 ? {

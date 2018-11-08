@@ -36,18 +36,21 @@
             name="Rotated"
             path="userData.rotated"
             :meta="meta"
+            :readonly="true"
         ></boolean>
 
         <number
             name="Offset X"
             path="userData.offsetX"
             :meta="meta"
+            :readonly="true"
         ></number>
         
         <number
             name="Offset Y"
             path="userData.offsetY"
             :meta="meta"
+            :readonly="true"
         ></number>
         
         <enum
@@ -121,6 +124,7 @@
     
     </section>
 
-    <!-- <image-preview :meta="meta" v-if="!child"></image-preview> -->
+    <!-- todo
+        <image-preview :meta="meta" v-if="!child"></image-preview> -->
 
 </div>

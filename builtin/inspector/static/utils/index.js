@@ -101,7 +101,7 @@ function getComponentType(target, $options) {
     return false;
 }
 
-function buildProp(path, key, item) {
+function buildProp(path, key, item, attrs) {
     // 将原有 type 保存到 originType 以便处理结束后恢复原有 type
     const {properties, type: originType, value, extends: extendTypes, default: defaultVal} = item;
     const hasCompType = getComponentType(item);
@@ -111,13 +111,18 @@ function buildProp(path, key, item) {
     let typeNull = false;
     let typeError = false;
 
-    item.name = item.displayName ? item.displayName : key;
+    item.name = attrs.displayName ? attrs.displayName : key;
     item.path = path;
     item.compType = hasCompType;
+    item.attrs = {...attrs};
 
     if (!originType) {
-        properties && (properties.visible = false);
+        item.attrs.visible = false;
     } else {
+        if ('visible' in item) {
+            item.attrs.visible = item.visible;
+        }
+
         if (extendTypes) {
             isAsset = [originType, ...extendTypes].some((item) => [
                 'cc.Asset',
@@ -159,9 +164,9 @@ function buildProp(path, key, item) {
         // console.log(`refresh ${item} typenull is ${typeNull}`);
     }
 
-    if (!typeNull && properties && properties.type && properties.type !== originType) {
+    if (!typeNull && item.attrs.type && item.attrs.type !== originType) {
         if (extendTypes) {
-            if (!extendTypes.includes(properties.type)) {
+            if (!extendTypes.includes(item.attrs.type)) {
                 typeError = true;
             }
         } else {
@@ -180,7 +185,10 @@ function buildProp(path, key, item) {
 
             for (let i = 0; i < value.length; i++) {
                 const item = value[i];
-                buildProp(`${path}.${i}`, `[${i}]`, item);
+                // Array 子元素的 buildProp 需要 extends、properties 类型判断
+                extendTypes && !item.extends &&  (item.extends = [...extendTypes]);
+                properties && !item.properties && (item.properties = {...properties});
+                buildProp(`${path}.${i}`, `[${i}]`, item, attrs);
             }
         } else if (item.type === 'Object') {
             if (originType === 'cc.ClickEvent') {
@@ -190,7 +198,10 @@ function buildProp(path, key, item) {
             }
 
             Object.keys(item.value).map((key) => {
-                item.value[key] && buildProp(`${path}.${key}`, key, item.value[key]);
+                const subItemAttrs = properties && properties[key];
+                if (subItemAttrs) {
+                    item.value[key] && buildProp(`${path}.${key}`, key, item.value[key], subItemAttrs);
+                }
             });
         }
     }

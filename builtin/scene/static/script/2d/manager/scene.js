@@ -147,7 +147,7 @@ function queryNodePath(uuid) {
 }
 
 function queryComponentFunctionOfNode(uuid) {
-    const node = query(uuid);
+    const node = manager.node.query(uuid);
 
     if (!node) {
         return {};

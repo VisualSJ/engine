@@ -22,40 +22,50 @@
         v-show="isGridLayout()"
     ></enum>
 
-    <div v-show="isPaddingEnabled()">
-        <label>Padding</label>
-
-        <div class="child layout vertical">
-        
-            <number
-                name="Left"
-                :indent="1"
-                :dump="target.paddingLeft"
-                v-show="isPaddingHorizontalEnabled()"
-            ></number>
-            
-            <number
-                name="Right"
-                :indent="1"
-                :dump="target.paddingRight"
-                v-show="isPaddingHorizontalEnabled()"
-            ></number>
-            
-            <number
-                name="Top"
-                :indent="1"
-                :dump="target.paddingTop"
-                v-show="isPaddingVerticalEnabled()"
-            ></number>
-            
-            <number
-                name="Bottom"
-                :indent="1"
-                :dump="target.paddingBottom"
-                v-show="isPaddingVerticalEnabled()"
-            ></number>
-
+    <div class="vue-comp-ui flex-wrap" v-show="isPaddingEnabled()">
+        <div class="name">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': true,
+                    'icon-fold': false,
+                    'is-visible': false
+                }"
+            ></i>
+            <span>Padding</span>
         </div>
+        
+        <number
+            class="flex-full"
+            name="Left"
+            :indent="1"
+            :dump="target.paddingLeft"
+            v-show="isPaddingHorizontalEnabled()"
+        ></number>
+        
+        <number
+            class="flex-full"
+            name="Right"
+            :indent="1"
+            :dump="target.paddingRight"
+            v-show="isPaddingHorizontalEnabled()"
+        ></number>
+        
+        <number
+            class="flex-full"
+            name="Top"
+            :indent="1"
+            :dump="target.paddingTop"
+            v-show="isPaddingVerticalEnabled()"
+        ></number>
+        
+        <number
+            class="flex-full"
+            name="Bottom"
+            :indent="1"
+            :dump="target.paddingBottom"
+            v-show="isPaddingVerticalEnabled()"
+        ></number>
 
     </div>
 

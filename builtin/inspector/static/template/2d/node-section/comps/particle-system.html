@@ -61,8 +61,18 @@
             :tooltip="T('particle_system', 'emissionRate')"
         ></number>
 
-        <div class="number">
-            <div class="name">{{target.life.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span>{{target.life.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="life" :value="target.life.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="lifeVar" :value="target.lifeVar.value"></ui-num-input>
@@ -101,40 +111,90 @@
             :tooltip="T('particle_system', 'endColorVar')"
         ></cc-color>
 
-        <div class="number">
-            <div class="name">{{target.angle.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1">{{target.angle.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="angle" :value="target.angle.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="angleVar" :value="target.angleVar.value"></ui-num-input>
             </div>
         </div>
         
-        <div class="number">
-            <div class="name">{{target.startSize.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1">{{target.startSize.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="startSize" :value="target.startSize.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="startSizeVar" :value="target.startSizeVar.value"></ui-num-input>
             </div>
         </div>
         
-        <div class="number">
-            <div class="name">{{target.endSize.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1">{{target.endSize.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="endSize" :value="target.endSize.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="endSizeVar" :value="target.endSizeVar.value"></ui-num-input>
             </div>
         </div>
         
-        <div class="number">
-            <div class="name">{{target.startSpin.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1">{{target.startSpin.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="startSpin" :value="target.startSpin.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="startSpinVar" :value="target.startSpinVar.value"></ui-num-input>
             </div>
         </div>
         
-        <div class="number">
-            <div class="name">{{target.endSpin.name}}</div>
+        <div class="number vue-comp-ui">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-un-fold': true,
+                        'icon-fold': false,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1">{{target.endSpin.name}}</span>
+            </div>
             <div class="value">
                 <ui-num-input class="flex-1" path="endSpin" :value="target.endSpin.value"></ui-num-input>
                 <ui-num-input class="flex-1" path="endSpinVar" :value="target.endSpinVar.value"></ui-num-input>
@@ -175,24 +235,54 @@
                 :tooltip="T('particle_system', 'gravity')"
             ></cc-vec2>
 
-            <div class="number">
-                <div class="name">{{target.speed.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.speed.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="speed" :value="target.speed.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="speedVar" :value="target.speedVar.value"></ui-num-input>
                 </div>
             </div>
             
-            <div class="number">
-                <div class="name">{{target.tangentialAccel.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.tangentialAccel.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="tangentialAccel" :value="target.tangentialAccel.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="tangentialAccelVar" :value="target.tangentialAccelVar.value"></ui-num-input>
                 </div>
             </div>
 
-            <div class="number">
-                <div class="name">{{target.radialAccel.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.radialAccel.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="radialAccel" :value="target.radialAccel.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="radialAccelVar" :value="target.radialAccelVar.value"></ui-num-input>
@@ -210,24 +300,54 @@
         <!-- radius -->
         <div v-if="isRadiusMode(target.emitterMode)">
             
-            <div class="number">
-                <div class="name">{{target.startRadius.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.startRadius.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="startRadius" :value="target.startRadius.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="startRadiusVar" :value="target.startRadiusVar.value"></ui-num-input>
                 </div>
             </div>
 
-            <div class="number">
-                <div class="name">{{target.endRadius.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.endRadius.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="endRadius"  :value="target.endRadius.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="endRadiusVar" :value="target.endRadiusVar.value"></ui-num-input>
                 </div>
             </div>
                 
-            <div class="number">
-                <div class="name">{{target.rotatePerS.name}}</div>
+            <div class="number vue-comp-ui">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span class="flex-1">{{target.rotatePerS.name}}</span>
+                </div>
                 <div class="value">
                     <ui-num-input class="flex-1" path="rotatePerS" :value="target.rotatePerS.value"></ui-num-input>
                     <ui-num-input class="flex-1" path="rotatePerSVar" :value="target.rotatePerSVar.value"></ui-num-input>

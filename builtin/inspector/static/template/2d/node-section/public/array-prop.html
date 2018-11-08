@@ -11,17 +11,35 @@
     </template>
 </ui-prop> -->
 <div class="number vue-comp-ui flex-wrap">
-    <div class="name">{{dump.name}}</div>
+    <div class="name">
+        <i
+            :class="{
+                iconfont: true,
+                'icon-un-fold': !foldUp,
+                'icon-fold': foldUp,
+                'is-visible': true
+            }"
+            @click="foldUp = !foldUp"
+        ></i>
+        <span class="flex-1"
+            :style="paddingStyle"
+        >{{dump.name}}</span>
+        <div class="lock"
+            v-if="dump.readonly"
+        ><i class="iconfont icon-lock"></i></div>
+    </div>
     <template v-if="!dump.values || dump.values.length <= 1">
         <div class="value">
-            <ui-num-input :value="dump.value.length" @confirm.stop="arraySizeChanged" min="0"></ui-num-input>
+            <ui-num-input :readonly="dump.readonly" :value="dump.value.length" @confirm.stop="arraySizeChanged" min="0"></ui-num-input>
         </div>
-        <div class="flex-full ovh">
+        <div class="flex-full ovh" v-show="!foldUp">
             <component
                 v-for="(prop, index) in dump.value"
                 :key="index"
                 :is="prop.compType"
+                :name="prop.name"
                 :dump="prop"
+                :path="prop.path"
                 :indent="1"
             ></component>
         </div>
