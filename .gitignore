@@ -18,3 +18,7 @@ node_modules/
 # /builtin/asset-db/static/internal/library
 # /builtin/asset-db/static/internal/temp
 /builtin/asset-db/static/internal/*
+
+# 模拟器
+/builtin/preview/simulator
+

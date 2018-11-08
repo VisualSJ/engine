@@ -68,10 +68,7 @@ requestAnimationFrame(async () => {
     }));
 
     // 启动场景
-    const scene = await Manager.Ipc.send('query-scene');
-    if (typeof scene === 'string') {
-        await Manager.Scene.open(scene);
-    }
+    await Manager.Scene.open();
 
     // 标记已经准备就绪
     ipc.ready();

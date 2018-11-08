@@ -23,8 +23,9 @@ const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
  */
 async function open(uuid) {
     // cc.view.resizeWithBrowserSize(true);
-
-    if (uuid) {
+    // 查找资源，确认是否存在
+    const info = await Manager.Ipc.send('query-asset-info', uuid);
+    if (uuid && info) {
         // 加载指定的 uuid
         try {
             await promisify(cc.director._loadSceneByUuid)(uuid);
@@ -32,6 +33,9 @@ async function open(uuid) {
             console.error(error);
         }
     } else {
+        if (uuid && !info) {
+            console.error(`scene ${uuid} is not exit`);
+        }
         const scene = new cc.Scene();
         const canvas = new cc.Node('Canvas');
         canvas.parent = scene;
@@ -49,7 +53,8 @@ async function open(uuid) {
     const historyCache = require('./history/cache');
     historyCache.reset();
 
-    ipc.send('broadcast', 'scene:ready');
+    // 发送初次打开场景的 uuid
+    ipc.send('broadcast', 'scene:ready', cc.director._scene._id);
 }
 
 /**

@@ -37,14 +37,14 @@ export async function ready() {
         data: {
             tab: 0,
             general: {
-                language: profile.get('language') || 'en',
-                themeColor: profile.get('themeColor') || 'light',
-                step: profile.get('step') || 1,
+                language: profile.get('general.language') || 'en',
+                themeColor: profile.get('general.themeColor') || 'light',
+                step: profile.get('general.step') || 1,
             },
             preview: {
-                autoRefresh: profile.get('autoRefresh') || true,
-                previewBrowser: profile.get('previewBrowser') || 'default',
-                simulatorPath: profile.get('simulatorPath') || '/simulatorPath/',
+                autoRefresh: profile.get('preview.autoRefresh') || true,
+                previewBrowser: profile.get('preview.previewBrowser') || 'default',
+                simulatorPath: profile.get('preview.simulatorPath') || '/simulatorPath/',
             }
         },
 
@@ -53,11 +53,11 @@ export async function ready() {
                 deep: true,
                 handler() {
                     // @ts-ignore
-                    profile.set('language', this.general.language);
+                    profile.set('general.language', this.general.language);
                     // @ts-ignore
-                    profile.set('step', this.general.step);
+                    profile.set('general.step', this.general.step);
                     // @ts-ignore
-                    profile.set('themeColor', this.general.themeColor);
+                    profile.set('general.themeColor', this.general.themeColor);
                     profile.save();
                 },
             },

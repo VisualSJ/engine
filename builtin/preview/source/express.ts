@@ -4,6 +4,7 @@ import { createReadStream, stat } from 'fs-extra';
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';
+const { getSetting, getModules } = require('./../static/utils/util');
 const express = require('express');
 
 let app: any = null;
@@ -26,8 +27,17 @@ export async function start() {
 
     app.set('views', join(__dirname, '../static/views'));
     app.set('view engine', 'jade');
+    // 获取配置文件
+    app.get('/setting.json', async (req: any, res: any) => {
+        const setting = await getSetting({
+            debug: true,
+            preview: true,
+            platform: 'web-desktop'
+        });
+        res.json(setting);
+    });
 
-    // 获取引擎文件
+    // 获取 engine 文件
     app.get('/engine.js', async (req: any, res: any) => {
         const type = Editor.Project.type;
         const result = await Editor.Ipc.requestToPackage('engine', 'query-info', type);
@@ -49,6 +59,16 @@ export async function start() {
         createReadStream(join(__dirname, `./../static/resources/${type}/boot.js`), { encoding: 'utf8' }).pipe(res);
     });
 
+    // 获取项目对应类型的脚本文件
+    app.get('/preview-scripts/*', async (req: any, res: any) => {
+        // 设置（HACK）资源目录地址
+        res.writeHead(200, {
+            'Content-Type': 'text/javascript'
+        });
+        const str = getModules(req.params[0]);
+        res.end(str);
+    });
+
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene', async (req: any, res: any) => {
         const uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
@@ -56,20 +76,12 @@ export async function start() {
             res.end();
             return;
         }
-
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         const filePath = asset.files[0];
-        createReadStream(filePath, { encoding: 'utf8' }).pipe(res);
-        const info: any = stat(filePath);
-        // 设置（HACK）资源目录地址
-        res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Content-Length': info.size,
-        });
-        res.cookie('uuid', uuid);
+        res.sendFile(filePath);
     });
 
-    // 根据资源路径加载对应资源
+    // 根据资源路径加载对应静态资源资源
     app.get('/res/import/*', async (req: any, res: any) => {
         const path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
         res.sendFile(path);

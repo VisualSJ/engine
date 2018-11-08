@@ -198,7 +198,7 @@ Worker.Ipc.on('asset-worker:query-database-info', async (event, name) => {
 });
 
 // 查询所有资源的列表
-Worker.Ipc.on('asset-worker:query-assets', async (event) => {
+Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
 
     await waitReady();
 
@@ -212,21 +212,29 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
         const name = names[i];
         const db = AssetWorker[name];
         const uuids = Object.keys(db.uuid2asset);
-
-        // 手动添加 db 对象
-        assets.push({
-            source: `db://${name}`,
-            uuid: `db://${name}`,
-            importer: 'database',
-            isDirectory: false,
-            files: [],
-            subAssets: {},
-        });
+        let extnames = null;
+        // 存在筛选的 name 变量时，先判断是否有效后获取筛选的文件名后缀
+        if (options && options.name && options.name in db.name2importer) {
+            extnames = db.name2importer[options.name].extnames;
+        } else {
+            // 手动添加 db 对象
+            assets.push({
+                source: `db://${name}`,
+                uuid: `db://${name}`,
+                importer: 'database',
+                isDirectory: false,
+                files: [],
+                subAssets: {},
+            });
+        }
 
         // 当前 db 内的所有资源
         for (let j = 0; j < uuids.length; j++) {
             const uuid = uuids[j];
             const asset = db.uuid2asset[uuid];
+            if (extnames && !extnames.includes(asset.extname)) {
+                continue;
+            }
             const info = {
                 source: source2url(name, asset.source),
                 uuid: asset.uuid,
@@ -235,6 +243,9 @@ Worker.Ipc.on('asset-worker:query-assets', async (event) => {
                 files: asset.meta.files.map((ext) => {
                     return asset.library + ext;
                 }),
+                loadPluginInNative: asset.meta.loadPluginInNative,
+                loadPluginInWeb: asset.meta.loadPluginInWeb,
+                isPlugin: asset.meta.isPlugin,
                 subAssets: {},
             };
 

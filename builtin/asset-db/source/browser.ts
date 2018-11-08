@@ -46,12 +46,13 @@ module.exports = {
 
         /**
          * 查询资源树
+         * @param options 筛选条件配置 name: 资源类型名称
          */
         async 'query-assets'(options: any) {
             if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
-            return await assetWorker.send('asset-worker:query-assets');
+            return await assetWorker.send('asset-worker:query-assets', options);
         },
 
         /**

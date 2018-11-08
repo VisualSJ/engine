@@ -7,7 +7,6 @@ window.customElements.define('engine-view', require('../static/script/engine-ele
 
 let isAssetReady: boolean = false;
 let panel: any = null;
-let currentSceneUuid: string | null = null;
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
@@ -40,9 +39,10 @@ export const methods = {
      * @param uuid
      */
     async openScene(uuid: string) {
-        currentSceneUuid = uuid;
-        Editor.Ipc.requestToPackage('scene', 'change-scene-uuid', currentSceneUuid);
         await panel.$.scene.openScene(uuid);
+        // 保存第一次打开的场景
+        profile.set('current-scene', uuid);
+        profile.save();
     },
 
     /**
@@ -57,8 +57,6 @@ export const methods = {
      * 关闭场景
      */
     async closeScene() {
-        currentSceneUuid = null;
-        Editor.Ipc.requestToPackage('scene', 'change-scene-uuid', currentSceneUuid);
         await panel.$.scene.closeScene();
     },
 
@@ -96,7 +94,7 @@ export const messages = {
     /**
      * 场景准备就绪
      */
-    'scene:ready'() {
+    'scene:ready'(uuid: string) {
         panel.$.loading.hidden = true;
     },
 

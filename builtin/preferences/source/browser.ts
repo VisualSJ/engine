@@ -14,11 +14,11 @@ export function load() {
     pkg = this;
 
     // 应用语言
-    const language = profile.get('language') || 'en';
+    const language = profile.get('general.language') || 'en';
     Editor.I18n.switch(language);
 
     // 应用皮肤
-    const theme = profile.get('theme') || '';
+    const theme = profile.get('general.theme') || '';
     Editor.Theme.use(theme);
 
     // 应用皮肤主题

@@ -249,7 +249,6 @@
                 }
             });
             request.open('GET', 'current-scene', 'true');
-            request.setRequestHeader('Content-Type', 'application/json');
             request.send();
         });
     }
@@ -272,33 +271,47 @@
         // canvas 透明模式
         cc.macro.ENABLE_TRANSPARENT_CANVAS = true;
 
-        // 初始化引擎配置
-        const option = {
-            id: canvas,
-            showFPS: false,
-            debugMode: cc.debug.DebugMode.ERROR_FOR_WEB_PAGE,
-            frameRate: parseInt(inputSetFPS.value, 10),
-            renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
-            registerSystemEvent: false,
-            jsList: [],
-            noCache: false,
-            groupList: [],
-            collisionMatrix: null,
-        };
-
         // 配置资源路径等
         const AssetOptions = {
             libraryPath: 'res/import',
             rawAssetsBase: 'res/raw-',
-            rawAssets: {}
+            rawAssets: SETTING.rawAssets,
+        };
+
+        // jsList
+        let jsList = SETTING.jsList || [];
+        jsList = jsList.map(function(x) { return AssetOptions.rawAssetsBase + x; });
+        if (SETTING.jsBundleForWebPreview) {
+            jsList.push(SETTING.jsBundleForWebPreview);
+        }
+
+        window.__modular.init(SETTING.scripts);
+        jsList = jsList.concat(window.__modular.srcs);
+
+        // 初始化引擎配置
+        const option = {
+            id: canvas,
+            showFPS: false,
+            scenes: SETTING.scenes,
+            debugMode: cc.debug.DebugMode.ERROR_FOR_WEB_PAGE,
+            frameRate: parseInt(inputSetFPS.value, 10),
+            renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
+            registerSystemEvent: false,
+            jsList: jsList,
+            noCache: false,
+            groupList: SETTING.groupList,
+            collisionMatrix: SETTING.collisionMatrix,
         };
 
         // 等待引擎启动
         await new Promise((resolve) => {
             cc.game.run(option, resolve);
         });
+        window.__modular.run();
 
         cc.view.enableRetina(false);
+        cc.debug.setDisplayStats(true);
+
         cc.game.canvas.style.imageRendering = 'pixelated';
 
         cc.game.canvas.setAttribute('tabindex', -1);
@@ -310,9 +323,9 @@
         });
 
         cc.game.pause();
+        let json = await getCurrentScene();
         // init assets
         cc.AssetLibrary.init(AssetOptions);
-        let json = await getCurrentScene();
         cc.AssetLibrary.loadJson(json,
             (err, sceneAsset) => {
                 if (err) {
@@ -334,15 +347,31 @@
         });
     }
 
+    function initSetting() {
+        return new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest();
+            request.responseType = 'text';
+            request.addEventListener('load', (req) => {
+                if (request.status === 200) {
+                    window.SETTING = JSON.parse(request.response);
+                    resolve(request.response);
+                }
+            });
+            request.open('GET', 'setting.json', 'true');
+            request.send();
+        });
+    }
     // 入口函数
-    function onload() {
-        // 监听刷新
-        monitorRefresh();
+    async function onload() {
+        // init Setting
+        await initSetting();
         // init operation event
         handles();
         // 初始化 canvas 大小
         updateResolution();
         // load scene file
         initScene();
+        // 监听刷新
+        monitorRefresh();
     }
 })();

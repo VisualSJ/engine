@@ -4,15 +4,27 @@ import { BrowserWindow , shell } from 'electron';
 import { getPort, start, stop } from './express';
 import { emitReload } from './socket';
 const ipc = require('@base/electron-base-ipc');
+const profile = Editor.Profile.load('profile://global/packages/preferences.json');
 
 let pkg: any = null;
+
+/**
+ * 获取预览的配置信息
+ * @param {string} name
+ * @returns
+ */
+function getConfig(name: string) {
+    return profile.get(`preview.${name}`);
+}
 
 export const messages = {
     /**
      * 场景保存的时候发送的消息
      */
     'scene:save'() {
-        emitReload();
+        if (getConfig('autoRefresh')) {
+            emitReload();
+        }
     },
 
     //////////////////////////
@@ -25,8 +37,9 @@ export const messages = {
         if (type === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {
-            const win = new BrowserWindow({width: 1000, height: 700});
-            win.loadURL(`http://localhost:${getPort()}`);
+            // 模拟器预览
+            // const win = new BrowserWindow({width: 1000, height: 700});
+            // win.loadURL(`http://localhost:${getPort()}`);
         }
     },
 
