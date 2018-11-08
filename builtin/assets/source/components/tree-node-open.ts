@@ -8,6 +8,10 @@ exports.scene = (asset: ItreeAsset) => {
     Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
 };
 
+exports.fire = (asset: ItreeAsset) => {
+    Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
+};
+
 exports.js = (asset: ItreeAsset) => {
     openFile(asset.uuid);
 };

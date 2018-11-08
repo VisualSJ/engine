@@ -1,12 +1,23 @@
+import { inherits } from 'util';
+
 'use strict';
 
 const protocol = 'db://';
 const uuidAssets: any = {};
-const subAssetsTree: any = { subAssets: {} };
-const assetsTree: any = {
-    depth: -1,
-    invalid: true
-};
+let subAssetsTree: any;
+let assetsTree: any;
+
+function reset() {
+    subAssetsTree = {
+        subAssets: {}
+    };
+
+    assetsTree = {
+        depth: -1,
+        invalid: true
+    };
+}
+
 /**
  * 输出是一个数组
  */
@@ -17,16 +28,10 @@ async function refresh() {
         return;
     }
 
+    reset();
     toSubAssetsTree(arr);
     toAssetsTree(assetsTree, subAssetsTree);
     return assetsTree;
-}
-
-async function ipcQuery(uuid: string) {
-    const one = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-    // TODO
-    // const arr = legalData([one]);
-    // return arr;
 }
 
 /**
@@ -101,9 +106,8 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.fileExt = fileExt ? fileExt : '';
     asset.parentSource = dir.join('/');
     asset.topSource = dir.slice(0, 2).join('/');
-    asset.isExpand = dir.length > 1 ? false : true;
-    asset.isParent = subAssets.length > 0 ? true : asset.isDirectory ? true : false; // 树形的父级三角形依据此字段
     asset.isRoot = dir.length === 1 ? true : false;
+    asset.isParent = (subAssets.length > 0 || asset.isRoot) ? true : asset.isDirectory ? true : false; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
     // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
     asset.readOnly = asset.lock || asset.isRoot || asset.isSubAsset ? true : false; // 根节点和 subAssets 都只读
@@ -130,4 +134,3 @@ function sortTree(arr: ItreeAsset[]) {
 
 exports.protocol = protocol;
 exports.refresh = refresh;
-exports.ipcQuery = ipcQuery;

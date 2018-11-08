@@ -36,7 +36,9 @@
     <input class="rename" ref='input'
         v-else
         :value="asset.name"
-        @blur="renameBlur(asset)"
+        @blur="renameSubmit($event, asset)"
+        @keyup.enter="renameSubmit($event, asset)"
+        @keyup.esc="renameCancel($event, asset)"
     >
     
     <section class="loading"

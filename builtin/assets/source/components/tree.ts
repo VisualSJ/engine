@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
+import { $ } from '../panel';
 
 const db = require('./tree-db');
 
@@ -12,6 +13,8 @@ const iconWidth: number = 18; // 树形节点 icon 的宽度
 const padding: number = 4; // 树形头部的间隔，为了保持美观
 
 let timeOutId: any;
+let isRenderingTree: boolean = false; // 正在重新渲染树形
+
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
  * 将所有有展开的资源按照 key = position.top 排列，value = ItreeAsset
@@ -76,17 +79,30 @@ export const watch = {
      * 搜索资源名称
      */
     search() {
+        // 搜索有变动都先滚回顶部
+        vm.$parent.$refs.viewBox.scrollTo(0, 0);
+
+        // 重新计算
         vm.changeData();
 
-        if (vm.search === '') { // 重新定位到选中项
-            selectsIntoView();
-        }
+        // 重新定位到选中项
+        vm.$nextTick(() => {
+            if (vm.search === '') {
+                selectsIntoView();
+            }
+        });
     },
     /**
      * 当前选中项变动
      */
     activeAsset() {
         vm.$parent.activeAsset = vm.activeAsset;
+    },
+    /**
+     * 展开全部项
+     */
+    allExpand() {
+        vm.$parent.allExpand = vm.allExpand;
     },
 };
 
@@ -158,15 +174,9 @@ export const methods = {
         if (!treeData) { // 容错处理，数据可能为空
             return;
         }
-        // console.log(dbdata); return;
-        //
-        // treeData = {
-        //     depth: -1,
-        //     invalid: true,
-        //     children: toTree(dbdata),
-        // };
 
         this.changeData();
+
         selectsIntoView();
     },
 
@@ -291,24 +301,14 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        const arr = await db.ipcQuery(uuid);
-
-        arr.forEach((newNode: ItreeAsset) => {
-            // const parent = addAssetIntoTree(treeData.children, newNode);
-            // if (!parent) {
-            //     return;
-            // }
-            // parent.state = ''; // 还原状态
-            // parent.isExpand = true; // 展开显示
-            // sortData(parent.children, false);
-
-            // @ts-ignore 检查是否需要重名命
-            if (this.newAssetNeedToRename && !newNode.invalid && !newNode.readonly) {
-                newNode.state = 'input';
-            }
-        });
-        // 触发节点数据已变动
-        this.changeData();
+        vm.refresh();
+        const asset = getAssetFromMap(uuid);
+        // @ts-ignore 检查是否需要重名命
+        if (this.newAssetNeedToRename && asset && !asset.readOnly) {
+            asset.state = 'input';
+            // 触发节点数据已变动
+            this.changeData();
+        }
     },
 
     /**
@@ -390,7 +390,25 @@ export const methods = {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
             this.changeData();
+
+            if (one.isRoot) {
+                vm.checkAllToggleStatus();
+            }
         }
+    },
+
+    /**
+     * 小优化，给界面上的 allToggle 按钮准确的切换状态
+     */
+    checkAllToggleStatus() {
+        let allCollapse: boolean = true;
+        treeData.children.forEach((asset: ItreeAsset) => {
+            if (asset.isRoot && asset.isExpand) {
+                allCollapse = false;
+            }
+        });
+
+        vm.allExpand = !allCollapse;
     },
 
     /**
@@ -635,21 +653,35 @@ export const methods = {
     /**
      * 树形数据已改变
      * 如资源增删改，是较大的变动，需要重新计算各个配套数据
+     * 增加 setTimeOut 是为了优化来自异步的多次触发
      */
     changeData() {
-        clearTimeout(timeOutId);
+        if (isRenderingTree) {
+            clearTimeout(timeOutId);
+            timeOutId = setTimeout(() => {
+                vm.renderTree();
+            }, 100);
+            return;
+        }
+
+        vm.renderTree();
+    },
+    renderTree() {
+        isRenderingTree = true;
+
+        assetsMap.clear(); // 清空数据
+
+        calcAssetPosition(); // 重算排位
+
+        calcDirectoryHeight(); // 计算文件夹的高度
+
+        this.render(); // 重新渲染出树形
+
+        // 重新定位滚动条, +1 是为了增加离底距离
+        vm.$parent.treeHeight = (assetsMap.size + 1) * assetHeight;
+
         timeOutId = setTimeout(() => {
-
-            assetsMap.clear(); // 清空数据
-
-            calcAssetPosition(); // 重算排位
-
-            calcDirectoryHeight(); // 计算文件夹的高度
-
-            this.render(); // 重新渲染出树形
-
-            // 重新定位滚动条, +1 是为了增加离底距离
-            vm.$parent.treeHeight = (assetsMap.size + 1) * assetHeight;
+            isRenderingTree = false;
         }, 100);
     },
 
@@ -725,7 +757,6 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
         if (vm.folds[one.uuid] === undefined) {
             vm.folds[one.uuid] = one.isParent ? true : false;
         }
-
         if (one.isExpand === undefined) {
             Object.defineProperty(one, 'isExpand', {
                 configurable: true,
@@ -762,7 +793,7 @@ function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
             vm.state = 'search';
 
             // @ts-ignore
-            if (!one.invalid && !one.readonly && one.name.search(vm.search) !== -1) { // 平级保存
+            if (!one.readOnly && one.name.search(vm.search) !== -1) { // 平级保存
                 one.depth = 0; // 平级保存
                 assetsMap.set(start, one);
                 index++;
@@ -965,13 +996,12 @@ function scrollIntoView(uuid: string) {
         return;
     }
     // 情况 A ：判断是否已在展开的节点中，
-    const [one, index, arr, parent] = getGroupFromTree(treeData, uuid);
+    const one = getAssetFromMap(uuid);
     if (one) { // 如果 A ：存在，
         // 情况 B ：判断是否在可视范围，
-        if (
-            (vm.scrollTop - assetHeight) < one.top &&
-            one.top < (vm.scrollTop + vm.viewHeight - assetHeight)
-        ) {
+        const min = vm.scrollTop - assetHeight;
+        const max = vm.scrollTop + vm.viewHeight - assetHeight;
+        if (min < one.top && one.top < max) {
             return; // 如果 B：是，则终止
         } else { // 如果 B：不是，则滚动到可视的居中范围内
             const top = one.top - vm.viewHeight / 2;
@@ -984,7 +1014,11 @@ function scrollIntoView(uuid: string) {
 
         if (expandAsset(uuid)) {
             vm.changeData();
-            scrollIntoView(uuid);
+
+            // setTimeOut 是为了避免死循环
+            setTimeout(() => {
+                scrollIntoView(uuid);
+            }, 200);
         }
     }
 }
