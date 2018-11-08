@@ -1,98 +1,102 @@
 <div>
     <cc-dragable
-        name="Target" 
+        class="flex-wrap"
+        name="Target"
         :dump="target.target"
-    ></cc-dragable>
+    >
+        <div class="vue-comp-ui flex-full justify-end" slot="child">
+            <ui-button
+                @confirm.stop="resetNodeSize"
+                :disabled="checkResizeToTarget(target.target)"
+                >{{ T('resize_to_target') }}</ui-button
+            >
+        </div>
+    </cc-dragable>
 
     <boolean
-        name="Interactable" 
+        name="Interactable"
         :dump="target.interactable"
     ></boolean>
 
     <boolean
-        name="EnableAutoGrayEffect" 
+        name="EnableAutoGrayEffect"
+        v-show="autoGrayEffectEnabled()"
         :dump="target.enableAutoGrayEffect"
     ></boolean>
 
-    <enum
-        name="Transition" 
-        :dump="target.transition"
-    ></enum>
-    
+    <enum name="Transition" :dump="target.transition"></enum>
+
     <!-- color -->
     <div v-if="checkTransition(target.transition, 1)">
-        <cc-color 
+        <cc-color
             :indent="1"
-            name="Normal" 
+            name="Normal"
             :dump="target.normalColor"
-        ></cc-color> 
-        <cc-color 
+        ></cc-color>
+        <cc-color
             :indent="1"
-            name="Pressed" 
+            name="Pressed"
             :dump="target.pressedColor"
-        ></cc-color> 
-        <cc-color 
+        ></cc-color>
+        <cc-color
             :indent="1"
-            name="Hover" 
+            name="Hover"
             :dump="target.hoverColor"
-        ></cc-color> 
-        <cc-color 
+        ></cc-color>
+        <cc-color
             :indent="1"
-            name="Disabled" 
-            :dump="target.disabledColor"
-        ></cc-color> 
-        <cc-color 
-            :indent="1"
-            name="Disabled" 
+            name="Disabled"
             :dump="target.disabledColor"
         ></cc-color>
-        <number 
+        <cc-color
             :indent="1"
-            name="Duration" 
+            name="Disabled"
+            :dump="target.disabledColor"
+        ></cc-color>
+        <number
+            :indent="1"
+            name="Duration"
             :dump="target.duration"
         ></number>
     </div>
 
     <!-- sprite -->
     <div v-if="checkTransition(target.transition, 2)">
-        <cc-dragable 
+        <cc-dragable
             :indent="1"
-            name="Normal" 
+            name="Normal"
             :dump="target.normalSprite"
         ></cc-dragable>
-        <cc-dragable 
+        <cc-dragable
             :indent="1"
-            name="Pressed" 
+            name="Pressed"
             :dump="target.pressedSprite"
         ></cc-dragable>
-        <cc-dragable 
+        <cc-dragable
             :indent="1"
-            name="Hover" 
+            name="Hover"
             :dump="target.hoverSprite"
         ></cc-dragable>
-        <cc-dragable 
+        <cc-dragable
             :indent="1"
-            name="Disabled" 
+            name="Disabled"
             :dump="target.disabledSprite"
         ></cc-dragable>
     </div>
 
     <!-- scale -->
     <div v-if="checkTransition(target.transition, 3)">
-        <number 
+        <number
             :indent="1"
-            name="Duration" 
+            name="Duration"
             :dump="target.duration"
         ></number>
-        <number 
+        <number
             :indent="1"
             name="Zoom Scale"
             :dump="target.zoomScale"
         ></number>
     </div>
 
-    <array-prop 
-        :dump="target.clickEvents"
-    ></array-prop>	
-
-</div> 
+    <array-prop :dump="target.clickEvents"></array-prop>
+</div>

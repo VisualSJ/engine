@@ -96,8 +96,8 @@ exports.watch = {
 exports.computed = {
     componentHandler() {
         if (this.menu) {
-            const {value: component} = this.dump.value.component;
-            const {value: handler} = this.dump.value.handler;
+            const { value: component } = this.dump.value.component;
+            const { value: handler } = this.dump.value.handler;
 
             if (component && handler) {
                 return `${component} / ${handler}`;
@@ -113,7 +113,9 @@ exports.methods = {
             return false;
         }
         path = String(path);
-        path = path.startsWith(this.dump.path) ? path.replace(`${this.dump.path}.`, '') : path;
+        path = path.startsWith(this.dump.path)
+            ? path.replace(`${this.dump.path}.`, '')
+            : path;
 
         if (path.includes('.')) {
             const paths = path.split('.');
@@ -130,7 +132,9 @@ exports.methods = {
             }
         }
 
-        return path && this.dump.value[path] ? this.dump.value[path] : false;
+        return path && this.dump.value[path]
+            ? this.dump.value[path]
+            : false;
     },
     /**
      * 向上传递修改事件
@@ -154,22 +158,36 @@ exports.methods = {
         const path = event.target.getAttribute('path');
         const dump = this.getDumpByPath(path);
         if (dump) {
-            // isUuid ? (dump.value.uuid = value) : (dump.value = value);
-            this.dispatch({...dump, value});
+            isUuid ? (dump.value.uuid = value) : (dump.value = value);
+            this.dispatch(dump);
         }
-
     },
 
     async updateDump(newVal, oldVal) {
-        const {dump: {value:  {target: {value: {uuid}}}}} = this;
+        const {
+            dump: {
+                value: {
+                    target: {
+                        value: { uuid }
+                    }
+                }
+            }
+        } = this;
         // 根据 uuid 生成 menu
         if (uuid) {
-            this.menu = await Editor.Ipc.requestToPackage('scene', 'query-component-function-of-node', uuid);
+            this.menu = await Editor.Ipc.requestToPackage(
+                'scene',
+                'query-component-function-of-node',
+                uuid
+            );
         } else {
             this.menu = null;
         }
         // 变更 uuid 清空 component 和 handler
-        if (oldVal !== newVal && this.dump.value.handler.value !== '') {
+        if (
+            oldVal !== newVal &&
+            this.dump.value.handler.value !== ''
+        ) {
             this.updateComponentHandler('', '');
         }
     },
@@ -177,7 +195,10 @@ exports.methods = {
     selectComponentHandler(event) {
         if (this.menu) {
             const self = this;
-            const { left, bottom } = event.target.getBoundingClientRect();
+            const {
+                left,
+                bottom
+            } = event.target.getBoundingClientRect();
             const x = Math.round(left + 5);
             const y = Math.round(bottom + 5);
             const keys = Object.keys(this.menu);
@@ -189,7 +210,10 @@ exports.methods = {
                     submenu: items.map((handler) => ({
                         label: handler,
                         click() {
-                            self.updateComponentHandler(component, handler);
+                            self.updateComponentHandler(
+                                component,
+                                handler
+                            );
                         }
                     }))
                 };

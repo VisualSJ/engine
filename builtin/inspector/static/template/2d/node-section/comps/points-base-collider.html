@@ -4,12 +4,11 @@
         name="Threshold"
         :dump="target.threshold"
     >
-        <!-- todo 
-            <template slot="suffix">
+        <div slot="suffix">
             <ui-button class="blue tiny"
-                @confirm="regeneratePoints"
+                @confirm.stop="regeneratePoints"
             >{{T('collider', 'regenerate_points')}}</ui-button>
-        </template> -->
+        </div>
     </string>
 
     <none :target="target"></none>

@@ -1,7 +1,7 @@
 'use strict';
 
 const manager = {
-    node: require('../../manager/node'),
+    node: require('../../manager/node')
 };
 
 const dumpBackup = require('./backup');
@@ -46,7 +46,7 @@ function fillDefaultValue(attrs, array, start, end) {
             break;
         }
         case 'Object': {
-            const {ctor: Ctor} = attrs;
+            const { ctor: Ctor } = attrs;
 
             if (isChildClass(Ctor, cc.Asset, cc.Node, cc.Component)) {
                 for (let i = start; i < end; i++) {
@@ -116,12 +116,12 @@ function _fillerType(types, type, dump) {
         }
 
         Object.keys(prop).forEach((key) => {
-                // 存在 type 为空情况所以 key 为 type 需要先判断 type 是否存在再赋值
-                if (key === 'type') {
-                    prop[key] && (dump[property][key] = prop[key]);
-                } else {
-                    dump[property][key] = prop[key];
-                }
+            // 存在 type 为空情况所以 key 为 type 需要先判断 type 是否存在再赋值
+            if (key === 'type') {
+                prop[key] && (dump[property][key] = prop[key]);
+            } else {
+                dump[property][key] = prop[key];
+            }
         });
     });
 }
@@ -140,12 +140,16 @@ function dumpNode(node) {
     // 补充 children 字段
     dump.children = {
         readonly: false,
-        value: node.children.map((ccNode) => {
-            if (ccNode._objFlags & cc.Object.Flags.HideInHierarchy) {
-                return null;
-            }
-            return { value: ccNode.uuid };
-        }).filter(Boolean)
+        value: node.children
+            .map((ccNode) => {
+                if (
+                    ccNode._objFlags & cc.Object.Flags.HideInHierarchy
+                ) {
+                    return null;
+                }
+                return { value: ccNode.uuid };
+            })
+            .filter(Boolean)
     };
     // 补充 parent 字段
     dump.parent = {
@@ -177,7 +181,7 @@ function restoreComponent() {
  * @param dump
  * @param property
  */
-function restoreProperty(node, path, dump) {
+async function restoreProperty(node, path, dump) {
     // dump 的时候将 _components 转成了 __comps__
     path = path.replace('__comps__', '_components');
 
@@ -210,7 +214,7 @@ function restoreProperty(node, path, dump) {
         const array = subProperty[subKey];
 
         const oldLength = array.length;
-        const {value} = dump;
+        const { value } = dump;
 
         array.length = value;
         fillDefaultValue(attr, array, oldLength, value);
@@ -219,14 +223,16 @@ function restoreProperty(node, path, dump) {
 
     switch (dump.type) {
         case 'cc.Scene':
-        case 'cc.Node':
-            const node = manager.node.query(dump.value);
+        case 'cc.Node': {
+            const { uuid } = dump.value;
+            const node = manager.node.query(uuid);
             if (key === 'parent') {
                 node.addChild(property);
             } else {
                 property[key] = node;
             }
             break;
+        }
         case 'cc.Vec3':
             if (key) {
                 property[key].x = dump.value.x;
@@ -239,7 +245,6 @@ function restoreProperty(node, path, dump) {
             }
             break;
         case 'cc.Vec2':
-
             if (key === 'scale') {
                 property.scaleX = dump.value.x;
                 property.scaleY = dump.value.y;
@@ -263,7 +268,6 @@ function restoreProperty(node, path, dump) {
             }
             break;
         case 'cc.Size':
-
             if (key === 'size') {
                 property.width = dump.value.width;
                 property.height = dump.value.height;
@@ -286,17 +290,27 @@ function restoreProperty(node, path, dump) {
         case 'cc.SpriteFrame':
         case 'cc.Texture2D':
         case 'cc.Texture':
-        case 'cc.Asset':
-            cc.AssetLibrary.loadAsset(dump.value.uuid || '', (err, asset) => {
-                property[key] = asset;
+        case 'cc.Asset': {
+            if (!dump.value.uuid) {
+                property[key] = null;
+                return;
+            }
+            await new Promise((resolve, reject) => {
+                cc.AssetLibrary.loadAsset(
+                    dump.value.uuid,
+                    (err, asset) => {
+                        property[key] = asset;
+                        resolve();
+                    }
+                );
             });
             break;
+        }
         case 'enums':
             dump.value -= 0;
         default:
             property[key] = dump.value;
     }
-
 }
 
 /**
@@ -306,7 +320,6 @@ function restoreProperty(node, path, dump) {
  */
 function restoreNode(node, dumpdata) {
     for (const path in dumpdata) {
-
         if (!(path in dumpdata)) {
             continue;
         }
@@ -321,7 +334,13 @@ function restoreNode(node, dumpdata) {
             });
         } else if (path === 'uuid') {
             if (node.uuid !== data.value) {
-                console.error(`node.uuid is '${node.uuid}' not the same as the data.value '${data.value}'.`);
+                console.error(
+                    `node.uuid is '${
+                        node.uuid
+                    }' not the same as the data.value '${
+                        data.value
+                    }'.`
+                );
             }
             continue;
         } else if (path === 'parent') {
@@ -367,5 +386,5 @@ module.exports = {
     dumpNode,
     restoreComponent,
     restoreProperty,
-    restoreNode,
+    restoreNode
 };

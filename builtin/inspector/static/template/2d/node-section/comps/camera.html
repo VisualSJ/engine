@@ -1,81 +1,82 @@
 <section>
-    <!-- todo
-        <template v-if="target._is3D && target._is3D.value"> -->
-        <number
-            name="Zoom Ratio"
-            :dump="target.zoomRatio"
-        ></number>
+    <!--
+        todo
 
-        <cc-color
-            name="Background Color"
-            :dump="target.backgroundColor"
-        ></cc-color>
+        <template v-if="target._is3D && target._is3D.value">
+    -->
+    <number
+        name="Zoom Ratio"
+        :dump="target.zoomRatio"
+    ></number>
 
-        <number
-            name="Depth"
-            :dump="target.depth"
-        ></number>
+    <cc-color
+        name="Background Color"
+        :dump="target.backgroundColor"
+    ></cc-color>
 
-        <number
-            name="cullingMask"
-            :dump="target.cullingMask"
-        ></number>
+    <number
+        name="Depth"
+        :dump="target.depth"
+    ></number>
 
-        <div class="vue-comp-ui">
-            <div class="name">
-                <i
-                    :class="{
-                        iconfont: true,
-                        'icon-un-fold': true,
-                        'icon-fold': false,
-                        'is-visible': false
-                    }"
-                ></i>
-                <span :style="paddingStyle">Culling Mask</span>
-            </div>
-            <div class="value flex-wrap">
+    <number
+        name="cullingMask"
+        :dump="target.cullingMask"
+    ></number>
+
+    <div class="vue-comp-ui">
+        <div class="name">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': true,
+                    'icon-fold': false,
+                    'is-visible': false
+                }"
+            ></i>
+            <span class="flex-1">Culling Mask</span>
+        </div>
+        <div class="value flex-wrap">
+            <ui-checkbox
+                :value="everythingMask()"
+                @change="everythingMaskChanged"
+            ></ui-checkbox>
+            <div
+                class="vue-comp-ui flex-full"
+                v-for="(item, index) in groupList"
+            >
                 <ui-checkbox
-                    :value="everythingMask()"
-                    @change="everythingMaskChanged"
+                    :value="getCullingMask(index)"
+                    @change="cullingMaskChanged($event, index)"
                 ></ui-checkbox>
-                <div class="vue-comp-ui flex-full" v-for="(item, index) in groupList">
-                    <ui-checkbox
-                        :value="getCullingMask(index)"
-                        @change="cullingMaskChanged($event, index)"
-                    ></ui-checkbox>
-                </div>
             </div>
         </div>
+    </div>
 
-        <div class="vue-comp-ui">
-            <div class="name">
-                <i
-                    :class="{
-                        iconfont: true,
-                        'icon-un-fold': true,
-                        'icon-fold': false,
-                        'is-visible': false
-                    }"
-                ></i>
-                <span :style="paddingStyle">Clear Flags</span>
-            </div>
-            <div class="value flex-wrap">
-                <div class="vue-comp-ui flex-full" v-for="(item, index) in clearFlags">
-                    <ui-checkbox
-                        :value="getClearFlags(index)"
-                        @change="clearFlagsChanged($event, index)"
-                    ></ui-checkbox>
-                </div>
+    <div class="vue-comp-ui">
+        <div class="name">
+            <i
+                :class="{
+                    iconfont: true,
+                    'icon-un-fold': true,
+                    'icon-fold': false,
+                    'is-visible': false
+                }"
+            ></i>
+            <span class="flex-1">Clear Flags</span>
+        </div>
+        <div class="value flex-wrap">
+            <div
+                class="vue-comp-ui flex-full"
+                v-for="(item, index) in clearFlags"
+            >
+                <ui-checkbox
+                    :value="getClearFlags(index)"
+                    @change="clearFlagsChanged($event, index)"
+                ></ui-checkbox>
             </div>
         </div>
+    </div>
 
-    <!-- </template> -->
-    <!-- <template v-for="(prop, key) in target" v-else>
-        <component
-            v-if="prop.visible !== false && prop.compType"
-            :is="prop.compType"
-            :name="prop.name"
-            :dump="prop"
-        ></component>
-    </template> -->
+    <!-- todo -->
 </section>

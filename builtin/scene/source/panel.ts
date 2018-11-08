@@ -299,6 +299,24 @@ export const messages = {
         Editor.Ipc.sendToAll('scene:node-changed', options.uuid);
     },
 
+    /**
+     * 执行 entity 上指定组件的方法
+     * @param options 执行组件方法的参数
+     */
+    async 'excute-component-method'(options: ExcuteComponentMethodOptions) {
+        await panel.$.scene.excuteComponentMethod(options);
+        panel.recordHistory(options.uuid);
+    },
+
+    /**
+     * 选择指定位置的 rigid
+     * @param options 选择 rigid 的参数
+     */
+    async 'choose-rigid-body'(options: ChooseRigidBodyOptions) {
+        await panel.$.scene.chooseRigidBody(options);
+        panel.recordHistory(options.uuid);
+    },
+
     /////////////////////
     // 查询场景内的数据的消息
 

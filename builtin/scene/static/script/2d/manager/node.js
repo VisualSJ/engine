@@ -10,10 +10,10 @@
 
 let uuid2node = {};
 
- /**
-  * 传入一个场景，将内部的节点全部缓存
-  * @param {*} scene
-  */
+/**
+ * 传入一个场景，将内部的节点全部缓存
+ * @param {*} scene
+ */
 function init(scene) {
     scene && walk(scene);
 }
@@ -57,6 +57,58 @@ function queryUuids() {
     return Object.keys(uuid2node);
 }
 
+function querySiblingNodeByPosition(uuid, position) {
+    const node = query(uuid);
+    if (!node) {
+        return null;
+    }
+    const index = node.parent
+        ? node.parent.children.findIndex((child) => child === node)
+        : -1;
+    switch (position) {
+        case 'prev': {
+            const prev =
+                index > 0 ? node.parent.children[index - 1] : null;
+            return prev;
+        }
+        case 'next': {
+            const next =
+                index > -1 && index < node.parent.children.length - 2
+                    ? node.parent.children[index + 1]
+                    : null;
+            return next;
+        }
+        case 'first': {
+            const last =
+                index > -1
+                    ? node.parent.children[
+                          node.parent.children.length - 1
+                      ]
+                    : null;
+            return last;
+        }
+        case 'last': {
+            const last =
+                index > -1
+                    ? node.parent.children[
+                          node.parent.children.length - 1
+                      ]
+                    : null;
+            return last;
+        }
+        default:
+            if (/^\d+$/.test(position)) {
+                const item =
+                    node.parent &&
+                    node.parent.find(
+                        (child, index) => index === position
+                    );
+                return item ? item : null;
+            }
+            break;
+    }
+}
+
 /////////////////////////
 // 工具函数
 
@@ -66,9 +118,10 @@ function queryUuids() {
  */
 function walkChild(node) {
     uuid2node[node._id] = node;
-    node.children && node.children.forEach((child) => {
-        walkChild(child);
-    });
+    node.children &&
+        node.children.forEach((child) => {
+            walkChild(child);
+        });
 }
 
 /**
@@ -92,4 +145,6 @@ module.exports = {
     query,
     // 查询受管理的所有节点的 uuid 数组
     queryUuids,
+    // 查询与节点同级的指定位置节点
+    querySiblingNodeByPosition
 };

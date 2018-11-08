@@ -1,15 +1,20 @@
 <div>
 
     <cc-dragable
+        class="flex-wrap"
         name="Target"
         :dump="target.target"
-    ></cc-dragable>
-    <!-- todo 
-        <div class="right">
-        <ui-button class="blue tiny"
-            @confirm="resetNodeSize"
-        ></ui-button>
-    </div> -->
+    > 
+        <div 
+            class="vue-comp-ui flex-full justify-end"
+            slot="child"
+        >
+            <ui-button
+                @confirm.stop="resetNodeSize"
+                :disabled="checkResizeToTarget(target.target)"
+            >{{T('resize_to_target')}}</ui-button>
+        </div>
+    </cc-dragable>
 
     <boolean
         name="Interactable"

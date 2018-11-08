@@ -1,5 +1,5 @@
 'use strict';
-
+const {basename, extname} = require('path');
 const { readTemplate, readComponent, T, buildProp } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
@@ -13,7 +13,8 @@ exports.components = {
 
 exports.data = function() {
     return {
-        node: null
+        node: null,
+        userScripts: null
     };
 };
 
@@ -21,6 +22,11 @@ exports.watch = {
     uuid() {
         this.refresh();
     }
+};
+
+exports.created = async function() {
+    const userScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+    this.userScripts = userScripts.filter((item) => item.importer.includes('javascript'));
 };
 
 exports.methods = {
@@ -85,10 +91,22 @@ exports.methods = {
     addCompPopup(event) {
         const { left, bottom } = event.target.getBoundingClientRect();
         const {
-            uuid: { value: uuid }
-        } = this.node;
+           node: { uuid: { value: uuid }},
+           userScripts
+        } = this;
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
+        const submenu = userScripts.map((item) => {
+            const {source, uuid: component} = item;
+            const label = basename(source, extname(source));
+            return {
+                label,
+                click() {
+                    Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                },
+                params: {uuid, component}
+            };
+        });
 
         Editor.Menu.popup({
             x,
@@ -343,7 +361,8 @@ exports.methods = {
                     ]
                 },
                 {
-                    label: T('component', 'scripts')
+                    label: T('component', 'scripts'),
+                    submenu
                 },
                 {
                     label: T('component', 'ui'),

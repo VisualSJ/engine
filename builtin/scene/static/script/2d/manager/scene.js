@@ -4,8 +4,11 @@ const manager = {
     node: require('./node')
 };
 
+const uuidUtils = require('../../utils/uuid');
+
 const nodeUtils = require('../utils/node');
 const dumpUtils = require('../utils/dump');
+
 const getComponentFunctionOfNode = require('../utils/get-component-function-of-node');
 const camera = require('./camera');
 
@@ -71,7 +74,7 @@ async function serialize() {
  * 关闭一个场景
  */
 function close() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         setTimeout(() => {
             resolve();
         }, 300);
@@ -99,8 +102,7 @@ function queryNodeTree(uuid) {
      * 逐步打包数据
      * @param node
      */
-    const step = (node) => {
-
+    const step = node => {
         if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
             return null;
         }
@@ -111,7 +113,7 @@ function queryNodeTree(uuid) {
             name: node.name,
             type: node.constructor.name.replace('_', '.'),
             uuid: node._id,
-            children: children.length ? children : null,
+            children: children.length ? children : null
         };
     };
 
@@ -151,6 +153,34 @@ function queryNodePath(uuid) {
     return names.join('/');
 }
 
+/**
+ * 选择对应的 rigid
+ * @param {*} uuid
+ * @param {*} index
+ * @param {*} position
+ * @returns
+ */
+function chooesRigidBody(uuid, index, position) {
+    const node = manager.node.query(uuid);
+    if (!node) {
+        console.warn(
+            `Choose rigid body failed: ${uuid} does not exist`
+        );
+        return;
+    }
+
+    const component = node._components[index];
+    const targetNode = manager.node.querySiblingNodeByPosition(
+        uuid,
+        position
+    );
+    if (component && targetNode) {
+        component.connectedBody = targetNode.getComponent(
+            cc.RigidBody
+        );
+    }
+}
+
 function queryComponentFunctionOfNode(uuid) {
     const node = manager.node.query(uuid);
 
@@ -167,7 +197,7 @@ function queryComponentFunctionOfNode(uuid) {
  * @param {*} key
  * @param {*} dump
  */
-function setProperty(uuid, path, dump) {
+async function setProperty(uuid, path, dump) {
     const node = manager.node.query(uuid);
     if (!node) {
         console.warn(`Set property failed: ${uuid} does not exist`);
@@ -175,7 +205,7 @@ function setProperty(uuid, path, dump) {
     }
 
     // 恢复数据
-    dumpUtils.restoreProperty(node, path, dump);
+    await dumpUtils.restoreProperty(node, path, dump);
 }
 
 /**
@@ -203,7 +233,9 @@ function moveArrayElement(uuid, path, target, offset) {
     }
 
     if (!Array.isArray(data)) {
-        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        console.warn(
+            `Move property failed: ${uuid} - ${path}.${key} isn't an array`
+        );
         return false;
     }
 
@@ -230,7 +262,9 @@ function removeArrayElement(uuid, path, index) {
     const key = (path || '').split('.').pop();
 
     if (key === 'children') {
-        console.warn('Unable to change `children` of the parent, Please change the `parent` of the child');
+        console.warn(
+            'Unable to change `children` of the parent, Please change the `parent` of the child'
+        );
         return false;
     }
 
@@ -250,7 +284,9 @@ function removeArrayElement(uuid, path, index) {
     }
 
     if (!Array.isArray(data)) {
-        console.warn(`Move property failed: ${uuid} - ${path}.${key} isn't an array`);
+        console.warn(
+            `Move property failed: ${uuid} - ${path}.${key} isn't an array`
+        );
         return false;
     }
 
@@ -268,15 +304,26 @@ function removeArrayElement(uuid, path, index) {
 function createComponent(uuid, component) {
     const node = manager.node.query(uuid);
     if (!node) {
-        console.warn(`create component failed: ${uuid} does not exist`);
+        console.warn(
+            `create component failed: ${uuid} does not exist`
+        );
         return false;
     }
 
-    if (Reg_Uuid.test(component) || Reg_NormalizedUuid.test(component) || Reg_CompressedUuid.test(component)) {
-        component = cc.js._getClassById(component);
+    let componentInstance;
+    if (
+        Reg_Uuid.test(component) ||
+        Reg_NormalizedUuid.test(component) ||
+        Reg_CompressedUuid.test(component)
+    ) {
+        componentInstance = cc.js._getClassById(component);
+    }
+    if (!componentInstance) {
+        const compressUuid = uuidUtils.compressUuid(component);
+        componentInstance = cc.js._getClassById(compressUuid);
     }
 
-    node.addComponent(component);
+    componentInstance && node.addComponent(componentInstance);
 }
 
 /**
@@ -292,6 +339,31 @@ function removeComponent(uuid, component) {
     }
 
     node.removeComponent(component);
+}
+
+/**
+ * 执行 entity 上指定组件的方法
+ * @param {*} uuid
+ * @param {*} index
+ * @param {*} rest
+ * @returns
+ */
+function excuteComponentMethod(uuid, index, ...rest) {
+    const node = manager.node.query(uuid);
+    if (!node) {
+        console.warn(
+            `Excute component method failed: ${uuid} does not exist`
+        );
+        return false;
+    }
+    const component = node._components[index];
+    if (component) {
+        rest.map(fn => {
+            if (typeof component[fn] === 'function') {
+                component[fn]();
+            }
+        });
+    }
 }
 
 /**
@@ -345,7 +417,6 @@ function removeNode(uuid) {
 }
 
 module.exports = {
-
     // 打开场景
     open,
     // 关闭当前场景（空实现）
@@ -377,4 +448,8 @@ module.exports = {
     createNode,
     // 移除节点
     removeNode,
+    // 执行组件方法
+    excuteComponentMethod,
+    // 选择对应 rigid
+    chooesRigidBody
 };

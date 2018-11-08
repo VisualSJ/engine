@@ -28,6 +28,7 @@ exports.template = `
             @confirm="_onConfirm"
         ></ui-drag-object>
         <slot name="suffix"></slot>
+        <slot name="sibling"></slot>
     </div>
     <div class="value" v-else>
         <ui-drag-object

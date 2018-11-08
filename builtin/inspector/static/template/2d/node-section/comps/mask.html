@@ -24,17 +24,19 @@
     ></number>
 
     <cc-dragable
+        class="flex-wrap"
         v-show="isImageStencilType()"
         name="spriteFrame"
         :dump="target.spriteFrame"
     >
-    <div class="horizontal layout end-justified"
+    <div 
+        class="vue-comp-ui flex-full justify-end" 
+        slot="child"
         v-show="target.spriteFrame.value.uuid && isImageStencilType()"
     >
-        <!-- todo 
-            <ui-button
-            @confirm="onAppImageSizeClick"
-        >{{T('resize_to_target')}}</ui-button> -->
+        <ui-button
+            @confirm.stop="onAppImageSizeClick"
+        >{{T('resize_to_target')}}</ui-button>
     </div>
 </cc-dragable>
 

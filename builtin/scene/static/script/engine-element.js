@@ -245,6 +245,30 @@ class View extends window.HTMLElement {
         });
     }
 
+    /**
+     * 执行组件方法
+     */
+    async excuteComponentMethod(options) {
+        this.dirty = true;
+        return await this.ipc.send('call-method', {
+            module: 'Scene',
+            handler: 'excuteComponentMethod',
+            params: [options.uuid, options.index, ...options.methodNames]
+        });
+    }
+
+    /**
+     * 选择指定 rigid
+     */
+    async chooseRigidBody(options) {
+        this.dirty = true;
+        return await this.ipc.send('call-method', {
+            module: 'Scene',
+            handler: 'chooesRigidBody',
+            params: [options.uuid, options.index, options.position]
+        });
+    }
+
     ///////////////////
 
     /**

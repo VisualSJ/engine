@@ -52,6 +52,18 @@ interface RemoveComponentOptions {
     component: string;
 }
 
+interface ExcuteComponentMethodOptions {
+    uuid: string;
+    index: number;
+    methodNames: string[];
+}
+
+interface ChooseRigidBodyOptions {
+    uuid: string;
+    index: number;
+    position: string | number;
+}
+
 interface NodeDump {
     uuid: PropertyDump;
 
