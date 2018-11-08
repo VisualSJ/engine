@@ -10,6 +10,8 @@ const iconWidth: number = 18; // 树形节点 icon 的宽度
 const padding: number = 4; // 树形头部的间隔，为了保持美观
 
 let timeOutId: any;
+let isRenderingTree: boolean = false; // 正在重新渲染树形
+
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
  * 将所有有展开的节点按照 key = position.top 排列，value = ItreeNode
@@ -74,17 +76,30 @@ export const watch = {
      * 搜索节点名称
      */
     search() {
+        // 搜索有变动都先滚回顶部
+        vm.$parent.$refs.viewBox.scrollTo(0, 0);
+
+        // 重新计算
         vm.changeData();
 
-        if (vm.search === '') { // 重新定位到选中项
-            selectsIntoView();
-        }
+        // 重新定位到选中项
+        vm.$nextTick(() => {
+            if (vm.search === '') {
+                selectsIntoView();
+            }
+        });
     },
     /**
      * 当前选中项变动
      */
     activeNode() {
         vm.$parent.activeNode = vm.activeNode;
+    },
+    /**
+     * 展开全部项
+     */
+    allExpand() {
+        vm.$parent.allExpand = vm.allExpand;
     },
 };
 
@@ -139,7 +154,7 @@ export const methods = {
      */
     async refresh() {
         treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
-        // console.log(treeData); return;
+
         if (!treeData) { // 容错处理，数据可能为空
             return;
         }
@@ -409,7 +424,25 @@ export const methods = {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
             this.changeData();
+
+            if (one.depth === 0) {
+                vm.checkAllToggleStatus();
+            }
         }
+    },
+
+    /**
+     * 小优化，给界面上的 allToggle 按钮准确的切换状态
+     */
+    checkAllToggleStatus() {
+        let allCollapse: boolean = true;
+        treeData.children.forEach((node: ItreeNode) => {
+            if (node.isParent && node.isExpand) {
+                allCollapse = false;
+            }
+        });
+
+        vm.allExpand = !allCollapse;
     },
 
     /**
@@ -784,20 +817,36 @@ export const methods = {
     /**
      * 树形数据已改变
      * 如节点增删改，是较大的变动，需要重新计算各个配套数据
+     * 增加 setTimeOut 是为了优化来自异步的多次触发
      */
     changeData() {
-        clearTimeout(timeOutId);
-        timeOutId = setTimeout(() => {
-            nodesMap.clear(); // 清空数据
+        if (isRenderingTree) {
+            clearTimeout(timeOutId);
+            timeOutId = setTimeout(() => {
+                vm.renderTree();
+            }, 100);
+            return;
+        }
 
-            calcNodePosition(); // 重算排位
+        vm.renderTree();
+    },
+    renderTree() {
+        isRenderingTree = true;
 
-            calcDirectoryHeight(); // 计算文件夹的高度
+        // 清空数据
+        nodesMap.clear();
 
-            this.render(); // 重新渲染出树形
+        calcNodePosition(); // 重算排位
 
-            // 重新定位滚动条, +1 是为了增加离底距离
-            vm.$parent.treeHeight = (nodesMap.size + 1) * nodeHeight;
+        calcDirectoryHeight(); // 计算文件夹的高度
+
+        this.render(); // 重新渲染出树形
+
+        // 重新定位滚动条, +1 是为了增加离底距离
+        vm.$parent.treeHeight = (nodesMap.size + 1) * nodeHeight;
+
+        setTimeout(() => {
+            isRenderingTree = false;
         }, 100);
     },
 
@@ -1203,13 +1252,12 @@ function scrollIntoView(uuid: string) {
         return;
     }
     // 情况 A ：判断是否已在展开的节点中，
-    const [one, index, arr, parent] = getGroupFromTree(treeData, uuid);
+    const one = getNodeFromMap(uuid);
     if (one) { // 如果 A ：存在，
         // 情况 B ：判断是否在可视范围，
-        if (
-            (vm.scrollTop - nodeHeight) < one.top &&
-            one.top < (vm.scrollTop + vm.viewHeight - nodeHeight)
-        ) {
+        const min = vm.scrollTop - nodeHeight;
+        const max = vm.scrollTop + vm.viewHeight - nodeHeight;
+        if (min < one.top && one.top < max) {
             return; // 如果 B：是，则终止
         } else { // 如果 B：不是，则滚动到可视的居中范围内
             const top = one.top - vm.viewHeight / 2;
@@ -1222,7 +1270,11 @@ function scrollIntoView(uuid: string) {
 
         if (expandNode(uuid)) {
             vm.changeData();
-            scrollIntoView(uuid);
+
+            // setTimeOut 是为了避免死循环
+            setTimeout(() => {
+                scrollIntoView(uuid);
+            }, 200);
         }
     }
 }
@@ -1236,7 +1288,6 @@ function expandNode(uuid: string): boolean {
         return false;
     }
     node.isExpand = true;
-
     if (parent && parent.uuid) {
         return expandNode(parent.uuid);
     }

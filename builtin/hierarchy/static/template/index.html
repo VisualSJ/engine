@@ -3,7 +3,7 @@
         <i class="i-add"
             @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="search"></ui-input>
+        <ui-input tabindex="-1" ref="search" @keydown.stop></ui-input>
         <i class="expand"
             :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
             @click="allToggle"
