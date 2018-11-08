@@ -68,7 +68,8 @@ requestAnimationFrame(async () => {
     }));
 
     // 启动场景
-    await Manager.Scene.open();
+    const uuid = await Manager.Ipc.send('query-scene');
+    await Manager.Scene.open(uuid);
 
     // 标记已经准备就绪
     ipc.ready();
