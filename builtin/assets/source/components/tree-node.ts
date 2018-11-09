@@ -34,7 +34,7 @@ export const watch = {
             // @ts-ignore
             const asset = this.asset;
             // @ts-ignore
-            this.draggable = (asset.state !== '' || asset.invalid || asset.readonly) ? false : true;
+            this.draggable = (asset.state !== '' || asset.isRoor || asset.readOnly) ? false : true;
             // @ts-ignore
             if (asset.state === 'input') {
                 // @ts-ignore 选中该节点
@@ -166,7 +166,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.copy'),
-                    enabled: asset.readOnly ? false : true,
+                    enabled: asset.readOnly || asset.isRoot ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('copy', asset.uuid);
@@ -185,7 +185,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.rename'),
-                    enabled: asset.readOnly ? false : true,
+                    enabled: asset.readOnly || asset.isRoot  ? false : true,
                     click(event: Event) {
                         // @ts-ignore
                         self.rename(asset);
@@ -193,7 +193,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.delete'),
-                    enabled: asset.readOnly ? false : true,
+                    enabled: asset.readOnly || asset.isRoot  ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('ipcDelete', asset.uuid);
@@ -305,6 +305,9 @@ export const methods = {
         if (this.selects.includes(uuid)) {
             // @ts-ignore
             uuid = this.selects.join(',');
+        } else {
+            // @ts-ignore 取消选中，避免样式重叠
+            this.$emit('ipcSingleSelect', uuid);
         }
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({ from: uuid }));
@@ -315,9 +318,6 @@ export const methods = {
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
-
-        // 取消选中，避免样式重叠
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
     },
     /**
      * 拖动到元素的上面
@@ -360,10 +360,6 @@ export const methods = {
      * @param uuid
      */
     drop(event: Event, asset: ItreeAsset) {
-        // 需要取消默认行为才能获取 dataTransfer 数据
-        event.preventDefault();
-        event.stopPropagation();
-
         // @ts-ignore
         const target: any = event.currentTarget;
         const insert = target.getAttribute('insert');
@@ -372,8 +368,12 @@ export const methods = {
 
         // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
         // @ts-ignore
-        if (!this.$parent.$el.hasAttribute('hoving')) {
+        const $tree = this.$parent.$el;
+        if (!$tree.hasAttribute('hoving')) {
             return;
+        } else {
+            event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
+            $tree.removeAttribute('hoving'); // 由于阻断需要手动删除
         }
 
         if (asset.readOnly) { // 不可用节点，比如 uuid 不存在
@@ -413,7 +413,7 @@ export const methods = {
 export function mounted() {
     // @ts-ignore
     const asset = this.asset;
-    if (asset.state !== '' || asset.invalid || asset.readonly) {
+    if (asset.state !== '' || asset.isRoot || asset.readOnly) {
         // @ts-ignore
         this.draggable = false;
     }

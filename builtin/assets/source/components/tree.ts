@@ -112,19 +112,15 @@ export function mounted() {
 
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
-        clearTimeout(timeOutId);
-        timeOutId = setTimeout(() => {
-            vm.dragOver('', 'after');
-        }, 500);
+        // @ts-ignore
+        vm.dragOver(vm.assets[0].uuid);
     });
+
     // @ts-ignore
     this.$el.addEventListener('drop', (event) => {
         // @ts-ignore
         const dragData = event.dataTransfer.getData('dragData');
         let data: IdragAsset;
-        // @ts-ignore
-        const rootUuid = this.assets[0].uuid;
-
         if (dragData === '') {
             // @ts-ignore
             data = {};
@@ -132,6 +128,8 @@ export function mounted() {
             data = JSON.parse(dragData);
         }
 
+        // @ts-ignore
+        const rootUuid = this.assets[0].uuid;
         // @ts-ignore
         const localFiles = Array.from(event.dataTransfer.files);
         if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
@@ -152,7 +150,6 @@ export function mounted() {
         }
         // @ts-ignore
         this.drop(data);
-
     });
 }
 
@@ -474,11 +471,11 @@ export const methods = {
      */
     async multipleSelect(uuid: string | string[]) {
         if (Array.isArray(uuid)) {
-            Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
             return;
         }
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
         if (uuids.length === 0) {
             return;
         }
@@ -498,8 +495,8 @@ export const methods = {
             selects.splice(selects.findIndex((id) => id === one.uuid), 1);
             selects.push(one.uuid);
 
-            Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', selects);
+            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+            Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
         }
     },
 
@@ -532,16 +529,23 @@ export const methods = {
      */
     dragOver(uuid: string) {
         // @ts-ignore
-        const node: ItreeAsset = getAssetFromMap(uuid);
-        if (!node.isDirectory) {
+        const asset: ItreeAsset = getAssetFromMap(uuid);
+        if (!asset.isDirectory) {
             // @ts-ignore
-            this.dragOver(node.parentUuid);
+            this.dragOver(asset.parentUuid);
             return;
         }
 
-        node.state = 'over';
+        const top = asset.top + padding;
+        let height = asset.height;
+        if (height > assetHeight) {
+            height += 2;
+        }
         // @ts-ignore
-        this.dirBox = [node.top + 4, node.height > assetHeight ? (node.height + 3) : node.height];
+        this.selectBox = {
+            top: top + 'px',
+            height: height + 'px',
+        };
     },
 
     /**
@@ -549,12 +553,12 @@ export const methods = {
      */
     dragLeave(uuid: string) {
         // @ts-ignore
-        let node: ItreeAsset = getAssetFromMap(uuid);
-        if (!node.isDirectory) {
+        let asset: ItreeAsset = getAssetFromMap(uuid);
+        if (!asset.isDirectory) {
             // @ts-ignore
-            node = getAssetFromMap(node.parentUuid);
+            asset = getAssetFromMap(asset.parentUuid);
         }
-        node.state = '';
+        asset.state = '';
     },
 
     /**
@@ -564,61 +568,64 @@ export const methods = {
      */
     drop(json: IdragAsset) {
         // @ts-ignore 隐藏高亮框
-        this.dirBox = false;
+        this.selectBox = false;
 
-        // 不是拖动的话，取消
-        if (json.insert !== 'inside') {
+        // 没有源 或者 不是拖动
+        if (!json.from || json.insert !== 'inside') {
             return;
         }
 
-        const toData = getGroupFromTree(treeData, json.to);
-        let toNode = getValidAsset(json.to); // 将被注入数据的对象
-        if (!toNode) {
+        // 鼠标在此节点释放
+        let toAsset: any = getValidAsset(json.to);
+
+        // 移动到节点的父级
+        if (toAsset && !toAsset.isDirectory) {
+            toAsset = getValidAsset(toAsset.parentUuid);
+        }
+        if (!toAsset) {
             return;
         }
 
-        if (!toNode.isDirectory) {
-            // @ts-ignore
-            toNode = getValidAsset(toData[3].uuid); // 节点的父级
-        }
-
-        if (!toNode) {
-            return;
-        }
-
-        let doIpc = false;
-        if (json.from === 'osFile') { // 从外部拖文件进来
-            // @ts-ignore
-            json.files.forEach((one) => {
-                // @ts-ignore
-                importAsset(toNode.uuid, one.path);
-                doIpc = true;
+        // 从外部拖文件进来
+        if (json.from === 'osFile') {
+            if (!Array.isArray(json.files)) { // 容错处理
+                json.files = [];
+            }
+            json.files.forEach((one: any) => {
+                toAsset.state = 'loading'; // 显示 loading 效果
+                importAsset(toAsset.uuid, one.path);
             });
-        } else {
-            if (!json.from) {
+            return;
+        }
+        const uuids = json.from.split(',');
+               // 多资源移动，根据现有排序的顺序执行
+        const groups: any[] = uuids.map((uuid: string) => {
+            return getGroupFromTree(treeData, uuid);
+        }).filter(Boolean).sort((a, b) => {
+            return a[0].top - b[0].top;
+        });
+
+        groups.forEach((group: any) => {
+            const [fromAsset, fromIndex, fromArr, fromParent] = group;
+            if (!fromAsset || fromAsset.isRoot || fromAsset.readOnly) {
                 return;
             }
 
-            const uuids = json.from.split(',');
-            uuids.forEach((fromId: string) => {
-                const [fromNode, fromIndex, fromArr, fromParent] = getGroupFromTree(treeData, fromId);
-                if (!fromNode || fromNode.invalid || fromNode.isSubAsset) {
-                    return;
-                }
+            const isSubChild = getGroupFromTree(fromAsset, json.to);
+            if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
+                return;
+            }
 
-                // @ts-ignore
-                if (toNode.uuid === fromParent.uuid) { // 资源移动仍在原来的目录内，不需要移动
-                    return;
-                }
-                // @ts-ignore 移动资源
-                Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromNode.source, toNode.source);
-                doIpc = true;
-            });
-        }
+            // 资源移动仍在原来的目录内，不需要移动
+            if (toAsset.uuid === fromParent.uuid) {
+                return;
+            }
 
-        if (doIpc) {
-            toNode.state = 'loading'; // 显示 loading 效果
-        }
+            toAsset.state = 'loading'; // 显示 loading 效果
+            // @ts-ignore 移动资源
+            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
+        });
+
     },
 
     /**
@@ -733,74 +740,76 @@ export const methods = {
  * 计算所有树形资源的位置数据，这一结果用来做快速检索
  * 重点是设置 assetsMap 数据
  * 返回当前序号
- * @param obj
+ * @param assets
  * @param index 资源的序号
  * @param depth 资源的层级
  */
-function calcAssetPosition(obj = treeData, index = 0, depth = 0) {
-    if (!obj || !Array.isArray(obj.children)) {
+function calcAssetPosition(assets = treeData, index = 0, depth = 0) {
+    if (!assets || !Array.isArray(assets.children)) {
         return index;
     }
 
-    obj.children.forEach((one: ItreeAsset) => {
-        if (!one) {
+    assets.children.forEach((asset: ItreeAsset) => {
+        if (!asset) {
             return;
         }
 
         const start = index * assetHeight;  // 起始位置
 
         // 扩展属性
-        one.depth = depth;
-        one.top = start;
-        one.left = depth * iconWidth + padding;
+        asset.depth = depth;
+        asset.top = start;
+        asset.left = depth * iconWidth + padding;
+        asset._height = assetHeight;
+        asset.parentUuid = assets.uuid;
 
-        if (vm.folds[one.uuid] === undefined) {
-            vm.folds[one.uuid] = one.isParent ? true : false;
+        if (vm.folds[asset.uuid] === undefined) {
+            vm.folds[asset.uuid] = asset.isParent ? true : false;
         }
-        if (one.isExpand === undefined) {
-            Object.defineProperty(one, 'isExpand', {
+        if (asset.isExpand === undefined) {
+            Object.defineProperty(asset, 'isExpand', {
                 configurable: true,
                 enumerable: true,
                 get() {
-                    return vm.folds[one.uuid];
+                    return vm.folds[asset.uuid];
                 },
                 set(val) {
-                    vm.folds[one.uuid] = val;
+                    vm.folds[asset.uuid] = val;
                 },
             });
         }
 
-        if (one.height === undefined) {
-            Object.defineProperty(one, 'height', {
+        if (asset.height === undefined) {
+            Object.defineProperty(asset, 'height', {
                 configurable: true,
                 enumerable: true,
                 get() {
                     return this._height;
                 },
-                set: addHeight.bind(one),
+                set: addHeight.bind(asset),
             });
         }
 
         if (vm.search === '') { // 没有搜索
             vm.state = '';
-            assetsMap.set(start, one);
+            assetsMap.set(start, asset);
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
-            if (one.isParent && one.isExpand === true) {
-                index = calcAssetPosition(one, index, depth + 1); // depth 是该资源的层级
+            if (asset.isParent && asset.isExpand === true) {
+                index = calcAssetPosition(asset, index, depth + 1); // depth 是该资源的层级
             }
         } else { // 有搜索
             vm.state = 'search';
 
             // @ts-ignore
-            if (!one.readOnly && one.name.search(vm.search) !== -1) { // 平级保存
-                one.depth = 0; // 平级保存
-                assetsMap.set(start, one);
+            if (!asset.isRoot && asset.name.search(vm.search) !== -1) { // 平级保存
+                asset.depth = 0; // 平级保存
+                assetsMap.set(start, asset);
                 index++;
             }
 
-            if (one.isParent) {
-                index = calcAssetPosition(one, index, 0);
+            if (asset.isParent) {
+                index = calcAssetPosition(asset, index, 0);
             }
         }
     });
@@ -820,14 +829,14 @@ function addHeight(add: number) {
         // 触发其父级高度也增加
         for (const [top, asset] of assetsMap) {
             // @ts-ignore
-            if (this.parentSource === asset.source) {
+            if (this.parentUuid === asset.uuid) {
                 asset.height = add;
                 break;
             }
         }
     } else {
         // @ts-ignore
-        this._height = this.depth === 0 ? assetHeight : 0;
+        this._height = assetHeight;
     }
 }
 
@@ -865,11 +874,11 @@ function resetTreeProps(props: any, tree: ItreeAsset[] = treeData.children) {
 
 /**
  * 获取一组资源的位置信息
- * 资源节点对象 node,
+ * 资源节点对象 asset,
  * 对象所在数组索引 index，
  * 所在数组 array，
  * 所在数组其所在的对象 object
- * 返回 [node, index, array, object]
+ * 返回 [asset, index, array, object]
  *
  * 找不到资源 返回 []
  * @param arr

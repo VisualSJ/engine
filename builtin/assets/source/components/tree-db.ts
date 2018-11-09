@@ -84,7 +84,11 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[] = [protocol]) 
     for (const name of subAssets) {
         const subTree = tree.subAssets[name];
         const subAsset = uuidAssets[subTree.uuid];
+
+        // 增加组件所需要用到的属性
         assetAttr(subAsset, dir, name);
+
+        // 载入父级
         asset.children.push(subAsset);
 
         const subNames = Object.keys(subTree.subAssets);
@@ -107,10 +111,12 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.parentSource = dir.join('/');
     asset.topSource = dir.slice(0, 2).join('/');
     asset.isRoot = dir.length === 1 ? true : false;
-    asset.isParent = (subAssets.length > 0 || asset.isRoot) ? true : asset.isDirectory ? true : false; // 树形的父级三角形依据此字段
+    // 这个兼容处理 window 和 mac 上对 database 的 isDirectory 不同的数据返回，window 上 true, mac 上 false
+    asset.isDirectory = asset.isRoot ? true : asset.isDirectory;
+    asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
     // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
-    asset.readOnly = asset.lock || asset.isRoot || asset.isSubAsset ? true : false; // 根节点和 subAssets 都只读
+    asset.readOnly = (asset.lock || asset.isSubAsset) ? true : false; // 根节点和 subAssets 都只读
     asset.state = '';
 }
 

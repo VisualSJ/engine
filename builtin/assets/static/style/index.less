@@ -88,24 +88,12 @@
     .select-box {
         opacity: 0;
         position: absolute;
-        z-index: 0;
+        z-index: 1;
         pointer-events: none;
         width: 100%;
-        border-left: 3px solid @drag-bgcolor;
-        border-right: 3px solid @drag-bgcolor;
-        border-bottom: 3px solid @drag-bgcolor;
+        border: 2px solid @drag-bgcolor;
         box-sizing: border-box;
-        transition: 0.3s all;
-        transition-delay: 0.1s;
-        &:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 20px;
-            background-color: @drag-bgcolor;
-        }
+        transition: 0.3s all ease-in-out;
     }
 }
 
