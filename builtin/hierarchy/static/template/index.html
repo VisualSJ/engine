@@ -1,14 +1,20 @@
 <div class="hierarchy">
     <header class="header">
         <i class="i-add"
+            :title="t('menu.createMenu', language)"
             @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="search" @keydown.stop></ui-input>
+        <ui-input tabindex="-1" ref="search" 
+            @keydown.stop
+            :placeholder="t('menu.searchPlaceholder', language)"
+        ></ui-input>
         <i class="expand"
             :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
+            :title="t('menu.'+(!allExpand?'allExpand':'allCollapse'), language)"
             @click="allToggle"
         ></i>
         <i class="i-refresh"
+            :title="t('menu.refresh', language)"
             @click="refresh"
         ></i>
     </header>

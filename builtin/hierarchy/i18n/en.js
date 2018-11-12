@@ -4,8 +4,12 @@ module.exports = {
     title: 'Hierarchy',
 
     menu: {
+        createMenu: 'Create Node',
         searchPlaceholder: 'Search...',
         search: 'Search',
+        refresh: 'Refresh',
+        allExpand: 'All Expand',
+        allCollapse: 'All Collapse',
 
         newNode: 'Create',
         newNodeEmpty: 'Empty Node',
@@ -14,6 +18,6 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
-        consoleLog: 'Console log UUID',
+        showUuid: 'Show Node UUID and PAth',
     }
 };

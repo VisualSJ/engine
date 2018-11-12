@@ -115,7 +115,7 @@ export const methods = {
                 },
                 { type: 'separator' },
                 {
-                    label: Editor.I18n.t('hierarchy.menu.consoleLog'),
+                    label: Editor.I18n.t('hierarchy.menu.showUuid'),
                     click() {
                         console.info(`UUID: ${node.uuid}`);
                     },

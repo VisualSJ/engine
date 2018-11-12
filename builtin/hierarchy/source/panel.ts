@@ -195,6 +195,7 @@ export async function ready() {
             tree: require('./components/tree'),
         },
         data: {
+            language: 'default',
             ready: false,
             state: '',
             allExpand: true,
@@ -230,6 +231,14 @@ export async function ready() {
             });
         },
         methods: {
+            /**
+             * 翻译
+             * @param {*} language
+             * @param {*} key
+             */
+            t(key: string, language: string) {
+                return Editor.I18n.t(`hierarchy.${key}`);
+            },
             /**
              * 刷新数据
              */

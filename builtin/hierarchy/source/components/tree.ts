@@ -300,7 +300,7 @@ export const methods = {
             // @ts-ignore
             this.$nextTick(() => {
                 // @ts-ignore 检查是否需要重名命
-                if (this.newNodeNeedToRename && !newNode.invalid) {
+                if (this.newNodeNeedToRename && !newNode.readOnly) {
                     newNode.state = 'input';
                 }
             });
@@ -898,78 +898,78 @@ export const methods = {
  * 计算所有树形资源的位置数据，这一结果用来做快速检索
  * 重点是设置 nodesMap 数据
  * 返回当前序号
- * @param obj
+ * @param nodes
  * @param index 资源的序号
  * @param depth 资源的层级
  */
-function calcNodePosition(obj = treeData, index = 0, depth = 0) {
-    if (!obj || !Array.isArray(obj.children)) {
+function calcNodePosition(nodes = treeData, index = 0, depth = 0) {
+    if (!nodes || !Array.isArray(nodes.children)) {
         return index;
     }
 
-    obj.children.forEach((one: ItreeNode) => {
-        if (!one) {
+    nodes.children.forEach((node: ItreeNode) => {
+        if (!node) {
             return;
         }
 
         const start = index * nodeHeight;  // 起始位置
 
         // 扩展属性
-        one.depth = depth;
-        one.top = start;
-        one.left = depth * iconWidth + padding;
-        one.state = one.state ? one.state : '';
-        one.isParent = one.children && one.children.length > 0 ? true : false;
-        one.parentUuid = obj.uuid;
+        node.depth = depth;
+        node.top = start;
+        node.left = depth * iconWidth + padding;
+        node.state = node.state ? node.state : '';
+        node.isParent = node.children && node.children.length > 0 ? true : false;
+        node.parentUuid = nodes.uuid;
 
-        if (vm.folds[one.uuid] === undefined) {
-            vm.folds[one.uuid] = one.isParent ? true : false;
+        if (vm.folds[node.uuid] === undefined) {
+            vm.folds[node.uuid] = node.isParent ? true : false;
         }
 
-        if (one.isExpand === undefined) {
-            Object.defineProperty(one, 'isExpand', {
+        if (node.isExpand === undefined) {
+            Object.defineProperty(node, 'isExpand', {
                 configurable: true,
                 enumerable: true,
                 get() {
-                    return vm.folds[one.uuid];
+                    return vm.folds[node.uuid];
                 },
                 set(val) {
-                    vm.folds[one.uuid] = val;
+                    vm.folds[node.uuid] = val;
                 },
             });
         }
 
-        if (one.height === undefined) {
-            Object.defineProperty(one, 'height', {
+        if (node.height === undefined) {
+            Object.defineProperty(node, 'height', {
                 configurable: true,
                 enumerable: true,
                 get() {
                     return this._height;
                 },
-                set: addHeight.bind(one),
+                set: addHeight.bind(node),
             });
         }
 
         if (vm.search === '') { // 没有搜索
             vm.state = vm.state === 'search' ? '' : vm.state;
-            nodesMap.set(start, one);
+            nodesMap.set(start, node);
             index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
 
-            if (one.isParent && one.isExpand === true) { // 没有搜索的时候只需要计算已展开的层级
+            if (node.isParent && node.isExpand === true) { // 没有搜索的时候只需要计算已展开的层级
                 // depth 是该节点的层级
-                index = calcNodePosition(one, index, depth + 1);
+                index = calcNodePosition(node, index, depth + 1);
             }
         } else { // 有搜索
             vm.state = 'search';
             // @ts-ignore
-            if (!one.invalid && one.name.search(vm.search) !== -1) { // 平级保存
-                one.depth = 1; // 平级保存
-                nodesMap.set(start, one);
+            if (!one.readOnly && one.name.search(vm.search) !== -1) { // 平级保存
+                node.depth = 1; // 平级保存
+                nodesMap.set(start, node);
                 index++;
             }
 
-            if (one.isParent) { // 有搜索的时候，只要有层级的都要计算
-                index = calcNodePosition(one, index, 0);
+            if (node.isParent) { // 有搜索的时候，只要有层级的都要计算
+                index = calcNodePosition(node, index, 0);
             }
         }
     });
@@ -987,10 +987,10 @@ function addHeight(add: number) {
         this._height += nodeHeight * add;
 
         // 触发其父级高度也增加
-        for (const [top, asset] of nodesMap) {
+        for (const [top, node] of nodesMap) {
             // @ts-ignore
-            if (this.parentUuid === asset.uuid) {
-                asset.height = add;
+            if (this.parentUuid === node.uuid) {
+                node.height = add;
                 break;
             }
         }
@@ -1096,7 +1096,7 @@ function getValidNode(uuid: string) {
         }
     }
 
-    if (!node || node.invalid) { // 资源不可用
+    if (!node || node.readOnly) { // 资源不可用
         return;
     }
 
@@ -1159,7 +1159,7 @@ function addNodeIntoTree(dumpData: any) {
         children: [],
         type: dumpData.__type__,
 
-        invalid: false,
+        readOnly: false,
         isLock: false,
         isParent: false,
         top: 0,
