@@ -1,6 +1,11 @@
 'use strict';
-const {basename, extname} = require('path');
-const { readTemplate, readComponent, T, buildProp } = require('../../../utils');
+const { basename, extname } = require('path');
+const {
+    readTemplate,
+    readComponent,
+    T,
+    buildProp
+} = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
 
@@ -25,8 +30,13 @@ exports.watch = {
 };
 
 exports.created = async function() {
-    const userScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-    this.userScripts = userScripts.filter((item) => item.importer.includes('javascript'));
+    const userScripts = await Editor.Ipc.requestToPackage(
+        'asset-db',
+        'query-assets'
+    );
+    this.userScripts = userScripts.filter((item) =>
+        item.importer.includes('javascript')
+    );
 };
 
 exports.methods = {
@@ -37,7 +47,11 @@ exports.methods = {
      */
     async refresh() {
         // todo diff
-        const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', this.uuid);
+        const dump = await Editor.Ipc.requestToPackage(
+            'scene',
+            'query-node',
+            this.uuid
+        );
 
         Object.keys(dump).forEach((key) => {
             if (key[0] === '_') {
@@ -69,7 +83,9 @@ exports.methods = {
      * @param {*} dump
      */
     onPropertyChanged(event) {
-        const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
+        const dump = event.detail
+            ? event.detail.dump
+            : event.target.__vue__.dump;
 
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
@@ -91,20 +107,26 @@ exports.methods = {
     addCompPopup(event) {
         const { left, bottom } = event.target.getBoundingClientRect();
         const {
-           node: { uuid: { value: uuid }},
-           userScripts
+            node: {
+                uuid: { value: uuid }
+            },
+            userScripts
         } = this;
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
         const submenu = userScripts.map((item) => {
-            const {source, uuid: component} = item;
+            const { source, uuid: component } = item;
             const label = basename(source, extname(source));
             return {
                 label,
                 click() {
-                    Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                    Editor.Ipc.sendToPanel(
+                        'scene',
+                        'create-component',
+                        this.params
+                    );
                 },
-                params: {uuid, component}
+                params: { uuid, component }
             };
         });
 
@@ -118,23 +140,44 @@ exports.methods = {
                         {
                             label: 'Box Collider',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.BoxCollider' }
+                            params: {
+                                uuid,
+                                component: 'cc.BoxCollider'
+                            }
                         },
                         {
                             label: 'Circle Collider',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.CircleCollider' }
+                            params: {
+                                uuid,
+                                component: 'cc.CircleCollider'
+                            }
                         },
                         {
                             label: 'Polygon Collider',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.PolygonCollider' }
+                            params: {
+                                uuid,
+                                component: 'cc.PolygonCollider'
+                            }
                         }
                     ]
                 },
@@ -144,30 +187,55 @@ exports.methods = {
                         {
                             label: 'Animation',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.Animation' }
+                            params: {
+                                uuid,
+                                component: 'cc.Animation'
+                            }
                         },
                         {
                             label: 'AudioSource',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.AudioSource' }
+                            params: {
+                                uuid,
+                                component: 'cc.AudioSource'
+                            }
                         },
                         {
                             label: 'Camera',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Camera' }
                         },
                         {
                             label: 'MotionStreak',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.MotionStreak' }
+                            params: {
+                                uuid,
+                                component: 'cc.MotionStreak'
+                            }
                         }
                     ]
                 },
@@ -181,30 +249,62 @@ exports.methods = {
                                 {
                                     label: 'Box',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.PhysicsBoxCollider' }
+                                    params: {
+                                        uuid,
+                                        component:
+                                            'cc.PhysicsBoxCollider'
+                                    }
                                 },
                                 {
                                     label: 'Chain',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.PhysicsChainCollider' }
+                                    params: {
+                                        uuid,
+                                        component:
+                                            'cc.PhysicsChainCollider'
+                                    }
                                 },
                                 {
                                     label: 'Circle',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.PhysicsCircleCollider' }
+                                    params: {
+                                        uuid,
+                                        component:
+                                            'cc.PhysicsCircleCollider'
+                                    }
                                 },
                                 {
                                     label: 'Polygon',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.PhysicsPolygonCollider' }
+                                    params: {
+                                        uuid,
+                                        component:
+                                            'cc.PhysicsPolygonCollider'
+                                    }
                                 }
                             ]
                         },
@@ -214,67 +314,130 @@ exports.methods = {
                                 {
                                     label: 'Distance',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.DistanceJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.DistanceJoint'
+                                    }
                                 },
                                 {
                                     label: 'Motor',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.MotorJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.MotorJoint'
+                                    }
                                 },
                                 {
                                     label: 'Mouse',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.MouseJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.MouseJoint'
+                                    }
                                 },
                                 {
                                     label: 'Prismatic',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.PrismaticJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.PrismaticJoint'
+                                    }
                                 },
                                 {
                                     label: 'Revolute',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.RevoluteJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.RevoluteJoint'
+                                    }
                                 },
                                 {
                                     label: 'Rope',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.RopeJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.RopeJoint'
+                                    }
                                 },
                                 {
                                     label: 'Weld',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.WeldJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.WeldJoint'
+                                    }
                                 },
                                 {
                                     label: 'Wheel',
                                     click() {
-                                        Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                        Editor.Ipc.sendToPanel(
+                                            'scene',
+                                            'create-component',
+                                            this.params
+                                        );
                                     },
-                                    params: { uuid, component: 'cc.WheelJoint' }
+                                    params: {
+                                        uuid,
+                                        component: 'cc.WheelJoint'
+                                    }
                                 }
                             ]
                         },
                         {
                             label: 'Rigid Body',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.RigidBody' }
+                            params: {
+                                uuid,
+                                component: 'cc.RigidBody'
+                            }
                         }
                     ]
                 },
@@ -284,77 +447,136 @@ exports.methods = {
                         {
                             label: 'DragonBones',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.DragonBones' }
+                            params: {
+                                uuid,
+                                component: 'cc.DragonBones'
+                            }
                         },
                         {
                             label: 'Graphics',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Graphics' }
                         },
                         {
                             label: 'Label',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Label' }
                         },
                         {
                             label: 'LabelOutline',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.LabelOutline' }
+                            params: {
+                                uuid,
+                                component: 'cc.LabelOutline'
+                            }
                         },
                         {
                             label: 'Mask',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Mask' }
                         },
                         {
                             label: 'ParticleSystem',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ParticleSystem' }
+                            params: {
+                                uuid,
+                                component: 'cc.ParticleSystem'
+                            }
                         },
                         {
                             label: 'RichText',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.RichText' }
                         },
                         {
                             label: 'Spine Skeleton',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.SpineSkeleton' }
+                            params: {
+                                uuid,
+                                component: 'cc.SpineSkeleton'
+                            }
                         },
                         {
                             label: 'Sprite',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Sprite' }
                         },
                         {
                             label: 'SpriteDistortion',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.SpriteDistortion' }
+                            params: {
+                                uuid,
+                                component: 'cc.SpriteDistortion'
+                            }
                         },
                         {
                             label: 'TiledMap',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.TiledMap' }
                         }
@@ -370,119 +592,211 @@ exports.methods = {
                         {
                             label: 'Block Input Events',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.BlockInputEvents' }
+                            params: {
+                                uuid,
+                                component: 'cc.BlockInputEvents'
+                            }
                         },
                         {
                             label: 'Button',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Button' }
                         },
                         {
                             label: 'Canvas',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Canvas' }
                         },
                         {
                             label: 'EditBox',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.EditBox' }
                         },
                         {
                             label: 'Layout',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Layout' }
                         },
                         {
                             label: 'PageView',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.PageView' }
                         },
                         {
                             label: 'PageViewIndicator',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.PageViewIndicator' }
+                            params: {
+                                uuid,
+                                component: 'cc.PageViewIndicator'
+                            }
                         },
                         {
                             label: 'ProgressBar',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ProgressBar' }
+                            params: {
+                                uuid,
+                                component: 'cc.ProgressBar'
+                            }
                         },
                         {
                             label: 'ScrollBar',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ScrollBar' }
+                            params: {
+                                uuid,
+                                component: 'cc.ScrollBar'
+                            }
                         },
                         {
                             label: 'ScrollView',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ScrollView' }
+                            params: {
+                                uuid,
+                                component: 'cc.ScrollView'
+                            }
                         },
                         {
                             label: 'Slider',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Slider' }
                         },
                         {
                             label: 'Toggle',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Toggle' }
                         },
                         {
                             label: 'ToggleContainer',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ToggleContainer' }
+                            params: {
+                                uuid,
+                                component: 'cc.ToggleContainer'
+                            }
                         },
                         {
                             label: 'ToggleGroup (Legacy)',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.ToggleGroup' }
+                            params: {
+                                uuid,
+                                component: 'cc.ToggleGroup'
+                            }
                         },
                         {
                             label: 'VideoPlayer',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
-                            params: { uuid, component: 'cc.VideoPlayer' }
+                            params: {
+                                uuid,
+                                component: 'cc.VideoPlayer'
+                            }
                         },
                         {
                             label: 'WebView',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.WebView' }
                         },
                         {
                             label: 'Widget',
                             click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                                Editor.Ipc.sendToPanel(
+                                    'scene',
+                                    'create-component',
+                                    this.params
+                                );
                             },
                             params: { uuid, component: 'cc.Widget' }
                         }

@@ -21,7 +21,7 @@ exports.mounted = function() {
     this.updateText();
 };
 
-exports.watch = { type: this.updateText, path: this.updateText };
+exports.watch = { type: 'updateText', path: 'updateText' };
 
 exports.methods = {
     updateText() {
@@ -32,7 +32,9 @@ exports.methods = {
     },
     highlightCode() {
         const es = require('event-stream');
-        const readStream = createReadStream(this.path, { encoding: 'utf-8' });
+        const readStream = createReadStream(this.path, {
+            encoding: 'utf-8'
+        });
         let remainLines = 400;
         let text = '';
         const writeStream = readStream

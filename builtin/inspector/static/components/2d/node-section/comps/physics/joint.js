@@ -18,33 +18,45 @@ exports.methods = {
 
     prevRigidBody() {
         // todo
-        const {
-            node: {
-                value: { uuid }
-            }
-        } = this.target;
+        const { connectedBody } = this.target;
         const { index } = this.$parent;
 
-        Editor.Ipc.sendToPanel('scene', 'choose-rigid-body', {
-            uuid,
-            index,
-            position: 'prev'
+        const customEvent = new CustomEvent('property-changed', {
+            bubbles: true,
+            detail: {
+                dump: {
+                    type: 'choose-rigid-body',
+                    path: connectedBody.path,
+                    value: {
+                        index,
+                        position: 'prev'
+                    }
+                }
+            }
         });
+
+        this.$el.dispatchEvent(customEvent);
     },
 
     nextRigidBody() {
         // todo
-        const {
-            node: {
-                value: { uuid }
-            }
-        } = this.target;
+        const { connectedBody } = this.target;
         const { index } = this.$parent;
 
-        Editor.Ipc.sendToPanel('scene', 'choose-rigid-body', {
-            uuid,
-            index,
-            position: 'next'
+        const customEvent = new CustomEvent('property-changed', {
+            bubbles: true,
+            detail: {
+                dump: {
+                    type: 'choose-rigid-body',
+                    path: connectedBody.path,
+                    value: {
+                        index,
+                        position: 'next'
+                    }
+                }
+            }
         });
+
+        this.$el.dispatchEvent(customEvent);
     }
 };

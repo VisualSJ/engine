@@ -24,21 +24,32 @@ class View extends window.HTMLElement {
      */
     async init() {
         // 根据项目类型初始化 webview
-        let preload = join(__dirname, `./${Editor.Project.type}/preload.js`);
+        let preload = join(
+            __dirname,
+            `./${Editor.Project.type}/preload.js`
+        );
         this.$scene.setAttribute('nodeintegration', '');
         this.$scene.setAttribute('preload', `file://${preload}`);
         this.$scene.setAttribute('disablewebsecurity', '');
         this.appendChild(this.$scene);
 
         // 查询引擎数据, 并指定 webview 加载
-        this.info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+        this.info = await Editor.Ipc.requestToPackage(
+            'engine',
+            'query-info',
+            Editor.Project.type
+        );
         this.version = this.info.version;
 
         // 初始化 ipc 监听
         initIpc(this);
 
         // 载入指定页面
-        this.$scene.loadURL(`packages://scene/static/template/${Editor.Project.type}-webview.html`);
+        this.$scene.loadURL(
+            `packages://scene/static/template/${
+                Editor.Project.type
+            }-webview.html`
+        );
     }
 
     /**
@@ -58,7 +69,7 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module,
             handler,
-            params,
+            params
         });
     }
 
@@ -72,7 +83,11 @@ class View extends window.HTMLElement {
         }
         this.uuid = uuid;
         await this.closeScene();
-        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        const asset = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-info',
+            uuid
+        );
 
         this.dirty = false;
         return await this.ipc.send('call-method', {
@@ -95,12 +110,19 @@ class View extends window.HTMLElement {
         // 如果 uuid 不存在，则是一个新场景
         if (this.uuid) {
             // 如果 uuid 存在，则获取 asset 信息，直接修改对应的文件
-            const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid);
+            const asset = await Editor.Ipc.requestToPackage(
+                'asset-db',
+                'query-asset-info',
+                this.uuid
+            );
 
             // 如果资源存在，则直接覆盖
             // 但如果资源已经被删除，则应该以新场景的方式处理
             if (asset) {
-                let url = asset.source.replace('db:/', Editor.Project.path);
+                let url = asset.source.replace(
+                    'db:/',
+                    Editor.Project.path
+                );
                 await outputFile(url, txt);
                 console.log(`Save scene: ${asset.source}`);
                 return;
@@ -108,9 +130,22 @@ class View extends window.HTMLElement {
         }
 
         // todo 弹窗
-        const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', 'db://assets/NewScene.scene', txt);
-        this.uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);
-        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid);
+        const source = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'create-asset',
+            'db://assets/NewScene.scene',
+            txt
+        );
+        this.uuid = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-uuid',
+            source
+        );
+        const asset = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-info',
+            this.uuid
+        );
         this.dirty = false;
         console.log(`Save scene: ${asset.source}`);
     }
@@ -151,7 +186,13 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'insertArrayElement',
-            params: [options.uuid, options.path, options.key, options.index, options.dump]
+            params: [
+                options.uuid,
+                options.path,
+                options.key,
+                options.index,
+                options.dump
+            ]
         });
     }
 
@@ -163,7 +204,12 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'moveArrayElement',
-            params: [options.uuid, options.path, options.target, options.offset]
+            params: [
+                options.uuid,
+                options.path,
+                options.target,
+                options.offset
+            ]
         });
     }
 
@@ -253,19 +299,11 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'excuteComponentMethod',
-            params: [options.uuid, options.index, ...options.methodNames]
-        });
-    }
-
-    /**
-     * 选择指定 rigid
-     */
-    async chooseRigidBody(options) {
-        this.dirty = true;
-        return await this.ipc.send('call-method', {
-            module: 'Scene',
-            handler: 'chooesRigidBody',
-            params: [options.uuid, options.index, options.position]
+            params: [
+                options.uuid,
+                options.index,
+                ...options.methodNames
+            ]
         });
     }
 
@@ -393,7 +431,7 @@ async function initIpc(elem) {
         return {
             path: elem.info.path,
             utils: elem.info.utils,
-            compile: elem.info.compile,
+            compile: elem.info.compile
         };
     });
 
@@ -405,12 +443,17 @@ async function initIpc(elem) {
     // 查询当前 asset 数据库使用的脚本文件
     elem.ipc.on('query-scripts', async () => {
         // 加载项目脚本
-        const assets = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-        const scripts = assets.map((asset) => {
-            if (asset.importer === 'javascript') {
-                return asset.uuid;
-            }
-        }).filter(Boolean);
+        const assets = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-assets'
+        );
+        const scripts = assets
+            .map((asset) => {
+                if (asset.importer === 'javascript') {
+                    return asset.uuid;
+                }
+            })
+            .filter(Boolean);
 
         return scripts;
     });
@@ -420,18 +463,32 @@ async function initIpc(elem) {
 
     // 转发查询 asset 数据消息
     elem.ipc.on('query-asset-info', async (uuid) => {
-        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        return Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-info',
+            uuid
+        );
     });
 
     // 转发选中节点消息
     elem.ipc.on('select-nodes', (uuids) => {
         uuids.forEach((uuid) => {
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+            Editor.Ipc.sendToPackage(
+                'selection',
+                'select',
+                'node',
+                uuid
+            );
         });
     });
     elem.ipc.on('unselect-nodes', (uuids) => {
         uuids.forEach((uuid) => {
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+            Editor.Ipc.sendToPackage(
+                'selection',
+                'unselect',
+                'node',
+                uuid
+            );
         });
     });
 

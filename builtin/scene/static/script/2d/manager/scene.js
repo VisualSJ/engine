@@ -74,7 +74,7 @@ async function serialize() {
  * 关闭一个场景
  */
 function close() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         setTimeout(() => {
             resolve();
         }, 300);
@@ -102,7 +102,7 @@ function queryNodeTree(uuid) {
      * 逐步打包数据
      * @param node
      */
-    const step = node => {
+    const step = (node) => {
         if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
             return null;
         }
@@ -151,34 +151,6 @@ function queryNodePath(uuid) {
         node = node.parent;
     }
     return names.join('/');
-}
-
-/**
- * 选择对应的 rigid
- * @param {*} uuid
- * @param {*} index
- * @param {*} position
- * @returns
- */
-function chooesRigidBody(uuid, index, position) {
-    const node = manager.node.query(uuid);
-    if (!node) {
-        console.warn(
-            `Choose rigid body failed: ${uuid} does not exist`
-        );
-        return;
-    }
-
-    const component = node._components[index];
-    const targetNode = manager.node.querySiblingNodeByPosition(
-        uuid,
-        position
-    );
-    if (component && targetNode) {
-        component.connectedBody = targetNode.getComponent(
-            cc.RigidBody
-        );
-    }
 }
 
 function queryComponentFunctionOfNode(uuid) {
@@ -358,7 +330,7 @@ function excuteComponentMethod(uuid, index, ...rest) {
     }
     const component = node._components[index];
     if (component) {
-        rest.map(fn => {
+        rest.map((fn) => {
             if (typeof component[fn] === 'function') {
                 component[fn]();
             }
@@ -449,7 +421,5 @@ module.exports = {
     // 移除节点
     removeNode,
     // 执行组件方法
-    excuteComponentMethod,
-    // 选择对应 rigid
-    chooesRigidBody
+    excuteComponentMethod
 };

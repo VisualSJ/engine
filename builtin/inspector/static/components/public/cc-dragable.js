@@ -22,7 +22,7 @@ exports.template = `
     <div class="value" v-if="dump">
         <ui-drag-object
             :dropable="dump.type"
-            :value="dump.value.uuid || false"
+            :value="dump.value.uuid || ''"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
             @confirm="_onConfirm"
@@ -33,7 +33,7 @@ exports.template = `
     <div class="value" v-else>
         <ui-drag-object
             :type="type"
-            :value="metaVal || false"
+            :value="metaVal || ''"
             :disabled="disabled"
             :readonly="readonly"
             @confirm="_onConfirm"
@@ -73,16 +73,18 @@ exports.computed = {
     metaVal: {
         get() {
             if (this.path) {
-                return (this.path + '').split('.').reduce((prev, next) => {
-                    if (prev) {
-                        try {
-                            return prev[next];
-                        } catch (err) {
-                            console.error(err);
-                            return void 0;
+                return (this.path + '')
+                    .split('.')
+                    .reduce((prev, next) => {
+                        if (prev) {
+                            try {
+                                return prev[next];
+                            } catch (err) {
+                                console.error(err);
+                                return void 0;
+                            }
                         }
-                    }
-                }, this.meta);
+                    }, this.meta);
             }
         },
         set(newVal) {
@@ -100,7 +102,9 @@ exports.computed = {
                     }
                 }, this.meta);
                 if (target) {
-                    target.hasOwnProperty(key) ? (target[key] = newVal) : this.$set(target, key, newVal);
+                    target.hasOwnProperty(key)
+                        ? (target[key] = newVal)
+                        : this.$set(target, key, newVal);
                 }
             }
         }
@@ -112,7 +116,9 @@ exports.methods = {
      * 向上传递修改事件
      */
     dispatch() {
-        const eventType = this.dump ? 'property-changed' : 'meta-changed';
+        const eventType = this.dump
+            ? 'property-changed'
+            : 'meta-changed';
         const evt = document.createEvent('HTMLEvents');
         evt.initEvent(eventType, true, true);
         this.$el.dispatchEvent(evt);
@@ -122,7 +128,7 @@ exports.methods = {
      * value 修改
      */
     _onConfirm(event) {
-        const {value: uuid} = event.target;
+        const { value: uuid } = event.target;
         if (this.dump) {
             this.dump.value.uuid = uuid;
         } else {

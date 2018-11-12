@@ -58,12 +58,6 @@ interface ExcuteComponentMethodOptions {
     methodNames: string[];
 }
 
-interface ChooseRigidBodyOptions {
-    uuid: string;
-    index: number;
-    position: string | number;
-}
-
 interface NodeDump {
     uuid: PropertyDump;
 

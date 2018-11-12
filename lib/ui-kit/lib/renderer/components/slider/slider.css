@@ -68,3 +68,9 @@
 :host([focused]:not([disabled])) .input {
   border-color: var(--focus-c);
 }
+:host([hide-num-input]) .input {
+  display: none;
+}
+:host([hide-num-input]) .track {
+  width: 100%;
+}

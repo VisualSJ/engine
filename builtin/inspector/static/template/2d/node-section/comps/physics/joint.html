@@ -15,8 +15,9 @@
     </cc-dragable>
 
     <template v-for="(prop, key) in target">
+        <!-- todo name shouid be Connect Body -->
         <component
-            v-if="prop.visible !== false && prop.name !== 'Connected Body' && prop.compType"
+            v-if="prop.visible !== false && prop.name !== 'connectedBody' && prop.compType"
             :is="prop.compType"
             :name="prop.name"
             :dump="prop"

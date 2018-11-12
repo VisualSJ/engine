@@ -3,15 +3,24 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-window.customElements.define('engine-view', require('../static/script/engine-element.js'));
+window.customElements.define(
+    'engine-view',
+    require('../static/script/engine-element.js')
+);
 
 let isAssetReady: boolean = false;
 let panel: any = null;
-const profile = Editor.Profile.load('profile://local/packages/scene.json');
+const profile = Editor.Profile.load(
+    'profile://local/packages/scene.json'
+);
 
-export const style = readFileSync(join(__dirname, '../dist/index.css'));
+export const style = readFileSync(
+    join(__dirname, '../dist/index.css')
+);
 
-export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
+export const template = readFileSync(
+    join(__dirname, '../static', '/template/index.html')
+);
 
 export const $ = {
     loading: '.loading',
@@ -86,11 +95,10 @@ export const methods = {
      */
     async redo() {
         await panel.$.scene.redo();
-    },
+    }
 };
 
 export const messages = {
-
     /**
      * 场景准备就绪
      */
@@ -152,9 +160,13 @@ export const messages = {
      * 资源更改
      */
     async 'asset-db:asset-add'(uuid: string) {
-        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        const info = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-asset-info',
+            uuid
+        );
         if (info.importer === 'javascript') {
-            panel.$.scene.loadScripts({ uuids: [uuid], });
+            panel.$.scene.loadScripts({ uuids: [uuid] });
         }
     },
 
@@ -219,7 +231,10 @@ export const messages = {
             if (node) {
                 const parentUuid = node.parent.value.uuid;
                 panel.recordHistory(parentUuid);
-                Editor.Ipc.sendToAll('scene:node-changed', parentUuid);
+                Editor.Ipc.sendToAll(
+                    'scene:node-changed',
+                    parentUuid
+                );
             }
         }
 
@@ -303,17 +318,10 @@ export const messages = {
      * 执行 entity 上指定组件的方法
      * @param options 执行组件方法的参数
      */
-    async 'excute-component-method'(options: ExcuteComponentMethodOptions) {
+    async 'excute-component-method'(
+        options: ExcuteComponentMethodOptions
+    ) {
         await panel.$.scene.excuteComponentMethod(options);
-        panel.recordHistory(options.uuid);
-    },
-
-    /**
-     * 选择指定位置的 rigid
-     * @param options 选择 rigid 的参数
-     */
-    async 'choose-rigid-body'(options: ChooseRigidBodyOptions) {
-        await panel.$.scene.chooseRigidBody(options);
         panel.recordHistory(options.uuid);
     },
 
@@ -372,8 +380,7 @@ export const messages = {
      */
     redo() {
         panel.redo();
-    },
-
+    }
 };
 
 export async function ready() {
@@ -381,7 +388,10 @@ export async function ready() {
     panel = this;
 
     // 检查 asset db 是否准备就绪
-    isAssetReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    isAssetReady = await Editor.Ipc.requestToPackage(
+        'asset-db',
+        'query-is-ready'
+    );
 
     // 初始化引擎管理器
     await panel.$.scene.init();
@@ -402,7 +412,9 @@ export async function beforeClose() {
     if (panel.$.scene.dirty) {
         const code = await Editor.Dialog.show({
             title: Editor.I18n.t('scene.messages.waning'),
-            message: Editor.I18n.t('scene.messages.scenario_modified'),
+            message: Editor.I18n.t(
+                'scene.messages.scenario_modified'
+            ),
             detail: Editor.I18n.t('scene.messages.want_to_save'),
             type: 'warning',
 
@@ -412,8 +424,8 @@ export async function beforeClose() {
             buttons: [
                 Editor.I18n.t('scene.messages.save'),
                 Editor.I18n.t('scene.messages.dont_save'),
-                Editor.I18n.t('scene.messages.cancel'),
-            ],
+                Editor.I18n.t('scene.messages.cancel')
+            ]
         });
 
         switch (code) {

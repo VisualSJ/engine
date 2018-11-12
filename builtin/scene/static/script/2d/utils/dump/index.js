@@ -306,8 +306,22 @@ async function restoreProperty(node, path, dump) {
             });
             break;
         }
-        case 'enums':
-            dump.value -= 0;
+        case 'enums': {
+            !isNaN(Number(dump.value)) && (dump.value -= 0);
+        }
+        case 'choose-rigid-body': {
+            const { position, index } = dump.value;
+            let targetNode = manager.node.querySiblingNodeByPosition(
+                node.uuid,
+                position
+            );
+            if (!targetNode) {
+                return;
+            }
+            property[key] = targetNode.getComponent(cc.RigidBody);
+
+            break;
+        }
         default:
             property[key] = dump.value;
     }
