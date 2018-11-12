@@ -2,12 +2,12 @@
 // --focus-c: focus 颜色设定
 // --hover-c hover 颜色设定
 // --default-c 默认字体颜色
+// --cursor-size 拖动小按钮的尺寸大小
 
 :host {
     position: relative;
     height: 1.8em;
     min-width: 150px;
-    padding: 0.1em;
     white-space: nowrap;
     .wrap {
         height: 100%;
@@ -35,8 +35,8 @@
         div {
             box-sizing: border-box;
             background: var(--main-dark-bg, #333);
-            width: 0.7em;
-            height: 0.7em;
+            width: var(--cursor-size, 9px);
+            height: var(--cursor-size, 9px);;
             box-shadow: 0 1px 3px 1px #000 inset, 0 1px 1px 0 rgba(0, 0, 0, 0.9);
             border-radius: 100%;
             border: 2px solid #949494;
