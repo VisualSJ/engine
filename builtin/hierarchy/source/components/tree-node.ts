@@ -27,7 +27,7 @@ export const watch = {
             // @ts-ignore
             const node = this.node;
             // @ts-ignore
-            this.draggable = (node.state !== '' || node.invalid) ? false : true;
+            this.draggable = (node.state !== '' || node.readOnly) ? false : true;
             // @ts-ignore
             if (node.state === 'input') {
                 // @ts-ignore 选中该节点
@@ -57,7 +57,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        if (node.invalid) { // 不需要右击菜单的情况
+        if (node.readOnly) { // 不需要右击菜单的情况
             return;
         }
 
@@ -132,7 +132,7 @@ export const methods = {
         // 必要的，配合父级容器的点击事件
         event.stopPropagation();
 
-        if (node.invalid) {
+        if (node.readOnly) {
             return;
         }
 
@@ -284,7 +284,7 @@ export const methods = {
             return;
         }
 
-        if (node.invalid) { // 不可用节点，比如 uuid 不存在
+        if (node.readOnly) { // 不可用节点，比如 uuid 不存在
             return;
         }
 
@@ -318,7 +318,7 @@ export const methods = {
 export function mounted() {
     // @ts-ignore
     const node = this.node;
-    if (node.state !== '' || node.invalid) {
+    if (node.state !== '' || node.readOnly) {
         // @ts-ignore
         this.draggable = false;
     }

@@ -316,9 +316,8 @@ export const methods = {
 
             setTimeout(() => {
                 isRequiringToAdd = false;
-            }, 1500);
+            }, 800);
         }
-
     },
 
     /**
@@ -345,7 +344,7 @@ export const methods = {
         }
 
         asset.state = 'loading';
-        
+
         const filedata = json.ext === 'folder' ? null : '';
         vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
 
