@@ -17,6 +17,7 @@ declare interface ItreeNode {
 
     // 以下是扩展的数据
     invalid: boolean; // 是否可用
+    readOnly: boolean;
     isLock: boolean; // 是否锁定
     top: number; // top 位置
     left: number; // 缩进的大小

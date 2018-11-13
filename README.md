@@ -2,13 +2,6 @@
 
 3D Editor
 
-## 新项目构建并启动
-
-```bash
-npm install
-
-```
-
 ## 初始化
 
 首先我们要安装 npm 模块，一些依赖模块包存在于公司内网 ftp 上，所以需要外网重装 npm 模块的时候可能会失败，需要做好备份。
@@ -16,6 +9,7 @@ npm install
 ```bash
 npm install
 npm run build
+npm run dev
 ```
 
 npm 版本 5 以上会使用 package-lock.json 锁定依赖库，tgz 安装包也会进行校验，所以如果 ftp 上的包更新的时候，可能会造成校验失败，这时候需要手动删除 package-lock.json 文件。
@@ -26,7 +20,7 @@ npm 版本 5 以上会使用 package-lock.json 锁定依赖库，tgz 安装包�
 package-lock=false
 ```
 
-## 构建编辑器
+### 构建编辑器
 
 编辑器内使用了部分 ts 以及 less 代码，需要在使用之前，进行构建生成可以直接运行的代码。
 
@@ -34,7 +28,7 @@ package-lock=false
 npm run build
 ```
 
-## 下载并构建引擎
+### 下载并构建引擎
 
 需要从 github clone 引擎仓库下来。
 并可执行 build 等操作。
@@ -43,7 +37,7 @@ npm run build
 npm run dev
 ```
 
-## 使用 electron 构建原生的 node 模块
+### 使用 electron 构建原生的 node 模块
 
 编辑器内使用的 nodejs 模块，可能会包含 c++ 等原生模块，而 electron 环境和本机环境有所不同，所以需要重新使用 electron 环境编译这些模块。
 
@@ -55,7 +49,7 @@ npm run dev
 npm run build:npm
 ```
 
-## 更新 ftp 上的安装包
+### 更新 ftp 上的安装包
 
 tgz 包可以通过 npm run update 进行更新：
 
@@ -65,7 +59,7 @@ npm run update @editor/dock @editor/panel
 
 命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。
 
-## 启动编辑
+### 启动编辑
 
 简单的启动预览，可以使用：
 
@@ -87,7 +81,7 @@ npm start --home /Users/name/.Editor3D
 
 所有的参数都可以复合使用，npm start 启动的时候默认带上 --dev。编辑器内部会识别为 dev 模式。
 
-## 开发 / 测试插件
+### 开发 / 测试插件
 
 插件开发过程中，可以使用独立的插件开发环境，在这个环境内，允许模拟其他插件监听消息，并发送消息给当前正在开发的插件。
 
@@ -133,7 +127,7 @@ exports.panel = [{
 
 **暂时只支持测试与插件同名的面板**
 
-## 依赖的一些环境
+### 依赖的一些环境
 
 1. 使用 npm 全局安装 typescript、tslint、electron-rebuild
 
@@ -147,7 +141,7 @@ npm install electron-rebuild -g
 
 3. 建议 vscode 的个人设置里面启用 tslint.autoFixOnSave、tslint.jsEnable
 
-## 其他参考资料
+### 其他参考资料
 
 编辑器使用的基础模块的接口说明，因为部分文档存在与 node_modules 内，所以需要在项目构建完成后才能够预览。
 
@@ -167,7 +161,7 @@ npm install electron-rebuild -g
 
 [setting - 设置管理](./node_modules/@editor/setting/README.MD)
 
-## electron 扩展模块
+### electron 扩展模块
 
 [electron-base-ipc](./node_modules/@base/electron-base-ipc/README.MD)
 
