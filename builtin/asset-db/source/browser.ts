@@ -9,7 +9,7 @@ const worker = require('@base/electron-worker');
 
 let isReady: boolean = false;
 let assetWorker: any = null;
-const assetProtocol = 'db://assets';
+const protocol = 'db://'; // 支持多 db , 不再列出具体的 db://assets 或 db://internal
 
 module.exports = {
     /**
@@ -98,6 +98,18 @@ module.exports = {
             return await assetWorker.send('asset-worker:query-asset-meta', uuid);
         },
 
+        /**
+         * 查询数据库 db 的信息
+         * @param name 可以是名称，也可以是URL
+         */
+        async 'query-database-info'(name: string) {
+            if (!assetWorker) {
+                return null;
+            }
+
+            return await assetWorker.send('asset-worker:query-database-info', name);
+        },
+
         ///////////////
         // 操作
 
@@ -111,10 +123,10 @@ module.exports = {
             if (!assetWorker) {
                 return;
             }
-            const dir = join(Editor.Project.path, 'assets');
             const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
 
-            const file = join(dir, info.source.replace(assetProtocol, ''));
+            const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
+            const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));
             // 如果不存在，停止操作
             if (!existsSync(file)) {
                 return;
@@ -138,13 +150,14 @@ module.exports = {
             if (!assetWorker) {
                 return;
             }
-            if (!url.startsWith(assetProtocol)) {
-                throw new Error('Must be prefixed with db://assets');
+            if (!url.startsWith(protocol)) {
+                throw new Error('Must be prefixed with db://');
             }
 
+            const dbInfo = await assetWorker.send('asset-worker:query-database-info', url);
+
             // 文件目录路径
-            const dirname = join(Editor.Project.path, 'assets');
-            let file = join(dirname, url.substr(assetProtocol.length));
+            let file = join(dbInfo.target, url.substr(dbInfo.protocol.length));
 
             // 获取可以使用的文件名
             file = getName(file);
@@ -156,7 +169,8 @@ module.exports = {
             }
 
             // 返回插入的文件地址
-            return 'db://' + relative(Editor.Project.path, file).replace(/\\/g, '/');
+            const fileUrl = file.replace(dbInfo.target, dbInfo.protocol).replace(/\\/g, '/');
+            return fileUrl;
         },
 
         /**
@@ -169,16 +183,17 @@ module.exports = {
                 return;
             }
 
-            if (!to.startsWith(assetProtocol)) {
-                throw new Error('Must be prefixed with db://assets');
+            if (!to.startsWith(protocol)) {
+                throw new Error('Must be prefixed with db://');
             }
 
-            const dirname = join(Editor.Project.path, 'assets');
+            const dbInfo = await assetWorker.send('asset-worker:query-database-info', url);
+            const dbInfoTo = await assetWorker.send('asset-worker:query-database-info', to);
 
-            let dest = join(dirname, to.substr(assetProtocol.length));
+            let dest = join(dbInfoTo.target, to.substr(dbInfoTo.protocol.length));
 
-            if (url.startsWith(assetProtocol)) {
-                url = join(dirname, url.substr(assetProtocol.length));
+            if (url.startsWith(protocol)) {
+                url = join(dbInfo.target, url.substr(dbInfo.protocol.length));
             }
 
             // 如果其中一个数据是错误的，则停止操作
@@ -205,7 +220,8 @@ module.exports = {
             });
 
             // 返回插入的文件地址
-            return 'db://' + relative(Editor.Project.path, to).replace(/\\/g, '/');
+            const fileUrl = dest.replace(dbInfoTo.target, dbInfoTo.protocol).replace(/\\/g, '/');
+            return fileUrl;
         },
 
         /**
@@ -260,10 +276,12 @@ module.exports = {
             if (!assetWorker) {
                 return;
             }
-            const dir = join(Editor.Project.path, 'assets');
             const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+            const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
 
-            const file = join(dir, info.source.replace(assetProtocol, ''));
+            // 文件目录路径
+            const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));
+
             const base = basename(file);
 
             const source = {

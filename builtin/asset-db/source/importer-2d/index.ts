@@ -16,6 +16,7 @@ import TextureImporter from './importers/texture';
 import TexturePackerImporter from './importers/texture-packer';
 import TiledMapImporter from './importers/tiled-map';
 import TTFFontImporter from './importers/ttf-font';
+import TypescriptImporter from './importers/typescript';
 import UnknownImporter from './importers/unknown';
 
 export function register(database: any) {
@@ -45,6 +46,9 @@ export function register(database: any) {
 
     // javascript 导入
     database.register(new JavascriptImporter(), '.js');
+
+    // typescript 导入
+    database.register(new TypescriptImporter(), '.ts');
 
     // text 导入
     database.register(new MarkdownImporter(), ['.md', '.markdown']);

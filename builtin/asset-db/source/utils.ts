@@ -15,9 +15,13 @@ export function getName(file: string) {
     const dir = dirname(file);
     const ext = extname(file);
     let name = basename(file, ext);
+    let firstLoop = true;
 
     do {
-        if ((/\-\d{3}/.test(name))) {
+        if (firstLoop) { // 使得 a.js -> a-001.js; a-001.js -> a-001-001.js
+            name += '-001';
+            firstLoop = false;
+        } else if ((/\-\d{3}/.test(name))) {
             name = name.replace(/(\-(\d{3})$)/, (strA, strB, strC) => {
                 let num = parseInt(strC, 10);
                 num += 1;
@@ -25,8 +29,6 @@ export function getName(file: string) {
                 num = num.toString().padStart(3, '0');
                 return `-${num}`;
             });
-        } else {
-            name += '-001';
         }
 
         file = join(dir, name);

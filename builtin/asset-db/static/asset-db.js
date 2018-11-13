@@ -5,6 +5,7 @@ const { join, relative, isAbsolute } = require('path');
 const { ensureDirSync } = require('fs-extra');
 const { AssetDB } = require('asset-db');
 
+const protocol = 'db://';
 let isReady = false;
 let waitTask = [];
 function waitReady() {
@@ -112,6 +113,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     console.log('Start the asset database...');
     // 拼接需要使用的地址
     const options = {
+        protocol: protocol + info.name, // 方便后续协议和路径的替换
         target: info.assets,
         library: info.library,
         temp: info.temp,
@@ -187,8 +189,28 @@ Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
     event.reply(null, join(db.options.target, unescape(uri.path || '')));
 });
 
-// 返回一个 db 的具体数据
+/**
+ * 返回一个 db 的具体数据
+ * 传入 url 获取该资源所在 db 的信息，信息数据格式为 json, 字段类似如下（window 10）：
+ * db://internal 如下
+ * protocol: db://internal
+ * library:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\library"
+ * target:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\assets"
+ * temp:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\temp"
+ *
+ * db://assets 如下
+ * protocol: db://assets
+ * library:"G:\cocos-creator\editor-3d\.project-2d\library"
+ * target:"G:\cocos-creator\editor-3d\.project-2d\assets"
+ * temp:"G:\cocos-creator\editor-3d\.project-2d\temp\asset-db"
+ */
 Worker.Ipc.on('asset-worker:query-database-info', async (event, name) => {
+    if (name.startsWith(protocol)) {
+        // arr 数据格式为 ['db:', 'assets', 其他文件夹路径...]
+        const arr = name.split('/').filter(Boolean);
+        name = arr[1];
+    }
+
     const db = AssetWorker[name];
     if (!db) {
         event.reply(null, null);
@@ -277,7 +299,7 @@ Worker.Ipc.on('asset-worker:query-asset-uuid', async (event, source) => {
     event.reply(null, asset.uuid);
 });
 
-// 传入一个 db:// 地址，返回对应的 uuid 数据
+// 传入一个 uuid ，返回 db:// 地址
 Worker.Ipc.on('asset-worker:query-asset-url', async (event, uuid) => {
     // 查询资源
     const assetInfo = queryAsset(uuid);
