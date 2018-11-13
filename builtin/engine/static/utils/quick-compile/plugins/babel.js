@@ -18,11 +18,11 @@ module.exports = function() {
                   'env'
                 ],
                 plugins: [
-                    // // make sure that transform-decorators-legacy comes before transform-class-properties.
-                    // 'transform-decorators-legacy',
-                    // 'transform-class-properties',
+                    // make sure that transform-decorators-legacy comes before transform-class-properties.
+                    'transform-decorators-legacy',
+                    'transform-class-properties',
 
-                    // 'add-module-exports',
+                    'add-module-exports',
                 ],
             });
 

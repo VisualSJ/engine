@@ -49,8 +49,8 @@ export async function ready() {
             pt: Editor.Project.type,
             custom,
             current: {
-                '2d': current['2d'] || '2.0.0-alpha',
-                '3d': current['3d'] || '0.15.0',
+                '2d': current['2d'] || 'builtin',
+                '3d': current['3d'] || 'builtin',
             },
 
             setting: 'local',
@@ -68,6 +68,9 @@ export async function ready() {
             custom: {
                 deep: true,
                 handler() {
+                    if (vm.current[vm.type] === 'custom') {
+                        alert(Editor.I18n.t('engine.change'));
+                    }
                     profile.local.set('custom', vm.custom);
                     profile.local.save();
                 },

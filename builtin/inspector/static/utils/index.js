@@ -117,7 +117,7 @@ function buildProp(path, key, item, attrs) {
     item.attrs = {...attrs};
 
     if (!originType) {
-        item.attrs.visible = false;
+        attrs.visible = false;
     } else {
         if ('visible' in item) {
             item.attrs.visible = item.visible;

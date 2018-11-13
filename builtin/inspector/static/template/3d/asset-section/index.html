@@ -1,0 +1,10 @@
+<section class="asset"
+    @meta-changed="onMetaChanged"
+>
+        <component
+            v-if="info && dataReady"
+            :is="getAsset(info.importer)"
+            :info="info"
+            :meta="meta"
+        ></component>
+</section>

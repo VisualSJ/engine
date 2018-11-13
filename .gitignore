@@ -12,7 +12,7 @@ node_modules/
 /lib/theme/**/dist
 
 # 引擎文件夹
-/builtin/engine/resources
+/resources
 
 # 内置数据库
 # /builtin/asset-db/static/internal/library

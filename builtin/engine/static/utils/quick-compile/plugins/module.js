@@ -23,6 +23,7 @@ ${QUICK_COMPILE_CONTENT}
 }
 
 module.exports = function(opts) {
+
     let transformPath = function(src, dst, compiler) {
         let relative;
         if (opts.transformPath) {

@@ -1,0 +1,33 @@
+<ui-section expand
+    v-if="node"
+>
+
+    <div slot="header" class="header flex-1 layout horizontal center-center">
+        <span>Node</span>
+        <span class="flex-1"></span>
+        <!-- todo
+            <ui-button class="transparent"
+                @click.prevent.stop=""
+                @confirm.stop.prevent="getContextMenu"
+            >
+                <i class="iconfont icon-setting"></i>
+            </ui-button>
+        -->
+    </div>
+
+    <cc-vec3 name="Position"
+        :dump="node.position"
+        :step="1"
+    ></cc-vec3>
+
+    <cc-vec3 name="Rotation"
+        :dump="node.rotation"
+        :step="1"
+    ></cc-vec3>
+
+    <cc-vec3 name="Scale"
+        :dump="node.scale"
+        :step="1"
+    ></cc-vec3>
+
+</ui-section>

@@ -15,7 +15,8 @@ exports.props = [
 
 exports.data = function() {
     // 获取版本列表
-    let list = fse.readJSONSync(path.join(__dirname, '../version.json'));
+    // todo 动态获取显示列表
+    let list = [];
 
     // 填充版本的数据
     // ~/.CocosEditor3D/engine/2d/2.0.1
@@ -23,7 +24,7 @@ exports.data = function() {
         const root = path.join(Editor.App.home, './engine', type);
         list[type].forEach((item) => {
             // 填充 exists - 是否存在(内置引擎版本认为一定存在))
-            item.exists = item.builtin || fse.existsSync(path.join(root, `${item.version}.js`));
+            item.exists = fse.existsSync(path.join(root, `${item.version}.js`));
 
             // 填充 download - 是否处于下载状态
             item.download = false;
@@ -58,9 +59,12 @@ exports.methods = {
         this.current[this.type] = item.version;
     },
 
+    /**
+     * 点击选择自定义引擎
+     */
     async _onSelectCustom(event) {
         const paths = await Editor.Dialog.openDirectory({
-            root: Editor.Project.path,
+            root: event.target.value || Editor.Project.path,
         });
 
         if (paths[0] && fse.existsSync(paths[0])) {

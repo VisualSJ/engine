@@ -1,0 +1,30 @@
+<ui-section expand>
+    <cc-structure :dump="comp.value" slot="header" class="header flex-1 layout horizontal center-center">
+        <ui-checkbox path="enabled"
+            :value="comp.value.enabled.value"
+            @click.stop=""
+        ></ui-checkbox>
+
+        {{comp.name || comp.type}}
+
+        <span class="flex-1"></span>
+
+        <ui-button class="tiny transparent"
+            @click.stop="onOpenHelpClick($event)"
+        >
+            <i class="iconfont icon-book"></i>
+        </ui-button>
+
+        <ui-button class="tiny transparent"
+            @click.stop="onContextMenuClick($event)"
+        >
+            <i class="iconfont icon-setting"></i>
+        </ui-button>
+    </cc-structure>
+
+    <component
+        :is="getComponent(comp.type)"
+        :target="comp.value"
+    ></component>
+    
+</ui-section>

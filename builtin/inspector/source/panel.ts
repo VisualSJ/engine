@@ -69,6 +69,7 @@ export const messages = {
     async 'scene:node-changed'(uuid: string) {
         if (vm) {
             vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
+            vm.$refs.inspector3d && vm.$refs.inspector3d.refresh();
         }
     }
 };
@@ -95,7 +96,8 @@ export async function ready() {
         },
 
         components: {
-            'inspector-2d': require('../static/components/2d')
+            'inspector-2d': require('../static/components/2d'),
+            'inspector-3d': require('../static/components/3d'),
         },
 
         async mounted() {

@@ -2,12 +2,20 @@
 
 3D Editor
 
+## 新项目构建并启动
+
+```bash
+npm install
+
+```
+
 ## 初始化
 
 首先我们要安装 npm 模块，一些依赖模块包存在于公司内网 ftp 上，所以需要外网重装 npm 模块的时候可能会失败，需要做好备份。
 
 ```bash
 npm install
+npm run build
 ```
 
 npm 版本 5 以上会使用 package-lock.json 锁定依赖库，tgz 安装包也会进行校验，所以如果 ftp 上的包更新的时候，可能会造成校验失败，这时候需要手动删除 package-lock.json 文件。
@@ -24,6 +32,15 @@ package-lock=false
 
 ```
 npm run build
+```
+
+## 下载并构建引擎
+
+需要从 github clone 引擎仓库下来。
+并可执行 build 等操作。
+
+```bash
+npm run dev
 ```
 
 ## 使用 electron 构建原生的 node 模块
@@ -47,16 +64,6 @@ npm run update @editor/dock @editor/panel
 ```
 
 命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。
-
-## 下载临时的测试文件
-
-现阶段引擎暂时无法提供序列化和反序列化等操作，所以部分文件需要 hack 模拟。需要从服务器上下载。
-
-```bash
-npm run temp
-```
-
-这部分等待引擎功能完善后需要移除
 
 ## 启动编辑
 

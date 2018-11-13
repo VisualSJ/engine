@@ -103,7 +103,7 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
     };
 
     // 加载引擎
-    require(info.engine);
+    require(join(info.engine, './bin/.cache/dev'));
 });
 
 // 启动一个数据库

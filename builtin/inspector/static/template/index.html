@@ -15,5 +15,11 @@
             :uuid="uuid"
         ></inspector-2d>
 
+        <inspector-3d ref="inspector3d"
+            v-if="type === '3d' && uuid"
+            :type="element"
+            :uuid="uuid"
+        ></inspector-3d>
+
     </section>
 </div>
