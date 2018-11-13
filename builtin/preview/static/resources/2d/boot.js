@@ -318,11 +318,16 @@
         cc.game.canvas.style.backgroundColor = '';
         cc.director.once(cc.Director.EVENT_AFTER_SCENE_LAUNCH, () => {
             splash.style.display = 'none';
+
+            // HACK Camera 的缩放有问题，待解决
+            cc.Camera.main.ortho = false;
+
             checkEmptyScene();
             inited = true;
         });
 
         cc.game.pause();
+
         let json = await getCurrentScene();
         // init assets
         cc.AssetLibrary.init(AssetOptions);
@@ -365,10 +370,10 @@
     async function onload() {
         // init Setting
         await initSetting();
-        // init operation event
-        handles();
         // 初始化 canvas 大小
         updateResolution();
+        // init operation event
+        handles();
         // load scene file
         initScene();
         // 监听刷新

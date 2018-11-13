@@ -4,7 +4,7 @@
     "menu": {
         "i18n:menu.panel/i18n:console.title": {
             "message": "open",
-            "icon": "./static/icon.png",
+            "icon": "./static/console.png",
             "accelerator": "CmdOrCtrl+0"
         }
     },

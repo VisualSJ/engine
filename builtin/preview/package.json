@@ -1,6 +1,18 @@
 {
     "name": "preview",
     "version": "0.0.1",
+    "menu": {
+        "i18n:menu.project/i18n:preview.play": {
+            "message": "open-terminal",
+            "accelerator": "CmdOrCtrl+P",
+            "icon": "./static/start.png"
+        },
+        "i18n:menu.project/i18n:preview.refresh_device": {
+            "message": "reload-terminal",
+            "accelerator": "CmdOrCtrl+Shift+P",
+            "icon": "./static/refresh.png"
+        }
+    },
     "main": "./dist/browser.js",
     "disabled": false,
     "description": "preview about editor"

@@ -1,8 +1,8 @@
 'use strict';
 
-import { existsSync, readFileSync } from 'fs';
-import { copySync, ensureDirSync, outputJsonSync, readJsonSync } from 'fs-extra';
-import { basename , join } from 'path';
+import { existsSync , readFileSync } from 'fs';
+import { ensureDirSync } from 'fs-extra';
+import { join } from 'path';
 const Vue = require('vue/dist/vue.js');
 
 Vue.config.productionTip = false;
@@ -81,34 +81,12 @@ export async function ready() {
                 this.queryKey = event.target.value;
             },
             // 新建插件
-            newPlugin(event: any) {
-                // @ts-ignore
-                const pkgPath = join(Editor.App[this.activeTab], './packages');
-                const path = join(pkgPath, './package');
-                const templatePath = join(__dirname, './../static/package');
-                if (!existsSync(pkgPath)) {
-                    ensureDirSync(pkgPath);
-                }
-                Editor.Dialog.saveFile({
-                    title: '请输入插件名称',
-                    root: path,
-                    label: '创建插件包',
-                }).then((filePath: string) => {
-                    if (!filePath) {
-                        return;
-                    }
-                    const json = readJsonSync(join(templatePath, './package.json'));
-                    json.name = basename(filePath);
-                    outputJsonSync(join(templatePath, './package.json'), json);
-                    // @ts-ignore
-                    copySync(templatePath, filePath);
-                });
+            addPlugin() {
+                Editor.Ipc.sendToPackage('pkg-manager', 'add-packages', this.activeTab);
             },
             // 导入插件
-            addPlugin(event: any) {
-                Editor.Dialog.openDirectory({
-                    title : '请选择插件包文件夹'
-                });
+            importPlugin() {
+                Editor.Ipc.sendToPackage('pkg-manager', 'import-packages', this.activeTab);
             },
         },
         components: {

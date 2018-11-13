@@ -5,15 +5,15 @@
         </div>
         <div class="search">
             <ui-input placeholder="Search" @change="query($event)"></ui-input>
-            <i class="iconfont i-add" @click="newPlugin" v-if="activePackages.length > 0 && activeTab !== 'internal'"></i>
-            <i class="iconfont i-open" @click="newPlugin" v-if="activePackages.length > 0 && activeTab !== 'internal'"></i>
+            <i class="iconfont i-add" @click="addPlugin" v-if="activePackages.length > 0 && activeTab !== 'internal'"></i>
+            <i class="iconfont i-open" @click="importPlugin" v-if="activePackages.length > 0 && activeTab !== 'internal'"></i>
         </div>
     </header>
     <div class="pkg-con" v-if="activePackages.length > 0">
         <pkg-item v-for="(item, key) in activePackages" :package="item" :key="key"></pkg-item>
     </div>
     <div class="pkg-con pkg-blank" v-else>
-        <div class="new" @click="newPlugin"><i class="iconfont i-add"></i></div>
-        <div class="add" @click="addPlugin"><i class="iconfont i-open"></i></div>
+        <div class="new" @click="addPlugin"><i class="iconfont i-add"></i></div>
+        <div class="add" @click="importPlugin"><i class="iconfont i-open"></i></div>
     </div>
 </div>

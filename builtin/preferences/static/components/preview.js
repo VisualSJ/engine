@@ -1,9 +1,9 @@
 'use stirct';
 
 const fs = require('fs');
-const ps = require('path');
-
-exports.template = fs.readFileSync(ps.join(__dirname, '../template/preview.html'), 'utf8');
+const {join, isAbsolute} = require('path');
+const {shell} = require('electron');
+exports.template = fs.readFileSync(join(__dirname, '../template/preview.html'), 'utf8');
 
 exports.props = ['preview'];
 exports.data = function() {
@@ -18,6 +18,18 @@ exports.methods = {
     t(key) {
         const name = `preferences.preview.${key}`;
         return Editor.I18n.t(name);
+    },
+
+    /**
+     * 获取模拟器器的实际路径
+     * @param {*} path
+     */
+    getSimulatorPath(path) {
+        // 如果是绝对路径值即返回
+        if (isAbsolute(path)) {
+            return path;
+        }
+        return join(Editor.App.path, path);
     },
 
     /**
@@ -37,6 +49,15 @@ exports.methods = {
                 break;
         }
     },
+
+    /**
+     * 打开指定的文件路径
+     * @param {*} path
+     */
+    open(path) {
+        shell.showItemInFolder(path);
+    },
+
 };
 
 exports.mounted = function() {

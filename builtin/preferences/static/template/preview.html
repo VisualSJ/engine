@@ -2,14 +2,14 @@
     <div class="line">
         <div class="name">{{t('autoRefresh')}}</div>
         <div class="value">
-            <ui-checkbox checked></ui-checkbox>
+            <ui-checkbox :value="preview.autoRefresh" @confirm="_onpreviewChanged($event, 'autoRefresh')"></ui-checkbox>
         </div>
     </div>
     <div class="line">
         <div class="name">{{t('previewBrowser')}}</div>
         <div class="value">
-            <ui-select value="0">
-                <option value="0">{{t('options.default')}}</option>
+            <ui-select :value="preview.previewBrowser" @confirm="_onpreviewChanged($event, 'previewBrowser')">
+                <option value="default">{{t('options.default')}}</option>
             </ui-select>
             <ui-button>浏览</ui-button>
             <ui-button>移除</ui-button>
@@ -18,42 +18,48 @@
     <div class="line">
         <div class="name">{{t('simulatorPath')}}</div>
         <div class="value">
-            <ui-input class="cocos"></ui-input>
-            <ui-button>打开</ui-button>
+            <ui-input class="cocos" :value="getSimulatorPath(preview.simulatorPath)" @confirm="_onpreviewChanged($event, 'simulatorPath')"></ui-input>
+            <ui-button @click = open(getSimulatorPath(preview.simulatorPath))>打开</ui-button>
         </div>
     </div>
     <div class="line">
         <div class="name">{{t('simulatorOrientation')}}</div>
         <div class="value">
-            <ui-select value="0">
-                <option value="0">{{t('options.vertical')}}</option>
-                <option value="1">{{t('horizontal.default')}}</option>
+            <ui-select :value="preview.simulatorOrientation" @confirm="_onpreviewChanged($event, 'simulatorOrientation')">
+                <option value="vertical">{{t('options.vertical')}}</option>
+                <option value="horizontal">{{t('options.horizontal')}}</option>
             </ui-select>
         </div>
     </div>
     <div class="line">
         <div class="name">{{t('simulatorResolution')}}</div>
         <div class="value">
-            <ui-select value="0">
-                <option value="0">iPhone 3Gs (480x320)</option>
-                <option value="1">iPhone 4 (960x640)</option>
-                <option value="2">iPhone 5 (1136x640)</option>
-                <option value="3">iPhone 6 (1334x750)</option>
-                <option value="4">iPhone 6 Plus (1920x1080)</option>
-                <option value="5">iPad (1024x768)</option>
-                <option value="6">iPad Retina (2048x1536)</option>
-                <option value="7">Android (800x480)</option>
-                <option value="8">Android (854x480)</option>
-                <option value="9">Android (1280x720)</option>
-                <option value="10">自定义</option>
+            <ui-select :value="preview.simulatorResolution" @confirm="_onpreviewChanged($event, 'simulatorResolution')">
+                <option value="iphone3">iPhone 3Gs (480x320)</option>
+                <option value="iphone4">iPhone 4 (960x640)</option>
+                <option value="iphone5">iPhone 5 (1136x640)</option>
+                <option value="iphone6">iPhone 6 (1334x750)</option>
+                <option value="iphone6_plus">iPhone 6 Plus (1920x1080)</option>
+                <option value="ipad">iPad (1024x768)</option>
+                <option value="ipad_retina">iPad Retina (2048x1536)</option>
+                <option value="android(800)">Android (800x480)</option>
+                <option value="android(854)">Android (854x480)</option>
+                <option value="android(1280)">Android (1280x720)</option>
+                <option value="customize">自定义</option>
             </ui-select>
         </div>
     </div>
     <div class="line">
         <div class="name">{{t('simulatorCustomResolution')}}</div>
         <div class="value">
-                {{t('options.width')}}: <ui-input value="960"></ui-input>
-                {{t('options.height')}}: <ui-input value="640"></ui-input>
+            <ui-prop :label="t('options.width')" :value="preview.simulator_width" type="int"></ui-prop>
+            <ui-prop :label="t('options.height')" :value="preview.simulator_height" type="int"></ui-prop>
+        </div>
+    </div>
+    <div class="line">
+        <div class="name">{{t('simulatorDebugger')}}</div>
+        <div class="value">
+            <ui-checkbox :value="preview.simulatorDebugger" @confirm="_onpreviewChanged($event, 'simulatorDebugger')"></ui-checkbox>
         </div>
     </div>
 </div>

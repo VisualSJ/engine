@@ -1,0 +1,24 @@
+{
+    "name": "pro-setting",
+    "version": "0.0.1",
+
+    "menu": {
+        "i18n:menu.project/i18n:pro-setting.title": {
+            "message": "open",
+            "icon": "./static/icon.png"
+        }
+    },
+
+    "main": "./dist/browser.js",
+    "disabled": false,
+    "description": "setting about project",
+    "panel": {
+        "title": "i18n:pro-setting.title",
+        "icon": "./static/icon.png",
+        "main": "./dist/panel.js",
+        "min-width": 400,
+        "min-height": 200,
+        "width": 700,
+        "height": 500
+    }
+}

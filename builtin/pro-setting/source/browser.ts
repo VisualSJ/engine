@@ -1,18 +1,19 @@
 'use strict';
 
-const profile = Editor.Profile.load('profile://global/packages/preferences.json');
 let pkg: any = null;
+const profile = Editor.Profile.load('profile://local/packages/project.json');
 
 export const messages = {
     open() {
-        Editor.Panel.open('preferences');
+        Editor.Panel.open('pro-setting');
     },
     /**
      * 查询记录的项目设置信息
      * @param {string} key
      */
     'get-setting'(key: string) {
-        return profile.get(key);
+        const value = profile.get(key);
+        return value;
     },
 
     /**
@@ -32,18 +33,6 @@ export const messages = {
 export function load() {
     // @ts-ignore
     pkg = this;
-
-    // 应用语言
-    const language = profile.get('general.language') || 'en';
-    Editor.I18n.switch(language);
-
-    // 应用皮肤
-    const theme = profile.get('general.theme') || '';
-    Editor.Theme.use(theme);
-
-    // 应用皮肤主题
-    // const color = profile.get('themeColor') || 'default';
-    // Editor.Theme.useColor(color);
 }
 
 export function unload() {}

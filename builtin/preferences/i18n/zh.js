@@ -19,6 +19,7 @@ module.exports = {
         simulatorOrientation: '模拟器竖屏设置',
         simulatorResolution: '模拟器分辨率设置',
         simulatorCustomResolution: '模拟器自定义分辨率设置',
+        simulatorDebugger: '开启模拟器调试界面',
         options: {
             default: '默认',
             vertical: '竖屏',

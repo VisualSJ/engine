@@ -8,8 +8,6 @@ const Vue = require('vue/dist/vue.js');
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
-const LANGUAGE = ['en', 'zh'];
-
 let panel: any = null;
 
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
@@ -17,8 +15,7 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 export const $ = {
-    language: '.language',
-    preferences: '.preferences'
+    project: '.project'
 };
 
 export const methods = {};
@@ -31,58 +28,45 @@ export async function ready() {
     panel = this;
 
     new Vue({
-        el: panel.$.preferences,
-
+        el: panel.$.project,
         data: {
             tab: 0,
-            general: {
-                language: 'en',
-                themeColor: 'default',
-                step:  0.01
-            },
             preview: {
-                autoRefresh: true,
-                previewBrowser: 'default',
-                simulatorPath: './builtin/preview/simulator/win32',
-                simulatorOrientation: 'vertical',
-                simulatorResolution: 'iphone4',
-                simulator_width: 960,
-                simulator_height: 480,
-                simulatorDebugger:  false,
+                start_scene: 'current_scene',
+                design_width: 960,
+                design_height:  480,
+                fit_width: true,
+                fit_height: false,
+                simulatorSettingType: 'global',
+                simulator_device_orientation: 'vertical',
+                simulator_resolution: 'iphone4',
+                customize_resolution_width: 960,
+                customize_resolution_height: 480,
             }
         },
 
         watch: {
-            general: {
-                deep: true,
-                handler() {
-                    // @ts-ignore
-                    this.set('language');
-                    // @ts-ignore
-                    this.set('step');
-                    // @ts-ignore
-                    this.set('themeColor');
-                    // @ts-ignore
-                    this.save();
-                },
-            },
             preview: {
                 deep: true,
                 handler() {
                     // @ts-ignore
-                    this.set('autoRefresh', 'preview');
+                    this.set('start_scene', 'preview');
                     // @ts-ignore
-                    this.set('previewBrowser', 'preview');
+                    this.set('design_width', 'preview');
                     // @ts-ignore
-                    this.set('simulatorPath', 'preview');
+                    this.set('design_height', 'preview');
                     // @ts-ignore
-                    this.set('simulatorOrientation', 'preview');
+                    this.set('fit_width', 'preview');
                     // @ts-ignore
-                    this.set('simulatorResolution', 'preview');
+                    this.set('fit_height', 'preview');
                     // @ts-ignore
-                    this.set('simulatorCustomResolution', 'preview');
+                    this.set('simulatorSettingType', 'preview');
                     // @ts-ignore
-                    this.set('simulatorDebugger', 'preview');
+                    this.set('simulator_device_orientation', 'preview');
+                    // @ts-ignore
+                    this.set('customize_resolution_width', 'preview');
+                    // @ts-ignore
+                    this.set('customize_resolution_height', 'preview');
                     // @ts-ignore
                     this.save();
                 }
@@ -90,7 +74,6 @@ export async function ready() {
         },
 
         components: {
-            'content-general': require('../static/components/general'),
             'content-preview': require('../static/components/preview'),
         },
 
@@ -100,15 +83,16 @@ export async function ready() {
              * @param key
              */
             t(key: string) {
-                const name = `preferences.${key}`;
+                const name = `pro-setting.${key}`;
                 return Editor.I18n.t(name);
             },
+
             /**
              * 查询项目配置
              * @param {*} key
              */
             async get(key: string, type: string) {
-                return await Editor.Ipc.requestToPackage('preferences', 'get-setting', `${type}.${key}`);
+                return await Editor.Ipc.requestToPackage('pro-setting', 'get-setting', `${type}.${key}`);
             },
 
             /**
@@ -116,14 +100,14 @@ export async function ready() {
              * @param {*} str
              */
             set(key: string, type: string) {
-                Editor.Ipc.sendToPackage('preferences', 'set-setting', `${type}.${key}`, this[type][key]);
+                Editor.Ipc.sendToPackage('pro-setting', 'set-setting', `${type}.${key}`, this[type][key]);
             },
 
             /**
              * 保存项目设置信息
              */
             save() {
-                Editor.Ipc.sendToPackage('preferences', 'save-setting');
+                Editor.Ipc.sendToPackage('pro-setting', 'save-setting');
             },
 
             async getData(type: string) {
@@ -140,7 +124,6 @@ export async function ready() {
             }
         },
         mounted() {
-            this.getData('general');
             this.getData('preview');
         },
     });

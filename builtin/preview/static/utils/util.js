@@ -92,7 +92,11 @@ function findDepIndex(scripts, dep) {
     }
 }
 
-// 获取对应脚本文件的依赖缓存信息
+/**
+ * 获取对应脚本文件的依赖缓存信息
+ * @param {Array} scripts 脚本信息数组
+ * @returns
+ */
 async function getScriptsCache(scripts) {
     return new Promise((resolve) => {
         let concat = Concat((buf) => {
@@ -165,16 +169,13 @@ async function getScriptsCache(scripts) {
     });
 }
 
-// 获取场景配置信息
-function getConfig() {
-    // 获取项目配置信息
-    let profile = Editor.Profile.load('profile://project/project.json');
+// 获取初始配置信息
+function getCustomConfig() {
     return {
-        designWidth: 960,
-        designHeight: 640,
-        groupList: profile.get('group-list') || ['default'],
-        collisionMatrix: profile.get('collision-matrix') || [[true]],
-        platform: 'web-desktop',
+        designWidth: getProSetting('preview.design_width') || 960,
+        designHeight: getProSetting('preview.design_height') || 480,
+        groupList: getProSetting('group-list') || ['default'],
+        collisionMatrix: getProSetting('collision-matrix') || [[true]],
         rawAssets: {}
     };
 }
@@ -266,18 +267,32 @@ function compressPackedAssets() {
 
 // 获取当前展示场景的数据信息
 async function getCurrentScene() {
-    const uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
+    let uuid = getProSetting('preview.start_scene');
+    if (uuid && uuid !== 'current_scene') {
+        uuid = getProSetting('preview.start_scene');
+    } else {
+        uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
+    }
     const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-    return asset.source;
+    return asset;
+}
+
+/**
+ * 查询项目配置
+ * @param {*} key
+ */
+async function getProSetting(key) {
+    return await Editor.Ipc.requestToPackage('pro-setting', 'get-setting', key);
 }
 
 // 获取 setting 的脚本信息
-async function getSetting(options) {
-    const setting = Object.assign(options, getConfig());
+async function buildSetting(options) {
+    const setting = Object.assign(options, getCustomConfig());
 
     const DEBUG = (setting.debug = options.debug);
     const PREVIEW = options.preview;
-    setting.launchScene = await getCurrentScene();
+    const currenScene = await getCurrentScene();
+    setting.launchScene = currenScene.source;
     setting.packedAssets = compressPackedAssets(options.packedAssets) || {};
     setting.md5AssetsMap = {};
     let obj = await queryAssets();
@@ -320,6 +335,7 @@ function getModules(path) {
     return HEADER + str + FOOTER;
 }
 module.exports = {
-    getSetting,
-    getModules
+    buildSetting,
+    getModules,
+    getCurrentScene,
 };

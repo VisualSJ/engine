@@ -5,7 +5,8 @@
     "menu": {
         "i18n:menu.develop/i18n:ui-preview.title": {
             "message": "open",
-            "group": "preview"
+            "group": "preview",
+            "icon": "./static/icon.png"
         }
     },
 

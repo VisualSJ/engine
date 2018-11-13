@@ -19,6 +19,7 @@ module.exports = {
         simulatorOrientation: 'Simulator Device Orientation',
         simulatorResolution: 'Simulator Resolution',
         simulatorCustomResolution: 'Simulator Custom Resolution',
+        simulatorDebugger: 'simulatorDebugger',
         options: {
             default: 'Default',
             vertical: 'Vertical',

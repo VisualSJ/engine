@@ -17,14 +17,14 @@
                 <ui-num-input
                     :value="general.step"
                     @confirm="_onGeneralChanged($event, 'step')"
-                    step="0.01"
+                    :step="general.step"
                 ></ui-num-input>
             </div>
         </div>
         <div class="line">
             <div class="name">{{t('themeColor')}}</div>
             <div class="value">
-                <ui-select :value="general.themeColor || 'default'" @confirm="_onGeneralChanged($event, 'themeColor')">
+                <ui-select :value="general.themeColor" @confirm="_onGeneralChanged($event, 'themeColor')">
                     <option value="default">default</option>
                     <option value="light">light</option>
                 </ui-select>

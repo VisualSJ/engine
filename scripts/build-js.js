@@ -18,6 +18,7 @@ let tsDirnames = [
     './builtin/selection',
     './builtin/ui-preview',
     './builtin/pkg-manager',
+    './builtin/pro-setting',
 ];
 
 Promise.all(tsDirnames.map((dir) => {

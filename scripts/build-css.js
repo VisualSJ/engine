@@ -16,6 +16,7 @@ let lessDirnames = [
     './builtin/scene',
     './builtin/ui-preview',
     './builtin/pkg-manager',
+    './builtin/pro-setting',
     './builtin/engine',
 ];
 

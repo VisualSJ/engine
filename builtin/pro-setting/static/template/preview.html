@@ -1,0 +1,73 @@
+<div class="preview">
+    <div class="line">
+        <div class="name">{{t('start_scene')}}</div>
+        <div class="value">
+            <ui-select :value="preview.start_scene" @confirm="_onpreviewChanged($event, 'start_scene')">
+                <option value="current_scene">{{t('current_scene')}}</option>
+                <option v-for = "scene in scenes" :value="scene.uuid">{{scene.name}}</option>
+            </ui-select>
+        </div>
+    </div>
+    <ui-section :header="t('section_canvas')" expand>
+        <div class="line">
+            <div class="name">{{t('design_resolution')}}</div>
+            <div class="value">
+                <ui-prop :label="t('width')" :value="preview.design_width" type="int" @confirm="_onpreviewChanged($event, 'design_width')"></ui-prop>
+                <ui-prop :label="t('height')" :value="preview.design_height" type="int" @confirm="_onpreviewChanged($event, 'design_height')"></ui-prop>
+            </div>
+        </div>
+        <div class="line">
+            <div class="name">{{t('fit_width')}}</div>
+            <div class="value"><ui-checkbox :value="preview.fit_width" @confirm="_onpreviewChanged($event, 'fit_width')"></ui-checkbox></div>
+        </div>
+        <div class="line">
+            <div class="name">{{t('fit_height')}}</div>
+            <div class="value"><ui-checkbox :value="preview.fit_height"@confirm="_onpreviewChanged($event, 'fit_height')" ></ui-checkbox></div>
+        </div>
+    </ui-section>
+    <div class="line">
+        <div class="name">{{t('simulatorSettingType')}}</div>
+        <div class="value">
+            <ui-select :value="preview.simulatorSettingType" @confirm="_onpreviewChanged($event, 'simulatorSettingType')">
+                <option value="global">{{t('global')}}</option>
+                <option value="project">{{t('project')}}</option>
+            </ui-select>
+        </div>
+    </div>
+    <div v-if="preview.simulatorSettingType === 'project'">
+        <div class="line">
+            <div class="name">{{t('simulator_device_orientation')}}</div>
+            <div class="value">
+                <ui-select :value="preview.simulator_device_orientation"  @confirm="_onpreviewChanged($event, 'simulator_device_orientation')">
+                    <option value="vertical">{{t('vertical')}}</option>
+                    <option value="horizontal">{{t('horizontal')}}</option>
+                </ui-select>
+            </div>
+        </div>
+        <div class="line">
+            <div class="name">{{t('simulator_resolution')}}</div>
+            <div class="value">
+                <ui-select :value="preview.simulator_resolution" @confirm="_onpreviewChanged($event, 'simulator_resolution')">
+                    <option value="iphone3">iPhone 3Gs (480x320)</option>
+                    <option value="iphone4">iPhone 4 (960x640)</option>
+                    <option value="iphone5">iPhone 5 (1136x640)</option>
+                    <option value="iphone6">iPhone 6 (1334x750)</option>
+                    <option value="iphone6_plus">iPhone 6 Plus (1920x1080)</option>
+                    <option value="ipad">iPad (1024x768)</option>
+                    <option value="ipad_retina">iPad Retina (2048x1536)</option>
+                    <option value="android(800)">Android (800x480)</option>
+                    <option value="android(854)">Android (854x480)</option>
+                    <option value="android(1280)">Android (1280x720)</option>
+                    <option value="customize">自定义</option>
+                </ui-select>
+            </div>
+        </div>
+        <div class="line">
+            <div class="name">{{t('customize_resolution')}}</div>
+            <div class="value">
+                <ui-prop :label="t('width')" :value="preview.customize_resolution_width" type="int" @confirm="_onpreviewChanged($event, 'customize_resolution_width')"></ui-prop>
+                <ui-prop :label="t('height')" :value="preview.customize_resolution_height" type="int"  @confirm="_onpreviewChanged($event, 'customize_resolution_height')"></ui-prop>
+            </div>
+        </div>
+    </div>
+</div>

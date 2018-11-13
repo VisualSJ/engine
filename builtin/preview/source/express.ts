@@ -1,10 +1,10 @@
 'use stirct';
 
-import { createReadStream, stat } from 'fs-extra';
+import { createReadStream } from 'fs-extra';
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';
-const { getSetting, getModules } = require('./../static/utils/util');
+const { getSetting, getModules , getCurrentScene} = require('./../static/utils/util');
 const express = require('express');
 
 let app: any = null;
@@ -45,7 +45,7 @@ export async function start() {
     });
 
     // 获取引擎文件
-    app.get('/engine/*', async (req: any, res: any) => {
+    app.get('/engine-dev/*', async (req: any, res: any) => {
         if (!enginPath) {
             const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
             enginPath = info.path;
@@ -71,14 +71,18 @@ export async function start() {
 
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene', async (req: any, res: any) => {
-        const uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
-        if (!uuid) {
-            res.end();
-            return;
-        }
-        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        const filePath = asset.files[0];
+        const asset = await getCurrentScene();
+        const filePath = await asset.files[0];
         res.sendFile(filePath);
+    });
+
+    app.get('/__quick_compile__.js', async (req: any, res: any) => {
+        if (!enginPath) {
+            const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+            enginPath = info.path;
+        }
+        const path = join(enginPath, 'bin/.cache/dev/__quick_compile__.js');
+        res.sendFile(path);
     });
 
     // 根据资源路径加载对应静态资源资源

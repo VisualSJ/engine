@@ -33,7 +33,7 @@ export const messages = {
      * 根据 type 类型打开对应终端预览界面
      * @param {string} type
      */
-    'open-terminal'(type: string) {
+    'open-terminal'(type: string = 'browser') {
         if (type === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {

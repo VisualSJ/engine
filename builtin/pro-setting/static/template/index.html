@@ -1,0 +1,8 @@
+<div class="project">
+    <div class="slider">
+        <div :active="tab === 0" @click="tab = 0">{{t('nav.preview')}}</div>
+    </div>
+    <section>
+        <content-preview v-if="tab === 0" :preview="preview"></content-preview>
+    </section>
+</div>
