@@ -14,6 +14,7 @@ const padding: number = 4; // 树形头部的间隔，为了保持美观
 
 let timeOutId: any;
 let isRenderingTree: boolean = false; // 正在重新渲染树形
+let isRequiringToAdd: boolean = false; // 新增项目带来的请求重新渲染树形
 
 /**
  * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
@@ -45,6 +46,7 @@ export function data() {
         assets: [], // 当前树形在可视区域的资源数据
         selects: [], // 已选中项的 uuid
         folds: {}, // 用于记录已展开的节点
+        renameSource: '', // 需要 rename 的节点的 url，只有一个
         search: '', // 搜索节点名称
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
@@ -52,7 +54,6 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: false, // 拖动时高亮的目录区域 {top, height} 或者 false 不显示
-        newAssetNeedToRename: false // 由于是异步，存在新建，拖拽进新文件，移动资源这三个过程的新建无法区分，所以需要用第三方变量记录该 rename 的时候
     };
 }
 
@@ -294,18 +295,30 @@ export const methods = {
 
     /**
      * 添加资源到树形，资源已创建，来自 ipc 通知
+     * 来自右击菜单，也来自批量导入
      * @param asset
      * @param json
      */
     async add(uuid: string) {
-        vm.refresh();
-        const asset = getAssetFromMap(uuid);
-        // @ts-ignore 检查是否需要重名命
-        if (this.newAssetNeedToRename && asset && !asset.readOnly) {
-            asset.state = 'input';
-            // 触发节点数据已变动
-            this.changeData();
+        if (isRequiringToAdd) { // 性能优化：避免导入带来的批量计算冲击
+            clearTimeout(timeOutId);
+            timeOutId = setTimeout(() => {
+                run();
+            }, 1500);
+        } else {
+            run();
         }
+
+        function run() {
+            vm.refresh();
+            vm.ipcSingleSelect(uuid);
+            isRequiringToAdd = true;
+
+            setTimeout(() => {
+                isRequiringToAdd = false;
+            }, 1500);
+        }
+
     },
 
     /**
@@ -313,17 +326,17 @@ export const methods = {
      * @param asset
      * @param json
      */
-    ipcAdd(json: IaddAsset, uuid: string) {
+    async ipcAdd(json: IaddAsset, uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
 
         // 获取该资源
-        const one = getGroupFromTree(treeData, uuid);
-        let url = one[0].source;
+        const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
+        let url = asset.source;
 
-        if (one[0].isDirectory !== true) { // 不是目录，指向父级级
-            url = one[3].source;
+        if (asset.isDirectory !== true) { // 不是目录，终止
+            return;
         }
 
         switch (json.ext) {
@@ -331,19 +344,21 @@ export const methods = {
             default: url += '/New File.' + json.ext; break;
         }
 
-        Editor.Ipc.sendToPackage('asset-db', 'create-asset', url, json.ext === 'folder' ? null : '');
+        asset.state = 'loading';
+        
+        const filedata = json.ext === 'folder' ? null : '';
+        vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
 
-        // @ts-ignore 新建成功后需要 rename
-        this.newAssetNeedToRename = true;
+        asset.state = '';
     },
 
     /**
      * 从树形删除资源节点
      */
     delete(uuid: string) {
-        const arr = getGroupFromTree(treeData, uuid);
-        if (arr[2]) {
-            arr[2].splice(arr[1], 1);
+        const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
+        if (arr) {
+            arr.splice(index, 1);
         }
 
         // 触发节点数据已变动
@@ -368,8 +383,15 @@ export const methods = {
             uuids.forEach((uuid: string) => {
                 const asset = getValidAsset(uuid);
                 if (asset) {
+                    asset.state = 'loading';
                     Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
                     Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
+
+                    setTimeout(() => {
+                        if (asset) {
+                            asset.state = '';
+                        }
+                    }, 800);
                 }
             });
             // 重置所有选中
@@ -507,8 +529,8 @@ export const methods = {
      * @param name
      */
     rename(asset: ItreeAsset, name = '') {
-        // @ts-ignore 还原需要 rename 的状态，手动新增资源的时候会先标注为 true
-        this.newAssetNeedToRename = false;
+        // @ts-ignore 清空需要 rename 的节点
+        this.renameSource = '';
 
         const one = getValidAsset(asset.uuid); // 获取该资源的数据
 
@@ -598,7 +620,7 @@ export const methods = {
             return;
         }
         const uuids = json.from.split(',');
-               // 多资源移动，根据现有排序的顺序执行
+        // 多资源移动，根据现有排序的顺序执行
         const groups: any[] = uuids.map((uuid: string) => {
             return getGroupFromTree(treeData, uuid);
         }).filter(Boolean).sort((a, b) => {
@@ -633,11 +655,11 @@ export const methods = {
      * @param uuid
      */
     copy(uuid: string) {
-        copiedUuids = vm.selects.slice();
-
         // 来自右击菜单的单个选中，右击节点不在已选项目里
-        if (uuid !== undefined && !vm.selects.includes(uuid)) {
+        if (uuid && !vm.selects.includes(uuid)) {
             copiedUuids = [uuid];
+        } else {
+            copiedUuids = vm.selects.slice();
         }
     },
 
@@ -663,7 +685,7 @@ export const methods = {
      * 增加 setTimeOut 是为了优化来自异步的多次触发
      */
     changeData() {
-        if (isRenderingTree) {
+        if (isRenderingTree) { // 性能优化：避免批量修改带来的计算冲击
             clearTimeout(timeOutId);
             timeOutId = setTimeout(() => {
                 vm.renderTree();

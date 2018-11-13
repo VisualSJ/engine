@@ -4,8 +4,12 @@ module.exports = {
     title: 'assets',
 
     menu: {
+        createMenu: 'Create asset context menu',
         searchPlaceholder: 'Search...',
         search: 'Search',
+        refresh: 'Refresh',
+        allExpand: 'All Expand',
+        allCollapse: 'All Collapse',
 
         new: 'Create',
         newFolder: 'Folder',
@@ -20,8 +24,8 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
-        openInlibrary: 'Open in library',
-        openInExplorer: 'Open in explorer',
-        consoleLog: 'Console log UUID and PATH',
+        revealInlibrary: 'Reveal In Library',
+        revealInExplorer: 'Reveal In Explorer',
+        showUuid: 'Show Asset UUID and PATH',
     },
 };

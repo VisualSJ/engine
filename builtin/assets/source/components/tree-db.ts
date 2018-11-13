@@ -77,11 +77,15 @@ function toSubAssetsTree(arr: ItreeAsset[]) {
 /**
  * 形成一个合法的树形数据
  */
-function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[] = [protocol]) {
+function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
     const subAssets = Object.keys(tree.subAssets);
     asset.children = [];
+    const init = !dir ? true : false;
 
     for (const name of subAssets) {
+        if (init) {
+            dir = ['db:/']; // 少掉一个斜杆是为了让数组.join('/')时能完整
+        }
         const subTree = tree.subAssets[name];
         const subAsset = uuidAssets[subTree.uuid];
 

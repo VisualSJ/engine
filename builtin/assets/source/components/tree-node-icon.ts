@@ -22,13 +22,14 @@ const map = {
          * @param {*} uuid
          * @param {*} source
          */
-        async generateImg(uuid: string, source: string) {
-            const thumbnail = await getDataURL(uuid);
+        async generateImg(asset: ItreeAsset) {
+            const thumbnail = await getDataURL(asset);
             if (thumbnail.startsWith('data:image')) {
                 return thumbnail;
             }
 
-            const src = source.replace('db:/', Editor.Project.path);
+            const dbInfo = dbInfos[asset.topSource];
+            const src = join(dbInfo.target, asset.source.substr(dbInfo.protocol.length));
             return await setDataURL(src, thumbnail, { x: 0, y: 0 });
         },
     },
@@ -39,13 +40,13 @@ const map = {
          * @param {*} uuid
          * @param {*} source
          */
-        async generateImg(uuid: string, source: string) {
-            const thumbnail = await getDataURL(uuid);
+        async generateImg(asset: ItreeAsset) {
+            const thumbnail = await getDataURL(asset);
             if (thumbnail.startsWith('data:image')) {
                 return thumbnail;
             }
 
-            const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
+            const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
             if (!meta || (!meta.userData.textureUuid && !meta.userData.rawTextureUuid)) {
                 return '';
             }
@@ -56,7 +57,8 @@ const map = {
                 return '';
             }
 
-            const src = textureInfo.source.replace('db:/', Editor.Project.path);
+            const dbInfo = dbInfos[asset.topSource];
+            const src = join(dbInfo.target, textureInfo.source.substr(dbInfo.protocol.length));
             const json = {
                 x: meta.userData.offsetX || 0,
                 y: meta.userData.offsetY || 0,
@@ -68,8 +70,16 @@ const map = {
     },
 };
 
-async function getDataURL(uuid: string) {
-    const cachePath = join(Editor.Project.path, 'temp', 'assets', uuid);
+// 数据 db 的信息
+const dbInfos: any = {};
+
+async function getDataURL(asset: ItreeAsset) {
+    let dbInfo = dbInfos[asset.topSource];
+    if (!dbInfo) {
+        dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-database-info', asset.topSource);
+        dbInfos[asset.topSource] = dbInfo;
+    }
+    const cachePath = join(dbInfo.temp, asset.uuid);
     if (existsSync(cachePath)) {
         return readFileSync(cachePath, 'utf8');
     }
@@ -77,6 +87,8 @@ async function getDataURL(uuid: string) {
 }
 
 async function setDataURL(src: string, cachePath: string, json: any) {
+    // console.log(src, cachePath);
+
     const img = document.createElement('img');
     img.src = src;
     await new Promise((resolve, reject) => {
@@ -139,7 +151,7 @@ export const methods = {
             vm.type = one.type;
             vm.value = one.value || '';
             if (vm.type === 'image') {
-                vm.value = await one.generateImg(vm.asset.uuid, vm.asset.source);
+                vm.value = await one.generateImg(vm.asset);
             }
         } else {
             vm.type = map['*'].type;

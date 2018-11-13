@@ -83,7 +83,7 @@ export const methods = {
      * 删除资源
      */
     async delete() {
-        vm.$refs.tree.delete();
+        vm.$refs.tree.ipcDelete();
     },
     async up() {
         vm.$refs.tree.upDownLeftRight('up');
@@ -191,6 +191,7 @@ export async function ready() {
             tree: require('./components/tree'),
         },
         data: {
+            language: 'default',
             ready: false,
             state: '',
             allExpand: false,
@@ -234,6 +235,14 @@ export async function ready() {
             });
         },
         methods: {
+            /**
+             * 翻译
+             * @param {*} language
+             * @param {*} key
+             */
+            t(key: string, language: string) {
+                return Editor.I18n.t(`assets.${key}`);
+            },
             /**
              * 刷新数据
              */

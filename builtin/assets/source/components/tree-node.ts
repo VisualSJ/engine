@@ -19,6 +19,7 @@ export const components = {
 export const props: string[] = [
     'asset',
     'selects',
+    'renameSource',
 ];
 
 export function data() {
@@ -28,6 +29,10 @@ export function data() {
 }
 
 export const watch = {
+    asset() {
+        // @ts-ignore
+        this.checkRename();
+    },
     'asset.state'() {
         // @ts-ignore
         this.$nextTick(() => {
@@ -45,6 +50,10 @@ export const watch = {
                 this.$refs.input.setSelectionRange(0, asset.name.lastIndexOf('.'));
             }
         });
+    },
+    renameSource() {
+        // @ts-ignore
+        this.checkRename();
     }
 };
 
@@ -185,7 +194,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.rename'),
-                    enabled: asset.readOnly || asset.isRoot  ? false : true,
+                    enabled: asset.readOnly || asset.isRoot ? false : true,
                     click(event: Event) {
                         // @ts-ignore
                         self.rename(asset);
@@ -193,7 +202,7 @@ export const methods = {
                 },
                 {
                     label: Editor.I18n.t('assets.menu.delete'),
-                    enabled: asset.readOnly || asset.isRoot  ? false : true,
+                    enabled: asset.readOnly || asset.isRoot ? false : true,
                     click() {
                         // @ts-ignore
                         self.$emit('ipcDelete', asset.uuid);
@@ -201,21 +210,23 @@ export const methods = {
                 },
                 { type: 'separator', },
                 {
-                    label: Editor.I18n.t('assets.menu.openInlibrary'),
+                    label: Editor.I18n.t('assets.menu.revealInlibrary'),
                     click() {
-                        const path = join(Editor.Project.path, 'library', asset.uuid.substr(0, 2));
-                        shell.openItem(path);
+                        const path = asset.files[0];
+                        if (path) {
+                            shell.showItemInFolder(path);
+                        }
                     },
                 },
                 {
-                    label: Editor.I18n.t('assets.menu.openInExplorer'),
+                    label: Editor.I18n.t('assets.menu.revealInExplorer'),
                     click() {
                         const path = join(Editor.Project.path, asset.source.substr(5));
                         shell.showItemInFolder(path);
                     },
                 },
                 {
-                    label: Editor.I18n.t('assets.menu.consoleLog'),
+                    label: Editor.I18n.t('assets.menu.showUuid'),
                     click() {
                         console.info(`UUID: ${asset.uuid}, PATH: ${asset.source}`);
                     },
@@ -401,20 +412,32 @@ export const methods = {
         data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
 
-            // @ts-ignore
+        // @ts-ignore
         this.$emit('drop', data);
 
         // @ts-ignore
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
+    },
+
+    checkRename() {
+        // @ts-ignore
+        if (this.renameSource === this.asset.source) {
+            // @ts-ignore
+            this.asset.state = 'input';
+        }
     }
 };
 
 export function mounted() {
     // @ts-ignore
     const asset = this.asset;
+    // @ts-ignore
+    this.checkRename();
+
     if (asset.state !== '' || asset.isRoot || asset.readOnly) {
         // @ts-ignore
         this.draggable = false;
     }
+
 }
