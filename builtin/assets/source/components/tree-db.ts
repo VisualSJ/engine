@@ -30,7 +30,7 @@ async function refresh() {
 
     reset();
     toSubAssetsTree(arr);
-    toAssetsTree(assetsTree, subAssetsTree);
+    toAssetsTree(assetsTree, subAssetsTree, []);
     return assetsTree;
 }
 
@@ -76,11 +76,14 @@ function toSubAssetsTree(arr: ItreeAsset[]) {
 
 /**
  * 形成一个合法的树形数据
+ * @param asset 格式为 assetsTree
+ * @param tree 格式为 subAssetsTree
+ * @param dir 格式类似为 ['db:/', 'assets','New Folder']
  */
 function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
     const subAssets = Object.keys(tree.subAssets);
     asset.children = [];
-    const init = !dir ? true : false;
+    const init = dir.length === 0 ? true : false;
 
     for (const name of subAssets) {
         if (init) {
