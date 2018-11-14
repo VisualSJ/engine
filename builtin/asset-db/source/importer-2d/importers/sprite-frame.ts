@@ -9,7 +9,7 @@ const imageUtils = require('../../../static/utils/image');
 export default class SpriteImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -47,7 +47,9 @@ export default class SpriteImporter extends Importer {
 
             if (!file || !existsSync(file)) {
                 throw new Error(
-                    `Spriteframe import failed: The picture file [${asset.userData.textureUuid}] does not exist`
+                    `Spriteframe import failed: The picture file [${
+                        asset.userData.textureUuid
+                    }] does not exist`
                 );
             }
 
@@ -60,19 +62,45 @@ export default class SpriteImporter extends Importer {
             userData.rawWidth = imageData.width;
             userData.rawHeight = imageData.height;
 
-            const rect = getTrimRect(imageData.data, userData.rawWidth, userData.rawHeight, userData.trimThreshold);
+            const rect = getTrimRect(
+                imageData.data,
+                userData.rawWidth,
+                userData.rawHeight,
+                userData.trimThreshold
+            );
             userData.trimX = rect[0];
             userData.trimY = rect[1];
             userData.width = rect[2];
             userData.height = rect[3];
 
-            userData.offsetX = userData.trimX + userData.width / 2 - userData.rawWidth / 2;
-            userData.offsetY = -(userData.trimY + userData.height / 2 - userData.rawHeight / 2);
+            userData.offsetX =
+                userData.trimX + userData.width / 2 - userData.rawWidth / 2;
+            userData.offsetY = -(
+                userData.trimY +
+                userData.height / 2 -
+                userData.rawHeight / 2
+            );
 
-            userData.borderTop = clamp(userData.borderTop, 0, userData.height);
-            userData.borderBottom = clamp(userData.borderBottom, 0, userData.height - userData.borderTop);
-            userData.borderLeft = clamp(userData.borderLeft, 0, userData.width);
-            userData.borderRight = clamp(userData.borderRight, 0, userData.width - userData.borderLeft);
+            userData.borderTop = clamp(
+                userData.borderTop || 0,
+                0,
+                userData.height - (userData.borderBottom || 0)
+            );
+            userData.borderBottom = clamp(
+                userData.borderBottom || 0,
+                0,
+                userData.height - (userData.borderTop || 0)
+            );
+            userData.borderLeft = clamp(
+                userData.borderLeft || 0,
+                0,
+                userData.width - (userData.borderRight || 0)
+            );
+            userData.borderRight = clamp(
+                userData.borderRight || 0,
+                0,
+                userData.width - (userData.borderLeft || 0)
+            );
 
             userData.vertices = undefined;
         }
@@ -108,7 +136,15 @@ export default class SpriteImporter extends Importer {
         sprite.setRect(cc.rect(0, 0, userData.width, userData.height));
         sprite._textureFilename = userData.textureFile;
         // @ts-ignore
-        sprite.setRect(cc.rect(userData.trimX, userData.trimY, userData.width, userData.height));
+        sprite.setRect(
+            // @ts-ignore
+            cc.rect(
+                userData.trimX,
+                userData.trimY,
+                userData.width,
+                userData.height
+            )
+        );
         sprite.setRotated(userData.rotated);
 
         sprite.insetTop = userData.borderTop;
@@ -135,8 +171,18 @@ export default class SpriteImporter extends Importer {
         // }
 
         let capInsets;
-        if (sprite.insetLeft || sprite.insetTop || sprite.insetRight || sprite.insetBottom) {
-            capInsets = [sprite.insetLeft, sprite.insetTop, sprite.insetRight, sprite.insetBottom];
+        if (
+            sprite.insetLeft ||
+            sprite.insetTop ||
+            sprite.insetRight ||
+            sprite.insetBottom
+        ) {
+            capInsets = [
+                sprite.insetLeft,
+                sprite.insetTop,
+                sprite.insetRight,
+                sprite.insetBottom
+            ];
         }
 
         let vertices;

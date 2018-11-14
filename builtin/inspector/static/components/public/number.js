@@ -22,6 +22,9 @@ exports.template = `
     <div class="value" v-if="dump">
         <ui-slider
             v-if="dump.slide"
+            :min="dump.min !== undefined ? dump.min : 0"
+            :max="dump.max !== undefined ? dump.max : 100"
+            :step="dump.step !== undefined ? dump.step : 1"
             :value="dump.value"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
@@ -87,16 +90,18 @@ exports.computed = {
     metaVal: {
         get() {
             if (this.path) {
-                return (this.path + '').split('.').reduce((prev, next) => {
-                    if (prev) {
-                        try {
-                            return prev[next];
-                        } catch (err) {
-                            console.error(err);
-                            return void 0;
+                return (this.path + '')
+                    .split('.')
+                    .reduce((prev, next) => {
+                        if (prev) {
+                            try {
+                                return prev[next];
+                            } catch (err) {
+                                console.error(err);
+                                return void 0;
+                            }
                         }
-                    }
-                }, this.meta);
+                    }, this.meta);
             }
         },
         set(newVal) {
@@ -114,7 +119,9 @@ exports.computed = {
                     }
                 }, this.meta);
                 if (target) {
-                    target.hasOwnProperty(key) ? (target[key] = newVal) : this.$set(target, key, newVal);
+                    target.hasOwnProperty(key)
+                        ? (target[key] = newVal)
+                        : this.$set(target, key, newVal);
                 }
             }
         }
@@ -126,7 +133,9 @@ exports.methods = {
      * 向上传递修改事件
      */
     dispatch() {
-        const eventType = this.dump ? 'property-changed' : 'meta-changed';
+        const eventType = this.dump
+            ? 'property-changed'
+            : 'meta-changed';
         const evt = document.createEvent('HTMLEvents');
         evt.initEvent(eventType, true, true);
         this.$el.dispatchEvent(evt);

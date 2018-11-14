@@ -19,5 +19,13 @@
         "min-height": 200,
         "width": 400,
         "height": 600
+    },
+    "panel.sprite-editor": {
+        "title": "i18n:inspector.SPRITE_EDITOR.title",
+        "main": "./dist/sprite-editor/panel.js",
+        "min-width": 325,
+        "min-height": 325,
+        "width": 400,
+        "height": 600
     }
 }

@@ -2,7 +2,10 @@
 const { join } = require('path');
 const { readTemplate, T } = require('../../../../utils');
 
-exports.template = readTemplate('2d', './asset-section/assets/javascript.html');
+exports.template = readTemplate(
+    '2d',
+    './asset-section/assets/javascript.html'
+);
 
 exports.props = ['meta', 'info'];
 
@@ -35,7 +38,13 @@ exports.methods = {
 exports.computed = {
     path() {
         if (this.meta) {
-            return join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), `${this.meta.uuid}.js`);
+            return join(
+                Editor.Project.path,
+                'library',
+                this.meta.uuid.substr(0, 2),
+                `${this.meta.uuid}.js`
+            );
         }
+        return '';
     }
 };

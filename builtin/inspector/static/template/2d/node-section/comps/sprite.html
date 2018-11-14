@@ -17,11 +17,11 @@
         name="Sprite Frame" 
         :dump="target.spriteFrame"
     >
-        <!-- todo 
+        <div slot="suffix">
             <ui-button class="blue tiny"
-            slot="suffix"
-            @confirm="editSprite"
-        >{{T('edit_button')}}</ui-button> -->
+                @confirm.stop="editSprite"
+            >{{T('edit_button')}}</ui-button>
+        </div>
     </cc-dragable>
 
     <!-- type -->

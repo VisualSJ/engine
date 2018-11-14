@@ -2,7 +2,10 @@
 
 const { readTemplate, T } = require('../../../../utils');
 
-exports.template = readTemplate('2d', './node-section/comps/sprite.html');
+exports.template = readTemplate(
+    '2d',
+    './node-section/comps/sprite.html'
+);
 
 exports.props = ['target'];
 
@@ -27,5 +30,16 @@ exports.methods = {
 
     editSprite() {
         // todo
+        const {
+            spriteFrame: {
+                value: { uuid }
+            }
+        } = this.target;
+
+        Editor.Ipc.sendToPackage(
+            'inspector',
+            'open-sprite-editor',
+            uuid
+        );
     }
 };

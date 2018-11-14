@@ -58,7 +58,7 @@ export const messages = {
             setTimeout(() => {
                 vm.element = type;
                 vm.uuid = uuid;
-            }, 100);
+            }, 200);
         }
     },
 

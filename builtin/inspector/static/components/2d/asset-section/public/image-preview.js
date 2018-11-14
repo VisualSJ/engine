@@ -1,9 +1,12 @@
 'use strict';
 
 const { join } = require('path');
-const { readTemplate } = require('../../../../utils');
+const { readTemplate, getFitSize } = require('../../../../utils');
 
-exports.template = readTemplate('2d', './asset-section/public/image-preview.html');
+exports.template = readTemplate(
+    '2d',
+    './asset-section/public/image-preview.html'
+);
 
 exports.props = ['meta'];
 
@@ -59,11 +62,22 @@ exports.methods = {
      * 根据容器缩放
      */
     resize() {
-        const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
+        const {
+            height: boxHeight,
+            width: boxWidth
+        } = this.$refs.content.getBoundingClientRect();
         const { width: imgWidth, height: imgHeight } = this.getSize();
-        const [width, height] = this.getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
+        const [width, height] = getFitSize(
+            imgWidth,
+            imgHeight,
+            boxWidth,
+            boxHeight
+        );
         if (this.meta.userData.rotated) {
-            this._scalingSize = { width: Math.ceil(height), height: Math.ceil(width) };
+            this._scalingSize = {
+                width: Math.ceil(height),
+                height: Math.ceil(width)
+            };
         }
         this.$refs.canvas.width = Math.ceil(width);
         this.$refs.canvas.height = Math.ceil(height);
@@ -80,9 +94,15 @@ exports.methods = {
         const canvasHeight = this.$refs.canvas.height;
 
         if (this.meta.__assetType__ === 'texture') {
-            canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
+            canvas.drawImage(
+                this._image,
+                0,
+                0,
+                canvasWidth,
+                canvasHeight
+            );
             this.meta.subMetas &&
-                [this.meta.subMetas['sprite-frame']].forEach(item => {
+                [this.meta.subMetas['sprite-frame']].forEach((item) => {
                     const { userData = {} } = item;
                     const ratioX = canvasWidth / this._image.width;
                     const ratioY = canvasHeight / this._image.height;
@@ -139,47 +159,17 @@ exports.methods = {
                 dHeight
             );
         }
-    },
-
-    /**
-     * 比对图片和容器的宽高返回合适的尺寸
-     * @param {number} imgWidth
-     * @param {number} imgHeight
-     * @param {number} boxWidth
-     * @param {number} boxHeight
-     * @returns {number[]}
-     */
-    getFitSize(imgWidth, imgHeight, boxWidth, boxHeight) {
-        let width = imgWidth;
-        let height = imgHeight;
-
-        if (imgWidth > boxWidth && imgHeight > boxHeight) {
-            // 图片宽高均大于容器
-            width = boxWidth;
-            height = (imgHeight * boxWidth) / imgWidth;
-            if (height > boxHeight) {
-                // 高度比例大于宽度比例
-                height = boxHeight;
-                width = (imgWidth * boxHeight) / imgHeight;
-            }
-        } else {
-            if (imgWidth > boxWidth) {
-                // 图片宽度大于容器宽度
-                width = boxWidth;
-                height = (imgHeight * boxWidth) / imgWidth;
-            } else if (imgHeight > boxHeight) {
-                // 图片高度大于容器高度
-                height = boxHeight;
-                width = (imgWidth * boxHeight) / imgHeight;
-            }
-        }
-        return [width, height];
     }
 };
 
 exports.mounted = function() {
-    let file = join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), this.meta.uuid);
-    file += this.meta.files.filter(file => !file.includes('json'))[0];
+    let file = join(
+        Editor.Project.path,
+        'library',
+        this.meta.uuid.substr(0, 2),
+        this.meta.uuid
+    );
+    file += this.meta.files.filter((file) => !file.includes('json'))[0];
     this.loadImage(file);
     // todo
     // eventBus.on('panel:resize', this.updateImage);

@@ -8,17 +8,21 @@ module.exports = {
     readComponent,
     T,
     getComponentType,
-    buildProp
+    buildProp,
+    getFitSize
 };
 
 const publicCompsPath = join(__dirname, '../components/public/');
 
-const publicComps = readdirSync(publicCompsPath).reduce((prev, next) => {
-    const key = basename(next, extname(next));
-    prev[key] = require(join(publicCompsPath, next));
+const publicComps = readdirSync(publicCompsPath).reduce(
+    (prev, next) => {
+        const key = basename(next, extname(next));
+        prev[key] = require(join(publicCompsPath, next));
 
-    return prev;
-}, {});
+        return prev;
+    },
+    {}
+);
 
 /**
  * 读取模版文件
@@ -54,6 +58,41 @@ function T(...rest) {
     const prefix = 'inspector';
     rest.unshift(prefix);
     return Editor.I18n.t(rest.join('.'));
+}
+
+/**
+ * 比对图片和容器的宽高返回合适的尺寸
+ * @param {number} imgWidth
+ * @param {number} imgHeight
+ * @param {number} boxWidth
+ * @param {number} boxHeight
+ * @returns {number[]}
+ */
+function getFitSize(imgWidth, imgHeight, boxWidth, boxHeight) {
+    let width = imgWidth;
+    let height = imgHeight;
+
+    if (imgWidth > boxWidth && imgHeight > boxHeight) {
+        // 图片宽高均大于容器
+        width = boxWidth;
+        height = (imgHeight * boxWidth) / imgWidth;
+        if (height > boxHeight) {
+            // 高度比例大于宽度比例
+            height = boxHeight;
+            width = (imgWidth * boxHeight) / imgHeight;
+        }
+    } else {
+        if (imgWidth > boxWidth) {
+            // 图片宽度大于容器宽度
+            width = boxWidth;
+            height = (imgHeight * boxWidth) / imgWidth;
+        } else if (imgHeight > boxHeight) {
+            // 图片高度大于容器高度
+            height = boxHeight;
+            width = (imgWidth * boxHeight) / imgHeight;
+        }
+    }
+    return [width, height];
 }
 
 function checkIsAsset(types) {
@@ -103,7 +142,13 @@ function getComponentType(target, $options) {
 
 function buildProp(path, key, item, attrs) {
     // 将原有 type 保存到 originType 以便处理结束后恢复原有 type
-    const {properties, type: originType, value, extends: extendTypes, default: defaultVal} = item;
+    const {
+        properties,
+        type: originType,
+        value,
+        extends: extendTypes,
+        default: defaultVal
+    } = item;
     const hasCompType = getComponentType(item);
 
     let isAsset = false;
@@ -114,7 +159,7 @@ function buildProp(path, key, item, attrs) {
     item.name = attrs.displayName ? attrs.displayName : key;
     item.path = path;
     item.compType = hasCompType;
-    item.attrs = {...attrs};
+    item.attrs = { ...attrs };
 
     if (!originType) {
         attrs.visible = false;
@@ -124,10 +169,9 @@ function buildProp(path, key, item, attrs) {
         }
 
         if (extendTypes) {
-            isAsset = [originType, ...extendTypes].some((item) => [
-                'cc.Asset',
-                'cc.RawAsset'
-            ].includes(item));
+            isAsset = [originType, ...extendTypes].some((item) =>
+                ['cc.Asset', 'cc.RawAsset'].includes(item)
+            );
 
             isNode = extendTypes.includes('cc.Object');
         }
@@ -136,7 +180,10 @@ function buildProp(path, key, item, attrs) {
     isAsset && (item.compType = 'cc.Asset');
     isNode && (item.compType = 'cc.Node');
 
-    if (Array.isArray(value) && (Reflect.has(item, 'default') || Array.isArray(defaultVal))) {
+    if (
+        Array.isArray(value) &&
+        (Reflect.has(item, 'default') || Array.isArray(defaultVal))
+    ) {
         item.type = 'Array';
 
         if (isAsset) {
@@ -159,12 +206,19 @@ function buildProp(path, key, item, attrs) {
         }
     }
 
-    if (item.type === 'Object' && (value === null || value === undefined)) {
+    if (
+        item.type === 'Object' &&
+        (value === null || value === undefined)
+    ) {
         typeNull = true;
         // console.log(`refresh ${item} typenull is ${typeNull}`);
     }
 
-    if (!typeNull && item.attrs.type && item.attrs.type !== originType) {
+    if (
+        !typeNull &&
+        item.attrs.type &&
+        item.attrs.type !== originType
+    ) {
         if (extendTypes) {
             if (!extendTypes.includes(item.attrs.type)) {
                 typeError = true;
@@ -186,8 +240,12 @@ function buildProp(path, key, item, attrs) {
             for (let i = 0; i < value.length; i++) {
                 const item = value[i];
                 // Array 子元素的 buildProp 需要 extends、properties 类型判断
-                extendTypes && !item.extends &&  (item.extends = [...extendTypes]);
-                properties && !item.properties && (item.properties = {...properties});
+                extendTypes &&
+                    !item.extends &&
+                    (item.extends = [...extendTypes]);
+                properties &&
+                    !item.properties &&
+                    (item.properties = { ...properties });
                 buildProp(`${path}.${i}`, `[${i}]`, item, attrs);
             }
         } else if (item.type === 'Object') {
@@ -200,7 +258,13 @@ function buildProp(path, key, item, attrs) {
             Object.keys(item.value).map((key) => {
                 const subItemAttrs = properties && properties[key];
                 if (subItemAttrs) {
-                    item.value[key] && buildProp(`${path}.${key}`, key, item.value[key], subItemAttrs);
+                    item.value[key] &&
+                        buildProp(
+                            `${path}.${key}`,
+                            key,
+                            item.value[key],
+                            subItemAttrs
+                        );
                 }
             });
         }
