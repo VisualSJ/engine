@@ -17,8 +17,8 @@ let tsDirnames = [
     './builtin/scene',
     './builtin/selection',
     './builtin/ui-preview',
-    './builtin/pkg-manager',
-    './builtin/pro-setting',
+    './builtin/package-manager',
+    './builtin/project-setting',
     './builtin/preview',
 ];
 

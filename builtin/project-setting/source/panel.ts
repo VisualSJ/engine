@@ -37,11 +37,11 @@ export async function ready() {
                 design_height:  480,
                 fit_width: true,
                 fit_height: false,
-                simulatorSettingType: 'global',
+                simulator_setting_type: 'global',
                 simulator_device_orientation: 'vertical',
                 simulator_resolution: 'iphone4',
-                customize_resolution_width: 960,
-                customize_resolution_height: 480,
+                simulator_width: 960,
+                simulator_height: 480,
             }
         },
 
@@ -60,13 +60,13 @@ export async function ready() {
                     // @ts-ignore
                     this.set('fit_height', 'preview');
                     // @ts-ignore
-                    this.set('simulatorSettingType', 'preview');
+                    this.set('simulator_setting_type', 'preview');
                     // @ts-ignore
                     this.set('simulator_device_orientation', 'preview');
                     // @ts-ignore
-                    this.set('customize_resolution_width', 'preview');
+                    this.set('simulator_width', 'preview');
                     // @ts-ignore
-                    this.set('customize_resolution_height', 'preview');
+                    this.set('simulator_height', 'preview');
                     // @ts-ignore
                     this.save();
                 }
@@ -83,7 +83,7 @@ export async function ready() {
              * @param key
              */
             t(key: string) {
-                const name = `pro-setting.${key}`;
+                const name = `project-setting.${key}`;
                 return Editor.I18n.t(name);
             },
 
@@ -92,7 +92,8 @@ export async function ready() {
              * @param {*} key
              */
             async get(key: string, type: string) {
-                return await Editor.Ipc.requestToPackage('pro-setting', 'get-setting', `${type}.${key}`);
+                const result = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', `${type}.${key}`);
+                return result;
             },
 
             /**
@@ -100,27 +101,24 @@ export async function ready() {
              * @param {*} str
              */
             set(key: string, type: string) {
-                Editor.Ipc.sendToPackage('pro-setting', 'set-setting', `${type}.${key}`, this[type][key]);
+                Editor.Ipc.sendToPackage('project-setting', 'set-setting', `${type}.${key}`, this[type][key]);
             },
 
             /**
              * 保存项目设置信息
              */
             save() {
-                Editor.Ipc.sendToPackage('pro-setting', 'save-setting');
+                Editor.Ipc.sendToPackage('project-setting', 'save-setting');
             },
 
             async getData(type: string) {
                 const keys = Object.keys(this[type]);
-                // 利用文件列表，生成 promise 任务，并并行执行
-                Promise.all(keys.map((key) => {
-                    const value = this.get(key);
-                    if (value && typeof(value) !== 'object') {
-                        this[type][key] = value;
+                const config = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', type);
+                for (const key of keys) {
+                    if (key in config) {
+                        this.preview[key] = config[key];
                     }
-                })).catch((error) => {
-                    console.log(`get project setting error: ${error}`);
-                });
+                }
             }
         },
         mounted() {

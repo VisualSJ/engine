@@ -5,7 +5,7 @@ const profile = Editor.Profile.load('profile://local/packages/project.json');
 
 export const messages = {
     open() {
-        Editor.Panel.open('pro-setting');
+        Editor.Panel.open('project-setting');
     },
     /**
      * 查询记录的项目设置信息

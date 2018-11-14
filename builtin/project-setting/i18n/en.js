@@ -14,7 +14,7 @@ module.exports = {
         height: 'Height',
         fit_width: 'Fit Width',
         fit_height: 'Fit Height',
-        simulatorSettingType: 'Simulator Setting Type',
+        simulator_setting_type: 'Simulator Setting Type',
         global: 'Global',
         project: 'Project',
         section_canvas: 'Default Canvas Setting',

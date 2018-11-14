@@ -14,7 +14,7 @@ module.exports = {
         height: '高度',
         fit_width: '适配屏幕宽度',
         fit_height: '适配屏幕高度',
-        simulatorSettingType: '模拟器设置类型',
+        simulator_setting_type: '模拟器设置类型',
         global: '全局',
         project: '项目',
         section_canvas: '默认 Canvas 设置',

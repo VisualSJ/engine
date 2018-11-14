@@ -7,7 +7,8 @@ exports.template = readFileSync(join(__dirname, '../template/preview.html'), 'ut
 exports.props = ['preview'];
 exports.data = function() {
     return {
-        scenes: []
+        scenes: [],
+        devices: {}
     };
 };
 
@@ -17,7 +18,7 @@ exports.methods = {
      * @param key
      */
     t(key) {
-        const name = `pro-setting.preview.${key}`;
+        const name = `project-setting.preview.${key}`;
         return Editor.I18n.t(name);
     },
 
@@ -27,11 +28,23 @@ exports.methods = {
      * @param {*} key
      */
     _onpreviewChanged(event, key) {
+        if (key === 'simulator_resolution') {
+            let value = event.target.value;
+            if (value !== 'customize') {
+                this.preview.simulator_width = this.devices[value].width;
+                this.preview.simulator_height = this.devices[value].height;
+            }
+        }
+
+        if (key === 'simulator_width' || key === 'simulator_height') {
+            this.preview.simulator_resolution = 'customize';
+        }
         this.preview[key] = event.target.value;
     },
 
+    // 获取当前项目内所有的场景信息
     async getScenes() {
-        let scenes = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {name: 'scene'});
+        let scenes = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scene'});
         if (!scenes) {
             return;
         }
@@ -43,6 +56,7 @@ exports.methods = {
         });
     },
 
+    // 检查设置内的场景是否存在
     async checkScene(info) {
         if (info === 'current_scene') {
             return true;
@@ -52,6 +66,11 @@ exports.methods = {
             return false;
         }
         return true;
+    },
+
+    // 获取支持的设备信息
+    async getDevice() {
+        this.devices = await Editor.Ipc.requestToPackage('preview', 'get-device');
     }
 };
 
@@ -61,4 +80,6 @@ exports.mounted = function() {
     if (!this.checkScene(this.preview.start_scene)) {
         this.preview.start_scene = 'current_scene';
     }
+
+    this.getDevice();
 };

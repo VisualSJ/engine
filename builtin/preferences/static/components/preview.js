@@ -7,7 +7,9 @@ exports.template = fs.readFileSync(join(__dirname, '../template/preview.html'), 
 
 exports.props = ['preview'];
 exports.data = function() {
-    return {};
+    return {
+        devices: {}
+    };
 };
 
 exports.methods = {
@@ -38,16 +40,18 @@ exports.methods = {
      * @param {*} key
      */
     _onpreviewChanged(event, key) {
-        this.preview[key] = event.target.value;
-
-        switch (key) {
-            case 'autoRefresh':
-                break;
-            case 'previewBrowser':
-                break;
-            case 'simulatorPath':
-                break;
+        if (key === 'simulator_resolution') {
+            let value = event.target.value;
+            if (value !== 'customize') {
+                this.preview.simulator_width = this.devices[value].width;
+                this.preview.simulator_height = this.devices[value].height;
+            }
         }
+
+        if (key === 'simulator_width' || key === 'simulator_height') {
+            this.preview.simulator_resolution = 'customize';
+        }
+        this.preview[key] = event.target.value;
     },
 
     /**
@@ -58,7 +62,12 @@ exports.methods = {
         shell.showItemInFolder(path);
     },
 
+    // 获取支持的设备信息
+    async getDevice() {
+        this.devices = await Editor.Ipc.requestToPackage('preview', 'get-device');
+    }
 };
 
 exports.mounted = function() {
+    this.getDevice();
 };

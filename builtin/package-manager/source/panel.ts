@@ -20,18 +20,18 @@ export const $ = {
 };
 
 /**
- * 配置 pkg-manager 的 iconfont 图标
+ * 配置 package-manager 的 iconfont 图标
  */
 export const fonts = [{
-    name: 'pkg-manager',
-    file: 'packages://pkg-manager/static/iconfont.woff',
+    name: 'package-manager',
+    file: 'packages://package-manager/static/iconfont.woff',
 }];
 
 export const methods = {};
 
 export const messages = {
     // 更新获取的 packages 信息
-    'pkg-manager:update-packages'() {
+    'package-manager:update-packages'() {
         vm.init();
     }
 };
@@ -54,7 +54,7 @@ export async function ready() {
         },
         mounted() {
             this.init();
-            Editor.Ipc.sendToPackage('pkg-manager', 'start-watch');
+            Editor.Ipc.sendToPackage('package-manager', 'start-watch');
         },
         computed: {
             // @ts-ignore
@@ -71,7 +71,7 @@ export async function ready() {
              * 初始化，获取已加载的插件包信息
              */
             async init() {
-                const packages = await Editor.Ipc.requestToPackage('pkg-manager', 'get-packgaes');
+                const packages = await Editor.Ipc.requestToPackage('package-manager', 'get-packgaes');
                 this.packages = packages;
             },
             /**
@@ -82,11 +82,11 @@ export async function ready() {
             },
             // 新建插件
             addPlugin() {
-                Editor.Ipc.sendToPackage('pkg-manager', 'add-packages', this.activeTab);
+                Editor.Ipc.sendToPackage('package-manager', 'add-packages', this.activeTab);
             },
             // 导入插件
             importPlugin() {
-                Editor.Ipc.sendToPackage('pkg-manager', 'import-packages', this.activeTab);
+                Editor.Ipc.sendToPackage('package-manager', 'import-packages', this.activeTab);
             },
         },
         components: {

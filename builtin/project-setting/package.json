@@ -1,9 +1,9 @@
 {
-    "name": "pro-setting",
+    "name": "project-setting",
     "version": "0.0.1",
 
     "menu": {
-        "i18n:menu.project/i18n:pro-setting.title": {
+        "i18n:menu.project/i18n:project-setting.title": {
             "message": "open",
             "icon": "./static/icon.png"
         }
@@ -13,7 +13,7 @@
     "disabled": false,
     "description": "setting about project",
     "panel": {
-        "title": "i18n:pro-setting.title",
+        "title": "i18n:project-setting.title",
         "icon": "./static/icon.png",
         "main": "./dist/panel.js",
         "min-width": 400,

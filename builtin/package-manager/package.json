@@ -1,28 +1,28 @@
 {
-    "name": "pkg-manager",
+    "name": "package-manager",
     "version": "0.0.1",
 
     "menu": {
-        "i18n:menu.expansion/i18n:pkg-manager.title": {
+        "i18n:menu.expansion/i18n:package-manager.title": {
             "message": "open",
             "icon": "./static/icon.png"
         },
-        "i18n:menu.expansion/i18n:pkg-manager.add_packages": {
+        "i18n:menu.expansion/i18n:package-manager.add_packages": {
             
         },
-        "i18n:menu.expansion/i18n:pkg-manager.add_packages/i18n:pkg-manager.add_packages_global": {
+        "i18n:menu.expansion/i18n:package-manager.add_packages/i18n:package-manager.add_packages_global": {
             "message": "add-packages:global"
         },
-        "i18n:menu.expansion/i18n:pkg-manager.add_packages/i18n:pkg-manager.add_packages_project": {
+        "i18n:menu.expansion/i18n:package-manager.add_packages/i18n:package-manager.add_packages_project": {
             "message": "add-packages:project"
         },
-        "i18n:menu.expansion/i18n:pkg-manager.import_packages": {
+        "i18n:menu.expansion/i18n:package-manager.import_packages": {
             
         },
-        "i18n:menu.expansion/i18n:pkg-manager.import_packages/i18n:pkg-manager.import_packages_global": {
+        "i18n:menu.expansion/i18n:package-manager.import_packages/i18n:package-manager.import_packages_global": {
             "message": "import-packages:global"
         },
-        "i18n:menu.expansion/i18n:pkg-manager.import_packages/i18n:pkg-manager.import_packages_project": {
+        "i18n:menu.expansion/i18n:package-manager.import_packages/i18n:package-manager.import_packages_project": {
             "message": "import-packages:project"
         }
     },
@@ -30,7 +30,7 @@
     "main": "./dist/browser.js",
 
     "panel": {
-        "title": "i18n:pkg-manager.title",
+        "title": "i18n:package-manager.title",
         "main": "./dist/panel.js",
         "icon": "./static/icon.png",
         "min-width": 200,

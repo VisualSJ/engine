@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    title: 'pkg-manager',
+    title: 'package-manager',
     add_packages: 'Create a new expansion',
     add_packages_global: 'For all project(in user profile folder)',
     add_packages_project: 'For current project(in project folder)',

@@ -9,7 +9,7 @@ import { basename , join } from 'path';
  */
 export const messages = {
     open() {
-        Editor.Panel.open('pkg-manager');
+        Editor.Panel.open('package-manager');
     },
     // 获取插件管理器内存储的插件信息
     'get-packgaes'() {
@@ -55,7 +55,7 @@ export function load() {
     // @ts-ignore
     pkg = this;
     Editor.Package.on('updatePlugin', () => {
-        Editor.Ipc.sendToAllPanels('pkg-manager:update-packages');
+        Editor.Ipc.sendToAllPanels('package-manager:update-packages');
     });
 }
 
