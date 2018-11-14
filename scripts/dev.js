@@ -32,7 +32,7 @@ function cmd(cmd, options) {
 (async (root) => {
 
     const progressBar = new ProgressBar(`${chalk.magenta('Update Hosts:')} :bar :current/:total`, {
-        total: 6,
+        total: 9,
     });
 
     // clone 3d 引擎
@@ -48,7 +48,7 @@ function cmd(cmd, options) {
         if (!fse.existsSync(engine)) {
             vGit.config.stdio = [0, 1, 2];
             console.log(' ');
-            await vGit.clone(dir, 'git@github.com:cocos-creator/engine.git');
+            await vGit.clone(dir, 'https://github.com/cocos-creator/engine.git');
         }
 
         const repo = await vGit.init(engine);
@@ -66,15 +66,31 @@ function cmd(cmd, options) {
         console.log(' ');
 
         // 3d 引擎模块安装
-        await cmd('npm', {
+        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
             args: ['install'],
+            root: engine,
+        });
+        progressBar.tick();
+        console.log(' ');
+        
+        // 3d 引擎模块还原配置
+        await cmd('git', {
+            args: ['checkout', '.'],
+            root: engine,
+        });
+        progressBar.tick();
+        console.log(' ');
+        
+        // 3d 引擎模块构建 gulp build-debug-infos
+        await cmd(process.platform === 'win32' ? 'gulp.cmd' : 'gulp', {
+            args: ['build-debug-infos'],
             root: engine,
         });
         progressBar.tick();
         console.log(' ');
 
         // 3d 引擎模块构建
-        await cmd('npm', {
+        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
             args: ['run', 'build'],
             root: engine,
         });
@@ -113,15 +129,23 @@ function cmd(cmd, options) {
         console.log(' ');
 
         // 2d 引擎模块安装
-        await cmd('npm', {
+        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
             args: ['install'],
             root: engine,
         });
         progressBar.tick();
         console.log(' ');
 
+        // 2d 引擎模块还原配置
+        await cmd('git', {
+            args: ['checkout', '.'],
+            root: engine,
+        });
+        progressBar.tick();
+        console.log(' ');
+
         // 2d 引擎模块构建 gulp build-debug-infos
-        await cmd('gulp', {
+        await cmd(process.platform === 'win32' ? 'gulp.cmd' : 'gulp', {
             args: ['build-debug-infos'],
             root: engine,
         });
