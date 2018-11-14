@@ -16,7 +16,7 @@ new Vue({
     data: {
 
         // 当前 2d 或 3d 项目 tab 项的 index
-        type: '2d',
+        type: '3d',
 
         // 侧边菜单项的文本内容
         types: [
@@ -60,7 +60,7 @@ let maxiFlag = false;
 if (process.platform === 'darwin') {
     $windoeRow.className = 'window-row mac';
 } else {
-    // 控制窗口关闭、最小化等(由于 vue 绑定的时机问题，使用 vue 绑定click无法接收到在可拖拽区域的点击事件)
+    // 控制窗口关闭、最小化等(由于 vue 绑定的时机问题，使用 vue 绑定 click 无法接收到在可拖拽区域的点击事件)
     $windowContron.addEventListener('click', (event) => {
         let name = event.target.getAttribute('name');
         if (!name) {

@@ -52,9 +52,19 @@ exports.methods = {
      */
     createProject() {
         let template = this.list[this.activeIndex];
-        project.create(this.directoryPath, template.path);
-        project.add(this.type, this.directoryPath);
-        project.open(this.directoryPath);
+        if (!this.isEmptyDir(this.directoryPath)) {
+            dialog.show({
+                type: 'warning',
+                title: '警告',
+                message: '该文件夹内已存在文件',
+                buttons: ['直接覆盖同名文件', '重新选择路径']
+            }).then((array) => {
+                if (array[0] === 0) {
+                    project.create(this.directoryPath, template.path);
+                    project.open(this.directoryPath);
+                }
+            });
+        }
     },
 
     // 打开文件夹弹框
@@ -63,12 +73,22 @@ exports.methods = {
         dialog.openDirectory({ title: '选择项目路径'})
         .then((array) => {
             if (array && array[0]) {
-                that.directoryPath = array[0] + '\\NewProject';
+                let path = array[0] + '\\NewProject';
+                that.directoryPath = getName(path);
                 dashProfile.set('recentProPath', array[0]);
                 dashProfile.save();
             }
         });
     },
+
+    /**
+     * 检测当前文件夹是否为空
+     * @param {*} path
+     */
+    isEmptyDir(path) {
+        let files = fs.readdirSync(path);
+        return !files || !files.length;
+    }
 };
 
 exports.mounted = function() {

@@ -2,7 +2,6 @@
 
 const { existsSync } = require('fs');
 const { basename, dirname, extname, join } = require('path');
-const util = {};
 /**
  * 初始化一个可用的文件名
  * @param file 初始文件名
@@ -23,10 +22,10 @@ function getName(file) {
                 num += 1;
                 // @ts-ignore
                 num = num.toString().padStart(3, '0');
-                return `-${num}`;
+                return `_${num}`;
             });
         } else {
-            name += '-001';
+            name += '_001';
         }
 
         file = join(dir, name);

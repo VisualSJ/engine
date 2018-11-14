@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const fse = require('fs-extra');
 const ps = require('path');
 
 const project = require('./../../../../lib/project');
@@ -36,15 +37,8 @@ exports.methods = {
      * @param {*} event
      * @param {*} path 项目路径
      */
-    removeProject(event, path) {
+    removeProject(path) {
         project.remove(path);
-
-        const vm = this;
-        setTimeout(() => {
-            vm.list = project.getList({
-                type: vm.type,
-            });
-        }, 500);
     },
 
     /**
@@ -54,24 +48,42 @@ exports.methods = {
      */
     openProject(event, path) {
         if (path) {
+            // 判断路径是否存在,不存在则提示并从项目管理器中删除
+            if (!fs.existsSync(path)) {
+                alert(`${path} is not exists`);
+                this.removeProject(path);
+                return;
+            }
             project.open(path);
             return;
         }
-
-        const vm = this;
+        const that = this;
         dialog.openDirectory({title: '打开项目'}).then((array) => {
             if (!array || !array[0]) {
                 return;
             }
             const path = array[0];
-            project.add(vm.type, path);
-            project.open(path);
+            const pkgJsonFile = ps.join(path, 'package.json');
+            if (!fs.existsSync(pkgJsonFile)) {
+                // todo toast 提示
+                const projectJson = fse.readJSONSync(ps.join(path, 'project.json'));
+                fse.outputJSONSync(pkgJsonFile, {
+                    type: projectJson.engine.includes('3d') ? '3d' : '2d',
+                }, { spaces: 2, });
+            }
+            const pkgJson = fse.readJSONSync(pkgJsonFile);
 
-            setTimeout(() => {
-                vm.list = project.getList({
-                    type: vm.type,
-                });
-            }, 500);
+            if (!pkgJson.type && pkgJson.engine) {
+                pkgJson.type = pkgJson.engine.includes('3d') ? '3d' : '2d';
+            }
+
+            // 判断当前打开项目与选择的 type 是否匹配
+            if (that.type && that.type !== pkgJson.type) {
+                // todo 提示错误
+                alert(`This project is not a ${that.type} project`);
+                return;
+            }
+            project.open(path);
         });
     },
 
@@ -99,10 +111,22 @@ exports.methods = {
     _onMouseLeave(event) {
         this.hover = null;
     },
+
+    /**
+     * 更新当前项目信息
+     */
+    updateProjects() {
+        this.list = project.getList({
+            type: this.type,
+        });
+    }
 };
 
 exports.mounted = function() {
-    this.list = project.getList({
-        type: this.type,
+    let that = this;
+    that.updateProjects();
+    // 监听项目内容更新，刷新列表
+    project.on('update', () => {
+        that.updateProjects();
     });
 };

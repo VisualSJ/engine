@@ -11,7 +11,7 @@
                 <div class="name">打开已有项目</div>
                 <div class="hover-wrap">
                     <span class="btn btn-blue"
-                        @click="openProject($event)"
+                        @click="openProject"
                     >打开</span>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                 <div class="name">{{item.name}}</div>
                 <div class="hover-wrap">
                     <span class="iconfont icon-del-b"
-                        @click="removeProject($event, item.path)"
+                        @click="removeProject(item.path)"
                     ></span>
                     <span class="btn btn-blue"
                         @click="openProject($event, item.path)"
