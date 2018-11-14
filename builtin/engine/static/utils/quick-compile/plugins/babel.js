@@ -13,7 +13,7 @@ module.exports = function() {
                 // TODO - disable transform-strict-mode
                 sourceMaps: 'inline',
                 compact: false,
-                filename: script.src, // search path for babelrc
+                // filename: script.src, // search path for babelrc
                 presets: [
                   'env'
                 ],
