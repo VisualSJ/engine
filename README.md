@@ -49,12 +49,25 @@ npm run dev
 npm run build:npm
 ```
 
-### 更新 ftp 上的安装包
+### 更新仓库以及引擎仓库
 
-tgz 包可以通过 npm run update 进行更新：
+更新仓库、使用的内置引擎以及 ftp 上的 tgz
 
 ```bash
-npm run update @editor/dock @editor/panel
+npm run update
+```
+
+更新 tgz 包
+
+```bash
+npm run update -- --module
+npm run update -- --module @editor/dock @editor/panel
+```
+
+更新引擎
+
+```bash
+npm run update -- --repo
 ```
 
 命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。

@@ -72,7 +72,7 @@ function cmd(cmd, options) {
         });
         progressBar.tick();
         console.log(' ');
-        
+
         // 3d 引擎模块还原配置
         await cmd('git', {
             args: ['checkout', '.'],
@@ -80,7 +80,7 @@ function cmd(cmd, options) {
         });
         progressBar.tick();
         console.log(' ');
-        
+
         // 3d 引擎模块构建 gulp build-debug-infos
         await cmd(process.platform === 'win32' ? 'gulp.cmd' : 'gulp', {
             args: ['build-debug-infos'],
