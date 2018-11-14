@@ -371,6 +371,7 @@ export const methods = {
      * @param uuid
      */
     drop(event: Event, asset: ItreeAsset) {
+        event.preventDefault(); // 重要：阻止默认打开一些文件的行为
         // @ts-ignore
         const target: any = event.currentTarget;
         const insert = target.getAttribute('insert');

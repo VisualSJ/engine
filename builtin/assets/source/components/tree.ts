@@ -304,7 +304,7 @@ export const methods = {
             clearTimeout(timeOutId);
             timeOutId = setTimeout(() => {
                 run();
-            }, 1500);
+            }, 1000);
         } else {
             run();
         }
@@ -316,7 +316,7 @@ export const methods = {
 
             setTimeout(() => {
                 isRequiringToAdd = false;
-            }, 800);
+            }, 500);
         }
     },
 
@@ -587,7 +587,7 @@ export const methods = {
      *
      * @param json
      */
-    drop(json: IdragAsset) {
+    async drop(json: IdragAsset) {
         // @ts-ignore 隐藏高亮框
         this.selectBox = false;
 
@@ -603,7 +603,7 @@ export const methods = {
         if (toAsset && !toAsset.isDirectory) {
             toAsset = getValidAsset(toAsset.parentUuid);
         }
-        if (!toAsset) {
+        if (!toAsset || !toAsset.isDirectory) {
             return;
         }
 
@@ -612,10 +612,16 @@ export const methods = {
             if (!Array.isArray(json.files)) { // 容错处理
                 json.files = [];
             }
-            json.files.forEach((one: any) => {
-                toAsset.state = 'loading'; // 显示 loading 效果
-                importAsset(toAsset.uuid, one.path);
-            });
+
+            let index = 0;
+            let file: any;
+            toAsset.state = 'loading'; // 显示 loading 效果
+
+            do {
+                file = json.files[index];
+                index++;
+            } while (file && await importAsset(toAsset.source, file.path));
+
             return;
         }
         const uuids = json.from.split(',');
@@ -666,16 +672,24 @@ export const methods = {
      * 粘贴
      * @param uuid 粘贴到这个节点里面
      */
-    paste(uuid: string) {
+    async paste(uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
-        copiedUuids.forEach((id: string) => {
-            const asset = getValidAsset(id);
-            if (asset) {
-                importAsset(uuid, asset.source);
-            }
-        });
+
+        const parent = getValidAsset(uuid);
+        if (!parent || !parent.isDirectory) {
+            return;
+        }
+
+        let index = 0;
+        let asset;
+        parent.state = 'loading'; // 显示 loading 效果
+
+        do {
+            asset = getValidAsset(copiedUuids[index]);
+            index++;
+        } while (asset && await importAsset(parent.source, asset.source));
     },
 
     /**
@@ -999,15 +1013,11 @@ function getSiblingsFromMap(uuid = '') {
 
 /**
  * 外部文件系统拖进资源
- * @param uuid 创建的位置
- * @param path 资源路径
+ * @param target 创建的位置
+ * @param source 资源路径
  */
-function importAsset(uuid: string, source: string) {
-    const dest = getValidAsset(uuid);
-    if (!dest) {
-        return;
-    }
-    Editor.Ipc.sendToPackage('asset-db', 'copy-asset', source, dest.source);
+async function importAsset(target: string, source: string) {
+    return await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', source, target);
 }
 
 /**
