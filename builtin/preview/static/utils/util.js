@@ -1,5 +1,6 @@
 const { basename, join, relative, extname } = require('path');
 const { readFileSync } = require('fs');
+const { copyFileSync, ensureDir, outputFileSync} = require('fs-extra');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
 const JSONStream = require('JSONStream');
@@ -10,19 +11,28 @@ const builtins = require('browserify/lib/builtins.js');
 // const mdeps = new Mdeps(mpConfig);
 const insertGlobals = require('insert-module-globals');
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
+const TEMP_PATH = join(Editor.App.project, 'temp');
 
-// 定义动态加载 js 时需要添加的脚本头尾部
-const SCRIPTS_HEADER = ``;
-
-const SCRIPTS_FOOTER = ``;
-let scriptsCache = []; // 脚本缓存
 let script2uuid = {}; // 脚本映射表
 
 const DB_PROTOCOL_HEADER = 'db://';
-const ASSET_HEADER = 'db://assets/';
-const CCSETTINGS_PREFIX = 'window._CCSettings';
 const PREVIEW_PATH = 'preview-scripts';
 const RAWASSETSPATH = join(Editor.App.project, '/assets');
+
+// 设备配置信息
+const DEVICES = {
+    ipad: { name: 'iPhone 3Gs (480x320)', width: 480, height: 320},
+    ipad_mini: { name: 'iPhone 4 (960x640)', width: 960, height: 640},
+    iphone4: { name: 'iPhone 5 (1136x640)', width: 1136, height: 640},
+    iphone5: { name: 'iPhone 6 (1334x750)', width: 1334, height: 750},
+    iphone6: { name: 'iPhone 6 Plus (1920x1080)', width: 1920, height: 1080},
+    iphone6_plus: { name: 'iPad (1024x768)', width: 1024, height: 768},
+    ipad_retina: { name: 'iPad Retina (2048x1536)', width: 2048, height: 1536},
+    android_800: { name: 'Android (800x480)', width: 800, height: 480},
+    android_854: { name: 'Android (854x480)', width: 854, height: 480},
+    android_1280: { name: 'Android (1280x720)', width: 1280, height: 720},
+    customize: { name: '自定义', width: 960, height: 640}
+};
 
 // import 类型与 资源类名映射表
 // TODO: 待完善
@@ -41,6 +51,10 @@ const type2CCClass = {
     markdown: 'cc.TextAsset'
 };
 
+async function getEnginInfo() {
+    let info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+    return info;
+}
 // 判断是否是脚本
 function isScript(assetType) {
     return assetType === 'javascript' || assetType === 'coffeescript' || assetType === 'typescript';
@@ -169,8 +183,21 @@ async function getScriptsCache(scripts) {
     });
 }
 
-// 获取初始配置信息
-function getCustomConfig() {
+/**
+ * 获取初始配置信息
+ * @param {*} simulatorConfig 标识是否为模拟器
+ * @returns
+ */
+function getCustomConfig(simulatorConfig) {
+    if (simulatorConfig) {
+        return {
+            designWidth: simulatorConfig.simulator_width || 960,
+            designHeight: simulatorConfig.simulator_height || 480,
+            groupList: getProSetting('group-list') || ['default'],
+            collisionMatrix: getProSetting('collision-matrix') || [[true]],
+            rawAssets: {}
+        };
+    }
     return {
         designWidth: getProSetting('preview.design_width') || 960,
         designHeight: getProSetting('preview.design_height') || 480,
@@ -214,6 +241,25 @@ function getAssetUrl(path, type) {
         rawPath = rawPath.replace(extname(rawPath), '');
     }
     return relative(RAWASSETSPATH, rawPath);
+}
+
+async function writScripts() {
+    const assetList = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
+    let path = join(TEMP_PATH, '/quick-scripts');
+    ensureDir(join(path, 'assets'));
+    for (let i = 0; i < assetList.length; i++) {
+        let asset = assetList[i];
+        let tempPath = getRightUrl(asset.source);
+        let ext = extname(tempPath);
+
+        let name = basename(tempPath, ext);
+        let scriptName = basename(asset.files[0]).replace(asset.uuid, name);
+        let mapName = basename(asset.files[1]).replace(asset.uuid, name);
+        let content = getModules(tempPath);
+        outputFileSync(join(path, 'assets', scriptName), content);
+        copyFileSync(asset.files[1], join(path, 'assets', mapName));
+    }
+    return path;
 }
 
 // 查询资源的相关信息
@@ -267,10 +313,8 @@ function compressPackedAssets() {
 
 // 获取当前展示场景的数据信息
 async function getCurrentScene() {
-    let uuid = getProSetting('preview.start_scene');
-    if (uuid && uuid !== 'current_scene') {
-        uuid = getProSetting('preview.start_scene');
-    } else {
+    let uuid = await getProSetting('preview.start_scene');
+    if ((uuid && uuid === 'current_scene') || typeof(uuid) === 'object') {
         uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
     }
     const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
@@ -278,16 +322,32 @@ async function getCurrentScene() {
 }
 
 /**
- * 查询项目配置
+ * 查询项目配置信息
  * @param {*} key
  */
 async function getProSetting(key) {
-    return await Editor.Ipc.requestToPackage('pro-setting', 'get-setting', key);
+    let value = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', key);
+    return value;
 }
 
-// 获取 setting 的脚本信息
-async function buildSetting(options) {
-    const setting = Object.assign(options, getCustomConfig());
+/**
+ * 查询全局配置信息
+ * @param {*} key
+ * @returns
+ */
+async function getGroSetting(key) {
+    return await Editor.Ipc.requestToPackage('preferences', 'get-setting', key);
+}
+
+/**
+ * 获取 setting 的脚本信息
+ * @param {*} options 脚本配置信息
+ * @param {*} simulatorConfig 模拟器配置
+ * @returns
+ */
+async function buildSetting(options, simulatorConfig) {
+    let config = await getCustomConfig(simulatorConfig);
+    const setting = Object.assign(options, config);
 
     const DEBUG = (setting.debug = options.debug);
     const PREVIEW = options.preview;
@@ -338,4 +398,9 @@ module.exports = {
     buildSetting,
     getModules,
     getCurrentScene,
+    getProSetting,
+    getGroSetting,
+    getEnginInfo,
+    writScripts,
+    DEVICES
 };

@@ -22,3 +22,5 @@ node_modules/
 # 模拟器
 /builtin/preview/simulator
 
+# cocos2d-x
+/cocos2d-x

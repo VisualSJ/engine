@@ -5,7 +5,8 @@ import { getPort, start, stop } from './express';
 import { emitReload } from './socket';
 const ipc = require('@base/electron-base-ipc');
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
-
+const {DEVICES} = require('./../static/utils/util.js');
+const simulator = require('./../static/simulator/simulator.js');
 let pkg: any = null;
 
 /**
@@ -38,8 +39,7 @@ export const messages = {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {
             // 模拟器预览
-            // const win = new BrowserWindow({width: 1000, height: 700});
-            // win.loadURL(`http://localhost:${getPort()}`);
+            simulator.run();
         }
     },
 
@@ -56,6 +56,13 @@ export const messages = {
     'device-change'(deviceNum: number) {
         ipc.send('package-preview:device-num-change', deviceNum);
     },
+
+    /**
+     * 获取支持的设备信息
+     */
+    'get-device'() {
+        return DEVICES;
+    }
 };
 
 export async function load() {

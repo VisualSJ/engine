@@ -17,22 +17,6 @@
     let splash = null;
     let inited = false;
 
-    // init device resolutions
-    const devices = [
-        { name: 'Apple iPad', width: 1024, height: 768, ratio: 2 },
-        { name: 'Apple iPad Mini', width: 1024, height: 768, ratio: 1 },
-        { name: 'Apple iPhone 4', width: 320, height: 480, ratio: 2 },
-        { name: 'Apple iPhone 5', width: 320, height: 568, ratio: 2 },
-        { name: 'Apple iPhone 6', width: 375, height: 667, ratio: 2 },
-        { name: 'Apple iPhone 6 Plus', width: 414, height: 736, ratio: 3 },
-        { name: 'Huawei P9', width: 540, height: 960, ratio: 2 },
-        { name: 'Huawei Mate9 Pro', width: 720, height: 1280, ratio: 2 },
-        { name: 'Goolge Nexus 4', width: 384, height: 640, ratio: 2 },
-        { name: 'Goolge Nexus 5', width: 360, height: 640, ratio: 3 },
-        { name: 'Goolge Nexus 6', width: 412, height: 732, ratio: 3.5 },
-        { name: 'Goolge Nexus 7', width: 960, height: 600, ratio: 2 }
-    ];
-
     let scene = null;
     let rotated = false;
 
@@ -54,12 +38,28 @@
     /**
      * initialize select option
      */
-    function initSelect() {
-        devices.map((device, index) => {
+    async function initSelect() {
+        let devices = await getDevices();
+        Object.keys(devices).forEach((key) => {
             const option = document.createElement('option');
-            option.value = index + 1;
-            option.text = device.name;
+            option.value = key;
+            option.text = devices[key].name;
             select.add(option);
+        });
+    }
+
+    // 获取支持的设备列表
+    function getDevices() {
+        return new Promise((resolve) => {
+            const request = new XMLHttpRequest();
+            request.responseType = 'text';
+            request.addEventListener('load', (req) => {
+                if (request.status === 200) {
+                    resolve(JSON.parse(request.response));
+                }
+            });
+            request.open('GET', 'get-devices', 'true');
+            request.send();
         });
     }
 

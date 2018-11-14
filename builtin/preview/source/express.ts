@@ -4,7 +4,7 @@ import { createReadStream } from 'fs-extra';
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';
-const { getSetting, getModules , getCurrentScene} = require('./../static/utils/util');
+const { buildSetting, getModules , getCurrentScene, DEVICES} = require('./../static/utils/util');
 const express = require('express');
 
 let app: any = null;
@@ -29,7 +29,7 @@ export async function start() {
     app.set('view engine', 'jade');
     // 获取配置文件
     app.get('/setting.json', async (req: any, res: any) => {
-        const setting = await getSetting({
+        const setting = await buildSetting({
             debug: true,
             preview: true,
             platform: 'web-desktop'
@@ -74,6 +74,11 @@ export async function start() {
         const asset = await getCurrentScene();
         const filePath = await asset.files[0];
         res.sendFile(filePath);
+    });
+
+    // 获取设备配置信息
+    app.get('/get-devices', async (req: any, res: any) => {
+        res.json(DEVICES);
     });
 
     app.get('/__quick_compile__.js', async (req: any, res: any) => {
