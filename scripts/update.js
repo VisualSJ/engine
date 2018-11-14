@@ -29,7 +29,8 @@ const packages = {
  */
 function cmd(cmd, options) {
     return new Promise((resolve, reject) => {
-        let child = cp.spawn(process.platform === 'win32' ? `${cmd}.cmd` : cmd, options.args, {
+        cmd = (options.rawCmd) || (process.platform !== 'win32') ? cmd : `${cmd}.cmd`;
+        let child = cp.spawn(cmd, options.args, {
             stdio: options.stdio || [0, 1, 2],
             cwd: options.root || process.cwd(),
         });
@@ -130,18 +131,21 @@ const update = async function() {
     await cmd('git', {
         root: path.join(__dirname, '..'),
         args: ['pull'],
+        rawCmd: true
     });
 
     console.log(chalk.cyanBright('Update 3d engine repo...'));
     await cmd('git', {
         root: path.join(__dirname, '../resources/3d/engine'),
         args: ['pull'],
+        rawCmd: true
     });
 
     console.log(chalk.cyanBright('Update 2d engine repo...'));
     await cmd('git', {
         root: path.join(__dirname, '../resources/2d/engine'),
         args: ['pull'],
+        rawCmd: true
     });
 };
 

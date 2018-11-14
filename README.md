@@ -12,14 +12,6 @@ npm run build
 npm run dev
 ```
 
-npm 版本 5 以上会使用 package-lock.json 锁定依赖库，tgz 安装包也会进行校验，所以如果 ftp 上的包更新的时候，可能会造成校验失败，这时候需要手动删除 package-lock.json 文件。
-
-或者在项目内加入 .npmrc 文件，关闭 package-lock：
-
-```
-package-lock=false
-```
-
 ### 构建编辑器
 
 编辑器内使用了部分 ts 以及 less 代码，需要在使用之前，进行构建生成可以直接运行的代码。
