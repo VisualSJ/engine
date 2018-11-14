@@ -8,6 +8,10 @@ const { AssetDB } = require('asset-db');
 const protocol = 'db://';
 let isReady = false;
 let waitTask = [];
+const type2importer = {
+    scripts: ['javascript', 'coffeescript', 'typescript'],
+    scene: ['scene']
+};
 function waitReady() {
     return new Promise((resolve) => {
         if (isReady) {
@@ -234,10 +238,10 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
         const name = names[i];
         const db = AssetWorker[name];
         const uuids = Object.keys(db.uuid2asset);
-        let extnames = null;
+        let importers ;
         // 存在筛选的 name 变量时，先判断是否有效后获取筛选的文件名后缀
-        if (options && options.name && options.name in db.name2importer) {
-            extnames = db.name2importer[options.name].extnames;
+        if (options && options.type) {
+            importers = type2importer[options.type];
         } else {
             // 手动添加 db 对象
             assets.push({
@@ -254,7 +258,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
         for (let j = 0; j < uuids.length; j++) {
             const uuid = uuids[j];
             const asset = db.uuid2asset[uuid];
-            if (extnames && !extnames.includes(asset.extname)) {
+            if (importers && !importers.includes(asset.meta.importer)) {
                 continue;
             }
             const info = {
