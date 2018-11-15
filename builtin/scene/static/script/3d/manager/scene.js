@@ -46,7 +46,7 @@ async function open(uuid) {
     }
 
     // camera.setSize(cc.Canvas.instance._designResolution);
-    // camera.adjustToCenter(10);
+    // camera.home();
 
     // 爬取节点树上的所有节点数据
     await manager.node.init(cc.director._scene);

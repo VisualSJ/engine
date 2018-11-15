@@ -6,9 +6,12 @@ function bindEvent(operator) {
     const $body = document.body;
 
     // window 变化事件
-    window.addEventListener('resize', (event) => {
+    window.addEventListener('resize', () => {
         const bcr = $body.getBoundingClientRect();
-        operator.emit('resize', { width: bcr.width, height: bcr.height, });
+        if (!window.cc) return;
+        cc.view.setCanvasSize(bcr.width, bcr.height);
+        cc.view.setDesignResolutionSize(bcr.width, bcr.height);
+        // operator.emit('resize', { width: bcr.width, height: bcr.height });
     });
 
     // 鼠标左键按住移动的情况下，发送 rect

@@ -2,9 +2,19 @@
 
 const { createCamera, createGrid } = require('./utils');
 
-const manager = {
-    operation: require('../operation'),
-};
+let vec3, quat;
+let v3a, v3b;
+
+function startTicking(fn) {
+    if (fn.timer) return;
+    fn.timer = setInterval(fn, 17);
+}
+
+function stopTicking(fn) {
+    if (!fn.timer) return;
+    clearInterval(fn.timer);
+    fn.timer = 0;
+}
 
 /**
  * 摄像机管理器
@@ -13,46 +23,64 @@ const manager = {
  * 编辑器模式下，游戏内的其他摄像机需要关闭（现阶段是在引擎内 hack 实现）。
  */
 
-let v3a = null;
-let v3b = null;
+class CameraTool {
 
-class Camrea {
-
-    /**
-     * 初始化摄像机并且挂到 renderer 上
-     */
-    init() {
-
-        if (!cc.Object.Flags.HideInHierarchy) {
-            console.warn('cc.Object.Flags.HideInHierarchy is not define.');
-
-            cc.Object.Flags.HideInHierarchy = 1 << 10;
-        }
-
-        v3a = cc.vmath.vec3.create();
-        v3b = cc.vmath.vec3.create();
-
+    constructor() {
         // speed controller
         this.movingSpeed = 0.2;
         this.movingSpeedShiftScale = 3;
         this.rotationSpeed = 0.5;
         this.panningSpeed = 0.2;
         this.wheelSpeed = 0.1;
+        // per-frame callback
+        this.move = () => {
+            this.node.getPosition(this.pos);
+            this.node.getRotation(this.rot);
+            vec3.scale(v3b, this.velocity, this.shiftKey ?
+                this.movingSpeedShiftScale : 1);
+            vec3.transformQuat(v3b, v3b, this.rot);
+            this.node.setPosition(vec3.add(v3b, this.pos, v3b));
+        };
+    }
+
+    /**
+     * 初始化摄像机并挂到场景中
+     */
+    init() {
+        vec3 = cc.vmath.vec3;
+        quat = cc.vmath.quat;
+        v3a = vec3.create();
+        v3b = vec3.create();
 
         // temps to store transform
-        this.pos = cc.vmath.vec3.create(50, 50, 50);
-        this.rot = cc.vmath.quat.create();
-        this.euler = cc.vmath.vec3.create();
+        this.pos = vec3.create(50, 50, 50);
+        this.rot = quat.create();
+        this.euler = vec3.create();
         // temps to store directions
-        this.id_right = cc.vmath.vec3.create(1, 0, 0);
-        this.id_up = cc.vmath.vec3.create(0, 1, 0);
-        this.id_forward = cc.vmath.vec3.create(0, 0, 1);
-        this.right = cc.vmath.vec3.clone(this.id_right);
-        this.up = cc.vmath.vec3.clone(this.id_up);
-        this.forward = cc.vmath.vec3.clone(this.id_forward);
+        this.id_right = vec3.create(1, 0, 0);
+        this.id_up = vec3.create(0, 1, 0);
+        this.id_forward = vec3.create(0, 0, 1);
+        this.right = vec3.clone(this.id_right);
+        this.up = vec3.clone(this.id_up);
+        this.forward = vec3.clone(this.id_forward);
         // temps to store velocity
-        this.velocity = cc.vmath.vec3.create();
+        this.velocity = vec3.create();
         this.curMovSpeed = this.movingSpeed;
+
+        this._grid = createGrid(50, 50);
+        this._camera = createCamera(cc.color(51, 51, 51, 255));
+        this.node = this._camera.node;
+        this.instance = this._camera._camera;
+        this.home();
+
+        document.addEventListener('mousedown', this.onMouseDown.bind(this));
+        document.addEventListener('mousemove', this.onMouseMove.bind(this));
+        document.addEventListener('mouseup', this.onMouseUp.bind(this));
+        document.addEventListener('wheel', this.onMouseWheel.bind(this));
+        document.addEventListener('keydown', this.onKeyDown.bind(this));
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
+
+        ////////////// everything below in this function should be moved to somewhere else
 
         // 用于编辑器绘制的背景和前景节点
         this.foregroundNode = new cc.Node('Editor Scene Foreground');
@@ -60,94 +88,102 @@ class Camrea {
         // 编辑器使用的节点不需要存储和显示在层级管理器
         this.foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
         this.backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
-
-        // 摄像机节点
-        this.camera = createCamera(cc.color(51, 51, 51, 255));
-        this.camera.node.parent = this.backgroundNode;
-        this.camera.node.setPosition(50, 50, 50);
-        this.camera.node.lookAt(cc.vmath.vec3.create());
-
-        // 网格
-        this.grid = createGrid(50, 50);
-        this.grid.parent = this.backgroundNode;
-
         // 这些节点应该是常驻节点
         cc.game.addPersistRootNode(this.foregroundNode);
         cc.game.addPersistRootNode(this.backgroundNode);
+
+        this._grid.parent = this.backgroundNode;
+        this.node.parent = this.backgroundNode;
     }
 
-    /**
-     * 将场景调整到窗口正中间
-     * @param {*} margin
-     */
-    adjustToCenter(margin) {}
+    onMouseDown(e) {
+        if (!e.button) return;
+        cc.game.canvas.requestPointerLock();
+        this.node.getRotation(this.rot);
+        if (e.button === 1) { // middle button: panning
+            this.node.getPosition(this.pos);
+            vec3.transformQuat(this.right, this.id_right, this.rot);
+            vec3.transformQuat(this.up, this.id_up, this.rot);
+        } else if (e.button === 2) { // right button: rotation
+            quat.toEuler(this.euler, this.rot);
+            startTicking(this.move);
+        }
+    }
+
+    onMouseMove(e) {
+        if ((e.buttons & 6) === 0) return;
+        let dx = e.movementX;
+        let dy = e.movementY;
+        if (e.buttons & 4) { // middle button: panning
+            vec3.add(this.pos, this.pos, vec3.scale(v3a, this.right, -dx * this.panningSpeed));
+            vec3.add(this.pos, this.pos, vec3.scale(v3a, this.up, dy * this.panningSpeed));
+            this.node.setPosition(this.pos);
+        } else if (e.buttons & 2) { // right button: rotation
+            this.euler.x -= dy * this.rotationSpeed;
+            this.euler.y -= dx * this.rotationSpeed;
+            this.node.setRotationFromEuler(this.euler.x, this.euler.y, this.euler.z);
+        }
+        return true;
+    }
+
+    onMouseUp(e) {
+        if (!e.button) return;
+        document.exitPointerLock();
+        if (e.button === 2) stopTicking(this.move);
+    }
+
+    onMouseWheel(e) {
+        this.node.getPosition(this.pos);
+        this.node.getRotation(this.rot);
+        vec3.transformQuat(this.forward, this.id_forward, this.rot);
+        vec3.scale(v3a, this.forward, e.deltaY * this.wheelSpeed);
+        vec3.add(v3a, this.pos, v3a);
+        this.node.setPosition(v3a);
+    }
+
+    onKeyDown(e) {
+        this.shiftKey = e.shiftKey;
+        switch (e.key.toLowerCase()) {
+        case 'd': this.velocity.x = this.curMovSpeed; break;
+        case 'a': this.velocity.x = -this.curMovSpeed; break;
+        case 'e': this.velocity.y = this.curMovSpeed; break;
+        case 'q': this.velocity.y = -this.curMovSpeed; break;
+        case 's': this.velocity.z = this.curMovSpeed; break;
+        case 'w': this.velocity.z = -this.curMovSpeed; break;
+        }
+    }
+
+    onKeyUp(e) {
+        this.shiftKey = e.shiftKey;
+        switch (e.key.toLowerCase()) {
+        case 'd': if (this.velocity.x > 0) this.velocity.x = 0; break;
+        case 'a': if (this.velocity.x < 0) this.velocity.x = 0; break;
+        case 'e': if (this.velocity.y > 0) this.velocity.y = 0; break;
+        case 'q': if (this.velocity.y < 0) this.velocity.y = 0; break;
+        case 's': if (this.velocity.z > 0) this.velocity.z = 0; break;
+        case 'w': if (this.velocity.z < 0) this.velocity.z = 0; break;
+        case 'h': this.home(); break;
+        }
+    }
+
+    adjustSceneToNodes(ids, margin = 50) {
+        vec3.set(v3a, 0, 0, 0);
+        ids.forEach(id => {
+            let node = cc.engine.getInstanceById(id);
+            vec3.add(v3a, v3a, node.getWorldPosition(v3b));
+        });
+        vec3.scale(v3a, v3a, 1 / ids.length);
+
+        this.node.getRotation(this.rot);
+        vec3.transformQuat(this.forward, this.id_forward, this.rot);
+        vec3.add(v3a, v3a, vec3.scale(v3b, this.forward, margin));
+        this.node.setPosition(v3a);
+    }
+
+    home(margin = 50) {
+        this.node.setPosition(margin, margin, margin);
+        this.node.lookAt(vec3.create());
+    }
 }
 
-const camera = module.exports = new Camrea();
-
-// 缩放
-manager.operation.on('zoom', (data) => {
-    camera.camera.node.getPosition(camera.pos);
-    camera.camera.node.getRotation(camera.rot);
-    cc.vmath.vec3.transformQuat(camera.forward, camera.id_forward, camera.rot);
-    cc.vmath.vec3.scale(v3a, camera.forward, data.offset * camera.wheelSpeed);
-    cc.vmath.vec3.add(v3a, camera.pos, v3a);
-    camera.camera.node.setPosition(v3a);
-});
-
-// canvas 大小变化
-manager.operation.on('resize', (data) => {
-    if (!window.cc) {
-        return;
-    }
-    cc.view.setCanvasSize(data.width, data.height);
-    cc.view.setDesignResolutionSize(data.width, data.height, camera.policy);
-});
-
-// 拖拽移动
-manager.operation.on('move-start', (data) => {
-    const vec3 = cc.vmath.vec3;
-    const node = camera.camera.node;
-
-    document.body.style.cursor = '-webkit-grabbing';
-    node.getRotation(camera.rot);
-    node.getPosition(camera.pos);
-    vec3.transformQuat(camera.right, camera.id_right, camera.rot);
-    vec3.transformQuat(camera.up, camera.id_up, camera.rot);
-});
-manager.operation.on('move-change', (data) => {
-    const vec3 = cc.vmath.vec3;
-
-    vec3.add(camera.pos, camera.pos, vec3.scale(v3a, camera.right, -data.offsetX * camera.panningSpeed));
-    vec3.add(camera.pos, camera.pos, vec3.scale(v3a, camera.up, data.offsetY * camera.panningSpeed));
-    camera.camera.node.setPosition(camera.pos);
-});
-manager.operation.on('move-end', (data) => {
-    document.body.style.cursor = '';
-});
-
-// 旋转
-manager.operation.on('rotation-start', () => {
-    const quat = cc.vmath.quat;
-
-    document.body.style.cursor = 'all-scroll';
-    quat.toEuler(camera.euler, camera.rot);
-});
-manager.operation.on('rotation-change', (data) => {
-    const vec3 = cc.vmath.vec3;
-    const node = camera.camera.node;
-
-    camera.euler.x -= data.offsetY * camera.rotationSpeed;
-    camera.euler.y -= data.offsetX * camera.rotationSpeed;
-    node.setRotationFromEuler(camera.euler.x, camera.euler.y, camera.euler.z);
-
-    node.getPosition(camera.pos);
-    node.getRotation(camera.rot);
-    vec3.scale(v3b, camera.velocity, 1);
-        // camera.shiftKey ? camera.movingSpeedShiftScale : 1);
-    vec3.transformQuat(v3b, v3b, camera.rot);
-    node.setPosition(vec3.add(v3b, camera.pos, v3b));
-});
-manager.operation.on('rotation-end', () => {
-    document.body.style.cursor = '';
-});
+module.exports = new CameraTool();

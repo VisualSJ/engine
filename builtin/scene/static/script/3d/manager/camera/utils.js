@@ -1,15 +1,6 @@
 'use stirct';
 
-function createCamera(color) {
-    const node = new cc.Node('Editor Camera');
-    const camera = node.addComponent(cc.CameraComponent);
-    camera.color = color;
-    camera.onLoad();
-    camera.onEnable();
-    return camera;
-}
-
-function grid(width, length, segw, segl) {
+function grid (width, length, segw, segl) {
     let positions = [];
     let normals = [];
     let uvs = [];
@@ -21,7 +12,7 @@ function grid(width, length, segw, segl) {
     let dl = length / segl;
     let i = 0;
     let minPos = cc.vmath.vec3.create(-hw, 0, -hl);
-    let maxPos = cc.vmath.vec3.create(hw, 0,  hl);
+    let maxPos = cc.vmath.vec3.create( hw, 0,  hl);
     let boundingRadius = Math.max(hw, hl);
 
     for (let x = -hw; x <= hw; x += dw, i += 2) {
@@ -40,7 +31,7 @@ function grid(width, length, segw, segl) {
         uvs.push(0, (z + hl) / length);
         normals.push(0, 1, 0);
 
-        positions.push(hw, 0, z);
+        positions.push( hw, 0, z);
         uvs.push(1, (z + hl) / length);
         normals.push(0, 1, 0);
 
@@ -64,14 +55,21 @@ function createGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
     let mtl = new cc.Material();
-    mtl.effectAsset = cc.game._builtins['builtin-effect-unlit'];
-    // mtl.define('USE_TEXTURE', true);
+    mtl.effectName = 'builtin-effect-unlit';
     mtl.define('USE_COLOR', true);
     mtl.setProperty('color', cc.color('#555555'));
     model.material = mtl;
-    // node.parent = _Scene.view.backgroundNode;
     node._layer = cc.Layers.Gizmos | cc.Layers.IgnoreRaycast;
     return node;
+}
+
+function createCamera(color) {
+    let node = new cc.Node('Editor Camera');
+    let camera = node.addComponent(cc.CameraComponent);
+    camera.color = color;
+    camera.onLoad();
+    camera.onEnable();
+    return camera;
 }
 
 module.exports = {

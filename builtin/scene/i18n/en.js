@@ -10,8 +10,8 @@ module.exports = {
 
     messages: {
         warning: 'Warning',
-        scenario_modified: 'Scenario data has been modified.',
-        want_to_save: 'Do you want to save the scenario?',
+        scenario_modified: 'Scene data has been modified.',
+        want_to_save: 'Do you want to save the scene?',
         save: 'Save',
         dont_save: 'Don\'t save',
         cancel: 'Cancel',
