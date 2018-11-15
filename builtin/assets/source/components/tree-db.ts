@@ -14,7 +14,6 @@ function reset() {
 
     assetsTree = {
         depth: -1,
-        invalid: true
     };
 }
 
@@ -96,7 +95,9 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
         assetAttr(subAsset, dir, name);
 
         // 载入父级
-        asset.children.push(subAsset);
+        if (subAsset.visible) {
+            asset.children.push(subAsset);
+        }
 
         const subNames = Object.keys(subTree.subAssets);
         if (subNames.length === 0) {
@@ -123,7 +124,6 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
     // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
-    asset.readOnly = (asset.lock || asset.isSubAsset) ? true : false; // 根节点和 subAssets 都只读
     asset.state = '';
 }
 

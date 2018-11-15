@@ -116,12 +116,9 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     const date = new Date().getTime();
     console.log('Start the asset database...');
     // 拼接需要使用的地址
-    const options = {
+    const options = Object.assign(info, {
         protocol: protocol + info.name, // 方便后续协议和路径的替换
-        target: info.assets,
-        library: info.library,
-        temp: info.temp,
-    };
+    });
 
     // 保证文件夹存在
     ensureDirSync(options.target);
@@ -193,34 +190,8 @@ Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
     event.reply(null, join(db.options.target, unescape(uri.path || '')));
 });
 
-/**
- * 返回一个 db 的具体数据
- * 传入 url 获取该资源所在 db 的信息，信息数据格式为 json, 字段类似如下（window 10）：
- * db://internal 如下
- * protocol: db://internal
- * library:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\library"
- * target:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\assets"
- * temp:"G:\cocos-creator\editor-3d\builtin\asset-db\static\internal\temp"
- *
- * db://assets 如下
- * protocol: db://assets
- * library:"G:\cocos-creator\editor-3d\.project-2d\library"
- * target:"G:\cocos-creator\editor-3d\.project-2d\assets"
- * temp:"G:\cocos-creator\editor-3d\.project-2d\temp\asset-db"
- */
-Worker.Ipc.on('asset-worker:query-database-info', async (event, name) => {
-    if (name.startsWith(protocol)) {
-        // arr 数据格式为 ['db:', 'assets', 其他文件夹路径...]
-        const arr = name.split('/').filter(Boolean);
-        name = arr[1];
-    }
-
-    const db = AssetWorker[name];
-    if (!db) {
-        event.reply(null, null);
-        return;
-    }
-    event.reply(null, db.options);
+Worker.Ipc.on('asset-worker:query-database-info', async (event, names) => {
+    event.reply(null, queryDatabaseInfo(names));
 });
 
 // 查询所有资源的列表
@@ -232,6 +203,9 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
 
     // 返回所有的资源的基础数据
     let names = Object.keys(AssetWorker);
+
+    // 多 db 配置信息
+    const dbInfos = queryDatabaseInfo(names);
 
     // 循环每个启动的 db
     for (let i = 0; i < names.length; i++) {
@@ -251,6 +225,8 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 isDirectory: false,
                 files: [],
                 subAssets: {},
+                visible: dbInfos[name].visible,
+                readOnly: dbInfos[name].readOnly,
             });
         }
 
@@ -273,9 +249,11 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 loadPluginInWeb: asset.meta.loadPluginInWeb,
                 isPlugin: asset.meta.isPlugin,
                 subAssets: {},
+                visible: dbInfos[name].visible,
+                readOnly: dbInfos[name].readOnly,
             };
 
-            searchSubAssets(info.subAssets, asset);
+            searchSubAssets(info, asset);
 
             assets.push(info);
         }
@@ -332,6 +310,8 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
     // asset 对象
     const asset = assetInfo.asset;
 
+    const dbInfo = queryDatabaseInfo(assetInfo.db);
+
     const info = {
         source: asset.source ? source2url(assetInfo.db, asset.source) : null,
         uuid: asset.uuid,
@@ -341,9 +321,11 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
             return asset.library + ext;
         }),
         subAssets: {},
+        visible: dbInfo.visible,
+        readOnly: dbInfo.readOnly,
     };
 
-    searchSubAssets(info.subAssets, asset);
+    searchSubAssets(info, asset);
 
     event.reply(null, info);
 });
@@ -369,14 +351,14 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
 
 /**
  * 扫描资源
- * @param {*} assets
+ * @param {*} parent
  * @param {*} asset
  */
-function searchSubAssets(assets, asset) {
+function searchSubAssets(parent, asset) {
     const names = Object.keys(asset.subAssets || {});
     for (const name of names) {
         const subAsset = asset.subAssets[name];
-        assets[name] = {
+        parent.subAssets[name] = {
             source: null,
             uuid: subAsset.uuid,
             importer: subAsset.meta.importer,
@@ -385,7 +367,54 @@ function searchSubAssets(assets, asset) {
                 return subAsset.library + ext;
             }),
             subAssets: {},
+            visible: parent.visible,
+            readOnly: parent.readOnly,
         };
-        searchSubAssets(assets[name].subAssets, subAsset);
+        searchSubAssets(parent.subAssets[name], subAsset);
     }
+}
+
+/**
+ * 返回单个或多个 db 的配置数据，
+ * 单个返回直接是一个 options
+ * 多个返回是 { nameA: options, nameB: options }
+ * 传入 url 获取该资源所在 db 的信息，信息数据格式为 json, 字段类似如下（window 10）：
+ * db://assets 类似如下
+ * protocol: db://assets
+ * library:"G:\cocos-creator\editor-3d\.project-2d\library"
+ * target:"G:\cocos-creator\editor-3d\.project-2d\assets"
+ * temp:"G:\cocos-creator\editor-3d\.project-2d\temp\asset-db"
+ * visible: true,
+ * readOnly: false,
+ * @param {*} names
+ */
+function queryDatabaseInfo(names) {
+    // 支持多个查询
+    const isArray = Array.isArray(names);
+    if (!isArray) {
+        names = [names];
+    }
+
+    const dbInfos = {};
+    names.forEach((name) => {
+        if (name.startsWith(protocol)) {
+            // arr 数据格式为 ['db:', 'assets', 其他文件夹路径...]
+            const arr = name.split('/').filter(Boolean);
+            name = arr[1];
+        }
+
+        const db = AssetWorker[name];
+
+        if (!db) {
+            dbInfos[name] = null;
+        } else {
+            dbInfos[name] = db.options;
+        }
+    });
+
+    if (!isArray) {
+        return Object.values(dbInfos)[0];
+    }
+
+    return dbInfos;
 }

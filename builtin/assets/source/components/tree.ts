@@ -311,7 +311,6 @@ export const methods = {
 
         function run() {
             vm.refresh();
-            vm.ipcSingleSelect(uuid);
             isRequiringToAdd = true;
 
             setTimeout(() => {
@@ -764,7 +763,7 @@ export const methods = {
      * 以下是工具函数：
      */
     getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
-        if (!vm.selects[0]) {
+        if (!vm.selects[0] && treeData.children[0]) {
             return treeData.children[0].uuid; // asset 节点资源
         }
         return vm.selects[0]; // 当前选中的资源

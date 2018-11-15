@@ -3,6 +3,7 @@
 @blue-bg: #059;
 @green: #0f0;
 .tree-node {
+    position: relative;
     display: flex;
     height: 20px;
     line-height: 20px;
@@ -94,6 +95,14 @@
         margin-left: 4px;
         margin-right: 20px;
         vertical-align: middle;
+    }
+    .readonly {
+        position: absolute;
+        top: 0;
+        right: 4px;
+        z-index: 100;
+        font-size: 12px;
+        color: rgba(255,255,255,0.4) !important;
     }
 }
 

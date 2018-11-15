@@ -18,7 +18,8 @@ declare interface ItreeAsset {
     source: string;
     subAssets: any;
     uuid: string;
-    lock: boolean; // 锁定，权限与 readOnly 一致，界面多一个图标 
+    readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
+    visible: boolean; // 是否显示
 
     // 以下是扩展的数据
     name: string; // 文件名，包含后缀
@@ -31,7 +32,6 @@ declare interface ItreeAsset {
     isParent: boolean; // 是否是父节点
     isRoot: boolean; // 是否是根节点，assets 这些
     isSubAsset: boolean; // 是否是 subAsset, 是的话：无右击菜单，可拖动到 scene 或 hierarchy, 但 asset 面板里面的不能移动
-    readOnly: boolean; // 是否只读，一般是根节点，db://assets/ 级别，可以选中和粘贴，其他的操作不允许，如重名命，删除，拖拽
     state: string; // 状态: ['', 'input', 'loading']
     depth: number; // 树形层级
     top: number; // top 位置
