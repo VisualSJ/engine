@@ -1,7 +1,7 @@
 <section class="console" @scroll="onScroll">
     <div class="wrapper" :style="wrapperStyle">
         <div :class="[item.texture, 'item']" v-for="(item, index) in showList" :type="item.type" :fold="item.fold" v-show="item.show"
-            :style="{transform: `translateY(${item.translateY}px)`,fontSize: `${fontSize}px`, lineHeight: `${lineHeight}px`}">
+            :style="{transform: `translateY(${item.translateY}px)`,fontSize: `${fontSize}px`, lineHeight: `${lineHeight}px`}" @click.right="showMenuPast($event, item)">
             <div class="wrap">
                 <div class="text" @click="item.rows > 1 ? toggleContent(item.translateY) : null">
                     <span>

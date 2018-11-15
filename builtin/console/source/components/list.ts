@@ -2,6 +2,8 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { copy } from 'iclipboard'
+
 const manager = require('../manager');
 const outputList = manager.outputList;
 
@@ -186,7 +188,33 @@ export const methods: any = {
                 }
             });
         });
-    }
+    },
+    /**
+     * 显示复制菜单
+     * @param {*} event
+     * @param {*} item
+     */
+    showMenuPast(event:any, item:any) {
+        let info = item.title;
+        if (item.rows > 1) {
+            item.content.forEach((str:string)=> {
+                info += str;
+            });
+        }
+        Editor.Menu.popup({
+            x: event.pageX,
+            y: event.pageY,
+            menu: [
+                {
+                    label: '复制',
+                    click() {
+                        copy(info);
+                        console.log(info);
+                    }
+                }
+            ]
+        });
+    },
 };
 
 export async function beforeClose() {}
