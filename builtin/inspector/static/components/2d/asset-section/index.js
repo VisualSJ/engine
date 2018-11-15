@@ -34,19 +34,30 @@ exports.methods = {
     async refresh() {
         this.$root.toggleLoading(true);
         this.dataReady = false;
+        try {
+            const [info, meta] = await Promise.all([
+                Editor.Ipc.requestToPackage(
+                    'asset-db',
+                    'query-asset-info',
+                    this.uuid
+                ),
+                Editor.Ipc.requestToPackage(
+                    'asset-db',
+                    'query-asset-meta',
+                    this.uuid
+                )
+            ]);
 
-        const [info, meta] = await Promise.all([
-            Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
-            Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid)
-        ]);
-
-        if (info && meta) {
-            this.info = info;
-            this.meta = buildMeta(meta, info);
+            if (info && meta) {
+                this.info = info;
+                this.meta = buildMeta(meta, info);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            this.$root.toggleLoading(false);
+            this.dataReady = true;
         }
-
-        this.$root.toggleLoading(false);
-        this.dataReady = true;
     },
 
     /**
@@ -82,12 +93,19 @@ exports.mounted = async function() {
 
     this.$on('apply', () => {
         const keys = Object.keys(this.meta);
-        const filterMeta = keys.filter((key) => !key.startsWith('__')).reduce((prev, next) => {
-            prev[next] = this.meta[next];
-            return prev;
-        }, {});
+        const filterMeta = keys
+            .filter((key) => !key.startsWith('__'))
+            .reduce((prev, next) => {
+                prev[next] = this.meta[next];
+                return prev;
+            }, {});
         const meta = JSON.stringify(filterMeta);
-        Editor.Ipc.sendToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
+        Editor.Ipc.sendToPackage(
+            'asset-db',
+            'save-asset-meta',
+            this.uuid,
+            meta
+        );
         // this.dirty = false;
     });
 };

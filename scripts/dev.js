@@ -7,6 +7,9 @@ const path = require('path');
 const vGit = require('v-git');
 const cp = require('child_process');
 
+const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const gulp = process.platform === 'win32' ? 'gulp.cmd' : 'gulp';
+
 /**
  * 执行一个控制台命令
  * @param {*} cmd
@@ -16,7 +19,7 @@ function cmd(cmd, options) {
     return new Promise((resolve, reject) => {
         let child = cp.spawn(cmd, options.args, {
             stdio: options.stdio || [0, 1, 2],
-            cwd: options.root || process.cwd(),
+            cwd: options.root || process.cwd()
         });
 
         child.on('exit', (code) => {
@@ -30,10 +33,12 @@ function cmd(cmd, options) {
 }
 
 (async (root) => {
-
-    const progressBar = new ProgressBar(`${chalk.magenta('Update Hosts:')} :bar :current/:total`, {
-        total: 9,
-    });
+    const progressBar = new ProgressBar(
+        `${chalk.magenta('Update Hosts:')} :bar :current/:total`,
+        {
+            total: 9
+        }
+    );
 
     // clone 3d 引擎
     await (async () => {
@@ -48,7 +53,10 @@ function cmd(cmd, options) {
         if (!fse.existsSync(engine)) {
             vGit.config.stdio = [0, 1, 2];
             console.log(' ');
-            await vGit.clone(dir, 'https://github.com/cocos-creator/engine.git');
+            await vGit.clone(
+                dir,
+                'https://github.com/cocos-creator/engine.git'
+            );
         }
 
         const repo = await vGit.init(engine);
@@ -66,9 +74,17 @@ function cmd(cmd, options) {
         console.log(' ');
 
         // 3d 引擎模块安装
-        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
+        await cmd(command, {
             args: ['install'],
-            root: engine,
+            root: engine
+        });
+        progressBar.tick();
+        console.log(' ');
+
+        // 2d 引擎模块构建 gulp build-debug-infos
+        await cmd(gulp, {
+            args: ['build-debug-infos'],
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
@@ -76,23 +92,26 @@ function cmd(cmd, options) {
         // 3d 引擎模块还原配置
         await cmd('git', {
             args: ['checkout', '.'],
-            root: engine,
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
 
         // 3d 引擎模块构建 gulp build-debug-infos
-        await cmd(process.platform === 'win32' ? 'gulp.cmd' : 'gulp', {
-            args: ['build-debug-infos'],
-            root: engine,
-        });
+        await cmd(
+            process.platform === 'win32' ? 'gulp.cmd' : 'gulp',
+            {
+                args: ['build-debug-infos'],
+                root: engine
+            }
+        );
         progressBar.tick();
         console.log(' ');
 
         // 3d 引擎模块构建
-        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
+        await cmd(command, {
             args: ['run', 'build'],
-            root: engine,
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
@@ -110,7 +129,7 @@ function cmd(cmd, options) {
         // 如果引擎文件夹不存在，则需要先从 2d 目录复制仓库
         if (!fse.existsSync(engine)) {
             console.log(' ');
-            console.log('Copying into \'engine\'...');
+            console.log("Copying into 'engine'...");
             fse.copySync(path.join(root, '3d', 'engine'), engine);
         }
 
@@ -129,9 +148,9 @@ function cmd(cmd, options) {
         console.log(' ');
 
         // 2d 引擎模块安装
-        await cmd(process.platform === 'win32' ? 'npm.cmd' : 'npm', {
+        await cmd(command, {
             args: ['install'],
-            root: engine,
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
@@ -139,18 +158,17 @@ function cmd(cmd, options) {
         // 2d 引擎模块还原配置
         await cmd('git', {
             args: ['checkout', '.'],
-            root: engine,
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
 
         // 2d 引擎模块构建 gulp build-debug-infos
-        await cmd(process.platform === 'win32' ? 'gulp.cmd' : 'gulp', {
+        await cmd(gulp, {
             args: ['build-debug-infos'],
-            root: engine,
+            root: engine
         });
         progressBar.tick();
         console.log(' ');
     })();
-
 })(path.join(__dirname, '../resources'));

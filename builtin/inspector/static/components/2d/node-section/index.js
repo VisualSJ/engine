@@ -4,7 +4,7 @@ const {
     readTemplate,
     readComponent,
     T,
-    buildProp
+    build2DProp
 } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/index.html');
@@ -30,13 +30,18 @@ exports.watch = {
 };
 
 exports.created = async function() {
-    const userScripts = await Editor.Ipc.requestToPackage(
-        'asset-db',
-        'query-assets'
-    );
-    this.userScripts = userScripts.filter((item) =>
-        item.importer.includes('javascript')
-    );
+    try {
+        const userScripts = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'query-assets'
+        );
+        this.userScripts = userScripts.filter((item) =>
+            item.importer.includes('javascript')
+        );
+    } catch (err) {
+        console.error(err);
+        this.userScripts = [];
+    }
 };
 
 exports.methods = {
@@ -67,7 +72,7 @@ exports.methods = {
                 const item = comp.value[key];
                 const attrs = comp.properties[key];
                 if (attrs && item) {
-                    buildProp(path, key, item, attrs);
+                    build2DProp(path, key, item, attrs);
                 } else {
                     delete comp.value[key];
                 }

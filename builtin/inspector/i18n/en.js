@@ -61,7 +61,9 @@ module.exports = {
         others: 'Add Other Component',
         scripts: 'Add Custom Component',
         collider: 'Add Collider Component',
-        physics: 'Add Physics Component'
+        physics: 'Add Physics Component',
+        // 3d
+        components: 'Components'
     },
     collider: {
         editing: 'Edit this collider component',
@@ -215,5 +217,13 @@ module.exports = {
         right: 'Right',
         top: 'Top',
         bottom: 'Bottom'
+    },
+    missing_script: {
+        error_compiled: `Error on executing script, or the script reference is missing.
+            Please check error log carefully and correct/recover your script.
+            The component will be restored once scripting error is gone. If you no long need the missing script,
+            please remove this component manually.`,
+        error_not_compiled: `Error on compiling script. Please check error log carefully and correct your script.
+            This component will be restored once compiling error is gone.`
     }
 };

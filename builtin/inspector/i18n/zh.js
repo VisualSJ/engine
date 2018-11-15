@@ -60,7 +60,9 @@ module.exports = {
         others: '添加其他组件',
         scripts: '添加用户脚本组件',
         collider: '添加碰撞组件',
-        physics: '物理'
+        physics: '物理',
+        // 3d
+        components: 'Components'
     },
     collider: {
         editing: '是否需要编辑此碰撞组件',
@@ -196,5 +198,11 @@ module.exports = {
         right: 'Right',
         top: 'Top',
         bottom: 'Bottom'
+    },
+    missing_script: {
+        error_compiled:
+            '载入脚本时报错或脚本已丢失，请检查报错信息并进行修正，该组件将在修正后自动还原。如果脚本已删除，请手动删除该组件。',
+        error_not_compiled:
+            '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。'
     }
 };

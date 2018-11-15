@@ -2,12 +2,16 @@
 
 const { readTemplate, readComponent } = require('../../../utils');
 
-exports.template = readTemplate('3d', './node-section/node-comp.html');
+exports.template = readTemplate(
+    '3d',
+    './node-section/node-comp.html'
+);
 
 exports.props = ['uuid', 'index', 'total', 'comp'];
 
 exports.components = {
     none: readComponent(__dirname, './comps/none'),
+    'cc-missingscript': require('./comps/missing-script')
 };
 
 exports.data = function() {
@@ -63,11 +67,15 @@ exports.methods = {
                 {
                     label: 'Remove',
                     click() {
-                        Editor.Ipc.sendToPanel('scene', 'remove-array-element', {
-                            uuid: uuid,
-                            path: '__comps__',
-                            index: index
-                        });
+                        Editor.Ipc.sendToPanel(
+                            'scene',
+                            'remove-array-element',
+                            {
+                                uuid: uuid,
+                                path: '__comps__',
+                                index: index
+                            }
+                        );
                     }
                 },
                 { type: 'separator' },
@@ -75,24 +83,32 @@ exports.methods = {
                     label: 'Move Up',
                     enabled: index !== 0,
                     click() {
-                        Editor.Ipc.sendToPanel('scene', 'move-array-element', {
-                            uuid: uuid,
-                            path: '__comps__',
-                            target: index,
-                            offset: -1
-                        });
+                        Editor.Ipc.sendToPanel(
+                            'scene',
+                            'move-array-element',
+                            {
+                                uuid: uuid,
+                                path: '__comps__',
+                                target: index,
+                                offset: -1
+                            }
+                        );
                     }
                 },
                 {
                     label: 'Move Down',
                     enabled: index !== total - 1,
                     click() {
-                        Editor.Ipc.sendToPanel('scene', 'move-array-element', {
-                            uuid: uuid,
-                            path: '__comps__',
-                            target: index,
-                            offset: 1
-                        });
+                        Editor.Ipc.sendToPanel(
+                            'scene',
+                            'move-array-element',
+                            {
+                                uuid: uuid,
+                                path: '__comps__',
+                                target: index,
+                                offset: 1
+                            }
+                        );
                     }
                 }
             ]
@@ -101,7 +117,11 @@ exports.methods = {
 };
 
 function isBaseCollider(type) {
-    return ['cc.PhysicsChainCollider', 'cc.PhysicsPolygonCollider', 'cc.PolygonCollider'].includes(type);
+    return [
+        'cc.PhysicsChainCollider',
+        'cc.PhysicsPolygonCollider',
+        'cc.PolygonCollider'
+    ].includes(type);
 }
 
 function checkIsJoint(type) {

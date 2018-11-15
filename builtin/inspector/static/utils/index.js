@@ -8,7 +8,8 @@ module.exports = {
     readComponent,
     T,
     getComponentType,
-    buildProp,
+    build2DProp,
+    build3DProp,
     getFitSize
 };
 
@@ -140,7 +141,14 @@ function getComponentType(target, $options) {
     return false;
 }
 
-function buildProp(path, key, item, attrs) {
+/**
+ * 2d 属性处理
+ * @param {string} path
+ * @param {string} key
+ * @param {object} item
+ * @param {object} attrs
+ */
+function build2DProp(path, key, item, attrs) {
     // 将原有 type 保存到 originType 以便处理结束后恢复原有 type
     const {
         properties,
@@ -271,4 +279,10 @@ function buildProp(path, key, item, attrs) {
     }
 
     item.type = originType;
+}
+
+function build3DProp(path, key, item, attrs) {
+    item.path = path;
+    item.name = attrs.displayName ? attrs.displayName : key;
+    item.compType = getComponentType(item);
 }

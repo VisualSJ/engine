@@ -180,23 +180,25 @@ export async function ready() {
                     )
                 ]);
 
-                if (meta.importer !== 'sprite-frame') {
-                    return;
+                if (meta && texture) {
+                    if (meta.importer !== 'sprite-frame') {
+                        return;
+                    }
+                    this.meta = meta;
+                    this.refreshScaleSlider();
+
+                    let src = join(
+                        Editor.Project.path,
+                        'library',
+                        texture.uuid.substr(0, 2),
+                        texture.uuid
+                    );
+                    src += texture.files.filter(
+                        (file: string) => !file.includes('json')
+                    )[0];
+
+                    this.loadImage(src);
                 }
-                this.meta = meta;
-                this.refreshScaleSlider();
-
-                let src = join(
-                    Editor.Project.path,
-                    'library',
-                    texture.uuid.substr(0, 2),
-                    texture.uuid
-                );
-                src += texture.files.filter(
-                    (file: string) => !file.includes('json')
-                )[0];
-
-                this.loadImage(src);
             },
 
             loadImage(this: any, src: string) {
