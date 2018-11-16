@@ -28,18 +28,30 @@ exports.methods = {
      * @param {*} key
      */
     _onpreviewChanged(event, key) {
+        this.preview[key] = event.target.value;
+        let value = event.target.value;
+
+        // 更改了屏幕方向后，需要交换一次当前屏幕分辨率设置的值
+        if (key === 'simulator_device_orientation') {
+            let temp = this.preview.simulator_width;
+            this.preview.simulator_width = this.preview.simulator_height;
+            this.preview.simulator_height = temp;
+        }
+
+        // 更改模拟器分辨率的 select 后，如果选中项不是自定义，需要同时修改设置的宽高
         if (key === 'simulator_resolution') {
-            let value = event.target.value;
             if (value !== 'customize') {
-                this.preview.simulator_width = this.devices[value].width;
-                this.preview.simulator_height = this.devices[value].height;
+                let direction = this.preview.simulator_device_orientation;
+                // 要根据当前设置的方向调整对应读取设备配置的宽高
+                this.preview.simulator_width = direction === 'vertical'? this.devices[value].width : this.devices[value].height;
+                this.preview.simulator_height = direction === 'vertical'? this.devices[value].height : this.devices[value].width; 
             }
         }
 
+        // 手动修改模拟器分辨率后，模拟器分辨率设置需要更改为自定义
         if (key === 'simulator_width' || key === 'simulator_height') {
             this.preview.simulator_resolution = 'customize';
         }
-        this.preview[key] = event.target.value;
     },
 
     // 获取当前项目内所有的场景信息
