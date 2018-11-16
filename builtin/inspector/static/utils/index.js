@@ -112,7 +112,7 @@ const convertMap = {
  * 获取 target 类型对应的 component 类型
  * @param {*} target
  */
-function getComponentType(target, $options) {
+function getComponentType(target) {
     if (!target || !target.type) {
         return false;
     }
@@ -129,10 +129,6 @@ function getComponentType(target, $options) {
     type = convertMap[type] || type;
     type = type.toLocaleLowerCase();
     type = type.replace(/\./, '-');
-
-    if ($options && $options.components) {
-        return $options.components[type] ? type : false;
-    }
 
     if (publicComps[type]) {
         return type;

@@ -36,7 +36,7 @@ exports.created = async function() {
             'asset-db',
             'query-assets'
         );
-        this.userScripts = userScripts.filter((item) =>
+        this.userScripts = (userScripts || []).filter((item) =>
             item.importer.includes('javascript')
         );
     } catch (err) {
@@ -53,40 +53,50 @@ exports.methods = {
      */
     async refresh() {
         // todo diff
-        const dump = await Editor.Ipc.requestToPackage(
-            'scene',
-            'query-node',
-            this.uuid
-        );
+        try {
+            this.$root.toggleLoading(true);
+            const dump = await Editor.Ipc.requestToPackage(
+                'scene',
+                'query-node',
+                this.uuid
+            );
 
-        Object.keys(dump).forEach((key) => {
-            if (key[0] === '_') {
-                return;
+            if (dump) {
+                Object.keys(dump).forEach((key) => {
+                    if (key[0] === '_') {
+                        return;
+                    }
+
+                    dump[key].path = key;
+                });
+
+                dump.__comps__.forEach((comp, index) => {
+                    Object.keys(comp.value).forEach((key) => {
+                        const path = `__comps__.${index}.${key}`;
+                        const item = comp.value[key];
+                        const attrs = comp.properties[key];
+                        if (attrs && item) {
+                            build3DProp(path, key, item, attrs);
+                            for (let key in attrs) {
+                                if (key in item) {
+                                    continue;
+                                }
+                                item[key] = attrs[key];
+                            }
+                        } else {
+                            delete comp.value[key];
+                        }
+                    });
+                });
             }
 
-            dump[key].path = key;
-        });
-
-        dump.__comps__.forEach((comp, index) => {
-            Object.keys(comp.value).forEach((key) => {
-                const path = `__comps__.${index}.${key}`;
-                const item = comp.value[key];
-                const attrs = comp.properties[key];
-                if (attrs && item) {
-                    build3DProp(path, key, item, attrs);
-                    for (let key in attrs) {
-                        if (key in item) {
-                            continue;
-                        }
-                        item[key] = attrs[key];
-                    }
-                } else {
-                    delete comp.value[key];
-                }
-            });
-        });
-
-        this.node = dump;
+            this.node = dump;
+        } catch (err) {
+            console.error(err);
+            this.node = null;
+        } finally {
+            this.$root.toggleLoading(false);
+        }
     },
 
     /**

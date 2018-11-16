@@ -19,7 +19,7 @@ window.Manager = {
 
     get serialize() {
         return this._serialize();
-    },
+    }
 };
 
 // host 调用 scene 的指定方法
@@ -33,7 +33,9 @@ ipc.on('call-method', async (options) => {
         throw new Error(`Module [${options.module}] does not exist.`);
     }
     if (!mod[options.handler]) {
-        throw new Error(`Method [${options.handler}] does not exist.`);
+        throw new Error(
+            `Method [${options.handler}] does not exist.`
+        );
     }
     return await mod[options.handler](...options.params);
 });
@@ -55,11 +57,16 @@ requestAnimationFrame(async () => {
     // 启动部分管理系统（camera 等）
     await require('./init/system')();
 
+    // engine polyfill
+    require('./polyfills/engine');
+
     // 加载脚本
     const scripts = await Manager.Ipc.send('query-scripts');
-    await Promise.all(scripts.map((uuid) => {
-        return Manager.Script.loadScript(uuid);
-    }));
+    await Promise.all(
+        scripts.map((uuid) => {
+            return Manager.Script.loadScript(uuid);
+        })
+    );
 
     // 启动场景
     const scene = await Manager.Ipc.send('query-scene');

@@ -1,4 +1,4 @@
-const Babel = require('babel-core');
+const Babel = require('@babel/core');
 
 module.exports = function() {
     return {
@@ -13,17 +13,20 @@ module.exports = function() {
                 // TODO - disable transform-strict-mode
                 sourceMaps: 'inline',
                 compact: false,
-                // filename: script.src, // search path for babelrc
-                presets: [
-                  'env'
-                ],
+                filename: script.src, // search path for babelrc
+                presets: ['@babel/preset-env'],
                 plugins: [
                     // make sure that transform-decorators-legacy comes before transform-class-properties.
-                    'transform-decorators-legacy',
-                    'transform-class-properties',
-
-                    'add-module-exports',
-                ],
+                    [
+                        '@babel/plugin-proposal-decorators',
+                        { legacy: true }
+                    ],
+                    [
+                        '@babel/plugin-proposal-class-properties',
+                        { loose: true }
+                    ],
+                    'add-module-exports'
+                ]
             });
 
             script.source = result.code;

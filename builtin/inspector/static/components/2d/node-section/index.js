@@ -52,34 +52,43 @@ exports.methods = {
      */
     async refresh() {
         // todo diff
-        const dump = await Editor.Ipc.requestToPackage(
-            'scene',
-            'query-node',
-            this.uuid
-        );
+        try {
+            this.$root.toggleLoading(true);
+            const dump = await Editor.Ipc.requestToPackage(
+                'scene',
+                'query-node',
+                this.uuid
+            );
+            if (dump) {
+                Object.keys(dump).forEach((key) => {
+                    if (key[0] === '_') {
+                        return;
+                    }
 
-        Object.keys(dump).forEach((key) => {
-            if (key[0] === '_') {
-                return;
+                    dump[key].path = key;
+                });
+
+                dump.__comps__.forEach((comp, index) => {
+                    Object.keys(comp.value).forEach((key) => {
+                        const path = `__comps__.${index}.${key}`;
+                        const item = comp.value[key];
+                        const attrs = comp.properties[key];
+                        if (attrs && item) {
+                            build2DProp(path, key, item, attrs);
+                        } else {
+                            delete comp.value[key];
+                        }
+                    });
+                });
             }
 
-            dump[key].path = key;
-        });
-
-        dump.__comps__.forEach((comp, index) => {
-            Object.keys(comp.value).forEach((key) => {
-                const path = `__comps__.${index}.${key}`;
-                const item = comp.value[key];
-                const attrs = comp.properties[key];
-                if (attrs && item) {
-                    build2DProp(path, key, item, attrs);
-                } else {
-                    delete comp.value[key];
-                }
-            });
-        });
-
-        this.node = dump;
+            this.node = dump;
+        } catch (err) {
+            console.error(err);
+            this.node = null;
+        } finally {
+            this.$root.toggleLoading(false);
+        }
     },
 
     /**

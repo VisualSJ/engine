@@ -1,9 +1,9 @@
 'use stirct';
 
 import { Asset, Importer } from 'asset-db';
-import { transform } from 'babel-core';
 import { readFile } from 'fs-extra';
 
+const babel = require('@babel/core');
 const uuidUtils = require('../../../static/utils/uuid-utils');
 
 export default class JavascriptImporter extends Importer {
@@ -41,8 +41,10 @@ export default class JavascriptImporter extends Importer {
                 const target = await this.compile(asset);
 
                 const header = `
-'use strict';
-cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
+                    'use strict';
+                    cc._RF.push(module, '${uuidUtils.compressUuid(
+                        asset.uuid
+                    )}', '${asset.basename}');
 // ${asset.basename}\n
                 `;
                 const footer = `\ncc._RF.pop();\n`;
@@ -51,7 +53,10 @@ cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}'
 
                 // @ts-ignore
                 asset.saveToLibrary('.js', target.code);
-                asset.saveToLibrary('.js.map', JSON.stringify(target.map));
+                asset.saveToLibrary(
+                    '.js.map',
+                    JSON.stringify(target.map)
+                );
 
                 updated = true;
             }
@@ -65,16 +70,26 @@ cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}'
     private async compile(asset: Asset) {
         const convert = require('convert-source-map');
         const file = await readFile(asset.source, 'utf8');
-        const sourceMap = convert.fromSource(file);
-        const { code, map = '' } = transform(file, {
+        const sourceMap = !!convert.fromSource(file);
+        const { code, map = '' } = babel.transformSync(file, {
             ast: false,
             compact: false,
             filename: asset.source,
             highlightCode: false,
             inputSourceMap: sourceMap,
-            presets: ['env'],
+            presets: ['@babel/preset-env'],
+            plugins: [
+                [
+                    '@babel/plugin-proposal-decorators',
+                    { legacy: true }
+                ],
+                [
+                    '@babel/plugin-proposal-class-properties',
+                    { loose: true }
+                ],
+                'add-module-exports'
+            ],
             sourceMaps: true
-            // plugins: ['transform-decorators-legacy', 'transform-class-properties', 'add-module-exports']
         });
         return { code, map };
     }

@@ -9,7 +9,6 @@ exports.props = ['uuid'];
 
 exports.components = {
     none: require('./assets/none')
-    // texture: readComponent(__dirname, './assets/texture')
 };
 
 exports.data = function() {
@@ -30,9 +29,9 @@ exports.methods = {
     T,
 
     async refresh() {
-        this.$root.toggleLoading(true);
-        this.dataReady = false;
         try {
+            this.$root.toggleLoading(true);
+            this.dataReady = false;
             const [info, meta] = await Promise.all([
                 Editor.Ipc.requestToPackage(
                     'asset-db',
@@ -49,9 +48,14 @@ exports.methods = {
             if (info && meta) {
                 this.info = info;
                 this.meta = buildMeta(meta, info);
+            } else {
+                this.info = null;
+                this.meta = null;
             }
         } catch (err) {
             console.error(err);
+            this.info = null;
+            this.meta = null;
         } finally {
             this.$root.toggleLoading(false);
             this.dataReady = true;

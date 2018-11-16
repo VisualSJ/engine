@@ -1,6 +1,6 @@
 <div class="content">
     <section class="loading"
-        v-show="loading"
+        v-show="loading || (!sready && element === 'node') || (!aready && element === 'asset')"
     >
         <ui-loading></ui-loading>
     </section>
