@@ -2,8 +2,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const { shell } = require('electron');
 const open = require('./tree-node-open');
+const context = require('./tree-node-context');
 
 export const name = 'tree-node';
 
@@ -24,37 +24,60 @@ export const props: string[] = [
 
 export function data() {
     return {
-        draggable: true,
+
     };
 }
 
-export const watch = {
-    asset() {
+export const computed = {
+    // @ts-ignore
+    state() {
         // @ts-ignore
-        this.checkRename();
+        const asset = this.asset;
+
+        if (!asset) {
+            return '';
+        }
+
+        // @ts-ignore
+        if (this.renameSource === asset.source) {
+            // @ts-ignore
+            return 'input';
+        }
+
+        return asset.state;
     },
-    'asset.state'() {
+    draggable() {
         // @ts-ignore
-        this.$nextTick(() => {
+        const asset = this.asset;
+
+        // @ts-ignore
+        if (this.state !== '' || asset.readOnly) {
+            return 'false';
+        }
+
+        return 'true';
+    }
+};
+
+export const watch = {
+    state() {
+        // @ts-ignore
+        const asset = this.asset;
+
+        // @ts-ignore
+        if (this.state === 'input') {
+            // @ts-ignore 选中该节点
+            this.$emit('ipcSingleSelect', asset.uuid);
+
             // @ts-ignore
-            const asset = this.asset;
-            // @ts-ignore
-            this.draggable = (asset.state !== '' || asset.isRoor || asset.readOnly) ? false : true;
-            // @ts-ignore
-            if (asset.state === 'input') {
-                // @ts-ignore 选中该节点
-                this.$emit('ipcSingleSelect', asset.uuid);
+            this.$nextTick(() => {
                 // @ts-ignore
                 this.$refs.input.focus();
                 // @ts-ignore
-                this.$refs.input.setSelectionRange(0, asset.name.lastIndexOf('.'));
-            }
-        });
+                this.$refs.input.setSelectionRange(0, asset.fileName.length);
+            });
+        }
     },
-    renameSource() {
-        // @ts-ignore
-        this.checkRename();
-    }
 };
 
 export const methods = {
@@ -82,157 +105,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        if (asset.readOnly) { // 不需要右击菜单的情况
-            return;
-        }
-
-        const self = this;
-
-        Editor.Menu.popup({
-            // @ts-ignore
-            x: event.pageX,
-            // @ts-ignore
-            y: event.pageY,
-            menu: [
-                {
-                    label: Editor.I18n.t('assets.menu.new'),
-                    submenu: [
-                        {
-                            label: Editor.I18n.t('assets.menu.newFolder'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'folder' }, asset.uuid);
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newJavaScript'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'js' }, asset.uuid);
-                            }
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newTypeScript'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'ts' }, asset.uuid);
-                            }
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'coffee' }, asset.uuid);
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newScene'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'fire' }, asset.uuid);
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'anim' }, asset.uuid);
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'pac' }, asset.uuid);
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { ext: 'labelatlas' }, asset.uuid);
-                            }
-                        },
-                    ]
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.copy'),
-                    enabled: asset.readOnly || asset.isRoot ? false : true,
-                    click() {
-                        // @ts-ignore
-                        self.$emit('copy', asset.uuid);
-                    }
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.paste'),
-                    enabled: asset.readOnly ? false : true,
-                    click() {
-                        // @ts-ignore
-                        self.$emit('paste', asset.uuid);
-                    }
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.rename'),
-                    enabled: asset.readOnly || asset.isRoot ? false : true,
-                    click(event: Event) {
-                        // @ts-ignore
-                        self.rename(asset);
-                    }
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.delete'),
-                    enabled: asset.readOnly || asset.isRoot ? false : true,
-                    click() {
-                        // @ts-ignore
-                        self.$emit('ipcDelete', asset.uuid);
-                    }
-                },
-                { type: 'separator', },
-                {
-                    label: Editor.I18n.t('assets.menu.revealInlibrary'),
-                    click() {
-                        const path = asset.files[0];
-                        if (path) {
-                            shell.showItemInFolder(path);
-                        }
-                    },
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.revealInExplorer'),
-                    click() {
-                        const path = join(Editor.Project.path, asset.source.substr(5));
-                        shell.showItemInFolder(path);
-                    },
-                },
-                {
-                    label: Editor.I18n.t('assets.menu.showUuid'),
-                    click() {
-                        console.info(`UUID: ${asset.uuid}, PATH: ${asset.source}`);
-                    },
-                },
-            ]
-        });
+        context.menu(this, asset);
     },
     /**
      * 选中某个节点
@@ -316,9 +189,6 @@ export const methods = {
         if (this.selects.includes(uuid)) {
             // @ts-ignore
             uuid = this.selects.join(',');
-        } else {
-            // @ts-ignore 取消选中，避免样式重叠
-            this.$emit('ipcSingleSelect', uuid);
         }
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({ from: uuid }));
@@ -420,25 +290,8 @@ export const methods = {
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
 
     },
-
-    checkRename() {
-        // @ts-ignore
-        if (this.renameSource === this.asset.source) {
-            // @ts-ignore
-            this.asset.state = 'input';
-        }
-    }
 };
 
 export function mounted() {
-    // @ts-ignore
-    const asset = this.asset;
-    // @ts-ignore
-    this.checkRename();
-
-    if (asset.state !== '' || asset.isRoot || asset.readOnly) {
-        // @ts-ignore
-        this.draggable = false;
-    }
 
 }

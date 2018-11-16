@@ -1,13 +1,23 @@
-import { inherits } from 'util';
-
 'use strict';
 
-const protocol = 'db://';
-const uuidAssets: any = {};
-let subAssetsTree: any;
-let assetsTree: any;
+export const protocol = 'db://';
+export const uuidAssets: any = {};
+export let subAssetsTree: any;
+export let assetsTree: any; // 树形结构的数据，含 children
+/**
+ * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
+ * 将所有有展开的资源按照 key = position.top 排列，value = ItreeAsset
+ * 注意：仅包含有展开显示的资源
+ */
+export const assetsMap: Map<number, ItreeAsset> = new Map();
 
-function reset() {
+export let vm: any; // 承接 tree vm 的参数配置
+
+export const assetHeight: number = 20; // 配置每个资源的高度，需要与css一致
+export const iconWidth: number = 18; // 树形节点 icon 的宽度
+export const padding: number = 4; // 树形头部的间隔，为了保持美观
+
+export function reset() {
     subAssetsTree = {
         subAssets: {}
     };
@@ -15,12 +25,21 @@ function reset() {
     assetsTree = {
         depth: -1,
     };
+
 }
 
 /**
  * 输出是一个数组
  */
-async function refresh() {
+
+export function init(treeVM: any) {
+    vm = treeVM;
+}
+
+/**
+ * 刷新
+ */
+export async function refresh() {
     const arr = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
 
     if (!arr) { // 数据可能为空
@@ -30,7 +49,17 @@ async function refresh() {
     reset();
     toSubAssetsTree(arr);
     toAssetsTree(assetsTree, subAssetsTree, []);
-    return assetsTree;
+}
+
+/**
+ * 重新计算树形数据
+ */
+export function calcAssetsTree() {
+    assetsMap.clear(); // 清空数据
+
+    calcAssetPosition(); // 重算排位
+
+    calcDirectoryHeight(); // 计算文件夹的高度
 }
 
 /**
@@ -109,6 +138,12 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
     sortTree(asset.children);
 }
 
+/**
+ * 处理单个资源的属性
+ * @param asset 资源对象
+ * @param dir 所在的 source 拆分出来的路径数组
+ * @param name 完整的文件名称
+ */
 function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     const [fileName, fileExt] = name.split('.');
     const subAssets = Object.keys(asset.subAssets);
@@ -145,5 +180,126 @@ function sortTree(arr: ItreeAsset[]) {
     });
 }
 
-exports.protocol = protocol;
-exports.refresh = refresh;
+/**
+ * 计算所有树形资源的位置数据，这一结果用来做快速检索
+ * 重点是设置 assetsMap 数据
+ * 返回当前序号
+ * @param assets
+ * @param index 资源的序号
+ * @param depth 资源的层级
+ */
+function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
+    if (!assets || !Array.isArray(assets.children)) {
+        return index;
+    }
+
+    assets.children.forEach((asset: ItreeAsset) => {
+        if (!asset) {
+            return;
+        }
+
+        const start = index * assetHeight;  // 起始位置
+
+        // 扩展属性
+        asset.depth = depth;
+        asset.top = start;
+        asset.left = depth * iconWidth + padding;
+        asset._height = assetHeight;
+        asset.parentUuid = assets.uuid;
+
+        if (vm.folds[asset.uuid] === undefined) {
+            vm.folds[asset.uuid] = asset.isParent ? true : false;
+        }
+        if (asset.isExpand === undefined) {
+            Object.defineProperty(asset, 'isExpand', {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return vm.folds[asset.uuid];
+                },
+                set(val) {
+                    vm.folds[asset.uuid] = val;
+                },
+            });
+
+            // 设定初始值
+            if (asset.isDirectory) {
+                asset.isExpand = true;
+            } else {
+                asset.isExpand = false;
+            }
+        }
+
+        if (asset.height === undefined) {
+            Object.defineProperty(asset, 'height', {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return this._height;
+                },
+                set: addHeight.bind(asset),
+            });
+        }
+
+        if (vm.search === '') { // 没有搜索
+            vm.state = '';
+            assetsMap.set(start, asset);
+            index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
+
+            if (asset.isParent && asset.isExpand === true) {
+                index = calcAssetPosition(asset, index, depth + 1); // depth 是该资源的层级
+            }
+        } else { // 有搜索
+            vm.state = 'search';
+
+            // @ts-ignore
+            if (!asset.isRoot && asset.name.search(vm.search) !== -1) { // 平级保存
+                asset.depth = 0; // 平级保存
+                assetsMap.set(start, asset);
+                index++;
+            }
+
+            if (asset.isParent) {
+                index = calcAssetPosition(asset, index, 0);
+            }
+        }
+    });
+    // 返回序号
+    return index;
+}
+
+/**
+ * 增加文件夹的高度
+ * add 为数字，1 表示有一个 children
+ */
+function addHeight(add: number) {
+    if (add > 0) {
+        // @ts-ignore
+        this._height += assetHeight * add;
+
+        // 触发其父级高度也增加
+        for (const [top, asset] of assetsMap) {
+            // @ts-ignore
+            if (this.parentUuid === asset.uuid) {
+                asset.height = add;
+                break;
+            }
+        }
+    } else {
+        // @ts-ignore
+        this._height = assetHeight;
+    }
+}
+
+/**
+ * 计算一个文件夹的完整高度
+ */
+function calcDirectoryHeight() {
+    for (const [top, parent] of assetsMap) {
+        if (parent.isExpand && parent.children && parent.children.length > 0) {
+            parent.height = parent.children.length; // 实际计算在内部的 setter 函数
+        } else {
+            parent.height = 0;
+        }
+    }
+}

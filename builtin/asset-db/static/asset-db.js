@@ -116,9 +116,9 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     const date = new Date().getTime();
     console.log('Start the asset database...');
     // 拼接需要使用的地址
-    const options = Object.assign(info, {
+    const options = Object.assign({
         protocol: protocol + info.name, // 方便后续协议和路径的替换
-    });
+    }, info);
 
     // 保证文件夹存在
     ensureDirSync(options.target);

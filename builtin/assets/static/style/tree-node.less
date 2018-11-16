@@ -8,6 +8,7 @@
     height: 20px;
     line-height: 20px;
     font-size: 12px;
+    cursor: default;
     &[active="true"] {
         background-color: rgba(255, 255, 255, 0.1);
     }
@@ -32,6 +33,9 @@
         .arrow {
             transform: rotate(90deg);
         }
+    }
+    &[draggable="false"] {
+        cursor: no-drop;
     }
     i {
         line-height: 21px;
@@ -63,16 +67,19 @@
             border-radius: 2px;
             vertical-align: text-bottom;
         }
+        .i-loading {
+            transform: scale(0.8);
+        }
     }
     .folder {
         transition: none !important;
         text-align: left !important;
-        &.i-database{
+        &.i-database {
             font-size: 14px;
         }
     }
     .name {
-        cursor: default;
+        cursor: inherit;
         white-space: nowrap;
         padding-right: 20px;
         padding-left: 4px;
@@ -102,14 +109,14 @@
         right: 4px;
         z-index: 100;
         font-size: 12px;
-        color: rgba(255,255,255,0.4) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
     }
 }
 
 .tree {
     &[state="search"] {
         >.tree-node {
-            padding-left: 30px!important;
+            padding-left: 30px !important;
             .icon {
                 margin-left: -2px;
             }

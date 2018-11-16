@@ -2,31 +2,15 @@
 
 import { readFileSync } from 'fs';
 import { extname, join } from 'path';
-import { $ } from '../panel';
 
 const db = require('./tree-db');
+const utils = require('./tree-utils');
 
 let vm: any = null;
-
-const assetHeight: number = 20; // 配置每个资源的高度，需要与css一致
-const iconWidth: number = 18; // 树形节点 icon 的宽度
-const padding: number = 4; // 树形头部的间隔，为了保持美观
 
 let timeOutId: any;
 let isRenderingTree: boolean = false; // 正在重新渲染树形
 let isRequiringToAdd: boolean = false; // 新增项目带来的请求重新渲染树形
-
-/**
- * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
- * 将所有有展开的资源按照 key = position.top 排列，value = ItreeAsset
- * 注意：仅包含有展开显示的资源
- */
-const assetsMap: Map<number, ItreeAsset> = new Map();
-
-let treeData: any; // 树形结构的数据，含 children
-
-const trash: any = {}; // 回收站，主要用于移动中，异步的先从一个父级删除节点，再添加另一个父级的过程
-
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
@@ -53,7 +37,7 @@ export function data() {
         viewHeight: 0, // 当前树形的可视区域高度
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
-        selectBox: false, // 拖动时高亮的目录区域 {top, height} 或者 false 不显示
+        selectBox: {}, // 拖动时高亮的目录区域 {top, left, height}
     };
 }
 
@@ -89,7 +73,7 @@ export const watch = {
         // 重新定位到选中项
         vm.$nextTick(() => {
             if (vm.search === '') {
-                selectsIntoView();
+                utils.scrollIntoView(vm.getFirstSelect());
             }
         });
     },
@@ -110,6 +94,7 @@ export const watch = {
 export function mounted() {
     // @ts-ignore
     vm = this;
+    db.init(vm);
 
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
@@ -144,7 +129,7 @@ export function mounted() {
         data.insert = 'inside';
 
         if (data.from) {  // 如果从根节点移动，则不需要移动
-            const arr = getGroupFromTree(treeData, data.from, 'uuid');
+            const arr = utils.getGroupFromTree(db.assetsTree, data.from, 'uuid');
             if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
                 return;
             }
@@ -160,7 +145,7 @@ export const methods = {
      */
     clear() {
         // @ts-ignore
-        treeData = null;
+        db.reset();
         this.changeData();
     },
 
@@ -168,14 +153,14 @@ export const methods = {
      * 刷新树形
      */
     async refresh() {
-        treeData = await db.refresh();
-        if (!treeData) { // 容错处理，数据可能为空
+        await db.refresh();
+        if (!db.assetsTree) { // 容错处理，数据可能为空
             return;
         }
 
         this.changeData();
 
-        selectsIntoView();
+        utils.scrollIntoView(vm.getFirstSelect());
     },
 
     /**
@@ -185,7 +170,7 @@ export const methods = {
         vm.allExpand = !vm.allExpand;
 
         // 修改所有树形节点的数据
-        resetTreeProps({ isExpand: vm.allExpand });
+        utils.resetTreeProps({ isExpand: vm.allExpand });
 
         this.changeData();
     },
@@ -195,7 +180,7 @@ export const methods = {
      */
     allSelect() {
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        for (const [top, asset] of assetsMap) {
+        for (const [top, asset] of db.assetsMap) {
             Editor.Ipc.sendToPackage('selection', 'select', 'asset', asset.uuid);
         }
     },
@@ -208,9 +193,9 @@ export const methods = {
     select(uuid: string, show = false) {
         if (!vm.selects.includes(uuid)) {
             vm.selects.push(uuid);
-            vm.current = getAssetFromMap(uuid);
+            vm.current = utils.getAssetFromMap(uuid);
             if (show) {
-                selectsIntoView();
+                utils.scrollIntoView(vm.getFirstSelect());
             }
             return vm.current;
         }
@@ -249,13 +234,13 @@ export const methods = {
                 if (uuids.length === 0) {
                     return;
                 }
-                const one = getAssetFromMap(uuid); // 当前给定的元素
-                const first = getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
+                const one = utils.getAssetFromMap(uuid); // 当前给定的元素
+                const first = utils.getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
                 if (one !== undefined && first !== undefined) {
                     const selects: string[] = [];
                     const min = one.top < first.top ? one.top : first.top;
                     const max = min === one.top ? first.top : one.top;
-                    for (const [top, json] of assetsMap) {
+                    for (const [top, json] of db.assetsMap) {
                         if (min <= top && top <= max) {
                             selects.push(json.uuid);
                         }
@@ -330,7 +315,7 @@ export const methods = {
         }
 
         // 获取该资源
-        const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
+        const [asset, index, arr, parent] = utils.getGroupFromTree(db.assetsTree, uuid);
         let url = asset.source;
 
         if (asset.isDirectory !== true) { // 不是目录，终止
@@ -354,7 +339,7 @@ export const methods = {
      * 从树形删除资源节点
      */
     delete(uuid: string) {
-        const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
+        const [asset, index, arr, parent] = utils.getGroupFromTree(db.assetsTree, uuid);
         if (arr) {
             arr.splice(index, 1);
         }
@@ -369,8 +354,8 @@ export const methods = {
      */
     async ipcDelete(uuid: string) {
         if (uuid && !vm.selects.includes(uuid)) { // 如果该资源没有被选中，则只是删除此单个
-            const asset = getValidAsset(uuid);
-            if (!asset) { // 删除的节点不可用，不允许删除
+            const asset = utils.getAssetFromTree(uuid);
+            if (utils.canNotDeleteAsset(asset)) {
                 return;
             }
 
@@ -379,18 +364,20 @@ export const methods = {
         } else { // 如果该资源是被选中了，表明要删除所有选中项
             const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
             uuids.forEach((uuid: string) => {
-                const asset = getValidAsset(uuid);
-                if (asset) {
-                    asset.state = 'loading';
-                    Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-                    Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
-
-                    setTimeout(() => {
-                        if (asset) {
-                            asset.state = '';
-                        }
-                    }, 800);
+                const asset = utils.getAssetFromTree(uuid);
+                if (utils.canNotDeleteAsset(asset)) {
+                    return;
                 }
+
+                asset.state = 'loading';
+                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
+
+                setTimeout(() => {
+                    if (asset) {
+                        asset.state = '';
+                    }
+                }, 800);
             });
             // 重置所有选中
             vm.selects = [];
@@ -402,7 +389,7 @@ export const methods = {
      * @param uuid
      */
     toggle(uuid: string, value: boolean) {
-        const one = getAssetFromMap(uuid); // 获取该资源的数据，包含子资源
+        const one = utils.getAssetFromMap(uuid); // 获取该资源的数据，包含子资源
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
@@ -419,7 +406,7 @@ export const methods = {
      */
     checkAllToggleStatus() {
         let allCollapse: boolean = true;
-        treeData.children.forEach((asset: ItreeAsset) => {
+        db.assetsTree.children.forEach((asset: ItreeAsset) => {
             if (asset.isRoot && asset.isExpand) {
                 allCollapse = false;
             }
@@ -441,7 +428,7 @@ export const methods = {
         } else if (direction === 'left') {
             this.toggle(uuid, false);
         } else {
-            const siblings = getSiblingsFromMap(uuid);
+            const siblings = utils.getSiblingsFromMap(uuid);
             let current;
             switch (direction) {
                 case 'up':
@@ -471,7 +458,7 @@ export const methods = {
         const length = uuids.length;
         const last = uuids[length - 1];
 
-        const siblings = getSiblingsFromMap(last);
+        const siblings = utils.getSiblingsFromMap(last);
         let current;
         switch (direction) {
             case 'up':
@@ -499,13 +486,13 @@ export const methods = {
         if (uuids.length === 0) {
             return;
         }
-        const one = getAssetFromMap(uuid); // 当前给定的元素
-        const first = getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
+        const one = utils.getAssetFromMap(uuid); // 当前给定的元素
+        const first = utils.getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
         if (one !== undefined && first !== undefined) {
             const selects: string[] = [];
             const min = one.top < first.top ? one.top : first.top;
             const max = min === one.top ? first.top : one.top;
-            for (const [top, json] of assetsMap) {
+            for (const [top, json] of db.assetsMap) {
                 if (min <= top && top <= max) {
                     selects.push(json.uuid);
                 }
@@ -530,9 +517,7 @@ export const methods = {
         // @ts-ignore 清空需要 rename 的节点
         this.renameSource = '';
 
-        const one = getValidAsset(asset.uuid); // 获取该资源的数据
-
-        if (!one || name === '' || name === asset.name) {
+        if (utils.canNotRenameAsset(asset) || name === '' || name === asset.name) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
             asset.state = '';
             return;
@@ -549,23 +534,34 @@ export const methods = {
      */
     dragOver(uuid: string) {
         // @ts-ignore
-        const asset: ItreeAsset = getAssetFromMap(uuid);
+        const asset: ItreeAsset = utils.getAssetFromMap(uuid);
         if (!asset.isDirectory) {
             // @ts-ignore
             this.dragOver(asset.parentUuid);
             return;
         }
 
-        const top = asset.top + padding;
+        const top = asset.top + db.padding;
         let height = asset.height;
-        if (height > assetHeight) {
+        if (height > db.assetHeight) {
             height += 2;
         }
         // @ts-ignore
         this.selectBox = {
+            opacity: top + '!important',
+            left: vm.$parent.$refs.viewBox.scrollLeft + 'px',
             top: top + 'px',
             height: height + 'px',
         };
+
+        // 效果优化：拖动且移出本面板时，选框隐藏
+        clearTimeout(timeOutId);
+        timeOutId = setTimeout(() => {
+            // @ts-ignore
+            this.selectBox = {
+                opacity: 0
+            };
+        }, 500);
     },
 
     /**
@@ -573,10 +569,10 @@ export const methods = {
      */
     dragLeave(uuid: string) {
         // @ts-ignore
-        let asset: ItreeAsset = getAssetFromMap(uuid);
+        let asset: ItreeAsset = utils.getAssetFromMap(uuid);
         if (!asset.isDirectory) {
             // @ts-ignore
-            asset = getAssetFromMap(asset.parentUuid);
+            asset = utils.getAssetFromMap(asset.parentUuid);
         }
         asset.state = '';
     },
@@ -587,8 +583,10 @@ export const methods = {
      * @param json
      */
     async drop(json: IdragAsset) {
-        // @ts-ignore 隐藏高亮框
-        this.selectBox = false;
+        // @ts-ignore 选框立即消失
+        this.selectBox = {
+            opacity: 0
+        };
 
         // 没有源 或者 不是拖动
         if (!json.from || json.insert !== 'inside') {
@@ -596,13 +594,13 @@ export const methods = {
         }
 
         // 鼠标在此节点释放
-        let toAsset: any = getValidAsset(json.to);
+        let toAsset: any = utils.getAssetFromTree(json.to);
 
         // 移动到节点的父级
         if (toAsset && !toAsset.isDirectory) {
-            toAsset = getValidAsset(toAsset.parentUuid);
+            toAsset = utils.getAssetFromTree(toAsset.parentUuid);
         }
-        if (!toAsset || !toAsset.isDirectory) {
+        if (utils.canNotPasteAsset(toAsset)) {
             return;
         }
 
@@ -619,25 +617,25 @@ export const methods = {
             do {
                 file = json.files[index];
                 index++;
-            } while (file && await importAsset(toAsset.source, file.path));
+            } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, toAsset.source));
 
             return;
         }
         const uuids = json.from.split(',');
         // 多资源移动，根据现有排序的顺序执行
         const groups: any[] = uuids.map((uuid: string) => {
-            return getGroupFromTree(treeData, uuid);
+            return utils.getGroupFromTree(db.assetsTree, uuid);
         }).filter(Boolean).sort((a, b) => {
             return a[0].top - b[0].top;
         });
 
         groups.forEach((group: any) => {
             const [fromAsset, fromIndex, fromArr, fromParent] = group;
-            if (!fromAsset || fromAsset.isRoot || fromAsset.readOnly) {
+            if (utils.canNotCopyAsset(fromAsset)) {
                 return;
             }
 
-            const isSubChild = getGroupFromTree(fromAsset, json.to);
+            const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
             if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
                 return;
             }
@@ -648,6 +646,7 @@ export const methods = {
             }
 
             toAsset.state = 'loading'; // 显示 loading 效果
+
             // @ts-ignore 移动资源
             Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
         });
@@ -665,6 +664,11 @@ export const methods = {
         } else {
             copiedUuids = vm.selects.slice();
         }
+
+        // 过滤不可复制的节点
+        copiedUuids.filter((uuid: string) => {
+            return !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
+        });
     },
 
     /**
@@ -676,19 +680,21 @@ export const methods = {
             uuid = this.getFirstSelect();
         }
 
-        const parent = getValidAsset(uuid);
-        if (!parent || !parent.isDirectory) {
+        const parent = utils.closestCanPasteAsset(uuid); // 自身或父级文件夹
+        if (!parent) { // 没有可用的
             return;
         }
 
         let index = 0;
         let asset;
+        let isLegal = false;
         parent.state = 'loading'; // 显示 loading 效果
 
         do {
-            asset = getValidAsset(copiedUuids[index]);
+            asset = utils.getAssetFromTree(copiedUuids[index]);
             index++;
-        } while (asset && await importAsset(parent.source, asset.source));
+            isLegal = !utils.canNotCopyAsset(asset);
+        } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 
     /**
@@ -710,16 +716,12 @@ export const methods = {
     renderTree() {
         isRenderingTree = true;
 
-        assetsMap.clear(); // 清空数据
-
-        calcAssetPosition(); // 重算排位
-
-        calcDirectoryHeight(); // 计算文件夹的高度
+        db.calcAssetsTree(); // 重新计算树形数据
 
         this.render(); // 重新渲染出树形
 
         // 重新定位滚动条, +1 是为了增加离底距离
-        vm.$parent.treeHeight = (assetsMap.size + 1) * assetHeight;
+        vm.$parent.treeHeight = (db.assetsMap.size + 1) * db.assetHeight;
 
         timeOutId = setTimeout(() => {
             isRenderingTree = false;
@@ -734,10 +736,10 @@ export const methods = {
     render() {
         vm.assets = []; // 先清空，这种赋值机制才能刷新 vue，而 .length = 0 不行
 
-        const min = vm.scrollTop - assetHeight; // 算出可视区域的 top 最小值
+        const min = vm.scrollTop - db.assetHeight; // 算出可视区域的 top 最小值
         const max = vm.viewHeight + vm.scrollTop; // 最大值
 
-        for (const [top, json] of assetsMap) {
+        for (const [top, json] of db.assetsMap) {
             if (top >= min && top <= max) { // 在可视区域才显示
                 vm.assets.push(json);
             }
@@ -749,10 +751,10 @@ export const methods = {
      * @param scrollTop
      */
     scroll(scrollTop = 0) {
-        const mode = scrollTop % assetHeight;
+        const mode = scrollTop % db.assetHeight;
         let top = scrollTop - mode;
         if (mode === 0 && scrollTop !== 0) {
-            top -= assetHeight;
+            top -= db.assetHeight;
         }
 
         vm.top = top; // 模拟出样式
@@ -763,316 +765,9 @@ export const methods = {
      * 以下是工具函数：
      */
     getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
-        if (!vm.selects[0] && treeData.children[0]) {
-            return treeData.children[0].uuid; // asset 节点资源
+        if (!vm.selects[0] && db.assetsTree.children[0]) {
+            return db.assetsTree.children[0].uuid; // asset 节点资源
         }
         return vm.selects[0]; // 当前选中的资源
     }
 };
-
-/**
- * 计算所有树形资源的位置数据，这一结果用来做快速检索
- * 重点是设置 assetsMap 数据
- * 返回当前序号
- * @param assets
- * @param index 资源的序号
- * @param depth 资源的层级
- */
-function calcAssetPosition(assets = treeData, index = 0, depth = 0) {
-    if (!assets || !Array.isArray(assets.children)) {
-        return index;
-    }
-
-    assets.children.forEach((asset: ItreeAsset) => {
-        if (!asset) {
-            return;
-        }
-
-        const start = index * assetHeight;  // 起始位置
-
-        // 扩展属性
-        asset.depth = depth;
-        asset.top = start;
-        asset.left = depth * iconWidth + padding;
-        asset._height = assetHeight;
-        asset.parentUuid = assets.uuid;
-
-        if (vm.folds[asset.uuid] === undefined) {
-            vm.folds[asset.uuid] = asset.isParent ? true : false;
-        }
-        if (asset.isExpand === undefined) {
-            Object.defineProperty(asset, 'isExpand', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return vm.folds[asset.uuid];
-                },
-                set(val) {
-                    vm.folds[asset.uuid] = val;
-                },
-            });
-        }
-
-        if (asset.height === undefined) {
-            Object.defineProperty(asset, 'height', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return this._height;
-                },
-                set: addHeight.bind(asset),
-            });
-        }
-
-        if (vm.search === '') { // 没有搜索
-            vm.state = '';
-            assetsMap.set(start, asset);
-            index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
-
-            if (asset.isParent && asset.isExpand === true) {
-                index = calcAssetPosition(asset, index, depth + 1); // depth 是该资源的层级
-            }
-        } else { // 有搜索
-            vm.state = 'search';
-
-            // @ts-ignore
-            if (!asset.isRoot && asset.name.search(vm.search) !== -1) { // 平级保存
-                asset.depth = 0; // 平级保存
-                assetsMap.set(start, asset);
-                index++;
-            }
-
-            if (asset.isParent) {
-                index = calcAssetPosition(asset, index, 0);
-            }
-        }
-    });
-    // 返回序号
-    return index;
-}
-
-/**
- * 增加文件夹的高度
- * add 为数字，1 表示有一个 children
- */
-function addHeight(add: number) {
-    if (add > 0) {
-        // @ts-ignore
-        this._height += assetHeight * add;
-
-        // 触发其父级高度也增加
-        for (const [top, asset] of assetsMap) {
-            // @ts-ignore
-            if (this.parentUuid === asset.uuid) {
-                asset.height = add;
-                break;
-            }
-        }
-    } else {
-        // @ts-ignore
-        this._height = assetHeight;
-    }
-}
-
-/**
- * 计算一个文件夹的完整高度
- */
-function calcDirectoryHeight() {
-    for (const [top, parent] of assetsMap) {
-        if (parent.isExpand && parent.children && parent.children.length > 0) {
-            parent.height = parent.children.length; // 实际计算在内部的 setter 函数
-        } else {
-            parent.height = 0;
-        }
-    }
-}
-
-/**
- * 重置某些属性，比如全部折叠或全部展开
- * @param obj
- * @param props
- */
-function resetTreeProps(props: any, tree: ItreeAsset[] = treeData.children) {
-    const keys = Object.keys(props);
-    tree.forEach((asset: ItreeAsset) => {
-        for (const k of keys) {
-            // @ts-ignore
-            asset[k] = props[k];
-        }
-
-        if (asset.children) {
-            resetTreeProps(props, asset.children);
-        }
-    });
-}
-
-/**
- * 获取一组资源的位置信息
- * 资源节点对象 asset,
- * 对象所在数组索引 index，
- * 所在数组 array，
- * 所在数组其所在的对象 object
- * 返回 [asset, index, array, object]
- *
- * 找不到资源 返回 []
- * @param arr
- * @param uuid
- */
-function getGroupFromTree(obj: ItreeAsset, value: string = '', key: string = 'uuid'): any {
-    let rt = [];
-
-    if (!obj || !obj.children) {
-        return [];
-    }
-    // @ts-ignore
-    if (obj[key] === value) { // 次要寻找包体 自身对象，比如根节点自身
-        return [obj];
-    }
-
-    let arr = obj.children; // 主要寻找包体是 .children
-    if (Array.isArray(obj)) {
-        arr = obj;
-    }
-    for (let i = 0, ii = arr.length; i < ii; i++) {
-        const one = arr[i];
-        if (!one) { // 容错处理，在 change 和 add 后，children 存在空值
-            continue;
-        }
-        // @ts-ignore
-        if (one[key] === value) { // 全等匹配
-            return [one, i, arr, obj]; // 找到后返回的数据格式
-        }
-
-        if (one.children && one.children.length !== 0) { // 如果还有 children 的继续迭代查找
-            rt = getGroupFromTree(one, value, key);
-
-            if (rt.length > 0) { // 找到了才返回，找不到，继续循环
-                return rt;
-            }
-        }
-    }
-
-    return rt;
-}
-
-/**
- * 获取一个可操作的资源节点
- * 不可用表现在无右击菜单，不能复制，拖拽，粘贴，新建子文件等操作
- * @param uuid
- */
-function getValidAsset(uuid: string) {
-    const one = getAssetFromMap(uuid);
-    if (!one || one.readOnly) { // 资源不可用
-        return;
-    }
-    return one;
-}
-
-/**
- * 更快速地找到单个资源节点
- */
-function getAssetFromMap(uuid = '') {
-    for (const [top, asset] of assetsMap) {
-        if (uuid === asset.uuid) {
-            return asset;
-        }
-    }
-    return;
-}
-
-/**
- * 找到当前节点及其前后节点
- * [current, prev, next]
- */
-function getSiblingsFromMap(uuid = '') {
-    const assets = Array.from(assetsMap.values());
-    const length = assets.length;
-    let current = assets[0];
-    let next = assets[1];
-    let prev = assets[length - 1];
-    let i = 0;
-
-    for (const [top, json] of assetsMap) {
-        if (uuid === json.uuid) {
-            current = json;
-            next = assets[i + 1];
-            if (i + 1 >= length) {
-                next = assets[0];
-            }
-            prev = assets[i - 1];
-            if (i - 1 < 0) {
-                prev = assets[length - 1];
-            }
-            break;
-        }
-        i++;
-    }
-    return [current, prev, next];
-}
-
-/**
- * 外部文件系统拖进资源
- * @param target 创建的位置
- * @param source 资源路径
- */
-async function importAsset(target: string, source: string) {
-    return await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', source, target);
-}
-
-/**
- * 展开选中项并处于视角中
- */
-function selectsIntoView() {
-    scrollIntoView(vm.getFirstSelect());
-}
-
-/**
- * 滚动节点到可视范围内
- * @param uuid
- */
-function scrollIntoView(uuid: string) {
-    if (!uuid) {
-        return;
-    }
-    // 情况 A ：判断是否已在展开的节点中，
-    const one = getAssetFromMap(uuid);
-    if (one) { // 如果 A ：存在，
-        // 情况 B ：判断是否在可视范围，
-        const min = vm.scrollTop - assetHeight;
-        const max = vm.scrollTop + vm.viewHeight - assetHeight;
-        if (min < one.top && one.top < max) {
-            return; // 如果 B：是，则终止
-        } else { // 如果 B：不是，则滚动到可视的居中范围内
-            const top = one.top - vm.viewHeight / 2;
-            vm.$parent.$refs.viewBox.scrollTo(0, top);
-        }
-    } else { // 如果 A ：不存在，展开其父级节点，迭代循环展开其祖父级节点，滚动到可视的居中范围内
-        if (uuid === treeData.uuid) { // 根节点的除外
-            return;
-        }
-
-        if (expandAsset(uuid)) {
-            vm.changeData();
-
-            // setTimeOut 是为了避免死循环
-            setTimeout(() => {
-                scrollIntoView(uuid);
-            }, 200);
-        }
-    }
-}
-
-/**
- * 展开树形资源节点
- */
-function expandAsset(uuid: string): boolean {
-    const [asset, index, arr, parent] = getGroupFromTree(treeData, uuid);
-    if (!asset) {
-        return false;
-    }
-    asset.isExpand = true;
-    if (parent && parent.uuid) {
-        return expandAsset(parent.uuid);
-    }
-    return true;
-}

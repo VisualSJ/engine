@@ -2,8 +2,11 @@
     :class="type !== 'image'? value : type"
 >
     <!-- 显示图片的缩略图 -->
+    <ui-loading class="i-loading"
+        v-if="type === 'image' && value === ''"
+    ></ui-loading>
     <img class="thumbnail"
-        v-if="type === 'image'"
+        v-if="type === 'image' && value !== ''"
         :src="value"
     >
 </i>
