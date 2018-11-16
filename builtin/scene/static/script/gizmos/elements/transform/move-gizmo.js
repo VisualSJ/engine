@@ -3,7 +3,7 @@ const NodeUtils = Editor.require('scene://utils/node');
 let PositionController = require('../controller/position-controller');
 
 class MoveGizmo extends Editor.Gizmo {
-    init () 
+    init ()
     {
         this.nodesWorldPosList = [];
     }
@@ -18,7 +18,7 @@ class MoveGizmo extends Editor.Gizmo {
 
     onCreateController()
     {
-        let rootNode = _Scene.view.foregroundNode.getChildByName('gizmoRoot');
+        let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
         this._controller = new PositionController(this._root, this._view, rootNode);
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
@@ -44,7 +44,7 @@ class MoveGizmo extends Editor.Gizmo {
     }
 
     onControllerMouseMove(/*event*/)
-    {      
+    {
     }
 
     onControllerMouseUp()
@@ -92,7 +92,7 @@ class MoveGizmo extends Editor.Gizmo {
             node.getPosition(curPos);
             curPos = curPos.add(dif);
             node.setPosition(curPos.x, curPos.y, curPos.z);
-            
+
         });
 
         this._view.repaintHost();
@@ -131,12 +131,12 @@ class MoveGizmo extends Editor.Gizmo {
             let deltaPos = this._controller.getDeltaPosition();
             let topNodes = this.topNodes;
             let curNodePos;
-            for (let i = 0; i < this.nodesWorldPosList.length; ++i) 
+            for (let i = 0; i < this.nodesWorldPosList.length; ++i)
             {
                 curNodePos = this.nodesWorldPosList[i].add(deltaPos);
                 NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
             }
-            
+
             this._view.repaintHost();
         }
 
@@ -158,13 +158,13 @@ class MoveGizmo extends Editor.Gizmo {
         else {
             worldPos = NodeUtils.getWorldPosition3D(node);
         }
-    
+
         if ( this._view.coordinate !== 'global' ) {
             worldRot = NodeUtils.getWorldRotation3D(node);
         }
 
         this._controller.setPosition(worldPos);
-        this._controller.setRotation(worldRot);   
+        this._controller.setRotation(worldRot);
     }
 }
 

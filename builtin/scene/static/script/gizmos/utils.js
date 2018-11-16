@@ -21,7 +21,7 @@ GizmosUtils.addMoveHandles = function ( gizmo, opts, callbacks ) {
         event.stopPropagation();
 
         // if no scene, should not do callback
-        if (typeof _Scene !== 'undefined' && !cc.director.getScene()) {
+        if (!cc.director.getScene()) {
             return;
         }
 
@@ -88,7 +88,7 @@ GizmosUtils.snapPixelWihVec2 = function (vec2) {
 };
 
 GizmosUtils.getCenter = function ( nodes ) {
-  
+
     let centerWorld = GizmosUtils.getCenterWorldPos(nodes);
 
     var scene = cc.director.getScene();
@@ -153,7 +153,7 @@ GizmosUtils.getCenterWorldPos3D = function ( nodes ) {
                 minY = v.y;
             if ( maxY === null || v.y > maxY )
                 maxY = v.y;
-            
+
             if ( minZ === null || v.z < minZ )
                 minZ = v.z;
             if ( maxZ === null || v.z > maxZ )

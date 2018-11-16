@@ -25,7 +25,7 @@ class RotateGizmo extends Editor.Gizmo {
 
     onCreateController()
     {
-        let rootNode = _Scene.view.foregroundNode.getChildByName('gizmoRoot');
+        let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
         this._controller = new RotationController(this._root, this._view, rootNode);
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
@@ -42,7 +42,7 @@ class RotateGizmo extends Editor.Gizmo {
 
         for (let i = 0; i < topNodes.length; ++i) {
             let rot = NodeUtils.getWorldRotation3D(topNodes[i]);
-            this._rotList.push(quat.clone(rot)); 
+            this._rotList.push(quat.clone(rot));
         }
 
         if (this._view.pivot === 'center') {
@@ -56,7 +56,7 @@ class RotateGizmo extends Editor.Gizmo {
     }
 
     onControllerMouseMove(event)
-    {      
+    {
     }
 
     onControllerMouseUp()
@@ -92,7 +92,7 @@ class RotateGizmo extends Editor.Gizmo {
             keyCode !== 'down') {
             return;
         }
-        
+
         let delta = event.shiftKey ? 10 : 1;// right and down
         if (keyCode === 'right' || keyCode === 'down') {
             delta *= -1;
@@ -116,7 +116,7 @@ class RotateGizmo extends Editor.Gizmo {
         if (this._view.pivot === 'center') {
             let center = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
 
-            for (let i = 0; i < topNodes.length; ++i) 
+            for (let i = 0; i < topNodes.length; ++i)
             {
                 let node = topNodes[i];
                 node.getRotation(curNodeRot);
@@ -134,7 +134,7 @@ class RotateGizmo extends Editor.Gizmo {
                 vec3.transformQuat(offsetPos, offsetPos, deltaRotation);
                 curNodePos = center.add(offsetPos);
                 NodeUtils.setWorldPosition3D(node, curNodePos);
-                NodeUtils.setWorldRotation3D(node, rot); 
+                NodeUtils.setWorldRotation3D(node, rot);
             }
 
             // rotate controller
@@ -142,7 +142,7 @@ class RotateGizmo extends Editor.Gizmo {
             this._controller.setRotation(rot);
         }
         else {
-            for (let i = 0; i < topNodes.length; ++i) 
+            for (let i = 0; i < topNodes.length; ++i)
             {
                 topNodes[i].getRotation(curNodeRot);
                 if (this._view.coordinate === 'global')
@@ -154,7 +154,7 @@ class RotateGizmo extends Editor.Gizmo {
                     quat.mul(rot , curNodeRot, deltaRotation);
                 }
 
-                NodeUtils.setWorldRotation3D(topNodes[i], rot);            
+                NodeUtils.setWorldRotation3D(topNodes[i], rot);
             }
         }
 
@@ -189,7 +189,7 @@ class RotateGizmo extends Editor.Gizmo {
     }
 
     onKeyDown (event) {
- 
+
     }
 
     onKeyUp (event) {
@@ -219,7 +219,7 @@ class RotateGizmo extends Editor.Gizmo {
 
             if (this._view.pivot === 'center')
             {
-                for (i = 0; i < topNodes.length; ++i) 
+                for (i = 0; i < topNodes.length; ++i)
                 {
                     let curNodeMouseDownRot = this._rotList[i];
 
@@ -238,12 +238,12 @@ class RotateGizmo extends Editor.Gizmo {
                     let offsetPos = cc.v3();
                     vec3.transformQuat(offsetPos, this._offsetList[i], deltaRotation);
                     NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
-                    NodeUtils.setWorldRotation3D(topNodes[i], rot); 
+                    NodeUtils.setWorldRotation3D(topNodes[i], rot);
                 }
             }
             else
             {
-                for (i = 0; i < topNodes.length; ++i) 
+                for (i = 0; i < topNodes.length; ++i)
                 {
                     if (this._view.coordinate === 'global')
                     {
@@ -254,8 +254,8 @@ class RotateGizmo extends Editor.Gizmo {
                         quat.mul(rot , this._rotList[i], deltaRotation);
                     }
 
-                    //topNodes[i].setRotation(rot);  
-                    NodeUtils.setWorldRotation3D(topNodes[i], rot);            
+                    //topNodes[i].setRotation(rot);
+                    NodeUtils.setWorldRotation3D(topNodes[i], rot);
                 }
             }
         }
@@ -270,7 +270,7 @@ class RotateGizmo extends Editor.Gizmo {
         let worldPos;
         let worldRot = cc.quat(0,0,0,1);
 
-   
+
         if (this._view.pivot === 'center')
         {
             if (this._rotating)
@@ -282,7 +282,7 @@ class RotateGizmo extends Editor.Gizmo {
         {
             worldPos = NodeUtils.getWorldPosition3D(node);
 
-            if ( this._view.coordinate === 'global' ) 
+            if ( this._view.coordinate === 'global' )
             {
                worldRot = this._controller.getDeltaRotation();
             }

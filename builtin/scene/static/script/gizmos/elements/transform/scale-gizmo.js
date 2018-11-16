@@ -21,7 +21,7 @@ class ScaleGizmo extends Editor.Gizmo {
 
     onCreateController()
     {
-        let rootNode = _Scene.view.foregroundNode.getChildByName('gizmoRoot');
+        let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
         this._controller = new ScaleController(this._root, this._view, rootNode);
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
@@ -65,7 +65,7 @@ class ScaleGizmo extends Editor.Gizmo {
     }
 
     onKeyDown (event) {
-  
+
     }
 
     onKeyUp (event) {
@@ -154,7 +154,7 @@ class ScaleGizmo extends Editor.Gizmo {
         if (this._controller.updated)
         {
             this.recordChanges();
-            
+
             let i;
             let scaleDelta = this._controller.getDeltaScale();
             let scale = cc.v3(1.0 + scaleDelta.x, 1.0 + scaleDelta.y, 1.0 + scaleDelta.z);
@@ -178,7 +178,7 @@ class ScaleGizmo extends Editor.Gizmo {
                     );
 
                     curNodePos = this._center.add(offset);
-                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);                    
+                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
                 }
             }
             else {

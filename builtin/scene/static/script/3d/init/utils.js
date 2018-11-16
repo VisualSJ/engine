@@ -25,4 +25,16 @@ module.exports = function(path) {
         backup.error(...args);
         ipc.send('console', 'error', ...args);
     };
+
+    // 用于编辑器绘制的背景和前景节点
+    Manager.foregroundNode = new cc.Node('Editor Scene Foreground');
+    Manager.backgroundNode = new cc.Node('Editor Scene Background');
+    // 编辑器使用的节点不需要存储和显示在层级管理器
+    Manager.foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+    Manager.backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+    // 这些节点应该是常驻节点
+    cc.game.addPersistRootNode(Manager.foregroundNode);
+    cc.game.addPersistRootNode(Manager.backgroundNode);
+
+    Manager.Node.__init();
 };

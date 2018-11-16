@@ -25,6 +25,8 @@ window.Editor = window.Editor ? Editor : {
                     linkPrefab() {},
                     unlinkPrefab() {},
                 };
+            case 'packages://scene/panel/tools/camera':
+                return require('../../manager/camera');
             case 'scene://utils/node':
                 return require('../../manager/node');
             default:
