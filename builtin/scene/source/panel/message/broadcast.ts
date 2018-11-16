@@ -79,7 +79,7 @@ export function apply(messages: any) {
      * 取消某个物体的选中状态
      *   判断是否为当前选中的节点，如果是的话，需要将显示在页面上的路径信息删除
      */
-    messages['selection:select'] = (type: string, uuid: string) => {
+    messages['selection:unselect'] = (type: string, uuid: string) => {
         if (type !== 'node') {
             return;
         }

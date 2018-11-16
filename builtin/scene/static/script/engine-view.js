@@ -122,11 +122,7 @@ async function initIpc(elem) {
 
     // 转发查询 asset 数据消息
     elem.ipc.on('query-asset-info', async (uuid) => {
-        return Editor.Ipc.requestToPackage(
-            'asset-db',
-            'query-asset-info',
-            uuid
-        );
+        return await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
     });
 
     // 转发选中节点消息

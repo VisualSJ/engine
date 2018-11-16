@@ -1,13 +1,54 @@
 'use strict';
 
 const manager = {
-    node: require('./node')
+    ipc: require('./ipc'),
+    node: require('./node'),
 };
-
-const { promisify } = require('util');
 
 let currentSceneUuid = '';
 let currentSceneData = null;
+
+/**
+ * 通过一个 uuid 加载对应的场景
+ */
+async function loadSceneByUuid(uuid) {
+    return new Promise((resolve, reject) => {
+        let timer = null;
+        cc.director._loadSceneByUuid(uuid, (error) => {
+            clearTimeout(timer);
+            if (error) {
+                return reject(error);
+            }
+            resolve();
+        });
+        timer = setTimeout(() => {
+            reject('Open scene timeout...');
+        }, 3000);
+    });
+}
+
+/**
+ * 从一个序列化后的 json 内加载场景
+ * @param {*} json
+ */
+async function loadSceneByJson(json) {
+    return new Promise((resolve, reject) => {
+
+        cc.AssetLibrary.loadJson(json, (error, scene) => {
+            let timer = null;
+            cc.director.runSceneImmediate(scene, (error) => {
+                clearTimeout(timer);
+                if (error) {
+                    return reject(error);
+                }
+                resolve();
+            });
+            timer = setTimeout(() => {
+                reject('Open scene timeout...');
+            }, 3000);
+        });
+    });
+}
 
 /**
  * 打开一个场景
@@ -17,11 +58,16 @@ async function open(uuid) {
     if (uuid === currentSceneUuid) {
         return;
     }
+
+    if (currentSceneUuid) {
+        await close();
+    }
+
     currentSceneUuid = uuid;
     // cc.view.resizeWithBrowserSize(true);
 
     try {
-        await Manager.Ipc.send('query-asset-info', uuid);
+        await manager.ipc.send('query-asset-info', uuid);
     } catch (error) {
         uuid = '';
     }
@@ -29,9 +75,12 @@ async function open(uuid) {
     if (uuid) {
         // 加载指定的 uuid
         try {
-            await promisify(cc.director._loadSceneByUuid)(uuid);
+            await loadSceneByUuid(uuid);
+            currentSceneData = serialize();
         } catch (error) {
+            console.error('Open scene failed: ' + uuid);
             console.error(error);
+            currentSceneData = null;
         }
     } else {
         const scene = new cc.Scene();
@@ -41,20 +90,17 @@ async function open(uuid) {
         cc.director.runSceneImmediate(scene);
     }
 
-    // camera.setSize(cc.Canvas.instance._designResolution);
-    // camera.home();
-
     // 爬取节点树上的所有节点数据
     await manager.node.init(cc.director._scene);
 
     // 重置历史操作数据
-    const historyCache = require('./history/cache');
-    historyCache.reset();
+    // const historyCache = require('./history/cache');
+    // historyCache.reset();
 
-    currentSceneData = serialize();
-
-    // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:ready');
+    if (currentSceneData) {
+        // 发送节点修改消息
+        Manager.Ipc.send('broadcast', 'scene:ready');
+    }
 }
 
 /**
@@ -62,7 +108,7 @@ async function open(uuid) {
  */
 function serialize() {
     let asset = new cc.SceneAsset();
-    asset.scene = cc.director._scene;
+    asset.scene = cc.director.getScene();
     cc.Object._deferredDestroy();
     return Manager.serialize(asset);
 }
@@ -80,6 +126,38 @@ async function close() {
             resolve();
         }, 300);
     });
+}
+
+/**
+ * 刷新一个场景并且放弃所有修改
+ */
+async function reload() {
+    let uuid = currentSceneUuid;
+    await close();
+    await open(uuid);
+}
+
+/**
+ * 软刷新，备份当前场景的数据，并重启场景
+ */
+async function softReload() {
+    const json = Manager.serialize(cc.director.getScene());
+
+    // 发送节点修改消息
+    Manager.Ipc.send('broadcast', 'scene:close');
+
+    try {
+        await loadSceneByJson(json);
+    } catch (error) {
+        console.error('Open scene failed: ' + uuid);
+        console.error(error);
+        currentSceneData = null;
+    }
+
+    if (currentSceneData) {
+        // 发送节点修改消息
+        Manager.Ipc.send('broadcast', 'scene:ready');
+    }
 }
 
 /**
@@ -164,11 +242,16 @@ module.exports = {
     open,
     // 关闭当前场景（空实现）
     close,
+    // 重新加载当前的场景
+    reload,
+    // 软刷新场景
+    softReload,
     // 获取当前场景的序列化数据
     serialize,
 
     // 查询当前场景内的节点树信息
     queryNodeTree,
+
     // 查询一个节点的搜索路径
     queryNodePath,
 
