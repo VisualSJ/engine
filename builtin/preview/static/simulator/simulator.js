@@ -8,7 +8,6 @@ const IconvLite = require('iconv-lite');
 
 let previewProcess; // 标识模拟器预览进程是否存在
 const INTERNAL_NAME = 'temp/internal';
-const WINDOW_HEADER = 'window._CCSettings =';
 const SCIPT_TEMP_PATH = join(Editor.App.project, 'temp/quick-scripts');
 const LIBREAY_PATH = join(Editor.App.project, 'library');
 
@@ -216,9 +215,8 @@ async function writeSetting() {
         preview: true,
         platform: 'web-desktop'
     }, config);
-    let content = JSON.stringify(setting);
-    content = content.replace(/"?internal"?:/, `"${join(Editor.Project.path, INTERNAL_NAME)}":`);
-    writeFileSync(join(simulatorRoot, 'src/settings.js'), WINDOW_HEADER + content);
+    setting = setting.replace(/"?internal"?:/, `"${join(Editor.Project.path, INTERNAL_NAME)}":`);
+    writeFileSync(join(simulatorRoot, 'src/settings.js'), setting);
     return;
 }
 

@@ -46,7 +46,7 @@ module.exports = {
 
         /**
          * 查询资源树
-         * @param options 筛选条件配置 name: 资源类型名称
+         * @param options 筛选条件配置 type: 资源类型（scripts\scene\...)
          */
         async 'query-assets'(options: any) {
             if (!assetWorker) {

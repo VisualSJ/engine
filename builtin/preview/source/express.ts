@@ -6,6 +6,7 @@ import { join } from 'path';
 import { start as startSocket } from './socket';
 const { buildSetting, getModules , getCurrentScene, DEVICES} = require('./../static/utils/util');
 const express = require('express');
+const ipc = require('@base/electron-base-ipc');
 
 let app: any = null;
 let server: any = null;
@@ -28,13 +29,13 @@ export async function start() {
     app.set('views', join(__dirname, '../static/views'));
     app.set('view engine', 'jade');
     // 获取配置文件
-    app.get('/setting.json', async (req: any, res: any) => {
+    app.get('/setting.js', async (req: any, res: any) => {
         const setting = await buildSetting({
             debug: true,
             preview: true,
             platform: 'web-desktop'
         });
-        res.json(setting);
+        res.send(setting);
     });
 
     // 获取 engine 文件
@@ -112,6 +113,7 @@ export async function start() {
                         port++;
                         server.removeListener('listening', handler.listener);
                         reject(`Port ${port - 1} is occupied`);
+                        ipc.broadcast('package-preview:port-change', port);
                     },
                     listener() {
                         server.removeListener('error', handler.error);

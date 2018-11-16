@@ -7,6 +7,7 @@ const ipc = require('@base/electron-base-ipc');
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
 const {DEVICES} = require('./../static/utils/util.js');
 const simulator = require('./../static/simulator/simulator.js');
+let previewPlatform = 'browser';
 let pkg: any = null;
 
 /**
@@ -31,11 +32,10 @@ export const messages = {
     //////////////////////////
 
     /**
-     * 根据 type 类型打开对应终端预览界面
-     * @param {string} type
+     * 根据 previewPlatform 类型打开对应终端预览界面
      */
-    'open-terminal'(type: string = 'browser') {
-        if (type === 'browser') {
+    'open-terminal'() {
+        if (previewPlatform === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {
             // 模拟器预览
@@ -77,4 +77,8 @@ export function unload() {
 
 ipc.on('package-preview:get-port', (event: any) => {
     event.reply(null, getPort());
+});
+
+ipc.on('package-preview:change-preview-platform', (event: any, platform: string) => {
+    previewPlatform = platform;
 });

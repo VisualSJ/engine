@@ -213,7 +213,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
         const db = AssetWorker[name];
         const uuids = Object.keys(db.uuid2asset);
         let importers ;
-        // 存在筛选的 name 变量时，先判断是否有效后获取筛选的文件名后缀
+        // 存在筛选的 type(资源类型) 变量时，先判断是否有效后获取筛选对应类型资源
         if (options && options.type) {
             importers = type2importer[options.type];
         } else {

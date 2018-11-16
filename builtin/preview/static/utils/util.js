@@ -1,6 +1,6 @@
 const { basename, join, relative, extname } = require('path');
 const { readFileSync } = require('fs');
-const { copyFileSync, ensureDir, outputFileSync} = require('fs-extra');
+const { copyFileSync, ensureDir, outputFileSync, readJSONSync} = require('fs-extra');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
 const JSONStream = require('JSONStream');
@@ -16,22 +16,23 @@ const TEMP_PATH = join(Editor.App.project, 'temp');
 let script2uuid = {}; // 脚本映射表
 
 const DB_PROTOCOL_HEADER = 'db://';
+const WINDOW_HEADER = 'window._CCSettings =';
 const PREVIEW_PATH = 'preview-scripts';
 const RAWASSETSPATH = join(Editor.App.project, '/assets');
 
 // 设备配置信息
 const DEVICES = {
-    ipad: { name: 'iPhone 3Gs (480x320)', width: 480, height: 320},
-    ipad_mini: { name: 'iPhone 4 (960x640)', width: 960, height: 640},
-    iphone4: { name: 'iPhone 5 (1136x640)', width: 1136, height: 640},
-    iphone5: { name: 'iPhone 6 (1334x750)', width: 1334, height: 750},
-    iphone6: { name: 'iPhone 6 Plus (1920x1080)', width: 1920, height: 1080},
-    iphone6_plus: { name: 'iPad (1024x768)', width: 1024, height: 768},
-    ipad_retina: { name: 'iPad Retina (2048x1536)', width: 2048, height: 1536},
-    android_800: { name: 'Android (800x480)', width: 800, height: 480},
-    android_854: { name: 'Android (854x480)', width: 854, height: 480},
-    android_1280: { name: 'Android (1280x720)', width: 1280, height: 720},
-    customize: { name: '自定义', width: 960, height: 640}
+    ipad: { name: 'iPhone 3Gs (480x320)', height: 480, width: 320},
+    ipad_mini: { name: 'iPhone 4 (960x640)', height: 960, width: 640},
+    iphone4: { name: 'iPhone 5 (1136x640)', height: 1136, width: 640},
+    iphone5: { name: 'iPhone 6 (1334x750)', height: 1334, width: 750},
+    iphone6: { name: 'iPhone 6 Plus (1920x1080)', height: 1920, width: 1080},
+    iphone6_plus: { name: 'iPad (1024x768)', height: 1024, width: 768},
+    ipad_retina: { name: 'iPad Retina (2048x1536)', height: 2048, width: 1536},
+    android_800: { name: 'Android (800x480)', height: 800, width: 480},
+    android_854: { name: 'Android (854x480)', height: 854, width: 480},
+    android_1280: { name: 'Android (1280x720)', height: 1280, width: 720},
+    customize: { name: '自定义', height: 960, width: 640}
 };
 
 // import 类型与 资源类名映射表
@@ -188,21 +189,23 @@ async function getScriptsCache(scripts) {
  * @param {*} simulatorConfig 标识是否为模拟器
  * @returns
  */
-function getCustomConfig(simulatorConfig) {
+async function getCustomConfig(simulatorConfig) {
     if (simulatorConfig) {
         return {
             designWidth: simulatorConfig.simulator_width || 960,
             designHeight: simulatorConfig.simulator_height || 480,
-            groupList: getProSetting('group-list') || ['default'],
-            collisionMatrix: getProSetting('collision-matrix') || [[true]],
+            groupList: await getProSetting('group-list') || ['default'],
+            collisionMatrix: await getProSetting('collision-matrix') || [[true]],
             rawAssets: {}
         };
     }
+    let groupList = await getProSetting('preview.group_list');
+    let collisionMatrix = await getProSetting('preview.collision_matrix');
     return {
-        designWidth: getProSetting('preview.design_width') || 960,
-        designHeight: getProSetting('preview.design_height') || 480,
-        groupList: getProSetting('group-list') || ['default'],
-        collisionMatrix: getProSetting('collision-matrix') || [[true]],
+        designWidth: 960,
+        designHeight: 480,
+        groupList: groupList || ['default'],
+        collisionMatrix: collisionMatrix || [[true]],
         rawAssets: {}
     };
 }
@@ -348,18 +351,24 @@ async function getGroSetting(key) {
 async function buildSetting(options, simulatorConfig) {
     let config = await getCustomConfig(simulatorConfig);
     const setting = Object.assign(options, config);
-
-    const DEBUG = (setting.debug = options.debug);
-    const PREVIEW = options.preview;
     const currenScene = await getCurrentScene();
     setting.launchScene = currenScene.source;
+    // 预览模式下的 canvas 宽高要已实际场景中的 cavas 为准
+    if (!simulatorConfig) {
+        let json = readJSONSync(currenScene.files[0]);
+        let info = json.find((item) => {
+            return item.__type__ === 'cc.Canvas';
+        });
+        setting.designWidth = info._designResolution.width;
+        setting.designHeight = info._designResolution.height;
+    }
     setting.packedAssets = compressPackedAssets(options.packedAssets) || {};
     setting.md5AssetsMap = {};
     let obj = await queryAssets();
     setting.rawAssets.assets = obj.assets;
     setting.scenes = obj.sceneList;
     setting.scripts = await getScriptsCache(obj.scripts);
-    return setting;
+    return WINDOW_HEADER + JSON.stringify(setting);
 }
 
 function getLibraryPath(uuid, extname) {
