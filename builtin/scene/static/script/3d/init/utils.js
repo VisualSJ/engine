@@ -35,6 +35,4 @@ module.exports = function(path) {
     // 这些节点应该是常驻节点
     cc.game.addPersistRootNode(Manager.foregroundNode);
     cc.game.addPersistRootNode(Manager.backgroundNode);
-
-    Manager.Node.__init();
 };

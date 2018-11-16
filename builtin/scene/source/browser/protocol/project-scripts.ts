@@ -4,8 +4,16 @@ const fs = require('fs');
 const url = require('url');
 
 /**
+ * 脚本在引擎内使用的时候，需要注入到引擎提供的管理器内。
+ * 所以需要在脚本头尾增加部分代码。
+ *
+ * 通过 project-scripts 协议获取的脚本资源，会自动增加这部分的代码。
+ */
+
+/**
  * 拼接实际的文本
- * @param {*} text
+ * @param text
+ * @param source
  */
 function disableCommonJS(text: string, source: string) {
     // (HEADER should not contain newline)

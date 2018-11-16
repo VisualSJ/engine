@@ -41,7 +41,7 @@ function dump(component) {
                 dump.value[name] = {
                     type: propType,
                     value: value.map((item) => {
-                        return dumpField(item, klass, propName, attrs);
+                        return dumpField(item, ctor, name, attrs);
                     }),
                 };
             } else if (value === null && Array.isArray(type.getDefault(attrs.default))) {

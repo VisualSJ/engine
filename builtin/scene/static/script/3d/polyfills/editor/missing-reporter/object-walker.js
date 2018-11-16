@@ -7,18 +7,17 @@ var getClassId = cc.js._getClassId;
 
 // ObjectWalkerBehavior
 
-function ObjectWalkerBehavior (root) {
+function ObjectWalkerBehavior(root) {
     this.root = root;
 }
 
 // walk(obj, key, val)
 ObjectWalkerBehavior.prototype.walk = null;
 
-ObjectWalkerBehavior.prototype.parseObject = function (val) {
+ObjectWalkerBehavior.prototype.parseObject = function(val) {
     if (Array.isArray(val)) {
         this.forEach(val);
-    }
-    else {
+    } else {
         var klass = val.constructor;
 
         if (val instanceof CCAsset ||                       // skip Asset
@@ -33,14 +32,13 @@ ObjectWalkerBehavior.prototype.parseObject = function (val) {
         if (props) {
             // CCClass or fastDefine
             this.parseCCClass(val, klass, props);
-        }
-        else {
-            this.forIn(val)
+        } else {
+            this.forIn(val);
         }
     }
 };
 
-ObjectWalkerBehavior.prototype.parseCCClass = function (val, klass, props) {
+ObjectWalkerBehavior.prototype.parseCCClass = function(val, klass, props) {
     var attrs = Attr.getClassAttrs(klass);
     for (var i = 0; i < props.length; i++) {
         var prop = props[i];
@@ -51,7 +49,7 @@ ObjectWalkerBehavior.prototype.parseCCClass = function (val, klass, props) {
     }
 };
 
-ObjectWalkerBehavior.prototype.forIn = function (val) {
+ObjectWalkerBehavior.prototype.forIn = function(val) {
     for (var key in val) {
         if (val.hasOwnProperty(key) &&
             (key.charCodeAt(0) !== 95 || key.charCodeAt(1) !== 95)  // not starts with __
@@ -61,7 +59,7 @@ ObjectWalkerBehavior.prototype.forIn = function (val) {
     }
 };
 
-ObjectWalkerBehavior.prototype.forEach = function (val) {
+ObjectWalkerBehavior.prototype.forEach = function(val) {
     for (var i = 0, len = val.length; i < len; ++i) {
         this.walk(val, '' + i, val[i]);
     }
@@ -71,7 +69,7 @@ ObjectWalkerBehavior.prototype.forEach = function (val) {
 
 // Traverse all objects recursively.
 // Each object will be navigated only once in the value parameter in callback.
-function ObjectWalker (root, iteratee, options) {
+function ObjectWalker(root, iteratee, options) {
     ObjectWalkerBehavior.call(this, root);
     this.iteratee = iteratee;
     this.parsedObjects = [];
@@ -84,11 +82,9 @@ function ObjectWalker (root, iteratee, options) {
     if (this.ignoreParent) {
         if (this.root instanceof cc.Component) {
             this.ignoreParent = this.root.node;
-        }
-        else if (this.root instanceof cc._BaseNode) {
+        } else if (this.root instanceof cc._BaseNode) {
             this.ignoreParent = this.root;
-        }
-        else {
+        } else {
             return cc.error('can only ignore parent of scene node');
         }
     }
@@ -97,7 +93,7 @@ function ObjectWalker (root, iteratee, options) {
 }
 cc.js.extend(ObjectWalker, ObjectWalkerBehavior);
 
-ObjectWalker.prototype.walk = function (obj, key, val) {
+ObjectWalker.prototype.walk = function(obj, key, val) {
     var isObj = val && typeof val === 'object';
     if (isObj) {
         if (this.walked.has(val)) {
@@ -108,8 +104,7 @@ ObjectWalker.prototype.walk = function (obj, key, val) {
                 if (!val.isChildOf(this.ignoreParent)) {
                     return;
                 }
-            }
-            else if (val instanceof cc.Component) {
+            } else if (val instanceof cc.Component) {
                 if (!val.node.isChildOf(this.ignoreParent)) {
                     return;
                 }
@@ -140,16 +135,15 @@ ObjectWalker.prototype.walk = function (obj, key, val) {
  * @param {Object} iteratee.value - per object will be navigated ONLY once in this parameter
  * @param {Object[]} iteratee.parsedObjects - parsed object path, NOT contains the "object" parameter
  */
-function walk (root, iteratee) {
+function walk(root, iteratee) {
     new ObjectWalker(root, iteratee);
 }
-
 
 var staticDummyWalker = new ObjectWalkerBehavior(null);
 staticDummyWalker.walk = null;
 
 // enumerate properties not recursively
-function doWalkProperties (obj, iteratee) {
+function doWalkProperties(obj, iteratee) {
     var SKIP_INVALID_TYPES_EVEN_IF_ROOT = null;
     staticDummyWalker.root = SKIP_INVALID_TYPES_EVEN_IF_ROOT;
     staticDummyWalker.walk = iteratee;
@@ -167,9 +161,9 @@ function doWalkProperties (obj, iteratee) {
  * @param {Object}   [options]
  * @param {Boolean}    [options.dontSkipNull = false]
  */
-function walkProperties (root, iteratee, options) {
+function walkProperties(root, iteratee, options) {
     var dontSkipNull = options && options.dontSkipNull;
-    new ObjectWalker(root, function (obj, key, value, parsedObjects) {
+    new ObjectWalker(root, function(obj, key, value, parsedObjects) {
         // 如果 value 已经遍历过，ObjectWalker 不会枚举其余对象对 value 的引用
         // 所以这里拿到 value 后自己再枚举一次 value 内的引用
         var noPropToWalk = !value || typeof value !== 'object';
@@ -177,7 +171,7 @@ function walkProperties (root, iteratee, options) {
             return;
         }
         parsedObjects.push(obj);
-        doWalkProperties(value, function (obj, key, val) {
+        doWalkProperties(value, function(obj, key, val) {
             var isObj = typeof val === 'object';
             if (isObj) {
                 if (dontSkipNull || val) {
@@ -189,21 +183,18 @@ function walkProperties (root, iteratee, options) {
     }, options);
 }
 
-
-function getNextProperty (parsedObjects, parsingObject, object) {
+function getNextProperty(parsedObjects, parsingObject, object) {
     var nextObj;
     var i = parsedObjects.lastIndexOf(object);
     if (i === parsedObjects.length - 1) {
         nextObj = parsingObject;
-    }
-    else if (0 <= i && i < parsedObjects.length - 1) {
+    } else if (0 <= i && i < parsedObjects.length - 1) {
         nextObj = parsedObjects[i + 1];
-    }
-    else {
+    } else {
         return '';
     }
     var foundKey = '';
-    doWalkProperties(object, function (obj, key, val) {
+    doWalkProperties(object, function(obj, key, val) {
         if (val === nextObj) {
             foundKey = key;
         }

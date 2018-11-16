@@ -52,12 +52,12 @@ async function loadScripts(uuids) {
         return loadScript(uuid);
     }));
 
-    await scene.close();
-    // 启动场景
-    const uuid = await Manager.Ipc.send('query-scene');
-    if (typeof uuid === 'string') {
-        await scene.open(uuid);
-    }
+    // await scene.close();
+    // // 启动场景
+    // const uuid = await Manager.Ipc.send('query-scene');
+    // if (typeof uuid === 'string') {
+    //     await scene.open(uuid);
+    // }
 }
 
 module.exports = {

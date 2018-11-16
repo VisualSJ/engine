@@ -21,12 +21,12 @@
         }
     },
 
-    "main": "./dist/browser.js",
+    "main": "./dist/browser/index.js",
     "disabled": false,
     "description": "scene about editor",
     "panel": {
         "title": "i18n:scene.title",
-        "main": "./dist/panel.js",
+        "main": "./dist/panel/index.js",
         "allowClose": false,
         "allowPopup": false,
         "icon": "./static/icon.png",
@@ -34,11 +34,6 @@
         "min-height": 300,
         "width": 500,
         "height": 400,
-        "shortcuts": {
-            "ctrl+z": "undo",
-            "command+z": "undo",
-            "ctrl+shift+z": "redo",
-            "command+shift+z": "redo"
-        }
+        "shortcuts": {}
     }
 }

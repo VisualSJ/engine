@@ -6,18 +6,18 @@ var getClassById = cc.js._getClassById;
 
 var MissingReporter = require('./missing-reporter');
 
-function report (parsingOwner, classId, asset, url) {
+function report(parsingOwner, classId, asset, url) {
     var assetType = MissingReporter.getObjectType(asset);
     var assetName = url && ps.basename(url);
 
     if (asset instanceof cc.SceneAsset || asset instanceof cc.Prefab) {
         var info;
-        var component, node;
+        var component;
+        var node;
         if (parsingOwner instanceof cc.Component) {
             component = parsingOwner;
             node = component.node;
-        }
-        else if (cc.Node.isNode(parsingOwner)) {
+        } else if (cc.Node.isNode(parsingOwner)) {
             node = parsingOwner;
         }
 
@@ -33,13 +33,11 @@ function report (parsingOwner, classId, asset, url) {
                 detailedClassId = compName = component._$erialized.__type__;
             }
             info = `Class "${classId}" used by component "${compName}"${IN_LOCATION} is missing or invalid.`;
-        }
-        else if (node) {
+        } else if (node) {
             // missing component
             isScript = true;
             info = `Script attached to "${node.name}"${IN_LOCATION} is missing or invalid.`;
-        }
-        else {
+        } else {
             return;
         }
 
@@ -54,33 +52,31 @@ function report (parsingOwner, classId, asset, url) {
         }
         info.slice(0, -1);  // remove last '\n'
         Editor.warn(info);
-    }
-    else {
+    } else {
         // missing CustomAsset ? not yet implemented
     }
 }
 
-function reportByWalker (value, obj, parsedObjects, asset, url, classId) {
+function reportByWalker(value, obj, parsedObjects, asset, url, classId) {
     classId = classId || (value._$erialized && value._$erialized.__type__);
     var parsingOwner;
     if (obj instanceof cc.Component || cc.Node.isNode(obj)) {
         parsingOwner = obj;
-    }
-    else {
-        parsingOwner = _.findLast(parsedObjects, x => (x instanceof cc.Component || cc.Node.isNode(x)));
+    } else {
+        parsingOwner = _.findLast(parsedObjects, (x) => (x instanceof cc.Component || cc.Node.isNode(x)));
     }
     report(parsingOwner, classId, asset, url);
 }
 
 // MISSING CLASS REPORTER
 
-function MissingClassReporter (root) {
+function MissingClassReporter(root) {
     MissingReporter.call(this, root);
 }
 
 cc.js.extend(MissingClassReporter, MissingReporter);
 
-MissingClassReporter.prototype.report = function () {
+MissingClassReporter.prototype.report = function() {
     ObjectWalker.walk(this.root, (obj, key, value, parsedObjects) => {
         if (this.missingObjects.has(value)) {
             reportByWalker(value, obj, parsedObjects, this.root);
@@ -88,7 +84,7 @@ MissingClassReporter.prototype.report = function () {
     });
 };
 
-MissingClassReporter.prototype.reportByOwner = function () {
+MissingClassReporter.prototype.reportByOwner = function() {
     var rootUrl;
     if (this.root instanceof cc.Asset) {
         rootUrl = Editor.assetdb.remote.uuidToUrl(this.root._uuid);
@@ -108,26 +104,25 @@ MissingClassReporter.prototype.reportByOwner = function () {
 // 用这个模块来标记找不到脚本的对象
 var MissingClass = {
     reporter: new MissingClassReporter(),
-    classFinder: function (id, data, owner, propName) {
+    classFinder: function(id, data, owner, propName) {
         var cls = getClassById(id);
         if (cls) {
             return cls;
-        }
-        else if (id) {
+        } else if (id) {
             MissingClass.hasMissingClass = true;
             MissingClass.reporter.stashByOwner(owner, propName, id);
         }
         return null;
     },
     hasMissingClass: false,
-    reportMissingClass: function (asset) {
+    reportMissingClass: function(asset) {
         MissingClass.reporter.root = asset;
         MissingClass.reporter.reportByOwner();
         MissingClass.reporter.reset();
     }
 };
 
-MissingClass.classFinder.onDereferenced = function (curOwner, curPropName, newOwner, newPropName) {
+MissingClass.classFinder.onDereferenced = function(curOwner, curPropName, newOwner, newPropName) {
     var id = MissingClass.reporter.removeStashedByOwner(curOwner, curPropName);
     if (id) {
         MissingClass.reporter.stashByOwner(newOwner, newPropName, id);

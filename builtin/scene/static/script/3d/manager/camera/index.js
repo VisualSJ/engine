@@ -2,16 +2,22 @@
 
 const { createCamera, createGrid } = require('./utils');
 
-let vec3, quat;
-let v3a, v3b;
+let vec3;
+let quat;
+let v3a;
+let v3b;
 
 function startTicking(fn) {
-    if (fn.timer) return;
+    if (fn.timer) {
+        return;
+    }
     fn.timer = setInterval(fn, 17);
 }
 
 function stopTicking(fn) {
-    if (!fn.timer) return;
+    if (!fn.timer) {
+        return;
+    }
     clearInterval(fn.timer);
     fn.timer = 0;
 }
@@ -82,7 +88,9 @@ class CameraTool {
     }
 
     onMouseDown(e) {
-        if (!e.button) return;
+        if (!e.button) {
+            return;
+        }
         cc.game.canvas.requestPointerLock();
         this.node.getRotation(this.rot);
         if (e.button === 1) { // middle button: panning
@@ -96,7 +104,9 @@ class CameraTool {
     }
 
     onMouseMove(e) {
-        if ((e.buttons & 6) === 0) return;
+        if ((e.buttons & 6) === 0) {
+            return;
+        }
         let dx = e.movementX;
         let dy = e.movementY;
         if (e.buttons & 4) { // middle button: panning
@@ -112,9 +122,13 @@ class CameraTool {
     }
 
     onMouseUp(e) {
-        if (!e.button) return;
+        if (!e.button) {
+            return;
+        }
         document.exitPointerLock();
-        if (e.button === 2) stopTicking(this.move);
+        if (e.button === 2) {
+            stopTicking(this.move);
+        }
     }
 
     onMouseWheel(e) {
@@ -141,19 +155,19 @@ class CameraTool {
     onKeyUp(e) {
         this.shiftKey = e.shiftKey;
         switch (e.key.toLowerCase()) {
-        case 'd': if (this.velocity.x > 0) this.velocity.x = 0; break;
-        case 'a': if (this.velocity.x < 0) this.velocity.x = 0; break;
-        case 'e': if (this.velocity.y > 0) this.velocity.y = 0; break;
-        case 'q': if (this.velocity.y < 0) this.velocity.y = 0; break;
-        case 's': if (this.velocity.z > 0) this.velocity.z = 0; break;
-        case 'w': if (this.velocity.z < 0) this.velocity.z = 0; break;
+        case 'd': if (this.velocity.x > 0) { this.velocity.x = 0; } break;
+        case 'a': if (this.velocity.x < 0) { this.velocity.x = 0; } break;
+        case 'e': if (this.velocity.y > 0) { this.velocity.y = 0; } break;
+        case 'q': if (this.velocity.y < 0) { this.velocity.y = 0; } break;
+        case 's': if (this.velocity.z > 0) { this.velocity.z = 0; } break;
+        case 'w': if (this.velocity.z < 0) { this.velocity.z = 0; } break;
         case 'h': this.home(); break;
         }
     }
 
     adjustSceneToNodes(ids, margin = 50) {
         vec3.set(v3a, 0, 0, 0);
-        ids.forEach(id => {
+        ids.forEach((id) => {
             let node = cc.engine.getInstanceById(id);
             vec3.add(v3a, v3a, node.getWorldPosition(v3b));
         });

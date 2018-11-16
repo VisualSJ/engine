@@ -20,6 +20,8 @@ module.exports = async function(info) {
     // canvas 透明模式
     cc.macro.ENABLE_TRANSPARENT_CANVAS = true;
 
+    cc.registerModuleFunc = function() {};
+
     // 启动引擎
     const option = {
         id: 'GameCanvas',

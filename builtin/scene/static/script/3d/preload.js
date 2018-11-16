@@ -1,54 +1,24 @@
 'use strict';
 
-const ipc = require('../ipc/webview');
-
-let isReady = false;
-
-// 放到全局, 便于调试
-// 不能放到主页面内, 应该避免主页内的全局参数污染
-window.Manager = {
-    Ipc: ipc,
-
-    Camera: require('./manager/camera'),
-    Scene: require('./manager/scene'),
-    Node: require('./manager/node'),
-    Script: require('./manager/scripts'),
-    History: require('./manager/history'),
-    Selection: require('./manager/selection'),
-    Operation: require('./manager/operation'),
-
-    get serialize() {
-        return this._serialize();
-    }
-};
-
-// host 调用 scene 的指定方法
-ipc.on('call-method', async (options) => {
-    // 防止初始化之前使用接口
-    if (!isReady) {
-        throw new Error(`The scene is not ready.`);
-    }
-    const mod = Manager[options.module];
-    if (!mod) {
-        throw new Error(`Module [${options.module}] does not exist.`);
-    }
-    if (!mod[options.handler]) {
-        throw new Error(
-            `Method [${options.handler}] does not exist.`
-        );
-    }
-    return await mod[options.handler](...options.params);
-});
+const manager = require('./manager');
 
 // 延迟一帧启动引擎
+//   1. 注册 Editor 以及引擎需要用的标记
+//   2. 启动引擎
+//   3. 启动引擎进程内的模块管理器
+//   4. 重写资源加载相关的函数
 requestAnimationFrame(async () => {
     // 初始化 Editor
     require('./polyfills/editor');
 
     // 启动引擎
-    const info = await ipc.send('query-engine');
+    const info = await manager.Ipc.send('query-engine');
     await require('./init/engine')(info);
 
+    // 引擎加载完成后立即注册全局的 Manager
+    window.Manager = manager;
+
+    // 重写引擎内的资源相关函数
     await require('./init/assets')();
 
     // 重写引擎的部分方法
@@ -56,25 +26,23 @@ requestAnimationFrame(async () => {
 
     // 启动部分管理系统（camera 等）
     await require('./init/system')();
+    await require('./polyfills/engine');
 
-    // engine polyfill
-    require('./polyfills/engine');
+    // 标记已经准备就绪
+    manager.isReady(true);
 
     // 加载脚本
     const scripts = await Manager.Ipc.send('query-scripts');
-    await Promise.all(
-        scripts.map((uuid) => {
-            return Manager.Script.loadScript(uuid);
-        })
-    );
+    await Promise.all(scripts.map((uuid) => {
+        return manager.Script.loadScript(uuid);
+    }));
 
-    // 启动场景
+    // 启动场景，之前启动了的话，会在 open 方法内被终止
     const scene = await Manager.Ipc.send('query-scene');
-    if (typeof scene === 'string') {
-        await Manager.Scene.open(scene);
-    }
-
-    // 标记已经准备就绪
-    ipc.ready();
-    isReady = true;
+    await manager.Scene.open(scene || '');
 });
+
+// 进程刷新的时候，需要广播
+window.addEventListener('beforeunload', () => {
+    Manager.Ipc.send('broadcast', 'scene:close');
+}, 3000);
