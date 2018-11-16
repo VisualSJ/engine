@@ -52,6 +52,8 @@ function grid (width, length, segw, segl) {
 
 function createGrid(w, l) {
     let node = new cc.Node('Editor Grid');
+    node._layer = cc.Layers.Gizmos | cc.Layers.IgnoreRaycast;
+    node.parent = Manager.backgroundNode;
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
     let mtl = new cc.Material();
@@ -59,12 +61,12 @@ function createGrid(w, l) {
     mtl.define('USE_COLOR', true);
     mtl.setProperty('color', cc.color('#555555'));
     model.material = mtl;
-    node._layer = cc.Layers.Gizmos | cc.Layers.IgnoreRaycast;
     return node;
 }
 
 function createCamera(color) {
     let node = new cc.Node('Editor Camera');
+    node.parent = Manager.backgroundNode;
     let camera = node.addComponent(cc.CameraComponent);
     camera.color = color;
     camera.onLoad();

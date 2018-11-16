@@ -79,21 +79,6 @@ class CameraTool {
         document.addEventListener('wheel', this.onMouseWheel.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
-
-        ////////////// everything below in this function should be moved to somewhere else
-
-        // 用于编辑器绘制的背景和前景节点
-        this.foregroundNode = new cc.Node('Editor Scene Foreground');
-        this.backgroundNode = new cc.Node('Editor Scene Background');
-        // 编辑器使用的节点不需要存储和显示在层级管理器
-        this.foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
-        this.backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
-        // 这些节点应该是常驻节点
-        cc.game.addPersistRootNode(this.foregroundNode);
-        cc.game.addPersistRootNode(this.backgroundNode);
-
-        this._grid.parent = this.backgroundNode;
-        this.node.parent = this.backgroundNode;
     }
 
     onMouseDown(e) {

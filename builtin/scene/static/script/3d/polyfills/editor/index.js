@@ -25,6 +25,8 @@ window.Editor = window.Editor ? Editor : {
                     linkPrefab() {},
                     unlinkPrefab() {},
                 };
+            case 'scene://utils/node':
+                return require('../../manager/node');
             default:
                 return require(url);
         }
