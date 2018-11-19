@@ -172,6 +172,7 @@ export const messages = {
     async 'query-component-function-of-node'(uuid: string) {
         return await Editor.Ipc.requestToPanel('scene', 'query-component-function-of-node', uuid);
     }
+
 };
 
 export function load() {

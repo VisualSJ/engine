@@ -25,5 +25,4 @@ exports.methods = {
         this.$root.$emit('change-type', item.type);
     },
 };
-
 exports.ready = function() {};

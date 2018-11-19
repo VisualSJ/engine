@@ -47,6 +47,12 @@ new Vue({
         this.$on('change-tab', (tab) => {
             this.tab = tab;
         });
+
+        // 打开页面时可以指定的相关配置
+        ipc.on('dashboard:set-options', (event, options) => {
+            options.tab && (this.tab = options.tab);
+            options.type && (this.type = options.type);
+        });
     },
 });
 
