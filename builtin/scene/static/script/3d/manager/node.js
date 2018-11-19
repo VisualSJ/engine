@@ -267,6 +267,7 @@ async function createNode(uuid, name = 'New Node', dump) {
 
     // 发送节点修改消息
     Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:node-created', node.uuid);
 
     return {
         uuid: node._id,
@@ -285,6 +286,7 @@ function removeNode(uuid) {
 
     // 发送节点修改消息
     Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
+    Manager.Ipc.send('broadcast', 'scene:node-removed', parent.uuid);
 
     return parent.uuid;
 }
