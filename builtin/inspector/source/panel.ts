@@ -11,13 +11,9 @@ Vue.config.devtools = false;
 let panel: any = null;
 let vm: any = null;
 
-export const style = readFileSync(
-    join(__dirname, '../dist/index.css')
-);
+export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
-export const template = readFileSync(
-    join(__dirname, '../static', '/template/index.html')
-);
+export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 /**
  * 配置 inspector 的 iconfont 图标
@@ -25,12 +21,12 @@ export const template = readFileSync(
 export const fonts = [
     {
         name: 'inspector',
-        file: 'packages://inspector/static/iconfont.woff'
-    }
+        file: 'packages://inspector/static/iconfont.woff',
+    },
 ];
 
 export const $ = {
-    content: '.content'
+    content: '.content',
 };
 
 export const messages = {
@@ -80,7 +76,7 @@ export const messages = {
             vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
             vm.$refs.inspector3d && vm.$refs.inspector3d.refresh();
         }
-    }
+    },
 };
 
 export const listeners = {};
@@ -101,24 +97,18 @@ export async function ready() {
             type: Editor.Project.type, // 项目类型
 
             element: '', // 最后选中的物体 asset | node
-            uuid: '' // 选中的物体的 uuid
+            uuid: '', // 选中的物体的 uuid
         },
 
         components: {
             'inspector-2d': require('../static/components/2d'),
-            'inspector-3d': require('../static/components/3d')
+            'inspector-3d': require('../static/components/3d'),
         },
 
         async mounted() {
             try {
-                this.sready = Editor.Ipc.requestToPackage(
-                    'scene',
-                    'query-is-ready'
-                );
-                this.aready = Editor.Ipc.requestToPackage(
-                    'asset-db',
-                    'query-is-ready'
-                );
+                this.sready = Editor.Ipc.requestToPackage('scene', 'query-is-ready');
+                this.aready = Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
                 await this.getData();
             } catch (err) {
                 console.error(err);
@@ -144,36 +134,42 @@ export async function ready() {
                         this.getData();
                     }
                 }
-            }
+            },
         },
         methods: {
-            toggleLoading(val: boolean) {
-                vm.loading = val;
+            showLoading(this: any, timeout: number = 0) {
+                if (this.loading || this._loaderId) {
+                    return;
+                }
+                this._loaderId = setTimeout(() => {
+                    this.loading = true;
+                    this._loaderId = null;
+                }, timeout);
             },
+
+            hideLoading(this: any) {
+                clearTimeout(this._loaderId);
+                this._loaderId = null;
+                this.loading = false;
+            },
+
             async getData(this: any) {
                 let type = '';
                 let uuid = '';
                 try {
-                    type = await Editor.Ipc.requestToPackage(
-                        'selection',
-                        'query-last-select-type'
-                    );
-                    uuid = await Editor.Ipc.requestToPackage(
-                        'selection',
-                        'query-last-select',
-                        type
-                    );
+                    type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
+                    uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
                 } catch (err) {
                     console.error(err);
                 } finally {
                     this.element = type;
                     this.uuid = uuid;
                 }
-            }
-        }
+            },
+        },
     });
 }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
-export async function close() {}
+export async function close() { }

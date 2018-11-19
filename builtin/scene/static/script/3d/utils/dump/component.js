@@ -22,11 +22,12 @@ function dump(component) {
         inspector: ctor.hasOwnProperty('_inspector') && ctor._inspector,
         icon: ctor.hasOwnProperty('_icon') && ctor._icon,
         help: ctor._help,
-        _showTick:  typeof component.start === 'function' ||
-                    typeof component.update === 'function' ||
-                    typeof component.lateUpdate === 'function' ||
-                    typeof component.onEnable === 'function' ||
-                    typeof component.onDisable === 'function',
+        _showTick:
+            typeof component.start === 'function' ||
+            typeof component.update === 'function' ||
+            typeof component.lateUpdate === 'function' ||
+            typeof component.onEnable === 'function' ||
+            typeof component.onDisable === 'function',
     };
 
     dump.value = {};
@@ -45,22 +46,24 @@ function dump(component) {
                     }),
                 };
             } else if (value === null && Array.isArray(type.getDefault(attrs.default))) {
-                dump.value[name] = {
-                    type: 'Object',
-                    value: null,
-                };
+                dump.value[name] = { type: 'Object', value: null, };
             } else {
                 dump.value[name] = dumpField(component, name, propType, attrs);
             }
 
             // todo 检查 visiable 属性
-            // if (typeof attrs.visible === 'function') {
-            //     var visible = checkPropVisible(component, attrs.visible);
-            //     if (visible !== checkPropVisible.ERRORED) {
-            //         dump[name].visible = !!visible;
-            //     }
-            // }
+            if (typeof attrs.visible === 'function') {
+                var visible = checkPropVisible(component, attrs.visible);
+                if (visible !== checkPropVisible.ERRORED) {
+                    dump[name].visible = !!visible;
+                }
+            }
         });
+
+        // to display __scriptAsset property in inspector
+        const scriptType = dump.properties.__scriptAsset;
+        scriptType.visible = !!component.__scriptUuid;
+        dump.value.__scriptAsset.value = { uuid: component.__scriptUuid, };
     }
     return dump;
 }
@@ -76,7 +79,6 @@ function dumpSceneObjRef(obj) {
 }
 
 function dumpByClass(obj) {
-
     const ctor = obj.constructor;
     const compType = type.dump(ctor);
 
@@ -107,12 +109,12 @@ function dumpByClass(obj) {
             }
 
             // todo 检查 visiable 属性
-            // if (typeof attrs.visible === 'function') {
-            //     var visible = checkPropVisible(component, attrs.visible);
-            //     if (visible !== checkPropVisible.ERRORED) {
-            //         compDump.value[name].visible = !!visible;
-            //     }
-            // }
+            if (typeof attrs.visible === 'function') {
+                var visible = checkPropVisible(component, attrs.visible);
+                if (visible !== checkPropVisible.ERRORED) {
+                    dump.value[name].visible = !!visible;
+                }
+            }
         });
     }
     return dump;
@@ -127,7 +129,6 @@ function dumpObjectField(obj, expectedType) {
 
     // 引擎对象
     if (obj instanceof cc.Object) {
-
         // 资源对象
         if (obj instanceof cc.Asset) {
             const objType = type.getID(obj);
@@ -145,7 +146,7 @@ function dumpObjectField(obj, expectedType) {
 
     // 引擎数据类型
     if (obj instanceof cc.ValueType) {
-        const result = Manager.serialize(obj, {stringify: false});
+        const result = Manager.serialize(obj, { stringify: false, });
 
         const dump = type.dump(ctor);
         dump.type = result.__type__;
@@ -167,9 +168,9 @@ function dumpObjectField(obj, expectedType) {
 
         // const dump = type.dump(ctor);
         // if (expectedType !== actualType) {
-            // if (!types[actualType]) {
-            //     dumpType(types, ctor, actualType);
-            // }
+        // if (!types[actualType]) {
+        //     dumpType(types, ctor, actualType);
+        // }
         // }
 
         // data.type = objType;
@@ -189,19 +190,19 @@ function dumpObjectField(obj, expectedType) {
  * @param {*} attrs
  */
 function dumpField(component, key, expectedType, attrs) {
+    const ctor = attrs.ctor;
+    const dump = type.dump(ctor);
+
     if (attrs.saveUrlAsAsset) {
-        const type = attrs.ctor;
         if (
-            typeof type === 'function' &&
-            cc.js.isChildClassOf(type, cc.RawAsset) &&
+            typeof ctor === 'function' &&
+            cc.js.isChildClassOf(ctor, cc.RawAsset) &&
             typeof component[key] === 'string'
         ) {
-            return {
-                type: expectedType,
-                value: {
-                    uuid: component[key] || '',
-                },
-            };
+            dump.type = expectedType;
+            dump.value = { uuid: component[key] || '', };
+
+            return dump;
         }
     }
 
@@ -212,28 +213,24 @@ function dumpField(component, key, expectedType, attrs) {
             if (attrs.ctor) {
                 const ctor = attrs.ctor;
                 if (type.isAnyChildClassOf(ctor, cc.Node, cc.RawAsset, cc.Component)) {
-                    return {
-                        type: expectedType,
-                        value: {
-                            uuid: '',
-                        }
-                    };
+                    result.type = expectedType;
+                    result.value = { uuid: '', };
                 }
             } else {
-                return {
-                    type: 'Object',
-                    value: null
-                };
+                result.type = 'Object';
+                result.value = null;
             }
         }
-        return result;
+        return { ...dump, ...result, };
     }
 
     if (typeof component[key] === 'function') {
         return null;
     }
 
-    const currentType = (typeof component[key]).replace(/^\s/, (str) => { return str.toUpperCase(); });
+    const currentType = (typeof component[key]).replace(/^\s/, (str) => {
+        return str.toUpperCase();
+    });
     if (expectedType === 'Enum' && typeof val === 'number') {
         currentType = 'Enum';
     }
@@ -243,11 +240,22 @@ function dumpField(component, key, expectedType, attrs) {
         }
     }
 
-    return {
-        type: currentType,
-        value: component[key],
-    };
+    dump.type = currentType;
+    dump.value = component[key];
+
+    return dump;
 }
+
+function checkPropVisible(object, func) {
+    try {
+        return func.call(object);
+    } catch (err) {
+        console.error(err);
+    }
+    return checkPropVisible.ERRORED;
+}
+
+checkPropVisible.ERRORED = {};
 
 module.exports = {
     dump,

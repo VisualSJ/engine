@@ -23,33 +23,39 @@ function dump(node) {
             return componentUtils.dump(comp);
         }),
 
-        parent: { type: 'cc.Node', value: { uuid: node.parent.uuid, } },
-        children: { type: 'Array', itemType: 'cc.Node', value: node.children.map((child) => {
-            if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
-                return null;
-            }
-            return { type: 'cc.Node', value: { uuid: child.uuid, } };
-        }).filter(Boolean), },
+        parent: { type: 'cc.Node', value: { uuid: node.parent.uuid, }, },
+        children: {
+            type: 'Array',
+            itemType: 'cc.Node',
+            value: node.children
+                .map((child) => {
+                    if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
+                        return null;
+                    }
+                    return { type: 'cc.Node', value: { uuid: child.uuid, }, };
+                })
+                .filter(Boolean),
+        },
 
         uuid: { type: 'String', value: node.uuid, },
-        active: { type: 'Boolean', value: true, },
+        active: { type: 'Boolean', value: node.active, },
         name: { type: 'String', value: node.name, },
         position: {
-            extends: ['cc.ValueType'],
+            extends: ['cc.ValueType', ],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,
             value: { x: position.x, y: position.y, z: position.z, },
         },
         rotation: {
-            extends: ['cc.ValueType'],
+            extends: ['cc.ValueType', ],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,
             value: { x: rotation.x, y: rotation.y, z: rotation.z, },
         },
         scale: {
-            extends: ['cc.ValueType'],
+            extends: ['cc.ValueType', ],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,

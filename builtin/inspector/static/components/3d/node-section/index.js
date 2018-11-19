@@ -1,44 +1,34 @@
 'use strict';
 
-const { basename, extname } = require('path');
-const {
-    readTemplate,
-    readComponent,
-    T,
-    build3DProp
-} = require('../../../utils');
+const { basename, extname, } = require('path');
+const { readTemplate, readComponent, T, build3DProp, } = require('../../../utils');
 
 exports.template = readTemplate('3d', './node-section/index.html');
 
-exports.props = ['uuid'];
+exports.props = ['uuid', ];
 
 exports.components = {
     'node-props': readComponent(__dirname, './node-props'),
-    'node-comp': readComponent(__dirname, './node-comp')
+    'node-comp': readComponent(__dirname, './node-comp'),
 };
 
 exports.data = function() {
     return {
         node: null,
-        userScripts: null
+        userScripts: null,
     };
 };
 
 exports.watch = {
     uuid() {
         this.refresh();
-    }
+    },
 };
 
 exports.created = async function() {
     try {
-        const userScripts = await Editor.Ipc.requestToPackage(
-            'asset-db',
-            'query-assets'
-        );
-        this.userScripts = (userScripts || []).filter((item) =>
-            item.importer.includes('javascript')
-        );
+        const userScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+        this.userScripts = (userScripts || []).filter((item) => item.importer.includes('javascript'));
     } catch (err) {
         console.error(err);
         this.userScripts = [];
@@ -54,12 +44,8 @@ exports.methods = {
     async refresh() {
         // todo diff
         try {
-            this.$root.toggleLoading(true);
-            const dump = await Editor.Ipc.requestToPackage(
-                'scene',
-                'query-node',
-                this.uuid
-            );
+            this.$root.showLoading(200);
+            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', this.uuid);
 
             if (dump) {
                 Object.keys(dump).forEach((key) => {
@@ -95,7 +81,7 @@ exports.methods = {
             console.error(err);
             this.node = null;
         } finally {
-            this.$root.toggleLoading(false);
+            this.$root.hideLoading();
         }
     },
 
@@ -105,9 +91,7 @@ exports.methods = {
      * @param {*} dump
      */
     onPropertyChanged(event) {
-        const dump = event.detail
-            ? event.detail.dump
-            : event.target.__vue__.dump;
+        const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
 
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
@@ -117,8 +101,8 @@ exports.methods = {
             path: dump.path,
             dump: {
                 type: dump.type,
-                value: JSON.parse(JSON.stringify(dump.value))
-            }
+                value: JSON.parse(JSON.stringify(dump.value)),
+            },
         });
     },
 
@@ -127,28 +111,24 @@ exports.methods = {
      * @param {*} event
      */
     addCompPopup(event) {
-        const { left, bottom } = event.target.getBoundingClientRect();
+        const { left, bottom, } = event.target.getBoundingClientRect();
         const {
             node: {
-                uuid: { value: uuid }
+                uuid: { value: uuid, },
             },
-            userScripts
+            userScripts,
         } = this;
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
         const submenu = userScripts.map((item) => {
-            const { source, uuid: component } = item;
+            const { source, uuid: component, } = item;
             const label = basename(source, extname(source));
             return {
                 label,
                 click() {
-                    Editor.Ipc.sendToPanel(
-                        'scene',
-                        'create-component',
-                        this.params
-                    );
+                    Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                 },
-                params: { uuid, component }
+                params: { uuid, component, },
             };
         });
 
@@ -162,105 +142,81 @@ exports.methods = {
                         {
                             label: 'Animation Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.AnimationComponent'
-                            }
+                                component: 'cc.AnimationComponent',
+                            },
                         },
                         {
                             label: 'Camera Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.CameraComponent'
-                            }
+                                component: 'cc.CameraComponent',
+                            },
                         },
                         {
                             label: 'Light Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.LightComponent'
-                            }
+                                component: 'cc.LightComponent',
+                            },
                         },
                         {
                             label: 'Model Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.ModelComponent'
-                            }
+                                component: 'cc.ModelComponent',
+                            },
                         },
                         {
                             label: 'Skinning Model Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.SkinningModelComponent'
-                            }
+                                component: 'cc.SkinningModelComponent',
+                            },
                         },
                         {
                             label: 'Skybox Component',
                             click() {
-                                Editor.Ipc.sendToPanel(
-                                    'scene',
-                                    'create-component',
-                                    this.params
-                                );
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                             },
                             params: {
                                 uuid,
-                                component: 'cc.SkyboxComponent'
-                            }
-                        }
-                    ]
+                                component: 'cc.SkyboxComponent',
+                            },
+                        },
+                    ],
                 },
                 {
                     label: T('component', 'others'),
-                    submenu: []
+                    submenu: [],
                 },
 
                 {
                     label: T('component', 'scripts'),
-                    submenu
+                    submenu,
                 },
                 {
                     label: T('component', 'ui'),
-                    submenu: []
-                }
-            ]
+                    submenu: [],
+                },
+            ],
         });
-    }
+    },
 };
 
 exports.mounted = async function() {

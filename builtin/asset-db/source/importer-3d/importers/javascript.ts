@@ -42,9 +42,7 @@ export default class JavascriptImporter extends Importer {
 
                 const header = `
                     'use strict';
-                    cc._RF.push(module, '${uuidUtils.compressUuid(
-                        asset.uuid
-                    )}', '${asset.basename}');
+                    cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
 // ${asset.basename}\n
                 `;
                 const footer = `\ncc._RF.pop();\n`;
@@ -53,10 +51,7 @@ export default class JavascriptImporter extends Importer {
 
                 // @ts-ignore
                 asset.saveToLibrary('.js', target.code);
-                asset.saveToLibrary(
-                    '.js.map',
-                    JSON.stringify(target.map)
-                );
+                asset.saveToLibrary('.js.map', JSON.stringify(target.map));
 
                 updated = true;
             }
@@ -71,26 +66,20 @@ export default class JavascriptImporter extends Importer {
         const convert = require('convert-source-map');
         const file = await readFile(asset.source, 'utf8');
         const sourceMap = !!convert.fromSource(file);
-        const { code, map = '' } = babel.transformSync(file, {
+        const { code, map = '', } = babel.transformSync(file, {
             ast: false,
             compact: false,
             filename: asset.source,
             highlightCode: false,
             inputSourceMap: sourceMap,
-            presets: ['@babel/preset-env'],
+            presets: ['@babel/preset-env', ],
             plugins: [
-                [
-                    '@babel/plugin-proposal-decorators',
-                    { legacy: true }
-                ],
-                [
-                    '@babel/plugin-proposal-class-properties',
-                    { loose: true }
-                ],
-                'add-module-exports'
+                ['@babel/plugin-proposal-decorators', { legacy: true, }, ],
+                ['@babel/plugin-proposal-class-properties', { loose: true, }, ],
+                'add-module-exports',
             ],
-            sourceMaps: true
+            sourceMaps: true,
         });
-        return { code, map };
+        return { code, map, };
     }
 }

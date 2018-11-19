@@ -1,31 +1,31 @@
 'use strict';
 
-const { join, basename, extname } = require('path');
-const { readTemplate, readComponent, T } = require('../../../utils');
+const { join, basename, extname, } = require('path');
+const { readTemplate, readComponent, T, } = require('../../../utils');
 
 exports.template = readTemplate('2d', './asset-section/index.html');
 
-exports.props = ['uuid'];
+exports.props = ['uuid', ];
 
 exports.components = {
     none: require('./assets/none'),
     texture: readComponent(__dirname, './assets/texture'),
     'sprite-frame': readComponent(__dirname, './assets/sprite-frame'),
-    javascript: readComponent(__dirname, './assets/javascript')
+    javascript: readComponent(__dirname, './assets/javascript'),
 };
 
 exports.data = function() {
     return {
         dataReady: false,
         info: null,
-        meta: null
+        meta: null,
     };
 };
 
 exports.watch = {
     uuid() {
         this.refresh();
-    }
+    },
 };
 
 exports.methods = {
@@ -33,19 +33,11 @@ exports.methods = {
 
     async refresh() {
         try {
-            this.$root.toggleLoading(true);
+            this.$root.showLoading(200);
             this.dataReady = false;
-            const [info, meta] = await Promise.all([
-                Editor.Ipc.requestToPackage(
-                    'asset-db',
-                    'query-asset-info',
-                    this.uuid
-                ),
-                Editor.Ipc.requestToPackage(
-                    'asset-db',
-                    'query-asset-meta',
-                    this.uuid
-                )
+            const [info, meta, ] = await Promise.all([
+                Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
+                Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid),
             ]);
 
             if (info && meta) {
@@ -60,7 +52,7 @@ exports.methods = {
             this.info = null;
             this.meta = null;
         } finally {
-            this.$root.toggleLoading(false);
+            this.$root.hideLoading();
             this.dataReady = true;
         }
     },
@@ -83,7 +75,7 @@ exports.methods = {
      */
     onMetaChanged(event) {
         this.meta.__dirty__ = true;
-    }
+    },
 };
 
 exports.mounted = async function() {
@@ -105,18 +97,13 @@ exports.mounted = async function() {
                 return prev;
             }, {});
         const meta = JSON.stringify(filterMeta);
-        Editor.Ipc.sendToPackage(
-            'asset-db',
-            'save-asset-meta',
-            this.uuid,
-            meta
-        );
+        Editor.Ipc.sendToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
         // this.dirty = false;
     });
 };
 
 function buildMeta(meta, info) {
-    const { source = '', files = [] } = info;
+    const { source = '', files = [], } = info;
     meta.__dirty__ = false;
     meta.__name__ = source && basename(source, extname(source));
     meta.__assetType__ = meta.importer;
