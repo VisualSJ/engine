@@ -4,7 +4,6 @@ const ipc = require('../../ipc/webview');
 
 // host 调用 scene 的指定方法
 ipc.on('call-method', async (options) => {
-    console.log(options);
     // 防止初始化之前使用接口
     if (!Manager.isReady()) {
         throw new Error(`The scene is not ready.`);

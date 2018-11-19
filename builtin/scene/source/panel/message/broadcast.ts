@@ -69,6 +69,10 @@ export function apply(messages: any) {
             return;
         }
 
+        // 通知场景这个节点在编辑器内被选中了
+        $scene.forwarding('Selection', '_select', [uuid]);
+
+        // 显示搜索路径
         selectNodeUuid = uuid;
         const path = await $scene.forwarding('Scene', 'queryNodePath', [uuid]);
         $path.innerHTML = path;
@@ -84,10 +88,13 @@ export function apply(messages: any) {
             return;
         }
 
+        // 通知场景这个节点在编辑器内被选中了
+        $scene.forwarding('Selection', '_unselect', [uuid]);
+
+        // 清空显示的搜索路径
         if (selectNodeUuid !== uuid) {
             return;
         }
-
         selectNodeUuid = '';
         $path.innerHTML = '';
     };

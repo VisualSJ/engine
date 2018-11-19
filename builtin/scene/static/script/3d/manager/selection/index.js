@@ -1,13 +1,9 @@
 'use strict';
 
-const manager = {
-    camera: require('../camera'),
-    operation: require('../operation'),
-};
-
-const select = require('./select');
 const { EventEmitter } = require('events');
 
+const operationManager = require('../operation');
+const cameraManager = require('../camera');
 const UuidArray = require('./uuid-array');
 
 /**
@@ -16,6 +12,15 @@ const UuidArray = require('./uuid-array');
  * 因为场景需要根据选中的节点去渲染 gizmo 等物体，所以需要单独管理一套。
  * 理论上应该同 Editor 内的 Selection 插件管理的 node 数据一致。
  *
+ * Event:
+ * Selection.on('select', (uuid, uuids) => {
+ *     // uuid 当前选中的节点
+ *     // uuids 当前所有被选中的节点数据
+ * });
+ * Selection.on('unselect', (uuid, uuids) => {
+ *     // uuid 当前取消选中的节点
+ *     // uuids 当前所有被选中的节点数据
+ * });
  */
 class Selection extends EventEmitter {
 
@@ -25,6 +30,8 @@ class Selection extends EventEmitter {
         this.noticeTimer = null;
         this.selectUuids = new UuidArray();
         this.unselectUuids = new UuidArray();
+
+        this.ray = cc.geometry.ray.create();
     }
 
     /**
@@ -33,6 +40,13 @@ class Selection extends EventEmitter {
      */
     isSelect(uuid) {
         return this.uuids.indexOf(uuid) !== -1;
+    }
+
+    /**
+     * 查询所有选中的节点 uuids 数组
+     */
+    query() {
+        return this.uuids.uuids.splice();
     }
 
     /**
@@ -47,6 +61,8 @@ class Selection extends EventEmitter {
        this.selectUuids.add(uuid);
        this.unselectUuids.remove(uuid);
        this.notice();
+
+       this.emit('select', uuid, this.uuids.uuids.splice());
     }
 
     /**
@@ -61,6 +77,8 @@ class Selection extends EventEmitter {
         this.selectUuids.remove(uuid);
         this.unselectUuids.add(uuid);
         this.notice();
+
+        this.emit('unselect', uuid, this.uuids.uuids.splice());
     }
 
     /**
@@ -70,6 +88,7 @@ class Selection extends EventEmitter {
         this.uuids.forEach((uuid) => {
             this.selectUuids.remove(uuid);
             this.unselectUuids.add(uuid);
+            this.emit('unselect', uuid);
         });
         this.uuids.clear();
         this.notice();
@@ -88,6 +107,34 @@ class Selection extends EventEmitter {
             this.unselectUuids.clear();
         }, 100);
     }
+
+    /**
+     * 通知管理器，该节点已经在编辑器内被选中
+     * 这时候不需要发送选中消息给编辑器
+     * @param {*} uuid
+     */
+    _select(uuid) {
+        if (!this.uuids.add(uuid)) {
+            return;
+        }
+        this.selectUuids.remove(uuid);
+        this.unselectUuids.remove(uuid);
+        this.emit('select', uuid, this.uuids.uuids.splice());
+    }
+
+    /**
+     * 通知管理器，该节点已经在编辑器内被取消选中
+     * 这时候不需要发送选中消息给编辑器
+     * @param {*} uuid
+     */
+    _unselect(uuid) {
+        if (!this.uuids.remove(uuid)) {
+            return;
+        }
+        this.selectUuids.remove(uuid);
+        this.unselectUuids.remove(uuid);
+        this.emit('unselect', uuid, this.uuids.uuids.splice());
+    }
 }
 
 ////////////////////////////
@@ -95,45 +142,33 @@ class Selection extends EventEmitter {
 
 const selection = module.exports = new Selection();
 
-const $mask = document.createElement('div');
-$mask.style.background = '#09f';
-$mask.style.position = 'absolute';
-$mask.style.opacity = 0.4;
-$mask.style.border = '1px solid #cae8fb';
-
-// manager.operation.on('rect-start', () => {
-//     $mask.style.left = '0px';
-//     $mask.style.top = '0px';
-//     $mask.style.width = '0px';
-//     $mask.style.height = '0px';
-
-//     document.body.appendChild($mask);
-// });
-// manager.operation.on('rect-change', (data) => {
-//     $mask.style.left = data.x + 'px';
-//     $mask.style.top = data.y + 'px';
-//     $mask.style.width = data.width + 'px';
-//     $mask.style.height = data.height + 'px';
-
-//     const scale = manager.camera.scale;
-//     const point = manager.camera.translatePoint({
-//         x: data.x,
-//         y: data.y + data.height,
-//     });
-
-//     let nodes = select.rectTest(point.x, point.y, data.width / scale, data.height / scale);
-//     selection.clear();
-//     (nodes || []).forEach((node) => {
-//         selection.select(node.uuid);
-//     });
-// });
-// manager.operation.on('rect-end', () => {
-//     document.body.removeChild($mask);
-// });
-
 // 点选操作
-// manager.operation.on('hit', (data) => {
-//     let node = select.hitTest(manager.camera.translatePoint(data));
-//     selection.clear();
-//     node && selection.select(node.uuid);
-// });
+operationManager.on('hit', (data) => {
+    const bcr = document.body.getBoundingClientRect();
+    cameraManager.instance.screenPointToRay(data.x, bcr.height - data.y, bcr.width, bcr.height, selection.ray);
+    let res = cc.director._renderSystem._scene.raycast(selection.ray);
+    let minDist = Number.MAX_VALUE;
+    let resultNode = null;
+
+    for (let i = 0; i < res.length; i++) {
+        let node = res[i].node;
+        let dist = res[i].distance;
+
+        // 寻找最近的相交, 并忽略锁定节点或 cc.PrivateNode (如 RichText 的子节点)
+        if (
+            dist > minDist ||
+            (node._objFlags & cc.Object.Flags.LockedInEditor) ||
+            node instanceof cc.PrivateNode
+        ) {
+            continue;
+        }
+
+        minDist = dist;
+        resultNode = node;
+    }
+
+    if (resultNode && resultNode.uuid) {
+        selection.clear();
+        selection.select(resultNode.uuid);
+    }
+});

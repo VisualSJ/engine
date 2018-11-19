@@ -1,14 +1,21 @@
 'use strict';
 
 const { EventEmitter } = require('events');
+let isBind = false;
 
 function bindEvent(operator) {
+    if (isBind) {
+        return;
+    }
+    isBind = true;
     const $body = document.body;
 
     // window 变化事件
     window.addEventListener('resize', () => {
         const bcr = $body.getBoundingClientRect();
-        if (!window.cc) return;
+        if (!window.cc) {
+            return;
+        }
         cc.view.setCanvasSize(bcr.width, bcr.height);
         cc.view.setDesignResolutionSize(bcr.width, bcr.height);
         // operator.emit('resize', { width: bcr.width, height: bcr.height });
@@ -185,6 +192,7 @@ class Operation extends EventEmitter {
          * rect-change
          * rect-end
          */
+        bindEvent(this);
         window.addEventListener('load', () => {
             bindEvent(this);
         });
