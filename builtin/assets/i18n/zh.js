@@ -29,4 +29,8 @@ module.exports = {
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',
     },
+
+    operate: {
+        renameFail: '重名命失败：已存在相同名称的文件'
+    }
 };

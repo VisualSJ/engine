@@ -4,6 +4,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const Vue = require('vue/dist/vue.js');
+const db = require('./components/panel-db');
+const context = require('./components/panel-context');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -185,7 +187,7 @@ export async function ready() {
     // @ts-ignore
     panel = this;
 
-    vm = new Vue({
+    db.vm = vm = new Vue({
         el: panel.$.content,
         components: {
             tree: require('./components/tree'),
@@ -258,7 +260,6 @@ export async function ready() {
              */
             clear() {
                 vm.$refs.tree.clear();
-                vm.$refs.search.value = '';
                 vm.ready = false;
             },
             /**
@@ -306,77 +307,7 @@ export async function ready() {
              * 创建按钮的弹出菜单
              */
             popupNew(event: Event) {
-                Editor.Menu.popup({
-                    // @ts-ignore
-                    x: event.pageX,
-                    // @ts-ignore
-                    y: event.pageY,
-                    menu: [
-                        {
-                            label: Editor.I18n.t('assets.menu.newFolder'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'folder' });
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newJavaScript'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'js' });
-                            }
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newTypeScript'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'ts' });
-                            }
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'coffee' });
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newScene'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'fire' });
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'anim' });
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'pac' });
-                            }
-                        },
-                        {
-                            type: 'separator'
-                        },
-                        {
-                            label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
-                            }
-                        },
-                    ]
-                });
+                context.popupNew(event);
             },
             /**
              * 面板的右击菜单
@@ -389,82 +320,7 @@ export async function ready() {
                     return;
                 }
 
-                Editor.Menu.popup({
-                    // @ts-ignore
-                    x: event.pageX,
-                    // @ts-ignore
-                    y: event.pageY,
-                    menu: [
-                        {
-                            label: Editor.I18n.t('assets.menu.new'),
-                            submenu: [
-                                {
-                                    label: Editor.I18n.t('assets.menu.newFolder'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'folder' });
-                                    }
-                                },
-                                {
-                                    type: 'separator'
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newJavaScript'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'js' });
-                                    }
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newTypeScript'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'ts' });
-                                    }
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'coffee' });
-                                    }
-                                },
-                                {
-                                    type: 'separator'
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newScene'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'fire' });
-                                    }
-                                },
-                                {
-                                    type: 'separator'
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'anim' });
-                                    }
-                                },
-                                {
-                                    type: 'separator'
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'pac' });
-                                    }
-                                },
-                                {
-                                    type: 'separator'
-                                },
-                                {
-                                    label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                                    click() {
-                                        vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
-                                    }
-                                },
-                            ]
-                        },
-                    ]
-                });
+                context.popupContext(event);
             },
             /**
              * 调整可视区域高度

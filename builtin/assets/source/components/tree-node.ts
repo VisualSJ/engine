@@ -40,7 +40,7 @@ export const computed = {
 
         // @ts-ignore
         if (this.renameSource === asset.source) {
-            // @ts-ignore
+            // @ts-ignore 选中该节点
             return 'input';
         }
 
@@ -66,9 +66,6 @@ export const watch = {
 
         // @ts-ignore
         if (this.state === 'input') {
-            // @ts-ignore 选中该节点
-            this.$emit('ipcSingleSelect', asset.uuid);
-
             // @ts-ignore
             this.$nextTick(() => {
                 // @ts-ignore

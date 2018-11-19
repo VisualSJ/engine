@@ -144,6 +144,7 @@ exports.getSiblingsFromMap = (uuid: string) => {
  */
 exports.scrollIntoView = (uuid: string) => {
     if (!uuid) {
+        db.vm.$parent.$refs.viewBox.scrollTo(0, 0);
         return;
     }
     // 情况 A ：判断是否已在展开的节点中，

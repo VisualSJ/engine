@@ -16,7 +16,16 @@ export let vm: any; // 承接 tree vm 的参数配置
 export const assetHeight: number = 20; // 配置每个资源的高度，需要与css一致
 export const iconWidth: number = 18; // 树形节点 icon 的宽度
 export const padding: number = 4; // 树形头部的间隔，为了保持美观
+export const extToFileType = {
+    js: 'javascript',
+    fire: 'scene',
+    json: 'json',
+    ts: 'typescript',
+};
 
+/**
+ * refresh 的时候需要重置数据
+ */
 export function reset() {
     subAssetsTree = {
         subAssets: {}
@@ -26,14 +35,6 @@ export function reset() {
         depth: -1,
     };
 
-}
-
-/**
- * 输出是一个数组
- */
-
-export function init(treeVM: any) {
-    vm = treeVM;
 }
 
 /**
@@ -207,9 +208,6 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
         asset._height = assetHeight;
         asset.parentUuid = assets.uuid;
 
-        if (vm.folds[asset.uuid] === undefined) {
-            vm.folds[asset.uuid] = asset.isParent ? true : false;
-        }
         if (asset.isExpand === undefined) {
             Object.defineProperty(asset, 'isExpand', {
                 configurable: true,
@@ -221,13 +219,10 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
                     vm.folds[asset.uuid] = val;
                 },
             });
+        }
 
-            // 设定初始值
-            if (asset.isDirectory) {
-                asset.isExpand = true;
-            } else {
-                asset.isExpand = false;
-            }
+        if (vm.folds[asset.uuid] === undefined) {
+            vm.folds[asset.uuid] = asset.isDirectory ? true : false;
         }
 
         if (asset.height === undefined) {

@@ -294,8 +294,14 @@ module.exports = {
                 meta: source.meta.replace(base, name),
             };
 
+            if (existsSync(target.file)) {
+               return false; // 新文件名已存在
+            }
+
             rename(source.meta, target.meta);
             rename(source.file, target.file);
+
+            return true;
         },
 
         /**
@@ -311,11 +317,13 @@ module.exports = {
 
             // 如果不存在，停止操作
             if (!existsSync(file)) {
-                return;
+                return false;
             }
 
             await remove(file);
             await remove(file + '.meta');
+
+            return true;
         },
     },
 

@@ -28,7 +28,7 @@
     ></tree-node-icon>
 
     <label class="name"
-        v-if="asset.state!=='input'"
+        v-if="state!=='input'"
         @dblclick="open($event, asset)"
     >{{asset.name}}</label>
 
@@ -41,7 +41,7 @@
     >
     
     <section class="loading"
-        v-if="asset.state==='loading'"
+        v-if="state==='loading'"
     >
         <ui-loading></ui-loading>
     </section>

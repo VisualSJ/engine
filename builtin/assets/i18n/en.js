@@ -28,4 +28,8 @@ module.exports = {
         revealInExplorer: 'Reveal In Explorer',
         showUuid: 'Show Asset UUID and PATH',
     },
+
+    operate: {
+        renameFail: 'Rename Fail: The new file name already exists.'
+    }
 };

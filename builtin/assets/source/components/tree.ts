@@ -27,10 +27,11 @@ export const components = {
 export function data() {
     return {
         state: '',
-        assets: [], // 当前树形在可视区域的资源数据
+        assets: [], // 当前树形在可视区域的资源节点
         selects: [], // 已选中项的 uuid
         folds: {}, // 用于记录已展开的节点
         renameSource: '', // 需要 rename 的节点的 url，只有一个
+        intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
@@ -42,6 +43,13 @@ export function data() {
 }
 
 export const watch = {
+    /**
+     * 定位显示资源
+     */
+    intoView() {
+        // @ts-ignore
+        utils.scrollIntoView(vm.intoView);
+    },
     /**
      * viewHeight 变化，刷新树形
      */
@@ -65,7 +73,7 @@ export const watch = {
      */
     search() {
         // 搜索有变动都先滚回顶部
-        vm.$parent.$refs.viewBox.scrollTo(0, 0);
+        vm.intoView = '';
 
         // 重新计算
         vm.changeData();
@@ -73,7 +81,7 @@ export const watch = {
         // 重新定位到选中项
         vm.$nextTick(() => {
             if (vm.search === '') {
-                utils.scrollIntoView(vm.getFirstSelect());
+                vm.intoView = vm.getFirstSelect();
             }
         });
     },
@@ -88,13 +96,21 @@ export const watch = {
      */
     allExpand() {
         vm.$parent.allExpand = vm.allExpand;
+
+        if (vm.allExpand === true) {
+            // 重新定位
+            const intoView = vm.intoView;
+            vm.intoView = ''; // 先置顶
+            vm.$nextTick(() => {
+                vm.intoView = intoView;
+            });
+        }
     },
 };
 
 export function mounted() {
     // @ts-ignore
-    vm = this;
-    db.init(vm);
+    db.vm = vm = this;
 
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
@@ -160,7 +176,21 @@ export const methods = {
 
         this.changeData();
 
-        utils.scrollIntoView(vm.getFirstSelect());
+        // @ts-ignore 准备重新定位
+        let intoView = this.intoView;
+        // @ts-ignore
+        this.intoView = '';
+        // @ts-ignore
+        const renameSource = this.renameSource;
+        if (renameSource !== '') {
+            const asset = utils.getGroupFromTree(db.assetsTree, renameSource, 'source')[0];
+            if (asset) {
+                intoView = asset.uuid;
+            }
+        }
+
+        // @ts-ignore
+        this.intoView = intoView;
     },
 
     /**
@@ -195,7 +225,8 @@ export const methods = {
             vm.selects.push(uuid);
             vm.current = utils.getAssetFromMap(uuid);
             if (show) {
-                utils.scrollIntoView(vm.getFirstSelect());
+                // @ts-ignore
+                this.intoView = uuid;
             }
             return vm.current;
         }
@@ -207,8 +238,7 @@ export const methods = {
      * @param uuid
      */
     ipcSingleSelect(uuid: string) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+        this.ipcResetSelect(uuid);
     },
 
     /**
@@ -226,8 +256,7 @@ export const methods = {
                 return;
             } else {
                 if (Array.isArray(uuid)) {
-                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+                    this.ipcResetSelect(uuid);
                     return;
                 }
                 const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
@@ -250,8 +279,7 @@ export const methods = {
                     selects.splice(selects.findIndex((id) => id === one.uuid), 1);
                     selects.push(one.uuid);
 
-                    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-                    Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
+                    this.ipcResetSelect(selects);
                 }
             }
         } else { // event.ctrlKey || event.metaKey
@@ -262,6 +290,15 @@ export const methods = {
                 Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
             }
         }
+    },
+
+    /**
+     * 重新选中节点
+     * @param uuid
+     */
+    ipcResetSelect(uuid: string | string[]) {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
     },
 
     /**
@@ -314,25 +351,37 @@ export const methods = {
             uuid = this.getFirstSelect();
         }
 
-        // 获取该资源
-        const [asset, index, arr, parent] = utils.getGroupFromTree(db.assetsTree, uuid);
-        let url = asset.source;
-
-        if (asset.isDirectory !== true) { // 不是目录，终止
+        const parent = utils.closestCanPasteAsset(uuid); // 自身或父级文件夹
+        if (!parent) { // 没有可用的
             return;
         }
 
+        let url = parent.source;
         switch (json.ext) {
             case 'folder': url += '/New Folder'; break;
             default: url += '/New File.' + json.ext; break;
         }
 
-        asset.state = 'loading';
+        parent.state = 'loading';
+        if (parent.isExpand === false) {
+            this.toggle(parent.uuid, true); // 重新展开父级节点
+        }
 
-        const filedata = json.ext === 'folder' ? null : '';
+        let filedata;
+        if (json.ext === 'folder') {
+            filedata = null;
+        } else {
+            const filetype = db.extToFileType[json.ext];
+            if (filetype) {
+                filedata = readFileSync(join(__dirname, `../../static/filecontent/${filetype}`), 'utf8');
+            } else {
+                filedata = '';
+            }
+        }
+
         vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
 
-        asset.state = '';
+        parent.state = '';
     },
 
     /**
@@ -372,12 +421,6 @@ export const methods = {
                 asset.state = 'loading';
                 Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
                 Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
-
-                setTimeout(() => {
-                    if (asset) {
-                        asset.state = '';
-                    }
-                }, 800);
             });
             // 重置所有选中
             vm.selects = [];
@@ -513,7 +556,7 @@ export const methods = {
      * @param asset
      * @param name
      */
-    rename(asset: ItreeAsset, name = '') {
+    async rename(asset: ItreeAsset, name = '') {
         // @ts-ignore 清空需要 rename 的节点
         this.renameSource = '';
 
@@ -524,9 +567,17 @@ export const methods = {
         }
 
         // 重名命资源
-        Editor.Ipc.sendToPackage('asset-db', 'rename-asset', asset.uuid, name);
+        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'rename-asset', asset.uuid, name);
 
-        asset.state = 'loading'; // 显示 loading 效果
+        if (isSuccess) {
+            asset.state = 'loading'; // 显示 loading 效果
+        } else {
+            Editor.Dialog.show({
+                type: 'error',
+                message: Editor.I18n.t('assets.operate.renameFail')
+            });
+            asset.state = '';
+        }
     },
 
     /**
@@ -613,6 +664,9 @@ export const methods = {
             let index = 0;
             let file: any;
             toAsset.state = 'loading'; // 显示 loading 效果
+            if (toAsset.isExpand === false) {
+                this.toggle(toAsset.uuid, true); // 重新展开父级节点
+            }
 
             do {
                 file = json.files[index];
@@ -644,8 +698,6 @@ export const methods = {
             if (toAsset.uuid === fromParent.uuid) {
                 return;
             }
-
-            toAsset.state = 'loading'; // 显示 loading 效果
 
             // @ts-ignore 移动资源
             Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
@@ -689,6 +741,9 @@ export const methods = {
         let asset;
         let isLegal = false;
         parent.state = 'loading'; // 显示 loading 效果
+        if (parent.isExpand === false) {
+            this.toggle(parent.uuid, true); // 重新展开父级节点
+        }
 
         do {
             asset = utils.getAssetFromTree(copiedUuids[index]);
@@ -706,21 +761,25 @@ export const methods = {
         if (isRenderingTree) { // 性能优化：避免批量修改带来的计算冲击
             clearTimeout(timeOutId);
             timeOutId = setTimeout(() => {
-                vm.renderTree();
+                vm.calcAssetsTree();
             }, 100);
             return;
         }
 
-        vm.renderTree();
+        vm.calcAssetsTree();
     },
-    renderTree() {
+
+    /**
+     * 重新计算树形数据
+     */
+    calcAssetsTree() {
         isRenderingTree = true;
 
         db.calcAssetsTree(); // 重新计算树形数据
 
         this.render(); // 重新渲染出树形
 
-        // 重新定位滚动条, +1 是为了增加离底距离
+        // 容器的整体高度，重新定位滚动条, +1 是为了增加离底距离
         vm.$parent.treeHeight = (db.assetsMap.size + 1) * db.assetHeight;
 
         timeOutId = setTimeout(() => {
@@ -730,8 +789,7 @@ export const methods = {
 
     /**
      * 重新渲染树形
-     * assets 存放被渲染的资源数据
-     * 主要通过 assets 数据的变动
+     * vm.assets 为当前显示的那几个节点数据
      */
     render() {
         vm.assets = []; // 先清空，这种赋值机制才能刷新 vue，而 .length = 0 不行
