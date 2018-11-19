@@ -5,7 +5,7 @@
  * 负责管理当前打开场景的 uuid 与节点对应关系
  */
 
-const { get } = require('lodash');
+const { get, } = require('lodash');
 const dumpUtils = require('../utils/dump');
 const getComponentFunctionOfNode = require('../utils/get-component-function-of-node');
 
@@ -270,8 +270,8 @@ async function createNode(uuid, name = 'New Node', dump) {
     Manager.Ipc.send('broadcast', 'scene:node-created', node.uuid);
 
     return {
-        uuid: node._id,
-        parentUuid: node._parent._id
+        uuid: node.uuid,
+        parentUuid: node._parent.uuid,
     };
 }
 
@@ -286,7 +286,7 @@ function removeNode(uuid) {
 
     // 发送节点修改消息
     Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
-    Manager.Ipc.send('broadcast', 'scene:node-removed', parent.uuid);
+    Manager.Ipc.send('broadcast', 'scene:node-removed', node.uuid);
 
     return parent.uuid;
 }
@@ -398,7 +398,7 @@ Utils.getObbFromRect = function(mat, rect, out_bl, out_tl, out_tr, out_br) {
     out_br.x = xa + yc + tx;
     out_br.y = xb + yd + ty;
 
-    return [out_bl, out_tl, out_tr, out_br];
+    return [out_bl, out_tl, out_tr, out_br, ];
 };
 
 Utils.getWorldBounds = function(node, size, out) {
