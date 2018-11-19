@@ -3,10 +3,11 @@
 import JavascriptImporter from './importers/javascript';
 import JsonImporter from './importers/json';
 import SceneImporter from './importers/scene';
-import SpriteFrameImporter from './importers/sprite-frame';
-import TextImporter from './importers/text';
+import ImageImporter from './importers/image';
 import TextureImporter from './importers/texture';
+import TextImporter from './importers/text';
 import UnknownImporter from './importers/unknown';
+import GltfImporter, { GltfMeshImporter, GltfAnimationImporter, GltfSkeletonImporter, GltfMaterialImporter } from './importers/gltf';
 
 export function register(database: any) {
     // 未知类型导入（不处理）
@@ -39,14 +40,18 @@ export function register(database: any) {
     // 场景文件导入
     database.register(new SceneImporter(), ['.scene', '.fire']);
 
-    // 图片资源导入
-    database.register(new TextureImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
-
     // 虚拟的 sprite-frame 导入
-    database.register(new SpriteFrameImporter());
+    //database.register(new SpriteFrameImporter());
 
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
-}
 
-export { TextureImporter, SpriteFrameImporter };
+    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
+    database.register(new TextureImporter(), '.texture');
+
+    database.register(new GltfImporter(), '.gltf');
+    database.register(new GltfMeshImporter(), '.gltf.mesh');
+    database.register(new GltfAnimationImporter(), '.gltf.animation');
+    database.register(new GltfSkeletonImporter(), '.gltf.skeleton');
+    database.register(new GltfMaterialImporter(), '.gltf.material');
+}
