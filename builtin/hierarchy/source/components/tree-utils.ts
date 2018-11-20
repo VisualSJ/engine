@@ -159,18 +159,12 @@ exports.getSiblingsFromMap = (uuid = '') => {
 };
 
 /**
- * 展开选中项并处于视角中
- */
-exports.selectsIntoView = () => {
-    exports.scrollIntoView(db.vm.getFirstSelect());
-};
-
-/**
  * 滚动节点到可视范围内
  * @param uuid
  */
 exports.scrollIntoView = (uuid: string) => {
     if (!uuid) {
+        db.vm.$parent.$refs.viewBox.scrollTo(0, 0);
         return;
     }
     // 情况 A ：判断是否已在展开的节点中，
@@ -179,12 +173,24 @@ exports.scrollIntoView = (uuid: string) => {
         // 情况 B ：判断是否在可视范围，
         const min = db.vm.scrollTop - db.nodeHeight;
         const max = db.vm.scrollTop + db.vm.viewHeight - db.nodeHeight;
-        if (min < one.top && one.top < max) {
-            return; // 如果 B：是，则终止
-        } else { // 如果 B：不是，则滚动到可视的居中范围内
-            const top = one.top - db.vm.viewHeight / 2;
-            db.vm.$parent.$refs.viewBox.scrollTo(0, top);
+
+        // 优化滚动
+        const offsetWidth = db.vm.$parent.$refs.viewBox.offsetWidth;
+        const scrollWidth = db.vm.$parent.$refs.viewBox.scrollWidth;
+        let scrollLeft = db.vm.$parent.$refs.viewBox.scrollLeft;
+        let scrollTop = db.vm.$parent.$refs.viewBox.scrollTop;
+        const overflowLeft = scrollLeft > one.left;
+        const overflowRight = offsetWidth < scrollWidth && offsetWidth * 0.3 < one.left - scrollLeft;
+        if (overflowLeft || overflowRight) { // 有 x 方向滚动，且单条资源的起始点在容器左边的30%处的右边，
+            scrollLeft = one.left - db.iconWidth * 2; // 在 x 方向滚动下有利于用户阅读
         }
+
+        if (one.top <= min || one.top >= max) {
+            // 如果 B：不是，则滚动到可视的居中范围内
+            scrollTop = one.top - db.vm.viewHeight / 2;
+        }
+        db.vm.$parent.$refs.viewBox.scrollTo(scrollLeft, scrollTop);
+        return;
     } else { // 如果 A ：不存在，展开其父级节点，迭代循环展开其祖父级节点，滚动到可视的居中范围内
         if (uuid === db.nodesTree.uuid) { // 根节点的除外
             return;

@@ -35,7 +35,8 @@ export const computed = {
 
         // @ts-ignore
         if (this.renameUuid === node.uuid) {
-            // @ts-ignore 选中该节点
+            // @ts-ignore
+            this.inputFocus();
             return 'input';
         }
 
@@ -62,17 +63,24 @@ export const watch = {
         // @ts-ignore
         if (this.state === 'input') {
             // @ts-ignore
-            this.$nextTick(() => {
-                // @ts-ignore
-                this.$refs.input.focus();
-                // @ts-ignore
-                this.$refs.input.setSelectionRange(0, node.name.length);
-            });
+            this.inputFocus();
         }
     }
 };
 
 export const methods = {
+    /**
+     * rename 情况下 input 的获得焦点且选中文字
+     */
+    inputFocus() {
+        // @ts-ignore
+        this.$nextTick(() => {
+            // @ts-ignore
+            this.$refs.input.focus();
+            // @ts-ignore
+            this.$refs.input.setSelectionRange(0, this.node.name.length);
+        });
+    },
     /**
      * 右击菜单
      * @param event

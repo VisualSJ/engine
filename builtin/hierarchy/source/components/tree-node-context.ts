@@ -1,5 +1,4 @@
 'use strict';
-import { join } from 'path';
 const { shell } = require('electron');
 const utils = require('./tree-utils');
 
@@ -12,12 +11,13 @@ exports.menu = (self: any, node: ItreeNode) => {
         menu: [
             {
                 label: Editor.I18n.t('hierarchy.menu.newNode'),
+                enabled: !utils.canNotPasteNode(node),
                 submenu: [
                     {
                         label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                         click() {
                             // @ts-ignore
-                            self.$emit('ipcAdd', { type: 'emptyNode' }, node.uuid);
+                            self.$emit('ipcAdd', { type: 'node' }, node.uuid);
                         }
                     }
                 ]
@@ -27,6 +27,7 @@ exports.menu = (self: any, node: ItreeNode) => {
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.copy'),
+                enabled: !utils.canNotCopyNode(node),
                 click() {
                     // @ts-ignore
                     self.$emit('copy', node.uuid);
@@ -34,6 +35,7 @@ exports.menu = (self: any, node: ItreeNode) => {
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.paste'),
+                enabled: !utils.canNotPasteNode(node),
                 click() {
                     // @ts-ignore
                     self.$emit('paste', node.uuid);
@@ -42,6 +44,7 @@ exports.menu = (self: any, node: ItreeNode) => {
             { type: 'separator' },
             {
                 label: Editor.I18n.t('hierarchy.menu.rename'),
+                enabled: !utils.canNotRenameNode(node),
                 click(event: Event) {
                     // @ts-ignore
                     self.rename(node);
@@ -49,6 +52,7 @@ exports.menu = (self: any, node: ItreeNode) => {
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.delete'),
+                enabled: !utils.canNotDeleteNode(node),
                 click() {
                     // @ts-ignore
                     self.$emit('ipcDelete', node.uuid);

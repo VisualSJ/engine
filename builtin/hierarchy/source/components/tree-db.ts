@@ -17,10 +17,6 @@ export const nodeHeight: number = 20; // 配置每个节点的高度，需要与
 export const iconWidth: number = 18; // 树形节点 icon 的宽度
 export const padding: number = 4; // 树形头部的间隔，为了保持美观
 
-export function reset() {
-    nodesTree = null;
-}
-
 /**
  * 刷新
  */
@@ -36,6 +32,32 @@ export async function refresh() {
 }
 
 /**
+ * 重置数据
+ */
+export function reset() {
+    nodesTree = null;
+}
+
+/**
+ * 形成一个合法的树形数据
+ */
+function toNodesTree(arr: ItreeNode[]) {
+    nodesTree = arr;
+
+    function step(node: ItreeNode) {
+        uuidNodes[node.uuid] = node;
+
+        if (node.children && node.children.length > 0) {
+            node.children.forEach((child: ItreeNode) => {
+                step(child);
+            });
+        }
+    }
+
+    step(nodesTree);
+}
+
+/**
  * 重新计算树形数据
  */
 export function calcNodesTree() {
@@ -47,28 +69,44 @@ export function calcNodesTree() {
 }
 
 /**
+ * 添加节点
+ */
+export async function addNode(uuid: string) {
+    // 获取该节点最新数据
+    const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+    // 更新当前数据
+    const newNode = addNodeIntoTree(dumpData);
+}
+
+/**
  * 添加节点后数据调整
  */
-export function addNodeIntoTree(dumpData: any) {
+function addNodeIntoTree(dumpData: any) {
     const uuid = dumpData.uuid.value;
+    const type = dumpData.__type__;
+    const parentUuid = dumpData.parent.value.uuid;
 
-    const newNode: any = {
+    const newNode: ItreeNode = {
         name: dumpData.name.value,
         uuid,
         children: [],
-        type: dumpData.__type__,
+        type,
 
         readOnly: false,
-        isLock: false,
-        isParent: false,
         top: 0,
+        left: 0,
         depth: 0,
+        isParent: false,
+        isExpand: false,
         state: '',
+        parentUuid,
+        _height: 0,
+        height: 0,
     };
     uuidNodes[newNode.uuid] = newNode;
 
     // 父级节点
-    let parentNode = uuidNodes[dumpData.parent.value.uuid];
+    let parentNode = uuidNodes[parentUuid];
     if (!parentNode) {
         parentNode = nodesTree;
     }
@@ -82,11 +120,26 @@ export function addNodeIntoTree(dumpData: any) {
 }
 
 /**
+ * 节点发生变动
+ */
+export async function changeNode(uuid: string) {
+    // 获取该节点最新数据
+    const newData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+    // 更新当前数据
+    if (Editor.Project.type === '3d') {
+        changeNode3D(newData);
+    }
+    if (Editor.Project.type === '2d') {
+        changeNode2D(newData);
+    }
+}
+
+/**
  * 改变 2d 节点后数据调整
  * @param uuid 现有节点的uuid
  * @param newData 新的数据包
  */
-export function changeNode2D(newData: any) {
+function changeNode2D(newData: any) {
     const uuid = newData.uuid.value;
     // 现有的节点数据
     const node = uuidNodes[uuid];
@@ -112,9 +165,6 @@ export function changeNode2D(newData: any) {
     const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
     const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
     if (nowChildren !== newChildren) {
-        // 展开其内容有变动的节点
-        node.isExpand = true;
-
         // 先保存原先的节点，例如在粘贴节点后进行 undo 操作，需要此操作保存已粘贴成功了的节点
         node.children.map((child: ItreeNode) => {
             return child.uuid;
@@ -140,7 +190,7 @@ export function changeNode2D(newData: any) {
  * @param uuid 现有节点的uuid
  * @param newData 新的数据包
  */
-export function changeNode3D(newData: any) {
+function changeNode3D(newData: any) {
     const uuid = newData.uuid.value;
     // 现有的节点数据
     const node = uuidNodes[uuid];
@@ -166,9 +216,6 @@ export function changeNode3D(newData: any) {
     const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
     const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
     if (nowChildren !== newChildren) {
-        // 展开其内容有变动的节点
-        node.isExpand = true;
-
         // 先保存原先的节点，例如在粘贴节点后进行 undo 操作，需要此操作保存已粘贴成功了的节点
         node.children.map((child: ItreeNode) => {
             return child.uuid;
@@ -189,25 +236,6 @@ export function changeNode3D(newData: any) {
     vm.changeData();
 
     return node;
-}
-
-/**
- * 形成一个合法的树形数据
- */
-function toNodesTree(arr: ItreeNode[]) {
-    nodesTree = arr;
-
-    function step(node: ItreeNode) {
-        uuidNodes[node.uuid] = node;
-
-        if (node.children && node.children.length > 0) {
-            node.children.forEach((child: ItreeNode) => {
-                step(child);
-            });
-        }
-    }
-
-    step(nodesTree);
 }
 
 /**

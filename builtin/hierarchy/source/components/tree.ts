@@ -73,7 +73,7 @@ export const watch = {
      */
     search() {
         // 搜索有变动都先滚回顶部
-        vm.$parent.$refs.viewBox.scrollTo(0, 0);
+        vm.intoView = '';
 
         // 重新计算
         vm.changeData();
@@ -81,7 +81,7 @@ export const watch = {
         // 重新定位到选中项
         vm.$nextTick(() => {
             if (vm.search === '') {
-                utils.selectsIntoView();
+                vm.intoView = vm.getFirstSelect();
             }
         });
     },
@@ -206,7 +206,8 @@ export const methods = {
             vm.current = utils.getNodeFromMap(uuid);
 
             if (show) {
-                utils.selectsIntoView();
+                // @ts-ignore
+                this.intoView = uuid;
             }
             return vm.current;
         }
@@ -218,8 +219,7 @@ export const methods = {
      * @param uuid
      */
     ipcSingleSelect(uuid: string) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+        this.ipcResetSelect(uuid);
     },
 
     /**
@@ -237,8 +237,7 @@ export const methods = {
                 return;
             } else {
                 if (Array.isArray(uuid)) {
-                    Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-                    Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+                    this.ipcResetSelect(uuid);
                     return;
                 }
                 const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
@@ -261,8 +260,7 @@ export const methods = {
                     selects.splice(selects.findIndex((id) => id === one.uuid), 1);
                     selects.push(one.uuid);
 
-                    Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-                    Editor.Ipc.sendToPackage('selection', 'select', 'node', selects);
+                    this.ipcResetSelect(selects);
                 }
             }
         } else { // event.ctrlKey || event.metaKey
@@ -273,6 +271,15 @@ export const methods = {
                 Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
             }
         }
+    },
+
+    /**
+     * 重新选中节点
+     * @param uuid
+     */
+    ipcResetSelect(uuid: string | string[]) {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
     },
 
     /**
@@ -295,12 +302,8 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        // 获取该节点最新数据
-        const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        // 更新当前数据
-        const newNode = db.addNodeIntoTree(dumpData);
+        db.addNode(uuid);
 
-        // 触发节点数据已变动
         vm.changeData();
     },
 
@@ -341,15 +344,7 @@ export const methods = {
      * @param json
      */
     async change(uuid: string) {
-        // 获取该节点最新数据
-        const newData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
-        // 更新当前数据
-        if (Editor.Project.type === '3d') {
-            db.changeNode3D(newData);
-        }
-        if (Editor.Project.type === '2d') {
-            db.changeNode2D(newData);
-        }
+        db.changeNode(uuid);
 
         vm.changeData();
     },
@@ -895,7 +890,7 @@ export const methods = {
      * 以下是工具函数：
      */
     getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
-        if (!vm.selects[0]) {
+        if (!vm.selects[0] && db.nodesTree) {
             return db.nodesTree.uuid; // node 节点
         }
         return vm.selects[0]; // 当前选中的节点

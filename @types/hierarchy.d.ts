@@ -17,7 +17,6 @@ declare interface ItreeNode {
 
     // 以下是扩展的数据
     readOnly: boolean; // 是否是只读
-    isLock: boolean; // 是否锁定
     top: number; // top 位置
     left: number; // 缩进的大小
     depth: number; // 树形层级
