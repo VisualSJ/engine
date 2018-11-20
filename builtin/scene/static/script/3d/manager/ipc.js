@@ -1,7 +1,7 @@
 'use strict';
 
-const ipc = require('../../ipc/webview');
-
+const ipc = require('../../public/ipc/webview');
+console.log(require('path').join(__dirname, '../../public/ipc/webview'));
 // host 调用 scene 的指定方法
 ipc.on('call-method', async (options) => {
     // 防止初始化之前使用接口

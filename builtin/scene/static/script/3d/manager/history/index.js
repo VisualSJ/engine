@@ -5,7 +5,7 @@ const manager = {
 };
 const historyCache = require('./cache');
 const dump = require('../../utils/dump');
-const ipc = require('../../../ipc/webview');
+const ipc = require('../../../public/ipc/webview');
 
 const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 const records = []; // 格式为 uuid[]
@@ -187,5 +187,5 @@ module.exports = {
     record,
     snapshot,
     undo,
-    redo
+    redo,
 };

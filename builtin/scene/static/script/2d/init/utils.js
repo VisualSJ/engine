@@ -1,6 +1,6 @@
 'use stirct';
 
-const ipc = require('../../ipc/webview');
+const ipc = require('../../public/ipc/webview');
 
 /**
  * 初始化一些工具函数

@@ -1,7 +1,7 @@
 'use strict';
 
-const { join } = require('path');
-const HostIpc = require('./ipc/host');
+const { join, } = require('path');
+const HostIpc = require('./public/ipc/host');
 
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
@@ -52,7 +52,7 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module,
             handler,
-            params
+            params,
         });
     }
 
@@ -69,8 +69,8 @@ class View extends window.HTMLElement {
             params: [
                 options.uuid,
                 options.index,
-                ...options.methodNames
-            ]
+                ...options.methodNames,
+            ],
         });
     }
 }
@@ -92,7 +92,7 @@ async function initIpc(elem) {
         return {
             path: elem.info.path,
             utils: elem.info.utils,
-            compile: elem.info.compile
+            compile: elem.info.compile,
         };
     });
 
