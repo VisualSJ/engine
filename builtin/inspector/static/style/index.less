@@ -64,6 +64,9 @@ ui-drag-object {
 .flex-full {
     flex-basis: 100%;
 }
+.align-self-center {
+    align-self: center;
+}
 
 .fit {
     position: absolute;
@@ -122,6 +125,10 @@ ui-checkbox {
         overflow: hidden;
         margin-right: 5px;
         display: flex;
+        & > .label {
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
         & > * {
             margin-right: 3px;
             &:last-child {
@@ -165,6 +172,30 @@ ui-checkbox {
     }
     .tiny {
         line-height: 0.9;
+    }
+    .object-value {
+        margin-right: 5px;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-weight: bold;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        min-width: 20px;
+        background: rgb(170, 170, 170);
+        color: rgb(51, 51, 51);
+    }
+    .object-type {
+        align-self: center;
+        color: rgb(0, 0, 0);
+        background: rgb(31, 161, 53);
+        min-width: 20px;
+        height: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: bold;
+        border-radius: 3px;
+        padding: 1px 6px;
+        margin-right: 5px;
     }
 }
 
@@ -380,6 +411,7 @@ ui-checkbox {
 @import './code-preview.less';
 
 @import './public/cc-vec2.less';
+@import './public/cc-vec3.less';
 @import './public/cc-size.less';
 @import './public/cc-color.less';
 @import './public/number.less';
@@ -598,7 +630,8 @@ ui-checkbox {
 }
 
 /* --------------------3d component start ------------------------ */
-.missing-script-message {
+/* missing script */
+.missing-script-message, .empty-message {
     color: #aa0;
     background-color: #333;
     border: 1px solid #666666;
@@ -606,3 +639,4 @@ ui-checkbox {
     margin: 10px;
     padding: 10px;
 }
+

@@ -1,0 +1,130 @@
+
+<div>
+
+    <!-- 头部工具栏 -->
+    <header
+        v-if="!child"
+        class="asset-header"
+    >
+        <!-- <img class="css-icon" :src="icon"></img> -->
+        <div
+            class="css-title"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <section
+        v-if="meta"
+    >
+        <boolean
+            name="Rotated"
+            path="userData.rotated"
+            :meta="meta"
+            :readonly="true"
+        ></boolean>
+
+        <number
+            name="Offset X"
+            path="userData.offsetX"
+            :meta="meta"
+            :readonly="true"
+        ></number>
+        
+        <number
+            name="Offset Y"
+            path="userData.offsetY"
+            :meta="meta"
+            :readonly="true"
+        ></number>
+        
+        <enum
+            name="Trim Type"
+            path="userData.trimType"
+            :meta="meta">
+                <option 
+                    v-for='(item) in [{name: "Auto", value: "auto"}, {name: "Custom", value: "custom"}]'
+                    :value="item.value" 
+                >{{item.name}}</option>
+        </enum>
+
+        <number
+            name="Trim Threshold"
+            path="userData.trimThreshold"
+            :meta="meta"
+        ></number>
+        
+        <number
+            name="Trim X"
+            path="userData.trimX"
+            :meta="meta"
+            :disabled="!isCustom()"
+        ></number>
+
+        <number
+            name="Trim Y"
+            path="userData.trimY"
+            :meta="meta"
+            :disabled="!isCustom()"
+        ></number>
+
+        <number
+            name="Trim Width"
+            path="userData.width"
+            :meta="meta"
+            :disabled="!isCustom()"
+        ></number>
+        
+        <number
+            name="Trim Height"
+            path="userData.height"
+            :meta="meta"
+            :disabled="!isCustom()"
+        ></number>
+        
+        <number
+            name="Border Top"
+            path="userData.borderTop"
+            :meta="meta"
+        ></number>
+
+        <number
+            name="Border Bottom"
+            path="userData.borderBottom"
+            :meta="meta"
+        ></number>
+
+        <number
+            name="Border Left"
+            path="userData.borderLeft"
+            :meta="meta"
+        ></number>
+        
+        <number
+            name="Border Right"
+            path="userData.borderRight"
+            :meta="meta"
+        ></number>
+
+    
+    </section>
+
+    <!-- todo
+        <image-preview :meta="meta" v-if="!child"></image-preview> -->
+
+</div>

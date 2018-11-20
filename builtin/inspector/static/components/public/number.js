@@ -12,7 +12,7 @@ exports.template = `
             }"
             @click="foldUp = !foldUp"
         ></i>
-        <span class="flex-1"
+        <span class="flex-1 label"
             :style="paddingStyle"
         >{{name ? name : 'Unknown'}}</span>
         <div class="lock"
@@ -71,7 +71,7 @@ exports.props = [
     'disabled',
     'slide',
     'readonly',
-    'foldable'
+    'foldable',
 ];
 
 exports.data = function() {
@@ -80,9 +80,9 @@ exports.data = function() {
         paddingStyle:
             this.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`
+                      'padding-left': `${this.indent * 13}px`,
                   }
-                : ''
+                : '',
     };
 };
 
@@ -124,8 +124,8 @@ exports.computed = {
                         : this.$set(target, key, newVal);
                 }
             }
-        }
-    }
+        },
+    },
 };
 
 exports.methods = {
@@ -152,5 +152,5 @@ exports.methods = {
             this.metaVal = value;
         }
         this.dispatch();
-    }
+    },
 };

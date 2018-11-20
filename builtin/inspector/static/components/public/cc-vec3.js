@@ -12,7 +12,7 @@ exports.template = `
             }"
             @click="foldUp = !foldUp"
         ></i>
-        <span class="flex-1"
+        <span class="flex-1 label"
             :style="paddingStyle"
         >{{name ? name : 'Unknown'}}</span>
         <div class="lock"
@@ -20,21 +20,21 @@ exports.template = `
         ><i class="iconfont icon-lock"></i></div>
     </div>
     <div class="value" v-if="dump">
-        <span>X</span>
+        <span class="label">X</span>
         <ui-num-input
             :value="dump ? dump.value.x : 0"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
             @confirm.stop="_onXConfirm"
         ></ui-num-input>
-        <span>Y</span>
+        <span class="label">Y</span>
         <ui-num-input
             :value="dump ? dump.value.y : 0"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
             @confirm.stop="_onYConfirm"
         ></ui-num-input>
-        <span>Z</span>
+        <span class="label">Z</span>
         <ui-num-input
             :value="dump ? dump.value.z : 0"
             :disabled="disabled"
@@ -83,7 +83,7 @@ exports.props = [
     'path',
     'disabled',
     'readonly',
-    'foldable'
+    'foldable',
 ];
 
 exports.data = function() {
@@ -92,9 +92,9 @@ exports.data = function() {
         paddingStyle:
             this.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`
+                      'padding-left': `${this.indent * 13}px`,
                   }
-                : ''
+                : '',
     };
 };
 
@@ -132,8 +132,8 @@ exports.computed = {
                     target.hasOwnProperty(key) ? (target[key] = newVal) : this.$set(target, key, newVal);
                 }
             }
-        }
-    }
+        },
+    },
 };
 
 exports.methods = {
@@ -172,5 +172,5 @@ exports.methods = {
         const target = this.dump ? this.dump.value : this.metaVal;
         target.z = event.target.value;
         this.dispatch();
-    }
+    },
 };

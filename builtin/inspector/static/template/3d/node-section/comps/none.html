@@ -1,4 +1,7 @@
-<section>
+<section class="empty-message" v-if="(Object.keys(target).every(key => target[key].visible === false || !target[key].compType))">
+    {{T('empty_component_message')}}
+</section>
+<section v-else>
     <template v-for="(prop, key) in target">
         <component
             v-if="prop.visible !== false && prop.compType"

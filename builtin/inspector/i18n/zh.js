@@ -18,11 +18,11 @@ module.exports = {
         plugin: '导入为插件',
         loadPluginInWeb: '允许 Web 平台加载',
         loadPluginInEditor: '允许编辑器加载',
-        loadPluginInNative: '允许 Native 平台加载'
+        loadPluginInNative: '允许 Native 平台加载',
     },
     block_input_events: {
         brief_help:
-            '该组件将拦截所有输入事件，防止输入穿透到下层节点，一般用于上层 UI 的背景。'
+            '该组件将拦截所有输入事件，防止输入穿透到下层节点，一般用于上层 UI 的背景。',
     },
 
     node: {
@@ -51,7 +51,7 @@ module.exports = {
         richtext: 'RichText（富文本）',
         toggle: 'Toggle（复选按钮）',
         toggleContainer: 'ToggleContainer（单选按钮）',
-        toggleGroup: 'ToggleGroup（旧版单选按钮）'
+        toggleGroup: 'ToggleGroup（旧版单选按钮）',
     },
     component: {
         title: '组件',
@@ -62,13 +62,13 @@ module.exports = {
         collider: '添加碰撞组件',
         physics: '物理',
         // 3d
-        components: 'Components'
+        components: 'Components',
     },
     collider: {
         editing: '是否需要编辑此碰撞组件',
         category: '碰撞组件所属类别',
         mask: '可以与碰撞组件相碰撞的组件掩码',
-        regenerate_points: 'Regenerate Points'
+        regenerate_points: 'Regenerate Points',
     },
     particle_system: {
         preview:
@@ -112,14 +112,14 @@ module.exports = {
             '初始半径及变化范围，表示粒子出生时相对发射器的距离，只有在半径模式下可用',
         endRadius: '结束半径及变化范围，只有在半径模式下可用',
         rotatePerS:
-            '粒子每秒围绕起始点的旋转角度及变化范围，只有在半径模式下可用'
+            '粒子每秒围绕起始点的旋转角度及变化范围，只有在半径模式下可用',
     },
     particle: {
         export_title: '将自定义的粒子数据导出成 plist 文件',
         export: '导出',
         export_error: '该资源不支持导出到项目外',
         sync: '同步',
-        sync_tips: '同步 File 中的参数到 Custom'
+        sync_tips: '同步 File 中的参数到 Custom',
     },
 
     physics: {
@@ -142,7 +142,7 @@ module.exports = {
             linearVelocity: '刚体在世界坐标下的线性速度',
             angularVelocity: '刚体的角速度',
             fixedRotation: '是否禁止此刚体进行旋转',
-            awake: '是否立刻唤醒此刚体'
+            awake: '是否立刻唤醒此刚体',
         },
         physics_collider: {
             density: '密度',
@@ -188,8 +188,8 @@ module.exports = {
             radius: '圆形半径',
             tag:
                 '标签。当一个节点上有多个碰撞组件时，在发生碰撞后，可以使用此标签来判断是节点上的哪个碰撞组件被碰撞了。',
-            points: '多边形顶点数组'
-        }
+            points: '多边形顶点数组',
+        },
     },
     SPRITE_EDITOR: {
         title: 'Sprite 编辑器',
@@ -197,12 +197,13 @@ module.exports = {
         left: 'Left',
         right: 'Right',
         top: 'Top',
-        bottom: 'Bottom'
+        bottom: 'Bottom',
     },
     missing_script: {
         error_compiled:
             '载入脚本时报错或脚本已丢失，请检查报错信息并进行修正，该组件将在修正后自动还原。如果脚本已删除，请手动删除该组件。',
         error_not_compiled:
-            '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。'
-    }
+            '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。',
+    },
+    empty_component_message: '组件没有可展示属性',
 };

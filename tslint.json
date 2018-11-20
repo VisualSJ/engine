@@ -30,8 +30,8 @@
             true,
             {
                 "singleline": {
-                    "objects": "always",
-                    "arrays": "always"
+                    "objects": "never",
+                    "arrays": "never"
                 },
                 "multiline": {
                     "objects": "always",
@@ -80,8 +80,8 @@
             true,
             {
                 "singleline": {
-                    "objects": "always",
-                    "arrays": "always"
+                    "objects": "never",
+                    "arrays": "never"
                 },
                 "multiline": {
                     "objects": "always",

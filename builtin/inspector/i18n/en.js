@@ -18,12 +18,12 @@ module.exports = {
         plugin: 'Import As Plugin',
         loadPluginInWeb: 'Load In Web',
         loadPluginInEditor: 'Load In Editor',
-        loadPluginInNative: 'Load In Native'
+        loadPluginInNative: 'Load In Native',
     },
     block_input_events: {
         brief_help: `This component will block all input events,
             preventing the input from penetrating into the underlying node,
-            typically for the background of the top UI.`
+            typically for the background of the top UI.`,
     },
     node: {
         title: 'Node Presets',
@@ -52,7 +52,7 @@ module.exports = {
         richtext: 'Node with RichText',
         toggle: 'Node with Toggle',
         toggleContainer: 'Node with ToggleContainer',
-        toggleGroup: 'Node with ToggleGroup (Legacy)'
+        toggleGroup: 'Node with ToggleGroup (Legacy)',
     },
     component: {
         title: 'Component',
@@ -63,13 +63,13 @@ module.exports = {
         collider: 'Add Collider Component',
         physics: 'Add Physics Component',
         // 3d
-        components: 'Components'
+        components: 'Components',
     },
     collider: {
         editing: 'Edit this collider component',
         category: 'Collider component category',
         mask: 'The collider mask can collide with this collider',
-        regenerate_points: 'Regenerate Points'
+        regenerate_points: 'Regenerate Points',
     },
     particle_system: {
         preview: 'Play particle in edit mode',
@@ -119,7 +119,7 @@ module.exports = {
         endRadius:
             'Ending radius and variation of the particles. Only available in Radius mode',
         rotatePerS: `Number of degress to rotate a particle around the source pos per second and variation.
-            Only available in Radius mode`
+            Only available in Radius mode`,
     },
     particle: {
         export_title: 'Export custom particle data to plist file.',
@@ -127,7 +127,7 @@ module.exports = {
         export_error:
             'This resource does not support exports outside of the project',
         sync: 'Sync',
-        sync_tips: 'Synchronize the parameters in the File to Custom'
+        sync_tips: 'Synchronize the parameters in the File to Custom',
     },
     physics: {
         rigid_body_last: 'Last',
@@ -153,7 +153,7 @@ module.exports = {
             angularVelocity: 'The angular velocity of the body.',
             fixedRotation:
                 'Should this body be prevented from rotating?',
-            awake: 'Is this body initially awake or sleeping?'
+            awake: 'Is this body initially awake or sleeping?',
         },
         physics_collider: {
             density: 'The density',
@@ -207,8 +207,8 @@ module.exports = {
             radius: 'Circle radius',
             tag: `Tag. If a node has several collider components,
                  you can judge which type of collider is collided according to the tag.`,
-            points: 'Polygon points'
-        }
+            points: 'Polygon points',
+        },
     },
     SPRITE_EDITOR: {
         title: 'Sprite Editor',
@@ -216,7 +216,7 @@ module.exports = {
         left: 'Left',
         right: 'Right',
         top: 'Top',
-        bottom: 'Bottom'
+        bottom: 'Bottom',
     },
     missing_script: {
         error_compiled: `Error on executing script, or the script reference is missing.
@@ -224,6 +224,7 @@ module.exports = {
             The component will be restored once scripting error is gone. If you no long need the missing script,
             please remove this component manually.`,
         error_not_compiled: `Error on compiling script. Please check error log carefully and correct your script.
-            This component will be restored once compiling error is gone.`
-    }
+            This component will be restored once compiling error is gone.`,
+    },
+    empty_component_message: 'The component has not properties to display',
 };

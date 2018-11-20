@@ -10,7 +10,7 @@ module.exports = {
     getComponentType,
     build2DProp,
     build3DProp,
-    getFitSize
+    getFitSize,
 };
 
 const publicCompsPath = join(__dirname, '../components/public/');
@@ -93,7 +93,7 @@ function getFitSize(imgWidth, imgHeight, boxWidth, boxHeight) {
             width = (imgWidth * boxHeight) / imgHeight;
         }
     }
-    return [width, height];
+    return [width, height ];
 }
 
 function checkIsAsset(types) {
@@ -101,11 +101,11 @@ function checkIsAsset(types) {
 }
 
 function checkIsNumber(type) {
-    return ['Integer', 'Float'].includes(type);
+    return ['Integer', 'Float' ].includes(type);
 }
 
 const convertMap = {
-    'cc.Node': 'cc-dragable'
+    'cc.Node': 'cc-dragable',
 };
 
 /**
@@ -122,7 +122,7 @@ function getComponentType(target) {
         return 'number';
     }
 
-    if (checkIsAsset([type, ...extendTypes])) {
+    if (checkIsAsset([type, ...extendTypes ])) {
         return 'cc-dragable';
     }
 
@@ -151,7 +151,7 @@ function build2DProp(path, key, item, attrs) {
         type: originType,
         value,
         extends: extendTypes,
-        default: defaultVal
+        default: defaultVal,
     } = item;
     const hasCompType = getComponentType(item);
 
@@ -173,8 +173,8 @@ function build2DProp(path, key, item, attrs) {
         }
 
         if (extendTypes) {
-            isAsset = [originType, ...extendTypes].some((item) =>
-                ['cc.Asset', 'cc.RawAsset'].includes(item)
+            isAsset = [originType, ...extendTypes ].some((item) =>
+                ['cc.Asset', 'cc.RawAsset' ].includes(item)
             );
 
             isNode = extendTypes.includes('cc.Object');
@@ -246,7 +246,7 @@ function build2DProp(path, key, item, attrs) {
                 // Array 子元素的 buildProp 需要 extends、properties 类型判断
                 extendTypes &&
                     !item.extends &&
-                    (item.extends = [...extendTypes]);
+                    (item.extends = [...extendTypes ]);
                 properties &&
                     !item.properties &&
                     (item.properties = { ...properties });
@@ -281,4 +281,33 @@ function build3DProp(path, key, item, attrs) {
     item.path = path;
     item.name = attrs.displayName ? attrs.displayName : key;
     item.compType = getComponentType(item);
+    item.attrs = { ...attrs };
+
+    const {type, value } = item;
+    let typeNull = false;
+    let typeError = false;
+
+    if (!item.compType && type) {
+        if (type === 'Object' && (value === null || value === undefined)) {
+            typeNull = true;
+        }
+        if (!typeNull && attrs.type && attrs.type !== type) {
+            // type 类型不一致
+           if (item.extends) {
+                // extends 类型与 attrs.type 不匹配
+               if (!item.extends.includes(attrs.type)) {
+                   typeError = true;
+               }
+           } else {
+               typeError = true;
+           }
+        }
+
+        if (typeNull) {
+            item.attrs.typename = item.attrs.type;
+            item.compType = 'null-prop';
+        } else if (typeError) {
+            item.compType = 'type-error-prop';
+        }
+    }
 }

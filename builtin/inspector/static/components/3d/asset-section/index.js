@@ -1,14 +1,16 @@
 'use strict';
 
-const { join, basename, extname, } = require('path');
-const { readTemplate, readComponent, T, } = require('../../../utils');
+const { join, basename, extname } = require('path');
+const { readTemplate, readComponent, T } = require('../../../utils');
 
 exports.template = readTemplate('3d', './asset-section/index.html');
 
-exports.props = ['uuid', ];
+exports.props = ['uuid' ];
 
 exports.components = {
     none: require('./assets/none'),
+    texture: readComponent(__dirname, './assets/texture'),
+    'sprite-frame': readComponent(__dirname, './assets/sprite-frame'),
 };
 
 exports.data = function() {
@@ -32,7 +34,7 @@ exports.methods = {
         try {
             this.$root.showLoading(200);
             this.dataReady = false;
-            const [info, meta, ] = await Promise.all([
+            const [info, meta ] = await Promise.all([
                 Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
                 Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid),
             ]);
@@ -100,7 +102,7 @@ exports.mounted = async function() {
 };
 
 function buildMeta(meta, info) {
-    const { source = '', files = [], } = info;
+    const { source = '', files = [] } = info;
     meta.__dirty__ = false;
     meta.__name__ = source && basename(source, extname(source));
     meta.__assetType__ = meta.importer;

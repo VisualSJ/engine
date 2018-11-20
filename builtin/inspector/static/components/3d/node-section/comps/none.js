@@ -1,6 +1,6 @@
 'use strict';
 
-const { readTemplate, getComponentType } = require('../../../../utils');
+const { readTemplate, T } = require('../../../../utils');
 
 exports.template = readTemplate('3d', './node-section/comps/none.html');
 
@@ -11,5 +11,5 @@ exports.data = function() {
 };
 
 exports.methods = {
-    getComponentType
+    T,
 };

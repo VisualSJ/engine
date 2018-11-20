@@ -12,7 +12,7 @@ exports.template = `
                 }"
                 @click="foldUp = !foldUp"
             ></i>
-            <span :style="paddingStyle">{{dump.name}}</span>
+            <span class="flex-1 label" :style="paddingStyle">{{dump.name}}</span>
             <div class="lock"
                 v-if="(dump && dump.readonly) || readonly"
             >
@@ -56,20 +56,20 @@ exports.template = `
 exports.props = {
     dump: {
         required: true,
-        type: Object
+        type: Object,
     },
     indent: {
         type: Number,
-        default: 0
+        default: 0,
     },
     readonly: {
         type: Boolean,
-        default: false
+        default: false,
     },
     foldable: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
 };
 
 exports.data = function() {
@@ -79,9 +79,9 @@ exports.data = function() {
         paddingStyle:
             this.indent !== 0
                 ? {
-                      'padding-left': `${this.indent * 13}px`
+                      'padding-left': `${this.indent * 13}px`,
                   }
-                : ''
+                : '',
     };
 };
 
@@ -90,7 +90,7 @@ exports.mounted = function() {
 };
 
 exports.watch = {
-    'dump.value.target.value.uuid': 'updateDump'
+    'dump.value.target.value.uuid': 'updateDump',
 };
 
 exports.computed = {
@@ -104,7 +104,7 @@ exports.computed = {
             }
         }
         return 'Component / Handler';
-    }
+    },
 };
 
 exports.methods = {
@@ -143,8 +143,8 @@ exports.methods = {
         const customEvent = new CustomEvent('property-changed', {
             bubbles: true,
             detail: {
-                dump
-            }
+                dump,
+            },
         });
 
         this.$el.dispatchEvent(customEvent);
@@ -168,10 +168,10 @@ exports.methods = {
             dump: {
                 value: {
                     target: {
-                        value: { uuid }
-                    }
-                }
-            }
+                        value: { uuid },
+                    },
+                },
+            },
         } = this;
         // 根据 uuid 生成 menu
         if (uuid) {
@@ -197,7 +197,7 @@ exports.methods = {
             const self = this;
             const {
                 left,
-                bottom
+                bottom,
             } = event.target.getBoundingClientRect();
             const x = Math.round(left + 5);
             const y = Math.round(bottom + 5);
@@ -214,15 +214,15 @@ exports.methods = {
                                 component,
                                 handler
                             );
-                        }
-                    }))
+                        },
+                    })),
                 };
             });
 
             Editor.Menu.popup({
                 x,
                 y,
-                menu
+                menu,
             });
         }
     },
@@ -233,5 +233,5 @@ exports.methods = {
 
         this.dispatch(this.dump.value.component);
         this.dispatch(this.dump.value.handler);
-    }
+    },
 };

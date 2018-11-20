@@ -11,7 +11,7 @@ exports.props = ['uuid', 'index', 'total', 'comp'];
 
 exports.components = {
     none: readComponent(__dirname, './comps/none'),
-    'cc-missingscript': require('./comps/missing-script')
+    'cc-missingscript': require('./comps/missing-script'),
 };
 
 exports.data = function() {
@@ -73,10 +73,10 @@ exports.methods = {
                             {
                                 uuid: uuid,
                                 path: '__comps__',
-                                index: index
+                                index: index,
                             }
                         );
-                    }
+                    },
                 },
                 { type: 'separator' },
                 {
@@ -90,10 +90,10 @@ exports.methods = {
                                 uuid: uuid,
                                 path: '__comps__',
                                 target: index,
-                                offset: -1
+                                offset: -1,
                             }
                         );
-                    }
+                    },
                 },
                 {
                     label: 'Move Down',
@@ -106,21 +106,21 @@ exports.methods = {
                                 uuid: uuid,
                                 path: '__comps__',
                                 target: index,
-                                offset: 1
+                                offset: 1,
                             }
                         );
-                    }
-                }
-            ]
+                    },
+                },
+            ],
         });
-    }
+    },
 };
 
 function isBaseCollider(type) {
     return [
         'cc.PhysicsChainCollider',
         'cc.PhysicsPolygonCollider',
-        'cc.PolygonCollider'
+        'cc.PolygonCollider',
     ].includes(type);
 }
 
@@ -133,6 +133,6 @@ function checkIsJoint(type) {
         'cc.RevoluteJoint',
         'cc.RopeJoint',
         'cc.WeldJoint',
-        'cc.WheelJoint'
+        'cc.WheelJoint',
     ].includes(type);
 }

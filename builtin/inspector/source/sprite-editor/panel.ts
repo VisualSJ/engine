@@ -24,8 +24,8 @@ export const template = readFileSync(
 export const fonts = [
     {
         name: 'inspector',
-        file: 'packages://inspector/static/iconfont.woff'
-    }
+        file: 'packages://inspector/static/iconfont.woff',
+    },
 ];
 
 export const $ = { content: '.sprite-editor' };
@@ -33,13 +33,13 @@ export const $ = { content: '.sprite-editor' };
 export const messages = {
     'current-uuid'(uuid: string) {
         vm && (vm.uuid = uuid);
-    }
+    },
 };
 
 export const listeners = {
     resize() {
         vm && vm.windowResizeListener();
-    }
+    },
 };
 
 export async function ready() {
@@ -65,7 +65,7 @@ export async function ready() {
             leftPos: 0,
             rightPos: 0,
             topPos: 0,
-            bottomPos: 0
+            bottomPos: 0,
         },
 
         async mounted() {
@@ -99,7 +99,7 @@ export async function ready() {
                         (this.meta.userData.height * this.scale) / 100
                     );
                 }
-            }
+            },
         },
         computed: {
             dynamicComponent(this: any) {
@@ -115,7 +115,7 @@ export async function ready() {
                 if (this.enabled) {
                     if (
                         this.leftPos + this.rightPos >=
-                            this.image.width &&
+                        this.image.width &&
                         this.leftPos === this.image.width
                     ) {
                         return true;
@@ -127,7 +127,7 @@ export async function ready() {
                 if (this.enabled) {
                     if (
                         this.topPos + this.bottomPos >=
-                            this.image.height &&
+                        this.image.height &&
                         this.topPos === this.image.height
                     ) {
                         return true;
@@ -157,7 +157,7 @@ export async function ready() {
                     );
                 }
                 return false;
-            }
+            },
         },
         methods: {
             T,
@@ -177,7 +177,7 @@ export async function ready() {
                         'asset-db',
                         'query-asset-meta',
                         this.uuid
-                    )
+                    ),
                 ]);
 
                 if (meta && texture) {
@@ -220,7 +220,7 @@ export async function ready() {
             ) {
                 const {
                     width: boxWidth,
-                    height: boxHeight
+                    height: boxHeight,
                 } = this.$refs.container.getBoundingClientRect();
                 const [width, height] = getFitSize(
                     imageWidth,
@@ -232,7 +232,7 @@ export async function ready() {
                 if (this.meta.userData.rotated) {
                     this._scalingSize = {
                         width: Math.ceil(height),
-                        height: Math.ceil(width)
+                        height: Math.ceil(width),
                     };
                 }
 
@@ -299,11 +299,11 @@ export async function ready() {
             refreshScaleSlider(this: any) {
                 const {
                     width,
-                    height
+                    height,
                 } = this.$refs.container.getBoundingClientRect();
                 const {
                     width: imageWidth,
-                    height: imageHeight
+                    height: imageHeight,
                 } = this.meta.userData;
 
                 const { width: prevWidth, height: prevHeight } = this
@@ -510,7 +510,7 @@ export async function ready() {
                         borderLeft,
                         borderRight,
                         borderTop,
-                        borderBottom
+                        borderBottom,
                     } = this.meta.userData;
 
                     const { userData } = this.meta;
@@ -553,19 +553,19 @@ export async function ready() {
                         borderLeft,
                         borderRight,
                         borderTop,
-                        borderBottom
+                        borderBottom,
                     } = this.meta.userData;
                     this.leftPos = borderLeft;
                     this.rightPos = borderRight;
                     this.topPos = borderTop;
                     this.bottomPos = borderBottom;
                 }
-            }
-        }
+            },
+        },
     });
 }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
 export async function close() {
     Editor.Ipc.sendToPackage(
