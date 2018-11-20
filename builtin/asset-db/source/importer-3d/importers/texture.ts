@@ -33,21 +33,21 @@ export default class TextureImporter extends Importer {
         let updated = false;
 
         if (!(await asset.existsInLibrary('.json'))) {
-            //@ts-ignore
+            // @ts-ignore
             const texture = new cc.Texture2D();
             const imageSource = asset.userData.imageSource as string;
             if (imageSource) {
                 asset.rely(imageSource);
                 const imageUuid = this.assetDB!.pathToUuid(imageSource);
                 if (imageUuid) {
-                    //@ts-ignore
+                    // @ts-ignore
                     const image = Manager.serialize.asAsset(imageUuid);
                     texture._mipmaps = [ image ];
                 }
             }
-            //@ts-ignore
+            // @ts-ignore
             asset.saveToLibrary('.json', Manager.serialize(texture));
-            
+
             updated = true;
         }
 

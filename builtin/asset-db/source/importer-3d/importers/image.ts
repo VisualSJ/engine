@@ -1,7 +1,7 @@
 import { Asset, Importer } from 'asset-db';
 import { extname } from 'path';
 
-type ImageImportType = "raw" | "texture" | "normal map" | "sprite-frame" | "texture cube" | undefined;
+type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube' | undefined;
 
 export default class ImageImporter extends Importer {
 
@@ -42,27 +42,27 @@ export default class ImageImporter extends Importer {
         }
 
         if (!(await asset.existsInLibrary('.json'))) {
-            //@ts-ignore
+            // @ts-ignore
             const image = new cc.ImageAsset();
-            //@ts-ignore
+            // @ts-ignore
             asset.saveToLibrary('.json', Manager.serialize(image));
 
             let importType = asset.userData.type as ImageImportType;
             if (!importType) {
-                importType = "raw";
+                importType = 'raw';
                 asset.userData.type = importType;
             }
 
             switch (importType) {
-                case "raw":
+                case 'raw':
                     break;
-                case "texture":
-                case "normal map":
-                    const subAsset = await asset.createSubAsset(name, "texture");
+                case 'texture':
+                case 'normal map':
+                    const subAsset = await asset.createSubAsset(name, 'texture');
                     subAsset.userData.imageSource = asset.source;
                     break;
-                case "texture cube":
-                case "sprite-frame":
+                case 'texture cube':
+                case 'sprite-frame':
                     break;
             }
 

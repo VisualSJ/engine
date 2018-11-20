@@ -47,7 +47,8 @@
         "no-angle-bracket-type-assertion": false,
         "no-eval": false,
         "no-empty": [true, "allow-empty-functions", "allow-empty-catch"],
-        "variable-name": [true, "ban-keywords", "check-format", "allow-pascal-case", "allow-snake-case"]
+        "variable-name": [true, "ban-keywords", "check-format", "allow-pascal-case", "allow-snake-case", "allow-leading-underscore"],
+        "max-classes-per-file": false
         // "space-before-function-paren": [true, "always"]
     },
     "jsRules": {

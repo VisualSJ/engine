@@ -94,7 +94,7 @@ export default class GltfImporter extends Importer {
         const gltfConverter = await GltfImporter.createGltfConverter(asset);
 
         // Fill the swap space for sub-assets' use
-        GltfImporter.fillGltfSwapSpace(asset, { gltfConverter, });
+        GltfImporter.fillGltfSwapSpace(asset, { gltfConverter });
 
         const assetTable: IGltfAssetTable = {};
         asset.userData.assetTable = assetTable;
@@ -169,7 +169,7 @@ class GltfSubAssetImporter extends Importer {
     protected async fetchGltfConverter(asset: Asset) {
         let swapSpace = (asset as any).swapSpace as IGltfAssetSwapSpace;
         if (!swapSpace) {
-            swapSpace = { gltfConverter: await GltfImporter.createGltfConverter(asset), };
+            swapSpace = { gltfConverter: await GltfImporter.createGltfConverter(asset) };
             await GltfImporter.fillGltfSwapSpace(asset, swapSpace);
         }
         return swapSpace.gltfConverter;
@@ -476,7 +476,7 @@ class GltfConverter {
 
             // @ts-ignore
             const primitive = new cc.Primitive();
-            primitive._vertexBundelIndices = [primitiveIndex, ];
+            primitive._vertexBundelIndices = [primitiveIndex ];
             primitive._topology = this._getTopology(gltfPrimitive.mode === undefined ? 4 : gltfPrimitive.mode);
             primitive._indices = indices;
             primitive._indexUnit = indexUnit;
@@ -490,7 +490,7 @@ class GltfConverter {
         mesh._maxPosition = maxPosition;
         mesh._primitives = primitives;
         mesh._vertexBundles = vertexBundles;
-        return { mesh, buffer: bufferBlob.getCombined(), };
+        return { mesh, buffer: bufferBlob.getCombined() };
     }
 
     public createSkeleton(gltfSkin: Skin) {
