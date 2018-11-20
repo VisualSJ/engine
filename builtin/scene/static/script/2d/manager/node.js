@@ -100,8 +100,8 @@ function querySiblingNodeByPosition(uuid, position) {
             const last =
                 index > -1
                     ? node.parent.children[
-                          node.parent.children.length - 1
-                      ]
+                    node.parent.children.length - 1
+                    ]
                     : null;
             return last;
         }
@@ -109,8 +109,8 @@ function querySiblingNodeByPosition(uuid, position) {
             const last =
                 index > -1
                     ? node.parent.children[
-                          node.parent.children.length - 1
-                      ]
+                    node.parent.children.length - 1
+                    ]
                     : null;
             return last;
         }
@@ -161,12 +161,14 @@ async function createNode(uuid, name = 'New Node', dump) {
     await add(node);
 
     // 发送节点修改消息
+    Manager.Ipc.send('broadcast', 'scene:node-created', node._id);
     Manager.Ipc.send('broadcast', 'scene:node-changed', node._parent._id);
 
-    return {
-        uuid: node._id,
-        parentUuid: node._parent._id
-    };
+    return node._id;
+    // return {
+    //     uuid: node._id,
+    //     parentUuid: node._parent._id
+    // };
 }
 
 /**
@@ -259,6 +261,8 @@ async function setProperty(uuid, path, dump) {
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
     }
+
+    return true;
 }
 
 /**

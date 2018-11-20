@@ -96,7 +96,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'setProperty', [
+        return await $scene.forwarding('Node', 'setProperty', [
             options.uuid,
             options.path,
             options.dump,
@@ -152,7 +152,9 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'createNode', [
+
+        // 返回 uuid
+        return await $scene.forwarding('Node', 'createNode', [
             options.parent,
             options.name,
             options.dump,

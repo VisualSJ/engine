@@ -1,0 +1,217 @@
+const db = require('./tree-db');
+
+/**
+ * 不能执行 删除 操作的资源
+ * 以下情况，目前可沿用 canNotDeleteNode 的逻辑判断
+ * @param node
+ */
+exports.canNotDeleteNode = (node: ItreeNode) => {
+    return !node || node.readOnly ? true : false;
+};
+
+/**
+ * 不能执行 复制 操作的资源
+ * @param node
+ */
+exports.canNotCopyNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
+ * 不能执行 重名命 操作的资源
+ * @param node
+ */
+exports.canNotRenameNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
+ * 不能执行 拖动 操作的资源
+ * @param node
+ */
+exports.canNotDragNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
+ * 不能执行 粘贴 操作的资源
+ * @param node
+ */
+exports.canNotPasteNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
+ * 重置某些属性，比如全部折叠或全部展开
+ * @param obj
+ * @param props
+ */
+exports.resetTreeProps = (props: any, tree: ItreeNode[] = db.nodesTree.children) => {
+    tree.forEach((node: ItreeNode) => {
+        for (const k of Object.keys(props)) {
+            const uuid = node.uuid;
+            // @ts-ignore
+            node[k] = props[k];
+        }
+
+        if (node.children) {
+            exports.resetTreeProps(props, node.children);
+        }
+    });
+};
+
+/**
+ * 获取一组节点的位置信息
+ * 节点对象 node,
+ * 对象所在数组索引 index，
+ * 所在数组 array，
+ * 所在数组其所在的对象 object
+ * 返回 [node, index, array, object]
+ *
+ * 找不到节点 返回 []
+ * @param arr
+ * @param uuid
+ */
+exports.getGroupFromTree = (obj: ItreeNode, value: string = '', key: string = 'uuid'): any => {
+    let rt = [];
+
+    if (!obj || !obj.children) {
+        return [];
+    }
+    // @ts-ignore
+    if (obj[key] === value) { // 次要寻找包体 自身对象，比如根节点自身
+        return [obj];
+    }
+
+    let arr = obj.children; // 主要寻找包体是 .children
+    if (Array.isArray(obj)) {
+        arr = obj;
+    }
+    for (let i = 0, ii = arr.length; i < ii; i++) {
+        const one = arr[i];
+        if (!one) { // 容错处理，在 change 和 add 后，children 存在空值
+            continue;
+        }
+        // @ts-ignore
+        if (one[key] === value) { // 全等匹配
+            return [one, i, arr, obj]; // 找到后返回的数据格式
+        }
+
+        if (one.children && one.children.length !== 0) { // 如果还有 children 的继续迭代查找
+            rt = exports.getGroupFromTree(one, value, key);
+
+            if (rt.length > 0) { // 找到了才返回，找不到，继续循环
+                return rt;
+            }
+        }
+    }
+
+    return rt;
+};
+
+/**
+ * 在树形中找单个节点
+ */
+exports.getNodeFromTree = (uuid: string) => {
+    return exports.getGroupFromTree(db.nodesTree, uuid)[0];
+};
+
+/**
+ * 更快速地找到单个资源节点
+ */
+exports.getNodeFromMap = (uuid = '') => {
+    for (const [top, node] of db.nodesMap) {
+        if (uuid === node.uuid) {
+            return node;
+        }
+    }
+    return;
+};
+
+/**
+ * 找到当前节点及其前后节点
+ * [current, prev, next]
+ */
+exports.getSiblingsFromMap = (uuid = '') => {
+    const nodes = Array.from(db.nodesMap.values());
+    const length = nodes.length;
+    let current = nodes[0];
+    let next = nodes[1];
+    let prev = nodes[length - 1];
+    let i = 0;
+
+    for (const [top, json] of db.nodesMap) {
+        if (uuid === json.uuid) {
+            current = json;
+            next = nodes[i + 1];
+            if (i + 1 >= length) {
+                next = nodes[0];
+            }
+            prev = nodes[i - 1];
+            if (i - 1 < 0) {
+                prev = nodes[length - 1];
+            }
+            break;
+        }
+        i++;
+    }
+    return [current, prev, next];
+};
+
+/**
+ * 展开选中项并处于视角中
+ */
+exports.selectsIntoView = () => {
+    exports.scrollIntoView(db.vm.getFirstSelect());
+};
+
+/**
+ * 滚动节点到可视范围内
+ * @param uuid
+ */
+exports.scrollIntoView = (uuid: string) => {
+    if (!uuid) {
+        return;
+    }
+    // 情况 A ：判断是否已在展开的节点中，
+    const one = exports.getNodeFromMap(uuid);
+    if (one) { // 如果 A ：存在，
+        // 情况 B ：判断是否在可视范围，
+        const min = db.vm.scrollTop - db.nodeHeight;
+        const max = db.vm.scrollTop + db.vm.viewHeight - db.nodeHeight;
+        if (min < one.top && one.top < max) {
+            return; // 如果 B：是，则终止
+        } else { // 如果 B：不是，则滚动到可视的居中范围内
+            const top = one.top - db.vm.viewHeight / 2;
+            db.vm.$parent.$refs.viewBox.scrollTo(0, top);
+        }
+    } else { // 如果 A ：不存在，展开其父级节点，迭代循环展开其祖父级节点，滚动到可视的居中范围内
+        if (uuid === db.nodesTree.uuid) { // 根节点的除外
+            return;
+        }
+
+        if (exports.expandNode(uuid)) {
+            db.vm.changeData();
+
+            // setTimeOut 是为了避免死循环
+            setTimeout(() => {
+                exports.scrollIntoView(uuid);
+            }, 200);
+        }
+    }
+};
+
+/**
+ * 展开树形节点
+ */
+exports.expandNode = (uuid: string): boolean => {
+    const [node, index, arr, parent] = exports.getGroupFromTree(db.nodesTree, uuid);
+    if (!node) {
+        return false;
+    }
+    node.isExpand = true;
+    if (parent && parent.uuid) {
+        return exports.expandNode(parent.uuid);
+    }
+    return true;
+};

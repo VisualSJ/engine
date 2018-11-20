@@ -1,11 +1,10 @@
 <ui-drag-item class="tree-node" type="node"
     :draggable="draggable"
+    :state="state"
     :active="selects.indexOf(node.uuid) !== -1"
     :style="{ paddingLeft: node.left + 'px' }"
     :class="{'parent':node.isParent}"
     :expand="node.isExpand"
-    :state="node.state"
-    :invalid="node.invalid"
     @mousedown="mouseDown($event, node)"
     @click="click($event, node)"
     @dragstart="dragStart($event, node)" 
@@ -19,7 +18,7 @@
     ></i>
 
     <label class="name"
-        v-if="node.state!=='input'"
+        v-if="state!=='input'"
     >{{node.name}}</label>
 
     <input class="rename" ref='input'
@@ -31,7 +30,7 @@
     >
     
     <section class="loading"
-        v-if="node.state==='loading'"
+        v-if="state==='loading'"
     >
         <ui-loading></ui-loading>
     </section>

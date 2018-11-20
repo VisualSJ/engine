@@ -2,6 +2,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+const context = require('./tree-node-context');
+
 export const name = 'tree-node';
 
 export const template = readFileSync(
@@ -12,35 +14,61 @@ export const template = readFileSync(
 export const props: string[] = [
     'node',
     'selects',
+    'renameUuid',
 ];
 
 export function data() {
     return {
-        draggable: true,
+        // state: ''
     };
 }
 
-export const watch = {
-    'node.state'() {
+export const computed = {
+    // @ts-ignore
+    state() {
         // @ts-ignore
-        this.$nextTick(() => {
+        const node = this.node;
+
+        if (!node) {
+            return '';
+        }
+
+        // @ts-ignore
+        if (this.renameUuid === node.uuid) {
+            // @ts-ignore 选中该节点
+            return 'input';
+        }
+
+        return node.state;
+    },
+    draggable() {
+        // @ts-ignore
+        const node = this.node;
+
+        // @ts-ignore
+        if (this.state !== '' || node.readOnly) {
+            return 'false';
+        }
+
+        return 'true';
+    }
+};
+
+export const watch = {
+    state() {
+        // @ts-ignore
+        const node = this.node;
+
+        // @ts-ignore
+        if (this.state === 'input') {
             // @ts-ignore
-            const node = this.node;
-            // @ts-ignore
-            this.draggable = (node.state !== '' || node.readOnly) ? false : true;
-            // @ts-ignore
-            if (node.state === 'input') {
-                // @ts-ignore 选中该节点
-                this.$emit('ipcSingleSelect', node.uuid);
+            this.$nextTick(() => {
                 // @ts-ignore
                 this.$refs.input.focus();
                 // @ts-ignore
-                this.$refs.input.setSelectionRange(0, node.name.lastIndexOf('.'));
-
-                // @ts-ignore 父级的 state 也处于 input
-                this.$parent.state = 'input';
-            }
-        });
+                this.$refs.input.setSelectionRange(0, node.name.length);
+            });
+        }
     }
 };
 
@@ -57,71 +85,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        if (node.readOnly) { // 不需要右击菜单的情况
-            return;
-        }
-
-        const self = this;
-
-        Editor.Menu.popup({
-            // @ts-ignore
-            x: event.pageX,
-            // @ts-ignore
-            y: event.pageY,
-            menu: [
-                {
-                    label: Editor.I18n.t('hierarchy.menu.newNode'),
-                    submenu: [
-                        {
-                            label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
-                            click() {
-                                // @ts-ignore
-                                self.$emit('ipcAdd', { type: 'emptyNode' }, node.uuid);
-                            }
-                        }
-                    ]
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.copy'),
-                    click() {
-                        // @ts-ignore
-                        self.$emit('copy', node.uuid);
-                    }
-                },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.paste'),
-                    click() {
-                        // @ts-ignore
-                        self.$emit('paste', node.uuid);
-                    }
-                },
-                { type: 'separator' },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.rename'),
-                    click(event: Event) {
-                        // @ts-ignore
-                        self.rename(node);
-                    }
-                },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.delete'),
-                    click() {
-                        // @ts-ignore
-                        self.$emit('ipcDelete', node.uuid);
-                    }
-                },
-                { type: 'separator' },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.showUuid'),
-                    click() {
-                        console.info(`UUID: ${node.uuid}`);
-                    },
-                },
-            ]
-        });
+        context.menu(this, node);
     },
     /**
      * 选中某个节点
@@ -316,10 +280,5 @@ export const methods = {
 };
 
 export function mounted() {
-    // @ts-ignore
-    const node = this.node;
-    if (node.state !== '' || node.readOnly) {
-        // @ts-ignore
-        this.draggable = false;
-    }
+
 }

@@ -18,10 +18,10 @@ const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
 
 let uuid2node = {};
 
- /**
-  * 传入一个场景，将内部的节点全部缓存
-  * @param {*} scene
-  */
+/**
+ * 传入一个场景，将内部的节点全部缓存
+ * @param {*} scene
+ */
 function init(scene) {
     scene && walk(scene);
 }
@@ -102,6 +102,7 @@ function setProperty(uuid, path, dump) {
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
     }
+    return true;
 }
 
 /**
@@ -266,13 +267,14 @@ async function createNode(uuid, name = 'New Node', dump) {
     await add(node);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
     Manager.Ipc.send('broadcast', 'scene:node-created', node.uuid);
+    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
 
-    return {
-        uuid: node.uuid,
-        parentUuid: node._parent.uuid,
-    };
+    return node.uuid;
+    // return {
+    //     uuid: node.uuid,
+    //     parentUuid: node._parent.uuid,
+    // };
 }
 
 /**
@@ -371,7 +373,7 @@ let tempQuat = cc.quat();
 let tempVec3 = cc.v3();
 
 // return [bl, tr, tr, br]
-Utils.getObbFromRect = function(mat, rect, out_bl, out_tl, out_tr, out_br) {
+Utils.getObbFromRect = function (mat, rect, out_bl, out_tl, out_tr, out_br) {
     let x = rect.x;
     let y = rect.y;
     let width = rect.width;
@@ -398,12 +400,12 @@ Utils.getObbFromRect = function(mat, rect, out_bl, out_tl, out_tr, out_br) {
     out_br.x = xa + yc + tx;
     out_br.y = xb + yd + ty;
 
-    return [out_bl, out_tl, out_tr, out_br, ];
+    return [out_bl, out_tl, out_tr, out_br,];
 };
 
-Utils.getWorldBounds = function(node, size, out) {
+Utils.getWorldBounds = function (node, size, out) {
     size = size || cc.size(0, 0);
-    let width  = size.width;
+    let width = size.width;
     let height = size.height;
     let rect = new cc.Rect(0, 0, width, height);
     node.getWorldMatrix(tempMatrix);
@@ -412,7 +414,7 @@ Utils.getWorldBounds = function(node, size, out) {
     if (out) {
         out.x = rect.x;
         out.y = rect.y;
-        out.width  = rect.width;
+        out.width = rect.width;
         out.height = rect.height;
         return out;
     } else {
@@ -420,9 +422,9 @@ Utils.getWorldBounds = function(node, size, out) {
     }
 };
 
-Utils.getWorldOrientedBounds = function(node, size, out_bl, out_tl, out_tr, out_br) {
+Utils.getWorldOrientedBounds = function (node, size, out_bl, out_tl, out_tr, out_br) {
     size = size || cc.size(0, 0);
-    let width  = size.width;
+    let width = size.width;
     let height = size.height;
     let rect = new cc.Rect(0, 0, width, height);
 
@@ -430,7 +432,7 @@ Utils.getWorldOrientedBounds = function(node, size, out_bl, out_tl, out_tr, out_
     return Utils.getObbFromRect(tempMatrix, rect, out_bl, out_tl, out_tr, out_br);
 };
 
-Utils.getScenePosition = function(node) {
+Utils.getScenePosition = function (node) {
     let scene = cc.director.getScene();
     if (!scene) {
         cc.error('Can not access scenePosition if no running scene');
@@ -440,7 +442,7 @@ Utils.getScenePosition = function(node) {
     return node.getWorldPosition(tempVec3);
 };
 
-Utils.setScenePosition = function(node, value) {
+Utils.setScenePosition = function (node, value) {
     let scene = cc.director.getScene();
     if (!scene) {
         cc.error('Can not access scenePosition if no running scene');
@@ -450,7 +452,7 @@ Utils.setScenePosition = function(node, value) {
     node.setWorldPosition(value);
 };
 
-Utils.getSceneRotation = function(node) {
+Utils.getSceneRotation = function (node) {
     let scene = cc.director.getScene();
     if (!scene) {
         cc.error('Can not access sceneRotation if no running scene');
@@ -460,7 +462,7 @@ Utils.getSceneRotation = function(node) {
     return Utils.getWorldRotation(node);
 };
 
-Utils.setSceneRotation = function(node, value) {
+Utils.setSceneRotation = function (node, value) {
     let scene = cc.director.getScene();
     if (!scene) {
         cc.error('Can not access sceneRotation if no running scene');
@@ -470,11 +472,11 @@ Utils.setSceneRotation = function(node, value) {
     Utils.setWorldRotation(value);
 };
 
-Utils.getWorldPosition = function(node) {
+Utils.getWorldPosition = function (node) {
     return node.getWorldPosition();
 };
 
-Utils.setWorldPosition = function(node, value) {
+Utils.setWorldPosition = function (node, value) {
     if (value instanceof cc.Vec3) {
         node.setWorldPosition(value);
     } else {
@@ -482,11 +484,11 @@ Utils.setWorldPosition = function(node, value) {
     }
 };
 
-Utils.getWorldRotation = function(node) {
+Utils.getWorldRotation = function (node) {
     return node.getWorldRotation(tempQuat);
 };
 
-Utils.setWorldRotation = function(node, value) {
+Utils.setWorldRotation = function (node, value) {
     if (value instanceof cc.Quat) {
         node.setWorldPosition(value);
     } else {
@@ -494,7 +496,7 @@ Utils.setWorldRotation = function(node, value) {
     }
 };
 
-Utils.getWorldScale = function(node) {
+Utils.getWorldScale = function (node) {
     // TODO adaptation to use vec3
     return node.getWorldScale(tempVec3);
 };
@@ -505,7 +507,7 @@ Utils.getWorldScale = function(node) {
  * @param {Number} flag - 只能包含一个标记, 不能是复合的 mask
  * @returns {boolean}
  */
-Utils._hasFlagInComponents = function(node, flag) {
+Utils._hasFlagInComponents = function (node, flag) {
     let comps = node._components;
     for (let c = 0, len = comps.length; c < len; ++c) {
         let comp = comps[c];
@@ -539,7 +541,7 @@ function invokeOnDestroyRecursively(node) {
     }
 }
 
-Utils._destroyForUndo = function(nodeOrComp, recordFunc) {
+Utils._destroyForUndo = function (nodeOrComp, recordFunc) {
     if (cc.Node.isNode(nodeOrComp)) {
         // invoke all callbacks of components
         if (nodeOrComp._activeInHierarchy) {
@@ -556,7 +558,7 @@ Utils._destroyForUndo = function(nodeOrComp, recordFunc) {
     Editor.Ipc.sendToAll('scene:delete-nodes-in-scene');
 };
 
-Utils.getNodePath = function(node) {
+Utils.getNodePath = function (node) {
     let path = '';
     while (node && !(node instanceof cc.Scene)) {
         if (path) {
@@ -570,7 +572,7 @@ Utils.getNodePath = function(node) {
 };
 
 var stack = new Array(32);
-Utils.getChildUuids = function(root, insertRoot) {
+Utils.getChildUuids = function (root, insertRoot) {
     var res = [];
     if (insertRoot) {
         res.push(root.uuid);
@@ -605,7 +607,7 @@ Utils.getChildUuids = function(root, insertRoot) {
  * @param {*} uuid
  * @param {*} callback
  */
-Utils.createNodeFromAsset = function(uuid, callback) {
+Utils.createNodeFromAsset = function (uuid, callback) {
     const Sandbox = require('../lib/sandbox');
     cc.AssetLibrary.queryAssetInfo(uuid, (error, url, isRaw, assetType) => {
         if (error) {
@@ -664,7 +666,7 @@ Utils.createNodeFromAsset = function(uuid, callback) {
  * @param {*} classID
  * @param {*} callback
  */
-Utils.createNodeFromClass = function(classID, callback) {
+Utils.createNodeFromClass = function (classID, callback) {
     let node = new cc.Node();
     let error = null;
 
@@ -684,7 +686,7 @@ Utils.createNodeFromClass = function(classID, callback) {
     callback && callback(error, node);
 };
 
-Utils.makeVec3InPrecision = function(inVec3, precision) {
+Utils.makeVec3InPrecision = function (inVec3, precision) {
     inVec3.x = Editor.Math.toPrecision(inVec3.x, precision);
     inVec3.y = Editor.Math.toPrecision(inVec3.y, precision);
     inVec3.z = Editor.Math.toPrecision(inVec3.z, precision);
@@ -692,27 +694,27 @@ Utils.makeVec3InPrecision = function(inVec3, precision) {
     return inVec3;
 };
 
-Utils.getWorldPosition3D = function(node) {
+Utils.getWorldPosition3D = function (node) {
     return node.getWorldPosition();
 };
 
-Utils.setWorldPosition3D = function(node, value) {
+Utils.setWorldPosition3D = function (node, value) {
     node.setWorldPosition(value);
 };
 
-Utils.getWorldRotation3D = function(node) {
+Utils.getWorldRotation3D = function (node) {
     return node.getWorldRotation();
 };
 
-Utils.setWorldRotation3D = function(node, value) {
+Utils.setWorldRotation3D = function (node, value) {
     node.setWorldRotation(value);
 };
 
-Utils.getEulerAngles = function(node) {
+Utils.getEulerAngles = function (node) {
     return cc.vmath.quat.toEuler(tempQuat, node.getRotation(tempVec3));
 };
 
-Utils.setEulerAngles = function(node, value) {
+Utils.setEulerAngles = function (node, value) {
     node.setRotationFromEuler(value.x, value.y, value.z);
 };
 

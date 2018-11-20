@@ -4,6 +4,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const Vue = require('vue/dist/vue.js');
+const db = require('./components/panel-db');
+const context = require('./components/panel-context');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -131,8 +133,6 @@ export const messages = {
 
     /**
      * 节点被修改
-     *
-     * @param event
      * @param uuid
      */
     async 'scene:node-changed'(uuid: string) {
@@ -142,9 +142,10 @@ export const messages = {
         }
         vm.change(uuid);
     },
+
     /**
      * 创建一个新节点
-     * @param uuid 当前选中节点，即新节点的父节点uuid
+     * @param uuid
      */
     async 'scene:node-created'(uuid: string) {
         // 没有初始化的时候，无需处理添加消息
@@ -153,6 +154,7 @@ export const messages = {
         }
         vm.add(uuid);
     },
+
     /**
      * 删除节点
      * @param uuid 要被删除的节点
@@ -164,6 +166,7 @@ export const messages = {
         }
         vm.delete(uuid);
     },
+
     /**
      * 选中了某个物体
      */
@@ -189,7 +192,7 @@ export async function ready() {
     // @ts-ignore
     panel = this;
 
-    vm = new Vue({
+    db.vm = vm = new Vue({
         el: panel.$.content,
         components: {
             tree: require('./components/tree'),
@@ -253,7 +256,6 @@ export async function ready() {
              */
             clear() {
                 vm.$refs.tree.clear();
-                vm.$refs.search.value = '';
                 vm.ready = false;
             },
             /**
@@ -301,20 +303,7 @@ export async function ready() {
              * 创建按钮的弹出菜单
              */
             popupNew(event: Event) {
-                Editor.Menu.popup({
-                    // @ts-ignore
-                    x: event.pageX,
-                    // @ts-ignore
-                    y: event.pageY,
-                    menu: [
-                        {
-                            label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
-                            click() {
-                                vm.$refs.tree.ipcAdd({ type: 'node' });
-                            }
-                        },
-                    ]
-                });
+                context.popupNew(event);
             },
             /**
              * 面板的右击菜单
@@ -327,28 +316,7 @@ export async function ready() {
                     return;
                 }
 
-                const self = this;
-
-                Editor.Menu.popup({
-                    // @ts-ignore
-                    x: event.pageX,
-                    // @ts-ignore
-                    y: event.pageY,
-                    menu: [
-                        {
-                            label: Editor.I18n.t('hierarchy.menu.newNode'),
-                            submenu: [
-                                {
-                                    label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
-                                    click() {
-                                        // @ts-ignore
-                                        vm.$refs.tree.ipcAdd({ type: 'node' });
-                                    }
-                                },
-                            ]
-                        },
-                    ]
-                });
+                context.popupContext(event);
             },
             /**
              * 调整可视区域高度

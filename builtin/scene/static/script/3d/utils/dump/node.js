@@ -23,7 +23,8 @@ function dump(node) {
             return componentUtils.dump(comp);
         }),
 
-        parent: { type: 'cc.Node', value: { uuid: node.parent.uuid, }, },
+        // 顶层节点 scene 的 parent = null
+        parent: { type: 'cc.Node', value: { uuid: node.parent && node.parent.uuid || '', }, },
         children: {
             type: 'Array',
             itemType: 'cc.Node',

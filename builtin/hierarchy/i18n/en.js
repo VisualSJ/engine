@@ -19,5 +19,9 @@ module.exports = {
         delete: 'Delete',
         rename: 'Rename',
         showUuid: 'Show Node UUID and PAth',
+    },
+
+    operate: {
+        renameFail: 'Rename Fail'
     }
 };

@@ -3,26 +3,13 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-let vm: any = null;
+const db = require('./tree-db');
+const utils = require('./tree-utils');
 
-const nodeHeight: number = 20; // 配置每个节点的高度，需要与css一致
-const iconWidth: number = 18; // 树形节点 icon 的宽度
-const padding: number = 4; // 树形头部的间隔，为了保持美观
+let vm: any = null;
 
 let timeOutId: any;
 let isRenderingTree: boolean = false; // 正在重新渲染树形
-
-/**
- * 考虑到 key 是数字且要直接用于运算，Map 格式的效率会高一些
- * 将所有有展开的节点按照 key = position.top 排列，value = ItreeNode
- * 注意：仅包含有展开显示的节点
- */
-const nodesMap: Map<number, ItreeNode> = new Map();
-
-let treeData: any; // 树形结构的数据，含 children
-
-const trash: any = {}; // 回收站，主要用于移动中，异步的先从一个父级删除节点，再添加另一个父级的过程
-
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
@@ -42,6 +29,8 @@ export function data() {
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
         folds: {}, // 用于记录已展开的节点
+        renameUuid: '', // 需要 rename 的节点的 url，只有一个
+        intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
@@ -54,6 +43,13 @@ export function data() {
 }
 
 export const watch = {
+    /**
+     * 定位显示资源
+     */
+    intoView() {
+        // @ts-ignore
+        utils.scrollIntoView(vm.intoView);
+    },
     /**
      * viewHeight 变化，刷新树形
      */
@@ -85,7 +81,7 @@ export const watch = {
         // 重新定位到选中项
         vm.$nextTick(() => {
             if (vm.search === '') {
-                selectsIntoView();
+                utils.selectsIntoView();
             }
         });
     },
@@ -105,7 +101,7 @@ export const watch = {
 
 export function mounted() {
     // @ts-ignore
-    vm = this;
+    db.vm = vm = this;
 
     // @ts-ignore
     this.$el.addEventListener('dragenter', () => {
@@ -125,7 +121,7 @@ export function mounted() {
             data = JSON.parse(dragData);
         }
 
-        data.to = treeData.uuid; // cc.Scene 根节点
+        data.to = db.nodesTree.uuid; // cc.Scene 根节点
         data.insert = 'inside';
         vm.drop(data);
     });
@@ -145,7 +141,7 @@ export const methods = {
      */
     clear() {
         // @ts-ignore
-        treeData = null;
+        db.reset();
         this.changeData();
     },
 
@@ -153,19 +149,28 @@ export const methods = {
      * 刷新树形
      */
     async refresh() {
-        treeData = await Editor.Ipc.requestToPackage('scene', 'query-node-tree');
-
-        if (!treeData) { // 容错处理，数据可能为空
+        await db.refresh();
+        if (!db.nodesTree) { // 容错处理，数据可能为空
             return;
         }
 
         this.changeData();
 
-        vm.$nextTick(() => {
-            selectsIntoView();
-        });
-        // TODO: scene ready 会触发三次
-        // console.log(treeData);
+        // @ts-ignore 准备重新定位
+        let intoView = this.intoView;
+        // @ts-ignore
+        this.intoView = '';
+        // @ts-ignore
+        const renameUuid = this.renameUuid;
+        if (renameUuid !== '') {
+            const node = utils.getNodeFromTree(renameUuid);
+            if (node) {
+                intoView = node.uuid;
+            }
+        }
+
+        // @ts-ignore
+        this.intoView = intoView;
     },
 
     /**
@@ -175,7 +180,7 @@ export const methods = {
         vm.allExpand = !vm.allExpand;
 
         // 修改所有树形节点的数据
-        resetTreeProps({ isExpand: vm.allExpand });
+        utils.resetTreeProps({ isExpand: vm.allExpand });
 
         this.changeData();
     },
@@ -185,7 +190,7 @@ export const methods = {
      */
     allSelect() {
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        for (const [top, node] of nodesMap) {
+        for (const [top, node] of db.nodesMap) {
             Editor.Ipc.sendToPackage('selection', 'select', 'node', node.uuid);
         }
     },
@@ -198,10 +203,10 @@ export const methods = {
     select(uuid: string, show = false) {
         if (!vm.selects.includes(uuid)) {
             vm.selects.push(uuid);
-            vm.current = getNodeFromMap(uuid);
+            vm.current = utils.getNodeFromMap(uuid);
 
             if (show) {
-                selectsIntoView();
+                utils.selectsIntoView();
             }
             return vm.current;
         }
@@ -240,13 +245,13 @@ export const methods = {
                 if (uuids.length === 0) {
                     return;
                 }
-                const one = getNodeFromMap(uuid); // 当前给定的元素
-                const first = getNodeFromMap(uuids[0]); // 已选列表中的第一个元素
+                const one = utils.getNodeFromMap(uuid); // 当前给定的元素
+                const first = utils.getNodeFromMap(uuids[0]); // 已选列表中的第一个元素
                 if (one !== undefined && first !== undefined) {
                     const selects: string[] = [];
                     const min = one.top < first.top ? one.top : first.top;
                     const max = min === one.top ? first.top : one.top;
-                    for (const [top, json] of nodesMap) {
+                    for (const [top, json] of db.nodesMap) {
                         if (min <= top && top <= max) {
                             selects.push(json.uuid);
                         }
@@ -293,18 +298,10 @@ export const methods = {
         // 获取该节点最新数据
         const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
         // 更新当前数据
-        const newNode = addNodeIntoTree(dumpData);
+        const newNode = db.addNodeIntoTree(dumpData);
 
-        // @ts-ignore
-        if (this.state === '') {
-            // @ts-ignore
-            this.$nextTick(() => {
-                // @ts-ignore 检查是否需要重名命
-                if (this.newNodeNeedToRename && !newNode.readOnly) {
-                    newNode.state = 'input';
-                }
-            });
-        }
+        // 触发节点数据已变动
+        vm.changeData();
     },
 
     /**
@@ -312,9 +309,14 @@ export const methods = {
      * @param node
      * @param json
      */
-    ipcAdd(json: IaddNode, uuid: string) {
+    async ipcAdd(json: IaddNode, uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
+        }
+
+        const parent = utils.getNodeFromTree(uuid);
+        if (utils.canNotPasteNode(parent)) {
+            return;
         }
 
         let name = 'New Node';
@@ -325,13 +327,12 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
         // 发送创建节点
-        Editor.Ipc.sendToPanel('scene', 'create-node', {
+        vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
             parent: uuid,
             name,
         });
 
-        // @ts-ignore 新建成功后需要 rename
-        this.newNodeNeedToRename = true;
+        parent.state = '';
     },
 
     /**
@@ -343,7 +344,14 @@ export const methods = {
         // 获取该节点最新数据
         const newData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
         // 更新当前数据
-        changeNodeData(newData);
+        if (Editor.Project.type === '3d') {
+            db.changeNode3D(newData);
+        }
+        if (Editor.Project.type === '2d') {
+            db.changeNode2D(newData);
+        }
+
+        vm.changeData();
     },
 
     /**
@@ -351,7 +359,7 @@ export const methods = {
      */
     delete(uuid: string, parentUuid: string) {
         const throwToTrash = (node: ItreeNode) => {
-            trash[node.uuid] = node;
+            db.trash[node.uuid] = node;
             if (Array.isArray(node.children)) {
                 node.children.forEach((child: ItreeNode) => {
                     throwToTrash(child);
@@ -359,13 +367,13 @@ export const methods = {
             }
         };
 
-        let arr = getGroupFromTree(treeData, uuid);
+        let arr = utils.getGroupFromTree(db.nodesTree, uuid);
         if (arr.length === 0) { // 现有树形中没有，从回收站再找找
-            const node = trash[uuid];
+            const node = db.trash[uuid];
             if (node) {
-                const parentNode = trash[node.parentUuid];
+                const parentNode = db.trash[node.parentUuid];
                 if (parentNode) {
-                    arr = getGroupFromTree(parentNode, uuid);
+                    arr = utils.getGroupFromTree(parentNode, uuid);
                 }
             }
         }
@@ -394,7 +402,7 @@ export const methods = {
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
         if (uuid && !vm.selects.includes(uuid)) { // 如果该节点没有被选中，则只是删除此单个
-            const node = getValidNode(uuid);
+            const node = utils.getNodeFromTree(uuid);
             if (!node) { // 删除的节点不可用，不允许删除
                 return;
             }
@@ -403,7 +411,7 @@ export const methods = {
             Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid });
         } else { // 如果该节点是被选中了，表明要删除所有选中项
             vm.selects.forEach((uuid: string) => {
-                const node = getValidNode(uuid);
+                const node = utils.getNodeFromTree(uuid);
                 if (node) {
                     Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
                     Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid });
@@ -419,7 +427,7 @@ export const methods = {
      * @param uuid
      */
     toggle(uuid: string, value: boolean) {
-        const one = getNodeFromMap(uuid); // 获取该节点的数据，包含子节点
+        const one = utils.getNodeFromMap(uuid); // 获取该节点的数据，包含子节点
         if (one && one.isParent) {
             one.isExpand = value !== undefined ? value : !one.isExpand;
 
@@ -436,7 +444,7 @@ export const methods = {
      */
     checkAllToggleStatus() {
         let allCollapse: boolean = true;
-        treeData.children.forEach((node: ItreeNode) => {
+        db.nodesTree.children.forEach((node: ItreeNode) => {
             if (node.isParent && node.isExpand) {
                 allCollapse = false;
             }
@@ -458,7 +466,7 @@ export const methods = {
         } else if (direction === 'left') {
             this.toggle(uuid, false);
         } else {
-            const siblings = getSiblingsFromMap(uuid);
+            const siblings = utils.getSiblingsFromMap(uuid);
             let current;
             switch (direction) {
                 case 'up':
@@ -488,7 +496,7 @@ export const methods = {
         const length = uuids.length;
         const last = uuids[length - 1];
 
-        const siblings = getSiblingsFromMap(last);
+        const siblings = utils.getSiblingsFromMap(last);
         let current;
         switch (direction) {
             case 'up':
@@ -516,13 +524,13 @@ export const methods = {
         if (uuids.length === 0) {
             return;
         }
-        const one = getNodeFromMap(uuid); // 当前给定的元素
-        const first = getNodeFromMap(uuids[0]); // 已选列表中的第一个元素
+        const one = utils.getNodeFromMap(uuid); // 当前给定的元素
+        const first = utils.getNodeFromMap(uuids[0]); // 已选列表中的第一个元素
         if (one !== undefined && first !== undefined) {
             const selects: string[] = [];
             const min = one.top < first.top ? one.top : first.top;
             const max = min === one.top ? first.top : one.top;
-            for (const [top, json] of nodesMap) {
+            for (const [top, json] of db.nodesMap) {
                 if (min <= top && top <= max) {
                     selects.push(json.uuid);
                 }
@@ -543,19 +551,11 @@ export const methods = {
      * @param node
      * @param name
      */
-    rename(node: ItreeNode, name = '') {
-        // @ts-ignore 还原需要 rename 的状态，手动新增节点的时候会先标注为 true
-        this.newNodeNeedToRename = false;
+    async rename(node: ItreeNode, name = '') {
+        // @ts-ignore 清空需要 rename 的节点
+        this.renameUuid = '';
 
-        // 重置状态，避免 blur, click 冲突，导致不能选中节点
-        setTimeout(() => {
-            // @ts-ignore
-            this.state = '';
-        }, 500);
-
-        const one = getValidNode(node.uuid); // 获取该节点的数据
-
-        if (!one || name === '' || name === node.name) {
+        if (utils.canNotRenameNode(node) || name === '' || name === node.name) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
             node.state = '';
             return;
@@ -563,8 +563,9 @@ export const methods = {
 
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         // 重名命节点
-        Editor.Ipc.sendToPackage('scene', 'set-property', { // 发送修改数据
+        const isSuccess = await Editor.Ipc.requestToPackage('scene', 'set-property', { // 发送修改数据
             uuid: node.uuid,
             path: 'name',
             dump: {
@@ -573,7 +574,15 @@ export const methods = {
             },
         });
 
-        node.state = 'loading'; // 显示 loading 效果
+        if (isSuccess) {
+            node.state = 'loading'; // 显示 loading 效果
+        } else {
+            Editor.Dialog.show({
+                type: 'error',
+                message: Editor.I18n.t('hierarchy.operate.renameFail')
+            });
+            node.state = '';
+        }
     },
 
     /**
@@ -587,19 +596,19 @@ export const methods = {
             // @ts-ignore
             node = {
                 // @ts-ignore
-                top: this.$el.lastElementChild.offsetTop - padding,
-                left: padding
+                top: this.$el.lastElementChild.offsetTop - db.padding,
+                left: db.padding
             };
         } else {
             // @ts-ignore
-            node = getNodeFromMap(uuid);
+            node = utils.getNodeFromMap(uuid);
         }
 
-        let top = node.top + padding;
-        let height = nodeHeight;
+        let top = node.top + db.padding;
+        let height = db.nodeHeight;
         let left = node.left;
         if (node && node.isParent === false) { // 末级节点
-            left = node.left + iconWidth - padding;
+            left = node.left + db.iconWidth - db.padding;
         }
 
         switch (position) {
@@ -611,7 +620,7 @@ export const methods = {
                 if (node.isParent) {
                     top += node.height;
                 } else {
-                    top += nodeHeight;
+                    top += db.nodeHeight;
                 }
                 break;
         }
@@ -642,7 +651,7 @@ export const methods = {
             return;
         }
 
-        const [toNode, toIndex, toArr, toParent] = getGroupFromTree(treeData, json.to); // 将被注入数据的对象
+        const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
 
         const uuids = json.from.split(',');
         // 保存历史记录
@@ -650,7 +659,7 @@ export const methods = {
 
         // 多节点的移动，根据现有排序的顺序执行
         const groups: any[] = uuids.map((uuid: string) => {
-            return getGroupFromTree(treeData, uuid);
+            return utils.getGroupFromTree(db.nodesTree, uuid);
         }).filter(Boolean).sort((a, b) => {
             return a[0].top - b[0].top;
         });
@@ -660,7 +669,7 @@ export const methods = {
             (async (group) => {
                 const [fromNode, fromIndex, fromArr, fromParent] = group;
 
-                const isSubChild = getGroupFromTree(fromNode, json.to);
+                const isSubChild = utils.getGroupFromTree(fromNode, json.to);
                 if (isSubChild[0]) { // toNode 节点是 fromNode 的子集，所以父不能移到子里面
                     return;
                 }
@@ -674,7 +683,7 @@ export const methods = {
                 // @ts-ignore
                 if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
                     // @ts-ignore
-                    affectNode = getNodeFromMap(fromParent.uuid); // 元素的父级
+                    affectNode = utils.getNodeFromMap(fromParent.uuid); // 元素的父级
 
                     offset = toIndex - fromIndex; // 目标索引减去自身索引
                     if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
@@ -700,7 +709,7 @@ export const methods = {
                     // 再开始移动
                     if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
                         // @ts-ignore
-                        affectNode = getNodeFromMap(toNode.uuid); // 元素自身
+                        affectNode = utils.getNodeFromMap(toNode.uuid); // 元素自身
                         Editor.Ipc.sendToPackage('scene', 'set-property', {
                             uuid: fromNode.uuid,
                             path: 'parent',
@@ -711,7 +720,7 @@ export const methods = {
                         });
                     } else { // 跨级插入 'before', 'after'
                         // @ts-ignore
-                        affectNode = getNodeFromMap(toParent); // 元素的父级
+                        affectNode = utils.getNodeFromMap(toParent); // 元素的父级
                         await Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
                             uuid: fromNode.uuid,
                             path: 'parent',
@@ -750,7 +759,7 @@ export const methods = {
      * @param uuid
      */
     lock(uuid: string) {
-        const one = getGroupFromTree(treeData, uuid)[0]; // 获取该节点的数据，包含子节点
+        const one = utils.getGroupFromTree(db.nodesTree, uuid)[0]; // 获取该节点的数据，包含子节点
         if (one) {
             // TODO 是否需要 ipc scene 修改数据
             one.isLock = !one.isLock;
@@ -788,7 +797,7 @@ export const methods = {
         async function _forEach(uuids: string[], parent: string) {
             // 多节点的复制，根据现有排序的顺序执行
             const nodes: any[] = uuids.map((uuid: string) => {
-                return getGroupFromTree(treeData, uuid)[0];
+                return utils.getGroupFromTree(db.nodesTree, uuid)[0];
             }).filter(Boolean).sort((a, b) => {
                 return a.top - b.top;
             });
@@ -823,27 +832,26 @@ export const methods = {
         if (isRenderingTree) {
             clearTimeout(timeOutId);
             timeOutId = setTimeout(() => {
-                vm.renderTree();
-            }, 100);
+                vm.calcNodesTree();
+            }, 200);
             return;
         }
 
-        vm.renderTree();
+        vm.calcNodesTree();
     },
-    renderTree() {
+
+    /**
+     * 重新计算树形数据
+     */
+    calcNodesTree() {
         isRenderingTree = true;
 
-        // 清空数据
-        nodesMap.clear();
-
-        calcNodePosition(); // 重算排位
-
-        calcDirectoryHeight(); // 计算文件夹的高度
+        db.calcNodesTree(); // 重新计算树形数据
 
         this.render(); // 重新渲染出树形
 
         // 重新定位滚动条, +1 是为了增加离底距离
-        vm.$parent.treeHeight = (nodesMap.size + 1) * nodeHeight;
+        vm.$parent.treeHeight = (db.nodesMap.size + 1) * db.nodeHeight;
 
         setTimeout(() => {
             isRenderingTree = false;
@@ -858,10 +866,10 @@ export const methods = {
     render() {
         vm.nodes = []; // 先清空，这种赋值机制才能刷新 vue，而 .length = 0 不行
 
-        const min = vm.scrollTop - nodeHeight; // 算出可视区域的 top 最小值
+        const min = vm.scrollTop - db.nodeHeight; // 算出可视区域的 top 最小值
         const max = vm.viewHeight + vm.scrollTop; // 最大值
 
-        for (const [top, json] of nodesMap) {
+        for (const [top, json] of db.nodesMap) {
             if (top >= min && top <= max) { // 在可视区域才显示
                 vm.nodes.push(json);
             }
@@ -873,10 +881,10 @@ export const methods = {
      * @param scrollTop
      */
     scroll(scrollTop = 0) {
-        const mode = scrollTop % nodeHeight;
+        const mode = scrollTop % db.nodeHeight;
         let top = scrollTop - mode;
         if (mode === 0 && scrollTop !== 0) {
-            top -= nodeHeight;
+            top -= db.nodeHeight;
         }
 
         vm.top = top; // 模拟出样式
@@ -888,408 +896,8 @@ export const methods = {
      */
     getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
         if (!vm.selects[0]) {
-            return treeData.uuid; // node 节点
+            return db.nodesTree.uuid; // node 节点
         }
         return vm.selects[0]; // 当前选中的节点
     }
 };
-
-/**
- * 计算所有树形资源的位置数据，这一结果用来做快速检索
- * 重点是设置 nodesMap 数据
- * 返回当前序号
- * @param nodes
- * @param index 资源的序号
- * @param depth 资源的层级
- */
-function calcNodePosition(nodes = treeData, index = 0, depth = 0) {
-    if (!nodes || !Array.isArray(nodes.children)) {
-        return index;
-    }
-
-    nodes.children.forEach((node: ItreeNode) => {
-        if (!node) {
-            return;
-        }
-
-        const start = index * nodeHeight;  // 起始位置
-
-        // 扩展属性
-        node.depth = depth;
-        node.top = start;
-        node.left = depth * iconWidth + padding;
-        node.state = node.state ? node.state : '';
-        node.isParent = node.children && node.children.length > 0 ? true : false;
-        node.parentUuid = nodes.uuid;
-
-        if (vm.folds[node.uuid] === undefined) {
-            vm.folds[node.uuid] = node.isParent ? true : false;
-        }
-
-        if (node.isExpand === undefined) {
-            Object.defineProperty(node, 'isExpand', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return vm.folds[node.uuid];
-                },
-                set(val) {
-                    vm.folds[node.uuid] = val;
-                },
-            });
-        }
-
-        if (node.height === undefined) {
-            Object.defineProperty(node, 'height', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return this._height;
-                },
-                set: addHeight.bind(node),
-            });
-        }
-
-        if (vm.search === '') { // 没有搜索
-            vm.state = vm.state === 'search' ? '' : vm.state;
-            nodesMap.set(start, node);
-            index++; // index 是平级的编号，即使在 children 中也会被按顺序计算
-
-            if (node.isParent && node.isExpand === true) { // 没有搜索的时候只需要计算已展开的层级
-                // depth 是该节点的层级
-                index = calcNodePosition(node, index, depth + 1);
-            }
-        } else { // 有搜索
-            vm.state = 'search';
-            // @ts-ignore
-            if (!one.readOnly && one.name.search(vm.search) !== -1) { // 平级保存
-                node.depth = 1; // 平级保存
-                nodesMap.set(start, node);
-                index++;
-            }
-
-            if (node.isParent) { // 有搜索的时候，只要有层级的都要计算
-                index = calcNodePosition(node, index, 0);
-            }
-        }
-    });
-    // 返回序号
-    return index;
-}
-
-/**
- * 增加文件夹的高度
- * add 为数字，1 表示有一个 children
- */
-function addHeight(add: number) {
-    if (add > 0) {
-        // @ts-ignore
-        this._height += nodeHeight * add;
-
-        // 触发其父级高度也增加
-        for (const [top, node] of nodesMap) {
-            // @ts-ignore
-            if (this.parentUuid === node.uuid) {
-                node.height = add;
-                break;
-            }
-        }
-    } else {
-        // @ts-ignore
-        this._height = nodeHeight;
-    }
-}
-
-/**
- * 计算一个文件夹的完整高度
- */
-function calcDirectoryHeight() {
-    for (const [top, parent] of nodesMap) {
-        parent.height = 0; // 先还原，0 表示它自己的高度
-
-        if (parent.isExpand && parent.children && parent.children.length > 0) {
-            // 加上子集的高度
-            parent.height = parent.children.length; // 实际计算在内部的 setter 函数
-        }
-    }
-}
-
-/**
- * 重置某些属性，比如全部折叠或全部展开
- * @param obj
- * @param props
- */
-function resetTreeProps(props: any, tree: ItreeNode[] = treeData.children) {
-    tree.forEach((node: ItreeNode) => {
-        for (const k of Object.keys(props)) {
-            const uuid = node.uuid;
-            // @ts-ignore
-            node[k] = props[k];
-        }
-
-        if (node.children) {
-            resetTreeProps(props, node.children);
-        }
-    });
-}
-
-/**
- * 获取一组节点的位置信息
- * 节点对象 node,
- * 对象所在数组索引 index，
- * 所在数组 array，
- * 所在数组其所在的对象 object
- * 返回 [node, index, array, object]
- *
- * 找不到节点 返回 []
- * @param arr
- * @param uuid
- */
-function getGroupFromTree(obj: ItreeNode, value: string = '', key: string = 'uuid'): any {
-    let rt = [];
-
-    if (!obj || !obj.children) {
-        return [];
-    }
-    // @ts-ignore
-    if (obj[key] === value) { // 次要寻找包体 自身对象，比如根节点自身
-        return [obj];
-    }
-
-    let arr = obj.children; // 主要寻找包体是 .children
-    if (Array.isArray(obj)) {
-        arr = obj;
-    }
-    for (let i = 0, ii = arr.length; i < ii; i++) {
-        const one = arr[i];
-        if (!one) { // 容错处理，在 change 和 add 后，children 存在空值
-            continue;
-        }
-        // @ts-ignore
-        if (one[key] === value) { // 全等匹配
-            return [one, i, arr, obj]; // 找到后返回的数据格式
-        }
-
-        if (one.children && one.children.length !== 0) { // 如果还有 children 的继续迭代查找
-            rt = getGroupFromTree(one, value, key);
-
-            if (rt.length > 0) { // 找到了才返回，找不到，继续循环
-                return rt;
-            }
-        }
-    }
-
-    return rt;
-}
-
-/**
- * 获取一个可操作的资源节点
- * 不可用表现在无右击菜单，不能复制，拖拽，粘贴，新建子文件等操作
- * @param uuid
- */
-function getValidNode(uuid: string) {
-    let node = getGroupFromTree(treeData, uuid)[0];
-
-    if (!node) {
-        if (trash[uuid]) {
-            node = trash[uuid];
-        }
-    }
-
-    if (!node || node.readOnly) { // 资源不可用
-        return;
-    }
-
-    return node;
-}
-
-/**
- * 更快速地找到单个资源节点
- */
-function getNodeFromMap(uuid = '') {
-    for (const [top, node] of nodesMap) {
-        if (uuid === node.uuid) {
-            return node;
-        }
-    }
-    return;
-}
-
-/**
- * 找到当前节点及其前后节点
- * [current, prev, next]
- */
-function getSiblingsFromMap(uuid = '') {
-    const nodes = Array.from(nodesMap.values());
-    const length = nodes.length;
-    let current = nodes[0];
-    let next = nodes[1];
-    let prev = nodes[length - 1];
-    let i = 0;
-
-    for (const [top, json] of nodesMap) {
-        if (uuid === json.uuid) {
-            current = json;
-            next = nodes[i + 1];
-            if (i + 1 >= length) {
-                next = nodes[0];
-            }
-            prev = nodes[i - 1];
-            if (i - 1 < 0) {
-                prev = nodes[length - 1];
-            }
-            break;
-        }
-        i++;
-    }
-    return [current, prev, next];
-}
-
-/**
- * 添加资源后，增加树形节点数据
- */
-function addNodeIntoTree(dumpData: any) {
-    const uuid = dumpData.uuid.value;
-
-    // 数据转换
-    // @ts-ignore
-    const newNode: ItreeNode = {
-        name: dumpData.name.value,
-        uuid,
-        children: [],
-        type: dumpData.__type__,
-
-        readOnly: false,
-        isLock: false,
-        isParent: false,
-        top: 0,
-        depth: 0,
-        state: '',
-    };
-
-    // 父级节点
-    let parentNode = getGroupFromTree(treeData, dumpData.parent.value.uuid)[0];
-    if (!parentNode) {
-        parentNode = treeData;
-    }
-    if (!Array.isArray(parentNode.children)) {
-        parentNode.children = [];
-    }
-    parentNode.children.push(newNode);
-    parentNode.isExpand = true;
-    // 触发节点数据已变动
-    vm.changeData();
-    return newNode;
-}
-
-/**
- * 改变现有节点数据
- * @param uuid 现有节点的uuid
- * @param newData 新的数据包
- */
-function changeNodeData(newData: any) {
-    const uuid = newData.uuid.value;
-    // 现有的节点数据
-    const node = getValidNode(uuid);
-
-    if (!node) {
-        console.error('Can not find the node.');
-        return;
-    }
-    // 属性是值类型的修改
-    ['name'].forEach((key) => {
-        // @ts-ignore
-        if (node[key] !== newData[key].value) {
-            // @ts-ignore
-            node[key] = newData[key].value;
-        }
-    });
-
-    if (!Array.isArray(node.children)) {
-        node.children = [];
-    }
-
-    // children 是否有变动
-    const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
-    const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
-    if (nowChildren !== newChildren) {
-        // 展开其内容有变动的节点
-        node.isExpand = true;
-
-        // 先保存原先的节点，例如在粘贴节点后进行 undo 操作，需要此操作保存已粘贴成功了的节点
-        node.children.map((child: ItreeNode) => {
-            return child.uuid;
-        }).forEach((uuid: string) => {
-            vm.delete(uuid, node.uuid);
-        });
-
-        // 属性值是对象类型的修改， 如 children
-        node.children = newData.children.value.map((json: any) => {
-            const uuid: string = json.value;
-            return getValidNode(uuid);
-        }).filter(Boolean);
-    }
-
-    // 触发节点数据已变动
-    node.state = ''; // 重置掉 loading 效果
-    vm.changeData();
-    return node;
-}
-
-/**
- * 展开选中项并处于视角中
- */
-function selectsIntoView() {
-    scrollIntoView(vm.getFirstSelect());
-}
-
-/**
- * 滚动节点到可视范围内
- * @param uuid
- */
-function scrollIntoView(uuid: string) {
-    if (!uuid) {
-        return;
-    }
-    // 情况 A ：判断是否已在展开的节点中，
-    const one = getNodeFromMap(uuid);
-    if (one) { // 如果 A ：存在，
-        // 情况 B ：判断是否在可视范围，
-        const min = vm.scrollTop - nodeHeight;
-        const max = vm.scrollTop + vm.viewHeight - nodeHeight;
-        if (min < one.top && one.top < max) {
-            return; // 如果 B：是，则终止
-        } else { // 如果 B：不是，则滚动到可视的居中范围内
-            const top = one.top - vm.viewHeight / 2;
-            vm.$parent.$refs.viewBox.scrollTo(0, top);
-        }
-    } else { // 如果 A ：不存在，展开其父级节点，迭代循环展开其祖父级节点，滚动到可视的居中范围内
-        if (uuid === treeData.uuid) { // 根节点的除外
-            return;
-        }
-
-        if (expandNode(uuid)) {
-            vm.changeData();
-
-            // setTimeOut 是为了避免死循环
-            setTimeout(() => {
-                scrollIntoView(uuid);
-            }, 200);
-        }
-    }
-}
-
-/**
- * 展开树形节点
- */
-function expandNode(uuid: string): boolean {
-    const [node, index, arr, parent] = getGroupFromTree(treeData, uuid);
-    if (!node) {
-        return false;
-    }
-    node.isExpand = true;
-    if (parent && parent.uuid) {
-        return expandNode(parent.uuid);
-    }
-    return true;
-}
