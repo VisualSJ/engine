@@ -1,29 +1,20 @@
-import { Asset, Importer, VirtualAsset } from "asset-db";
-import * as fs from "fs";
-import * as path from "path";
-import { readJson, readFile } from "fs-extra";
-import { GlTf, Accessor, Mesh, Animation, Skin, Material } from "../../../../../@types/asset-db/glTF";
-
-//@ts-ignore
-const gfx = cc.gfx;
-//@ts-ignore
-const gfxEnums = gfx;
-//@ts-ignore
-const WrapMode = cc.TextureBase.WrapMode;
-//@ts-ignore
-const Filter = cc.TextureBase.Filter;
+import { Asset, Importer, VirtualAsset } from 'asset-db';
+import * as fs from 'fs';
+import { readJson } from 'fs-extra';
+import * as path from 'path';
+import { Accessor, Animation, GlTf, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
 
 // All sub-assets share the same gltf converter.
-interface GltfAssetSwapSpace {
-    gltfConverter: GltfConverter
+interface IGltfAssetSwapSpace {
+    gltfConverter: GltfConverter;
 }
 
-interface GltfAssetTable {
-    meshes?: (string | null)[],
-    animations?: (string | null)[],
-    skeletons?: (string | null)[],
-    textures?: (string | null)[],
-    materials?: (string | null)[],
+interface IGltfAssetTable {
+    meshes?: Array<string | null>;
+    animations?: Array<string | null>;
+    skeletons?: Array<string | null>;
+    textures?: Array<string | null>;
+    materials?: Array<string | null>;
 }
 
 export default class GltfImporter extends Importer {
@@ -36,6 +27,37 @@ export default class GltfImporter extends Importer {
     // importer 的名字，用于指定 importer as 等
     get name() {
         return 'gltf';
+    }
+
+    public static async fillGltfSwapSpace(asset: Asset, swapSpace: IGltfAssetSwapSpace) {
+        (asset as any).swapSpace = swapSpace;
+    }
+
+    /**
+     * Create a gltf converter of the specified gltf asset.
+     * @param asset The gltf asset.
+     */
+    public static async createGltfConverter(asset: Asset) {
+        const gltf = await readJson(asset.source) as GlTf;
+        let buffers: Buffer[] = [];
+        if (gltf.buffers) {
+            buffers = gltf.buffers.map((gltfBuffer) => {
+                if (!gltfBuffer.uri) {
+                    return new Buffer(0);
+                }
+                const bufferPath = path.resolve(path.dirname(asset.source), gltfBuffer.uri);
+                return fs.readFileSync(bufferPath);
+            });
+        }
+        return new GltfConverter(gltf, buffers);
+    }
+
+    private static _validateAssetName(name: string | undefined) {
+        if (!name) {
+            return undefined;
+        } else {
+            return name.replace(/[<>:'\/\\|?*\x00-\x1F]/g, '-');
+        }
     }
 
     /**
@@ -72,19 +94,23 @@ export default class GltfImporter extends Importer {
         const gltfConverter = await GltfImporter.createGltfConverter(asset);
 
         // Fill the swap space for sub-assets' use
-        GltfImporter.fillGltfSwapSpace(asset, { gltfConverter });
+        GltfImporter.fillGltfSwapSpace(asset, { gltfConverter, });
 
-        const assetTable: GltfAssetTable = {};
+        const assetTable: IGltfAssetTable = {};
         asset.userData.assetTable = assetTable;
 
         /**
-         * 
+         *
          * @param gltfSubAssets Gltf assets to create
          * @param extension Extension of sub-asset
          * @param importer Importer used by sub-assets
          * @return Sub-asset uuids foreach gltf sub-asset.
          */
-        const createSubAssets = async (gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[], extension: string, importer: string): Promise<(string| null)[]> => {
+        const createSubAssets = async (
+            gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[],
+            extension: string,
+            importer: string
+        ): Promise<Array<string | null>> => {
             const result = new Array<string | null>(gltfSubAssets.length).fill(null);
             for (let index = 0; index < gltfSubAssets.length; ++index) {
                 const gltfSubAsset = gltfSubAssets[index];
@@ -98,17 +124,17 @@ export default class GltfImporter extends Importer {
 
         // Import meshes
         if (gltfConverter.gltf.meshes) {
-            assetTable.meshes = await createSubAssets(gltfConverter.gltf.meshes, ".mesh", "gltf-mesh");
+            assetTable.meshes = await createSubAssets(gltfConverter.gltf.meshes, '.mesh', 'gltf-mesh');
         }
 
         // Import animations
         if (gltfConverter.gltf.animations) {
-            assetTable.animations = await createSubAssets(gltfConverter.gltf.animations, ".animation", "gltf-animation");
+            assetTable.animations = await createSubAssets(gltfConverter.gltf.animations, '.animation', 'gltf-animation');
         }
 
         // Import skeletons
         if (gltfConverter.gltf.skins) {
-            assetTable.skeletons = await createSubAssets(gltfConverter.gltf.skins, ".skeleton", "gltf-skeleton");
+            assetTable.skeletons = await createSubAssets(gltfConverter.gltf.skins, '.skeleton', 'gltf-skeleton');
         }
 
         // Import textures
@@ -116,8 +142,8 @@ export default class GltfImporter extends Importer {
             assetTable.textures = new Array(gltfConverter.gltf.textures.length).fill(null);
             for (let index = 0; index < gltfConverter.gltf.textures.length; ++index) {
                 const gltfTexture = gltfConverter.gltf.textures[index];
-                const name = (GltfImporter._validateAssetName(gltfTexture.name) || `${asset.basename}-${index}`) + ".texture";
-                const subAsset = await asset.createSubAsset(name, "texture");
+                const name = (GltfImporter._validateAssetName(gltfTexture.name) || `${asset.basename}-${index}`) + '.texture';
+                const subAsset = await asset.createSubAsset(name, 'texture');
                 if (gltfTexture.source !== undefined) {
                     const gltfImage = gltfConverter.gltf.images![gltfTexture.source];
                     if (gltfImage.uri) {
@@ -130,38 +156,7 @@ export default class GltfImporter extends Importer {
 
         // Import materials
         if (gltfConverter.gltf.materials) {
-            assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, ".material", "gltf-material");
-        }
-    }
-
-    public static async fillGltfSwapSpace(asset: Asset, swapSpace: GltfAssetSwapSpace) {
-        (asset as any).swapSpace = swapSpace;
-    }
-
-    /**
-     * Create a gltf converter of the specified gltf asset.
-     * @param asset The gltf asset.
-     */
-    public static async createGltfConverter(asset: Asset) {
-        const gltf = await readJson(asset.source) as GlTf;
-        let buffers: Buffer[] = [];
-        if (gltf.buffers) {
-            buffers = gltf.buffers.map(gltfBuffer => {
-                if (!gltfBuffer.uri) {
-                    return new Buffer(0);
-                }
-                const bufferPath = path.resolve(path.dirname(asset.source), gltfBuffer.uri);
-                return fs.readFileSync(bufferPath);
-            });
-        }
-        return new GltfConverter(gltf, buffers);
-    }
-
-    private static _validateAssetName(name: string | undefined) {
-        if (!name) {
-            return undefined;
-        } else {
-            return name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, "-");
+            assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, '.material', 'gltf-material');
         }
     }
 }
@@ -170,10 +165,11 @@ export default class GltfImporter extends Importer {
  * Give the capability to access the GltfConverter.
  */
 class GltfSubAssetImporter extends Importer {
+
     protected async fetchGltfConverter(asset: Asset) {
-        let swapSpace = (asset as any).swapSpace as GltfAssetSwapSpace;
+        let swapSpace = (asset as any).swapSpace as IGltfAssetSwapSpace;
         if (!swapSpace) {
-            swapSpace = { gltfConverter: await GltfImporter.createGltfConverter(asset) };
+            swapSpace = { gltfConverter: await GltfImporter.createGltfConverter(asset), };
             await GltfImporter.fillGltfSwapSpace(asset, swapSpace);
         }
         return swapSpace.gltfConverter;
@@ -221,7 +217,7 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         const mesh = gltfConverter.createMesh(gltfConverter.gltf.meshes![asset.userData.gltfIndex as number]);
 
         // Save the mesh asset into library
-        //@ts-ignore
+        // @ts-ignore
         asset.saveToLibrary('.json', Manager.serialize(mesh.mesh));
         asset.saveToLibrary('.bin', new Buffer(mesh.buffer));
 
@@ -266,7 +262,7 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
         const animationClip = gltfConverter.createAnimation(gltfConverter.gltf.animations![asset.userData.gltfIndex as number]);
 
-        //@ts-ignore
+        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(animationClip));
 
         return true;
@@ -310,7 +306,7 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
 
         const skeleton = gltfConverter.createSkeleton(gltfConverter.gltf.skins![asset.userData.gltfIndex as number]);
 
-        //@ts-ignore
+        // @ts-ignore
         asset.saveToLibrary('.json', Manager.serialize(skeleton));
 
         return true;
@@ -352,14 +348,14 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
-        const assetTable = asset.parent.userData.assetTable as GltfAssetTable;
-        //@ts-ignore
-        const textureTable = !assetTable.textures ? [] : assetTable.textures.map(textureUUID => Manager.serialize.asAsset(textureUUID));
-        //@ts-ignore
+        const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
+        // @ts-ignore
+        const textureTable = !assetTable.textures ? [] : assetTable.textures.map((textureUUID) => Manager.serialize.asAsset(textureUUID));
+        // @ts-ignore
         const material = gltfConverter.createMaterial(
             gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable);
 
-        //@ts-ignore
+        // @ts-ignore
         asset.saveToLibrary('.json', Manager.serialize(material));
 
         return true;
@@ -370,23 +366,23 @@ class BufferBlob {
     private _arrayBuffers: ArrayBuffer[] = [];
     private _length = 0;
 
-    addBuffer(arrayBuffer: ArrayBuffer) {
+    public addBuffer(arrayBuffer: ArrayBuffer) {
         const result = this._length;
         this._arrayBuffers.push(arrayBuffer);
         this._length += arrayBuffer.byteLength;
         return result;
     }
 
-    getLength() {
+    public getLength() {
         return this._length;
     }
 
-    getCombined() {
+    public getCombined() {
         let length = 0;
-        this._arrayBuffers.forEach(arrayBuffer => length += arrayBuffer.byteLength);
+        this._arrayBuffers.forEach((arrayBuffer) => length += arrayBuffer.byteLength);
         const result = new Uint8Array(length);
         let counter = 0;
-        this._arrayBuffers.forEach(arrayBuffer => {
+        this._arrayBuffers.forEach((arrayBuffer) => {
             result.set(new Uint8Array(arrayBuffer), counter);
             counter += arrayBuffer.byteLength;
         });
@@ -395,7 +391,7 @@ class BufferBlob {
 }
 
 class GltfConverter {
-    _nodePathTable: string[] | null = null;
+    private _nodePathTable: string[] | null = null;
 
     constructor(private _gltf: GlTf, private _buffers: Buffer[]) {
         this._nodePathTable = this._createNodePathTable();
@@ -405,22 +401,22 @@ class GltfConverter {
         return this._gltf;
     }
 
-    createMesh(gltfMesh: Mesh) {
+    public createMesh(gltfMesh: Mesh) {
         const bufferBlob = new BufferBlob();
 
-        //@ts-ignore
-        let minPosition = new cc.Vec3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-        //@ts-ignore
-        let maxPosition = new cc.Vec3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+        // @ts-ignore
+        const minPosition = new cc.Vec3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+        // @ts-ignore
+        const maxPosition = new cc.Vec3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
 
-        //@ts-ignore
+        // @ts-ignore
         const vertexBundles = new Array<cc.VertexBundle>();
         const primitives = gltfMesh.primitives.map((gltfPrimitive, primitiveIndex) => {
             const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
 
             let vertexBufferStride = 0;
             let verticesCount = 0;
-            const formats: { name: any, type: number, num: number }[] = [];
+            const formats: Array<{ name: any, type: number, num: number }> = [];
 
             const attributeByteLengths = attributeNames.map((attributeName) => {
                 const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
@@ -438,13 +434,13 @@ class GltfConverter {
                 this._readAccessor(attributeAccessor, new DataView(vertexBuffer, currentByteOffset), vertexBufferStride);
                 currentByteOffset += attributeByteLengths[iAttribute];
 
-                if (attributeName === "POSITION") {
+                if (attributeName === 'POSITION') {
                     if (attributeAccessor.min) {
-                        //@ts-ignore
+                        // @ts-ignore
                         cc.vmath.vec3.min(minPosition, minPosition, new cc.vmath.vec3(attributeAccessor.min[0], attributeAccessor.min[1], attributeAccessor.min[2]));
                     }
                     if (attributeAccessor.max) {
-                        //@ts-ignore
+                        // @ts-ignore
                         cc.vmath.vec3.max(maxPosition, maxPosition, new cc.vmath.vec3(attributeAccessor.max[0], attributeAccessor.max[1], attributeAccessor.max[2]));
                     }
                 }
@@ -452,14 +448,14 @@ class GltfConverter {
                 formats.push({
                     name: this._getGfxAttributeName(attributeName),
                     type: this._getGfxComponentType(attributeAccessor.componentType),
-                    num: this._getComponentsPerAttribute(attributeAccessor.type)
+                    num: this._getComponentsPerAttribute(attributeAccessor.type),
                 });
             });
 
-            //@ts-ignore
+            // @ts-ignore
             const vertexBundleRange = new cc.BufferRange(bufferBlob.addBuffer(vertexBuffer), vertexBuffer.byteLength);
 
-            //@ts-ignore
+            // @ts-ignore
             const vertexBundle = new cc.VertexBundle();
             vertexBundle._data = vertexBundleRange;
             vertexBundle._verticesCount = verticesCount;
@@ -473,37 +469,37 @@ class GltfConverter {
                 const indexStride = this._getBytesPerAttribute(indicesAccessor);
                 const indicesData = new ArrayBuffer(indexStride * indicesAccessor.count);
                 this._readAccessor(indicesAccessor, new DataView(indicesData));
-                //@ts-ignore
+                // @ts-ignore
                 indices = new cc.BufferRange(bufferBlob.addBuffer(indicesData), indicesData.byteLength);
                 indexUnit = this._getGfxIndexUnitType(indicesAccessor.componentType);
             }
 
-            //@ts-ignore
+            // @ts-ignore
             const primitive = new cc.Primitive();
-            primitive._vertexBundelIndices = [primitiveIndex];
+            primitive._vertexBundelIndices = [primitiveIndex, ];
             primitive._topology = this._getTopology(gltfPrimitive.mode === undefined ? 4 : gltfPrimitive.mode);
             primitive._indices = indices;
             primitive._indexUnit = indexUnit;
             return primitive;
         });
 
-        //@ts-ignore
+        // @ts-ignore
         const mesh = new cc.Mesh();
         mesh.name = gltfMesh.name;
         mesh._minPosition = minPosition;
         mesh._maxPosition = maxPosition;
         mesh._primitives = primitives;
         mesh._vertexBundles = vertexBundles;
-        return { mesh, buffer: bufferBlob.getCombined() };
+        return { mesh, buffer: bufferBlob.getCombined(), };
     }
 
-    createSkeleton(gltfSkin: Skin) {
+    public createSkeleton(gltfSkin: Skin) {
         const inverseBindMatrices = new Array(gltfSkin.joints.length);
         if (gltfSkin.inverseBindMatrices === undefined) {
             // The default is that each matrix is a 4x4 identity matrix,
             // which implies that inverse-bind matrices were pre-applied.
             for (let i = 0; i < inverseBindMatrices.length; ++i) {
-                //@ts-ignore
+                // @ts-ignore
                 inverseBindMatrices[i] = new cc.Mat4(
                     1, 0, 0, 0,
                     0, 1, 0, 0,
@@ -514,13 +510,13 @@ class GltfConverter {
         } else {
             const inverseBindMatricesAccessor = this._gltf.accessors![gltfSkin.inverseBindMatrices];
             if (inverseBindMatricesAccessor.componentType !== 5126 ||
-                inverseBindMatricesAccessor.type !== "MAT4") {
-                throw `The inverse bind matrix should be floating-point 4x4 matrix.`;
+                inverseBindMatricesAccessor.type !== 'MAT4') {
+                throw new Error(`The inverse bind matrix should be floating-point 4x4 matrix.`);
             }
             const data = new Float32Array(inverseBindMatrices.length * 16);
             this._readAccessor(inverseBindMatricesAccessor, new DataView(data.buffer));
             for (let i = 0; i < inverseBindMatrices.length; ++i) {
-                //@ts-ignore
+                // @ts-ignore
                 inverseBindMatrices[i] = new cc.Mat4(
                     data[16 * i + 0], data[16 * i + 1], data[16 * i + 2], data[16 * i + 3],
                     data[16 * i + 4], data[16 * i + 5], data[16 * i + 6], data[16 * i + 7],
@@ -530,21 +526,21 @@ class GltfConverter {
             }
         }
 
-        //@ts-ignore
+        // @ts-ignore
         const skeleton = new cc.Skeleton();
         skeleton.name = gltfSkin.name;
-        skeleton._joints = gltfSkin.joints.map(nodeIndex => this._getNodePath(nodeIndex));
+        skeleton._joints = gltfSkin.joints.map((nodeIndex) => this._getNodePath(nodeIndex));
         skeleton._inverseBindMatrices = inverseBindMatrices;
 
         return skeleton;
     }
 
-    createAnimation(gltfAnimation: Animation) {
-        //@ts-ignore
-        let frames: cc.AnimationFrame[] = [];
+    public createAnimation(gltfAnimation: Animation) {
+        // @ts-ignore
+        const frames: cc.AnimationFrame[] = [];
         let maxLength = 0;
 
-        gltfAnimation.channels.forEach(gltfChannel => {
+        gltfAnimation.channels.forEach((gltfChannel) => {
             const targetNode = gltfChannel.target.node;
 
             if (targetNode === undefined) {
@@ -561,8 +557,8 @@ class GltfConverter {
             // if not found, create one
             if (!frame) {
                 if (inputAccessor.componentType !== 5126 ||
-                    inputAccessor.type !== "SCALAR") {
-                    throw `Input of an animation channel must be floating point scalars represent times.`;
+                    inputAccessor.type !== 'SCALAR') {
+                    throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
                 }
                 const inputData = new Float32Array(inputAccessor.count);
                 this._readAccessor(inputAccessor, new DataView(inputData.buffer));
@@ -575,7 +571,7 @@ class GltfConverter {
                     maxLength = Math.max(maxLength, times[times.length - 1]);
                 }
 
-                //@ts-ignore
+                // @ts-ignore
                 frame = new cc.AnimationFrame();
                 frame._name = inputAccessor.name;
                 frame._times = times;
@@ -588,7 +584,7 @@ class GltfConverter {
 
             // if not found, create one
             if (!channel) {
-                //@ts-ignore
+                // @ts-ignore
                 channel = new cc.AnimationChannel();
                 channel.target = this._getNodePath(targetNode);
                 frame._channels.push(channel);
@@ -596,43 +592,43 @@ class GltfConverter {
 
             const outputAccessor = this._gltf.accessors![gltfSampler.output];
             if (outputAccessor.componentType !== 5126) {
-                throw `Output of an animation channel must be floating point values.`;
+                throw new Error(`Output of an animation channel must be floating point values.`);
             }
             const outputData = new Float32Array(this._getComponentsPerAttribute(outputAccessor.type) * outputAccessor.count);
             this._readAccessor(outputAccessor, new DataView(outputData.buffer));
             if (gltfChannel.target.path === 'translation') {
-                if (outputAccessor.type !== "VEC3") {
-                    throw `Output of an animation channel targetting translation must be 3d vectors.`;
+                if (outputAccessor.type !== 'VEC3') {
+                    throw new Error(`Output of an animation channel targetting translation must be 3d vectors.`);
                 }
                 channel.positionCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
-                    //@ts-ignore
+                    // @ts-ignore
                     channel.positionCurve[i] = new cc.Vec3(outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
                 }
             } else if (gltfChannel.target.path === 'rotation') {
-                if (outputAccessor.type !== "VEC4") {
-                    throw `Output of an animation channel targetting translation must be 4d vectors.`;
+                if (outputAccessor.type !== 'VEC4') {
+                    throw new Error(`Output of an animation channel targetting translation must be 4d vectors.`);
                 }
                 channel.rotationCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
-                    //@ts-ignore
+                    // @ts-ignore
                     channel.rotationCurve[i] = new cc.Quat(outputData[4 * i + 0], outputData[4 * i + 1], outputData[4 * i + 2], outputData[4 * i + 3]);
                 }
             } else if (gltfChannel.target.path === 'scale') {
-                if (outputAccessor.type !== "VEC3") {
-                    throw `Output of an animation channel targetting scale must be 3d vectors.`;
+                if (outputAccessor.type !== 'VEC3') {
+                    throw new Error(`Output of an animation channel targetting scale must be 3d vectors.`);
                 }
                 channel.scaleCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
-                    //@ts-ignore
+                    // @ts-ignore
                     channel.scaleCurve[i] = new cc.Vec3(outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
                 }
             } else {
-                throw `Unsupported channel target path.`;
+                throw new Error(`Unsupported channel target path.`);
             }
         });
 
-        //@ts-ignore
+        // @ts-ignore
         const animationClip = new cc.AnimationClip();
         animationClip.name = gltfAnimation.name;
         animationClip._frames = frames;
@@ -640,46 +636,47 @@ class GltfConverter {
         return animationClip;
     }
 
-    //@ts-ignore
-    createMaterial(gltfMaterial: Material, textures: cc.Texture[]) {
-        //@ts-ignore
+    // @ts-ignore
+    public createMaterial(gltfMaterial: Material, textures: cc.Texture[]) {
+        // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material.effectName = "builtin-effect-unlit";
+        material.effectName = 'builtin-effect-unlit';
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                material.define("USE_TEXTURE", true);
-                material.setProperty("mainTexture", textures[pbrMetallicRoughness.baseColorTexture.index]);
+                material.define('USE_TEXTURE', true);
+                material.setProperty('mainTexture', textures[pbrMetallicRoughness.baseColorTexture.index]);
             } else {
-                material.define("USE_COLOR", true);
+                material.define('USE_COLOR', true);
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
                     const c = pbrMetallicRoughness.baseColorFactor;
-                    //@ts-ignore
+                    // @ts-ignore
                     color = new cc.Color(c[0] * 255, c[1] * 255, c[2] * 255, c[3] * 255);
                 } else {
-                    //@ts-ignore
+                    // @ts-ignore
                     color = new cc.Color(255, 255, 255, 255);
                 }
-                material.setProperty("color", color);
+                material.setProperty('color', color);
             }
         }
 
         return material;
     }
 
-    createTexture(index: number) {
+    public createTexture(index: number) {
         if (this._gltf.textures === undefined || index >= this._gltf.textures.length) {
             return null;
         }
 
         const gltfTexture = this._gltf.textures[index];
-        //@ts-ignore
+        // @ts-ignore
         const texture = new cc.Texture();
         texture.name = gltfTexture.name;
         if (gltfTexture.sampler === undefined) {
-            texture.setWrapMode(WrapMode.REPEAT, WrapMode.REPEAT);
+            // @ts-ignore
+            texture.setWrapMode(cc.TextureBase.WrapMode.REPEAT, cc.TextureBase.WrapMode.REPEAT);
         } else {
             const gltfSampler = this._requireSampler(gltfTexture.sampler);
             texture.setFilters(
@@ -688,32 +685,32 @@ class GltfConverter {
             );
             texture.setWrapMode(
                 this._getWrapMode(gltfSampler.wrapS === undefined ? 10497 : gltfSampler.wrapS),
-                this._getWrapMode(gltfSampler.wrapT === undefined ? 10497 : gltfSampler.wrapT),
+                this._getWrapMode(gltfSampler.wrapT === undefined ? 10497 : gltfSampler.wrapT)
             );
         }
 
         return texture;
     }
 
-    _getNodePath(node: number) {
+    private _getNodePath(node: number) {
         if (this._nodePathTable == null) {
             this._nodePathTable = this._createNodePathTable();
         }
         return this._nodePathTable[node];
     }
 
-    _createNodePathTable() {
+    private _createNodePathTable() {
         if (this._gltf.nodes === undefined) {
             return [];
         }
 
         const result = new Array<string>(this._gltf.nodes.length);
-        result.fill("");
+        result.fill('');
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
             const myPath = result[nodeIndex] + gltfNode.name;
             result[nodeIndex] = myPath;
             if (gltfNode.children) {
-                gltfNode.children.forEach(childNodeIndex => {
+                gltfNode.children.forEach((childNodeIndex) => {
                     const childPath = result[childNodeIndex];
                     result[childNodeIndex] = `${myPath}/${childPath}`;
                 });
@@ -721,7 +718,7 @@ class GltfConverter {
         });
         // Remove root segment
         result.forEach((path, index) => {
-            let segments = path.split('/');
+            const segments = path.split('/');
             segments.shift();
             result[index] = segments.join('/');
         });
@@ -766,16 +763,18 @@ class GltfConverter {
     }
 
     private _getTopology(mode: number) {
+        // @ts-ignore
+        const gfx = cc.gfx;
         switch (mode) {
-            case 0: return gfxEnums.PT_POINTS;
-            case 1: return gfxEnums.PT_LINES;
-            case 2: return gfxEnums.PT_LINE_LOOP;
-            case 3: return gfxEnums.PT_LINE_STRIP;
-            case 4: return gfxEnums.PT_TRIANGLES;
-            case 5: return gfxEnums.PT_TRIANGLE_STRIP;
-            case 6: return gfxEnums.PT_TRIANGLE_FAN;
+            case 0: return gfx.PT_POINTS;
+            case 1: return gfx.PT_LINES;
+            case 2: return gfx.PT_LINE_LOOP;
+            case 3: return gfx.PT_LINE_STRIP;
+            case 4: return gfx.PT_TRIANGLES;
+            case 5: return gfx.PT_TRIANGLE_STRIP;
+            case 6: return gfx.PT_TRIANGLE_FAN;
             default:
-                throw `Unrecognized primitive mode: ${mode}.`;
+                throw new Error(`Unrecognized primitive mode: ${mode}.`);
         }
     }
 
@@ -793,14 +792,14 @@ class GltfConverter {
 
     private _getComponentsPerAttribute(type: string) {
         switch (type) {
-            case "SCALAR": return 1;
-            case "VEC2": return 2;
-            case "VEC3": return 3;
-            case "VEC4": case "MAT2": return 4;
-            case "MAT3": return 9;
-            case "MAT4": return 16;
+            case 'SCALAR': return 1;
+            case 'VEC2': return 2;
+            case 'VEC3': return 3;
+            case 'VEC4': case 'MAT2': return 4;
+            case 'MAT3': return 9;
+            case 'MAT4': return 16;
             default:
-                throw `Unrecognized attribute type: ${type}.`;
+                throw new Error(`Unrecognized attribute type: ${type}.`);
         }
     }
 
@@ -810,24 +809,26 @@ class GltfConverter {
             case 5122: case 5123: return 2;
             case 5125: case 5126: return 4;
             default:
-                throw `Unrecognized component type: ${componentType}`;
+                throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
 
     private _getGfxAttributeName(name: string) {
+        // @ts-ignore
+        const gfx = cc.gfx;
         switch (name) {
-            case "POSITION": return gfx.ATTR_POSITION;
-            case "NORMAL": return gfx.ATTR_NORMAL;
-            case "TANGENT": return gfx.ATTR_TANGENT;
-            case "COLOR_0": return gfx.ATTR_COLOR0;
-            case "TEXCOORD_0": return gfx.ATTR_UV0;
-            case "TEXCOORD_1": return gfx.ATTR_UV1;
-            case "TEXCOORD_2": return gfx.ATTR_UV2;
-            case "TEXCOORD_3": return gfx.ATTR_UV3;
-            case "JOINTS_0": return gfx.ATTR_JOINTS;
-            case "WEIGHTS_0": return gfx.ATTR_WEIGHTS;
+            case 'POSITION': return gfx.ATTR_POSITION;
+            case 'NORMAL': return gfx.ATTR_NORMAL;
+            case 'TANGENT': return gfx.ATTR_TANGENT;
+            case 'COLOR_0': return gfx.ATTR_COLOR0;
+            case 'TEXCOORD_0': return gfx.ATTR_UV0;
+            case 'TEXCOORD_1': return gfx.ATTR_UV1;
+            case 'TEXCOORD_2': return gfx.ATTR_UV2;
+            case 'TEXCOORD_3': return gfx.ATTR_UV3;
+            case 'JOINTS_0': return gfx.ATTR_JOINTS;
+            case 'WEIGHTS_0': return gfx.ATTR_WEIGHTS;
             default:
-                throw `Unrecognized attribute type: ${name}`;
+                throw new Error(`Unrecognized attribute type: ${name}`);
         }
     }
 
@@ -840,7 +841,7 @@ class GltfConverter {
             case 5125: return (buffer, offset) => buffer.getUint32(offset, true);
             case 5126: return (buffer, offset) => buffer.getFloat32(offset, true);
             default:
-                throw `Unrecognized component type: ${componentType}`;
+                throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
 
@@ -853,37 +854,42 @@ class GltfConverter {
             case 5125: return (buffer, offset, value) => buffer.setUint32(offset, value, true);
             case 5126: return (buffer, offset, value) => buffer.setFloat32(offset, value, true);
             default:
-                throw `Unrecognized component type: ${componentType}`;
+                throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
 
     private _getFilter(filter: number) {
         switch (filter) {
             case 9728:
-                return Filter.NEAREST;
+                // @ts-ignore
+                return cc.TextureBase.Filter.NEAREST;
             case 9729:
-                return Filter.LINEAR;
+                // @ts-ignore
+                return cc.TextureBase.Filter.LINEAR;
             default:
-                throw `Unrecognized filter: ${filter}.`;
+                throw new Error(`Unrecognized filter: ${filter}.`);
         }
     }
 
     private _getWrapMode(wrapMode: number) {
         switch (wrapMode) {
             case 33071:
-                return WrapMode.CLAMP_TO_EDGE;
+                // @ts-ignore
+                return cc.TextureBase.WrapMode.CLAMP_TO_EDGE;
             case 33648:
-                return WrapMode.MIRRORED_REPEAT;
+                // @ts-ignore
+                return cc.TextureBase.WrapMode.MIRRORED_REPEAT;
             case 10497:
-                return WrapMode.REPEAT;
+                // @ts-ignore
+                return cc.TextureBase.WrapMode.REPEAT;
             default:
-                throw `Unrecognized wrapMode: ${wrapMode}.`;
+                throw new Error(`Unrecognized wrapMode: ${wrapMode}.`);
         }
     }
 
     private _requireSampler(index: number) {
         if (this._gltf.samplers === undefined) {
-            throw `Samplers is require but it do not exists.`;
+            throw new Error(`Samplers is require but it do not exists.`);
         }
         return this._gltf.samplers[index];
     }
