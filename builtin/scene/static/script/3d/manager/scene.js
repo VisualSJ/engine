@@ -5,6 +5,8 @@ const manager = {
     node: require('./node'),
 };
 
+const gizmoManager = require('../../public/gizmos');
+
 let currentSceneUuid = '';
 let currentSceneData = null;
 
@@ -100,6 +102,7 @@ async function open(uuid) {
     if (currentSceneData) {
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:ready');
+        gizmoManager.onSceneLoaded();
     }
 }
 
@@ -157,6 +160,7 @@ async function softReload() {
     if (currentSceneData) {
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:ready');
+        gizmoManager.onSceneLoaded();
     }
 }
 

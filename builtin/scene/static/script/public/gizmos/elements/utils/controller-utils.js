@@ -1,13 +1,13 @@
 'use strict';
 let ControllerShape = require('./controller-shape');
-const NodeUtils = Editor.require('scene://utils/node');
+const NodeUtils = require('../../../../utils/node');
 const ControllerShapeCollider = require('./controller-shape-collider');
 const { gfx, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../engine');
 let ControllerUtils = {};
 
-ControllerUtils.YELLOW = new cc.Color(255,255,0);
+ControllerUtils.YELLOW = new cc.Color(255, 255, 0);
 
-ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name){
+ControllerUtils.arrow = function (headHeight, headRadius, bodyHeight, color, name) {
     if (name == null)
         name = "arrow";
 
@@ -30,28 +30,26 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
     addMeshToNode(coneNode,
         ControllerShape.Cone(headRadius, headHeight), { cullMode: gfx.CULL_BACK });
     setMeshColor(coneNode, color);
-    coneNode.setPosition(cc.v3(0, bodyHeight + headHeight/2, 0));
+    coneNode.setPosition(cc.v3(0, bodyHeight + headHeight / 2, 0));
     csc = coneNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = false;
 
     return axisNode;
 };
 
-ControllerUtils.plane = function(width, height, color = cc.Color.RED, name = 'plane')
-{
+ControllerUtils.plane = function (width, height, color = cc.Color.RED, name = 'plane') {
     let planeNode = create3DNode(name);
     addMeshToNode(planeNode, ControllerShape.Plane(width, height));
     setMeshColor(planeNode, color);
     return planeNode;
 };
 
-ControllerUtils.borderPlane = function(width, height, color, name)
-{
+ControllerUtils.borderPlane = function (width, height, color, name) {
     if (name == null)
         name = "borderPlane";
 
-    let halfWidth = width/2;
-    let halfHeight = height/2;
+    let halfWidth = width / 2;
+    let halfHeight = height / 2;
     let borderPlane = create3DNode(name);
     // plane
     let planeNode = create3DNode('Plane');
@@ -63,8 +61,7 @@ ControllerUtils.borderPlane = function(width, height, color, name)
     let csc = planeNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = false;
 
-    function createBorder(startPos, endPos, color)
-    {
+    function createBorder(startPos, endPos, color) {
         let borderNode = create3DNode('border');
         addMeshToNode(borderNode,
             ControllerShape.Line(startPos, endPos));
@@ -74,14 +71,13 @@ ControllerUtils.borderPlane = function(width, height, color, name)
     }
 
     // borders
-    createBorder(cc.v3(0, 0, height/2), cc.v3(halfWidth, 0, height/2), color);
+    createBorder(cc.v3(0, 0, height / 2), cc.v3(halfWidth, 0, height / 2), color);
     createBorder(cc.v3(halfWidth, 0, halfHeight), cc.v3(halfWidth, 0, 0), color);
 
     return borderPlane;
 };
 
-ControllerUtils.circle = function(radius, color, name)
-{
+ControllerUtils.circle = function (radius, color, name) {
     if (name == null)
         name = "circle";
 
@@ -93,8 +89,7 @@ ControllerUtils.circle = function(radius, color, name)
     return circleNode;
 };
 
-ControllerUtils.torus = function(radius, tube, opts, color, name = "torus")
-{
+ControllerUtils.torus = function (radius, tube, opts, color, name = "torus") {
     let torusNode = create3DNode(name);
     addMeshToNode(torusNode,
         ControllerShape.Torus(radius, tube, opts), { cullMode: gfx.CULL_BACK });
@@ -106,8 +101,7 @@ ControllerUtils.torus = function(radius, tube, opts, color, name = "torus")
     return torusNode;
 };
 
-ControllerUtils.cube = function(width, height, depth, color, name)
-{
+ControllerUtils.cube = function (width, height, depth, color, name) {
     if (name == null)
         name = 'cube';
     let cubeNode = create3DNode(name);
@@ -119,14 +113,13 @@ ControllerUtils.cube = function(width, height, depth, color, name)
     return cubeNode;
 };
 
-ControllerUtils.scaleSlider = function(headWidth, bodyHeight, color, name)
-{
+ControllerUtils.scaleSlider = function (headWidth, bodyHeight, color, name) {
     if (name == null)
         name = 'scaleSlider';
     let scaleSliderNode = create3DNode(name);
     let headNode = ControllerUtils.cube(headWidth, headWidth, headWidth, color, 'ScaleSliderHead');
     headNode.parent = scaleSliderNode;
-    headNode.setPosition(0, bodyHeight + headWidth/2, 0);
+    headNode.setPosition(0, bodyHeight + headWidth / 2, 0);
 
     let bodyNode = create3DNode('ScaleSliderBody');
     addMeshToNode(bodyNode,
@@ -140,14 +133,14 @@ ControllerUtils.scaleSlider = function(headWidth, bodyHeight, color, name)
     return scaleSliderNode;
 };
 
-ControllerUtils.getCameraDistanceFactor = function(pos, camera){
+ControllerUtils.getCameraDistanceFactor = function (pos, camera) {
     let cameraPos = NodeUtils.getWorldPosition3D(camera);
     let dist = cc.vmath.vec3.distance(pos, cameraPos);
 
     return dist;
 };
 
-ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED){
+ControllerUtils.lineTo = function (startPos, endPos, color = cc.Color.RED) {
     let lineNode = create3DNode("line");
     addMeshToNode(lineNode,
         ControllerShape.Line(startPos, endPos));
@@ -156,20 +149,18 @@ ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED){
     return lineNode;
 };
 
-ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color = cc.Color.RED)
-{
+ControllerUtils.sector = function (center, normal, fromDir, radian, radius, color = cc.Color.RED) {
     let sectorNode = create3DNode('sector');
-    addMeshToNode(sectorNode, 
+    addMeshToNode(sectorNode,
         ControllerShape.Sector(center, normal, fromDir, radian, radius, 60));
     setMeshColor(sectorNode, color);
 
     return sectorNode;
 };
 
-ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED)
-{
+ControllerUtils.arc = function (center, normal, fromDir, radian, radius, color = cc.Color.RED) {
     let arcNode = create3DNode('arc');
-    addMeshToNode(arcNode, 
+    addMeshToNode(arcNode,
         ControllerShape.Arc(center, normal, fromDir, radian, radius, 60));
     setMeshColor(arcNode, color);
 

@@ -44,7 +44,7 @@ class Selection extends EventEmitter {
      * 查询所有选中的节点 uuids 数组
      */
     query() {
-        return this.uuids.uuids.splice();
+        return this.uuids.uuids.slice();
     }
 
     /**
@@ -60,7 +60,7 @@ class Selection extends EventEmitter {
         this.unselectUuids.remove(uuid);
         this.notice();
 
-        this.emit('select', uuid, this.uuids.uuids.splice());
+        this.emit('select', uuid, this.uuids.uuids.slice());
     }
 
     /**
@@ -76,7 +76,7 @@ class Selection extends EventEmitter {
         this.unselectUuids.add(uuid);
         this.notice();
 
-        this.emit('unselect', uuid, this.uuids.uuids.splice());
+        this.emit('unselect', uuid, this.uuids.uuids.slice());
     }
 
     /**
@@ -117,7 +117,7 @@ class Selection extends EventEmitter {
         }
         this.selectUuids.remove(uuid);
         this.unselectUuids.remove(uuid);
-        this.emit('select', uuid, this.uuids.uuids.splice());
+        this.emit('select', uuid, this.uuids.uuids.slice());
     }
 
     /**
@@ -131,7 +131,7 @@ class Selection extends EventEmitter {
         }
         this.selectUuids.remove(uuid);
         this.unselectUuids.remove(uuid);
-        this.emit('unselect', uuid, this.uuids.uuids.splice());
+        this.emit('unselect', uuid, this.uuids.uuids.slice());
     }
 }
 

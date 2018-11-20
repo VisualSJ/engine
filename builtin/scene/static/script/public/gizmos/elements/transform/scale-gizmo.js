@@ -1,36 +1,30 @@
 'use strict';
 
-const NodeUtils = Editor.require('scene://utils/node');
+const NodeUtils = require('../../../../utils/node');
+let Gizmo = require('../gizmo');
 let ScaleController = require('../controller/scale-controller');
 
-class ScaleGizmo extends Editor.Gizmo {
-    init () {
+class ScaleGizmo extends Gizmo {
+    init() {
         this._localScaleList = [];
         this._offsetList = [];
-        this._center = cc.v2(0,0);
+        this._center = cc.v2(0, 0);
     }
 
-    layer () {
+    layer() {
         return 'foreground';
     }
 
-    onCreateRoot () {
-        //this._tool = Tools.scaleTool( this._root, this.createMoveCallbacks() );
-
-    }
-
-    onCreateController()
-    {
+    onCreateController() {
         let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
-        this._controller = new ScaleController(this._root, this._view, rootNode);
+        this._controller = new ScaleController(rootNode);
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
         this._controller.onControllerMouseMove = this.onControllerMouseMove.bind(this);
         this._controller.onControllerMouseUp = this.onControllerMouseUp.bind(this);
     }
 
-    onControllerMouseDown()
-    {
+    onControllerMouseDown() {
         this._localScaleList = [];
 
         let topNodes = this.topNodes;
@@ -51,34 +45,76 @@ class ScaleGizmo extends Editor.Gizmo {
         }
     }
 
-    onControllerMouseMove()
-    {
+    onControllerMouseMove() {
 
+        if (this._controller.updated) {
+            this.recordChanges();
+
+            let i;
+            let scaleDelta = this._controller.getDeltaScale();
+            let scale = cc.v3(1.0 + scaleDelta.x, 1.0 + scaleDelta.y, 1.0 + scaleDelta.z);
+            let newScale = cc.v3();
+            let topNodes = this.topNodes;
+
+            if (this._view.pivot === 'center') {
+                let curNodePos;
+                for (i = 0; i < this._localScaleList.length; ++i) {
+
+                    newScale.x = this._localScaleList[i].x * scale.x;
+                    newScale.y = this._localScaleList[i].y * scale.y;
+                    newScale.z = this._localScaleList[i].z * scale.z;
+
+                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
+
+                    let offset = cc.v3(
+                        this._offsetList[i].x * scale.x,
+                        this._offsetList[i].y * scale.y,
+                        this._offsetList[i].z * scale.z
+                    );
+
+                    curNodePos = this._center.add(offset);
+                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
+                    // 发送节点修改消息
+                    Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
+                }
+            }
+            else {
+                for (i = 0; i < this._localScaleList.length; ++i) {
+                    newScale.x = this._localScaleList[i].x * scale.x;
+                    newScale.y = this._localScaleList[i].y * scale.y;
+                    newScale.z = this._localScaleList[i].z * scale.z;
+
+                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
+                    // 发送节点修改消息
+                    Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
+                }
+            }
+        }
+
+        // update scaleController transform
+        this.updateControllerTransform();
     }
 
-    onControllerMouseUp()
-    {
-        if (this._controller.updated)
-        {
+    onControllerMouseUp() {
+        if (this._controller.updated) {
             this.commitChanges();
         }
     }
 
-    onKeyDown (event) {
+    onKeyDown(event) {
 
     }
 
-    onKeyUp (event) {
+    onKeyUp(event) {
 
     }
 
-    onGizmoKeyDown(event)
-    {
+    onGizmoKeyDown(event) {
         if (!this.target) {
             return;
         }
 
-        let keyCode = Editor.KeyCode(event.which);
+        let keyCode = event.key.toLowerCase();
 
         if (keyCode !== 'left' &&
             keyCode !== 'right' &&
@@ -113,17 +149,14 @@ class ScaleGizmo extends Editor.Gizmo {
 
             this.setScaleWithPrecision(node, curScale, 3);
         }.bind(this));
-
-        this._view.repaintHost();
     }
 
-    onGizmoKeyUp(event)
-    {
+    onGizmoKeyUp(event) {
         if (!this.target) {
             return;
         }
 
-        let keyCode = Editor.KeyCode(event.which);
+        let keyCode = event.key.toLowerCase();
 
         if (keyCode !== 'left' &&
             keyCode !== 'right' &&
@@ -135,72 +168,27 @@ class ScaleGizmo extends Editor.Gizmo {
         this.commitChanges();
     }
 
-    visible () {
+    visible() {
         return true;
     }
 
-    dirty () {
+    dirty() {
         return true;
     }
 
-    setScaleWithPrecision(node, newScale, precision)
-    {
+    setScaleWithPrecision(node, newScale, precision) {
         newScale = NodeUtils.makeVec3InPrecision(newScale, precision);
         node.setScale(newScale.x, newScale.y, newScale.z);
     }
 
-    onUpdate () {
+    onUpdate() {
 
-        if (this._controller.updated)
-        {
-            this.recordChanges();
-
-            let i;
-            let scaleDelta = this._controller.getDeltaScale();
-            let scale = cc.v3(1.0 + scaleDelta.x, 1.0 + scaleDelta.y, 1.0 + scaleDelta.z);
-            let newScale = cc.v3();
-            let topNodes = this.topNodes;
-
-            if (this._view.pivot === 'center') {
-                let curNodePos;
-                for (i = 0; i < this._localScaleList.length; ++i) {
-
-                    newScale.x = this._localScaleList[i].x * scale.x;
-                    newScale.y = this._localScaleList[i].y * scale.y;
-                    newScale.z = this._localScaleList[i].z * scale.z;
-
-                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
-
-                    let offset = cc.v3(
-                        this._offsetList[i].x * scale.x,
-                        this._offsetList[i].y * scale.y,
-                        this._offsetList[i].z * scale.z
-                    );
-
-                    curNodePos = this._center.add(offset);
-                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
-                }
-            }
-            else {
-                for (i = 0; i < this._localScaleList.length; ++i) {
-                    newScale.x = this._localScaleList[i].x * scale.x;
-                    newScale.y = this._localScaleList[i].y * scale.y;
-                    newScale.z = this._localScaleList[i].z * scale.z;
-
-                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
-                }
-            }
-        }
-
-        // update scaleController transform
-        this.updateControllerTransform();
     }
 
-    updateControllerTransform()
-    {
+    updateControllerTransform() {
         let node = this.node;
         let worldPos;
-        let worldRot = cc.quat(0,0,0,1);
+        let worldRot = cc.quat(0, 0, 0, 1);
 
         if (this._view.pivot === 'center') {
             worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);

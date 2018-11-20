@@ -1,66 +1,73 @@
 'use strict';
-const NodeUtils = Editor.require('scene://utils/node');
+const NodeUtils = require('../../../../utils/node');
 let PositionController = require('../controller/position-controller');
-
-class MoveGizmo extends Editor.Gizmo {
-    init ()
-    {
+let Gizmo = require('../gizmo');
+class PositionGizmo extends Gizmo {
+    init() {
         this.nodesWorldPosList = [];
     }
 
-    layer () {
+    layer() {
         return 'foreground';
     }
 
-    onCreateRoot () {
-
-    }
-
-    onCreateController()
-    {
+    onCreateController() {
         let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
-        this._controller = new PositionController(this._root, this._view, rootNode);
+        this._controller = new PositionController(rootNode);
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
         this._controller.onControllerMouseMove = this.onControllerMouseMove.bind(this);
         this._controller.onControllerMouseUp = this.onControllerMouseUp.bind(this);
     }
 
-    visible () {
+    visible() {
         return true;
     }
 
-    dirty () {
+    dirty() {
         return true;
     }
 
-    onControllerMouseDown()
-    {
+    onControllerMouseDown() {
         this.nodesWorldPosList.length = 0;
         let topNodes = this.topNodes;
         for (let i = 0; i < topNodes.length; ++i) {
-            this.nodesWorldPosList.push( NodeUtils.getWorldPosition3D(topNodes[i]) );
+            this.nodesWorldPosList.push(NodeUtils.getWorldPosition3D(topNodes[i]));
         }
     }
 
-    onControllerMouseMove(/*event*/)
-    {
+    onControllerMouseMove(/*event*/) {
+        if (this._controller.updated) {
+            this.recordChanges();
+
+            let deltaPos = this._controller.getDeltaPosition();
+            let topNodes = this.topNodes;
+            let curNodePos;
+            for (let i = 0; i < this.nodesWorldPosList.length; ++i) {
+                curNodePos = this.nodesWorldPosList[i].add(deltaPos);
+                NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
+
+                // 发送节点修改消息
+                Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
+            }
+        }
+
+        // update controller transform
+        this.updateControllerTransform();
     }
 
-    onControllerMouseUp()
-    {
-        if (this._controller.updated)
-        {
+    onControllerMouseUp() {
+        if (this._controller.updated) {
             this.commitChanges();
         }
     }
 
-    onGizmoKeyDown(event){
+    onGizmoKeyDown(event) {
         if (!this.target) {
             return;
         }
 
-        let keyCode = Editor.KeyCode(event.which);
+        let keyCode = event.key.toLowerCase();
 
         if (keyCode !== 'left' &&
             keyCode !== 'right' &&
@@ -94,16 +101,14 @@ class MoveGizmo extends Editor.Gizmo {
             node.setPosition(curPos.x, curPos.y, curPos.z);
 
         });
-
-        this._view.repaintHost();
     }
 
-    onGizmoKeyUp(event){
+    onGizmoKeyUp(event) {
         if (!this.target) {
             return;
         }
 
-        let keyCode = Editor.KeyCode(event.which);
+        let keyCode = event.key.toLowerCase();
 
         if (keyCode !== 'left' &&
             keyCode !== 'right' &&
@@ -115,43 +120,25 @@ class MoveGizmo extends Editor.Gizmo {
         this.commitChanges();
     }
 
-    onKeyDown (/*event*/) {
+    onKeyDown(/*event*/) {
 
     }
 
-    onKeyUp (/*event*/) {
+    onKeyUp(/*event*/) {
 
     }
 
-    onUpdate () {
-        if (this._controller.updated)
-        {
-            this.recordChanges();
-
-            let deltaPos = this._controller.getDeltaPosition();
-            let topNodes = this.topNodes;
-            let curNodePos;
-            for (let i = 0; i < this.nodesWorldPosList.length; ++i)
-            {
-                curNodePos = this.nodesWorldPosList[i].add(deltaPos);
-                NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
-            }
-
-            this._view.repaintHost();
-        }
+    onUpdate() {
 
 
-        // update controller transform
-        this.updateControllerTransform();
     }
 
     // 由于inspect之类的地方也会修改位置旋转等，所以暂时在update里调用可以确保位置一直是正确的，更好的
     // 作法应该是在各种引起Node的Transform的变化的地方发送一个消息来通知Gizmo的Trasform更新。
-    updateControllerTransform()
-    {
+    updateControllerTransform() {
         let node = this.node;
         let worldPos;
-        let worldRot = cc.quat(0,0,0,1);
+        let worldRot = cc.quat(0, 0, 0, 1);
         if (this._view.pivot === 'center') {
             worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
         }
@@ -159,7 +146,7 @@ class MoveGizmo extends Editor.Gizmo {
             worldPos = NodeUtils.getWorldPosition3D(node);
         }
 
-        if ( this._view.coordinate !== 'global' ) {
+        if (this._view.coordinate !== 'global') {
             worldRot = NodeUtils.getWorldRotation3D(node);
         }
 
@@ -168,4 +155,4 @@ class MoveGizmo extends Editor.Gizmo {
     }
 }
 
-module.exports = MoveGizmo;
+module.exports = PositionGizmo;

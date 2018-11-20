@@ -1,22 +1,16 @@
 'use strict';
 const vec3 = cc.vmath.vec3;
 const vec2 = cc.vmath.vec2;
-let snapPixelWihVec2 = Editor.GizmosUtils.snapPixelWihVec2;
-const CameraTool = Editor.require('packages://scene/panel/tools/camera');
-const NodeUtils = Editor.require('scene://utils/node');
-const ControllerUtils = require('../3d/controller-utils');
-const ControllerShapeCollider = require('../3d/controller-shape-collider');
+const CameraTool = require('../../../../3d/manager/camera');
+const NodeUtils = require('../../../../utils/node');
+const ControllerUtils = require('../utils/controller-utils');
+const ControllerShapeCollider = require('../utils/controller-shape-collider');
 const { isCreator2x, create3DNode, setMeshColor, getModel } = require('../../engine');
 
-class ControllerBase
-{
-    constructor(graphic, view, rootNode)
-    {
-        this._graphic = graphic;
-        this._view = view;
-        this._shapeGroup = null;
-        this._position = cc.v3(0,0,0);
-        this._rotation = cc.quat(0,0,0,1);
+class ControllerBase {
+    constructor(rootNode) {
+        this._position = cc.v3(0, 0, 0);
+        this._rotation = cc.quat(0, 0, 0, 1);
         this._updated = false;
 
         // for 3d
@@ -25,23 +19,21 @@ class ControllerBase
         this._baseDist = 600;
         this._axisDataMap = {};
         this._axisDir = {};
-        this._axisDir['x'] = cc.v3(1,0,0);
-        this._axisDir['y'] = cc.v3(0,1,0);
-        this._axisDir['z'] = cc.v3(0,0,1);
+        this._axisDir['x'] = cc.v3(1, 0, 0);
+        this._axisDir['y'] = cc.v3(0, 1, 0);
+        this._axisDir['z'] = cc.v3(0, 0, 1);
 
         // for 2d
         this._is2D = isCreator2x;
         this._2DScale = 1;
     }
 
-    createShapeNode(name)
-    {
+    createShapeNode(name) {
         this.shape = create3DNode(name);
         this.shape.parent = this._rootNode;
     }
 
-    initAxis(node, axisName, oriColor = cc.Color.WHITE)
-    {
+    initAxis(node, axisName, oriColor = cc.Color.WHITE) {
         let axisData = {};
         axisData.topNode = node;
         axisData.rendererNodes = this.getRendererNodes(node);
@@ -58,29 +50,23 @@ class ControllerBase
             this.onInitAxis(node, axisName);
     }
 
-    setAxisColor(axisName, color)
-    {
+    setAxisColor(axisName, color) {
         let rendererNodes = this._axisDataMap[axisName].rendererNodes;
-        if (rendererNodes != null)
-        {
+        if (rendererNodes != null) {
             rendererNodes.forEach(node => {
                 setMeshColor(node, color);
             });
         }
     }
 
-    resetAxisColor()
-    {
-        for(let key in this._axisDataMap)
-        {
+    resetAxisColor() {
+        for (let key in this._axisDataMap) {
             this.setAxisColor(key, this._axisDataMap[key].oriColor);
         }
     }
 
-    registerMouseEvents(node, axisName)
-    {
-        node.on('mouseDown', function(event)
-        {
+    registerMouseEvents(node, axisName) {
+        node.on('mouseDown', function (event) {
             event.axisName = axisName;
             event.node = node;
             this._updated = false;
@@ -89,8 +75,7 @@ class ControllerBase
             event.stopPropagation();
         }.bind(this));
 
-        node.on('mouseMove', function(event)
-        {
+        node.on('mouseMove', function (event) {
             this._updated = true;
             event.axisName = axisName;
             event.node = node;
@@ -100,8 +85,7 @@ class ControllerBase
 
         }.bind(this));
 
-        node.on('mouseUp', function(event)
-        {
+        node.on('mouseUp', function (event) {
             event.axisName = axisName;
             event.node = node;
             if (this.onMouseUp)
@@ -111,16 +95,14 @@ class ControllerBase
         }.bind(this));
 
         // 鼠标移出场景窗口，暂时处理为和mouseup等同
-        node.on('mouseLeave', function(event)
-        {
+        node.on('mouseLeave', function (event) {
             if (this.onMouseLeave)
                 this.onMouseLeave(event);
             event.stopPropagation();
             this._updated = false;
         }.bind(this));
 
-        node.on('hoverIn', function(event)
-        {
+        node.on('hoverIn', function (event) {
             event.axisName = axisName;
             event.node = node;
             if (this.onHoverIn)
@@ -128,8 +110,7 @@ class ControllerBase
             event.stopPropagation();
         }.bind(this));
 
-        node.on('hoverOut', function(event)
-        {
+        node.on('hoverOut', function (event) {
             event.axisName = axisName;
             event.node = node;
             if (this.onHoverOut)
@@ -138,65 +119,47 @@ class ControllerBase
         }.bind(this));
     }
 
-    get updated()
-    {
+    get updated() {
         return this._updated;
     }
 
-    sceneToPixel (p) 
-    {
-        return snapPixelWihVec2( this._view.sceneToPixel(p) );
-    }
-
-    setPosition(value)
-    {
-        if ( value instanceof cc.Vec3 )
-        {
+    setPosition(value) {
+        if (value instanceof cc.Vec3) {
             this._position = value;
         }
-        else
-        {
+        else {
             this._position = cc.v3(value.x, value.y, 0);
         }
         this.updateController();
     }
 
-    getPosition()
-    {
+    getPosition() {
         return this._position;
     }
 
-    setRotation(value)
-    {
+    setRotation(value) {
         this._rotation = value;
         this.updateController();
     }
 
-    updateController()
-    {
+    updateController() {
         this.updateController3D();
     }
 
-    updateController3D()
-    {
+    updateController3D() {
         NodeUtils.setWorldPosition3D(this.shape, this._position);
         NodeUtils.setWorldRotation3D(this.shape, this._rotation);
 
-        // 根据和相机的距离，对坐标系进行整体放缩
-        let scalar = this.getDistScalar();
-        this.shape.setScale(scalar, scalar, scalar);
+        this.adjustControllerSize();
     }
 
-    getDistScalar()
-    {
+    getDistScalar() {
         let scalar = 1;
 
-        if (this._is2D)
-        {
+        if (this._is2D) {
             scalar = 1 / this._2DScale;
         }
-        else
-        {
+        else {
             let cameraNode = CameraTool._camera.node;
             let dist = ControllerUtils.getCameraDistanceFactor(this._position, cameraNode);
             scalar = dist / this._baseDist;
@@ -205,23 +168,27 @@ class ControllerBase
         return scalar;
     }
 
-    needRender(node){
+    adjustControllerSize() {
+        // 根据和相机的距离，对坐标系进行整体放缩
+        let scalar = this.getDistScalar();
+        this.shape.setScale(scalar, scalar, scalar);
+    }
+
+    needRender(node) {
         let csc = node.getComponent(ControllerShapeCollider);
         if (csc && csc.isRender == false)
             return false;
-        
+
         return true;
     }
 
-    getRendererNodes(node)
-    {
+    getRendererNodes(node) {
         let renderNodes = [];
 
         if (getModel(node) && this.needRender(node))
             renderNodes.push(node);
 
-        for (let i = 0; i < node.childrenCount; i++)
-        {
+        for (let i = 0; i < node.childrenCount; i++) {
             let child = node._children[i];
             renderNodes = renderNodes.concat(this.getRendererNodes(child));
         }
@@ -229,13 +196,11 @@ class ControllerBase
         return renderNodes;
     }
 
-    getRayDetectNodes(node)
-    {
+    getRayDetectNodes(node) {
         let rayDetectNodes = [];
         if (getModel(node)) rayDetectNodes.push(node);
 
-        for (let i = 0; i < node.childrenCount; i++)
-        {
+        for (let i = 0; i < node.childrenCount; i++) {
             let child = node._children[i];
             rayDetectNodes = rayDetectNodes.concat(this.getRayDetectNodes(child));
         }
@@ -243,19 +208,17 @@ class ControllerBase
         return rayDetectNodes;
     }
 
-    localToWorldPosition(localPos)
-    {
+    localToWorldPosition(localPos) {
         let worldMatrix = cc.mat4();
-        let worldPos = cc.v3(0,0,0);
+        let worldPos = cc.v3(0, 0, 0);
         this.shape.getWorldMatrix(worldMatrix);
-    
+
         vec3.transformMat4(worldPos, localPos, worldMatrix);
-    
+
         return worldPos;
     }
 
-    worldPosToScreenPos(worldPos)
-    {
+    worldPosToScreenPos(worldPos) {
         let camera = CameraTool._camera._camera;
         let screenPos = cc.v2();
         camera.worldToScreen(screenPos, worldPos, cc.visibleRect.width, cc.visibleRect.height);
@@ -263,13 +226,11 @@ class ControllerBase
         return screenPos;
     }
 
-    getScreenPos(localPos)
-    {
+    getScreenPos(localPos) {
         return this.worldPosToScreenPos(this.localToWorldPosition(localPos));
     }
 
-    getAlignAxisMoveDistance(axisWorldDirEndPos, deltaPos)
-    {
+    getAlignAxisMoveDistance(axisWorldDirEndPos, deltaPos) {
         let dirInScreen = this.worldPosToScreenPos(axisWorldDirEndPos);
         let oriPosInScreen = this.worldPosToScreenPos(this._position);
         vec2.sub(dirInScreen, dirInScreen, oriPosInScreen);
@@ -279,35 +240,29 @@ class ControllerBase
         return alignAxisMoveDist;
     }
 
-    show()
-    {
+    show() {
         this.shape.active = true;
 
-        if (this.onShow)
-        {
+        if (this.onShow) {
             this.onShow();
         }
     }
 
-    hide()
-    {
+    hide() {
         this.shape.active = false;
 
-        if (this.onHide)
-        {
+        if (this.onHide) {
             this.onHide();
         }
     }
 
-    setDimension(is2D)
-    {
+    setDimension(is2D) {
         this._is2D = is2D;
         this.show();
         this.updateController();
     }
 
-    set2DScale(scale)
-    {
+    set2DScale(scale) {
         this._2DScale = scale;
         this.updateController();
     }

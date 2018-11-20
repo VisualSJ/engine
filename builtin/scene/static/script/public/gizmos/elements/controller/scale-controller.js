@@ -2,24 +2,21 @@
 const vec3 = cc.vmath.vec3;
 // const Tools = require('../tools');
 let ControllerBase = require('./controller-base');
-let ControllerUtils = require('../3d/controller-utils');
-const NodeUtils = Editor.require('scene://utils/node');
+let ControllerUtils = require('../utils/controller-utils');
+const NodeUtils = require('../../../../utils/node');
 
-class ScaleController extends ControllerBase
-{
-    constructor(graphic, view, rootNode)
-    {
-        super(graphic, view, rootNode);
+class ScaleController extends ControllerBase {
+    constructor(rootNode) {
+        super(rootNode);
 
-        this._deltaScale = cc.v3(0,0,0);
+        this._deltaScale = cc.v3(0, 0, 0);
         this._scaleFactor = 10;
         //this._shapeGroup = Tools.scaleTool(this._graphic, this.createMoveCallbacks());
 
         this.initShape();
     }
 
-    initShape()
-    {
+    initShape() {
         this.createShapeNode('ScaleController');
 
         let baseCubeSize = 25;
@@ -32,7 +29,7 @@ class ScaleController extends ControllerBase
         xSliderNode.parent = this.shape;
         NodeUtils.setEulerAngles(xSliderNode, cc.v3(-90, -90, 0));
         this.initAxis(xSliderNode, 'x', cc.Color.RED);
-        
+
 
         let ySliderNode = ControllerUtils.scaleSlider(baseCubeSize, axisLength, cc.Color.GREEN, 'ySlider');
         ySliderNode.parent = this.shape;
@@ -45,12 +42,13 @@ class ScaleController extends ControllerBase
 
         let xyzNode = ControllerUtils.cube(baseCubeSize, baseCubeSize, baseCubeSize, cc.Color.GRAY, 'xyzScale');
         xyzNode.parent = this.shape;
-        this._axisDir['xyz'] = cc.v3(1,1,1);    // only for scale
+        this._axisDir['xyz'] = cc.v3(1, 1, 1);    // only for scale
         this.initAxis(xyzNode, 'xyz', cc.Color.GRAY);
+
+        this.shape.active = false;
     }
 
-    onInitAxis(node, axisName)
-    {
+    onInitAxis(node, axisName) {
         if (axisName === 'xyz')
             return;
 
@@ -61,8 +59,7 @@ class ScaleController extends ControllerBase
         this._axisSliderNodes[axisName] = sliderNodeData;
     }
 
-    onAxisSliderMove(axisName, deltaDist)
-    {
+    onAxisSliderMove(axisName, deltaDist) {
         if (this._axisSliderNodes[axisName] == null)
             return;
 
@@ -76,11 +73,10 @@ class ScaleController extends ControllerBase
         head.setPosition(0, newLength, 0);
     }
 
-    getAlignAxisDeltaScale(axisName, curMouseDeltaPos)
-    {
+    getAlignAxisDeltaScale(axisName, curMouseDeltaPos) {
         let axisDir = this._axisDir[axisName];
         let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir), curMouseDeltaPos);
-    
+
         let deltaScale = cc.v3();
         let deltaDist = alignAxisMoveDist / this._scaleFactor;
         vec3.scale(deltaScale, axisDir, deltaDist);
@@ -90,23 +86,20 @@ class ScaleController extends ControllerBase
         return deltaScale;
     }
 
-    onMouseDown(event)
-    {
-        this._deltaScale = cc.v3(0,0,0);
-        this._mouseDeltaPos = cc.v2(0,0);
-        this._view.style.cursor = 'pointer';
+    onMouseDown(event) {
+        this._deltaScale = cc.v3(0, 0, 0);
+        this._mouseDeltaPos = cc.v2(0, 0);
+        cc.game.canvas.style.cursor = 'pointer';
         this._moveAxisName = event.axisName;
 
         this.onAxisSliderMove(event.axisName, 0);
 
-        if (this.onControllerMouseDown != null)
-        {
+        if (this.onControllerMouseDown != null) {
             this.onControllerMouseDown();
         }
     }
 
-    onMouseMove(event)
-    {
+    onMouseMove(event) {
         this._mouseDeltaPos.x += event.deltaX;
         this._mouseDeltaPos.y += event.deltaY;
 
@@ -114,57 +107,44 @@ class ScaleController extends ControllerBase
 
         this._deltaScale = this.getAlignAxisDeltaScale(event.axisName, this._mouseDeltaPos);
 
-        if (this.onControllerMouseMove != null)
-        {
+        if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);
         }
 
         this.updateController();
-        this._view.repaintHost();
     }
 
-    onMouseUp(event)
-    {
-        this._view.style.cursor = 'default';
+    onMouseUp(event) {
+        cc.game.canvas.style.cursor = 'default';
         this.onAxisSliderMove(this._moveAxisName, 0);
 
-        if (this.onControllerMouseUp != null)
-        {
+        if (this.onControllerMouseUp != null) {
             this.onControllerMouseUp();
         }
     }
 
-    onMouseLeave()
-    {
+    onMouseLeave() {
         this.onMouseUp();
     }
 
-    onHoverIn(event)
-    {
+    onHoverIn(event) {
         this.setAxisColor(event.axisName, ControllerUtils.YELLOW);
-        this._view.repaintHost();
     }
 
-    onHoverOut(/*event*/)
-    {
+    onHoverOut(/*event*/) {
         this.resetAxisColor();
-        this._view.repaintHost();
     }
 
-    getDeltaScale()
-    {
+    getDeltaScale() {
         return this._deltaScale;
     }
 
-    onShow()
-    {
-        if (this._is2D)
-        {
+    onShow() {
+        if (this._is2D) {
             this._axisDataMap['z'].topNode.active = false;
             this.updateController();
         }
-        else
-        {
+        else {
             this._axisDataMap['z'].topNode.active = true;
         }
     }
