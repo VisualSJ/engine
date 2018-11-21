@@ -1,6 +1,9 @@
 <ui-drag-area class="tree" dropable="asset,file"
     :state="state"
     :style="{ top: top + 'px' }"
+    @dragenter="dragEnter($event)"
+    @dragover="hideSelectBox($event)"
+    @drop="drop($event)"
 >
     <tree-node type="asset"
         v-for="(asset,index) in assets" 
@@ -16,7 +19,7 @@
         @ipcSingleSelect="ipcSingleSelect"
         @rename="rename"
         @dragOver="dragOver"
-        @drop="drop"
+        @ipcDrop="ipcDrop"
     >
     </tree-node>
 </ui-drag-area>

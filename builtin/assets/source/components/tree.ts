@@ -9,7 +9,7 @@ const utils = require('./tree-utils');
 let vm: any = null;
 
 let isRenderingTree: boolean = false; // 正在重新渲染树形
-let isRequiringToAdd: boolean = false; // 新增项目带来的请求重新渲染树形
+let isRefreshing: boolean = false; // 新增项目带来的请求重新渲染树形
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
@@ -110,48 +110,6 @@ export const watch = {
 export function mounted() {
     // @ts-ignore
     db.vm = vm = this;
-
-    // @ts-ignore
-    this.$el.addEventListener('dragenter', () => {
-        // @ts-ignore
-        vm.dragOver(vm.assets[0].uuid);
-    });
-
-    // @ts-ignore
-    this.$el.addEventListener('drop', (event) => {
-        // @ts-ignore
-        const dragData = event.dataTransfer.getData('dragData');
-        let data: IdragAsset;
-        if (dragData === '') {
-            // @ts-ignore
-            data = {};
-        } else {
-            data = JSON.parse(dragData);
-        }
-
-        // @ts-ignore
-        const rootUuid = this.assets[0].uuid;
-        // @ts-ignore
-        const localFiles = Array.from(event.dataTransfer.files);
-        if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
-            data.from = 'osFile';
-            data.insert = 'inside';
-            // @ts-ignore
-            data.files = localFiles;
-        }
-
-        data.to = rootUuid; // 都归于根节点
-        data.insert = 'inside';
-
-        if (data.from) {  // 如果从根节点移动，则不需要移动
-            const arr = utils.getGroupFromTree(db.assetsTree, data.from, 'uuid');
-            if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
-                return;
-            }
-        }
-        // @ts-ignore
-        this.drop(data);
-    });
 }
 
 export const methods = {
@@ -168,31 +126,43 @@ export const methods = {
      * 刷新树形
      */
     async refresh() {
-        await db.refresh();
-        if (!db.assetsTree) { // 容错处理，数据可能为空
-            return;
+        if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
+            clearTimeout(vm.timerAdd);
+            vm.timerAdd = setTimeout(() => {
+                run();
+            }, 800);
+        } else {
+            run();
         }
 
-        this.changeData();
+        async function run() {
+            isRefreshing = true;
+            setTimeout(() => {
+                isRefreshing = false;
+            }, 600);
 
-        // @ts-ignore 准备重新定位
-        let intoView = this.intoView;
-        // @ts-ignore
-        this.intoView = '';
-        // @ts-ignore
-        const renameSource = this.renameSource;
-        if (renameSource !== '') {
-            const asset = utils.getGroupFromTree(db.assetsTree, renameSource, 'source')[0];
-            if (asset) {
-                intoView = asset.uuid;
+            await db.refresh();
+            if (!db.assetsTree) { // 容错处理，数据可能为空
+                return;
             }
-        }
 
-        // @ts-ignore
-        vm.$nextTick(() => {
-            // @ts-ignore
-            this.intoView = intoView;
-        });
+            vm.changeData();
+
+            // @ts-ignore 准备重新定位
+            let intoView = vm.intoView;
+            vm.intoView = '';
+            const renameSource = vm.renameSource;
+            if (renameSource !== '') {
+                const asset = utils.getGroupFromTree(db.assetsTree, renameSource, 'source')[0];
+                if (asset) {
+                    intoView = asset.uuid;
+                }
+            }
+
+            vm.$nextTick(() => {
+                vm.intoView = intoView;
+            });
+        }
     },
 
     /**
@@ -324,23 +294,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        if (isRequiringToAdd) { // 性能优化：避免导入带来的批量计算冲击
-            clearTimeout(vm.timerAdd);
-            vm.timerAdd = setTimeout(() => {
-                run();
-            }, 1000);
-        } else {
-            run();
-        }
-
-        function run() {
-            vm.refresh();
-            isRequiringToAdd = true;
-
-            setTimeout(() => {
-                isRequiringToAdd = false;
-            }, 500);
-        }
+        vm.refresh();
     },
 
     /**
@@ -606,12 +560,12 @@ export const methods = {
             top: top + 'px',
             height: height + 'px',
         };
-
+    },
+    hideSelectBox() {
         // 效果优化：拖动且移出本面板时，选框隐藏
         clearTimeout(vm.timerDrag);
         vm.timerDrag = setTimeout(() => {
-            // @ts-ignore
-            this.selectBox = {
+            vm.selectBox = {
                 opacity: 0,
             };
         }, 500);
@@ -631,11 +585,58 @@ export const methods = {
     },
 
     /**
+     * tree 容器上的 drop
+     * @param event
+     */
+    drop(event: Event) {
+        // @ts-ignore
+        const dragData = event.dataTransfer.getData('dragData');
+        let data: IdragAsset;
+        if (dragData === '') {
+            // @ts-ignore
+            data = {};
+        } else {
+            data = JSON.parse(dragData);
+        }
+
+        // @ts-ignore
+        const rootUuid = vm.assets[0].uuid;
+        // @ts-ignore
+        const localFiles = Array.from(event.dataTransfer.files);
+        if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
+            data.from = 'osFile';
+            data.insert = 'inside';
+            // @ts-ignore
+            data.files = localFiles;
+        }
+
+        data.to = rootUuid; // 都归于根节点
+        data.insert = 'inside';
+
+        if (data.from) {  // 如果从根节点移动，则不需要移动
+            const arr = utils.getGroupFromTree(db.assetsTree, data.from, 'uuid');
+            if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
+                return;
+            }
+        }
+        // @ts-ignore
+        vm.ipcDrop(data);
+    },
+
+    /**
+     * 进入 tree 容器
+     * @param event
+     */
+    dragEnter(event: Event) {
+        vm.dragOver(vm.assets[0].uuid);
+    },
+
+    /**
      * 资源拖动
      *
      * @param json
      */
-    async drop(json: IdragAsset) {
+    async ipcDrop(json: IdragAsset) {
         // @ts-ignore 选框立即消失
         this.selectBox = {
             opacity: 0,

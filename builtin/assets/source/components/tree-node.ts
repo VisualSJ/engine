@@ -281,7 +281,7 @@ export const methods = {
         data.insert = insert; // 在重新排序前获取数据
 
         // @ts-ignore
-        this.$emit('drop', data);
+        this.$emit('ipcDrop', data);
 
         // @ts-ignore
         this.$emit('dragLeave', asset.uuid); // 取消拖动的高亮效果
