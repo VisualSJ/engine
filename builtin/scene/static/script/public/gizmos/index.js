@@ -4,6 +4,8 @@ const GizmoDefines = require('./gizmo-defines');
 const NodeUtils = require('../../3d/manager/node');
 const Selection = require('../selection');
 
+const operationManager = require('../operation');
+
 let hitPoint = cc.v3();
 
 module.exports = {
@@ -16,12 +18,12 @@ module.exports = {
         this.curSelectNode = null;
 
         // events
-        document.addEventListener('mousedown', this.onMouseDown.bind(this));
-        document.addEventListener('mousemove', this.onMouseMove.bind(this));
-        document.addEventListener('mouseup', this.onMouseUp.bind(this));
-        document.addEventListener('wheel', this.onMouseWheel.bind(this));
-        document.addEventListener('keydown', this.onKeyDown.bind(this));
-        document.addEventListener('keyup', this.onKeyUp.bind(this));
+        operationManager.on('mousedown', this.onMouseDown.bind(this));
+        operationManager.on('mousemove', this.onMouseMove.bind(this));
+        operationManager.on('mouseup', this.onMouseUp.bind(this));
+        operationManager.on('wheel', this.onMouseWheel.bind(this));
+        operationManager.on('keydown', this.onKeyDown.bind(this));
+        operationManager.on('keyup', this.onKeyUp.bind(this));
 
         // for gizmo tool
         this._gizmoToolMap = {};
@@ -235,11 +237,9 @@ module.exports = {
     },
 
     onMouseDown(event) {
-        if (event.button) { return; }
-
-        if (event.which === 1) {
-            let x = event.offsetX;
-            let y = cc.game.canvas.height - event.offsetY;
+        if (event.leftButton) {
+            let x = event.x;
+            let y = cc.game.canvas.height - event.y;
             this.recordLastX = x;
             this.recordLastY = y;
 
@@ -268,8 +268,8 @@ module.exports = {
     },
 
     onMouseMove(event) {
-        let x = event.offsetX;
-        let y = cc.game.canvas.height - event.offsetY;
+        let x = event.x;
+        let y = cc.game.canvas.height - event.y;
 
         let results = getRaycastResults(this.gizmoRootNode, x, y);
 
@@ -281,8 +281,8 @@ module.exports = {
 
         customEvent.x = x;
         customEvent.y = y;
-        customEvent.deltaX = event.movementX;
-        customEvent.deltaY = -event.movementY;
+        customEvent.deltaX = event.moveDeltaX;
+        customEvent.deltaY = -event.moveDeltaY;
 
         if (this.curSelectNode != null) {
             this.curSelectNode.emit(customEvent.type, customEvent);
@@ -314,8 +314,8 @@ module.exports = {
 
     },
     onMouseUp(event) {
-        let x = event.offsetX;
-        let y = cc.game.canvas.height - event.offsetY;
+        let x = event.x;
+        let y = cc.game.canvas.height - event.y;
         let customEvent = new cc.Event('mouseUp', true);
 
         if (this.curSelectNode != null) {

@@ -1,6 +1,7 @@
 'use strict';
 
 const { createCamera, createGrid } = require('./utils');
+const operationManager = require('../operation');
 
 let vec3;
 let quat;
@@ -29,7 +30,7 @@ function stopTicking(fn) {
  * 编辑器模式下，游戏内的其他摄像机需要关闭（现阶段是在引擎内 hack 实现）。
  */
 
-class CameraTool {
+class Camera {
 
     constructor() {
         // speed controller
@@ -79,41 +80,35 @@ class CameraTool {
         this.instance = this._camera._camera;
         this.home();
 
-        document.addEventListener('mousedown', this.onMouseDown.bind(this));
-        document.addEventListener('mousemove', this.onMouseMove.bind(this));
-        document.addEventListener('mouseup', this.onMouseUp.bind(this));
-        document.addEventListener('wheel', this.onMouseWheel.bind(this));
-        document.addEventListener('keydown', this.onKeyDown.bind(this));
-        document.addEventListener('keyup', this.onKeyUp.bind(this));
+        operationManager.on('mousedown', this.onMouseDown.bind(this));
+        operationManager.on('mousemove', this.onMouseMove.bind(this));
+        operationManager.on('mouseup', this.onMouseUp.bind(this));
+        operationManager.on('wheel', this.onMouseWheel.bind(this));
+        operationManager.on('keydown', this.onKeyDown.bind(this));
+        operationManager.on('keyup', this.onKeyUp.bind(this));
     }
 
-    onMouseDown(e) {
-        if (!e.button) {
-            return;
-        }
-        cc.game.canvas.requestPointerLock();
+    onMouseDown(event) {
+        operationManager.requestPointerLock();
         this.node.getRotation(this.rot);
-        if (e.button === 1) { // middle button: panning
+        if (event.middleButton) { // middle button: panning
             this.node.getPosition(this.pos);
             vec3.transformQuat(this.right, this.id_right, this.rot);
             vec3.transformQuat(this.up, this.id_up, this.rot);
-        } else if (e.button === 2) { // right button: rotation
+        } else if (event.rightButton) { // right button: rotation
             quat.toEuler(this.euler, this.rot);
             startTicking(this.move);
         }
     }
 
-    onMouseMove(e) {
-        if ((e.buttons & 6) === 0) {
-            return;
-        }
-        let dx = e.movementX;
-        let dy = e.movementY;
-        if (e.buttons & 4) { // middle button: panning
+    onMouseMove(event) {
+        let dx = event.moveDeltaX;
+        let dy = event.moveDeltaY;
+        if (event.middleButton) { // middle button: panning
             vec3.add(this.pos, this.pos, vec3.scale(v3a, this.right, -dx * this.panningSpeed));
             vec3.add(this.pos, this.pos, vec3.scale(v3a, this.up, dy * this.panningSpeed));
             this.node.setPosition(this.pos);
-        } else if (e.buttons & 2) { // right button: rotation
+        } else if (event.rightButton) { // right button: rotation
             this.euler.x -= dy * this.rotationSpeed;
             this.euler.y -= dx * this.rotationSpeed;
             this.node.setRotationFromEuler(this.euler.x, this.euler.y, this.euler.z);
@@ -121,47 +116,42 @@ class CameraTool {
         return true;
     }
 
-    onMouseUp(e) {
-        if (!e.button) {
-            return;
-        }
-        document.exitPointerLock();
-        if (e.button === 2) {
-            stopTicking(this.move);
-        }
+    onMouseUp(event) {
+        operationManager.exitPointerLock();
+        stopTicking(this.move);
     }
 
-    onMouseWheel(e) {
+    onMouseWheel(event) {
         this.node.getPosition(this.pos);
         this.node.getRotation(this.rot);
         vec3.transformQuat(this.forward, this.id_forward, this.rot);
-        vec3.scale(v3a, this.forward, e.deltaY * this.wheelSpeed);
+        vec3.scale(v3a, this.forward, event.wheelDeltaY * this.wheelSpeed);
         vec3.add(v3a, this.pos, v3a);
         this.node.setPosition(v3a);
     }
 
-    onKeyDown(e) {
-        this.shiftKey = e.shiftKey;
-        switch (e.key.toLowerCase()) {
-        case 'd': this.velocity.x = this.curMovSpeed; break;
-        case 'a': this.velocity.x = -this.curMovSpeed; break;
-        case 'e': this.velocity.y = this.curMovSpeed; break;
-        case 'q': this.velocity.y = -this.curMovSpeed; break;
-        case 's': this.velocity.z = this.curMovSpeed; break;
-        case 'w': this.velocity.z = -this.curMovSpeed; break;
+    onKeyDown(event) {
+        this.shiftKey = event.shiftKey;
+        switch (event.key.toLowerCase()) {
+            case 'd': this.velocity.x = this.curMovSpeed; break;
+            case 'a': this.velocity.x = -this.curMovSpeed; break;
+            case 'e': this.velocity.y = this.curMovSpeed; break;
+            case 'q': this.velocity.y = -this.curMovSpeed; break;
+            case 's': this.velocity.z = this.curMovSpeed; break;
+            case 'w': this.velocity.z = -this.curMovSpeed; break;
         }
     }
 
-    onKeyUp(e) {
-        this.shiftKey = e.shiftKey;
-        switch (e.key.toLowerCase()) {
-        case 'd': if (this.velocity.x > 0) { this.velocity.x = 0; } break;
-        case 'a': if (this.velocity.x < 0) { this.velocity.x = 0; } break;
-        case 'e': if (this.velocity.y > 0) { this.velocity.y = 0; } break;
-        case 'q': if (this.velocity.y < 0) { this.velocity.y = 0; } break;
-        case 's': if (this.velocity.z > 0) { this.velocity.z = 0; } break;
-        case 'w': if (this.velocity.z < 0) { this.velocity.z = 0; } break;
-        case 'h': this.home(); break;
+    onKeyUp(event) {
+        this.shiftKey = event.shiftKey;
+        switch (event.key.toLowerCase()) {
+            case 'd': if (this.velocity.x > 0) { this.velocity.x = 0; } break;
+            case 'a': if (this.velocity.x < 0) { this.velocity.x = 0; } break;
+            case 'e': if (this.velocity.y > 0) { this.velocity.y = 0; } break;
+            case 'q': if (this.velocity.y < 0) { this.velocity.y = 0; } break;
+            case 's': if (this.velocity.z > 0) { this.velocity.z = 0; } break;
+            case 'w': if (this.velocity.z < 0) { this.velocity.z = 0; } break;
+            case 'h': this.home(); break;
         }
     }
 
@@ -185,4 +175,4 @@ class CameraTool {
     }
 }
 
-module.exports = new CameraTool();
+module.exports = new Camera();

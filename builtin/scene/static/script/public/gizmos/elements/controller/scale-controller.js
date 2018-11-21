@@ -103,8 +103,8 @@ class ScaleController extends ControllerBase {
     }
 
     onMouseMove(event) {
-        this._mouseDeltaPos.x += event.deltaX;
-        this._mouseDeltaPos.y += event.deltaY;
+        this._mouseDeltaPos.x += event.moveDeltaX;
+        this._mouseDeltaPos.y += event.moveDeltaY;
 
         vec3.set(this._deltaScale, 0, 0, 0);
 

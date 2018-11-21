@@ -5,10 +5,10 @@ import { join } from 'path';
 
 import {
     apply as messageApply,
-    init as  messageInit,
+    init as messageInit,
 } from './message';
 
-window.customElements.define('engine-view', require('../../static/script/engine-view.js'));
+window.customElements.define('engine-view', require('../../static/script/engine-view'));
 
 let panel: any = null;
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
@@ -24,7 +24,7 @@ export const $ = {
     scene: '.scene',
 
     path: 'footer .path',
-    version: 'footer .version'
+    version: 'footer .version',
 };
 
 export const listeners = {
@@ -34,7 +34,7 @@ export const listeners = {
     resize() {
         // @ts-ignore
         window.app && window.app.resize();
-    }
+    },
 };
 
 export const methods = {};
@@ -82,8 +82,8 @@ export async function beforeClose() {
         buttons: [
             Editor.I18n.t('scene.messages.save'),
             Editor.I18n.t('scene.messages.dont_save'),
-            Editor.I18n.t('scene.messages.cancel')
-        ]
+            Editor.I18n.t('scene.messages.cancel'),
+        ],
     });
 
     switch (code) {

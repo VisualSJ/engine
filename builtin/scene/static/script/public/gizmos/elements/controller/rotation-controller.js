@@ -174,8 +174,8 @@ class RotationController extends ControllerBase {
     onMouseMove(event) {
         // mousemovent sometimes has a big number when pointer was locked
         // https://stackoverflow.com/questions/47985847/javascript-mouseevent-movementx-and-movementy-large-spikes
-        let deltaX = EditorMath.clamp(event.deltaX, -10, 10);
-        let deltaY = EditorMath.clamp(event.deltaY, -10, 10);
+        let deltaX = EditorMath.clamp(event.moveDeltaX, -10, 10);
+        let deltaY = EditorMath.clamp(event.moveDeltaY, -10, 10);
 
         this._mouseDeltaPos.x += deltaX;
         this._mouseDeltaPos.y += deltaY;

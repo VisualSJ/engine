@@ -146,8 +146,8 @@ class PositionController extends ControllerBase {
                 this._deltaPosition = hitPos.sub(this._mouseDownOnPlanePos);
             }
         } else {
-            this._mouseDeltaPos.x += event.deltaX;
-            this._mouseDeltaPos.y += event.deltaY;
+            this._mouseDeltaPos.x += event.moveDeltaX;
+            this._mouseDeltaPos.y += event.moveDeltaY;
 
             vec3.set(this._deltaPosition, 0, 0, 0);
 
