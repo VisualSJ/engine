@@ -5,7 +5,7 @@
  * 负责管理当前打开场景的 uuid 与节点对应关系
  */
 
-const { get, } = require('lodash');
+const { get } = require('lodash');
 const dumpUtils = require('../utils/dump');
 const getComponentFunctionOfNode = require('../utils/get-component-function-of-node');
 
@@ -100,7 +100,7 @@ function setProperty(uuid, path, dump) {
 
     if (path === 'parent') {
         // 发送节点修改消息
-        Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
+        Manager.Ipc.send('broadcast', 'scene:node-changed', node.parent.uuid);
     }
     return true;
 }

@@ -1,21 +1,22 @@
 'use strict';
 
+const { get } = require('lodash');
 const nodeUtils = require('./node');
-
-const manager = {
-    node: require('../../manager/node'),
-};
-
 const isChildClass = require('../is-child-class');
 
-const { get } = require('lodash');
-
+/**
+ * 获取一个数据的默认值
+ * @param {*} attrs
+ * @param {*} array
+ * @param {*} start
+ * @param {*} end
+ */
 function fillDefaultValue(attrs, array, start, end) {
     const DefaultMap = {
         Boolean: false,
         String: '',
         Float: 0,
-        Integer: 0
+        Integer: 0,
     };
 
     let val = attrs.saveUrlAsAsset ? '' : DefaultMap[attrs.type];
@@ -38,7 +39,7 @@ function fillDefaultValue(attrs, array, start, end) {
             break;
         }
         case 'Object': {
-            const {ctor: Ctor} = attrs;
+            const { ctor: Ctor } = attrs;
 
             if (isChildClass(Ctor, cc.Asset, cc.Node, cc.Component)) {
                 for (let i = start; i < end; i++) {
@@ -61,61 +62,6 @@ function fillDefaultValue(attrs, array, start, end) {
         default:
             break;
     }
-}
-
-/**
- * 将 type 内的数据填充到实际的 dump 内
- * @param {*} types
- * @param {*} type
- * @param {*} dump
- */
-function _fillerType(types, type, dump) {
-    const classType = types[type];
-
-    Object.keys(dump).forEach((prop) => {
-        const property = dump[prop];
-
-        // 如果 cc.Node 内的 properties 有数据，则全部放到一起
-        if (classType.properties[prop]) {
-            const list = classType.properties[prop];
-            Object.keys(list).forEach((key) => {
-                // 存在 type 为空情况所以 key 为 type 则需要先判断 type 是否存在再赋值
-                if (key === 'type') {
-                    list[key] && (property[key] = list[key]);
-                } else {
-                    property[key] = list[key];
-                }
-            });
-        }
-
-        if (types[property.type]) {
-            const propertyType = types[property.type];
-            Object.keys(propertyType).forEach((key) => {
-                if (key in property) {
-                    return;
-                }
-
-                property[key] = propertyType[key];
-            });
-        }
-    });
-
-    Object.keys(classType.properties).forEach((property) => {
-        const prop = classType.properties[property];
-
-        if (!prop || !dump[property]) {
-            return;
-        }
-
-        Object.keys(prop).forEach((key) => {
-                // 存在 type 为空情况所以 key 为 type 需要先判断 type 是否存在再赋值
-                if (key === 'type') {
-                    prop[key] && (dump[property][key] = prop[key]);
-                } else {
-                    dump[property][key] = prop[key];
-                }
-        });
-    });
 }
 
 /**
@@ -161,7 +107,7 @@ function restoreProperty(node, path, dump) {
         const array = subProperty[subKey];
 
         const oldLength = array.length;
-        const {value} = dump;
+        const { value } = dump;
 
         array.length = value;
         fillDefaultValue(attr, array, oldLength, value);
@@ -169,16 +115,17 @@ function restoreProperty(node, path, dump) {
     }
 
     switch (dump.type) {
-        case 'cc.Scene':
-        case 'cc.Node':
-            const node = manager.node.query(dump.value);
+        case 'Scene':
+        case 'Node':
+            const nodeManaer = require('../../manager/node');
+            const node = nodeManaer.query(dump.value);
             if (key === 'parent') {
                 node.addChild(property);
             } else {
                 property[key] = node;
             }
             break;
-        case 'cc.Vec3':
+        case 'Vec3':
             if (key) {
                 property[key].x = dump.value.x;
                 property[key].y = dump.value.y;
@@ -189,7 +136,7 @@ function restoreProperty(node, path, dump) {
                 property.z = dump.value.z;
             }
             break;
-        case 'cc.Vec2':
+        case 'Vec2':
 
             if (key === 'scale') {
                 property.scaleX = dump.value.x;
@@ -213,7 +160,7 @@ function restoreProperty(node, path, dump) {
                 property.y = dump.value.y;
             }
             break;
-        case 'cc.Size':
+        case 'Size':
 
             if (key === 'size') {
                 property.width = dump.value.width;
@@ -229,11 +176,12 @@ function restoreProperty(node, path, dump) {
                 property.height = dump.value.height;
             }
             break;
-        case 'cc.Color':
+        case 'Color':
             const { a: opacity, r, g, b } = dump.value;
             property[key] = new cc.Color(r, g, b, 255);
             property.opacity = Math.floor(opacity * 255);
             break;
+        case 'cc.Mesh':
         case 'cc.SpriteFrame':
         case 'cc.Texture2D':
         case 'cc.Texture':
@@ -276,7 +224,8 @@ function restoreNode(node, dumpdata) {
             }
             continue;
         } else if (path === 'parent') {
-            node.parent = manager.node.query(data.value.uuid);
+            const nodeManaer = require('../../manager/node');
+            node.parent = nodeManaer.query(data.value.uuid);
         } else if (path === 'children') {
             const uuids = data.value.map((one) => one.value);
             resetNodeChildren(node, uuids);
@@ -294,17 +243,18 @@ function restoreNode(node, dumpdata) {
  * 来自 redo undo 的重置
  */
 function resetNodeChildren(parentNode, childrenIds) {
+    const nodeManaer = require('../../manager/node');
     // 全部移除
     const uuids = parentNode.children.map((node) => node.uuid);
 
     uuids.forEach((uuid) => {
-        const node = manager.node.query(uuid);
+        const node = nodeManaer.query(uuid);
         node.parent = null;
     });
 
     // 重新添加
     childrenIds.forEach((uuid) => {
-        const node = manager.node.query(uuid);
+        const node = nodeManaer.query(uuid);
         if (node) {
             node.parent = null;
             parentNode.addChild(node);
