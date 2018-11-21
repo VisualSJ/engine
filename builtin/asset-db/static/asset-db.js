@@ -212,7 +212,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
         const name = names[i];
         const db = AssetWorker[name];
         const uuids = Object.keys(db.uuid2asset);
-        let importers ;
+        let importers;
         // 存在筛选的 type(资源类型) 变量时，先判断是否有效后获取筛选对应类型资源
         if (options && options.type) {
             importers = type2importer[options.type];
@@ -220,6 +220,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
             // 手动添加 db 对象
             assets.push({
                 source: `db://${name}`,
+                file: db.options.target, // 实际磁盘路径
                 uuid: `db://${name}`,
                 importer: 'database',
                 isDirectory: false,
@@ -239,6 +240,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
             }
             const info = {
                 source: source2url(name, asset.source),
+                file: asset.source, // 实际磁盘路径
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
                 isDirectory: await asset.isDirectory(),
@@ -314,6 +316,7 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
 
     const info = {
         source: asset.source ? source2url(assetInfo.db, asset.source) : null,
+        file: asset.source,
         uuid: asset.uuid,
         importer: asset.meta.importer,
         isDirectory: await asset.isDirectory(),
@@ -360,6 +363,7 @@ function searchSubAssets(parent, asset) {
         const subAsset = asset.subAssets[name];
         parent.subAssets[name] = {
             source: null,
+            file: null,
             uuid: subAsset.uuid,
             importer: subAsset.meta.importer,
             isDirectory: false,

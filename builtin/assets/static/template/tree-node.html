@@ -36,6 +36,7 @@
         v-else
         :value="asset.name"
         @blur="renameSubmit($event, asset)"
+        @keydown.stop
         @keyup.enter="renameSubmit($event, asset)"
         @keyup.esc="renameCancel($event, asset)"
     >

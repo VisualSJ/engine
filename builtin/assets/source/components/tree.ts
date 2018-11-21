@@ -8,7 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let timeOutId: any;
 let isRenderingTree: boolean = false; // 正在重新渲染树形
 let isRequiringToAdd: boolean = false; // 新增项目带来的请求重新渲染树形
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
@@ -21,7 +20,7 @@ export const template = readFileSync(
 );
 
 export const components = {
-    'tree-node': require('./tree-node')
+    'tree-node': require('./tree-node'),
 };
 
 export function data() {
@@ -190,7 +189,10 @@ export const methods = {
         }
 
         // @ts-ignore
-        this.intoView = intoView;
+        vm.$nextTick(() => {
+            // @ts-ignore
+            this.intoView = intoView;
+        });
     },
 
     /**
@@ -323,8 +325,8 @@ export const methods = {
      */
     async add(uuid: string) {
         if (isRequiringToAdd) { // 性能优化：避免导入带来的批量计算冲击
-            clearTimeout(timeOutId);
-            timeOutId = setTimeout(() => {
+            clearTimeout(vm.timerAdd);
+            vm.timerAdd = setTimeout(() => {
                 run();
             }, 1000);
         } else {
@@ -574,7 +576,7 @@ export const methods = {
         } else {
             Editor.Dialog.show({
                 type: 'error',
-                message: Editor.I18n.t('assets.operate.renameFail')
+                message: Editor.I18n.t('assets.operate.renameFail'),
             });
             asset.state = '';
         }
@@ -606,11 +608,11 @@ export const methods = {
         };
 
         // 效果优化：拖动且移出本面板时，选框隐藏
-        clearTimeout(timeOutId);
-        timeOutId = setTimeout(() => {
+        clearTimeout(vm.timerDrag);
+        vm.timerDrag = setTimeout(() => {
             // @ts-ignore
             this.selectBox = {
-                opacity: 0
+                opacity: 0,
             };
         }, 500);
     },
@@ -636,7 +638,7 @@ export const methods = {
     async drop(json: IdragAsset) {
         // @ts-ignore 选框立即消失
         this.selectBox = {
-            opacity: 0
+            opacity: 0,
         };
 
         // 没有源 或者 不是拖动
@@ -759,8 +761,8 @@ export const methods = {
      */
     changeData() {
         if (isRenderingTree) { // 性能优化：避免批量修改带来的计算冲击
-            clearTimeout(timeOutId);
-            timeOutId = setTimeout(() => {
+            clearTimeout(vm.timerChange);
+            vm.timerChange = setTimeout(() => {
                 vm.calcAssetsTree();
             }, 100);
             return;
@@ -782,7 +784,7 @@ export const methods = {
         // 容器的整体高度，重新定位滚动条, +1 是为了增加离底距离
         vm.$parent.treeHeight = (db.assetsMap.size + 1) * db.assetHeight;
 
-        timeOutId = setTimeout(() => {
+        vm.timerChange = setTimeout(() => {
             isRenderingTree = false;
         }, 100);
     },
@@ -827,5 +829,5 @@ export const methods = {
             return db.assetsTree.children[0].uuid; // asset 节点资源
         }
         return vm.selects[0]; // 当前选中的资源
-    }
+    },
 };

@@ -33,6 +33,24 @@ const map = {
             return await setDataURL(src, thumbnail, { x: 0, y: 0 });
         },
     },
+    image: {
+        type: 'image',
+        /**
+         * 生成 image 的缩略图
+         * @param {*} uuid
+         * @param {*} source
+         */
+        async generateImg(asset: ItreeAsset) {
+            const thumbnail = await getDataURL(asset);
+            if (thumbnail.startsWith('data:image')) {
+                return thumbnail;
+            }
+
+            const dbInfo = dbInfos[asset.topSource];
+            const src = join(dbInfo.target, asset.source.substr(dbInfo.protocol.length));
+            return await setDataURL(src, thumbnail, { x: 0, y: 0 });
+        },
+    },
     'sprite-frame': {
         type: 'image',
         /**

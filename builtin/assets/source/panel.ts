@@ -215,7 +215,7 @@ export async function ready() {
                 } else {
                     vm.info = '';
                 }
-            }
+            },
         },
         mounted() {
             // 初始化搜索框

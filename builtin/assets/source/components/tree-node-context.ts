@@ -121,9 +121,9 @@ exports.menu = (self: any, asset: ItreeAsset) => {
             },
             {
                 label: Editor.I18n.t('assets.menu.revealInExplorer'),
-                click() {
-                    const path = join(Editor.Project.path, asset.source.substr(5));
-                    shell.showItemInFolder(path);
+                enabled: !utils.canNotShowInExplorer(asset),
+                async click() {
+                    shell.showItemInFolder(asset.file);
                 },
             },
             {

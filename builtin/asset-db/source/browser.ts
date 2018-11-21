@@ -7,7 +7,26 @@ import { getName } from './utils';
 
 const worker = require('@base/electron-worker');
 
-let isReady: boolean = false;
+// 需要启动的多个 db 配置
+const assetDBs = [
+    {
+        name: 'internal',
+        target: join(__dirname, '../static/internal', 'assets'),
+        library: join(__dirname, '../static/internal', 'library'),
+        temp: join(__dirname, '../static/internal', 'temp'),
+        visible: true,
+        readOnly: false,
+    },
+    {
+        name: 'assets',
+        target: join(Editor.Project.path, 'assets'),
+        library: join(Editor.Project.path, 'library'),
+        temp: join(Editor.Project.path, 'temp/asset-db'),
+        visible: true,
+        readOnly: false,
+    },
+];
+let isReady: number = 0; // 支持多 db, 当 isReady === assetDBs.length 才是全部 ready
 let assetWorker: any = null;
 const protocol = 'db://'; // 支持多 db , 不再列出具体的 db://assets 或 db://internal
 
@@ -21,7 +40,7 @@ module.exports = {
          * 查询是否准备完成
          */
         'query-is-ready'() {
-            return isReady;
+            return isReady === assetDBs.length;
         },
 
         /**
@@ -96,6 +115,17 @@ module.exports = {
                 throw new Error('Asset DB does not exist.');
             }
             return await assetWorker.send('asset-worker:query-asset-meta', uuid);
+        },
+
+        /**
+         * 查询资源的磁盘文件路径
+         * @param uuid
+         */
+        async 'query-asset-path'(uuidOrUrl: string) {
+            if (!assetWorker) {
+                throw new Error('Asset DB does not exist.');
+            }
+            return await queryAssetPath(uuidOrUrl);
         },
 
         /**
@@ -198,13 +228,13 @@ module.exports = {
 
             // 如果其中一个数据是错误的，则停止操作
             if (
-                    dest === url ||
-                    !existsSync(dest) ||
-                    !statSync(dest).isDirectory() ||
-                    !existsSync(url)
-                ) {
-                    return;
-                }
+                dest === url ||
+                !existsSync(dest) ||
+                !statSync(dest).isDirectory() ||
+                !existsSync(url)
+            ) {
+                return;
+            }
 
             // 复制文件
             const name = basename(url);
@@ -216,7 +246,7 @@ module.exports = {
                 overwrite: true,
                 filter(a, b) {
                     return extname(a) !== '.meta';
-                }
+                },
             });
 
             // 返回插入的文件地址
@@ -295,7 +325,7 @@ module.exports = {
             };
 
             if (existsSync(target.file)) {
-               return false; // 新文件名已存在
+                return false; // 新文件名已存在
             }
 
             rename(source.meta, target.meta);
@@ -344,9 +374,9 @@ module.exports = {
         worker.close('asset-db');
 
         // 更新主进程标记以及广播消息
-        isReady = false;
+        isReady = 0;
         Editor.Ipc.sendToAll('asset-db:close');
-    }
+    },
 };
 
 /**
@@ -369,49 +399,33 @@ async function createWorker() {
             engine: info.path,
             type: Editor.Project.type,
             dist: join(__dirname, '../dist'),
-            utils: info.utils
+            utils: info.utils,
         });
 
-        // 启动内置数据库
-        assetWorker.send('asset-worker:startup-database', {
-            name: 'internal',
-            target: join(__dirname, '../static/internal', 'assets'),
-            library: join(__dirname, '../static/internal', 'library'),
-            temp: join(__dirname, '../static/internal', 'temp'),
-            visible: true,
-            readOnly: false,
-        });
-
-        // 启动项目数据库
-        assetWorker.send('asset-worker:startup-database', {
-            name: 'assets',
-            target: join(Editor.Project.path, 'assets'),
-            library: join(Editor.Project.path, 'library'),
-            temp: join(Editor.Project.path, 'temp/asset-db'),
-            visible: true,
-            readOnly: false,
+        // 启动数据库
+        assetDBs.forEach((config) => {
+            assetWorker.send('asset-worker:startup-database', config);
         });
     });
 
     // 如果 worker 检测到正在刷新
     assetWorker.on('refresh', () => {
         Editor.Ipc.sendToAll('asset-db:close');
-        isReady = false;
+        isReady = 0;
     });
 
     // 如果 worker 检测到关闭
     assetWorker.on('closed', () => {
         Editor.Ipc.sendToAll('asset-db:close');
-        isReady = false;
+        isReady = 0;
     });
 
     // 更新主进程标记以及广播消息
     assetWorker.on('asset-worker:ready', async (event: any, name: string) => {
-        if (name !== 'assets') {
-            return;
+        isReady++;
+        if (isReady === assetDBs.length) {
+            Editor.Ipc.sendToAll('asset-db:ready');
         }
-        Editor.Ipc.sendToAll('asset-db:ready');
-        isReady = true;
     });
 
     // workder 检测到了插入资源
@@ -428,4 +442,21 @@ async function createWorker() {
     assetWorker.on('asset-worker:asset-delete', (event: any, uuid: string) => {
         Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
     });
+}
+
+/**
+ * 查询资源的文件路径
+ */
+async function queryAssetPath(uuidOrUrl: string) {
+    if (!assetWorker) {
+        throw new Error('Asset DB does not exist.');
+    }
+    if (!uuidOrUrl.startsWith(protocol)) { // 没有以协议开头即为uuid
+        const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
+        uuidOrUrl = asset.source;
+    }
+
+    const dbInfo = await assetWorker.send('asset-worker:query-database-info', uuidOrUrl);
+
+    return join(dbInfo.target, uuidOrUrl.substr(dbInfo.protocol.length));
 }

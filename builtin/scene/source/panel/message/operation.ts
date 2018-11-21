@@ -61,8 +61,7 @@ export function apply(messages: any) {
 
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         if (asset) {
-            const url = asset.source.replace('db:/', Editor.Project.path);
-            await outputFile(url, text);
+            await outputFile(asset.file, text);
             console.log(`Save scene: ${asset.source}`);
             return;
         }

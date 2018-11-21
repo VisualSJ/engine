@@ -16,6 +16,7 @@ declare interface ItreeAsset {
     importer: string;
     isDirectory: boolean;
     source: string;
+    file: string; // 磁盘路径
     subAssets: any;
     uuid: string;
     readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标

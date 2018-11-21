@@ -41,6 +41,14 @@ exports.canNotPasteAsset = (asset: ItreeAsset) => {
 };
 
 /**
+ * 能否在资源管理器中打开
+ * @param asset
+ */
+exports.canNotShowInExplorer = (asset: ItreeAsset) => {
+    return !asset || !asset.file || asset.isSubAsset;
+};
+
+/**
  * 获取一组资源的位置信息
  * 资源节点对象 asset,
  * 对象所在数组索引 index，
