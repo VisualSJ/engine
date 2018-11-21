@@ -142,11 +142,13 @@
         inputSetFPS.value = '60';
     }
 
-    initPreviewOptions();
-
     // 全局入口
     window.onload = function() {
-        onload();
+        if (window.__quick_compile__) {
+            window.__quick_compile__.load(onload);
+        } else {
+            onload();
+        }
     };
     // 检查是否为空场景
     function checkEmptyScene() {
@@ -174,6 +176,9 @@
 
     // 绑定相关按钮处理事件
     function handles() {
+        // init title
+        document.title = _CCSettings.title;
+
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;
             toggleElementClass(rotateBtn, 'checked');
@@ -236,6 +241,10 @@
         stepBtn.addEventListener('click', function() {
             cc.game.step();
         });
+
+        if (isFullScreen()) {
+            window.addEventListener('resize', updateResolution);
+        }
     }
 
     // 监听用户的刷新行为
@@ -278,10 +287,10 @@
             request.responseType = 'text';
             request.addEventListener('load', (req) => {
                 if (request.status === 200) {
-                    resolve(request.response);
+                    resolve(JSON.parse(request.response));
                 }
             });
-            request.open('GET', 'current-scene', 'true');
+            request.open('GET', 'current-scene.json', 'true');
             request.send();
         });
     }
@@ -326,12 +335,9 @@
             id: canvas,
             showFPS: false,
             scenes: window._CCSettings.scenes,
-            debugMode: cc.debug.DebugMode.ERROR_FOR_WEB_PAGE,
+            debugMode: parseInt(optsDebugMode.value, 10),
             frameRate: parseInt(inputSetFPS.value, 10),
-            renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
-            registerSystemEvent: false,
             jsList: jsList,
-            noCache: false,
             groupList: window._CCSettings.groupList,
             collisionMatrix: window._CCSettings.collisionMatrix,
         };
@@ -342,7 +348,7 @@
         });
         window.__modular.run();
 
-        cc.view.enableRetina(false);
+        cc.view.enableRetina(true);
         cc.debug.setDisplayStats(true);
 
         cc.game.canvas.style.imageRendering = 'pixelated';
@@ -351,9 +357,6 @@
         cc.game.canvas.style.backgroundColor = '';
         cc.director.once(cc.Director.EVENT_AFTER_SCENE_LAUNCH, () => {
             splash.style.display = 'none';
-
-            // HACK Camera 的缩放有问题，待解决
-            cc.Camera.main.ortho = false;
 
             checkEmptyScene();
             inited = true;
@@ -364,6 +367,8 @@
         let json = await getCurrentScene();
         // init assets
         cc.AssetLibrary.init(AssetOptions);
+
+         // load stashed scene
         cc.AssetLibrary.loadJson(json,
             (err, sceneAsset) => {
                 if (err) {
@@ -383,13 +388,16 @@
         await new Promise((resolve) => {
             setTimeout(resolve, 100);
         });
+
         updateResolution();
     }
 
     // 入口函数
     async function onload() {
+        // 初始化 select 选项设置
+        initPreviewOptions();
         // 初始化 canvas 大小
-        updateResolution();
+        // updateResolution();
         // init operation event
         handles();
         // load scene file

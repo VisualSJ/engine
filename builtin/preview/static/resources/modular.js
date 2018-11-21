@@ -25,7 +25,7 @@ window.__modular = {
         };
 
         cc.require = function(request, path) {
-            var m; var requestScript;
+            var m, requestScript;
 
             if (path) {
                 m = modules[path];
@@ -77,8 +77,7 @@ window.__modular = {
 
     run: function() {
         var modules = this.modules;
-        for (var i = 0; i < modules.length; i++) {
-            var path = modules[i];
+        for (var path in modules) {
             var module = modules[path];
             if (!module.module) {
                 module.func();

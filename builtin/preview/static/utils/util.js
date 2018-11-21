@@ -7,6 +7,7 @@ const JSONStream = require('JSONStream');
 const Concat = require('concat-stream');
 const xtend = require('xtend'); // 用于扩展对象的插件包
 const builtins = require('browserify/lib/builtins.js');
+const lodash = require('lodash'); // 排序
 
 // const mdeps = new Mdeps(mpConfig);
 const insertGlobals = require('insert-module-globals');
@@ -32,7 +33,7 @@ const DEVICES = {
     android_800: { name: 'Android (800x480)', height: 800, width: 480},
     android_854: { name: 'Android (854x480)', height: 854, width: 480},
     android_1280: { name: 'Android (1280x720)', height: 1280, width: 720},
-    customize: { name: '自定义', height: 960, width: 640}
+    customize: { name: '自定义', height: 960, width: 640},
 };
 
 // import 类型与 资源类名映射表
@@ -49,7 +50,7 @@ const type2CCClass = {
     // 'tiled-map': 'sp.SkeletonData',
     // 'tiled-map': 'cc.Prefab',
     // 'label-atlas': 'cc.ParticleAsset',
-    markdown: 'cc.TextAsset'
+    markdown: 'cc.TextAsset',
 };
 
 async function getEnginInfo() {
@@ -76,7 +77,7 @@ function updateNodeModules(scripts) {
             tempScripts.push({
                 file,
                 deps: path.deps,
-                isNodeModule: true
+                isNodeModule: true,
             });
             continue;
         }
@@ -91,7 +92,7 @@ function updateNodeModules(scripts) {
         let file = rawPathToAssetPath(path.file);
         tempScripts.push({
             file,
-            deps: path.deps
+            deps: path.deps,
         });
     }
     scriptsCache = tempScripts;
@@ -132,7 +133,7 @@ async function getScriptsCache(scripts) {
 
             // 忽略不存在的模块，否则会打断分析过程，得不到回调
             // 不存在的模块会在 page 层加载模块时输出信息。
-            ignoreMissing: true
+            ignoreMissing: true,
         };
 
         // 自定义解析函数
@@ -162,8 +163,8 @@ async function getScriptsCache(scripts) {
                 vars: {
                     process: function() {
                         return "require('_process')";
-                    }
-                }
+                    },
+                },
             });
         };
 
@@ -196,7 +197,7 @@ async function getCustomConfig(simulatorConfig) {
             designHeight: simulatorConfig.simulator_height || 480,
             groupList: await getProSetting('group-list') || ['default'],
             collisionMatrix: await getProSetting('collision-matrix') || [[true]],
-            rawAssets: {}
+            rawAssets: {},
         };
     }
     let groupList = await getProSetting('preview.group_list');
@@ -206,7 +207,7 @@ async function getCustomConfig(simulatorConfig) {
         designHeight: 480,
         groupList: groupList || ['default'],
         collisionMatrix: collisionMatrix || [[true]],
-        rawAssets: {}
+        rawAssets: {},
     };
 }
 
@@ -243,7 +244,8 @@ function getAssetUrl(path, type) {
     if (type) {
         rawPath = rawPath.replace(extname(rawPath), '');
     }
-    return relative(RAWASSETSPATH, rawPath);
+    rawPath = relative(RAWASSETSPATH, rawPath).replace('resources\\', '');
+    return rawPath.replace(/\\/g, '\/');
 }
 
 async function writScripts() {
@@ -267,7 +269,13 @@ async function writScripts() {
 
 // 查询资源的相关信息
 async function queryAssets() {
-    const assetList = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+    let assetList = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+
+    // 根据 source 排序，否则贴图资源会无法正确贴图
+    assetList = lodash.sortBy(assetList, (asset) => {
+        return asset.source;
+    });
+
     let assets = {};
     let plugins = [];
     let scripts = [];
@@ -295,12 +303,14 @@ async function queryAssets() {
             sceneList.push({ url: asset.source, uuid: asset.uuid });
             continue;
         }
+        // ********************* 资源类型 ********************** //
+        // cc.SpriteFrame 类型资源处理
         if (asset.subAssets && Object.keys(asset.subAssets).length > 0) {
             Object.keys(asset.subAssets).forEach((key) => {
                 let item = asset.subAssets[key];
                 let uuid = item.uuid;
                 assets[uuid] = [];
-                assets[uuid].push(getAssetUrl(asset.source, item.importer), type2CCClass[item.importer]);
+                assets[uuid].push(getAssetUrl(asset.source, item.importer), type2CCClass[item.importer], 1);
             });
         }
         assets[asset.uuid] = [];
@@ -353,6 +363,8 @@ async function buildSetting(options, simulatorConfig) {
     const setting = Object.assign(options, config);
     const currenScene = await getCurrentScene();
     setting.launchScene = currenScene.source;
+    setting.title = `Cocos ${Editor.Project.type} | ${basename(currenScene.source)}`;
+
     // 预览模式下的 canvas 宽高要已实际场景中的 cavas 为准
     if (!simulatorConfig) {
         let json = readJSONSync(currenScene.files[0]);
@@ -362,6 +374,7 @@ async function buildSetting(options, simulatorConfig) {
         setting.designWidth = info._designResolution.width;
         setting.designHeight = info._designResolution.height;
     }
+
     setting.packedAssets = compressPackedAssets(options.packedAssets) || {};
     setting.md5AssetsMap = {};
     let obj = await queryAssets();
@@ -380,28 +393,27 @@ function getModules(path) {
     let uuid = script2uuid[path];
     let libraryPath = getLibraryPath(uuid, extname(rawPath));
     let previewPath = rawPathToAssetPath(rawPath);
-    const HEADER = `(function() {"use strict";
-    var __module = CC_EDITOR ? module : {
-        exports: {}
-    };
+    const HEADER = `(function() {
+    "use strict";
+    var __module = CC_EDITOR ? module : {exports:{}};
     var __filename = '${previewPath}';
-    var __require = CC_EDITOR ? function(request) {
-        return cc.require(request, require);
-    }
-    : function(request) {
-        return cc.require(request, __filename);
-    }
-    ;
-    function __define(exports, require, module) {`;
-    const FOOTER = `}if (CC_EDITOR) {
+    var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} :
+    function (request) {return cc.require(request, __filename);};
+    function __define (exports, require, module) {
+    "use strict";`;
+    const FOOTER = `    }if (CC_EDITOR) {
         __define(__module.exports, __require, __module);
-    }else {
-        cc.registerModuleFunc(__filename, function () {
-            __define(__module.exports, __require, __module);
-        });
-    }})();`;
-    const str = readFileSync(libraryPath, 'utf-8');
-    return HEADER + str + FOOTER;
+}else {
+    cc.registerModuleFunc(__filename, function () {
+        __define(__module.exports, __require, __module);
+    });
+}})();`;
+    const content = readFileSync(libraryPath, 'utf-8');
+    let str = `cc._RF.push(module, '${uuid}', '${basename(rawPath, extname(rawPath))}'`;
+    let name = basename(rawPath, extname(rawPath));
+    let reg = /cc._RF.push\s*\(\s*module,\s*([\'\"][^\'\"]+\s*[\'\"])\s*,\s*([\'\"][^\'\"]*[\'\"])\s*\)/;
+    let rightContent = content.replace(reg, 'cc._RF.push(module, $1, $2, __filename)');
+    return HEADER + rightContent + FOOTER;
 }
 module.exports = {
     buildSetting,
@@ -411,5 +423,5 @@ module.exports = {
     getGroSetting,
     getEnginInfo,
     writScripts,
-    DEVICES
+    DEVICES,
 };

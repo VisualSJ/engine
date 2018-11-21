@@ -28,21 +28,25 @@ export async function start() {
 
     app.set('views', join(__dirname, '../static/views'));
     app.set('view engine', 'jade');
+
     // 获取配置文件
     app.get('/setting.js', async (req: any, res: any) => {
         const setting = await buildSetting({
             debug: true,
             preview: true,
-            platform: 'web-desktop'
+            platform: 'web-desktop',
         });
         res.send(setting);
     });
 
-    // 获取 engine 文件
-    app.get('/engine.js', async (req: any, res: any) => {
-        const type = Editor.Project.type;
-        const result = await Editor.Ipc.requestToPackage('engine', 'query-info', type);
-        createReadStream(result.path, { encoding: 'utf8' }).pipe(res);
+    // 获取引擎基础文件
+    app.get('/engine/*', async (req: any, res: any) => {
+        if (!enginPath) {
+            const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+            enginPath = info.path;
+        }
+        const str = req.params[0];
+        createReadStream(join(enginPath, str), { encoding: 'utf8' }).pipe(res);
     });
 
     // 获取引擎文件
@@ -51,27 +55,22 @@ export async function start() {
             const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
             enginPath = info.path;
         }
-        createReadStream(join(enginPath, req.params[0]), { encoding: 'utf8' }).pipe(res);
-    });
-
-    // 获取项目对应类型的脚本文件
-    app.get('/boot.js', async (req: any, res: any) => {
-        const type = Editor.Project.type;
-        createReadStream(join(__dirname, `./../static/resources/${type}/boot.js`), { encoding: 'utf8' }).pipe(res);
-    });
+        const path = join(enginPath, 'bin/.cache/dev', req.params[0]);
+        res.sendFile(path);
+    }),
 
     // 获取项目对应类型的脚本文件
     app.get('/preview-scripts/*', async (req: any, res: any) => {
         // 设置（HACK）资源目录地址
         res.writeHead(200, {
-            'Content-Type': 'text/javascript'
+            'Content-Type': 'text/javascript',
         });
         const str = getModules(req.params[0]);
         res.end(str);
     });
 
     // 获取当前场景资源 json 与 uuid
-    app.get('/current-scene', async (req: any, res: any) => {
+    app.get('/current-scene.json', async (req: any, res: any) => {
         const asset = await getCurrentScene();
         const filePath = await asset.files[0];
         res.sendFile(filePath);
@@ -82,21 +81,15 @@ export async function start() {
         res.json(DEVICES);
     });
 
-    app.get('/__quick_compile__.js', async (req: any, res: any) => {
-        if (!enginPath) {
-            const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
-            enginPath = info.path;
-        }
-        const path = join(enginPath, 'bin/.cache/dev/__quick_compile__.js');
-        res.sendFile(path);
-    });
-
     // 根据资源路径加载对应静态资源资源
     app.get('/res/import/*', async (req: any, res: any) => {
         const path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
         res.sendFile(path);
     });
-
+    app.get('/res/raw-*',  async (req: any, res: any) => {
+        const path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        res.sendFile(path);
+    });
     // 渲染主页
     app.get('/', (req: any, res: any, next: any) => {
         res.render('index', { title: 'cocos 3d', tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty') });
