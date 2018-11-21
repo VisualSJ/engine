@@ -10,7 +10,8 @@
       "../../node_modules/@types/node",
       "../../node_modules/@types/fs-extra",
       "../../@types/editor",
-      "../../@types/asset-db/glTF"
+      "../../@types/asset-db/glTF",
+      "../../@types/asset-db/equirect-cubemap-faces-js"
     ],
     "esModuleInterop": true
   }

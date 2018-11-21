@@ -1,15 +1,17 @@
 'use strict';
 
+import { AssetDB } from 'asset-db';
+import GltfImporter, { GltfAnimationImporter, GltfMaterialImporter, GltfMeshImporter, GltfSkeletonImporter } from './importers/gltf';
+import ImageImporter from './importers/image';
 import JavascriptImporter from './importers/javascript';
 import JsonImporter from './importers/json';
 import SceneImporter from './importers/scene';
-import ImageImporter from './importers/image';
-import TextureImporter from './importers/texture';
 import TextImporter from './importers/text';
+import TextureImporter from './importers/texture';
+import TextureCubeImporter, { TextureCubeFaceImporter } from './importers/texture-cube';
 import UnknownImporter from './importers/unknown';
-import GltfImporter, { GltfMeshImporter, GltfAnimationImporter, GltfSkeletonImporter, GltfMaterialImporter } from './importers/gltf';
 
-export function register(database: any) {
+export function register(database: AssetDB) {
     // 未知类型导入（不处理）
     database.register(new UnknownImporter(), '*');
 
@@ -28,7 +30,7 @@ export function register(database: any) {
         '.csv',
         '.proto',
         '.ts',
-        '.tsx'
+        '.tsx',
     ]);
 
     // json 导入
@@ -41,13 +43,15 @@ export function register(database: any) {
     database.register(new SceneImporter(), ['.scene', '.fire']);
 
     // 虚拟的 sprite-frame 导入
-    //database.register(new SpriteFrameImporter());
+    // database.register(new SpriteFrameImporter());
 
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
 
-    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
+    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp', '.cubemap_test']);
     database.register(new TextureImporter(), '.texture');
+    database.register(new TextureCubeImporter(), '.texture-cube');
+    database.register(new TextureCubeFaceImporter(), '.texture-cube-face');
 
     database.register(new GltfImporter(), '.gltf');
     database.register(new GltfMeshImporter(), '.gltf.mesh');

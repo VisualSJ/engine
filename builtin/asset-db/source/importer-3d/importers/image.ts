@@ -53,15 +53,22 @@ export default class ImageImporter extends Importer {
                 asset.userData.type = importType;
             }
 
+            if (ext === '.cubemap_test') {
+                importType = 'texture cube';
+            }
+
             switch (importType) {
                 case 'raw':
                     break;
                 case 'texture':
                 case 'normal map':
-                    const subAsset = await asset.createSubAsset(name, 'texture');
-                    subAsset.userData.imageSource = asset.source;
+                    const texture2DSubAsset = await asset.createSubAsset('texture', 'texture');
+                    texture2DSubAsset.userData.imageSource = asset.source;
                     break;
                 case 'texture cube':
+                    const textureCubeSubAsset = await asset.createSubAsset('texture cube', 'texture-cube');
+                    textureCubeSubAsset.userData.imageSource = asset.source;
+                    break;
                 case 'sprite-frame':
                     break;
             }
