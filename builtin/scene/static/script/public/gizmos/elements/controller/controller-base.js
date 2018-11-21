@@ -19,9 +19,9 @@ class ControllerBase {
         this._baseDist = 600;
         this._axisDataMap = {};
         this._axisDir = {};
-        this._axisDir['x'] = cc.v3(1, 0, 0);
-        this._axisDir['y'] = cc.v3(0, 1, 0);
-        this._axisDir['z'] = cc.v3(0, 0, 1);
+        this._axisDir.x = cc.v3(1, 0, 0);
+        this._axisDir.y = cc.v3(0, 1, 0);
+        this._axisDir.z = cc.v3(0, 0, 1);
 
         // for 2d
         this._is2D = isCreator2x;
@@ -41,19 +41,19 @@ class ControllerBase {
         this._axisDataMap[axisName] = axisData;
 
         let rayDetectNodes = this.getRayDetectNodes(node);
-        rayDetectNodes.forEach(node => {
+        rayDetectNodes.forEach((node) => {
             this.registerMouseEvents(node, axisName);
         });
 
-
-        if (this.onInitAxis)
+        if (this.onInitAxis) {
             this.onInitAxis(node, axisName);
+        }
     }
 
     setAxisColor(axisName, color) {
         let rendererNodes = this._axisDataMap[axisName].rendererNodes;
         if (rendererNodes != null) {
-            rendererNodes.forEach(node => {
+            rendererNodes.forEach((node) => {
                 setMeshColor(node, color);
             });
         }
@@ -61,60 +61,69 @@ class ControllerBase {
 
     resetAxisColor() {
         for (let key in this._axisDataMap) {
-            this.setAxisColor(key, this._axisDataMap[key].oriColor);
+            if (key) {
+                this.setAxisColor(key, this._axisDataMap[key].oriColor);
+            }
+
         }
     }
 
     registerMouseEvents(node, axisName) {
-        node.on('mouseDown', function (event) {
+        node.on('mouseDown', function(event) {
             event.axisName = axisName;
             event.node = node;
             this._updated = false;
-            if (this.onMouseDown)
+            if (this.onMouseDown) {
                 this.onMouseDown(event);
+            }
             event.stopPropagation();
         }.bind(this));
 
-        node.on('mouseMove', function (event) {
+        node.on('mouseMove', function(event) {
             this._updated = true;
             event.axisName = axisName;
             event.node = node;
-            if (this.onMouseMove)
+            if (this.onMouseMove) {
                 this.onMouseMove(event);
+            }
             event.stopPropagation();
 
         }.bind(this));
 
-        node.on('mouseUp', function (event) {
+        node.on('mouseUp', function(event) {
             event.axisName = axisName;
             event.node = node;
-            if (this.onMouseUp)
+            if (this.onMouseUp) {
                 this.onMouseUp(event);
+            }
             event.stopPropagation();
             this._updated = false;
         }.bind(this));
 
         // 鼠标移出场景窗口，暂时处理为和mouseup等同
-        node.on('mouseLeave', function (event) {
-            if (this.onMouseLeave)
+        node.on('mouseLeave', function(event) {
+            if (this.onMouseLeave) {
                 this.onMouseLeave(event);
+            }
             event.stopPropagation();
             this._updated = false;
         }.bind(this));
 
-        node.on('hoverIn', function (event) {
+        node.on('hoverIn', function(event) {
             event.axisName = axisName;
             event.node = node;
-            if (this.onHoverIn)
+            if (this.onHoverIn) {
                 this.onHoverIn(event);
+            }
             event.stopPropagation();
         }.bind(this));
 
-        node.on('hoverOut', function (event) {
+        node.on('hoverOut', function(event) {
             event.axisName = axisName;
             event.node = node;
-            if (this.onHoverOut)
+            if (this.onHoverOut) {
                 this.onHoverOut(event);
+            }
             event.stopPropagation();
         }.bind(this));
     }
@@ -126,8 +135,7 @@ class ControllerBase {
     setPosition(value) {
         if (value instanceof cc.Vec3) {
             this._position = value;
-        }
-        else {
+        } else {
             this._position = cc.v3(value.x, value.y, 0);
         }
         this.updateController();
@@ -158,8 +166,7 @@ class ControllerBase {
 
         if (this._is2D) {
             scalar = 1 / this._2DScale;
-        }
-        else {
+        } else {
             let cameraNode = CameraTool._camera.node;
             let dist = ControllerUtils.getCameraDistanceFactor(this._position, cameraNode);
             scalar = dist / this._baseDist;
@@ -176,8 +183,9 @@ class ControllerBase {
 
     needRender(node) {
         let csc = node.getComponent(ControllerShapeCollider);
-        if (csc && csc.isRender == false)
+        if (csc && csc.isRender === false) {
             return false;
+        }
 
         return true;
     }
@@ -185,8 +193,9 @@ class ControllerBase {
     getRendererNodes(node) {
         let renderNodes = [];
 
-        if (getModel(node) && this.needRender(node))
+        if (getModel(node) && this.needRender(node)) {
             renderNodes.push(node);
+        }
 
         for (let i = 0; i < node.childrenCount; i++) {
             let child = node._children[i];
@@ -198,7 +207,7 @@ class ControllerBase {
 
     getRayDetectNodes(node) {
         let rayDetectNodes = [];
-        if (getModel(node)) rayDetectNodes.push(node);
+        if (getModel(node)) { rayDetectNodes.push(node); }
 
         for (let i = 0; i < node.childrenCount; i++) {
             let child = node._children[i];

@@ -2,6 +2,7 @@
 const NodeUtils = require('../../../../utils/node');
 let PositionController = require('../controller/position-controller');
 let Gizmo = require('../gizmo');
+const GizmoManager = require('../../index');
 class PositionGizmo extends Gizmo {
     init() {
         this.nodesWorldPosList = [];
@@ -81,21 +82,18 @@ class PositionGizmo extends Gizmo {
         let dif = cc.v2();
         if (keyCode === 'left') {
             dif.x = -offset;
-        }
-        else if (keyCode === 'right') {
+        } else if (keyCode === 'right') {
             dif.x = offset;
-        }
-        else if (keyCode === 'up') {
+        } else if (keyCode === 'up') {
             dif.y = offset;
-        }
-        else if (keyCode === 'down') {
+        } else if (keyCode === 'down') {
             dif.y = -offset;
         }
 
         this.recordChanges();
 
         let curPos = cc.v3();
-        this.topNodes.forEach(node => {
+        this.topNodes.forEach((node) => {
             node.getPosition(curPos);
             curPos = curPos.add(dif);
             node.setPosition(curPos.x, curPos.y, curPos.z);
@@ -130,7 +128,6 @@ class PositionGizmo extends Gizmo {
 
     onUpdate() {
 
-
     }
 
     // 由于inspect之类的地方也会修改位置旋转等，所以暂时在update里调用可以确保位置一直是正确的，更好的
@@ -139,14 +136,13 @@ class PositionGizmo extends Gizmo {
         let node = this.node;
         let worldPos;
         let worldRot = cc.quat(0, 0, 0, 1);
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
-        }
-        else {
+        } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
         }
 
-        if (this._view.coordinate !== 'global') {
+        if (GizmoManager.coordinate !== 'global') {
             worldRot = NodeUtils.getWorldRotation3D(node);
         }
 

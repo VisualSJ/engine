@@ -27,7 +27,7 @@ module.exports = {
         this._gizmoToolMap = {};
         //this.transformToolName = 'position';
         this._coordinate = 'local';     // local/global
-        this._pivot = 'pivot'           // pivot/center
+        this._pivot = 'pivot';           // pivot/center
         this.selection = [];
 
         // selection events
@@ -104,24 +104,23 @@ module.exports = {
         if (tool == null) {
             let gizmoDef;
             switch (toolName) {
-                case "position":
+                case 'position':
                     gizmoDef = GizmoDefines.position;
                     break;
-                case "rotation":
+                case 'rotation':
                     gizmoDef = GizmoDefines.rotation;
                     break;
-                case "scale":
+                case 'scale':
                     gizmoDef = GizmoDefines.scale;
                     break;
                 default:
 
             }
             if (gizmoDef != null) {
-                this._gizmoToolMap[toolName] = new gizmoDef(this);
+                this._gizmoToolMap[toolName] = new gizmoDef();
                 tool = this._gizmoToolMap[toolName];
-            }
-            else {
-                Editor.error("Unknown transform tool %s", toolName);
+            } else {
+                Editor.error('Unknown transform tool %s', toolName);
             }
         }
 
@@ -129,10 +128,10 @@ module.exports = {
     },
 
     /**
- *
- * @param {*} node
- * @param {*} states
- */
+     *
+     * @param {*} node
+     * @param {*} states
+     */
     updateGizmosState(node, states) {
         if (!node) {
             return;
@@ -140,12 +139,12 @@ module.exports = {
 
         let components = node._components;
 
-        Object.keys(states).forEach(key => {
+        Object.keys(states).forEach((key) => {
             if (node.gizmo) {
                 node.gizmo[key] = states[key];
             }
 
-            components.forEach(component => {
+            components.forEach((component) => {
                 if (!component.gizmo) {
                     return;
                 }
@@ -160,13 +159,13 @@ module.exports = {
      * @param {*} ids
      */
     select(ids) {
-        ids.forEach(id => {
+        ids.forEach((id) => {
             this.selection.push(id);
         });
 
         let nodes = [];
 
-        this.selection.forEach(id => {
+        this.selection.forEach((id) => {
             let node = NodeUtils.query(id);
             if (!node) {
                 return;
@@ -174,7 +173,7 @@ module.exports = {
 
             this.updateGizmosState(node, {
                 selecting: true,
-                editing: false
+                editing: false,
             });
 
             nodes.push(node);
@@ -188,7 +187,7 @@ module.exports = {
      * @param {*} ids
      */
     unselect(ids) {
-        ids.forEach(id => {
+        ids.forEach((id) => {
             let index = this.selection.indexOf(id);
             if (index !== -1) {
                 this.selection.splice(index, 1);
@@ -197,16 +196,16 @@ module.exports = {
             let node = NodeUtils.query(id);
             this.updateGizmosState(node, {
                 selecting: false,
-                editing: false
+                editing: false,
             });
         });
 
-        let nodes = this.selection.map(id => {
+        let nodes = this.selection.map((id) => {
             return NodeUtils.query(id);
         });
 
         this.edit(
-            nodes.filter(node => {
+            nodes.filter((node) => {
                 return !!node;
             })
         );
@@ -223,19 +222,20 @@ module.exports = {
         if (nodes.length === 1) {
             this.updateGizmosState(nodes[0], {
                 selecting: false,
-                editing: true
+                editing: true,
             });
         }
 
-        if (this.transformTool == null)
+        if (this.transformTool == null) {
             return;
+        }
 
         this.transformTool.target = nodes;
         this.transformTool.show();
     },
 
     onMouseDown(event) {
-        if (event.button) return;
+        if (event.button) { return; }
 
         if (event.which === 1) {
             let x = event.offsetX;
@@ -286,13 +286,12 @@ module.exports = {
 
         if (this.curSelectNode != null) {
             this.curSelectNode.emit(customEvent.type, customEvent);
-        }
-        else {
+        } else {
             if (results.length > 0) {
                 let firstReuslt = results[0];
                 let target = firstReuslt.node;
 
-                if (target != this.hoverinNode) {
+                if (target !== this.hoverinNode) {
                     if (this.hoverinNode != null) {
                         customEvent = new cc.Event('hoverOut', true);
                         this.hoverinNode.emit(customEvent.type, customEvent);
@@ -302,8 +301,7 @@ module.exports = {
                     customEvent = new cc.Event('hoverIn', true);
                     this.hoverinNode.emit(customEvent.type, customEvent);
                 }
-            }
-            else {
+            } else {
                 if (this.hoverinNode != null) {
                     customEvent = new cc.Event('hoverOut', true);
                     this.hoverinNode.emit(customEvent.type, customEvent);
@@ -324,8 +322,7 @@ module.exports = {
             this.curSelectNode.emit(customEvent.type, customEvent);
             this.curSelectNode = null;
             return true;
-        }
-        else {
+        } else {
             let results = getRaycastResults(this.gizmoRootNode, x, y);
 
             for (let i = 0; i < results.length; i++) {

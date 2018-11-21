@@ -84,7 +84,7 @@ class PositionController extends ControllerBase {
     onInitAxis(node, axisName) {
         if (axisName.length > 1) {
             let axisData = this._axisDataMap[axisName];
-            axisData.panPlane = node.getChildByName(axisName + "PanPlane");
+            axisData.panPlane = node.getChildByName(axisName + 'PanPlane');
         }
     }
 
@@ -145,8 +145,7 @@ class PositionController extends ControllerBase {
             if (this.getPositionOnPanPlane(hitPos, event.x, event.y, this._dragPanPlane)) {
                 this._deltaPosition = hitPos.sub(this._mouseDownOnPlanePos);
             }
-        }
-        else {
+        } else {
             this._mouseDeltaPos.x += event.deltaX;
             this._mouseDeltaPos.y += event.deltaY;
 
@@ -196,15 +195,14 @@ class PositionController extends ControllerBase {
 
     onShow() {
         if (this._is2D) {
-            this._axisDataMap['z'].topNode.active = false;
-            this._axisDataMap['xz'].topNode.active = false;
-            this._axisDataMap['yz'].topNode.active = false;
+            this._axisDataMap.z.topNode.active = false;
+            this._axisDataMap.xz.topNode.active = false;
+            this._axisDataMap.yz.topNode.active = false;
             this.updateController();
-        }
-        else {
-            this._axisDataMap['z'].topNode.active = true;
-            this._axisDataMap['xz'].topNode.active = true;
-            this._axisDataMap['yz'].topNode.active = true;
+        } else {
+            this._axisDataMap.z.topNode.active = true;
+            this._axisDataMap.xz.topNode.active = true;
+            this._axisDataMap.yz.topNode.active = true;
         }
     }
 }

@@ -5,6 +5,8 @@ const quat = cc.vmath.quat;
 const NodeUtils = require('../../../../utils/node');
 let Gizmo = require('../gizmo');
 let RotationController = require('../controller/rotation-controller');
+const GizmoManager = require('../../index');
+
 class RotationGizmo extends Gizmo {
     init() {
         this._rotList = [];
@@ -39,7 +41,7 @@ class RotationGizmo extends Gizmo {
             this._rotList.push(quat.clone(rot));
         }
 
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             this._center = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
             this._offsetList.length = 0;
             for (let i = 0; i < topNodes.length; ++i) {
@@ -60,17 +62,17 @@ class RotationGizmo extends Gizmo {
             let deltaRotation = this._controller.getDeltaRotation();
             let topNodes = this.topNodes;
 
-            if (this._view.pivot === 'center') {
+            if (GizmoManager.pivot === 'center') {
                 for (i = 0; i < topNodes.length; ++i) {
                     let curNodeMouseDownRot = this._rotList[i];
 
-                    if (curNodeMouseDownRot == null)
+                    if (curNodeMouseDownRot == null) {
                         return;
-
-                    if (this._view.coordinate === 'global') {
-                        quat.mul(rot, deltaRotation, curNodeMouseDownRot);
                     }
-                    else {
+
+                    if (GizmoManager.coordinate === 'global') {
+                        quat.mul(rot, deltaRotation, curNodeMouseDownRot);
+                    } else {
                         quat.mul(rot, curNodeMouseDownRot, deltaRotation);
                     }
 
@@ -81,13 +83,11 @@ class RotationGizmo extends Gizmo {
                     // 发送节点修改消息
                     Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
                 }
-            }
-            else {
+            } else {
                 for (i = 0; i < topNodes.length; ++i) {
-                    if (this._view.coordinate === 'global') {
+                    if (GizmoManager.coordinate === 'global') {
                         quat.mul(rot, deltaRotation, this._rotList[i]);
-                    }
-                    else {
+                    } else {
                         quat.mul(rot, this._rotList[i], deltaRotation);
                     }
 
@@ -103,7 +103,7 @@ class RotationGizmo extends Gizmo {
     }
 
     onControllerMouseUp() {
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             let worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
             let worldRot = cc.quat(0, 0, 0, 1);
             this._controller.setPosition(worldPos);
@@ -133,7 +133,7 @@ class RotationGizmo extends Gizmo {
             return;
         }
 
-        let delta = event.shiftKey ? 10 : 1;// right and down
+        let delta = event.shiftKey ? 10 : 1; // right and down
         if (keyCode === 'right' || keyCode === 'down') {
             delta *= -1;
         }
@@ -153,17 +153,16 @@ class RotationGizmo extends Gizmo {
         let curNodePos;
         quat.fromAxisAngle(deltaRotation, cc.v3(0, 0, 1), delta * this._degreeToRadianFactor);
 
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             let center = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
 
             for (let i = 0; i < topNodes.length; ++i) {
                 let node = topNodes[i];
                 node.getRotation(curNodeRot);
 
-                if (this._view.coordinate === 'global') {
+                if (GizmoManager.coordinate === 'global') {
                     quat.mul(rot, deltaRotation, curNodeRot);
-                }
-                else {
+                } else {
                     quat.mul(rot, curNodeRot, deltaRotation);
                 }
 
@@ -177,14 +176,12 @@ class RotationGizmo extends Gizmo {
             // rotate controller
             quat.fromAxisAngle(rot, cc.v3(0, 0, 1), this.keydownDelta * this._degreeToRadianFactor);
             this._controller.setRotation(rot);
-        }
-        else {
+        } else {
             for (let i = 0; i < topNodes.length; ++i) {
                 topNodes[i].getRotation(curNodeRot);
-                if (this._view.coordinate === 'global') {
+                if (GizmoManager.coordinate === 'global') {
                     quat.mul(rot, deltaRotation, curNodeRot);
-                }
-                else {
+                } else {
                     quat.mul(rot, curNodeRot, deltaRotation);
                 }
 
@@ -207,7 +204,7 @@ class RotationGizmo extends Gizmo {
             return;
         }
 
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             let worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
             this._controller.setPosition(worldPos);
             this._controller.setRotation(cc.quat(0, 0, 0, 1));
@@ -237,7 +234,6 @@ class RotationGizmo extends Gizmo {
 
     onUpdate() {
 
-
     }
 
     updateControllerTransform() {
@@ -245,20 +241,18 @@ class RotationGizmo extends Gizmo {
         let worldPos;
         let worldRot = cc.quat(0, 0, 0, 1);
 
-
-        if (this._view.pivot === 'center') {
-            if (this._rotating)
+        if (GizmoManager.pivot === 'center') {
+            if (this._rotating) {
                 return;
+            }
 
             worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
-        }
-        else {
+        } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
 
-            if (this._view.coordinate === 'global') {
+            if (GizmoManager.coordinate === 'global') {
                 worldRot = this._controller.getDeltaRotation();
-            }
-            else {
+            } else {
                 worldRot = NodeUtils.getWorldRotation3D(node);
             }
         }

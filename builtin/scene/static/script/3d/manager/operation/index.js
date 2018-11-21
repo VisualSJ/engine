@@ -3,12 +3,47 @@
 const { EventEmitter } = require('events');
 let isBind = false;
 
+class ProportionalToScene extends cc.ResolutionPolicy.ContainerStrategy {
+    apply(view, designedResolution) {
+        const frameW = view._frameSize.width;
+        const frameH = view._frameSize.height;
+        const containerStyle = cc.game.container.style;
+        const designW = designedResolution.width;
+        const designH = designedResolution.height;
+        const scaleX = frameW / designW;
+        const scaleY = frameH / designH;
+        let containerW;
+        let containerH;
+
+        if (scaleX < scaleY) {
+            containerW = frameW;
+            containerH = designH * scaleX;
+        } else {
+            containerW = designW * scaleY;
+            containerH = frameH;
+        }
+
+        // Adjust container size with integer value
+        const offx = Math.round((frameW - containerW) / 2);
+        const offy = Math.round((frameH - containerH) / 2);
+        containerW = frameW - 2 * offx;
+        containerH = frameH - 2 * offy;
+
+        this._setupContainer(view, containerW, containerH);
+        containerStyle.margin = '0';
+    }
+}
+
+let _policy = null;
+
 function bindEvent(operator) {
     if (isBind) {
         return;
     }
     isBind = true;
     const $body = document.body;
+
+    _policy = new cc.ResolutionPolicy(new ProportionalToScene(), cc.ResolutionPolicy.ContentStrategy.SHOW_ALL);
 
     // window 变化事件
     window.addEventListener('resize', () => {
@@ -17,7 +52,7 @@ function bindEvent(operator) {
             return;
         }
         cc.view.setCanvasSize(bcr.width, bcr.height);
-        cc.view.setDesignResolutionSize(bcr.width, bcr.height);
+        cc.view.setDesignResolutionSize(bcr.width, bcr.height, _policy || cc.ResolutionPolicy.SHOW_ALL);
         // operator.emit('resize', { width: bcr.width, height: bcr.height });
     });
 

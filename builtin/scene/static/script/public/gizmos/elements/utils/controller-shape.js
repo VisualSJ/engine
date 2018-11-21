@@ -126,7 +126,8 @@ ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height 
     }
 
     function generateCap(top) {
-        let centerIndexStart, centerIndexEnd;
+        let centerIndexStart;
+        let centerIndexEnd;
 
         let radius = top ? radiusTop : radiusBottom;
         let sign = top ? 1 : - 1;
@@ -203,63 +204,58 @@ ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height 
         uvs,
         indices,
         minPos,
-        maxPos
+        maxPos,
     });
 };
 
-ControllerShape.Cone = function(radius, height, opts)
-{
+ControllerShape.Cone = function(radius, height, opts) {
     return ControllerShape.Cylinder(0, radius, height, opts);
 };
 
-ControllerShape.Plane = function(width, height)
-{
+ControllerShape.Plane = function(width, height) {
     let hw = width / 2;
     let hh = height / 2;
     return createMesh({
         positions: [cc.v3(-hw, 0, hh), cc.v3(-hw, 0, -hh),
-            cc.v3(hw, 0, -hh), cc.v3(hw, 0, hh)],
+        cc.v3(hw, 0, -hh), cc.v3(hw, 0, hh)],
         normals: Array(4).fill(cc.v3(0, 1, 0)),
         indices: [0, 3, 1, 1, 3, 2],
         minPos: cc.v3(-hw, -1, -hh),
-        maxPos: cc.v3( hw,  1,  hh),
-        doubleSided: true
+        maxPos: cc.v3(hw, 1, hh),
+        doubleSided: true,
     });
 };
 
-ControllerShape.Line = function(startPos, endPos)
-{
+ControllerShape.Line = function(startPos, endPos) {
     return createMesh({
-        positions: [cc.v3(startPos.x, startPos.y, startPos.z), 
-            cc.v3(endPos.x, endPos.y, endPos.z)],
+        positions: [cc.v3(startPos.x, startPos.y, startPos.z),
+        cc.v3(endPos.x, endPos.y, endPos.z)],
         normals: Array(2).fill(cc.v3(0, 1, 0)),
         indices: [0, 1],
-        primitiveType: gfx.PT_LINES
+        primitiveType: gfx.PT_LINES,
     });
 };
 
-ControllerShape.LineWithBoundingBox = function(length, size = 3)
-{
+ControllerShape.LineWithBoundingBox = function(length, size = 3) {
     return createMesh({
         positions: [cc.v3(), cc.v3(length, 0, 0)],
         normals: Array(2).fill(cc.v3(0, 1, 0)),
         indices: [0, 1],
         minPos: cc.v3(0, -size, -size),
         maxPos: cc.v3(length, size, size),
-        primitiveType: gfx.PT_LINES
+        primitiveType: gfx.PT_LINES,
     });
 };
 
-ControllerShape.Circle = function(radius, segments)
-{
+ControllerShape.Circle = function(radius, segments) {
     let TwoPI = Math.PI * 2;
     return createMesh({
         positions: Array(segments).fill(0).map((_, i) =>
             cc.v3(radius * Math.cos(i / segments * TwoPI),
-             radius * Math.sin(i / segments * TwoPI), 0)),
+                radius * Math.sin(i / segments * TwoPI), 0)),
         normals: Array(segments).fill(cc.v3(0, 0, 1)),
         indices: [...Array(segments).keys()],
-        primitiveType: gfx.PT_LINE_LOOP
+        primitiveType: gfx.PT_LINE_LOOP,
     });
 };
 
@@ -273,32 +269,32 @@ ControllerShape.Cube = function(width, height, length, opts = {}) {
     let hl = length * 0.5;
 
     let corners = [
-        cc.v3(-hw, -hh,  hl),
-        cc.v3( hw, -hh,  hl),
-        cc.v3( hw,  hh,  hl),
-        cc.v3(-hw,  hh,  hl),
-        cc.v3( hw, -hh, -hl),
+        cc.v3(-hw, -hh, hl),
+        cc.v3(hw, -hh, hl),
+        cc.v3(hw, hh, hl),
+        cc.v3(-hw, hh, hl),
+        cc.v3(hw, -hh, -hl),
         cc.v3(-hw, -hh, -hl),
-        cc.v3(-hw,  hh, -hl),
-        cc.v3( hw,  hh, -hl),
+        cc.v3(-hw, hh, -hl),
+        cc.v3(hw, hh, -hl),
     ];
 
     let faceAxis = [
-        [ 2, 3, 1 ], // FRONT
-        [ 4, 5, 7 ], // BACK
-        [ 7, 6, 2 ], // TOP
-        [ 1, 0, 4 ], // BOTTOM
-        [ 1, 4, 2 ], // RIGHT
-        [ 5, 0, 6 ]  // LEFT
+        [2, 3, 1], // FRONT
+        [4, 5, 7], // BACK
+        [7, 6, 2], // TOP
+        [1, 0, 4], // BOTTOM
+        [1, 4, 2], // RIGHT
+        [5, 0, 6],  // LEFT
     ];
 
     let faceNormals = [
-        cc.v3( 0,  0,  1), // FRONT
-        cc.v3( 0,  0, -1), // BACK
-        cc.v3( 0,  1,  0), // TOP
-        cc.v3( 0, -1,  0), // BOTTOM
-        cc.v3( 1,  0,  0), // RIGHT
-        cc.v3(-1,  0,  0)  // LEFT
+        cc.v3(0, 0, 1), // FRONT
+        cc.v3(0, 0, -1), // BACK
+        cc.v3(0, 1, 0), // TOP
+        cc.v3(0, -1, 0), // BOTTOM
+        cc.v3(1, 0, 0), // RIGHT
+        cc.v3(-1, 0, 0),  // LEFT
     ];
 
     let positions = [];
@@ -308,9 +304,11 @@ ControllerShape.Cube = function(width, height, length, opts = {}) {
     let minPos = cc.v3(-hw, -hh, -hl);
     let maxPos = cc.v3(hw, hh, hl);
 
-    function _buildPlane (side, uSegments, vSegments) {
-        let u, v;
-        let ix, iy;
+    function _buildPlane(side, uSegments, vSegments) {
+        let u;
+        let v;
+        let ix;
+        let iy;
         let offset = positions.length;
         let idx = faceAxis[side];
         let faceNormal = faceNormals[side];
@@ -352,56 +350,55 @@ ControllerShape.Cube = function(width, height, length, opts = {}) {
         indices,
         normals,
         minPos,
-        maxPos
+        maxPos,
     });
 };
 
-ControllerShape.Torus = function(radius, tube, opts={})
-{
+ControllerShape.Torus = function(radius, tube, opts = {}) {
     let radialSegments = opts.radialSegments || 30;
     let tubularSegments = opts.tubularSegments || 20;
     let arc = opts.arc || 2.0 * Math.PI;
-  
+
     let positions = [];
     let normals = [];
     let uvs = [];
     let indices = [];
     let minPos = cc.v3(-radius - tube, -tube, -radius - tube);
     let maxPos = cc.v3(radius + tube, tube, radius + tube);
-  
+
     for (let j = 0; j <= radialSegments; j++) {
-      for (let i = 0; i <= tubularSegments; i++) {
-        let u = i / tubularSegments;
-        let v = j / radialSegments;
-  
-        let u1 = u * arc;
-        let v1 = v * Math.PI * 2;
-  
-        // vertex
-        let x = (radius + tube * Math.cos(v1)) * Math.sin(u1);
-        let y = tube * Math.sin(v1);
-        let z = (radius + tube * Math.cos(v1)) * Math.cos(u1);
-  
-        // this vector is used to calculate the normal
-        let nx = Math.sin(u1) * Math.cos(v1);
-        let ny = Math.sin(v1);
-        let nz = Math.cos(u1) * Math.cos(v1);
-  
-        positions.push(cc.v3(x, y, z));
-        normals.push(cc.v3(nx, ny, nz));
-        uvs.push(cc.v2(u, v));
-  
-        if ((i < tubularSegments) && (j < radialSegments)) {
-          let seg1 = tubularSegments + 1;
-          let a = seg1 * j + i;
-          let b = seg1 * (j + 1) + i;
-          let c = seg1 * (j + 1) + i + 1;
-          let d = seg1 * j + i + 1;
-  
-          indices.push(a, d, b);
-          indices.push(d, c, b);
+        for (let i = 0; i <= tubularSegments; i++) {
+            let u = i / tubularSegments;
+            let v = j / radialSegments;
+
+            let u1 = u * arc;
+            let v1 = v * Math.PI * 2;
+
+            // vertex
+            let x = (radius + tube * Math.cos(v1)) * Math.sin(u1);
+            let y = tube * Math.sin(v1);
+            let z = (radius + tube * Math.cos(v1)) * Math.cos(u1);
+
+            // this vector is used to calculate the normal
+            let nx = Math.sin(u1) * Math.cos(v1);
+            let ny = Math.sin(v1);
+            let nz = Math.cos(u1) * Math.cos(v1);
+
+            positions.push(cc.v3(x, y, z));
+            normals.push(cc.v3(nx, ny, nz));
+            uvs.push(cc.v2(u, v));
+
+            if ((i < tubularSegments) && (j < radialSegments)) {
+                let seg1 = tubularSegments + 1;
+                let a = seg1 * j + i;
+                let b = seg1 * (j + 1) + i;
+                let c = seg1 * (j + 1) + i + 1;
+                let d = seg1 * j + i + 1;
+
+                indices.push(a, d, b);
+                indices.push(d, c, b);
+            }
         }
-      }
     }
 
     return createMesh({
@@ -410,24 +407,22 @@ ControllerShape.Torus = function(radius, tube, opts={})
         normals,
         uvs,
         minPos,
-        maxPos
+        maxPos,
     });
 };
 
-ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius, segments)
-{
+ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius, segments) {
     vec3.normalize(fromDir, fromDir);
 
-    let deltaRot = cc.quat(0,0,0,1);
+    let deltaRot = cc.quat(0, 0, 0, 1);
     //let count = Math.ceil(radian * segments / (Math.PI * 2));
     let count = segments;
-    quat.fromAxisAngle(deltaRot, normal, radian/(count - 1));
+    quat.fromAxisAngle(deltaRot, normal, radian / (count - 1));
     let tangent = cc.v3();
     vec3.scale(tangent, fromDir, radius);
 
     let arcPoints = [];
-    for (let i = 0; i < count; i++)
-    {
+    for (let i = 0; i < count; i++) {
         arcPoints[i] = center.add(tangent);
         vec3.transformQuat(tangent, tangent, deltaRot);
     }
@@ -435,8 +430,7 @@ ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius
     return arcPoints;
 };
 
-ControllerShape.CalcSectorPoints = function(center, normal, fromDir, radian, radius, segments)
-{
+ControllerShape.CalcSectorPoints = function(center, normal, fromDir, radian, radius, segments) {
     let sectorPoints = [];
     sectorPoints.push(center);
     let arcPoints = ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments);
@@ -444,22 +438,20 @@ ControllerShape.CalcSectorPoints = function(center, normal, fromDir, radian, rad
     return sectorPoints;
 };
 
-ControllerShape.Sector = function(center, normal, fromDir, radian, radius, segments)
-{
+ControllerShape.Sector = function(center, normal, fromDir, radian, radius, segments) {
     return createMesh({
         positions: ControllerShape.CalcSectorPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments + 1).fill(cc.v3(normal)),
         indices: [...Array(segments + 1).keys()],
-        primitiveType: gfx.PT_TRIANGLE_FAN
+        primitiveType: gfx.PT_TRIANGLE_FAN,
     });
 };
 
-ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments)
-{
+ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments) {
     return createMesh({
         positions: ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments).fill(cc.v3(normal)),
         indices: [...Array(segments).keys()],
-        primitiveType: gfx.PT_LINE_STRIP
+        primitiveType: gfx.PT_LINE_STRIP,
     });
 };

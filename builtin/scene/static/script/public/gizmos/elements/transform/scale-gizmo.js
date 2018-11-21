@@ -3,6 +3,7 @@
 const NodeUtils = require('../../../../utils/node');
 let Gizmo = require('../gizmo');
 let ScaleController = require('../controller/scale-controller');
+const GizmoManager = require('../../index');
 
 class ScaleGizmo extends Gizmo {
     init() {
@@ -35,7 +36,7 @@ class ScaleGizmo extends Gizmo {
             this._localScaleList.push(scale);
         }
 
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             this._center = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
             this._offsetList.length = 0;
             for (let i = 0; i < topNodes.length; ++i) {
@@ -56,7 +57,7 @@ class ScaleGizmo extends Gizmo {
             let newScale = cc.v3();
             let topNodes = this.topNodes;
 
-            if (this._view.pivot === 'center') {
+            if (GizmoManager.pivot === 'center') {
                 let curNodePos;
                 for (i = 0; i < this._localScaleList.length; ++i) {
 
@@ -77,8 +78,7 @@ class ScaleGizmo extends Gizmo {
                     // 发送节点修改消息
                     Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
                 }
-            }
-            else {
+            } else {
                 for (i = 0; i < this._localScaleList.length; ++i) {
                     newScale.x = this._localScaleList[i].x * scale.x;
                     newScale.y = this._localScaleList[i].y * scale.y;
@@ -127,21 +127,18 @@ class ScaleGizmo extends Gizmo {
         let dif = cc.v2();
         if (keyCode === 'left') {
             dif.x = offset * -1;
-        }
-        else if (keyCode === 'right') {
+        } else if (keyCode === 'right') {
             dif.x = offset;
-        }
-        else if (keyCode === 'up') {
+        } else if (keyCode === 'up') {
             dif.y = offset;
-        }
-        else if (keyCode === 'down') {
+        } else if (keyCode === 'down') {
             dif.y = offset * -1;
         }
 
         this.recordChanges();
 
         let curScale = cc.v3();
-        this.topNodes.forEach(function (node) {
+        this.topNodes.forEach(function(node) {
             node.getScale(curScale);
 
             curScale.x = curScale.x + dif.x;
@@ -190,10 +187,9 @@ class ScaleGizmo extends Gizmo {
         let worldPos;
         let worldRot = cc.quat(0, 0, 0, 1);
 
-        if (this._view.pivot === 'center') {
+        if (GizmoManager.pivot === 'center') {
             worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
-        }
-        else {
+        } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
 
         }

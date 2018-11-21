@@ -63,17 +63,17 @@ class RotationController extends ControllerBase {
 
         // 目前碰撞检测用的是透明的Torus模型
         // x rotation
-        this.createRotationShape('x', cc.v3(0, 0, 90), cc.v3(-90, -90, 0), this._axisDir['z'], -Math.PI / 2, cc.Color.RED);
+        this.createRotationShape('x', cc.v3(0, 0, 90), cc.v3(-90, -90, 0), this._axisDir.z, -Math.PI / 2, cc.Color.RED);
 
         // y rotation
-        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir['z'], Math.PI / 2, cc.Color.GREEN);
+        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir.z, Math.PI / 2, cc.Color.GREEN);
 
         // z rotation
-        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir['x'], Math.PI / 2, cc.Color.BLUE);
+        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir.x, Math.PI / 2, cc.Color.BLUE);
 
         // for 2d z rotation, use w for hack
-        this._axisDir['w'] = cc.v3(0, 0, 1);
-        this.createRotationShape('w', cc.v3(-90, 0, 0), cc.v3(0, 0, -90), this._axisDir['x'], Math.PI * 2, cc.Color.BLUE);
+        this._axisDir.w = cc.v3(0, 0, 1);
+        this.createRotationShape('w', cc.v3(-90, 0, 0), cc.v3(0, 0, -90), this._axisDir.x, Math.PI * 2, cc.Color.BLUE);
 
         // for rotation indicator sector
         let indicator = {};
@@ -100,8 +100,9 @@ class RotationController extends ControllerBase {
 
         for (let i = 0; i < arrowTopNode.childrenCount; i++) {
             let child = arrowTopNode._children[i];
-            if (hitNode === child)
+            if (hitNode === child) {
                 return true;
+            }
         }
 
         return false;
@@ -121,15 +122,13 @@ class RotationController extends ControllerBase {
         if (this._is2D) {
             if (this.isHitOnAxisArrow(event.node, event.axisName)) {
                 vec3.transformQuat(hitDir, cc.v3(1, 0, 0), this._rotation);
-            }
-            else {
+            } else {
                 vec3.sub(hitDir, hitPoint, this._position);
             }
 
             // 2D情况下rotation扇形指示器从自身x轴为起始方向
             vec3.transformQuat(this._indicatorStartDir, cc.v3(1, 0, 0), this._rotation);
-        }
-        else {
+        } else {
             vec3.sub(hitDir, hitPoint, this._position);
             this._indicatorStartDir = hitDir;
         }
@@ -138,7 +137,6 @@ class RotationController extends ControllerBase {
         vec3.transformQuat(axisDir, axisDir, this._rotation);
         vec3.cross(crossDir, hitDir, axisDir);
         vec3.cross(hitDir, axisDir, crossDir);
-
 
         this._rotateAlignDir = crossDir;
         this._transformAxisDir = axisDir;
@@ -149,12 +147,10 @@ class RotationController extends ControllerBase {
         this._indicator.sectorNode.active = true;
         this._axisDataMap[event.axisName].indicatorCircle.active = true;
 
-
         Object.keys(this._axisDataMap).forEach((key) => {
             if (key === event.axisName) {
                 this._axisDataMap[key].normalTorusNode.active = false;
-            }
-            else {
+            } else {
                 this._axisDataMap[key].topNode.active = false;
             }
         });
@@ -213,11 +209,10 @@ class RotationController extends ControllerBase {
         this._deltaRotation = cc.quat(0, 0, 0, 1);
 
         if (this._is2D) {
-            this._axisDataMap['w'].indicatorCircle.active = false;
-            this._axisDataMap['w'].normalTorusNode.active = true;
-            this._axisDataMap['w'].topNode.active = true;
-        }
-        else {
+            this._axisDataMap.w.indicatorCircle.active = false;
+            this._axisDataMap.w.normalTorusNode.active = true;
+            this._axisDataMap.w.topNode.active = true;
+        } else {
             Object.keys(this._axisDataMap).forEach((key) => {
                 if (key !== 'w') {
                     this._axisDataMap[key].normalTorusNode.active = true;
@@ -255,7 +250,7 @@ class RotationController extends ControllerBase {
     }
 
     setNodesOpacity(nodes, opacity) {
-        nodes.forEach(node => {
+        nodes.forEach((node) => {
             setNodeOpacity(node, opacity);
         });
     }
@@ -266,19 +261,18 @@ class RotationController extends ControllerBase {
 
     onShow() {
         if (this._is2D) {
-            this._axisDataMap['x'].topNode.active = false;
-            this._axisDataMap['y'].topNode.active = false;
-            this._axisDataMap['z'].topNode.active = false;
+            this._axisDataMap.x.topNode.active = false;
+            this._axisDataMap.y.topNode.active = false;
+            this._axisDataMap.z.topNode.active = false;
 
-            this._axisDataMap['w'].topNode.active = true;
+            this._axisDataMap.w.topNode.active = true;
             this.updateController();
-        }
-        else {
-            this._axisDataMap['x'].topNode.active = true;
-            this._axisDataMap['y'].topNode.active = true;
-            this._axisDataMap['z'].topNode.active = true;
+        } else {
+            this._axisDataMap.x.topNode.active = true;
+            this._axisDataMap.y.topNode.active = true;
+            this._axisDataMap.z.topNode.active = true;
 
-            this._axisDataMap['w'].topNode.active = false;
+            this._axisDataMap.w.topNode.active = false;
         }
     }
 

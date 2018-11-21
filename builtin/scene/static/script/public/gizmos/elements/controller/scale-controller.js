@@ -11,8 +11,6 @@ class ScaleController extends ControllerBase {
 
         this._deltaScale = cc.v3(0, 0, 0);
         this._scaleFactor = 10;
-        //this._shapeGroup = Tools.scaleTool(this._graphic, this.createMoveCallbacks());
-
         this.initShape();
     }
 
@@ -30,7 +28,6 @@ class ScaleController extends ControllerBase {
         NodeUtils.setEulerAngles(xSliderNode, cc.v3(-90, -90, 0));
         this.initAxis(xSliderNode, 'x', cc.Color.RED);
 
-
         let ySliderNode = ControllerUtils.scaleSlider(baseCubeSize, axisLength, cc.Color.GREEN, 'ySlider');
         ySliderNode.parent = this.shape;
         this.initAxis(ySliderNode, 'y', cc.Color.GREEN);
@@ -42,15 +39,16 @@ class ScaleController extends ControllerBase {
 
         let xyzNode = ControllerUtils.cube(baseCubeSize, baseCubeSize, baseCubeSize, cc.Color.GRAY, 'xyzScale');
         xyzNode.parent = this.shape;
-        this._axisDir['xyz'] = cc.v3(1, 1, 1);    // only for scale
+        this._axisDir.xyz = cc.v3(1, 1, 1);    // only for scale
         this.initAxis(xyzNode, 'xyz', cc.Color.GRAY);
 
         this.shape.active = false;
     }
 
     onInitAxis(node, axisName) {
-        if (axisName === 'xyz')
+        if (axisName === 'xyz') {
             return;
+        }
 
         let sliderNodeData = {};
         sliderNodeData.head = node.getChildByName('ScaleSliderHead');
@@ -60,17 +58,22 @@ class ScaleController extends ControllerBase {
     }
 
     onAxisSliderMove(axisName, deltaDist) {
-        if (this._axisSliderNodes[axisName] == null)
-            return;
 
-        let head = this._axisSliderNodes[axisName].head;
-        let body = this._axisSliderNodes[axisName].body;
+        for (let i = 0; i < axisName.length; i++) {
+            let singleAxisName = axisName.charAt(i);
+            if (singleAxisName == null) {
+                return;
+            }
 
-        let newLength = this._baseAxisLength + deltaDist;
-        let scale = newLength / this._baseAxisLength;
+            let head = this._axisSliderNodes[singleAxisName].head;
+            let body = this._axisSliderNodes[singleAxisName].body;
 
-        body.setScale(scale, 1, 1);
-        head.setPosition(0, newLength, 0);
+            let newLength = this._baseAxisLength + deltaDist;
+            let scale = newLength / this._baseAxisLength;
+
+            body.setScale(scale, 1, 1);
+            head.setPosition(0, newLength, 0);
+        }
     }
 
     getAlignAxisDeltaScale(axisName, curMouseDeltaPos) {
@@ -141,11 +144,10 @@ class ScaleController extends ControllerBase {
 
     onShow() {
         if (this._is2D) {
-            this._axisDataMap['z'].topNode.active = false;
+            this._axisDataMap.z.topNode.active = false;
             this.updateController();
-        }
-        else {
-            this._axisDataMap['z'].topNode.active = true;
+        } else {
+            this._axisDataMap.z.topNode.active = true;
         }
     }
 }
