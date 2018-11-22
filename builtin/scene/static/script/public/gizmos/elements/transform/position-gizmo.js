@@ -13,8 +13,7 @@ class PositionGizmo extends Gizmo {
     }
 
     onCreateController() {
-        let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
-        this._controller = new PositionController(rootNode);
+        this._controller = new PositionController(this.getGizmoRoot());
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
         this._controller.onControllerMouseMove = this.onControllerMouseMove.bind(this);

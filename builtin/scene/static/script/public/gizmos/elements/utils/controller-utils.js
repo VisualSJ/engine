@@ -172,4 +172,14 @@ ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = 
     return arcNode;
 };
 
+ControllerUtils.arcDirectionLine = function(center, normal, fromDir, radian,
+                                            radius, length, segments, color = cc.Color.RED) {
+    let arcDirNode = create3DNode('arcDirLine');
+    addMeshToNode(arcDirNode,
+        ControllerShape.ArcDirectionLine(center, normal, fromDir, radian, radius, length, segments));
+    setMeshColor(arcDirNode, color);
+
+    return arcDirNode;
+};
+
 module.exports = ControllerUtils;

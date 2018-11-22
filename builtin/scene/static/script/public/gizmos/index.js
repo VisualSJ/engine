@@ -12,8 +12,6 @@ module.exports = {
     init() {
         this.gizmoRootNode = create3DNode('gizmoRoot');
         this.gizmoRootNode.parent = Manager.foregroundNode;
-        this.recordLastX = 0;
-        this.recordLastY = 0;
         this.hoverinNode = null;
         this.curSelectNode = null;
 
@@ -27,14 +25,14 @@ module.exports = {
 
         // for gizmo tool
         this._gizmoToolMap = {};
-        //this.transformToolName = 'position';
         this._coordinate = 'local';     // local/global
         this._pivot = 'pivot';           // pivot/center
-        this.selection = [];
+        this._selection = [];
+        this._gizmosPool = {};
 
         // selection events
         Selection.on('select', (uuid, uuids) => {
-            this.select(uuids);
+            this.select(uuid, uuids);
         });
 
         Selection.on('unselect', (uuid) => {
@@ -119,7 +117,7 @@ module.exports = {
 
             }
             if (gizmoDef != null) {
-                this._gizmoToolMap[toolName] = new gizmoDef();
+                this._gizmoToolMap[toolName] = this.createGizmo(gizmoDef);
                 tool = this._gizmoToolMap[toolName];
             } else {
                 Editor.error('Unknown transform tool %s', toolName);
@@ -127,6 +125,76 @@ module.exports = {
         }
 
         return tool;
+    },
+
+    createGizmo(gizmoDef, target) {
+        if (gizmoDef == null) {
+            return;
+        }
+
+        let gizmoObjList = this._gizmosPool[name];
+        let newGizmoObj = null;
+        if (gizmoObjList == null) {
+            gizmoObjList = [];
+            newGizmoObj = new gizmoDef(target);
+            gizmoObjList.push(newGizmoObj);
+        } else {
+            for (let i = 0; i < gizmoObjList.length; i++) {
+                if (!gizmoObjList[i].visible()) {
+                    newGizmoObj = gizmoObjList[i];
+                    break;
+                }
+            }
+        }
+
+        return newGizmoObj;
+    },
+
+    destoryGizmo(gizmo) {
+        gizmo.hide();
+    },
+
+    showNodeGizmo(node) {
+        let gizmoDef = null;
+        let gizmoObj = null;
+        // node gizmo
+        if (node.gizmo == null) {
+            let className = cc.js.getClassName(node);
+            gizmoDef = GizmoDefines[className];
+            if (gizmoDef) {
+                gizmoObj = this.createGizmo(gizmoDef, node);
+                gizmoObj.show();
+                node.gizmo = gizmoObj;
+            }
+        }
+
+        // for component gizmo
+        node._components.forEach((component) => {
+            if (component.gizmo == null) {
+                let componentName = cc.js.getClassName(component);
+                gizmoDef = GizmoDefines.components[componentName];
+                if (gizmoDef != null) {
+                    gizmoObj = this.createGizmo(gizmoDef, component);
+                    gizmoObj.show();
+                    component.gizmo = gizmoObj;
+                }
+            }
+        });
+    },
+
+    hideNodeGizmo(node) {
+        if (node.gizmo) {
+            this.destoryGizmo(node.gizmo);
+            node.gizmo = null;
+        }
+
+        // for component gizmo
+        node._components.forEach((component) => {
+            if (component.gizmo) {
+                this.destoryGizmo(component.gizmo);
+                component.gizmo = null;
+            }
+        });
     },
 
     /**
@@ -158,16 +226,19 @@ module.exports = {
 
     /**
      * 选中节点
+     * @param {*} newId
      * @param {*} ids
      */
-    select(ids) {
-        ids.forEach((id) => {
-            this.selection.push(id);
-        });
+    select(newId, ids) {
+        let newSelecedNode = NodeUtils.query(newId);
+        if (!newSelecedNode) {
+            return;
+        }
+        this.showNodeGizmo(newSelecedNode);
 
+        this._selection = ids;
         let nodes = [];
-
-        this.selection.forEach((id) => {
+        ids.forEach((id) => {
             let node = NodeUtils.query(id);
             if (!node) {
                 return;
@@ -190,9 +261,9 @@ module.exports = {
      */
     unselect(ids) {
         ids.forEach((id) => {
-            let index = this.selection.indexOf(id);
+            let index = this._selection.indexOf(id);
             if (index !== -1) {
-                this.selection.splice(index, 1);
+                this._selection.splice(index, 1);
             }
 
             let node = NodeUtils.query(id);
@@ -200,9 +271,11 @@ module.exports = {
                 selecting: false,
                 editing: false,
             });
+
+            this.hideNodeGizmo(node);
         });
 
-        let nodes = this.selection.map((id) => {
+        let nodes = this._selection.map((id) => {
             return NodeUtils.query(id);
         });
 
@@ -240,8 +313,6 @@ module.exports = {
         if (event.leftButton) {
             let x = event.x;
             let y = cc.game.canvas.height - event.y;
-            this.recordLastX = x;
-            this.recordLastY = y;
 
             let results = getRaycastResults(this.gizmoRootNode, x, y);
             let ray = results.ray;
@@ -274,15 +345,11 @@ module.exports = {
         let results = getRaycastResults(this.gizmoRootNode, x, y);
 
         let customEvent = new cc.Event('mouseMove', true);
-        // customEvent.deltaX = x - this.recordLastX;
-        // customEvent.deltaY = y - this.recordLastY;
-        // this.recordLastX = x;
-        // this.recordLastY = y;
 
         customEvent.x = x;
         customEvent.y = y;
-        customEvent.deltaX = event.moveDeltaX;
-        customEvent.deltaY = -event.moveDeltaY;
+        customEvent.moveDeltaX = event.moveDeltaX;
+        customEvent.moveDeltaY = -event.moveDeltaY;
 
         if (this.curSelectNode != null) {
             this.curSelectNode.emit(customEvent.type, customEvent);

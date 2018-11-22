@@ -197,14 +197,14 @@ function restoreProperty(node, path, dump) {
     }
 
     switch (path) {
-        case 'position':
-            node.setPosition(this._lpos);
+        case '_lpos':
+            node.setPosition(node._lpos);
             break;
-        case 'rotation':
-            node.setRotation(this._lrot);
+        case '_lrot':
+            node.setRotation(node._lrot);
             break;
-        case 'scale':
-            node.setScale(this._lscale);
+        case '_lscale':
+            node.setScale(node._lscale);
             break;
     }
 }

@@ -17,6 +17,7 @@ const manager = {
     History: null,
     Selection: null,
     Operation: null,
+    Gizmo: null,
 
     get serialize() {
         return this._serialize();
@@ -34,6 +35,7 @@ function isReady(bool) {
         manager.History = require('./history');
         manager.Selection = require('./selection');
         manager.Operation = require('./operation');
+        manager.Gizmo = require('./gizmos');
 
         ipc.ready();
     }

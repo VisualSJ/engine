@@ -455,3 +455,34 @@ ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments
         primitiveType: gfx.PT_LINE_STRIP,
     });
 };
+
+ControllerShape.ArcDirectionLine = function(center, normal, fromDir, radian, radius, length, segments) {
+    let vertices = [];
+    let indices = [];
+
+    // add directin line
+    let arcPoints = ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments);
+    let endOffset = cc.v3();
+    vec3.scale(endOffset, normal, length);
+    for (let i = 0; i < arcPoints.length; i++) {
+        let endPoint = cc.v3();
+        vec3.add(endPoint, arcPoints[i], endOffset);
+        vertices.push(arcPoints[i], endPoint);
+        indices.push(i * 2, i * 2 + 1);
+    }
+
+    // add arc
+    for (let i = 1; i < arcPoints.length; i++) {
+        vertices.push(arcPoints[i - 1]);
+        indices.push(vertices.length - 1);
+        vertices.push(arcPoints[i]);
+        indices.push(vertices.length - 1);
+    }
+
+    return createMesh({
+        positions: vertices,
+        normals: Array(vertices.length).fill(cc.v3(0, 1, 1)),
+        indices: indices,
+        primitiveType: gfx.PT_LINES,
+    });
+};

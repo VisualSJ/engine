@@ -22,8 +22,7 @@ class RotationGizmo extends Gizmo {
     }
 
     onCreateController() {
-        let rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
-        this._controller = new RotationController(rootNode);
+        this._controller = new RotationController(this.getGizmoRoot());
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
         this._controller.onControllerMouseMove = this.onControllerMouseMove.bind(this);

@@ -4,7 +4,7 @@ const quat = cc.vmath.quat;
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 let ControllerShape = require('../utils/controller-shape');
-const { gfx, setNodeOpacity, getModel, updateVBAttr } = require('../../engine');
+const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode } = require('../../engine');
 
 const NodeUtils = require('../../../../utils/node');
 const EditorMath = require('../../../../utils/math');
@@ -28,8 +28,7 @@ class RotationController extends ControllerBase {
         let baseRadius = this._baseRadius;
         let tubeRadius = this._tubeRadius;
 
-        let topNode = new cc.Node(axisName + 'Rotation');
-        topNode.is3DNode = true;
+        let topNode = create3DNode(axisName + 'Rotation');
         topNode.parent = this.shape;
 
         let torusNode = ControllerUtils.torus(baseRadius, tubeRadius,
