@@ -6,7 +6,7 @@
         border-top-right-radius: var(--border-radius-n);
         border-top-left-radius: var(--border-radius-n);
     }
-    
+
     ui-drag-area {
         width: 90%;
         box-sizing: border-box;
@@ -23,4 +23,18 @@
 :host[draging] {
     border: 1px solid #0f0;
     background: #090;
+}
+
+:host([readonly]:hover),
+:host([disabled]:hover) {
+    cursor: default;
+    ui-drag-area,
+    .area > svg {
+        cursor: default;
+    }
+}
+
+:host([disabled]) {
+    color: var(--disaled-c);
+    opacity: var(--opacity-n);
 }
