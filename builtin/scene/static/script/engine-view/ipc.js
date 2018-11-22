@@ -31,6 +31,16 @@ const messages = {
     'query-scene'() {
         return profile.get('current-scene') || '';
     },
+
+    /**
+     * 打开场景成功后，记录当前打开的场景
+     * @param {*} uuid
+     */
+    'set-scene'(uuid) {
+        profile.set('current-scene', uuid || '');
+        profile.save();
+    },
+
     /**
      * 查询 assetDB 内所有可以使用的脚本文件
      * scene 进程在启动场景之后，需要主动管理所有的脚本

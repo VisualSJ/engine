@@ -3,11 +3,18 @@
 const assets = require('../../assets');
 
 window.Editor = window.Editor ? Editor : {
+
+    get serialize() {
+        return Manager.serialize;
+    },
+
     // 适配 Editor.require()
     require(url) {
         switch (url) {
             case 'app://editor/page/scene-utils/missing-class-reporter':
                 return require('./missing-reporter/missing-class-reporter');
+            case 'app://editor/page/scene-utils/missing-object-reporter':
+                return require('./missing-reporter/missing-object-reporter');
             case 'app://editor/page/scene-utils/utils/node':
                 return {};
             case 'scene://edit-mode':
@@ -22,8 +29,8 @@ window.Editor = window.Editor ? Editor : {
                 return {};
             case 'scene://utils/prefab':
                 return {
-                    linkPrefab() {},
-                    unlinkPrefab() {},
+                    linkPrefab() { },
+                    unlinkPrefab() { },
                 };
             case 'packages://scene/panel/tools/camera':
                 return require('../../manager/camera');
@@ -38,7 +45,7 @@ window.Editor = window.Editor ? Editor : {
     Utils: {
         UuidUtils: require('../../../../../../engine/static/utils/2d/serialize/uuid'),
         UuidCache: {
-            cache() {},
+            cache() { },
         },
     },
 
@@ -47,7 +54,7 @@ window.Editor = window.Editor ? Editor : {
             uuidToUrl() {
 
             },
-        }
+        },
     },
 
     Selection: {
@@ -95,5 +102,5 @@ window.Editor = window.Editor ? Editor : {
                 default:
             }
         },
-    }
+    },
 };

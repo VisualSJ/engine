@@ -16,11 +16,17 @@ module.exports = function() {
 
     cc.AssetLibrary.queryAssetInfo = async function(uuid, callback) {
 
-        const info = await Manager.Ipc.send('query-asset-info', uuid);
-        let url = info.files[0]
-            .replace(/^\S+(\/|\\)library(\/|\\)/, '')
-            .replace(/\.[^\.]+$/, '.json');
+        try {
+            const info = await Manager.Ipc.send('query-asset-info', uuid);
+            let url = info.files[0]
+                .replace(/^\S+(\/|\\)library(\/|\\)/, '')
+                .replace(/\.[^\.]+$/, '.json');
 
-        callback(null, `import://${url}`, false, assets.getCtor(info.importer));
+            callback(null, `import://${url}`, false, assets.getCtor(info.importer));
+        } catch (e) {
+            const error = new Error('Can not get asset url by uuid "' + uuid + '", the asset may be deleted.');
+            error.errorCode = 'db.NOTFOUND';
+            callback(error);
+        }
     };
 };
