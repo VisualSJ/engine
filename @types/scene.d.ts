@@ -172,3 +172,9 @@ declare interface IhistoryStep {
     insert: string; // 插入方式，有三种：inside, before, after
     files?: string[]; // 拖拽中带上外部系统文件
 }
+
+interface IquerySerializedMaterialOptions {
+    effectName: string;
+    _props: any;
+    _defines: any;
+}

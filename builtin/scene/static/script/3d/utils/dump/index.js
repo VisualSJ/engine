@@ -177,9 +177,10 @@ function restoreProperty(node, path, dump) {
             }
             break;
         case 'Color':
-            const { a: opacity, r, g, b } = dump.value;
-            property[key] = new cc.Color(r, g, b, 255);
-            property.opacity = Math.floor(opacity * 255);
+            // 3d opacity、color 由 effect 控制，无需更改 opacity
+            const { a, r, g, b } = dump.value;
+            property[key] = new cc.Color(r, g, b, a * 255);
+            // property.opacity = Math.floor(opacity * 255);
             break;
         case 'cc.Mesh':
         case 'cc.SpriteFrame':

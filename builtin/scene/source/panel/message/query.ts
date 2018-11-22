@@ -55,4 +55,33 @@ export function apply(messages: any) {
         return await $scene.forwarding('Node', 'queryComponentFunctionOfNode', [uuid]);
     };
 
+    /**
+     * 查询所有内置 Effects
+     */
+    messages['query-builtin-effects'] = async () => {
+        if (!$scene) {
+            return null;
+        }
+        return await $scene.forwarding('Asset', 'queryBuiltinEffects');
+    };
+
+    /**
+     * 根据 effecName 构建指定 Effect 的 props 和 defines 属性
+     */
+    messages['query-effect-data-for-inspector'] = async (effectName: string) => {
+        if (!$scene) {
+            return null;
+        }
+        return await $scene.forwarding('Asset', 'queryEffectDataForInspector', [effectName]);
+    };
+
+    /**
+     * 返回根据给定属性创建完整的 material 系列化数据
+     */
+    messages['query-serialized-material'] = async (options: IquerySerializedMaterialOptions) => {
+        if (!$scene) {
+            return null;
+        }
+        return await $scene.forwarding('Asset', 'querySerializedMaterial', [options]);
+    };
 }

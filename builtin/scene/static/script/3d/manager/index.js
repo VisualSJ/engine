@@ -36,6 +36,7 @@ function isReady(bool) {
         manager.Selection = require('./selection');
         manager.Operation = require('./operation');
         manager.Gizmo = require('./gizmos');
+        manager.Asset = require('./asset');
 
         ipc.ready();
     }

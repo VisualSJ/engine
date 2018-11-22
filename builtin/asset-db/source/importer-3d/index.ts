@@ -1,10 +1,16 @@
 'use strict';
 
 import { AssetDB } from 'asset-db';
-import GltfImporter, { GltfAnimationImporter, GltfMaterialImporter, GltfMeshImporter, GltfSkeletonImporter } from './importers/gltf';
+import GltfImporter, {
+    GltfAnimationImporter,
+    GltfMaterialImporter,
+    GltfMeshImporter,
+    GltfSkeletonImporter
+} from './importers/gltf';
 import ImageImporter from './importers/image';
 import JavascriptImporter from './importers/javascript';
 import JsonImporter from './importers/json';
+import MaterialImporter from './importers/material';
 import SceneImporter from './importers/scene';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
@@ -58,4 +64,6 @@ export function register(database: AssetDB) {
     database.register(new GltfAnimationImporter(), '.gltf.animation');
     database.register(new GltfSkeletonImporter(), '.gltf.skeleton');
     database.register(new GltfMaterialImporter(), '.gltf.material');
+
+    database.register(new MaterialImporter(), '.mtl');
 }

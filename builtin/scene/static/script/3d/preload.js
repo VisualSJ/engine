@@ -8,6 +8,7 @@ const manager = require('./manager');
 //   3. 启动引擎进程内的模块管理器
 //   4. 重写资源加载相关的函数
 requestAnimationFrame(async () => {
+    window.CC_EDITOR = true;
     // 初始化 Editor
     require('./polyfills/editor');
 

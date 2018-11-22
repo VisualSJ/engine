@@ -4,6 +4,7 @@
         "exclude": ["**/node_modules/**/*", "**/dist/**/*"]
     },
     "rules": {
+        "interface-name": false,
         "max-line-length": [true, 120],
         "indent": [true, "spaces", 4],
         "whitespace": [

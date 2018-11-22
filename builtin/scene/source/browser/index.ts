@@ -171,7 +171,30 @@ export const messages = {
      */
     async 'query-component-function-of-node'(uuid: string) {
         return await Editor.Ipc.requestToPanel('scene', 'query-component-function-of-node', uuid);
-    }
+    },
+
+    /**
+     * 查询所有内置 Effects
+     */
+    async 'query-builtin-effects'() {
+        return await Editor.Ipc.requestToPanel('scene', 'query-builtin-effects');
+    },
+
+    /**
+     * 根据 effecName 构建指定 Effect 的 props 和 defines 属性
+     * @param {string} effectName
+     */
+    async 'query-effect-data-for-inspector'(effectName: string) {
+        return await Editor.Ipc.requestToPanel('scene', 'query-effect-data-for-inspector', effectName);
+    },
+
+    /**
+     * 返回根据给定属性创建完整的 material 系列化数据
+     * @param {IquerySerializedMaterialOptions} options
+     */
+    async 'query-serialized-material'(options: IquerySerializedMaterialOptions) {
+        return await Editor.Ipc.requestToPanel('scene', 'query-serialized-material', options);
+    },
 
 };
 

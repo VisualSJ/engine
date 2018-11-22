@@ -204,6 +204,27 @@ module.exports = {
         },
 
         /**
+         * 保存资源
+         * @param {string} uuid
+         * @param {(Buffer | string)} data
+         */
+        async 'save-asset'(uuid: string, data: Buffer | string) {
+            if (!assetWorker) {
+                return;
+            }
+            try {
+                const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
+                const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
+                const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));
+                await outputFile(file, data);
+                return true;
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+        },
+
+        /**
          * 复制一个资源到指定位置
          * @param url db://assets/abc.json 或者 系统路径 如 C:\Users\**
          * @param to db://assets/abc

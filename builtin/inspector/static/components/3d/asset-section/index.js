@@ -11,6 +11,8 @@ exports.components = {
     none: require('./assets/none'),
     texture: readComponent(__dirname, './assets/texture'),
     'sprite-frame': readComponent(__dirname, './assets/sprite-frame'),
+    material: readComponent(__dirname, './assets/material'),
+    javascript: readComponent(__dirname, './assets/javascript'),
 };
 
 exports.data = function() {

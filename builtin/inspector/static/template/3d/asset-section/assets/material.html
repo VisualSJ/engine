@@ -1,0 +1,78 @@
+<div @property-changed="onPropertyChanged">
+    <!-- 头部工具栏 -->
+   <header
+        class="asset-header"
+    >
+        <!-- <img class="css-icon" :src="icon"></img> -->
+        <div
+            class="css-title"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!dirty"
+            @confirm.stop="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!dirty"
+            @confirm.stop="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <div class="effect-content">
+
+        <div class="vue-comp-ui enum">
+            <div class="name">
+                <i
+                    :class="{
+                        iconfont: true,
+                        'icon-fold': true,
+                        'is-visible': false
+                    }"
+                ></i>
+                <span class="flex-1 label"
+                >Effect</span>
+            </div>
+            <div class="value">
+                <ui-select
+                    :value="effectName"
+                    @confirm.stop="onSelected"
+                >
+                    <option
+                        :key="index"
+                        v-for="(type, index) in effectTypes"
+                        :value="type"
+                    >
+                        {{type}}
+                    </option>
+                </ui-select>
+            </div>
+        </div>
+
+        <!-- defines -->
+        <component 
+            v-for="(item, index) in definesList"
+            :name="item.name || item.key"
+            :is="item.compType"
+            :dump="item"
+            :key="item.key"
+        ></component>
+
+        <!-- props -->
+        <component 
+            v-for="(item, index) in propsList"
+            :name="item.name || item.key"
+            :is="item.compType"
+            :dump="item"
+            :key="item.key"
+        ></component>
+
+    </div>
+</div>
