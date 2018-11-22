@@ -9,12 +9,12 @@ const componentUtils = require('./component');
 function dump(node) {
     const position = node._lpos;
     const rotation = node._lrot;
-    const scale = node._scale;
+    const scale = node._lscale;
 
     const properties = {
-        x: { default: 0, type: 'Float', visible: false, },
-        y: { default: 0, type: 'Float', visible: false, },
-        z: { default: 0, type: 'Float', visible: false, },
+        x: { default: 0, type: 'Float', visible: false },
+        y: { default: 0, type: 'Float', visible: false },
+        z: { default: 0, type: 'Float', visible: false },
     };
 
     let parentData = { type: '', value: { uuid: '' } };
@@ -38,34 +38,34 @@ function dump(node) {
                     if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
                         return null;
                     }
-                    return { type: 'Node', value: { uuid: child.uuid, }, };
+                    return { type: 'Node', value: { uuid: child.uuid } };
                 })
                 .filter(Boolean),
         },
 
-        uuid: { type: 'String', value: node.uuid, },
-        active: { type: 'Boolean', value: node.active, },
-        name: { type: 'String', value: node.name, },
+        uuid: { type: 'String', value: node.uuid },
+        active: { type: 'Boolean', value: node.active },
+        name: { type: 'String', value: node.name },
         position: {
-            extends: ['cc.ValueType', ],
+            extends: ['cc.ValueType'],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,
-            value: { x: position.x, y: position.y, z: position.z, },
+            value: { x: position.x, y: position.y, z: position.z },
         },
         rotation: {
-            extends: ['cc.ValueType', ],
+            extends: ['cc.ValueType'],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,
-            value: { x: rotation.x, y: rotation.y, z: rotation.z, },
+            value: { x: rotation.x, y: rotation.y, z: rotation.z },
         },
         scale: {
-            extends: ['cc.ValueType', ],
+            extends: ['cc.ValueType'],
             name: 'Vec3',
             type: 'cc.Vec3',
             properties,
-            value: { x: scale.x, y: scale.y, z: scale.z, },
+            value: { x: scale.x, y: scale.y, z: scale.z },
         },
     };
 }

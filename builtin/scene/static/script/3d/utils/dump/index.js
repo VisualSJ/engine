@@ -88,9 +88,9 @@ function restoreProperty(node, path, dump) {
     // path 如果是是 position.x || position.y 实际修改的应该是 node._lpos.x || node._lpos.y
     path = path.replace('position', '_lpos');
     // 如果修改的是 scale.x || scale.y 实际修改的应该是 node._scale.x || node._scale.y
-    path = path.replace('scale', '_scale');
+    path = path.replace('scale', '_lscale');
     // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._rot.x || node._rot.y
-    path = path.replace('rotation', '_rot');
+    path = path.replace('rotation', '_lrot');
 
     const keys = (path || '').split('.');
     const key = keys.pop();
@@ -196,6 +196,17 @@ function restoreProperty(node, path, dump) {
             property[key] = dump.value;
     }
 
+    switch (path) {
+        case 'position':
+            node.setPosition(this._lpos);
+            break;
+        case 'rotation':
+            node.setRotation(this._lrot);
+            break;
+        case 'scale':
+            node.setScale(this._lscale);
+            break;
+    }
 }
 
 /**
