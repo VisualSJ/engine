@@ -37,7 +37,21 @@ export const listeners = {
     },
 };
 
-export const methods = {};
+export const methods = {
+    /**
+     * 撤销：回到上一步操作
+     */
+    async undo() {
+        Editor.Ipc.sendToPanel('scene', 'undo');
+    },
+
+    /**
+     * 重做：回到下一步操作
+     */
+    async redo() {
+        Editor.Ipc.sendToPanel('scene', 'redo');
+    }
+};
 
 export const messages = messageApply();
 

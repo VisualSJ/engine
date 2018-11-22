@@ -126,6 +126,10 @@ export async function changeNode(uuid: string) {
     // 获取该节点最新数据
     const newData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
     // 更新当前数据
+    if (!newData) {
+        return;
+    }
+
     if (Editor.Project.type === '3d') {
         changeNode3D(newData);
     }

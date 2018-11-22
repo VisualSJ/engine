@@ -1,10 +1,5 @@
 'use strict';
 
-const manager = {
-    node: require('../node'),
-    scene: require('../scene'),
-};
-
 let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
 
 /**
@@ -24,29 +19,16 @@ function getNodes(uuids) {
  * @param {*} uuids
  */
 function refresh(uuids) {
+    const managerScene = require('../node');
+
     uuids.forEach((id) => {
-        dumpMap[id] = manager.scene.queryNode(id);
+        dumpMap[id] = managerScene.queryDump(id);
     });
 
     return getNodes(uuids);
 }
 
-/**
- * 重置节点树
- * 这个触发的时机在 scene ready, 通过 history reset 的时序触发
- * 也在操作记录有截点重置的时候触发
- */
-function reset() {
-    // dumpMap = {};
-
-    // const uuids = manager.node.queryUuids();
-    // uuids.forEach((uuid) => {
-    //     dumpMap[uuid] = manager.scene.queryNode(uuid);
-    // });
-}
-
 module.exports = {
     getNodes,
     refresh,
-    reset,
 };

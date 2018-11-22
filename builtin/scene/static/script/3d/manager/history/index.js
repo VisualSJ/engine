@@ -1,11 +1,7 @@
 'use strict';
 
-const manager = {
-    node: require('../node'),
-};
-const historyCache = require('./cache');
-const dump = require('../../utils/dump');
-const ipc = require('../../../public/ipc/webview');
+const dumpUtils = require('../../utils/dump');
+const cache = require('./cache');
 
 const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 const records = []; // 格式为 uuid[]
@@ -20,22 +16,23 @@ let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候�
  * 记录受 ipc 修改指令影响的 uuid
  */
 function record(uuid) {
+    console.log(records);
     records.push(uuid);
 }
 
 /**
- *
+ * 停止记录，并将已记录的数据存档
  */
-function recordSave() {
+function stopRecordToArchive() {
     if (records.length === 0) {
         if (index !== steps.length - 1) {
-            historyCache.reset();
+            cache.reset();
         }
         return false;
     }
 
-    const oldData = historyCache.getNodes(records); // 取得旧数据
-    const newData = historyCache.refresh(records); // 刷新 dumptree, 取得新数据
+    const oldData = cache.getNodes(records); // 取得旧数据
+    const newData = cache.refresh(records); // 刷新 dumptree, 取得新数据
 
     records.length = 0;
 
@@ -46,7 +43,7 @@ function recordSave() {
 }
 
 function snapshot() {
-    const step = recordSave();
+    const step = stopRecordToArchive();
     //
     if (step === false) {
         return;
@@ -54,7 +51,7 @@ function snapshot() {
 
     // 清除指针后面的数据
     const deprecated = steps.splice(index + 1);
-    // TODO 内存优化可用从 deprecated 里面包含的对象处理
+    // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
 
     // 存入新步骤
     steps.push(step);
@@ -62,7 +59,7 @@ function snapshot() {
     // 如果步骤数大于 100, 始终保持最大 100
     if (steps.length > 100) {
         const deprecated2 = steps.shift();
-        // TODO 内存优化可用从 deprecated 里面包含的对象处理
+        // TODO 内存优化可用从 deprecated2 里面包含的对象处理，不可能再 undo 复原的节点可以删除掉
     }
 
     // 重设指针和方法
@@ -137,6 +134,8 @@ function redo() {
  * 场景刷新
  */
 function restore() {
+    const managerNode = require('../node'); // 循环引用 hack： history/index.js 有引入到 ../node.js 中
+
     const dumpdata = steps[index][method];
     Object.assign(stepData, dumpdata);
 
@@ -153,12 +152,12 @@ function restore() {
             continue;
         }
 
-        const node = manager.node.query(uuid);
+        const node = managerNode.query(uuid);
         if (node) {
             // 还原节点
-            dump.restoreNode(node, stepData[uuid]);
+            dumpUtils.restoreNode(node, stepData[uuid]);
             // 广播已变动的节点
-            ipc.send('broadcast', 'scene:node-changed', uuid);
+            Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
         }
     }
 
@@ -178,8 +177,6 @@ function reset() {
     clearTimeout(timeId);
     stepData = {};
     records.length = 0;
-
-    historyCache.reset();
 }
 
 module.exports = {

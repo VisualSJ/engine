@@ -34,6 +34,11 @@
         "min-height": 300,
         "width": 500,
         "height": 400,
-        "shortcuts": {}
+        "shortcuts": {
+            "ctrl+z": "undo",
+            "command+z": "undo",
+            "ctrl+shift+z": "redo",
+            "command+shift+z": "redo"
+        }
     }
 }

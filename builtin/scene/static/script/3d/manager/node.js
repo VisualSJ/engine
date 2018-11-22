@@ -7,6 +7,7 @@
 
 const { get } = require('lodash');
 const dumpUtils = require('../utils/dump');
+const history = require('./history');
 const getComponentFunctionOfNode = require('../utils/get-component-function-of-node');
 
 const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
@@ -96,10 +97,12 @@ function setProperty(uuid, path, dump) {
     dumpUtils.restoreProperty(node, path, dump);
 
     // 发送节点修改消息
+    history.record(uuid);
     Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
 
     if (path === 'parent') {
         // 发送节点修改消息
+        history.record(node.parent.uuid);
         Manager.Ipc.send('broadcast', 'scene:node-changed', node.parent.uuid);
     }
     return true;
@@ -144,6 +147,7 @@ function moveArrayElement(uuid, path, target, offset) {
     }
 
     // 发送节点修改消息
+    history.record(uuid);
     Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
 
     return true;
@@ -248,7 +252,7 @@ async function createNode(uuid, name = 'New Node', dump) {
     const node = new cc.Node();
 
     if (dump) {
-        const dumpData = queryNode(dump);
+        const dumpData = queryDump(dump);
         // 这几个属性不需要赋给一个新节点
         delete dumpData.uuid;
         delete dumpData.parent;
@@ -271,10 +275,6 @@ async function createNode(uuid, name = 'New Node', dump) {
     Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
 
     return node.uuid;
-    // return {
-    //     uuid: node.uuid,
-    //     parentUuid: node._parent.uuid,
-    // };
 }
 
 /**

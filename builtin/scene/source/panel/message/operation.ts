@@ -208,6 +208,36 @@ export function apply(messages: any) {
     //         ...options.methodNames,
     //     ]);
     // };
+
+    /**
+     * 保存一次操作记录
+     */
+    messages.snapshot = async () => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('History', 'snapshot');
+    };
+
+    /**
+     * 保存一次操作记录
+     */
+    messages.undo = async () => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('History', 'undo');
+    };
+
+    /**
+     * 保存一次操作记录
+     */
+    messages.redo = async () => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('History', 'redo');
+    };
 }
 
 /**

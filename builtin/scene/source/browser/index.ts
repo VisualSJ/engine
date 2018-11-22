@@ -1,7 +1,7 @@
 'use strict';
 
 let isReady: boolean = false;
-const { readJsonSync} = require('fs-extra');
+const { readJsonSync } = require('fs-extra');
 const { join } = require('path');
 const SCENEPATH = join(Editor.App.project, 'profiles/packages/scene.json');
 
@@ -60,21 +60,21 @@ export const messages = {
      * @param uuid 打开场景的 uuid
      */
     async 'open-scene'(uuid: string) {
-        return await Editor.Ipc.sendToPanel('scene', 'open-scene', uuid);
+        return await Editor.Ipc.requestToPanel('scene', 'open-scene', uuid);
     },
 
     /**
      * 保存场景
      */
     async 'save-scene'() {
-        return await Editor.Ipc.sendToPanel('scene', 'save-scene');
+        return await Editor.Ipc.requestToPanel('scene', 'save-scene');
     },
 
     /**
      * 关闭当前场景
      */
     async 'close-scene'() {
-        return await Editor.Ipc.sendToPanel('scene', 'close-scene');
+        return await Editor.Ipc.requestToPanel('scene', 'close-scene');
     },
 
     /**
