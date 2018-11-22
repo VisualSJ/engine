@@ -17,23 +17,28 @@ function dump(node) {
         z: { default: 0, type: 'Float', visible: false, },
     };
 
+    let parentData = { type: '', value: { uuid: '' } };
+    if (node.parent) {// 顶层节点 scene 的 parent = null
+        parentData.type = node.parent.constructor.name;
+        parentData.value.uuid = node.parent.uuid;
+    }
+
     return {
-        __type__: 'cc.Node',
+        __type__: 'Node',
         __comps__: node._components.map((comp) => {
             return componentUtils.dump(comp);
         }),
 
-        // 顶层节点 scene 的 parent = null
-        parent: { type: 'cc.Node', value: { uuid: node.parent && node.parent.uuid || '', }, },
+        parent: parentData,
         children: {
             type: 'Array',
-            itemType: 'cc.Node',
+            itemType: 'Node',
             value: node.children
                 .map((child) => {
                     if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
                         return null;
                     }
-                    return { type: 'cc.Node', value: { uuid: child.uuid, }, };
+                    return { type: 'Node', value: { uuid: child.uuid, }, };
                 })
                 .filter(Boolean),
         },
