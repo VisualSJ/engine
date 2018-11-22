@@ -89,15 +89,16 @@ class Camera {
     }
 
     onMouseDown(event) {
-        operationManager.requestPointerLock();
         this.node.getRotation(this.rot);
         if (event.middleButton) { // middle button: panning
             this.node.getPosition(this.pos);
             vec3.transformQuat(this.right, this.id_right, this.rot);
             vec3.transformQuat(this.up, this.id_up, this.rot);
+            operationManager.requestPointerLock();
         } else if (event.rightButton) { // right button: rotation
             quat.toEuler(this.euler, this.rot);
             startTicking(this.move);
+            operationManager.requestPointerLock();
         }
     }
 
