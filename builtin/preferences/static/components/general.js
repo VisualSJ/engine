@@ -26,17 +26,20 @@ exports.methods = {
      * @param {*} key
      */
     _onGeneralChanged(event, key) {
-        this.general[key] = event.target.value;
-
+        const value =  event.target.value;
+        this.general[key] = value;
         switch (key) {
             case 'language':
-                Editor.I18n.switch(event.target.value);
+                Editor.I18n.switch(value);
+                break;
+            case 'node_tree':
+                // TODO 设置层级管理器节点默认折叠状态
                 break;
             case 'step':
-                Editor.UI.NumInput.updateStep(event.target.value);
+                Editor.UI.NumInput.updateStep(value);
                 break;
             case 'themeColor':
-                Editor.Theme.useColor(event.target.value);
+                Editor.Theme.useColor(value);
                 break;
         }
     },

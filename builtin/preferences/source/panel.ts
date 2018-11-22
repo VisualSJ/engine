@@ -18,7 +18,7 @@ export const template = readFileSync(join(__dirname, '../static', '/template/ind
 
 export const $ = {
     language: '.language',
-    preferences: '.preferences'
+    preferences: '.preferences',
 };
 
 export const methods = {};
@@ -36,9 +36,10 @@ export async function ready() {
         data: {
             tab: 0,
             general: {
-                language: 'en',
+                language: 'zh',
                 themeColor: 'default',
-                step:  0.01
+                step:  0.01,
+                node_tree: 'memory_last_state',
             },
             preview: {
                 auto_refresh: true,
@@ -49,7 +50,7 @@ export async function ready() {
                 simulator_width: 960,
                 simulator_height: 480,
                 simulator_debugger:  false,
-            }
+            },
         },
 
         watch: {
@@ -62,6 +63,8 @@ export async function ready() {
                     this.set('step', 'general');
                     // @ts-ignore
                     this.set('themeColor', 'general');
+                    // @ts-ignore
+                    this.set('node_tree', 'general');
                     // @ts-ignore
                     this.save();
                 },
@@ -87,8 +90,8 @@ export async function ready() {
                     this.set('simulator_debugger', 'preview');
                     // @ts-ignore
                     this.save();
-                }
-            }
+                },
+            },
         },
 
         components: {
@@ -136,7 +139,7 @@ export async function ready() {
                         this.preview[key] = config[key];
                     }
                 }
-            }
+            },
         },
         mounted() {
             this.getData('general');

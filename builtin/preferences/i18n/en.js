@@ -11,6 +11,10 @@ module.exports = {
         step: 'Number step',
         theme: 'theme',
         themeColor: 'Theme Color ',
+        node_tree: 'Default Node Tree State',
+        expand_all: 'Expand All',
+        collapse_all: 'Collapse All',
+        memory_last_state: 'Memory Last State',
     },
     preview: {
         auto_refresh: 'Should Auto-refresh Preview?',

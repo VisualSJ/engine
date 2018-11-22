@@ -11,6 +11,10 @@ module.exports = {
         step: '数值默认步长',
         theme: '皮肤主题',
         themeColor: '配色主题',
+        node_tree: '默认层级管理器节点折叠状态',
+        expand_all: '全部展开',
+        collapse_all: '全部折叠',
+        memory_last_state: '记住上一次状态',
     },
     preview: {
         auto_refresh: '自动户刷新已启动的预览',
