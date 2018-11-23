@@ -239,7 +239,7 @@ function restoreNode(node, dumpdata) {
             const nodeManaer = require('../../manager/node');
             node.parent = nodeManaer.query(data.value.uuid);
         } else if (path === 'children') {
-            const uuids = data.value.map((one) => one.value);
+            const uuids = data.value.map((one) => one.value.uuid); // 没有 children 的情况，map 后 uuids = []，需要有这个空数组
             resetNodeChildren(node, uuids);
         } else {
             if (node instanceof cc.Scene) {

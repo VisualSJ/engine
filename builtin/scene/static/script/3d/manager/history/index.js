@@ -1,5 +1,6 @@
 'use strict';
 
+const nodeManager = require('../node');
 const dumpUtils = require('../../utils/dump');
 const cache = require('./cache');
 
@@ -12,12 +13,25 @@ let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
 
+nodeManager.on('change', (node) => {
+    record(node.uuid);
+});
+
+nodeManager.on('add', (node) => {
+    record(node.uuid);
+});
+
+nodeManager.on('remove', (node) => {
+    // 注意：删除节点不需要保存之前的状态，因为它的父节点 children 已做了 change 的变更记录
+});
+
 /**
  * 记录受 ipc 修改指令影响的 uuid
  */
 function record(uuid) {
-    console.log(records);
-    records.push(uuid);
+    if (!records.includes(uuid)) {
+        records.push(uuid);
+    }
 }
 
 /**
@@ -26,7 +40,7 @@ function record(uuid) {
 function stopRecordToArchive() {
     if (records.length === 0) {
         if (index !== steps.length - 1) {
-            cache.reset();
+            cache.reset(nodeManager.queryUuids());
         }
         return false;
     }
@@ -134,8 +148,6 @@ function redo() {
  * 场景刷新
  */
 function restore() {
-    const managerNode = require('../node'); // 循环引用 hack： history/index.js 有引入到 ../node.js 中
-
     const dumpdata = steps[index][method];
     Object.assign(stepData, dumpdata);
 
@@ -152,7 +164,7 @@ function restore() {
             continue;
         }
 
-        const node = managerNode.query(uuid);
+        const node = nodeManager.query(uuid);
         if (node) {
             // 还原节点
             dumpUtils.restoreNode(node, stepData[uuid]);

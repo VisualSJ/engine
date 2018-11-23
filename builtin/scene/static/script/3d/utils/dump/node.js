@@ -24,7 +24,7 @@ function dump(node) {
     }
 
     return {
-        __type__: 'Node',
+        __type__: node.constructor.name, // Node or Scene
         __comps__: node._components.map((comp) => {
             return componentUtils.dump(comp);
         }),

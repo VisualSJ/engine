@@ -10,7 +10,6 @@ const { get } = require('lodash');
 const utils = require('./utils');
 
 const dumpUtils = require('../../utils/dump');
-const history = require('../history');
 const getComponentFunctionOfNode = require('../../utils/get-component-function-of-node');
 
 const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
@@ -38,6 +37,7 @@ class NodeManager extends EventEmitter {
      */
     init(scene) {
         scene && utils.walk(scene, uuid2node);
+        this.emit('inited', this.queryUuids());
     }
 
     /**
@@ -110,13 +110,11 @@ class NodeManager extends EventEmitter {
         dumpUtils.restoreProperty(node, path, dump);
 
         // 发送节点修改消息
-        history.record(uuid);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
         this.emit('change', node);
 
         if (path === 'parent') {
             // 发送节点修改消息
-            history.record(node.parent.uuid);
             Manager.Ipc.send('broadcast', 'scene:node-changed', node.parent.uuid);
             this.emit('change', node.parent);
         }
@@ -162,7 +160,6 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        history.record(uuid);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
         this.emit('change', node);
 

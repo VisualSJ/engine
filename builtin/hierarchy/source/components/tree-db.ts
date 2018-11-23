@@ -216,9 +216,9 @@ function changeNode3D(newData: any) {
         node.children = [];
     }
 
-    // children 是否有变动
+    // children 是否有变动，注意 2d 和 3d 数据结构有差别: children
     const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
-    const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
+    const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value.uuid));
     if (nowChildren !== newChildren) {
         // 先保存原先的节点，例如在粘贴节点后进行 undo 操作，需要此操作保存已粘贴成功了的节点
         node.children.map((child: ItreeNode) => {
@@ -236,9 +236,6 @@ function changeNode3D(newData: any) {
 
     // 重置掉 loading 效果
     node.state = '';
-
-    vm.changeData();
-
     return node;
 }
 
