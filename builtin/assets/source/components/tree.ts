@@ -127,20 +127,16 @@ export const methods = {
      */
     async refresh() {
         if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
-            clearTimeout(vm.timerAdd);
-            vm.timerAdd = setTimeout(() => {
-                run();
-            }, 800);
-        } else {
-            run();
+            return;
         }
 
-        async function run() {
-            isRefreshing = true;
-            setTimeout(() => {
-                isRefreshing = false;
-            }, 600);
+        isRefreshing = true;
+        setTimeout(() => { // 整体延迟
+            isRefreshing = false;
+            run();
+        }, 300);
 
+        async function run() {
             await db.refresh();
             if (!db.assetsTree) { // 容错处理，数据可能为空
                 return;
@@ -344,13 +340,7 @@ export const methods = {
      * 从树形删除资源节点
      */
     delete(uuid: string) {
-        const [asset, index, arr, parent] = utils.getGroupFromTree(db.assetsTree, uuid);
-        if (arr) {
-            arr.splice(index, 1);
-        }
-
-        // 触发节点数据已变动
-        this.changeData();
+        vm.refresh();
     },
 
     /**

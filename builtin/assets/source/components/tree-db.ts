@@ -28,7 +28,7 @@ export const extToFileType = {
  */
 export function reset() {
     subAssetsTree = {
-        subAssets: {}
+        subAssets: {},
     };
 
     assetsTree = {
@@ -82,7 +82,7 @@ function toSubAssetsTree(arr: ItreeAsset[]) {
                     continue;
                 }
                 // 如果当前的路径不存在，则生成默认的路径
-                data = data.subAssets[name] = data.subAssets[name] || { subAssets: {}, };
+                data = data.subAssets[name] = data.subAssets[name] || { subAssets: {} };
             }
         }
 
@@ -93,7 +93,7 @@ function toSubAssetsTree(arr: ItreeAsset[]) {
             if (!asset.subAssets[name]) {
                 continue;
             }
-            data.subAssets[name] = { subAssets: {}, };
+            data.subAssets[name] = { subAssets: {} };
             step(asset.subAssets[name], data.subAssets[name]);
         }
 
@@ -222,7 +222,7 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
         }
 
         if (vm.folds[asset.uuid] === undefined) {
-            vm.folds[asset.uuid] = asset.isDirectory ? true : false;
+            vm.folds[asset.uuid] = asset.isDirectory ? false : true; // directory 默认折叠
         }
 
         if (asset.height === undefined) {

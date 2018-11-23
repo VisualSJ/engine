@@ -33,8 +33,14 @@ export const methods = {
     /**
      * 暂存页面数据
      */
-    async staging() {
-        Editor.Ipc.sendToPackage('assets', 'staging-fold', JSON.stringify(vm.$refs.tree.folds));
+    staging() {
+        const uuidsIsExpand = [];
+        for (const uuid in vm.$refs.tree.folds) {
+            if (vm.$refs.tree.folds[uuid]) {
+                uuidsIsExpand.push(uuid);
+            }
+        }
+        Editor.Ipc.sendToPackage('assets', 'staging-fold', JSON.stringify(uuidsIsExpand));
     },
 
     /**
@@ -43,7 +49,12 @@ export const methods = {
     async unstaging() {
         // 初始化缓存的折叠数据
         const folds = await Editor.Ipc.requestToPackage('assets', 'query-staging-fold');
-        vm.$refs.tree.folds = JSON.parse(folds);
+        if (folds) {
+            const uuidsIsExpand = JSON.parse(folds);
+            uuidsIsExpand.forEach((uuid: string) => {
+                vm.$refs.tree.folds[uuid] = true;
+            });
+        }
     },
     /**
      * 刷新面板
@@ -331,6 +342,9 @@ export async function ready() {
         },
     });
 
+    // 初始化缓存的折叠数据
+    await panel.unstaging();
+
     // db 就绪状态才需要查询数据
     const isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
     if (isReady) {
@@ -341,6 +355,7 @@ export async function ready() {
 export async function beforeClose() { }
 
 export async function close() {
+    panel.staging();
     Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
 }
 
