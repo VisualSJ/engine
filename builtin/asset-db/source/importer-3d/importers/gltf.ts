@@ -38,14 +38,21 @@ export default class GltfImporter extends Importer {
      * @param asset The gltf asset.
      */
     public static async createGltfConverter(asset: Asset) {
-        const gltf = await readJson(asset.source) as GlTf;
+        const importer = asset._assetDB.name2importer[asset.meta.importer] as GltfImporter;
+        if (!importer) {
+            throw new Error(`Importer is not found for asset ${asset.source}`);
+        }
+
+        const gltfFilePath: string = await importer.getGltfFilePath(asset);
+
+        const gltf = await readJson(gltfFilePath) as GlTf;
         let buffers: Buffer[] = [];
         if (gltf.buffers) {
             buffers = gltf.buffers.map((gltfBuffer) => {
                 if (!gltfBuffer.uri) {
                     return new Buffer(0);
                 }
-                const bufferPath = path.resolve(path.dirname(asset.source), gltfBuffer.uri);
+                const bufferPath = path.resolve(path.dirname(gltfFilePath), gltfBuffer.uri);
                 return fs.readFileSync(bufferPath);
             });
         }
@@ -83,10 +90,14 @@ export default class GltfImporter extends Importer {
         if (!(await asset.existsInLibrary('.json'))) {
             await asset.copyToLibrary('.json', asset.source);
             updated = true;
-            this._importSubAssets(asset);
+            await this._importSubAssets(asset);
         }
 
         return updated;
+    }
+
+    protected async getGltfFilePath(asset: Asset) {
+        return asset.source;
     }
 
     private async _importSubAssets(asset: Asset) {
@@ -94,7 +105,7 @@ export default class GltfImporter extends Importer {
         const gltfConverter = await GltfImporter.createGltfConverter(asset);
 
         // Fill the swap space for sub-assets' use
-        GltfImporter.fillGltfSwapSpace(asset, { gltfConverter });
+        await GltfImporter.fillGltfSwapSpace(asset, { gltfConverter });
 
         const assetTable: IGltfAssetTable = {};
         asset.userData.assetTable = assetTable;
@@ -114,7 +125,8 @@ export default class GltfImporter extends Importer {
             const result = new Array<string | null>(gltfSubAssets.length).fill(null);
             for (let index = 0; index < gltfSubAssets.length; ++index) {
                 const gltfSubAsset = gltfSubAssets[index];
-                const name = (GltfImporter._validateAssetName(gltfSubAsset.name) || `${asset.basename}-${index}`) + extension;
+                const name = (GltfImporter._validateAssetName(gltfSubAsset.name) || `${asset.basename}-${index}`) +
+                    extension;
                 const subAsset = await asset.createSubAsset(name, importer);
                 subAsset.userData.gltfIndex = index;
                 result[index] = subAsset.uuid;
@@ -129,7 +141,8 @@ export default class GltfImporter extends Importer {
 
         // Import animations
         if (gltfConverter.gltf.animations) {
-            assetTable.animations = await createSubAssets(gltfConverter.gltf.animations, '.animation', 'gltf-animation');
+            assetTable.animations = await createSubAssets(
+                gltfConverter.gltf.animations, '.animation', 'gltf-animation');
         }
 
         // Import skeletons
@@ -142,7 +155,8 @@ export default class GltfImporter extends Importer {
             assetTable.textures = new Array(gltfConverter.gltf.textures.length).fill(null);
             for (let index = 0; index < gltfConverter.gltf.textures.length; ++index) {
                 const gltfTexture = gltfConverter.gltf.textures[index];
-                const name = (GltfImporter._validateAssetName(gltfTexture.name) || `${asset.basename}-${index}`) + '.texture';
+                const name = (GltfImporter._validateAssetName(gltfTexture.name) || `${asset.basename}-${index}`) +
+                    '.texture';
                 const subAsset = await asset.createSubAsset(name, 'texture');
                 if (gltfTexture.source !== undefined) {
                     const gltfImage = gltfConverter.gltf.images![gltfTexture.source];
@@ -215,11 +229,12 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
 
         // Create the mesh asset
         const mesh = gltfConverter.createMesh(gltfConverter.gltf.meshes![asset.userData.gltfIndex as number]);
+        mesh.mesh._setRawAsset('.bin');
 
         // Save the mesh asset into library
         // @ts-ignore
-        asset.saveToLibrary('.json', Manager.serialize(mesh.mesh));
-        asset.saveToLibrary('.bin', new Buffer(mesh.buffer));
+        await asset.saveToLibrary('.json', Manager.serialize(mesh.mesh));
+        await asset.saveToLibrary('.bin', new Buffer(mesh.buffer));
 
         return true;
     }
@@ -307,7 +322,7 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
         const skeleton = gltfConverter.createSkeleton(gltfConverter.gltf.skins![asset.userData.gltfIndex as number]);
 
         // @ts-ignore
-        asset.saveToLibrary('.json', Manager.serialize(skeleton));
+        await asset.saveToLibrary('.json', Manager.serialize(skeleton));
 
         return true;
     }
@@ -356,7 +371,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
             gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable);
 
         // @ts-ignore
-        asset.saveToLibrary('.json', Manager.serialize(material));
+        await asset.saveToLibrary('.json', Manager.serialize(material));
 
         return true;
     }
@@ -678,7 +693,7 @@ class GltfConverter {
             // @ts-ignore
             texture.setWrapMode(cc.TextureBase.WrapMode.REPEAT, cc.TextureBase.WrapMode.REPEAT);
         } else {
-            const gltfSampler = this._requireSampler(gltfTexture.sampler);
+            const gltfSampler = this._gltf.samplers![gltfTexture.sampler];
             texture.setFilters(
                 gltfSampler.minFilter === undefined ? undefined : this._getFilter(gltfSampler.minFilter),
                 gltfSampler.magFilter === undefined ? undefined : this._getFilter(gltfSampler.magFilter)
@@ -727,7 +742,8 @@ class GltfConverter {
     }
 
     private _readAccessor(gltfAccessor: Accessor, outputBuffer: DataView, outputStride = 0) {
-        if (!gltfAccessor.bufferView) {
+        if (gltfAccessor.bufferView === undefined) {
+            console.warn(`Note, there is an accessor assiociate with no buffer view.`);
             return;
         }
 
@@ -746,7 +762,8 @@ class GltfConverter {
 
         const inputBuffer = new DataView(this._buffers[gltfBufferView.buffer].buffer, inputStartOffset);
 
-        const inputStride = gltfBufferView.byteStride !== undefined ? gltfBufferView.byteStride : componentsPerAttribute * bytesPerElement;
+        const inputStride = gltfBufferView.byteStride !== undefined ?
+            gltfBufferView.byteStride : componentsPerAttribute * bytesPerElement;
 
         const componentReader = this._getComponentReader(gltfAccessor.componentType);
         const componentWriter = this._getComponentWriter(gltfAccessor.componentType);
@@ -787,7 +804,8 @@ class GltfConverter {
     }
 
     private _getBytesPerAttribute(gltfAccessor: Accessor) {
-        return this._getBytesPerComponent(gltfAccessor.componentType) * this._getComponentsPerAttribute(gltfAccessor.type);
+        return this._getBytesPerComponent(gltfAccessor.componentType) *
+            this._getComponentsPerAttribute(gltfAccessor.type);
     }
 
     private _getComponentsPerAttribute(type: string) {
@@ -885,12 +903,5 @@ class GltfConverter {
             default:
                 throw new Error(`Unrecognized wrapMode: ${wrapMode}.`);
         }
-    }
-
-    private _requireSampler(index: number) {
-        if (this._gltf.samplers === undefined) {
-            throw new Error(`Samplers is require but it do not exists.`);
-        }
-        return this._gltf.samplers[index];
     }
 }

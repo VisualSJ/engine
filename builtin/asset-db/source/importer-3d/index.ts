@@ -1,6 +1,7 @@
 'use strict';
 
 import { AssetDB } from 'asset-db';
+import FbxImporter from './importers/fbx';
 import GltfImporter, {
     GltfAnimationImporter,
     GltfMaterialImporter,
@@ -64,6 +65,8 @@ export function register(database: AssetDB) {
     database.register(new GltfAnimationImporter(), '.gltf.animation');
     database.register(new GltfSkeletonImporter(), '.gltf.skeleton');
     database.register(new GltfMaterialImporter(), '.gltf.material');
+
+    database.register(new FbxImporter(), '.fbx');
 
     database.register(new MaterialImporter(), '.mtl');
 }
