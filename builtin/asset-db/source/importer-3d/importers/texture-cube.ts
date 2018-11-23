@@ -22,6 +22,10 @@ export default class TextureCubeImporter extends Importer {
         return 'texture-cube';
     }
 
+    get assetType() {
+        return 'cc.TextureCube';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset

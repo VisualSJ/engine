@@ -15,6 +15,10 @@ export default class ImageImporter extends Importer {
         return 'image';
     }
 
+    get assetType() {
+        return 'cc.ImageAsset';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset

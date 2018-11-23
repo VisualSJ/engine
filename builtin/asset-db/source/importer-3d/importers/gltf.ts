@@ -202,6 +202,10 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         return 'gltf-mesh';
     }
 
+    get assetType() {
+        return 'cc.Mesh';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset
@@ -252,6 +256,10 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
         return 'gltf-animation';
     }
 
+    get assetType() {
+        return 'cc.AnimationClip';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset
@@ -275,7 +283,8 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
-        const animationClip = gltfConverter.createAnimation(gltfConverter.gltf.animations![asset.userData.gltfIndex as number]);
+        const animationClip = gltfConverter.createAnimation(
+            gltfConverter.gltf.animations![asset.userData.gltfIndex as number]);
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(animationClip));
@@ -294,6 +303,10 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
     // importer 的名字，用于指定 importer as 等
     get name() {
         return 'gltf-skeleton';
+    }
+
+    get assetType() {
+        return 'cc.Skeleton';
     }
 
     /**
@@ -340,6 +353,10 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         return 'gltf-material';
     }
 
+    get assetType() {
+        return 'cc.Material';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset
@@ -364,8 +381,10 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
         const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
+        const textureTable = !assetTable.textures ? [] :
         // @ts-ignore
-        const textureTable = !assetTable.textures ? [] : assetTable.textures.map((textureUUID) => Manager.serialize.asAsset(textureUUID));
+            assetTable.textures.map((textureUUID) => Manager.serialize.asAsset(textureUUID));
+
         // @ts-ignore
         const material = gltfConverter.createMaterial(
             gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable);

@@ -15,6 +15,10 @@ export default class MaterialImporter extends CustomAssetImporter {
         return 'material';
     }
 
+    get assetType() {
+        return 'cc.Material';
+    }
+
     /**
      * 判断是否允许使用当前的 importer 进行导入
      * @param asset

@@ -1,16 +1,30 @@
 import { Asset, Importer, VirtualAsset } from 'asset-db';
-import { extname } from 'path';
+import { applyTextureBaseAssetUserData,
+    makeDefaultTextureBaseAssetUserData,
+    TextureBaseAssetUserData } from './texture-base';
+
+interface Texture2DAssetUserData extends TextureBaseAssetUserData {
+    imageSource?: string;
+}
+
+export function makeDefaultTexture2DAssetUserData(): Texture2DAssetUserData {
+    return makeDefaultTextureBaseAssetUserData();
+}
 
 export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
     get name() {
         return 'texture';
+    }
+
+    get assetType() {
+        return 'cc.Texture2D';
     }
 
     /**
@@ -33,8 +47,12 @@ export default class TextureImporter extends Importer {
         let updated = false;
 
         if (!(await asset.existsInLibrary('.json'))) {
+            // if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+            //     Object.assign(asset.userData, makeDefaultTextureBaseAssetUserData());
+            // }
             // @ts-ignore
             const texture = new cc.Texture2D();
+            // applyTextureBaseAssetUserData(asset.userData as TextureBaseAssetUserData, texture);
             const imageSource = asset.userData.imageSource as string;
             if (imageSource) {
                 asset.rely(imageSource);
