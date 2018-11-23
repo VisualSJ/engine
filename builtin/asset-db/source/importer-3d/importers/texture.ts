@@ -42,7 +42,7 @@ export default class TextureImporter extends Importer {
                 if (imageUuid) {
                     // @ts-ignore
                     const image = Manager.serialize.asAsset(imageUuid);
-                    texture._mipmaps = [ image ];
+                    texture._mipmaps = [image];
                 }
             }
             // @ts-ignore

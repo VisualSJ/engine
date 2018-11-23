@@ -1,10 +1,12 @@
-<ui-drag-item class="tree-node" type="asset"
+<ui-drag-item class="tree-node"
     :draggable="draggable"
     :state="state"
     :active="selects.indexOf(asset.uuid) !== -1" 
     :style="{ paddingLeft: asset.left + 'px' }"
     :class="{'parent':asset.isParent}"
     :expand="asset.isExpand"
+    :type="asset.type"
+
     @mousedown="mouseDown($event, asset)"
     @click="click($event, asset)" 
     @dragstart="dragStart($event, asset)" 

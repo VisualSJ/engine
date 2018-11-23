@@ -491,7 +491,7 @@ class GltfConverter {
 
             // @ts-ignore
             const primitive = new cc.Primitive();
-            primitive._vertexBundelIndices = [primitiveIndex ];
+            primitive._vertexBundelIndices = [primitiveIndex];
             primitive._topology = this._getTopology(gltfPrimitive.mode === undefined ? 4 : gltfPrimitive.mode);
             primitive._indices = indices;
             primitive._indexUnit = indexUnit;

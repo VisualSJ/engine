@@ -56,7 +56,7 @@ export const computed = {
         }
 
         return 'true';
-    }
+    },
 };
 
 export const watch = {

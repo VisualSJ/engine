@@ -3,14 +3,14 @@
 const { parse } = require('url');
 const { join, relative, isAbsolute } = require('path');
 const { ensureDirSync } = require('fs-extra');
-const { AssetDB } = require('asset-db');
+const { AssetDB, version } = require('asset-db');
 
 const protocol = 'db://';
 let isReady = false;
 let waitTask = [];
 const type2importer = {
     scripts: ['javascript', 'coffeescript', 'typescript'],
-    scene: ['scene']
+    scene: ['scene'],
 };
 function waitReady() {
     return new Promise((resolve) => {
@@ -41,7 +41,7 @@ window.Manager = {
     AssetWorker,
     get serialize() {
         return this._serialize();
-    }
+    },
 };
 
 /**
@@ -80,7 +80,7 @@ const queryAsset = (uuid) => {
                 asset: {
                     source: `db://${key}`, uuid: `db://${key}`,
                     isDirectory() { return false; },
-                    meta: { importer: 'database', files: [], }
+                    meta: { importer: 'database', files: [] },
                 },
             };
         }
@@ -113,8 +113,14 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
 
 // 启动一个数据库
 Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
+
+    if (info.name === 'internal' && !version) {
+        console.warn(`Try 'npm run update -- module asset-db' within the bash.`);
+        return;
+    }
+
     const date = new Date().getTime();
-    console.log('Start the asset database...');
+    console.log(`Start the asset(${info.name}) database...`);
     // 拼接需要使用的地址
     const options = Object.assign({
         protocol: protocol + info.name, // 方便后续协议和路径的替换
@@ -123,6 +129,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     // 保证文件夹存在
     ensureDirSync(options.target);
     ensureDirSync(options.library);
+    ensureDirSync(options.temp);
 
     // 启动资源数据库
     try {
@@ -167,6 +174,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
         console.log(`The asset database is ready: ${new Date() - date}ms`);
     } catch (error) {
         console.error(error);
+        console.error(`Try 'npm run update -- module asset-db' within the bash.`);
     }
 });
 
@@ -238,11 +246,14 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
             if (importers && !importers.includes(asset.meta.importer)) {
                 continue;
             }
+            const importer = db.name2importer[asset.meta.importer] || null;
+
             const info = {
                 source: source2url(name, asset.source),
                 file: asset.source, // 实际磁盘路径
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
+                type: importer.assetType || 'cc.Asset',
                 isDirectory: await asset.isDirectory(),
                 files: asset.meta.files.map((ext) => {
                     return asset.library + ext;
@@ -255,7 +266,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 readOnly: dbInfos[name].readOnly,
             };
 
-            searchSubAssets(info, asset);
+            searchSubAssets(info, asset, db);
 
             assets.push(info);
         }
@@ -314,11 +325,15 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
 
     const dbInfo = queryDatabaseInfo(assetInfo.db);
 
+    const db = AssetWorker[assetInfo.db];
+    const importer = db ? db.name2importer[asset.meta.importer] : null;
+
     const info = {
         source: asset.source ? source2url(assetInfo.db, asset.source) : null,
         file: asset.source,
         uuid: asset.uuid,
         importer: asset.meta.importer,
+        type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
         isDirectory: await asset.isDirectory(),
         files: asset.meta.files.map((ext) => {
             return asset.library + ext;
@@ -328,7 +343,7 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
         readOnly: dbInfo.readOnly,
     };
 
-    searchSubAssets(info, asset);
+    searchSubAssets(info, asset, db);
 
     event.reply(null, info);
 });
@@ -357,15 +372,17 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
  * @param {*} parent
  * @param {*} asset
  */
-function searchSubAssets(parent, asset) {
+function searchSubAssets(parent, asset, db) {
     const names = Object.keys(asset.subAssets || {});
     for (const name of names) {
         const subAsset = asset.subAssets[name];
+        const importer = db.name2importer[subAsset.meta.importer] || null;
         parent.subAssets[name] = {
             source: null,
             file: null,
             uuid: subAsset.uuid,
             importer: subAsset.meta.importer,
+            type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
             isDirectory: false,
             files: subAsset.meta.files.map((ext) => {
                 return subAsset.library + ext;
@@ -374,7 +391,7 @@ function searchSubAssets(parent, asset) {
             visible: parent.visible,
             readOnly: parent.readOnly,
         };
-        searchSubAssets(parent.subAssets[name], subAsset);
+        searchSubAssets(parent.subAssets[name], subAsset, db);
     }
 }
 

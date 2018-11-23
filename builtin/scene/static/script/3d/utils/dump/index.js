@@ -81,7 +81,7 @@ function dumpNode(node) {
  * @param dump
  * @param property
  */
-function restoreProperty(node, path, dump) {
+async function restoreProperty(node, path, dump) {
     // dump 的时候将 _components 转成了 __comps__
     path = path.replace('__comps__', '_components');
 
@@ -187,8 +187,11 @@ function restoreProperty(node, path, dump) {
         case 'cc.Texture2D':
         case 'cc.Texture':
         case 'cc.Asset':
-            cc.AssetLibrary.loadAsset(dump.value.uuid || '', (err, asset) => {
-                property[key] = asset;
+            await new Promise((resolve) => {
+                cc.AssetLibrary.loadAsset(dump.value.uuid || '', (err, asset) => {
+                    property[key] = asset;
+                    resolve();
+                });
             });
             break;
         case 'enums':

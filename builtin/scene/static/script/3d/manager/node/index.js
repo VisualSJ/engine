@@ -99,7 +99,7 @@ class NodeManager extends EventEmitter {
      * @param {*} key
      * @param {*} dump
      */
-    setProperty(uuid, path, dump) {
+    async setProperty(uuid, path, dump) {
         const node = this.query(uuid);
         if (!node) {
             console.warn(`Set property failed: ${uuid} does not exist`);
@@ -107,7 +107,7 @@ class NodeManager extends EventEmitter {
         }
 
         // 恢复数据
-        dumpUtils.restoreProperty(node, path, dump);
+        await dumpUtils.restoreProperty(node, path, dump);
 
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);

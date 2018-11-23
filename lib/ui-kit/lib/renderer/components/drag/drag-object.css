@@ -69,16 +69,16 @@
 :host([focused]) .area {
   border-color: #fd942b;
 }
-:host([value]) .area > ui-drag-area {
+:host([effective]) .area > ui-drag-area {
   background-color: #6691b9;
 }
-:host([value]) .area > ui-drag-area > .value {
+:host([effective]) .area > ui-drag-area > .value {
   display: inline;
 }
-:host([value]) .area > ui-drag-area > .placeholder {
+:host([effective]) .area > ui-drag-area > .placeholder {
   display: none;
 }
-:host([value]) .area > svg {
+:host([effective]) .area > svg {
   display: inline;
 }
 :host(:hover) ui-drag-area {

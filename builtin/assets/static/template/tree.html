@@ -5,7 +5,7 @@
     @dragover="hideSelectBox($event)"
     @drop="drop($event)"
 >
-    <tree-node type="asset"
+    <tree-node
         v-for="(asset,index) in assets" 
         :key="index"
         :asset="asset"

@@ -8,10 +8,32 @@ let quat;
 let v3a;
 let v3b;
 
+// wasd 按键提示
+const $info = document.createElement('div');
+$info.hidden = true;
+$info.id = 'camera_info';
+$info.innerHTML = `
+<style>
+    #camera_info { position: absolute; top: 10px; left: 10px; font-size: 12px; text-align: center; color: #fff; }
+    #camera_info div { padding: 2px 0; }
+    #camera_info span { border: 1px solid #fff; border-radius: 2px; padding: 0 4px; }
+</style>
+<div>
+    <span>w</span>
+</div>
+<div>
+    <span>a</span>
+    <span>s</span>
+    <span>d</span>
+</div>
+`;
+document.body.appendChild($info);
+
 function startTicking(fn) {
     if (fn.timer) {
         return;
     }
+    $info.hidden = false;
     fn.timer = setInterval(fn, 17);
 }
 
@@ -19,6 +41,7 @@ function stopTicking(fn) {
     if (!fn.timer) {
         return;
     }
+    $info.hidden = true;
     clearInterval(fn.timer);
     fn.timer = 0;
 }
