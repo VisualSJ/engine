@@ -14,5 +14,4 @@
         "lib": ["dom", "es7", "dom.iterable", "scripthost"],
         "esModuleInterop": true
     },
-    "include": ["static/**/*", "source/**/*"]
 }

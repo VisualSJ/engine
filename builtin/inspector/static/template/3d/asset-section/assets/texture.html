@@ -67,18 +67,18 @@
             v-if="meta.userData.type === 'sprite'"
         >
             <div slot="header" class="header">Sprite</div>
-            <sprite-frame
+            <cc-sprite-frame
                 v-if="meta.subMetas && meta.subMetas['sprite-frame']"
                 :meta="meta.subMetas['sprite-frame']"
                 :child="true"
-            ></sprite-frame>
+            ></cc-sprite-frame>
         </ui-section>
 
     </div>
 
-    <image-preview
+    <cc-image-preview
         v-if="meta"
         :meta="meta"
-    ></image-preview>
+    ></cc-image-preview>
 
 </div>

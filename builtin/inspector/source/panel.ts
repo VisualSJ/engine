@@ -170,6 +170,6 @@ export async function ready() {
     });
 }
 
-export async function beforeClose() { }
+export async function beforeClose() {}
 
-export async function close() { }
+export async function close() {}

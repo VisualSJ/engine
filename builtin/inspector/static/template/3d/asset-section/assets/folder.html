@@ -1,0 +1,57 @@
+<div :class="{[meta.__assetType__]: true}">
+
+    <!-- 头部工具栏 -->
+    <header
+        class="asset-header"
+    >
+        <!-- <img class="css-icon" :src="icon"></img> -->
+        <div
+            class="css-title"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <div class="props flex-1">
+        <div class="vue-comp-ui">
+            <span class="flex-1">{{ info.source }}</span>
+            <ui-button class="blue explore-btn" @confirm="explore">
+                <i class="iconfont icon-folderopen"></i>
+            </ui-button>
+        </div>
+        
+        <boolean
+            :name="T('folder','is_subpackage')"
+            :meta="meta"
+            path="isSubpackage"
+        ></boolean>
+        <string
+            v-if="meta.isSubpackage"
+            :name="T('folder', 'subpackage_name')"
+            :meta="meta"
+            :placeholder="subPackageName(info.source)"
+            path="subpackageName"
+        ></string>
+
+        <cc-markdown-preview
+            v-if="isResources"
+            :content="getMarkdownContent()"
+        ></cc-markdown-preview>
+    </div>
+
+</div>

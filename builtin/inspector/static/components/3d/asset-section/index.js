@@ -3,21 +3,27 @@
 const { join, basename, extname } = require('path');
 const { readTemplate, readComponent, T } = require('../../../utils');
 
+const prefix = 'cc-';
+
+exports.assetComponentPrefix = prefix;
+
 exports.template = readTemplate('3d', './asset-section/index.html');
 
-exports.props = ['uuid' ];
+exports.props = ['uuid'];
 
 exports.components = {
-    none: require('./assets/none'),
-    texture: readComponent(__dirname, './assets/texture'),
-    'sprite-frame': readComponent(__dirname, './assets/sprite-frame'),
-    material: readComponent(__dirname, './assets/material'),
-    javascript: readComponent(__dirname, './assets/javascript'),
+    [`${prefix}none`]: require('./assets/none'),
+    [`${prefix}texture`]: readComponent(__dirname, './assets/texture'),
+    [`${prefix}sprite-frame`]: readComponent(__dirname, './assets/sprite-frame'),
+    [`${prefix}material`]: readComponent(__dirname, './assets/material'),
+    [`${prefix}javascript`]: readComponent(__dirname, './assets/javascript'),
+    [`${prefix}folder`]: readComponent(__dirname, './assets/folder'),
+    [`${prefix}image`]: readComponent(__dirname, './assets/image'),
 };
 
 exports.data = function() {
     return {
-        dataReady: false,
+        // dataReady: false,
         info: null,
         meta: null,
     };
@@ -35,13 +41,14 @@ exports.methods = {
     async refresh() {
         try {
             this.$root.showLoading(200);
-            this.dataReady = false;
-            const [info, meta ] = await Promise.all([
+            // this.dataReady = false;
+            const [info, meta] = await Promise.all([
                 Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
                 Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', this.uuid),
             ]);
 
             if (info && meta) {
+                // console.log(info, meta);
                 this.info = info;
                 this.meta = buildMeta(meta, info);
             } else {
@@ -54,7 +61,7 @@ exports.methods = {
             this.meta = null;
         } finally {
             this.$root.hideLoading(false);
-            this.dataReady = true;
+            // this.dataReady = true;
         }
     },
 
@@ -64,10 +71,10 @@ exports.methods = {
      */
     getAsset(type) {
         type = type.toLocaleLowerCase();
-        if (!exports.components[type]) {
-            return 'none';
+        if (!exports.components[`${prefix}${type}`]) {
+            type = 'none';
         }
-        return type;
+        return `${prefix}${type}`;
     },
 
     /**
@@ -83,23 +90,30 @@ exports.mounted = async function() {
     this.refresh();
 
     this.$on('reset', () => {
-        this.meta = null;
-        this.info = null;
+        // this.meta = null;
+        // this.info = null;
         this.refresh();
         // this.dirty = false;
     });
 
-    this.$on('apply', () => {
-        const keys = Object.keys(this.meta);
-        const filterMeta = keys
-            .filter((key) => !key.startsWith('__'))
-            .reduce((prev, next) => {
-                prev[next] = this.meta[next];
-                return prev;
-            }, {});
-        const meta = JSON.stringify(filterMeta);
-        Editor.Ipc.sendToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
-        // this.dirty = false;
+    this.$on('apply', async () => {
+        try {
+            const keys = Object.keys(this.meta);
+            const filterMeta = keys
+                .filter((key) => !key.startsWith('__'))
+                .reduce((prev, next) => {
+                    prev[next] = this.meta[next];
+                    return prev;
+                }, {});
+            const meta = JSON.stringify(filterMeta);
+            const isSaved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
+            if (isSaved) {
+                this.refresh();
+            }
+            // this.dirty = false;
+        } catch (err) {
+            console.error(err);
+        }
     });
 };
 
@@ -107,7 +121,7 @@ function buildMeta(meta, info) {
     const { source = '', files = [] } = info;
     meta.__dirty__ = false;
     meta.__name__ = source && basename(source, extname(source));
-    meta.__assetType__ = meta.importer;
+    meta.__assetType__ = getAssetType(info);
     // todo
     // if (meta.subMetas) {
     //     const arr = [];
@@ -121,4 +135,13 @@ function buildMeta(meta, info) {
     //     meta.subMetas = arr;
     // }
     return meta;
+}
+
+function getAssetType(info) {
+    if (info.importer === '*') {
+        if (info.isDirectory) {
+            return 'folder';
+        }
+    }
+    return info.importer;
 }

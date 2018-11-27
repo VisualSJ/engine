@@ -25,6 +25,7 @@ exports.template = `
             :value="dump.value"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
+            :placeholder="placeholder"
             @confirm.stop="_onConfirm"
         ></ui-textarea>
         <ui-input
@@ -32,6 +33,7 @@ exports.template = `
             :value="dump.value"
             :disabled="disabled"
             :readonly="dump.readonly || readonly"
+            :placeholder="placeholder"
             @confirm.stop="_onConfirm"
         ></ui-input>
         <slot name="suffix"></slot>
@@ -43,6 +45,7 @@ exports.template = `
             :value="metaVal"
             :disabled="disabled"
             :readonly="readonly"
+            :placeholder="placeholder"
             @confirm.stop="_onConfirm"
         ></ui-textarea>
         <ui-input
@@ -50,6 +53,7 @@ exports.template = `
             :value="metaVal"
             :disabled="disabled"
             :readonly="readonly"
+            :placeholder="placeholder"
             @confirm.stop="_onConfirm"
         ></ui-input>
         <slot name="suffix"></slot>
@@ -69,6 +73,7 @@ exports.props = [
     'disabled',
     'readonly',
     'foldable',
+    'placeholder',
 ];
 
 exports.data = function() {

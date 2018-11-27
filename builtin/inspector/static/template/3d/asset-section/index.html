@@ -2,8 +2,8 @@
     @meta-changed="onMetaChanged"
 >
         <component
-            v-if="info && dataReady"
-            :is="getAsset(info.importer)"
+            v-if="info && meta"
+            :is="getAsset(meta.__assetType__)"
             :info="info"
             :meta="meta"
         ></component>

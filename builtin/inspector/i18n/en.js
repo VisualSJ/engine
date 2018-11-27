@@ -1,4 +1,11 @@
 'use strict';
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
+const resources_tips = readFileSync(
+    join(__dirname, './markdown/resources-tips-en.md'),
+    { encoding: 'utf-8' }
+);
 
 module.exports = {
     title: 'inspector',
@@ -79,16 +86,14 @@ module.exports = {
         spriteFrame: 'SpriteFrame of Particle System',
         texture:
             'Texture of Particle System, readonly, please use spriteFrame to setup new texture',
-        particleCount:
-            'Current quantity of particles that are being simulated',
+        particleCount: 'Current quantity of particles that are being simulated',
         srcBlendFactor: 'Specify the source Blend Factor',
         dstBlendFactor: 'Specify the destination Blend Factor',
         playOnLoad:
             'If set to true, the particle system will automatically start playing on onLoad',
         autoRemoveOnFinish:
             'Indicate whether the owner node will be auto-removed when it has no particles left',
-        duration:
-            'How many seconds the emitter wil run. -1 means forever',
+        duration: 'How many seconds the emitter wil run. -1 means forever',
         emissionRate: 'Emission rate of the particles',
         life: 'Life and variation of each particle setter',
         totalParticles: 'Maximum particles of the system',
@@ -97,8 +102,7 @@ module.exports = {
         endColor: 'Ending color of each particle',
         endColorVar: 'Variation of the end color',
         angle: 'Angle and variation of each particle setter',
-        startSize:
-            'Start size and variation in pixels of each particle',
+        startSize: 'Start size and variation in pixels of each particle',
         endSize: 'End size and variation in pixels of each particle',
         startSpin: 'Start angle and variation of each particle',
         endSpin: 'End angle and variation of each particle',
@@ -137,8 +141,7 @@ module.exports = {
                 the collision callback will only be called when enabled contact listener.`,
             bullet:
                 'Is this a fast moving body that should be prevented from tunneling through other moving bodies?',
-            type:
-                'Rigidbody type : Static, Kinematic, Dynamic or Animated.',
+            type: 'Rigidbody type : Static, Kinematic, Dynamic or Animated.',
             allowSleep:
                 'Set this flag to false if this body should never fall asleep. Note that this increases CPU usage.',
             gravityScale: 'Scale the gravity applied to this body.',
@@ -151,16 +154,14 @@ module.exports = {
             linearVelocity:
                 "The linear velocity of the body's origin in world co-ordinates",
             angularVelocity: 'The angular velocity of the body.',
-            fixedRotation:
-                'Should this body be prevented from rotating?',
+            fixedRotation: 'Should this body be prevented from rotating?',
             awake: 'Is this body initially awake or sleeping?',
         },
         physics_collider: {
             density: 'The density',
             sensor:
                 'A sensor collider collects contact information but never generates a collision response',
-            friction:
-                'The friction coefficient, usually in the range [0,1].',
+            friction: 'The friction coefficient, usually in the range [0,1].',
             restitution:
                 'The restitution (elasticity) usually in the range [0,1].',
             anchor: 'The anchor of the rigidbody.',
@@ -169,18 +170,15 @@ module.exports = {
                 'The rigidbody to which the other end of the joint is attached.',
             collideConnected:
                 'Should the two rigid bodies connected with this joint collide with each other?',
-            distance:
-                'The distance separating the two ends of the joint.',
+            distance: 'The distance separating the two ends of the joint.',
             frequency: 'The spring frequency.',
             dampingRatio: 'The damping ratio.',
             linearOffset:
                 'The linear offset from connected rigidbody to rigidbody.',
             angularOffset:
                 'The angular offset from connected rigidbody to rigidbody.',
-            maxForce:
-                'The maximum force can be applied to rigidbody.',
-            maxTorque:
-                'The maximum torque can be applied to rigidbody.',
+            maxForce: 'The maximum force can be applied to rigidbody.',
+            maxTorque: 'The maximum torque can be applied to rigidbody.',
             correctionFactor:
                 'The position correction factor in the range [0,1].',
             mouseRegion:
@@ -227,4 +225,11 @@ module.exports = {
             This component will be restored once compiling error is gone.`,
     },
     empty_component_message: 'The component has not properties to display',
+    folder: {
+        is_subpackage: 'Subpackage',
+        subpackage_name: 'Subpackage Name',
+    },
+    assets: {
+        resources_tips,
+    },
 };

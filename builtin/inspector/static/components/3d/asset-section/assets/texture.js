@@ -1,14 +1,15 @@
 'use strict';
 
 const { readTemplate } = require('../../../../utils');
+const { assetComponentPrefix } = require('../../asset-section');
 
 exports.template = readTemplate('3d', './asset-section/assets/texture.html');
 
 exports.props = ['info', 'meta'];
 
 exports.components = {
-    'sprite-frame': require('./sprite-frame'),
-    'image-preview': require('../public/image-preview'),
+    [`${assetComponentPrefix}sprite-frame`]: require('./sprite-frame'),
+    [`${assetComponentPrefix}image-preview`]: require('../public/image-preview'),
 };
 
 exports.data = function() {

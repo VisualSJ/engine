@@ -3,9 +3,9 @@
 const { readTemplate } = require('../../../../utils');
 const { assetComponentPrefix } = require('../../asset-section');
 
-exports.template = readTemplate('3d', './asset-section/assets/sprite-frame.html');
+exports.template = readTemplate('3d', './asset-section/assets/image.html');
 
-exports.props = ['info', 'meta', 'child'];
+exports.props = ['info', 'meta'];
 
 exports.components = {
     [`${assetComponentPrefix}image-preview`]: require('../public/image-preview'),
@@ -16,10 +16,6 @@ exports.data = function() {
 };
 
 exports.methods = {
-    isCustom() {
-        return this.meta.userData.trimType === 'custom';
-    },
-
     /**
      * 重置
      */

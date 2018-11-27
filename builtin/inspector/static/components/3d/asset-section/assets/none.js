@@ -6,8 +6,6 @@ exports.template = readTemplate('3d', './asset-section/assets/none.html');
 
 exports.props = ['meta', 'info'];
 
-exports.components = {};
-
 exports.data = function() {
     return {
         cssHost: {
@@ -18,10 +16,14 @@ exports.data = function() {
             padding: '3px 10px 5px',
             borderBottom: '1px solid #666',
             height: '24px',
-            overflow: 'hidden'
+            overflow: 'hidden',
         },
         cssIcon: { marginRight: '5px' },
-        cssTitle: { fontWeight: 'bold', textOverflow: 'ellipsis', overflow: 'hidden' }
+        cssTitle: {
+            fontWeight: 'bold',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+        },
     };
 };
 

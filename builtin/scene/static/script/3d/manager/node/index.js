@@ -229,12 +229,16 @@ class NodeManager extends EventEmitter {
         if (Reg_Uuid.test(component) || Reg_NormalizedUuid.test(component) || Reg_CompressedUuid.test(component)) {
             component = cc.js._getClassById(component);
         }
+        if (component) {
+            node.addComponent(component);
 
-        node.addComponent(component);
-
-        // 发送节点修改消息
-        Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', node);
+            // 发送节点修改消息
+            Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+            this.emit('change', node);
+        } else {
+            console.warn(`create component failed: ${uuid} does not exist`);
+            return false;
+        }
     }
 
     /**
@@ -328,7 +332,6 @@ class NodeManager extends EventEmitter {
         }
         return getComponentFunctionOfNode(node);
     }
-
 }
 
 module.exports = new NodeManager();

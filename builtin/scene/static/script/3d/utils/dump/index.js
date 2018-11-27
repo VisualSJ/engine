@@ -137,7 +137,6 @@ async function restoreProperty(node, path, dump) {
             }
             break;
         case 'Vec2':
-
             if (key === 'scale') {
                 property.scaleX = dump.value.x;
                 property.scaleY = dump.value.y;
@@ -161,7 +160,6 @@ async function restoreProperty(node, path, dump) {
             }
             break;
         case 'Size':
-
             if (key === 'size') {
                 property.width = dump.value.width;
                 property.height = dump.value.height;
@@ -177,6 +175,7 @@ async function restoreProperty(node, path, dump) {
             }
             break;
         case 'Color':
+        case 'cc.Color':
             // 3d opacity、color 由 effect 控制，无需更改 opacity
             const { a, r, g, b } = dump.value;
             property[key] = new cc.Color(r, g, b, a * 255);
@@ -193,13 +192,10 @@ async function restoreProperty(node, path, dump) {
                 return;
             }
             await new Promise((resolve, reject) => {
-                cc.AssetLibrary.loadAsset(
-                    dump.value.uuid,
-                    (err, asset) => {
-                        property[key] = asset;
-                        resolve();
-                    }
-                );
+                cc.AssetLibrary.loadAsset(dump.value.uuid, (err, asset) => {
+                    property[key] = asset;
+                    resolve();
+                });
             });
             break;
         case 'enums':
@@ -228,7 +224,6 @@ async function restoreProperty(node, path, dump) {
  */
 function restoreNode(node, dumpdata) {
     for (const path in dumpdata) {
-
         if (!(path in dumpdata)) {
             continue;
         }

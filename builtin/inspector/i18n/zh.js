@@ -1,4 +1,11 @@
 'use strict';
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
+const resources_tips = readFileSync(
+    join(__dirname, './markdown/resources-tips-zh.md'),
+    { encoding: 'utf-8' }
+);
 
 module.exports = {
     title: '属性检查器',
@@ -71,13 +78,11 @@ module.exports = {
         regenerate_points: 'Regenerate Points',
     },
     particle_system: {
-        preview:
-            '在编辑器模式下预览粒子，启用后选中粒子时，粒子将自动播放',
+        preview: '在编辑器模式下预览粒子，启用后选中粒子时，粒子将自动播放',
         custom: '是否自定义粒子属性',
         file: 'plist 格式的粒子配置文件',
         spriteFrame: '粒子贴图定义',
-        texture:
-            '粒子贴图，只读属性，请使用 spriteFrame 属性来替换贴图',
+        texture: '粒子贴图，只读属性，请使用 spriteFrame 属性来替换贴图',
         particleCount: '当前播放的粒子数量',
         srcBlendFactor: '指定原图混合模式',
         dstBlendFactor: '指定目标的混合模式',
@@ -106,8 +111,7 @@ module.exports = {
             '每个粒子的切向加速度及变化范围，即垂直于重力方向的加速度，只有在重力模式下可用',
         radialAccel:
             '粒子径向加速度及变化范围，即平行于重力方向的加速度，只有在重力模式下可用',
-        rotationIsDir:
-            '每个粒子的旋转是否等于其方向，只有在重力模式下可用',
+        rotationIsDir: '每个粒子的旋转是否等于其方向，只有在重力模式下可用',
         startRadius:
             '初始半径及变化范围，表示粒子出生时相对发射器的距离，只有在半径模式下可用',
         endRadius: '结束半径及变化范围，只有在半径模式下可用',
@@ -153,23 +157,18 @@ module.exports = {
             anchor: '刚体的锚点。',
             connectedAnchor: '关节另一端刚体的锚点。',
             connectedBody: '关节另一端链接的刚体',
-            collideConnected:
-                '链接到关节上的两个刚体是否应该相互碰撞？',
+            collideConnected: '链接到关节上的两个刚体是否应该相互碰撞？',
             distance: '关节两端的距离',
             frequency: '弹性系数。',
-            dampingRatio:
-                '阻尼，表示关节变形后，恢复到初始状态受到的阻力。',
-            linearOffset:
-                '关节另一端的刚体相对于起始端刚体的位置偏移量',
-            angularOffset:
-                '关节另一端的刚体相对于起始端刚体的角度偏移量',
+            dampingRatio: '阻尼，表示关节变形后，恢复到初始状态受到的阻力。',
+            linearOffset: '关节另一端的刚体相对于起始端刚体的位置偏移量',
+            angularOffset: '关节另一端的刚体相对于起始端刚体的角度偏移量',
             maxForce: '可以应用于刚体的最大的力值',
             maxTorque: '可以应用于刚体的最大扭矩值',
             correctionFactor: '位置矫正系数，范围为 [0, 1]',
             mouseRegion:
                 '用于注册触摸事件的节点。如果没有设置这个值，那么将会使用关节的节点来注册事件。',
-            target:
-                '目标点，鼠标关节将会移动选中的刚体到指定的目标点',
+            target: '目标点，鼠标关节将会移动选中的刚体到指定的目标点',
             localAxisA: '指定刚体可以移动的方向。',
             enableLimit: '是否开启关节的距离限制？',
             enableMotor: '是否开启关节马达？',
@@ -206,4 +205,11 @@ module.exports = {
             '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。',
     },
     empty_component_message: '组件没有可展示属性',
+    folder: {
+        is_subpackage: '配置为子包',
+        subpackage_name: '子包名',
+    },
+    assets: {
+        resources_tips,
+    },
 };

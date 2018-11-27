@@ -1,11 +1,9 @@
 'use strict';
 const { join } = require('path');
 const { readTemplate, T } = require('../../../../utils');
+const { assetComponentPrefix } = require('../../asset-section');
 
-exports.template = readTemplate(
-    '3d',
-    './asset-section/assets/javascript.html'
-);
+exports.template = readTemplate('3d', './asset-section/assets/javascript.html');
 
 exports.props = ['meta', 'info'];
 
@@ -16,7 +14,7 @@ exports.data = function() {
 };
 
 exports.components = {
-    'code-preview': require('../public/code-preview'),
+    [`${assetComponentPrefix}code-preview`]: require('../public/code-preview'),
 };
 
 exports.methods = {
@@ -38,7 +36,7 @@ exports.methods = {
 
     async getPath() {
         try {
-            const {uuid} = this.meta || {};
+            const { uuid } = this.meta || {};
             const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', uuid);
             this.path = path;
         } catch (err) {
