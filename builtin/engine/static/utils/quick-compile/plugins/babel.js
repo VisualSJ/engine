@@ -12,6 +12,7 @@ module.exports = function() {
                 highlightCode: false,
                 // TODO - disable transform-strict-mode
                 sourceMaps: 'inline',
+                sourceFileName: `enginesource:///${script.src}`,
                 compact: false,
                 filename: script.src, // search path for babelrc
                 presets: ['@babel/preset-env'],

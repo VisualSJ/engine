@@ -1,5 +1,16 @@
 import { Asset, Importer, VirtualAsset } from 'asset-db';
 import equirectToCubemapFaces from 'equirect-cubemap-faces-js';
+import { applyTextureBaseAssetUserData,
+    makeDefaultTextureBaseAssetUserData,
+    TextureBaseAssetUserData } from './texture-base';
+
+export interface TextureCubeAssetUserData extends TextureBaseAssetUserData {
+    imageSource?: string;
+}
+
+export function makeDefaultTextureCubeAssetUserData(): TextureCubeAssetUserData {
+    return makeDefaultTextureBaseAssetUserData();
+}
 
 interface ITextureCubeImporterSwapSpace {
     front: HTMLCanvasElement;
@@ -14,7 +25,7 @@ export default class TextureCubeImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -46,7 +57,13 @@ export default class TextureCubeImporter extends Importer {
         let updated = false;
 
         if (!(await asset.existsInLibrary('.json'))) {
-            const imageSource = asset.userData.imageSource as string;
+            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+                Object.assign(asset.userData, makeDefaultTextureCubeAssetUserData());
+            }
+
+            const userData = asset.userData as TextureCubeAssetUserData;
+
+            const imageSource = userData.imageSource as string;
             if (!imageSource) {
                 return false;
             }
@@ -86,6 +103,7 @@ export default class TextureCubeImporter extends Importer {
 
             // @ts-ignore
             const texture = new cc.TextureCube();
+            applyTextureBaseAssetUserData(userData, texture);
             texture._mipmaps = [ facesAssets ];
 
             // @ts-ignore

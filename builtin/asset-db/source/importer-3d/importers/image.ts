@@ -1,5 +1,7 @@
 import { Asset, Importer } from 'asset-db';
 import { extname } from 'path';
+import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
+import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube' | undefined;
 
@@ -7,7 +9,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -48,6 +50,7 @@ export default class ImageImporter extends Importer {
         if (!(await asset.existsInLibrary('.json'))) {
             // @ts-ignore
             const image = new cc.ImageAsset();
+            image._setRawAsset(asset.basename);
             // @ts-ignore
             asset.saveToLibrary('.json', Manager.serialize(image));
 
@@ -67,11 +70,13 @@ export default class ImageImporter extends Importer {
                 case 'texture':
                 case 'normal map':
                     const texture2DSubAsset = await asset.createSubAsset('texture', 'texture');
-                    texture2DSubAsset.userData.imageSource = asset.source;
+                    Object.assign(texture2DSubAsset.userData, makeDefaultTexture2DAssetUserData());
+                    (texture2DSubAsset.userData as Texture2DAssetUserData).imageSource = asset.source;
                     break;
                 case 'texture cube':
                     const textureCubeSubAsset = await asset.createSubAsset('texture cube', 'texture-cube');
-                    textureCubeSubAsset.userData.imageSource = asset.source;
+                    Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
+                    (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageSource = asset.source;
                     break;
                 case 'sprite-frame':
                     break;

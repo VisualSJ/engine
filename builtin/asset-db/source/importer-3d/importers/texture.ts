@@ -3,7 +3,7 @@ import { applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
     TextureBaseAssetUserData } from './texture-base';
 
-interface Texture2DAssetUserData extends TextureBaseAssetUserData {
+export interface Texture2DAssetUserData extends TextureBaseAssetUserData {
     imageSource?: string;
 }
 
@@ -15,7 +15,7 @@ export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -47,13 +47,15 @@ export default class TextureImporter extends Importer {
         let updated = false;
 
         if (!(await asset.existsInLibrary('.json'))) {
-            // if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-            //     Object.assign(asset.userData, makeDefaultTextureBaseAssetUserData());
-            // }
+            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+                Object.assign(asset.userData, makeDefaultTexture2DAssetUserData());
+            }
+            const userData = asset.userData as Texture2DAssetUserData;
+
             // @ts-ignore
             const texture = new cc.Texture2D();
-            // applyTextureBaseAssetUserData(asset.userData as TextureBaseAssetUserData, texture);
-            const imageSource = asset.userData.imageSource as string;
+            applyTextureBaseAssetUserData(userData, texture);
+            const imageSource = userData.imageSource as string;
             if (imageSource) {
                 asset.rely(imageSource);
                 const imageUuid = this.assetDB!.pathToUuid(imageSource);

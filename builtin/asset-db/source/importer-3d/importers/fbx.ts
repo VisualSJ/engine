@@ -19,8 +19,7 @@ export default class FbxImporter extends GltfImporter {
     }
 
     protected async getGltfFilePath(asset: Asset) {
-        const tmpDirDir = join('E:\\', `temp`);
-        mkdirpSync(tmpDirDir);
+        const tmpDirDir = this.assetDB!.options.temp;
         const tmpDir = tmp.dirSync({dir: tmpDirDir, prefix: 'fbx2gltf-'});
         const destPath = join(tmpDir.name, `hello.gltf`);
         const gltfPath = await convert(asset.source, destPath);

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { readJson } from 'fs-extra';
 import * as path from 'path';
 import { Accessor, Animation, GlTf, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
+import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -21,7 +22,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -158,10 +159,11 @@ export default class GltfImporter extends Importer {
                 const name = (GltfImporter._validateAssetName(gltfTexture.name) || `${asset.basename}-${index}`) +
                     '.texture';
                 const subAsset = await asset.createSubAsset(name, 'texture');
+                Object.assign(subAsset.userData, makeDefaultTexture2DAssetUserData());
                 if (gltfTexture.source !== undefined) {
                     const gltfImage = gltfConverter.gltf.images![gltfTexture.source];
                     if (gltfImage.uri) {
-                        subAsset.userData.imageSource = gltfImage.uri;
+                        (subAsset.userData as Texture2DAssetUserData).imageSource = gltfImage.uri;
                     }
                 }
                 assetTable.textures[index] = subAsset.uuid;
