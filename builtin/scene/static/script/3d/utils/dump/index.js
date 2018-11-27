@@ -186,12 +186,20 @@ async function restoreProperty(node, path, dump) {
         case 'cc.SpriteFrame':
         case 'cc.Texture2D':
         case 'cc.Texture':
+        case 'cc.Material':
         case 'cc.Asset':
-            await new Promise((resolve) => {
-                cc.AssetLibrary.loadAsset(dump.value.uuid || '', (err, asset) => {
-                    property[key] = asset;
-                    resolve();
-                });
+            if (!dump.value.uuid) {
+                property[key] = null;
+                return;
+            }
+            await new Promise((resolve, reject) => {
+                cc.AssetLibrary.loadAsset(
+                    dump.value.uuid,
+                    (err, asset) => {
+                        property[key] = asset;
+                        resolve();
+                    }
+                );
             });
             break;
         case 'enums':

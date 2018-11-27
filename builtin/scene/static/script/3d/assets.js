@@ -25,6 +25,8 @@ function getCtor(importer) {
             return cc.SpriteFrame;
         case 'tiled-map':
             return cc.TiledMap;
+        case 'material':
+            return cc.Material;
     }
 }
 

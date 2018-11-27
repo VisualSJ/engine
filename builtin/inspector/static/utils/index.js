@@ -287,6 +287,14 @@ function build3DProp(path, key, item, attrs) {
     let typeNull = false;
     let typeError = false;
 
+    if (item.type === 'Array') {
+        item.compType = 'array-prop';
+        for (i = 0; i < value.length; i++) {
+            const attrs = item.properties || {};
+            build3DProp(`${path}.${i}`, `[${i}]`, value[i], attrs);
+        }
+    }
+
     if (!item.compType && type) {
         if (type === 'Object' && (value === null || value === undefined)) {
             typeNull = true;

@@ -38,15 +38,18 @@ function dump(component) {
             const propType = dump.properties[name].type;
             const attrs = cc.Class.attr(ctor, name);
 
+            const defaultDump = type.dump(attrs.ctor);
+
             if (Array.isArray(value)) {
                 dump.value[name] = {
-                    type: propType,
-                    value: value.map((item) => {
-                        return dumpField(item, ctor, name, attrs);
+                    ...defaultDump,
+                    type: 'Array',
+                    value: value.map((item, key) => {
+                        return dumpField(value, key, propType, attrs);
                     }),
                 };
             } else if (value === null && Array.isArray(type.getDefault(attrs.default))) {
-                dump.value[name] = { type: 'Object', value: null, };
+                dump.value[name] = { ...defaultDump, type: 'Object', value: null };
             } else {
                 dump.value[name] = dumpField(component, name, propType, attrs);
             }
@@ -63,7 +66,7 @@ function dump(component) {
         // to display __scriptAsset property in inspector
         const scriptType = dump.properties.__scriptAsset;
         scriptType.visible = !!component.__scriptUuid;
-        dump.value.__scriptAsset.value = { uuid: component.__scriptUuid, };
+        dump.value.__scriptAsset.value = { uuid: component.__scriptUuid };
     }
     return dump;
 }
@@ -122,7 +125,7 @@ function dumpByClass(obj) {
 
 function dumpObjectField(obj, expectedType) {
     if (!obj) {
-        return { type: 'Object', value: null, };
+        return { type: 'Object', value: null };
     }
 
     const ctor = obj.constructor;
@@ -135,7 +138,7 @@ function dumpObjectField(obj, expectedType) {
 
             const dump = type.dump(ctor);
             dump.type = objType;
-            dump.value = { uuid: obj._uuid, };
+            dump.value = { uuid: obj._uuid };
             return dump;
         }
 
@@ -146,7 +149,7 @@ function dumpObjectField(obj, expectedType) {
 
     // 引擎数据类型
     if (obj instanceof cc.ValueType) {
-        const result = Manager.serialize(obj, { stringify: false, });
+        const result = Manager.serialize(obj, { stringify: false });
 
         const dump = type.dump(ctor);
         dump.type = result.__type__;
@@ -179,7 +182,7 @@ function dumpObjectField(obj, expectedType) {
         return dumpByClass(obj, ctor);
     }
 
-    return { type: 'Object', value: null, };
+    return { type: 'Object', value: null };
 }
 
 /**
@@ -200,7 +203,7 @@ function dumpField(component, key, expectedType, attrs) {
             typeof component[key] === 'string'
         ) {
             dump.type = expectedType;
-            dump.value = { uuid: component[key] || '', };
+            dump.value = { uuid: component[key] || '' };
 
             return dump;
         }
@@ -214,14 +217,14 @@ function dumpField(component, key, expectedType, attrs) {
                 const ctor = attrs.ctor;
                 if (type.isAnyChildClassOf(ctor, cc.Node, cc.RawAsset, cc.Component)) {
                     result.type = expectedType;
-                    result.value = { uuid: '', };
+                    result.value = { uuid: '' };
                 }
             } else {
                 result.type = 'Object';
                 result.value = null;
             }
         }
-        return { ...dump, ...result, };
+        return { ...dump, ...result };
     }
 
     if (typeof component[key] === 'function') {

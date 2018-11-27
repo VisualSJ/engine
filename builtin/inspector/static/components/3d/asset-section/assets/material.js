@@ -1,5 +1,5 @@
 'use strict';
-
+const {readFile} = require('fs');
 const { readTemplate } = require('../../../../utils');
 
 exports.template = readTemplate('3d', './asset-section/assets/material.html');
@@ -86,7 +86,7 @@ exports.methods = {
         this.effectMap = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', effectName);
     },
 
-    async refresh() {
+    async refresh(isReset = false) {
         if (!this.meta) {
             this.effectName = '';
             this.props = {};
@@ -95,12 +95,26 @@ exports.methods = {
         }
         try {
             const builtinEffects = await Editor.Ipc.requestToPackage('scene', 'query-builtin-effects');
-            this.material = await require(this.info.files[0]);
-            this.effectName = this.material ?  this.material._effectName : '';
-            this.builtinEffects = builtinEffects ? builtinEffects : {};
-            this.dirty = false;
+            const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', this.meta.uuid);
+            readFile(path, (err, data) => {
+                if (err) {
+                    throw(err);
+                }
+                const material = JSON.parse(data);
+                this.material = material;
+                this.effectName = this.material ?  this.material._effectName : '';
+                this.builtinEffects = builtinEffects ? builtinEffects : {};
+                this.dirty = false;
+            });
+            // reset 避免上次操作遗留的 effectMap
+            if (isReset) {
+                this.getEffectMap();
+            }
         } catch (err) {
             console.error(err);
+            this.effectName = '';
+            this.props = {};
+            this.defines = {};
         }
     },
 
@@ -138,7 +152,7 @@ exports.methods = {
         }
     },
     reset() {
-        this.refresh();
+        this.refresh(true);
     },
 
     async apply() {

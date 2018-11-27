@@ -9,12 +9,12 @@ exports.template = readTemplate('2d', './node-section/public/array-prop.html');
 exports.props = {
     dump: {
         type: Object,
-        require: true
+        require: true,
     },
     indent: {
         type: Number,
-        default: 0
-    }
+        default: 0,
+    },
 };
 
 exports.data = function() {
@@ -23,9 +23,9 @@ exports.data = function() {
         paddingStyle:
             this.indent !== 0
                 ? {
-                      'padding-left': `${this.indent * 13}px`
+                      'padding-left': `${this.indent * 13}px`,
                   }
-                : ''
+                : '',
     };
 };
 
@@ -57,13 +57,13 @@ exports.methods = {
                 dump: {
                     type: 'Array',
                     path: `${this.dump.path}.length`,
-                    value
-                }
-            }
+                    value,
+                },
+            },
         });
 
         this.$el.dispatchEvent(customEvent);
 
-    }
+    },
 
 };

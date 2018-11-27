@@ -1,11 +1,11 @@
 'use strict';
 
-const { basename, extname, } = require('path');
-const { readTemplate, readComponent, T, build3DProp, } = require('../../../utils');
+const { basename, extname } = require('path');
+const { readTemplate, readComponent, T, build3DProp } = require('../../../utils');
 
 exports.template = readTemplate('3d', './node-section/index.html');
 
-exports.props = ['uuid', ];
+exports.props = ['uuid' ];
 
 exports.components = {
     'node-props': readComponent(__dirname, './node-props'),
@@ -111,24 +111,24 @@ exports.methods = {
      * @param {*} event
      */
     addCompPopup(event) {
-        const { left, bottom, } = event.target.getBoundingClientRect();
+        const { left, bottom } = event.target.getBoundingClientRect();
         const {
             node: {
-                uuid: { value: uuid, },
+                uuid: { value: uuid },
             },
             userScripts,
         } = this;
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
         const submenu = userScripts.map((item) => {
-            const { source, uuid: component, } = item;
+            const { source, uuid: component } = item;
             const label = basename(source, extname(source));
             return {
                 label,
                 click() {
                     Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
                 },
-                params: { uuid, component, },
+                params: { uuid, component },
             };
         });
 
