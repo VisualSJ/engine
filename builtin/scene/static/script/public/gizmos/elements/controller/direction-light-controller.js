@@ -18,8 +18,10 @@ class DirectionLightController extends ControllerBase {
         // direction light
         let lightOriDir = cc.v3(0, 0, -1);
         let lightDirNode = ControllerUtils.arcDirectionLine(cc.v3(), lightOriDir,
-            cc.v3(1, 0, 0), Math.PI * 2, 20, 100, 9, oriLightColor);
+            cc.v3(1, 0, 0), this._twoPI, 20, 100, 9, oriLightColor);
         lightDirNode.parent = this.shape;
+
+        this.hide();
     }
 }
 

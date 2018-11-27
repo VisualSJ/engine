@@ -411,7 +411,7 @@ ControllerShape.Torus = function(radius, tube, opts = {}) {
     });
 };
 
-ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius, segments) {
+ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius, segments = 60) {
     vec3.normalize(fromDir, fromDir);
 
     let deltaRot = cc.quat(0, 0, 0, 1);
@@ -447,7 +447,7 @@ ControllerShape.Sector = function(center, normal, fromDir, radian, radius, segme
     });
 };
 
-ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments) {
+ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments = 60) {
     return createMesh({
         positions: ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments).fill(cc.v3(normal)),
@@ -482,6 +482,35 @@ ControllerShape.ArcDirectionLine = function(center, normal, fromDir, radian, rad
     return createMesh({
         positions: vertices,
         normals: Array(vertices.length).fill(cc.v3(0, 1, 1)),
+        indices: indices,
+        primitiveType: gfx.PT_LINES,
+    });
+};
+
+ControllerShape.Lines = function(vertices, indices) {
+    return createMesh({
+        positions: vertices,
+        normals: Array(vertices.length).fill(cc.v3(0, 1, 0)),
+        indices: indices,
+        primitiveType: gfx.PT_LINES,
+    });
+};
+
+ControllerShape.WireframeBox = function(center, size) {
+    let points = ControllerShape.CalcBoxPoints(center, size);
+    let indices = [];
+
+    for (let i = 1; i < points.length; i++) {
+        indices.push(i - 1, i);
+    }
+
+    indices.push(1, 6);
+    indices.push(2, 7);
+    indices.push(3, 8);
+
+    return createMesh({
+        positions: points,
+        normals: Array(points.length).fill(cc.v3(0, 1, 0)),
         indices: indices,
         primitiveType: gfx.PT_LINES,
     });

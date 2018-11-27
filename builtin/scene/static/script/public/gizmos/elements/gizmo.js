@@ -14,47 +14,37 @@ class Gizmo {
         this.selecting = false;
         this.editing = false;
 
+        this._isInited = false;
         this._hidden = true;
-        this._controller = null;
-
-        this._dirty = true;
-
-        this._lastMats = {};
-
-        //this.createController();
 
         this.target = target;
-
-        if (this.init) {
-            this.init();
-        }
     }
 
     get target() {
         return this._target;
     }
 
+    // component的gizmo是1对1关系，transform gizmo可以同时操作多个对像
     set target(value) {
-        if (this._target && this._target.length > 0) {
-            this.unRegistTransformEvent(this.nodes);
+        let nodes = this.nodes;
+        if (nodes && nodes.length > 0) {
+            this.unRegisterTransformEvent(this.nodes);
+            this.unRegisterNodeEvents(this.nodes);
         }
 
         this._target = value;
-        if (this._target == null || this._target.length <= 0) {
-            return;
+        nodes = this.nodes;
+        if (nodes && nodes.length > 0) {
+            this.registerTransformEvent(this.nodes);
+            this.registerNodeEvents(this.nodes);
+
+            if (this.onTargetUpdate) {
+                this.onTargetUpdate();
+            }
+        } else {
+            this.hide();
         }
 
-        this.registTransformEvent(this.nodes);
-
-        if (this.onTargetsUpdate) {
-            this.onTargetsUpdate();
-        }
-    }
-
-    onTargetsUpdate() {
-        if (this._controller && this.updateControllerTransform) {
-            this.updateControllerTransform();
-        }
     }
 
     // foreground, scene, background
@@ -70,34 +60,17 @@ class Gizmo {
         return this._rootNode;
     }
 
-    // 延迟controller的创建，可以在show gizmo时再创建
-    ensureController() {
-        if (this._controller) {
-            return;
-        }
-
-        this.createController();
-    }
-
-    createController() {
-        if (this.onCreateController) {
-            this.onCreateController();
-        }
-    }
-
     recordChanges() {
         // this.nodes.forEach( node => {
         //     _Scene.Undo.recordNode( node.uuid );
         // });
 
-        this._dirty = true;
     }
 
     commitChanges() {
         // AnimUtils.recordNodeChanged(this.nodes);
         // _Scene.Undo.commit();
 
-        this._dirty = true;
     }
 
     //判断当前选中节点是否被锁定
@@ -119,43 +92,16 @@ class Gizmo {
         return !this._hidden;
     }
 
-    _nodeDirty(node) {
-        node = node || this.node;
-        node.getWorldMatrix(_tempMatrix);
-        let dirty = false;
-
-        let lastMat = this._lastMats[node.uuid];
-        if (!lastMat) {
-            this._lastMats[node.uuid] = lastMat = cc.vmath.mat4.create();
-            dirty = true;
-        } else if (!close(lastMat.a, _tempMatrix.a) ||
-            !close(lastMat.b, _tempMatrix.b) ||
-            !close(lastMat.c, _tempMatrix.c) ||
-            !close(lastMat.d, _tempMatrix.d) ||
-            !close(lastMat.tx, _tempMatrix.tx) ||
-            !close(lastMat.ty, _tempMatrix.ty)) {
-            dirty = true;
-        }
-
-        cc.vmath.mat4.copy(lastMat, _tempMatrix);
-        return dirty;
-    }
-
-    dirty() {
-        return this._nodeDirty() || this._dirty;
-    }
-
     hide() {
         if (this._hidden) {
             return;
         }
 
-        if (this._controller) {
-            this._controller.hide();
+        if (this.onHide) {
+            this.onHide();
         }
 
         this._hidden = true;
-        this._dirty = true;
     }
 
     show() {
@@ -163,32 +109,57 @@ class Gizmo {
             return;
         }
 
-        this.ensureController();
-
-        if (this._controller) {
-            this._controller.show();
-            if (this.updateControllerTransform) {
-                this.updateControllerTransform();
+        if (!this._isInited) {
+            if (this.init) {
+                this.init();
             }
+            this._isInited = true;
+        }
+
+        if (this.onShow) {
+            this.onShow();
         }
 
         this._hidden = false;
-        this._dirty = true;
+    }
+
+    onNodeTransformChanged() {
+        if (this.updateControllerTransform) {
+            this.updateControllerTransform();
+        }
     }
 
     // 监听Node的transform改变事件
-    registTransformEvent(nodes) {
-        if (this.updateControllerTransform) {
+    registerTransformEvent(nodes) {
+        if (this.onNodeTransformChanged) {
             for (let i = 0; i < nodes.length; i++) {
-                nodes[i].on('transform-changed', this.updateControllerTransform, this);
+                nodes[i].on('transform-changed', this.onNodeTransformChanged, this);
             }
         }
     }
 
-    unRegistTransformEvent(nodes) {
-        if (this.updateControllerTransform) {
+    unRegisterTransformEvent(nodes) {
+        if (this.onNodeTransformChanged) {
             for (let i = 0; i < nodes.length; i++) {
-                nodes[i].off('transform-changed', this.updateControllerTransform, this);
+                nodes[i].off('transform-changed', this.onNodeTransformChanged, this);
+            }
+        }
+    }
+
+    // 监听Node和component的属性变化事件，目前由编辑器发送
+    registerNodeEvents(nodes) {
+        if (this.onNodeChanged) {
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].on('change', this.onNodeChanged, this);
+            }
+        }
+    }
+
+    // gizmo会被复用，所以在component Hide的时候要取消注册事件
+    unRegisterNodeEvents(nodes) {
+        if (this.onNodeChanged) {
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].off('change', this.onNodeChanged, this);
             }
         }
     }
@@ -253,7 +224,6 @@ class Gizmo {
     }
 
     set selecting(value) {
-        this._dirty = value !== this._selecting;
         this._selecting = value;
     }
 
@@ -262,7 +232,6 @@ class Gizmo {
     }
 
     set editing(value) {
-        this._dirty = value !== this._editing;
         this._editing = value;
     }
 
@@ -271,14 +240,7 @@ class Gizmo {
     }
 
     set hovering(value) {
-        this._dirty = value !== this._hovering;
         this._hovering = value;
-    }
-
-    onMouseWheel(event) {
-        if (this._controller) {
-            this._controller.adjustControllerSize();
-        }
     }
 }
 

@@ -29,6 +29,7 @@ module.exports = {
         this._pivot = 'pivot';           // pivot/center
         this._selection = [];
         this._gizmosPool = {};
+        this._isGizmoToolLocked = false;
 
         // selection events
         Selection.on('select', (uuid, uuids) => {
@@ -98,6 +99,14 @@ module.exports = {
         }
     },
 
+    lockGizmoTool(value) {
+        this._isGizmoToolLocked = value;
+    },
+
+    isGizmoToolLocked() {
+        return this._isGizmoToolLocked;
+    },
+
     getGizmoToolByName(toolName) {
         let tool = this._gizmoToolMap[toolName];
 
@@ -120,7 +129,7 @@ module.exports = {
                 this._gizmoToolMap[toolName] = this.createGizmo(gizmoDef);
                 tool = this._gizmoToolMap[toolName];
             } else {
-                Editor.error('Unknown transform tool %s', toolName);
+                console.error('Unknown transform tool %s', toolName);
             }
         }
 
@@ -333,9 +342,7 @@ module.exports = {
     },
 
     onMouseWheel(event) {
-        if (this.transformTool && this.transformTool.onMouseWheel) {
-            this.transformTool.onMouseWheel(event);
-        }
+
     },
 
     onMouseMove(event) {
@@ -409,12 +416,14 @@ module.exports = {
     onKeyDown(event) {
 
         // test
-        switch (event.key.toLowerCase()) {
-            case 'w': this.transformToolName = 'position'; break;
-            case 'e': this.transformToolName = 'rotation'; break;
-            case 'r': this.transformToolName = 'scale'; break;
-            case 'g': this.coordinate = 'global'; break;
-            case 'l': this.coordinate = 'local'; break;
+        if (!this.isGizmoToolLocked()) {
+            switch (event.key.toLowerCase()) {
+                case 'w': this.transformToolName = 'position'; break;
+                case 'e': this.transformToolName = 'rotation'; break;
+                case 'r': this.transformToolName = 'scale'; break;
+                case 'g': this.coordinate = 'global'; break;
+                case 'l': this.coordinate = 'local'; break;
+            }
         }
         // test end
 
@@ -432,4 +441,9 @@ module.exports = {
         }
     },
 
+    onNodeChanged(node) {
+        if (node != null) {
+            node.emit('change');
+        }
+    },
 };

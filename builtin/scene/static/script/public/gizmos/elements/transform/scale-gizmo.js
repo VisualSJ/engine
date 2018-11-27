@@ -1,22 +1,24 @@
 'use strict';
 
 const NodeUtils = require('../../../../utils/node');
-let Gizmo = require('../gizmo');
+let TransformGizmo = require('./transform-gizmo');
 let ScaleController = require('../controller/scale-controller');
 const GizmoManager = require('../../index');
 
-class ScaleGizmo extends Gizmo {
+class ScaleGizmo extends TransformGizmo {
     init() {
         this._localScaleList = [];
         this._offsetList = [];
         this._center = cc.v2(0, 0);
+
+        this.createController();
     }
 
     layer() {
         return 'foreground';
     }
 
-    onCreateController() {
+    createController() {
         this._controller = new ScaleController(this.getGizmoRoot());
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);

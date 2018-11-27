@@ -1,7 +1,7 @@
 'use strict';
 const vec3 = cc.vmath.vec3;
 const vec2 = cc.vmath.vec2;
-const CameraTool = require('../../../../3d/manager/camera');
+const EditorCamera = require('../../../../3d/manager/camera').EditorCamera;
 const NodeUtils = require('../../../../utils/node');
 const ControllerUtils = require('../utils/controller-utils');
 const ControllerShapeCollider = require('../utils/controller-shape-collider');
@@ -22,6 +22,9 @@ class ControllerBase {
         this._axisDir.x = cc.v3(1, 0, 0);
         this._axisDir.y = cc.v3(0, 1, 0);
         this._axisDir.z = cc.v3(0, 0, 1);
+        this._twoPI = Math.PI * 2;
+        this._halfPI = Math.PI / 2;
+        this._degreeToRadianFactor = Math.PI / 180;
 
         // for 2d
         this._is2D = isCreator2x;
@@ -31,6 +34,12 @@ class ControllerBase {
     createShapeNode(name) {
         this.shape = create3DNode(name);
         this.shape.parent = this._rootNode;
+
+        EditorCamera.node.on('transform-changed', this.onEditorCameraMoved, this);
+    }
+
+    onEditorCameraMoved() {
+        this.adjustControllerSize();
     }
 
     initAxis(node, axisName, oriColor = cc.Color.WHITE) {
@@ -167,7 +176,7 @@ class ControllerBase {
         if (this._is2D) {
             scalar = 1 / this._2DScale;
         } else {
-            let cameraNode = CameraTool._camera.node;
+            let cameraNode = EditorCamera._camera.node;
             let dist = ControllerUtils.getCameraDistanceFactor(this._position, cameraNode);
             scalar = dist / this._baseDist;
         }
@@ -228,7 +237,7 @@ class ControllerBase {
     }
 
     worldPosToScreenPos(worldPos) {
-        let camera = CameraTool._camera._camera;
+        let camera = EditorCamera._camera._camera;
         let screenPos = cc.v2();
         camera.worldToScreen(screenPos, worldPos, cc.visibleRect.width, cc.visibleRect.height);
 

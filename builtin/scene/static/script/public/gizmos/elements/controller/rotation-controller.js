@@ -15,7 +15,6 @@ class RotationController extends ControllerBase {
 
         this._deltaRotation = cc.quat(0, 0, 0, 1);
         this._rotFactor = 3;
-        this._degreeToRadianFactor = Math.PI / 180;
 
         this.initShape();
     }
@@ -47,7 +46,7 @@ class RotationController extends ControllerBase {
 
         // indicator circle
         arcNode = ControllerUtils.arc(cc.v3(),
-            this._axisDir[axisName], arcFromDir, Math.PI * 2, baseRadius, color);
+            this._axisDir[axisName], arcFromDir, this._twoPI, baseRadius, color);
         arcNode.parent = topNode;
         arcNode.active = false;
         arcNode.name = axisName + 'IndicatorCircle';
@@ -62,17 +61,18 @@ class RotationController extends ControllerBase {
 
         // 目前碰撞检测用的是透明的Torus模型
         // x rotation
-        this.createRotationShape('x', cc.v3(0, 0, 90), cc.v3(-90, -90, 0), this._axisDir.z, -Math.PI / 2, cc.Color.RED);
+        this.createRotationShape('x', cc.v3(0, 0, 90), cc.v3(-90, -90, 0),
+            this._axisDir.z, -this._halfPI, cc.Color.RED);
 
         // y rotation
-        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir.z, Math.PI / 2, cc.Color.GREEN);
+        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir.z, this._halfPI, cc.Color.GREEN);
 
         // z rotation
-        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir.x, Math.PI / 2, cc.Color.BLUE);
+        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir.x, this._halfPI, cc.Color.BLUE);
 
         // for 2d z rotation, use w for hack
         this._axisDir.w = cc.v3(0, 0, 1);
-        this.createRotationShape('w', cc.v3(-90, 0, 0), cc.v3(0, 0, -90), this._axisDir.x, Math.PI * 2, cc.Color.BLUE);
+        this.createRotationShape('w', cc.v3(-90, 0, 0), cc.v3(0, 0, -90), this._axisDir.x, this._twoPI, cc.Color.BLUE);
 
         // for rotation indicator sector
         let indicator = {};

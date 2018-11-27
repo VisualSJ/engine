@@ -1,18 +1,20 @@
 'use strict';
 const NodeUtils = require('../../../../utils/node');
 let PositionController = require('../controller/position-controller');
-let Gizmo = require('../gizmo');
+let TransformGizmo = require('./transform-gizmo');
 const GizmoManager = require('../../index');
-class PositionGizmo extends Gizmo {
+class PositionGizmo extends TransformGizmo {
     init() {
         this.nodesWorldPosList = [];
+
+        this.createController();
     }
 
     layer() {
         return 'foreground';
     }
 
-    onCreateController() {
+    createController() {
         this._controller = new PositionController(this.getGizmoRoot());
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);

@@ -3,11 +3,11 @@
 const vec3 = cc.vmath.vec3;
 const quat = cc.vmath.quat;
 const NodeUtils = require('../../../../utils/node');
-let Gizmo = require('../gizmo');
+let TransformGizmo = require('./transform-gizmo');
 let RotationController = require('../controller/rotation-controller');
 const GizmoManager = require('../../index');
 
-class RotationGizmo extends Gizmo {
+class RotationGizmo extends TransformGizmo {
     init() {
         this._rotList = [];
         this._offsetList = [];
@@ -15,13 +15,15 @@ class RotationGizmo extends Gizmo {
         this._rotating = false;
 
         this._degreeToRadianFactor = Math.PI / 180;
+
+        this.createController();
     }
 
     layer() {
         return 'foreground';
     }
 
-    onCreateController() {
+    createController() {
         this._controller = new RotationController(this.getGizmoRoot());
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);

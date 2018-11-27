@@ -114,7 +114,7 @@ if (Engine.isCreator2x) { /////////////////////////////////////////////////////
   Engine.setNodeOpacity = function(node, opacity) {
     node.modelColor.a = opacity;
   };
-  const CameraTool = require('../../3d/manager/camera');
+  const CameraTool = require('../../3d/manager/camera').EditorCamera;
   const cmp = (a, b) => { return a.distance - b.distance; };
   const ray = cc.geometry.ray.create();
   Engine.getRaycastResults = function(rootNode, x, y) {

@@ -166,7 +166,7 @@ ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color
 ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED) {
     let arcNode = create3DNode('arc');
     addMeshToNode(arcNode,
-        ControllerShape.Arc(center, normal, fromDir, radian, radius, 60));
+        ControllerShape.Arc(center, normal, fromDir, radian, radius));
     setMeshColor(arcNode, color);
 
     return arcNode;
@@ -180,6 +180,24 @@ ControllerUtils.arcDirectionLine = function(center, normal, fromDir, radian,
     setMeshColor(arcDirNode, color);
 
     return arcDirNode;
+};
+
+ControllerUtils.lines = function(vertices, indices, color = cc.Color.RED) {
+    let linesNode = create3DNode('lines');
+    addMeshToNode(linesNode,
+        ControllerShape.Lines(vertices, indices));
+    setMeshColor(linesNode, color);
+
+    return linesNode;
+};
+
+ControllerUtils.wireframeBox = function(center, size, color) {
+    let boxNode = create3DNode('wireframeBox');
+    addMeshToNode(boxNode,
+        ControllerShape.WireframeBox(center, size));
+    setMeshColor(boxNode, color);
+
+    return boxNode;
 };
 
 module.exports = ControllerUtils;

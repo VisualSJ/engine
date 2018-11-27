@@ -2,7 +2,7 @@
 
 const selection = require('../../public/selection');
 const operationManager = require('./operation');
-const cameraManager = require('./camera');
+const cameraManager = require('./camera').EditorCamera;
 
 operationManager.on('hit', (data) => {
     const bcr = document.body.getBoundingClientRect();

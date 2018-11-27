@@ -28,7 +28,7 @@ function isReady(bool) {
     if (bool !== undefined) {
         readyFlag = !!bool;
 
-        manager.Camera = require('./camera');
+        manager.Camera = require('./camera').EditorCamera;
         manager.Scene = require('./scene');
         manager.Node = require('./node');
         manager.Script = require('./scripts');
