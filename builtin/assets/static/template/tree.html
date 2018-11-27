@@ -1,4 +1,4 @@
-<ui-drag-area class="tree" dropable="asset,file"
+<ui-drag-area class="tree" dropable="cc.Asset,file"
     :state="state"
     :style="{ top: top + 'px' }"
     @dragenter="dragEnter($event)"
@@ -20,6 +20,7 @@
         @rename="rename"
         @dragOver="dragOver"
         @ipcDrop="ipcDrop"
+        @toggle="toggle"
     >
     </tree-node>
 </ui-drag-area>

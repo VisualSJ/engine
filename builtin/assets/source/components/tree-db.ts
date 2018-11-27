@@ -159,7 +159,6 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.isDirectory = asset.isRoot ? true : asset.isDirectory;
     asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
-    // 不可用是指不在db中，第一层节点除外，不可用节点在树形结构中它依然是一个正常的可折叠节点
     asset.state = '';
 }
 
@@ -222,7 +221,7 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
         }
 
         if (vm.folds[asset.uuid] === undefined) {
-            vm.folds[asset.uuid] = asset.isDirectory ? false : true; // directory 默认折叠
+            vm.$set(vm.folds, asset.uuid, false);
         }
 
         if (asset.height === undefined) {

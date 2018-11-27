@@ -8,7 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let isRenderingTree: boolean = false; // 正在重新渲染树形
 let isRefreshing: boolean = false; // 新增项目带来的请求重新渲染树形
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
@@ -139,25 +138,19 @@ export const methods = {
         async function run() {
             await db.refresh();
             if (!db.assetsTree) { // 容错处理，数据可能为空
+                console.error('Assets data can not be empty.');
                 return;
             }
 
             vm.changeData();
 
             // @ts-ignore 准备重新定位
-            let intoView = vm.intoView;
-            vm.intoView = '';
-            const renameSource = vm.renameSource;
-            if (renameSource !== '') {
-                const asset = utils.getGroupFromTree(db.assetsTree, renameSource, 'source')[0];
+            if (vm.renameSource !== '') {
+                const asset = utils.getGroupFromTree(db.assetsTree, vm.renameSource, 'source')[0];
                 if (asset) {
-                    intoView = asset.uuid;
+                    vm.intoView = asset.uuid;
                 }
             }
-
-            vm.$nextTick(() => {
-                vm.intoView = intoView;
-            });
         }
     },
 
@@ -378,15 +371,16 @@ export const methods = {
      * @param uuid
      */
     toggle(uuid: string, value: boolean) {
-        const one = utils.getAssetFromMap(uuid); // 获取该资源的数据，包含子资源
-        if (one && one.isParent) {
-            one.isExpand = value !== undefined ? value : !one.isExpand;
+        const asset = utils.getAssetFromMap(uuid); // 获取该资源的数据，包含子资源
+        if (asset && asset.isParent) {
+            asset.isExpand = value !== undefined ? value : !asset.isExpand;
 
             this.changeData();
 
-            if (one.isRoot) {
+            if (asset.isRoot) {
                 vm.checkAllToggleStatus();
             }
+
         }
     },
 
@@ -503,21 +497,23 @@ export const methods = {
      * @param name
      */
     async rename(asset: ItreeAsset, name = '') {
+        if (asset.state === 'loading') {
+            return false;
+        }
+
         // @ts-ignore 清空需要 rename 的节点
-        this.renameSource = '';
+        vm.renameSource = '';
 
         if (utils.canNotRenameAsset(asset) || name === '' || name === asset.name) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
             asset.state = '';
             return;
         }
-
+        asset.state = 'loading'; // 显示 loading 效果
         // 重名命资源
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'rename-asset', asset.uuid, name);
 
-        if (isSuccess) {
-            asset.state = 'loading'; // 显示 loading 效果
-        } else {
+        if (!isSuccess) {
             Editor.Dialog.show({
                 type: 'error',
                 message: Editor.I18n.t('assets.operate.renameFail'),
@@ -751,33 +747,12 @@ export const methods = {
      * 增加 setTimeOut 是为了优化来自异步的多次触发
      */
     changeData() {
-        if (isRenderingTree) { // 性能优化：避免批量修改带来的计算冲击
-            clearTimeout(vm.timerChange);
-            vm.timerChange = setTimeout(() => {
-                vm.calcAssetsTree();
-            }, 100);
-            return;
-        }
-
-        vm.calcAssetsTree();
-    },
-
-    /**
-     * 重新计算树形数据
-     */
-    calcAssetsTree() {
-        isRenderingTree = true;
-
         db.calcAssetsTree(); // 重新计算树形数据
 
         this.render(); // 重新渲染出树形
 
         // 容器的整体高度，重新定位滚动条, +1 是为了增加离底距离
         vm.$parent.treeHeight = (db.assetsMap.size + 1) * db.assetHeight;
-
-        vm.timerChange = setTimeout(() => {
-            isRenderingTree = false;
-        }, 100);
     },
 
     /**

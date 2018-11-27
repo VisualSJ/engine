@@ -52,7 +52,7 @@ export const methods = {
         if (folds) {
             const uuidsIsExpand = JSON.parse(folds);
             uuidsIsExpand.forEach((uuid: string) => {
-                vm.$refs.tree.folds[uuid] = true;
+                vm.$set(vm.$refs.tree.folds, uuid, true);
             });
         }
     },
@@ -124,14 +124,9 @@ export const messages = {
      * asset db 准备就绪
      * 刷新数据
      */
-    'asset-db:ready'() {
-        clearTimeout(panel.timer);
-        panel.timer = setTimeout(async () => {
-            await panel.unstaging();
-            requestAnimationFrame(() => {
-                vm.refresh();
-            });
-        }, 300);
+    async 'asset-db:ready'() {
+        await panel.unstaging();
+        vm.refresh();
     },
 
     /**
@@ -213,6 +208,7 @@ export async function ready() {
             viewHeight: 0, // 当前树形的可视区域高度
             treeHeight: 0, // 完整树形的全部高度
             selectBox: false, // 随组件 tree 中属性 selectBox 值
+            searchType: 'name', // 指定搜索的类型
         },
         watch: {
             treeHeight() {
@@ -338,6 +334,12 @@ export async function ready() {
              */
             resizePanel() {
                 vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
+            },
+            /**
+             * 切换搜索类型
+             */
+            changeSearchType() {
+
             },
         },
     });

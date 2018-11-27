@@ -110,9 +110,6 @@ export const methods = {
      * @param asset
      */
     click(event: Event, asset: ItreeAsset) {
-        // 必要的，配合父级容器的点击事件
-        event.stopPropagation();
-
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             // @ts-ignore
@@ -136,7 +133,7 @@ export const methods = {
         }, 500);
 
         // @ts-ignore
-        this.$parent.toggle(asset.uuid);
+        this.$emit('toggle', asset.uuid);
     },
     /**
      * 节点重名命
@@ -239,6 +236,7 @@ export const methods = {
      */
     drop(event: Event, asset: ItreeAsset) {
         event.preventDefault(); // 重要：阻止默认打开一些文件的行为
+        event.stopPropagation();
         // @ts-ignore
         const target: any = event.currentTarget;
         const insert = target.getAttribute('insert');
@@ -250,9 +248,6 @@ export const methods = {
         const $tree = this.$parent.$el;
         if (!$tree.hasAttribute('hoving')) {
             return;
-        } else {
-            event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
-            $tree.removeAttribute('hoving'); // 由于阻断需要手动删除
         }
 
         if (asset.readOnly) { // 不可用节点，比如 uuid 不存在
