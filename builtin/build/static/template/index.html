@@ -1,0 +1,77 @@
+<div class="build">
+    <h2>{{ t('title') }}</h2>
+    <div class="container"  @change="onChangeValue">
+        <div class="line">
+            <ui-prop :label="t('name')">
+                <div slot="content"><ui-input :value="name" path="name" tabindex="0" placeholder=""></ui-input></div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop :label="t('platform')">
+                <div slot="content">
+                    <ui-select :value="platform" path="platform" >
+                        <option value="web-mobile">Web Mobile</option>
+                        <option value="web-desktop">Web Desktop</option>
+                    </ui-select>
+                </div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop :label="t('build_path')">
+                <div slot="content">
+                    <ui-input :value="build_path" path="build_path" tabindex="0"></ui-input>
+                    <ui-button @confirm.stop="onChooseBuildPath">···</ui-button>
+                    <ui-button @confirm.stop="onOpenBuildPath">打开</ui-button>
+                </div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop :label="t('start_scene')">
+                <div slot="content">
+                    <ui-select :value="start_scene" path="start_scene">
+                        <option v-if="scene.choose" v-for="scene in scenes" :value="scene.uuid">{{ scene.url }}</option>
+                    </ui-select>
+                </div>
+            </ui-prop>
+        </div>
+        <div class="line start-scene">
+            <ui-prop :label="t('scenes')">
+                <div slot="content">
+                    <div class="line"><ui-checkbox :checked="selectAll" path="selectAll">全选</ui-checkbox></div>
+                    <div class="line" v-for="(scene, index) in scenes">
+                        <ui-checkbox :checked="scene.choose" @change.stop="onChangeScene($event, index)" :disabled="start_scene === scene.uuid ? true : false">{{
+                            scene.url
+                        }}</ui-checkbox
+                        ><i class="iconfont i-star" v-if="start_scene === scene.uuid"></i>
+                    </div>
+                </div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop :label="t('inline_SpriteFrames')">
+                <div slot="content"><ui-checkbox checked path="inline_SpriteFrames"></ui-checkbox></div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop label="MD5 Cache">
+                <div slot="content"><ui-checkbox checked path="inline_SpriteFrames"></ui-checkbox></div>
+            </ui-prop>
+        </div>
+        <component :is="platform" :info="{build_path}" ref="children"></component>
+        <div class="line"><ui-prop type="boolean" :label="t('debug')" :value="debug"></ui-prop></div>
+        <div class="line"><ui-prop type="boolean" :label="t('source_map')" :value="source_map"></ui-prop></div>
+    </div>
+    <footer>
+        <div class="progress">
+            <span class="bar" :state="{width: progressRate}"></span>
+            <div :class="state">{{message}}</div>
+        </div>
+        <div class="btn-group">
+            <ui-button class="green" @confirm.stop="onBuild" :disabled = "!btnState.build">构建</ui-button>
+            <i class="iconfont i-arrow-right"></i>
+            <ui-button class="green" :disabled = "!btnState.compile">编译</ui-button>
+            <i class="iconfont i-arrow-right" v-if="!btnState.compile"></i>
+            <ui-button class="green" :disabled = "!btnState.run">运行</ui-button>
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,112 @@
+@import './reset';
+@import './iconfont';
+
+// ui 组件初始化
+ui-input,
+ui-num-input,
+ui-color,
+ui-section,
+ui-select {
+    flex: 1;
+}
+
+ui-prop {
+    --left-width: 40%; // 内部嵌套 ui-prop 组件的 label 长度,如若不希望面板变宽时 label 变得越来越宽，可以给它指定一个固定值
+    --right-width: 60%; // 内部嵌套 ui-prop 组件的 ui 组件长度，不指定默认就是占满除了 label 以外的宽度
+    --label-max-width: 200px;
+    ui-button {
+        line-height: 12px;
+        margin-left: 4px;
+    }
+    a {
+        color: var(--focus-c);
+    }
+}
+ui-prop > div[slot='content'] {
+    width: 100%;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+}
+
+.build {
+    height: 100vh;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    h2 {
+        margin: 10px 0;
+        font-size: 22px;
+    }
+}
+
+.progress {
+    background: var(--main-dark-bg);
+    border: 1px solid var(--border-c);
+    border-radius: var(--border-radius-n);
+    position: relative;
+    text-align: center;
+    color: white;
+    height: 14px;
+    font-size: 12px;
+    line-height: 14px;
+    margin-bottom: 15px;
+    .bar {
+        background: var(--focus-c);
+        position: absolute;
+        width: 20%;
+        top:0;
+        bottom: 0;
+        left: 0;
+    }
+    .state {
+        position: absolute;
+        width: 100%;
+    }
+}
+.container {
+    overflow-y: auto;
+    height: 80vh;
+    border-top: 1px solid #807e7e;
+    padding: 10px 0;
+    flex: 1;
+    .line {
+        margin: 5px 0;
+    }
+    .start-scene {
+        div[slot='content'] {
+            display: block;
+            padding: 5px;
+            border: 1px solid var(--border-c);
+            border-radius: var(--border-radius-n);
+            background: var(--main-dark-bg);
+        }
+        .line {
+            margin-bottom: 5px;
+            position: relative;
+        }
+        .iconfont {
+            position: absolute;
+            right: 2px;
+            color: var(--focus-c);
+        }
+    }
+}
+
+footer {
+    .btn-group {
+        padding: 20px 0;
+        height: 25px;
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+        align-items: center;
+        & > * {
+            margin-right: 5px;
+        }
+        ui-button {
+            padding: 0.2em 1em;
+        }
+    }
+
+}

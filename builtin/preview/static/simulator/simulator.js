@@ -1,5 +1,5 @@
 const TreeKill = require('tree-kill');
-const {getGroSetting , getEnginInfo, getCurrentScene, buildSetting, writScripts} = require('./../utils/util');
+const {getGroSetting , getEnginInfo, writScripts} = require('./../utils/util');
 const {ensureDirSync, copySync, emptyDirSync, writeFileSync} = require('fs-extra');
 const {readFileSync} = require('fs');
 const spawn = require('child_process').spawn;
@@ -26,7 +26,7 @@ function initCocosEnv() {
             COCOS_X_ROOT: cocosRoot,
             COCOS_CONSOLE_ROOT: join(cocosRoot, 'tools/cocos2d-console/bin'),
             NDK_ROOT: '',
-            ANDROID_SDK_ROOT: ''
+            ANDROID_SDK_ROOT: '',
         };
         envStr = '';
         Object.keys(env).forEach((key) => {
@@ -202,18 +202,18 @@ async function writeMain() {
 }
 
 async function writeCurrentScene() {
-    let dest = join(simulatorRoot, 'preview-scene.json');
-    let asset = await getCurrentScene();
+    const dest = join(simulatorRoot, 'preview-scene.json');
+    const asset = await Editor.Ipc.requestToPackage('build', 'get-current-scene');
     copySync(asset.files[0], dest);
     return;
 }
 
 async function writeSetting() {
     let config = await getSimulatorConfig();
-    let setting = await buildSetting({
+    let setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
         debug: true,
-        preview: true,
-        platform: 'web-desktop'
+        type: 'simulator',
+        platform: 'web-desktop',
     }, config);
     setting = setting.replace(/"?internal"?:/, `"${join(Editor.Project.path, INTERNAL_NAME)}":`);
     writeFileSync(join(simulatorRoot, 'src/settings.js'), setting);
@@ -229,5 +229,5 @@ function simulatorError(err, code) {
 }
 module.exports = {
     run,
-    stop
+    stop,
 };

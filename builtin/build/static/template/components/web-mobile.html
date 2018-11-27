@@ -1,0 +1,19 @@
+<div>
+    <div class="line"><ui-prop :label="t('merge_start_scene')" type="boolean"></ui-prop></div>
+    <div class="line">
+        <ui-prop :label="t('orientation')">
+            <div slot="content">
+                <ui-select value="auto">
+                    <option value="landscape">Landscape</option> <option value="portrait">Portrait</option>
+                    <option value="auto">Auto</option>
+                </ui-select>
+            </div>
+        </ui-prop>
+    </div>
+    <div class="line">
+        <ui-prop :label="t('preview_url')">
+            <div slot="content"><a :href="preview_url" @click="preview">{{preview_url}}</a></div>
+        </ui-prop>
+    </div>
+    <div class="line"><ui-prop :label="t('eruda')" type="boolean"></ui-prop></div>
+</div>

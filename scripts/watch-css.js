@@ -11,9 +11,10 @@ let lessDirnames = [
     '../builtin/inspector',
     '../builtin/preferences',
     '../builtin/scene',
+    '../builtin/build',
 ];
 
-const watchCss = 'watch:css'
+const watchCss = 'watch:css';
 gulp.task(watchCss, () => {
     lessDirnames.map((dir) => {
         let watchPath = path.join(__dirname, dir, 'static/style/*.less');

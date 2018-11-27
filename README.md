@@ -92,6 +92,7 @@ npm start --home /Users/name/.Editor3D
 
 ```javascript
 npm test -- --project assets
+npm run watch:css // 可以监听 watch-css 文件内有定义的插件内 less 变化自动编译
 ```
 
 assets 插件内需要两个文件：

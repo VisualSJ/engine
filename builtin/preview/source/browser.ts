@@ -34,7 +34,11 @@ export const messages = {
     /**
      * 根据 previewPlatform 类型打开对应终端预览界面
      */
-    'open-terminal'() {
+    'open-terminal'(url: string) {
+        if (url) {
+            shell.openExternal(url);
+            return;
+        }
         if (previewPlatform === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {
@@ -62,7 +66,12 @@ export const messages = {
      */
     'get-device'() {
         return DEVICES;
-    }
+    },
+
+    'get-port'() {
+        const port = getPort();
+        return port;
+    },
 };
 
 export async function load() {

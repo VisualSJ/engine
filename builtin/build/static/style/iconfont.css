@@ -1,0 +1,14 @@
+.iconfont {
+  font-family: 'build' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  display: inline-block;
+}
+.i-arrow-right:before {
+  content: "\e60d";
+}
+.i-star:before {
+  content: "\e70b";
+}

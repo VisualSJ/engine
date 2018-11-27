@@ -4,7 +4,7 @@ import { createReadStream } from 'fs-extra';
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';
-const { buildSetting, getModules , getCurrentScene, DEVICES} = require('./../static/utils/util');
+const { DEVICES} = require('./../static/utils/util');
 const express = require('express');
 const ipc = require('@base/electron-base-ipc');
 
@@ -31,9 +31,9 @@ export async function start() {
 
     // 获取配置文件
     app.get('/setting.js', async (req: any, res: any) => {
-        const setting = await buildSetting({
+        const setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
-            preview: true,
+            type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
         });
         res.send(setting);
@@ -65,13 +65,13 @@ export async function start() {
         res.writeHead(200, {
             'Content-Type': 'text/javascript',
         });
-        const str = getModules(req.params[0]);
+        const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
         res.end(str);
     });
 
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene.json', async (req: any, res: any) => {
-        const asset = await getCurrentScene();
+        const asset = await Editor.Ipc.requestToPackage('build', 'get-current-scene');
         const filePath = await asset.files[0];
         res.sendFile(filePath);
     });
