@@ -18,12 +18,12 @@ exports.menu = (self: any, node: ItreeNode) => {
                         click() {
                             // @ts-ignore
                             self.$emit('ipcAdd', { type: 'node' }, node.uuid);
-                        }
-                    }
-                ]
+                        },
+                    },
+                ],
             },
             {
-                type: 'separator'
+                type: 'separator',
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.copy'),
@@ -31,7 +31,7 @@ exports.menu = (self: any, node: ItreeNode) => {
                 click() {
                     // @ts-ignore
                     self.$emit('copy', node.uuid);
-                }
+                },
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.paste'),
@@ -39,7 +39,7 @@ exports.menu = (self: any, node: ItreeNode) => {
                 click() {
                     // @ts-ignore
                     self.$emit('paste', node.uuid);
-                }
+                },
             },
             { type: 'separator' },
             {
@@ -48,7 +48,7 @@ exports.menu = (self: any, node: ItreeNode) => {
                 click(event: Event) {
                     // @ts-ignore
                     self.rename(node);
-                }
+                },
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.delete'),
@@ -56,7 +56,7 @@ exports.menu = (self: any, node: ItreeNode) => {
                 click() {
                     // @ts-ignore
                     self.$emit('ipcDelete', node.uuid);
-                }
+                },
             },
             { type: 'separator' },
             {
@@ -65,6 +65,6 @@ exports.menu = (self: any, node: ItreeNode) => {
                     console.info(`UUID: ${node.uuid}`);
                 },
             },
-        ]
+        ],
     });
 };

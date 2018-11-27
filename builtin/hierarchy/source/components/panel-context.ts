@@ -14,9 +14,9 @@ exports.popupNew = (event: Event) => {
                 label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                 click() {
                     db.vm.$refs.tree.ipcAdd({ type: 'node' });
-                }
+                },
             },
-        ]
+        ],
     });
 };
 
@@ -35,10 +35,10 @@ exports.popupContext = (event: Event) => {
                         click() {
                             // @ts-ignore
                             db.vm.$refs.tree.ipcAdd({ type: 'node' });
-                        }
+                        },
                     },
-                ]
+                ],
             },
-        ]
+        ],
     });
 };

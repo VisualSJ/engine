@@ -8,8 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let timeOutId: any;
-let isRenderingTree: boolean = false; // 正在重新渲染树形
 let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
@@ -20,7 +18,7 @@ export const template = readFileSync(
 );
 
 export const components = {
-    'tree-node': require('./tree-node')
+    'tree-node': require('./tree-node'),
 };
 
 export function data() {
@@ -38,7 +36,6 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: false, // 拖动时高亮的目录区域 {top, height} 或者 false 不显示
-        newNodeNeedToRename: false // 由于是异步，存在新建，拖拽进新文件，移动节点这三个过程的新建无法区分，所以需要用第三方变量记录该 rename 的时候
     };
 }
 
@@ -102,37 +99,6 @@ export const watch = {
 export function mounted() {
     // @ts-ignore
     db.vm = vm = this;
-
-    // @ts-ignore
-    this.$el.addEventListener('dragenter', () => {
-        clearTimeout(timeOutId);
-        timeOutId = setTimeout(() => {
-            vm.dragOver('', 'after');
-        }, 500);
-    });
-    // @ts-ignore
-    this.$el.addEventListener('drop', (event) => {
-        const dragData = event.dataTransfer.getData('dragData');
-        let data: IdragNode;
-        if (dragData === '') {
-            // @ts-ignore
-            data = {};
-        } else {
-            data = JSON.parse(dragData);
-        }
-
-        data.to = db.nodesTree.uuid; // cc.Scene 根节点
-        data.insert = 'inside';
-        vm.drop(data);
-    });
-    // @ts-ignore
-    this.$el.addEventListener('click', () => {
-        // @ts-ignore
-        if (this.state !== '') {
-            return;
-        }
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-    });
 }
 
 export const methods = {
@@ -302,7 +268,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        db.addNode(uuid);
+        await db.addNode(uuid);
 
         vm.changeData();
     },
@@ -344,7 +310,7 @@ export const methods = {
      * @param json
      */
     async change(uuid: string) {
-        db.changeNode(uuid);
+        await db.changeNode(uuid);
 
         vm.changeData();
     },
@@ -507,6 +473,17 @@ export const methods = {
     },
 
     /**
+     * 空白处点击，取消选中
+     */
+    click(event: Event) {
+        // @ts-ignore
+        if (this.state !== '') {
+            return;
+        }
+        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+    },
+
+    /**
      * 节点多选
      */
     async multipleSelect(uuid: string | string[]) {
@@ -574,17 +551,28 @@ export const methods = {
         } else {
             Editor.Dialog.show({
                 type: 'error',
-                message: Editor.I18n.t('hierarchy.operate.renameFail')
+                message: Editor.I18n.t('hierarchy.operate.renameFail'),
             });
             node.state = '';
         }
     },
 
     /**
+     * 拖动且移出本面板时，选框隐藏
+     */
+    hideSelectBox() {
+        clearTimeout(vm.timerDrag);
+        vm.timerDrag = setTimeout(() => {
+            vm.selectBox = {
+                opacity: 0,
+            };
+        }, 500);
+    },
+
+    /**
      * 拖动中感知当前所处的文件夹，高亮此文件夹
      */
     dragOver(uuid: string, position: string) {
-        clearTimeout(timeOutId);
         // @ts-ignore
         let node: ItreeNode;
         if (uuid === '') {
@@ -592,7 +580,7 @@ export const methods = {
             node = {
                 // @ts-ignore
                 top: this.$el.lastElementChild.offsetTop - db.padding,
-                left: db.padding
+                left: db.padding,
             };
         } else {
             // @ts-ignore
@@ -622,11 +610,39 @@ export const methods = {
 
         // @ts-ignore
         this.selectBox = {
+            opacity: top + '!important',
             top: top + 'px',
-            height: height + 'px',
             left: left + 'px',
+            height: height + 'px',
         };
 
+    },
+
+    /**
+     * 进入 tree 容器
+     * @param event
+     */
+    dragEnter(event: Event) {
+        vm.dragOver('', 'after');
+    },
+
+    /**
+     * tree 容器上的 drop
+     */
+    drop(event: Event) {
+        // @ts-ignore
+        const dragData = event.dataTransfer.getData('dragData');
+        let data: IdragNode;
+        if (dragData === '') {
+            // @ts-ignore
+            data = {};
+        } else {
+            data = JSON.parse(dragData);
+        }
+
+        data.to = db.nodesTree.uuid; // cc.Scene 根节点
+        data.insert = 'inside';
+        vm.drop(data);
     },
 
     /**
@@ -634,7 +650,7 @@ export const methods = {
      *
      * @param json
      */
-    drop(json: IdragNode) {
+    ipcDrop(json: IdragNode) {
         // @ts-ignore 隐藏高亮框
         this.selectBox = false;
 
@@ -710,8 +726,8 @@ export const methods = {
                             path: 'parent',
                             dump: {
                                 type: toNode.type,
-                                value: toNode.uuid // 被 drop 的元素就是父级
-                            }
+                                value: toNode.uuid, // 被 drop 的元素就是父级
+                            },
                         });
                     } else { // 跨级插入 'before', 'after'
                         // @ts-ignore
@@ -721,8 +737,8 @@ export const methods = {
                             path: 'parent',
                             dump: {
                                 type: toParent.type,
-                                value: toParent.uuid // 被 drop 的元素的父级
-                            }
+                                value: toParent.uuid, // 被 drop 的元素的父级
+                            },
                         });
 
                         offset = toIndex - toArr.length; // 目标索引减去自身索引
@@ -824,33 +840,12 @@ export const methods = {
      * 增加 setTimeOut 是为了优化来自异步的多次触发
      */
     changeData() {
-        if (isRenderingTree) {
-            clearTimeout(timeOutId);
-            timeOutId = setTimeout(() => {
-                vm.calcNodesTree();
-            }, 200);
-            return;
-        }
-
-        vm.calcNodesTree();
-    },
-
-    /**
-     * 重新计算树形数据
-     */
-    calcNodesTree() {
-        isRenderingTree = true;
-
         db.calcNodesTree(); // 重新计算树形数据
 
         this.render(); // 重新渲染出树形
 
         // 重新定位滚动条, +1 是为了增加离底距离
         vm.$parent.treeHeight = (db.nodesMap.size + 1) * db.nodeHeight;
-
-        setTimeout(() => {
-            isRenderingTree = false;
-        }, 100);
     },
 
     /**
@@ -894,5 +889,5 @@ export const methods = {
             return db.nodesTree.uuid; // node 节点
         }
         return vm.selects[0]; // 当前选中的节点
-    }
+    },
 };

@@ -34,7 +34,13 @@ export const methods = {
      * 暂存页面数据
      */
     async staging() {
-        Editor.Ipc.sendToPackage('hierarchy', 'staging-fold', JSON.stringify(vm.$refs.tree.folds));
+        const uuidsIsExpand = [];
+        for (const uuid in vm.$refs.tree.folds) {
+            if (vm.$refs.tree.folds[uuid]) {
+                uuidsIsExpand.push(uuid);
+            }
+        }
+        Editor.Ipc.sendToPackage('hierarchy', 'staging-fold', JSON.stringify(uuidsIsExpand));
     },
 
     /**
@@ -43,7 +49,13 @@ export const methods = {
     async unstaging() {
         // 初始化缓存的折叠数据
         const folds = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging-fold');
-        vm.$refs.tree.folds = JSON.parse(folds);
+
+        if (folds) {
+            const uuidsIsExpand = JSON.parse(folds);
+            uuidsIsExpand.forEach((uuid: string) => {
+                vm.$set(vm.$refs.tree.folds, uuid, true);
+            });
+        }
     },
     /**
      * 刷新面板
@@ -112,14 +124,9 @@ export const messages = {
     /**
      * 场景准备就绪
      */
-    'scene:ready'() {
-        clearTimeout(panel.timer);
-        panel.timer = setTimeout(async () => {
-            await panel.unstaging();
-            requestAnimationFrame(() => {
-                vm.refresh();
-            });
-        }, 300);
+    async 'scene:ready'() {
+        await panel.unstaging();
+        vm.refresh();
     },
 
     /**
@@ -212,7 +219,7 @@ export async function ready() {
                 if (vm.treeHeight < vm.viewHeight) {
                     vm.$refs.tree.scroll(0);
                 }
-            }
+            },
         },
         mounted() {
             // 初始化搜索框
@@ -326,6 +333,9 @@ export async function ready() {
             },
         },
     });
+
+    // 初始化缓存的折叠数据
+    await panel.unstaging();
 
     // 场景就绪状态才需要查询数据
     const isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');

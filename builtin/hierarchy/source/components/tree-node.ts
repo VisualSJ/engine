@@ -52,7 +52,7 @@ export const computed = {
         }
 
         return 'true';
-    }
+    },
 };
 
 export const watch = {
@@ -65,7 +65,7 @@ export const watch = {
             // @ts-ignore
             this.inputFocus();
         }
-    }
+    },
 };
 
 export const methods = {
@@ -240,9 +240,7 @@ export const methods = {
      * @param uuid
      */
     drop(event: Event, node: ItreeNode) {
-        // 需要取消默认行为才能获取 dataTransfer 数据
-        event.preventDefault();
-        event.stopPropagation();
+        event.preventDefault(); // 重要：阻止默认打开一些文件的行为
 
         // @ts-ignore
         const target: any = event.currentTarget;
@@ -252,8 +250,12 @@ export const methods = {
 
         // 如果当前 ui-drag-area 面板没有 hoving 属性，说明不接受此类型的 drop
         // @ts-ignore
-        if (!this.$parent.$el.hasAttribute('hoving')) {
+        const $tree = this.$parent.$el;
+        if (!$tree.hasAttribute('hoving')) {
             return;
+        } else {
+            event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
+            $tree.removeAttribute('hoving'); // 由于阻断需要手动删除
         }
 
         if (node.readOnly) { // 不可用节点，比如 uuid 不存在
@@ -274,7 +276,7 @@ export const methods = {
         data.insert = insert; // 在重新排序前获取数据
 
         // @ts-ignore
-        this.$emit('drop', data);
+        this.$emit('ipcDrop', data);
     },
 
     /**

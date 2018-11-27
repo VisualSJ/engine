@@ -160,7 +160,7 @@ class SceneManager extends EventEmitter {
 
             return {
                 name: node.name,
-                type: node.constructor.name.replace('_', '.'),
+                type: node.constructor.name,
                 uuid: node._id,
                 children: children.length ? children : null,
             };

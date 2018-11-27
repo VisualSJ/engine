@@ -75,7 +75,7 @@ export async function addNode(uuid: string) {
     // 获取该节点最新数据
     const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
     // 更新当前数据
-    const newNode = addNodeIntoTree(dumpData);
+    return addNodeIntoTree(dumpData);
 }
 
 /**
@@ -136,6 +136,7 @@ export async function changeNode(uuid: string) {
     if (Editor.Project.type === '2d') {
         changeNode2D(newData);
     }
+    return newData;
 }
 
 /**
@@ -281,7 +282,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         }
 
         if (vm.folds[node.uuid] === undefined) {
-            vm.folds[node.uuid] = node.isParent ? true : false;
+            vm.$set(vm.folds, node.uuid, false); // 默认不展开节点
         }
 
         if (node.height === undefined) {

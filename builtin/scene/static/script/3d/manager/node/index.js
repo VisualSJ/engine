@@ -152,7 +152,10 @@ class NodeManager extends EventEmitter {
 
         // 移动顺序
         if (path === 'children') {
-            const child = data[target];
+            // 过滤掉类似 Foreground Background 的节点
+            const children = data.filter((child) => !(child._objFlags & cc.Object.Flags.HideInHierarchy));
+
+            const child = children[target];
             child.setSiblingIndex(target + offset);
         } else {
             const temp = data.splice(target, 1);

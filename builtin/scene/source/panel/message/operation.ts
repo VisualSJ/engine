@@ -135,7 +135,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'moveArrayElement', [
+        await $scene.forwarding('Node', 'removeArrayElement', [
             options.uuid,
             options.path,
             options.index,
@@ -190,7 +190,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'createComponent', [
+        await $scene.forwarding('Node', 'removeComponent', [
             options.uuid,
             options.component,
         ]);
