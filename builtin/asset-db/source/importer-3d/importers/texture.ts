@@ -66,7 +66,7 @@ export default class TextureImporter extends Importer {
                 }
             }
             // @ts-ignore
-            asset.saveToLibrary('.json', Manager.serialize(texture));
+            await asset.saveToLibrary('.json', Manager.serialize(texture));
 
             updated = true;
         }

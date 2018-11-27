@@ -52,7 +52,7 @@ export default class ImageImporter extends Importer {
             const image = new cc.ImageAsset();
             image._setRawAsset(asset.basename);
             // @ts-ignore
-            asset.saveToLibrary('.json', Manager.serialize(image));
+            await asset.saveToLibrary('.json', Manager.serialize(image));
 
             let importType = asset.userData.type as ImageImportType;
             if (!importType) {

@@ -107,7 +107,7 @@ export default class TextureCubeImporter extends Importer {
             texture._mipmaps = [ facesAssets ];
 
             // @ts-ignore
-            asset.saveToLibrary('.json', Manager.serialize(texture));
+            await asset.saveToLibrary('.json', Manager.serialize(texture));
 
             updated = true;
         }
