@@ -245,12 +245,24 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
             }
         } else { // 有搜索
             vm.state = 'search';
+            if (!asset.isRoot) {
+                let legal = false;
 
-            // @ts-ignore
-            if (!asset.isRoot && asset.name.search(vm.search) !== -1) { // 平级保存
-                asset.depth = 0; // 平级保存
-                assetsMap.set(start, asset);
-                index++;
+                if (vm.searchType === 'name' && asset.name.search(vm.search) !== -1) { // 平级保存
+                    legal = true;
+                }
+                if (vm.searchType === 'uuid' && asset.uuid.search(vm.search) !== -1) { // 平级保存
+                    legal = true;
+                }
+                if (vm.searchType === 'type' && asset.importer.search(vm.search) !== -1) { // 平级保存
+                    legal = true;
+                }
+
+                if (legal) {
+                    asset.depth = 0; // 平级保存
+                    assetsMap.set(start, asset);
+                    index++;
+                }
             }
 
             if (asset.isParent) {

@@ -208,6 +208,7 @@ export async function ready() {
             viewHeight: 0, // 当前树形的可视区域高度
             treeHeight: 0, // 完整树形的全部高度
             selectBox: false, // 随组件 tree 中属性 selectBox 值
+            searchPlaceholder: 'menu.searchPlaceholder_name', // 指定搜索的类型
             searchType: 'name', // 指定搜索的类型
         },
         watch: {
@@ -223,17 +224,18 @@ export async function ready() {
                     vm.info = '';
                 }
             },
+            searchType() {
+                vm.searchPlaceholder = `menu.searchPlaceholder_${vm.searchType}`;
+                vm.$refs.tree.searchType = vm.searchType;
+                vm.$refs.tree.doSearch();
+            },
         },
         mounted() {
-            // 初始化搜索框
-            this.$refs.search.placeholder = Editor.I18n.t('assets.menu.searchPlaceholder');
-            this.$refs.search.addEventListener('change', (event: Event) => {
-                // @ts-ignore
-                const value = event.target.value.trim();
-                vm.$refs.tree.search = value;
-            });
-
-            // 初始化监听 scroll 事件
+            /**
+             * 初始化监听 scroll 事件
+             * 不放在 vue template 里面是因为有性能损耗，vue 里快速滚动的话会有前后空白区
+             * 这样直接绑定性能最好
+             */
             this.$refs.viewBox.addEventListener('scroll', () => {
                 vm.$refs.tree.scroll(vm.$refs.viewBox.scrollTop);
             }, false);
@@ -311,10 +313,22 @@ export async function ready() {
                 vm.current = vm.$refs.tree.unselect(uuid);
             },
             /**
+             * 搜索 input 变动
+             */
+            searchChange() {
+                vm.$refs.tree.search = vm.$refs.search.value;
+            },
+            /**
              * 创建按钮的弹出菜单
              */
             popupNew(event: Event) {
                 context.popupNew(event);
+            },
+            /**
+             * 切换搜索类型
+             */
+            popupSearchType(event: Event) {
+                context.popupSearchType(event);
             },
             /**
              * 面板的右击菜单
@@ -334,12 +348,6 @@ export async function ready() {
              */
             resizePanel() {
                 vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
-            },
-            /**
-             * 切换搜索类型
-             */
-            changeSearchType() {
-
             },
         },
     });

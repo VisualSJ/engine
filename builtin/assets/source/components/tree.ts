@@ -31,6 +31,7 @@ export function data() {
         renameSource: '', // 需要 rename 的节点的 url，只有一个
         intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称
+        searchType: 'name', // 搜索类型
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
         viewHeight: 0, // 当前树形的可视区域高度
@@ -70,18 +71,7 @@ export const watch = {
      * 搜索资源名称
      */
     search() {
-        // 搜索有变动都先滚回顶部
-        vm.intoView = '';
-
-        // 重新计算
-        vm.changeData();
-
-        // 重新定位到选中项
-        vm.$nextTick(() => {
-            if (vm.search === '') {
-                vm.intoView = vm.getFirstSelect();
-            }
-        });
+        vm.doSearch();
     },
     /**
      * 当前选中项变动
@@ -523,6 +513,24 @@ export const methods = {
     },
 
     /**
+     * 执行搜索
+     */
+    doSearch() {
+        // 搜索有变动都先滚回顶部
+        vm.intoView = '';
+
+        // 重新计算
+        vm.changeData();
+
+        // 重新定位到选中项
+        vm.$nextTick(() => {
+            if (vm.search === '') {
+                vm.intoView = vm.getFirstSelect();
+            }
+        });
+    },
+
+    /**
      * 拖动中感知当前所处的文件夹，高亮此文件夹
      */
     dragOver(uuid: string) {
@@ -547,8 +555,11 @@ export const methods = {
             height: height + 'px',
         };
     },
+
+    /**
+     * 效果优化：拖动且移出本面板时，选框隐藏
+     */
     hideSelectBox() {
-        // 效果优化：拖动且移出本面板时，选框隐藏
         clearTimeout(vm.timerDrag);
         vm.timerDrag = setTimeout(() => {
             vm.selectBox = {
@@ -788,9 +799,9 @@ export const methods = {
     },
 
     /**
-     * 以下是工具函数：
+     * 获取第一个选中节点，没有选中项，返回根节点
      */
-    getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
+    getFirstSelect() {
         if (!vm.selects[0] && db.assetsTree.children[0]) {
             return db.assetsTree.children[0].uuid; // asset 节点资源
         }

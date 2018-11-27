@@ -5,8 +5,13 @@ module.exports = {
 
     menu: {
         createMenu: 'Create asset context menu',
-        searchPlaceholder: 'Search...',
+        searchPlaceholder_name: 'Search name...',
+        searchPlaceholder_uuid: 'Search uuid...',
+        searchPlaceholder_type: 'Search type...',
         search: 'Search',
+        searchName: 'Search Name',
+        searchUuid: 'Search UUID',
+        searchType: 'Search Type',
         refresh: 'Refresh',
         allExpand: 'All Expand',
         allCollapse: 'All Collapse',
@@ -30,6 +35,6 @@ module.exports = {
     },
 
     operate: {
-        renameFail: 'Rename Fail: The new file name already exists.'
-    }
+        renameFail: 'Rename Fail: The new file name already exists.',
+    },
 };
