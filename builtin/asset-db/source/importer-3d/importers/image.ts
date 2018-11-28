@@ -3,7 +3,7 @@ import { extname } from 'path';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
 
-type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube' | undefined;
+type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
 
 export default class ImageImporter extends Importer {
 
@@ -54,14 +54,10 @@ export default class ImageImporter extends Importer {
             // @ts-ignore
             await asset.saveToLibrary('.json', Manager.serialize(image));
 
-            let importType = asset.userData.type as ImageImportType;
-            if (!importType) {
+            let importType = asset.userData.type as (ImageImportType | undefined);
+            if (importType === undefined) {
                 importType = 'raw';
                 asset.userData.type = importType;
-            }
-
-            if (ext === '.cubemap_test') {
-                importType = 'texture cube';
             }
 
             switch (importType) {

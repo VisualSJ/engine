@@ -55,7 +55,7 @@ export function register(database: AssetDB) {
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
 
-    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp', '.cubemap_test']);
+    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
     database.register(new TextureImporter(), '.texture');
     database.register(new TextureCubeImporter(), '.texture-cube');
     database.register(new TextureCubeFaceImporter(), '.texture-cube-face');

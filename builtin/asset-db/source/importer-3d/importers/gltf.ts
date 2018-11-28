@@ -225,6 +225,10 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
         // This could not happen
         if (!asset.parent) {
             return false;
@@ -279,6 +283,10 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
         if (!asset.parent) {
             return false;
         }
@@ -328,6 +336,10 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
         if (!asset.parent) {
             return false;
         }
@@ -376,6 +388,10 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
         if (!asset.parent) {
             return false;
         }

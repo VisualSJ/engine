@@ -145,6 +145,10 @@ export class TextureCubeFaceImporter extends Importer {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
         if (!asset.parent) {
             return false;
         }
