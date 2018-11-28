@@ -57,39 +57,15 @@ export async function ready() {
             general: {
                 deep: true,
                 handler() {
-                    // @ts-ignore
-                    this.set('language', 'general');
-                    // @ts-ignore
-                    this.set('step', 'general');
-                    // @ts-ignore
-                    this.set('themeColor', 'general');
-                    // @ts-ignore
-                    this.set('node_tree', 'general');
-                    // @ts-ignore
-                    this.save();
+                   // @ts-ignore
+                   this.dataChange('general');
                 },
             },
             preview: {
                 deep: true,
                 handler() {
                     // @ts-ignore
-                    this.set('auto_refresh', 'preview');
-                    // @ts-ignore
-                    this.set('preview_browser', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_path', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_orientation', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_resolution', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_width', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_height', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_debugger', 'preview');
-                    // @ts-ignore
-                    this.save();
+                    this.dataChange('preview');
                 },
             },
         },
@@ -100,6 +76,15 @@ export async function ready() {
         },
 
         methods: <any>{
+            dataChange(type: string) {
+                // @ts-ignore
+                Object.keys(this.preview).forEach((key) => {
+                    // @ts-ignore
+                    this.set(key, type);
+                });
+                // @ts-ignore
+                this.save();
+            },
             /**
              * 翻译
              * @param key

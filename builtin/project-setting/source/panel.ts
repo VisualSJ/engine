@@ -15,7 +15,7 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 export const $ = {
-    project: '.project'
+    project: '.project',
 };
 
 export const methods = {};
@@ -42,7 +42,7 @@ export async function ready() {
                 simulator_resolution: 'iphone4',
                 simulator_width: 960,
                 simulator_height: 480,
-            }
+            },
         },
 
         watch: {
@@ -50,27 +50,9 @@ export async function ready() {
                 deep: true,
                 handler() {
                     // @ts-ignore
-                    this.set('start_scene', 'preview');
-                    // @ts-ignore
-                    this.set('design_width', 'preview');
-                    // @ts-ignore
-                    this.set('design_height', 'preview');
-                    // @ts-ignore
-                    this.set('fit_width', 'preview');
-                    // @ts-ignore
-                    this.set('fit_height', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_setting_type', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_device_orientation', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_width', 'preview');
-                    // @ts-ignore
-                    this.set('simulator_height', 'preview');
-                    // @ts-ignore
-                    this.save();
-                }
-            }
+                    this.dataChange('preview');
+                },
+            },
         },
 
         components: {
@@ -78,6 +60,16 @@ export async function ready() {
         },
 
         methods: <any>{
+            dataChange(type: string) {
+                // @ts-ignore
+                Object.keys(this.preview).forEach((key) => {
+                    // @ts-ignore
+                    this.set(key, type);
+                });
+                // @ts-ignore
+                this.save();
+            },
+
             /**
              * 翻译
              * @param key
@@ -119,7 +111,7 @@ export async function ready() {
                         this.preview[key] = config[key];
                     }
                 }
-            }
+            },
         },
         mounted() {
             this.getData('preview');

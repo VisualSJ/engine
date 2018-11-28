@@ -4,6 +4,8 @@ module.exports = {
     title: 'preferences',
     nav: {
         general: 'Gneneral',
+        data_editor: 'Data Editor',
+        native_develop: 'Native Develop',
         preview: 'Preview Run',
     },
     general: {
@@ -31,5 +33,23 @@ module.exports = {
             width: 'Width',
             height: 'Height',
         },
+    },
+    data_editor: {
+        auto_compiler_scripts: 'Auto Compiler Scripts',
+        external_script_editor: 'External Script Editor',
+        external_picture_editor: 'External Picture Editor',
+        picture_editor_placeholder: 'Add external picture editor path',
+        browse: 'Drowse',
+        remove: 'Remove',
+        internal: 'Default',
+    },
+    native_develop: {
+        use_default_js_engine: 'Use Builtin JavaScript Engine',
+        js_engine_path: 'JavaScript Engine Path',
+        wechatgame_app_path: 'WechatGame App Path',
+        ndk_root: 'NDK Path',
+        ndk_placeholder: 'ndk-root version r10e recommended',
+        android_sdk_root: 'Android SDK Root',
+        doc_link_title: 'Framework Setup Guide: Read in browser',
     },
 };

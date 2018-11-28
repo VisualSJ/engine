@@ -1,6 +1,8 @@
 'use strict';
 
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
+const {app} = require('electron');
+
 let pkg: any = null;
 
 export const messages = {
@@ -26,21 +28,25 @@ export const messages = {
     // 保存设置信息
     'save-setting'() {
         profile.save();
-    }
+    },
 };
 
 export function load() {
     // @ts-ignore
     pkg = this;
 
-    // 应用语言
-    const language = profile.get('general.language') || 'en';
-    Editor.I18n.switch(language);
-
     // 应用皮肤
     const theme = profile.get('general.theme') || '';
     Editor.Theme.use(theme);
-
+    let lan = navigator.language.toLowerCase();
+    if (lan.indexOf('zh') >= 0) {
+        lan = 'zh';
+    } else {
+        lan = 'en';
+    }
+    // 应用语言
+    const language = profile.get('general.language') || lan;
+    Editor.I18n.switch(language);
     // 应用皮肤主题
     // const color = profile.get('themeColor') || 'default';
     // Editor.Theme.useColor(color);

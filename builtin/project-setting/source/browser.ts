@@ -1,8 +1,7 @@
 'use strict';
 
 let pkg: any = null;
-const profile = Editor.Profile.load('profile://local/packages/project.json');
-
+const profile = Editor.Profile.load('profile://global/packages/project-setting.json');
 export const messages = {
     open() {
         Editor.Panel.open('project-setting');
@@ -12,8 +11,7 @@ export const messages = {
      * @param {string} key
      */
     'get-setting'(key: string) {
-        const value = profile.get(key);
-        return value;
+        return profile.get(key);
     },
 
     /**
@@ -27,7 +25,7 @@ export const messages = {
     // 保存设置信息
     'save-setting'() {
         profile.save();
-    }
+    },
 };
 
 export function load() {

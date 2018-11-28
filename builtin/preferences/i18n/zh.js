@@ -4,6 +4,8 @@ module.exports = {
     title: '偏好设置',
     nav: {
         general: '通用设置',
+        data_editor: '数据编辑',
+        native_develop: '原生开发环境',
         preview: '预览运行',
     },
     general: {
@@ -31,5 +33,23 @@ module.exports = {
             width: '宽度',
             height: '高度',
         },
+    },
+    data_editor: {
+        auto_compiler_scripts: '自动编译脚本',
+        external_script_editor: '外部脚本编辑器',
+        external_picture_editor: '外部图片编辑器',
+        picture_editor_placeholder: '添加外部图片编辑器路径',
+        browse: '浏览',
+        remove: '移除',
+        internal: '系统默认',
+    },
+    native_develop: {
+        use_default_js_engine: '使用内置的 JavaScript 引擎',
+        js_engine_path: 'JavaScript 引擎路径',
+        wechatgame_app_path: 'WechatGame 程序路径',
+        ndk_root: 'NDK 路径',
+        ndk_placeholder: 'ndk-root 推荐使用 r10e 版本',
+        android_sdk_root: 'Android SDK 路径',
+        doc_link_title: 'Cocos Framework 配置请参考配置文档',
     },
 };
