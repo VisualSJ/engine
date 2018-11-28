@@ -8,6 +8,7 @@
 const { EventEmitter } = require('events');
 const { get } = require('lodash');
 const utils = require('./utils');
+const uuidUtils = require('../../../utils/uuid');
 
 const dumpUtils = require('../../utils/dump');
 const getComponentFunctionOfNode = require('../../utils/get-component-function-of-node');
@@ -227,8 +228,10 @@ class NodeManager extends EventEmitter {
         }
 
         if (Reg_Uuid.test(component) || Reg_NormalizedUuid.test(component) || Reg_CompressedUuid.test(component)) {
-            component = cc.js._getClassById(component);
+            const compressUuid = uuidUtils.compressUuid(component);
+            component = cc.js._getClassById(compressUuid);
         }
+
         if (component) {
             node.addComponent(component);
 

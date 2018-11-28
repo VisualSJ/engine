@@ -2,10 +2,7 @@
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
-const resources_tips = readFileSync(
-    join(__dirname, './markdown/resources-tips-en.md'),
-    { encoding: 'utf-8' }
-);
+const resources_tips = readFileSync(join(__dirname, '../static/markdown/resources-tips-en.md'), { encoding: 'utf-8' });
 
 module.exports = {
     title: 'inspector',
@@ -80,19 +77,15 @@ module.exports = {
     },
     particle_system: {
         preview: 'Play particle in edit mode',
-        custom:
-            'If set custom to true, then use custom properties insteadof read particle file',
+        custom: 'If set custom to true, then use custom properties insteadof read particle file',
         file: 'The plist file',
         spriteFrame: 'SpriteFrame of Particle System',
-        texture:
-            'Texture of Particle System, readonly, please use spriteFrame to setup new texture',
+        texture: 'Texture of Particle System, readonly, please use spriteFrame to setup new texture',
         particleCount: 'Current quantity of particles that are being simulated',
         srcBlendFactor: 'Specify the source Blend Factor',
         dstBlendFactor: 'Specify the destination Blend Factor',
-        playOnLoad:
-            'If set to true, the particle system will automatically start playing on onLoad',
-        autoRemoveOnFinish:
-            'Indicate whether the owner node will be auto-removed when it has no particles left',
+        playOnLoad: 'If set to true, the particle system will automatically start playing on onLoad',
+        autoRemoveOnFinish: 'Indicate whether the owner node will be auto-removed when it has no particles left',
         duration: 'How many seconds the emitter wil run. -1 means forever',
         emissionRate: 'Emission rate of the particles',
         life: 'Life and variation of each particle setter',
@@ -112,24 +105,19 @@ module.exports = {
         emitterMode: 'Particles emitter modes',
         gravity: 'Gravity of the emitter',
         speed: 'Speed and variation of the emitter',
-        tangentialAccel:
-            'Tangential acceleration and variation of each particle. Only available in Gravity mode ',
-        radialAccel:
-            'Acceleration and variation of each particle. Only available in Gravity mode',
+        tangentialAccel: 'Tangential acceleration and variation of each particle. Only available in Gravity mode ',
+        radialAccel: 'Acceleration and variation of each particle. Only available in Gravity mode',
         rotationIsDir:
             'Indicate whether the rotation of each particle equals to its direction. Only available in Gravity mode',
-        startRadius:
-            'Starting radius and variation of the particles. Only available in Radius mode',
-        endRadius:
-            'Ending radius and variation of the particles. Only available in Radius mode',
+        startRadius: 'Starting radius and variation of the particles. Only available in Radius mode',
+        endRadius: 'Ending radius and variation of the particles. Only available in Radius mode',
         rotatePerS: `Number of degress to rotate a particle around the source pos per second and variation.
             Only available in Radius mode`,
     },
     particle: {
         export_title: 'Export custom particle data to plist file.',
         export: 'Export',
-        export_error:
-            'This resource does not support exports outside of the project',
+        export_error: 'This resource does not support exports outside of the project',
         sync: 'Sync',
         sync_tips: 'Synchronize the parameters in the File to Custom',
     },
@@ -139,8 +127,7 @@ module.exports = {
         rigidbody: {
             enabledContactListener: `Should enabled contact listener. When a collision is trigger,
                 the collision callback will only be called when enabled contact listener.`,
-            bullet:
-                'Is this a fast moving body that should be prevented from tunneling through other moving bodies?',
+            bullet: 'Is this a fast moving body that should be prevented from tunneling through other moving bodies?',
             type: 'Rigidbody type : Static, Kinematic, Dynamic or Animated.',
             allowSleep:
                 'Set this flag to false if this body should never fall asleep. Note that this increases CPU usage.',
@@ -151,54 +138,41 @@ module.exports = {
             angularDamping: `Angular damping is use to reduce the angular velocity.
                 The damping parameter can be larger than 1 but the damping effect
                 becomes sensitive to the time step when the damping parameter is large.`,
-            linearVelocity:
-                "The linear velocity of the body's origin in world co-ordinates",
+            linearVelocity: "The linear velocity of the body's origin in world co-ordinates",
             angularVelocity: 'The angular velocity of the body.',
             fixedRotation: 'Should this body be prevented from rotating?',
             awake: 'Is this body initially awake or sleeping?',
         },
         physics_collider: {
             density: 'The density',
-            sensor:
-                'A sensor collider collects contact information but never generates a collision response',
+            sensor: 'A sensor collider collects contact information but never generates a collision response',
             friction: 'The friction coefficient, usually in the range [0,1].',
-            restitution:
-                'The restitution (elasticity) usually in the range [0,1].',
+            restitution: 'The restitution (elasticity) usually in the range [0,1].',
             anchor: 'The anchor of the rigidbody.',
             connectedAnchor: 'The anchor of the connected rigidbody.',
-            connectedBody:
-                'The rigidbody to which the other end of the joint is attached.',
-            collideConnected:
-                'Should the two rigid bodies connected with this joint collide with each other?',
+            connectedBody: 'The rigidbody to which the other end of the joint is attached.',
+            collideConnected: 'Should the two rigid bodies connected with this joint collide with each other?',
             distance: 'The distance separating the two ends of the joint.',
             frequency: 'The spring frequency.',
             dampingRatio: 'The damping ratio.',
-            linearOffset:
-                'The linear offset from connected rigidbody to rigidbody.',
-            angularOffset:
-                'The angular offset from connected rigidbody to rigidbody.',
+            linearOffset: 'The linear offset from connected rigidbody to rigidbody.',
+            angularOffset: 'The angular offset from connected rigidbody to rigidbody.',
             maxForce: 'The maximum force can be applied to rigidbody.',
             maxTorque: 'The maximum torque can be applied to rigidbody.',
-            correctionFactor:
-                'The position correction factor in the range [0,1].',
-            mouseRegion:
-                "The node used to register touch evnet. If this is null, it will be the joint's node.",
-            target:
-                'The target point. The mouse joint will move choosed rigidbody to target point.',
+            correctionFactor: 'The position correction factor in the range [0,1].',
+            mouseRegion: "The node used to register touch evnet. If this is null, it will be the joint's node.",
+            target: 'The target point. The mouse joint will move choosed rigidbody to target point.',
             localAxisA: 'The local joint axis relative to rigidbody.',
             enableLimit: 'Enable joint distance limit?',
             enableMotor: 'Enable joint motor?',
             lowerLimit: 'The lower joint limit.',
             upperLimit: 'The upper joint limit.',
-            maxMotorForce:
-                'The maxium force can be applied to rigidbody to rearch the target motor speed.',
+            maxMotorForce: 'The maxium force can be applied to rigidbody to rearch the target motor speed.',
             motorSpeed: 'The expected motor speed.',
-            referenceAngle:
-                'The reference angle. An angle between bodies considered to be zero for the joint angle.',
+            referenceAngle: 'The reference angle. An angle between bodies considered to be zero for the joint angle.',
             lowerAngle: 'The lower angle.',
             upperAngle: 'The upper angle.',
-            maxMotorTorque:
-                'The maxium torque can be applied to rigidbody to rearch the target motor speed.',
+            maxMotorTorque: 'The maxium torque can be applied to rigidbody to rearch the target motor speed.',
             maxLength: 'The max length.',
             offset: 'Position offset',
             size: 'Box size',

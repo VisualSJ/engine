@@ -2,10 +2,7 @@
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
-const resources_tips = readFileSync(
-    join(__dirname, './markdown/resources-tips-zh.md'),
-    { encoding: 'utf-8' }
-);
+const resources_tips = readFileSync(join(__dirname, '../static/markdown/resources-tips-zh.md'), { encoding: 'utf-8' });
 
 module.exports = {
     title: '属性检查器',
@@ -28,8 +25,7 @@ module.exports = {
         loadPluginInNative: '允许 Native 平台加载',
     },
     block_input_events: {
-        brief_help:
-            '该组件将拦截所有输入事件，防止输入穿透到下层节点，一般用于上层 UI 的背景。',
+        brief_help: '该组件将拦截所有输入事件，防止输入穿透到下层节点，一般用于上层 UI 的背景。',
     },
 
     node: {
@@ -107,16 +103,12 @@ module.exports = {
         emitterMode: '发射器类型',
         gravity: '重力',
         speed: '速度及变化范围',
-        tangentialAccel:
-            '每个粒子的切向加速度及变化范围，即垂直于重力方向的加速度，只有在重力模式下可用',
-        radialAccel:
-            '粒子径向加速度及变化范围，即平行于重力方向的加速度，只有在重力模式下可用',
+        tangentialAccel: '每个粒子的切向加速度及变化范围，即垂直于重力方向的加速度，只有在重力模式下可用',
+        radialAccel: '粒子径向加速度及变化范围，即平行于重力方向的加速度，只有在重力模式下可用',
         rotationIsDir: '每个粒子的旋转是否等于其方向，只有在重力模式下可用',
-        startRadius:
-            '初始半径及变化范围，表示粒子出生时相对发射器的距离，只有在半径模式下可用',
+        startRadius: '初始半径及变化范围，表示粒子出生时相对发射器的距离，只有在半径模式下可用',
         endRadius: '结束半径及变化范围，只有在半径模式下可用',
-        rotatePerS:
-            '粒子每秒围绕起始点的旋转角度及变化范围，只有在半径模式下可用',
+        rotatePerS: '粒子每秒围绕起始点的旋转角度及变化范围，只有在半径模式下可用',
     },
     particle: {
         export_title: '将自定义的粒子数据导出成 plist 文件',
@@ -132,12 +124,10 @@ module.exports = {
         rigidbody: {
             enabledContactListener:
                 '是否启用接触接听器。当 collider 产生碰撞时，只有开启了接触接听器才会调用相应的回调函数',
-            bullet:
-                '这个刚体是否是一个快速移动的刚体，并且需要禁止穿过其他快速移动的刚体',
+            bullet: '这个刚体是否是一个快速移动的刚体，并且需要禁止穿过其他快速移动的刚体',
             type:
                 '刚体类型： Static（静态）, Kinematic（不受外力）, Dynamic（动态）和 Animated（通过设置线性速度和角速度驱动）',
-            allowSleep:
-                '如果此刚体永远都不应该进入睡眠，那么设置这个属性为 false。需要注意这将使 CPU 占用率提高',
+            allowSleep: '如果此刚体永远都不应该进入睡眠，那么设置这个属性为 false。需要注意这将使 CPU 占用率提高',
             gravityScale: '缩放应用在此刚体上的重力值',
             linearDamping:
                 'Linear damping 用于衰减刚体的线性速度。衰减系数可以大于 1，但是当衰减系数比较大的时候，衰减的效果会变得比较敏感。',
@@ -150,8 +140,7 @@ module.exports = {
         },
         physics_collider: {
             density: '密度',
-            sensor:
-                '一个传感器类型的碰撞体会产生碰撞回调，但是不会发生物理碰撞效果。',
+            sensor: '一个传感器类型的碰撞体会产生碰撞回调，但是不会发生物理碰撞效果。',
             friction: '摩擦系数，取值一般在 [0, 1] 之间',
             restitution: '弹性系数，取值一般在 [0, 1]之间',
             anchor: '刚体的锚点。',
@@ -166,8 +155,7 @@ module.exports = {
             maxForce: '可以应用于刚体的最大的力值',
             maxTorque: '可以应用于刚体的最大扭矩值',
             correctionFactor: '位置矫正系数，范围为 [0, 1]',
-            mouseRegion:
-                '用于注册触摸事件的节点。如果没有设置这个值，那么将会使用关节的节点来注册事件。',
+            mouseRegion: '用于注册触摸事件的节点。如果没有设置这个值，那么将会使用关节的节点来注册事件。',
             target: '目标点，鼠标关节将会移动选中的刚体到指定的目标点',
             localAxisA: '指定刚体可以移动的方向。',
             enableLimit: '是否开启关节的距离限制？',
@@ -176,8 +164,7 @@ module.exports = {
             upperLimit: '刚体能够移动的最大值',
             maxMotorForce: '可以施加到刚体的最大力。',
             motorSpeed: '期望的马达速度。',
-            referenceAngle:
-                '相对角度。两个物体之间角度为零时可以看作相等于关节角度',
+            referenceAngle: '相对角度。两个物体之间角度为零时可以看作相等于关节角度',
             lowerAngle: '角度的最低限制。',
             upperAngle: '角度的最高限制。',
             maxMotorTorque: '可以施加到刚体的最大扭矩。',
@@ -201,8 +188,7 @@ module.exports = {
     missing_script: {
         error_compiled:
             '载入脚本时报错或脚本已丢失，请检查报错信息并进行修正，该组件将在修正后自动还原。如果脚本已删除，请手动删除该组件。',
-        error_not_compiled:
-            '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。',
+        error_not_compiled: '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。',
     },
     empty_component_message: '组件没有可展示属性',
     folder: {
