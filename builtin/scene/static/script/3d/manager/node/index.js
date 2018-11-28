@@ -225,9 +225,9 @@ class NodeManager extends EventEmitter {
 
         if (path === '_components') {
             const comp = data[index];
-            this.emit('before-component-add', comp);
+            this.emit('before-component-remove', comp);
             comp.destroy();
-            this.emit('component-added', comp);
+            this.emit('component-removed', comp);
         } else {
             // 删除某个 item
             data.splice(index, 1);
@@ -260,10 +260,12 @@ class NodeManager extends EventEmitter {
         if (component) {
             // 发送节点修改消息
             this.emit('before-change', node);
+            this.emit('before-component-add', component, node);
             Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
 
-            node.addComponent(component);
+            const comp = node.addComponent(component);
 
+            this.emit('component-added', comp, node);
             // 发送节点修改消息
             this.emit('changed', node);
             Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
@@ -289,7 +291,10 @@ class NodeManager extends EventEmitter {
         this.emit('before-change', node);
         Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
 
+        const comp = node.getComponent(component);
+        this.emit('before-component-remove', comp, node);
         node.removeComponent(component);
+        this.emit('component-removed', comp, node);
 
         // 发送节点修改消息
         this.emit('changed', node);
