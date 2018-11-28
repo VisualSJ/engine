@@ -1,8 +1,5 @@
 'use stirct';
 
-const fs = require('fs');
-const url = require('url');
-
 /**
  * 脚本在引擎内使用的时候，需要注入到引擎提供的管理器内。
  * 所以需要在脚本头尾增加部分代码。
@@ -58,7 +55,11 @@ function disableCommonJS(text: string, source: string) {
     return HEADER + text + FOOTER;
 }
 
-exports.handler = async function handler(request: any, callback: any) {
+export const type = 'registerStringProtocol';
+
+export async function handler(request: any, callback: any) {
+    const fs = require('fs');
+    const url = require('url');
     const urlObj = url.parse(request.url);
     if (!urlObj.slashes) {
         console.error('Please use "project-scripts://" + uuid.');
@@ -75,7 +76,7 @@ exports.handler = async function handler(request: any, callback: any) {
         if (/\.map/.test(file)) {
             file = info.files[1];
         }
-    } catch (error) {}
+    } catch (error) { }
 
     if (!file) {
         callback(-6); // net::ERR_FILE_NOT_FOUND
@@ -89,12 +90,12 @@ exports.handler = async function handler(request: any, callback: any) {
         }
         callback({ data: disableCommonJS(data, source), charset: 'utf-8' });
     });
-};
+}
 
-exports.error = function error(error: any) {
+export function error(error: any) {
     if (error) {
         console.error('Failed to register protocol project-scripts, %s', error.message);
         return;
     }
     // console.info('protocol project-scripts registerred');
-};
+}

@@ -199,21 +199,16 @@ export const messages = {
 };
 
 export function load() {
-    require('electron').protocol.registerFileProtocol('import', (request: any, cb: any) => {
-        const url = decodeURIComponent(request.url);
-        const uri = require('url').parse(url);
-        const path = require('path');
-        const fs = require('fs');
-        let result = path.join(Editor.Project.path, 'library', uri.host, uri.path);
-        if (!fs.existsSync(result)) {
-            result = path.join(Editor.App.path, 'builtin/asset-db/static/internal/library', uri.host, uri.path);
-        }
-        cb({ path: result });
-    });
+    const protocols = {
+        import: require('./protocol/import'),
+        projectScripts: require('./protocol/project-scripts'),
+    };
 
-    const projectScripts = require('./protocol/project-scripts');
-    require('electron').protocol
-        .registerStringProtocol('project-scripts', projectScripts.handler, projectScripts.error);
+    Object.keys(protocols).forEach((name: string) => {
+        // @ts-ignore
+        const mod = protocols[name];
+        require('electron').protocol[mod.type](name, mod.handler, mod.error);
+    });
 }
 
 export function unload() { }

@@ -22,7 +22,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -64,7 +64,7 @@ export default class GltfImporter extends Importer {
         if (!name) {
             return undefined;
         } else {
-            return name.replace(/[<>:'\/\\|?*\x00-\x1F]/g, '-');
+            return name.replace(/[ <>:'\/\\|?*\x00-\x1F]/g, '-');
         }
     }
 
@@ -400,7 +400,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
         const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
         const textureTable = !assetTable.textures ? [] :
-        // @ts-ignore
+            // @ts-ignore
             assetTable.textures.map((textureUUID) => Manager.serialize.asAsset(textureUUID));
 
         // @ts-ignore
