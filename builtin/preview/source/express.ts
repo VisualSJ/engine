@@ -1,6 +1,6 @@
 'use stirct';
 
-import { createReadStream } from 'fs-extra';
+import { createReadStream, existsSync } from 'fs-extra';
 import http from 'http';
 import { join } from 'path';
 import { start as startSocket } from './socket';
@@ -83,11 +83,17 @@ export async function start() {
 
     // 根据资源路径加载对应静态资源资源
     app.get('/res/import/*', async (req: any, res: any) => {
-        const path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        if (!existsSync(path)) {
+            path = join(Editor.App.path, 'builtin/asset-db/static/internal/library', req.params[0]);
+        }
         res.sendFile(path);
     });
     app.get('/res/raw-*',  async (req: any, res: any) => {
-        const path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        if (!existsSync(path)) {
+            path = join(Editor.App.path, 'builtin/asset-db/static/internal/library', req.params[0]);
+        }
         res.sendFile(path);
     });
     // 渲染主页

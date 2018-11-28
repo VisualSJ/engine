@@ -68,6 +68,22 @@ const messages = {
         return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
     },
 
+    /**
+     * 通过路径查询资源 uuid
+     * @param {string} path
+     */
+    async 'query-asset-uuid'(path) {
+        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', path);
+    },
+
+    /**
+     * 查询所有资源信息
+     * @param {Object} options
+     */
+    async 'query-assets'(options) {
+        return Editor.Ipc.requestToPackage('asset-db', 'query-assets', options);
+    },
+
     //////////////////////
     // 转发消息
 

@@ -22,6 +22,9 @@ requestAnimationFrame(async () => {
     // 重写引擎内的资源相关函数
     await require('./init/assets')();
 
+    // 重写 loadRes、loadResArray、loadResDir 相关函数
+    await require('./init/loader')();
+
     // 重写引擎的部分方法
     await require('./init/utils')(info.utils);
 

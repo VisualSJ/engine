@@ -30,7 +30,28 @@ function getCtor(importer) {
     }
 }
 
+function getImporter(ctor) {
+    switch (ctor) {
+        case cc.SpriteFrame:
+            return 'sprite-frame';
+        case cc.ImageAsset:
+            return 'image';
+        case cc.JsonAsset:
+            return 'json';
+        case cc.Material:
+            return 'material';
+        case cc.Texture2D:
+            return 'texture';
+        case cc.SceneAsset:
+            return 'scene';
+        case cc.TextAsset:
+            return 'text';
+        default: return '';
+    }
+}
+
 module.exports = {
     getCtor,
     assetMap,
+    getImporter,
 };

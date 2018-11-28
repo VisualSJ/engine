@@ -203,7 +203,11 @@ export function load() {
         const url = decodeURIComponent(request.url);
         const uri = require('url').parse(url);
         const path = require('path');
-        const result = path.join(Editor.Project.path, 'library', uri.host, uri.path);
+        const fs = require('fs');
+        let result = path.join(Editor.Project.path, 'library', uri.host, uri.path);
+        if (!fs.existsSync(result)) {
+            result = path.join(Editor.App.path, 'builtin/asset-db/static/internal/library', uri.host, uri.path);
+        }
         cb({ path: result });
     });
 

@@ -11,8 +11,10 @@ const lodash = require('lodash'); // 排序
 const address = require('address');
 
 // const mdeps = new Mdeps(mpConfig);
-const insertGlobals = require('insert-module-globals');
+
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
+const insertGlobals = require('insert-module-globals');
+
 const TEMP_PATH = join(Editor.App.project, 'temp');
 
 let script2uuid = {}; // 脚本映射表
@@ -20,25 +22,8 @@ let script2uuid = {}; // 脚本映射表
 const DB_PROTOCOL_HEADER = 'db://';
 const WINDOW_HEADER = 'window._CCSettings =';
 const PREVIEW_PATH = 'preview-scripts';
-const RAWASSETSPATH = join(Editor.App.project, '/assets');
-
-// import 类型与 资源类名映射表
-// TODO: 待完善
-const type2CCClass = {
-    javascript: 'CC.JavaScript',
-    texture: 'cc.Texture2D',
-    'sprite-frame': 'cc.SpriteFrame',
-    'bitmap-font': 'cc.BitmapFont',
-    'label-atlas': 'cc.LabelAtlas',
-    'audio-clip': 'cc.AudioClip',
-    'animation-clip': 'cc.AnimationClip',
-    'tiled-map': 'cc.TiledMapAsset',
-    image: 'cc.ImageAsset',
-    // 'tiled-map': 'sp.SkeletonData',
-    // 'tiled-map': 'cc.Prefab',
-    // 'label-atlas': 'cc.ParticleAsset',
-    markdown: 'cc.TextAsset',
-};
+const RAWASSET_SPATH = join(Editor.App.project, '/assets');
+const INTERNAL_PATH = join(Editor.App.path, 'builtin/asset-db/static/internal/assets');
 
 // 判断是否是脚本
 function isScript(assetType) {
@@ -239,32 +224,27 @@ function getRightUrl(path) {
  * @returns
  */
 function getAssetUrl(path, type) {
-    let rawPath = join(Editor.App.project, getRightUrl(path));
+    // let rawPath = join(Editor.App.project, getRightUrl(path));
+    let rawPath = '';
+    var mountPoint = getRightUrl(path);
+    var inAssets = inInternal = false;
+    if (mountPoint.startsWith('assets')) {
+        inAssets = true;
+        rawPath = join(Editor.App.project, mountPoint);
+    } else if (mountPoint.startsWith('internal')) {
+        inInternal = true;
+        rawPath = join(INTERNAL_PATH, mountPoint.replace(/\binternal/, ''));
+    }
     // subAsset 类型的路径需要去掉扩展名
     if (type) {
         rawPath = rawPath.replace(extname(rawPath), '');
     }
-    rawPath = relative(RAWASSETSPATH, rawPath).replace('resources\\', '');
-    return rawPath.replace(/\\/g, '\/');
-}
-
-async function writScripts() {
-    const assetList = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
-    let path = join(TEMP_PATH, '/quick-scripts');
-    ensureDir(join(path, 'assets'));
-    for (let i = 0; i < assetList.length; i++) {
-        let asset = assetList[i];
-        let tempPath = getRightUrl(asset.source);
-        let ext = extname(tempPath);
-
-        let name = basename(tempPath, ext);
-        let scriptName = basename(asset.files[0]).replace(asset.uuid, name);
-        let mapName = basename(asset.files[1]).replace(asset.uuid, name);
-        let content = getModules(tempPath);
-        outputFileSync(join(path, 'assets', scriptName), content);
-        copyFileSync(asset.files[1], join(path, 'assets', mapName));
+    if (inAssets) {
+        rawPath = relative(RAWASSET_SPATH, rawPath).replace('resources\\', '');
+    } else if (inInternal) {
+        rawPath = relative(INTERNAL_PATH, rawPath).replace('resources\\', '');
     }
-    return path;
+    return rawPath.replace(/\\/g, '\/');
 }
 
 // 查询资源的相关信息
@@ -277,6 +257,7 @@ async function queryAssets() {
     });
 
     let assets = {};
+    let internal = {};
     let plugins = [];
     let scripts = [];
     let sceneList = [];
@@ -309,14 +290,24 @@ async function queryAssets() {
             Object.keys(asset.subAssets).forEach((key) => {
                 let item = asset.subAssets[key];
                 let uuid = item.uuid;
-                assets[uuid] = [];
-                assets[uuid].push(getAssetUrl(asset.source, item.importer), type2CCClass[item.importer], 1);
+                if (asset.source.startsWith('db://assets')) {
+                    assets[uuid] = [];
+                    assets[uuid].push(getAssetUrl(asset.source, item.importer), item.type, 1);
+                } else if (asset.source.startsWith('db://internal')) {
+                    internal[uuid] = [];
+                    internal[uuid].push(getAssetUrl(asset.source, item.importer), item.type, 1);
+                }
             });
         }
-        assets[asset.uuid] = [];
-        assets[asset.uuid].push(getAssetUrl(asset.source), type2CCClass[asset.importer]);
+        if (asset.source.startsWith('db://assets')) {
+            assets[asset.uuid] = [];
+            assets[asset.uuid].push(getAssetUrl(asset.source), asset.type);
+        } else if (asset.source.startsWith('db://internal')) {
+            internal[asset.uuid] = [];
+            internal[asset.uuid].push(getAssetUrl(asset.source), asset.type);
+        }
     }
-    return { assets, plugins, scripts, sceneList };
+    return { assets, internal, plugins, scripts, sceneList };
 }
 
 // 构建打包
@@ -386,6 +377,7 @@ async function buildSetting(options, config) {
     setting.md5AssetsMap = {};
     let obj = await queryAssets();
     setting.rawAssets.assets = obj.assets;
+    setting.rawAssets.internal = obj.internal;
     if (options.type !== 'build-release') {
         setting.scenes = obj.sceneList;
     }
