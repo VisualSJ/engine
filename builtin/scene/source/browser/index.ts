@@ -201,7 +201,7 @@ export const messages = {
 export function load() {
     const protocols = {
         import: require('./protocol/import'),
-        projectScripts: require('./protocol/project-scripts'),
+        'project-scripts': require('./protocol/project-scripts'),
     };
 
     Object.keys(protocols).forEach((name: string) => {
