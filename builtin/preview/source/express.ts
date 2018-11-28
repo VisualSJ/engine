@@ -72,8 +72,14 @@ export async function start() {
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene.json', async (req: any, res: any) => {
         const asset = await Editor.Ipc.requestToPackage('build', 'get-current-scene');
-        const filePath = await asset.files[0];
-        res.sendFile(filePath);
+        if (asset.currenSceneFlag) {
+            const json = await Editor.Ipc.requestToPanel('scene', 'query-scene-json');
+            res.end(json);
+        } else {
+            const filePath = await asset.files[0];
+            res.sendFile(filePath);
+        }
+
     });
 
     // 获取设备配置信息

@@ -317,13 +317,17 @@ function compressPackedAssets() {
 
 // 获取当前展示场景的数据信息
 async function getCurrentScene(uuid) {
+    let currenUuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
     if (!uuid) {
         uuid = await getProSetting('preview.start_scene');
         if ((uuid && uuid === 'current_scene') || typeof(uuid) === 'object' || !uuid) {
-            uuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
+            uuid = currenUuid;
         }
     }
     const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    if (uuid === currenUuid) {
+        asset.currenSceneFlag = true;
+    }
     return asset;
 }
 
@@ -369,8 +373,11 @@ async function buildSetting(options, config) {
         let info = json.find((item) => {
             return item.__type__ === 'cc.Canvas';
         });
-        setting.designWidth = info._designResolution.width;
-        setting.designHeight = info._designResolution.height;
+        // 存在 canvas 节点数据则更新分辨率
+        if (info) {
+            setting.designWidth = info._designResolution.width;
+            setting.designHeight = info._designResolution.height;
+        }
     }
 
     setting.packedAssets = compressPackedAssets(options.packedAssets) || {};
