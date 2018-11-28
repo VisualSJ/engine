@@ -3,25 +3,28 @@
 const { join } = require('path');
 const { readTemplate, getFitSize } = require('../../../../utils');
 
-exports.template = readTemplate(
-    '2d',
-    './asset-section/public/image-preview.html'
-);
+exports.template = readTemplate('2d', './asset-section/public/image-preview.html');
 
 exports.props = ['meta'];
 
 exports.data = function() {
     return {
-        info: '0 x 0'
+        info: '0 x 0',
     };
 };
 
 exports.methods = {
+    getImagePath() {
+        let file = join(Editor.Project.path, 'library', this.meta.uuid.substr(0, 2), this.meta.uuid);
+        file += this.meta.files.filter((file) => !file.includes('json'))[0];
+        return file;
+    },
+
     /**
-     * 加载指定 src 的图片
-     * @param {string} src
+     * 加载图片
      */
-    loadImage(src) {
+    loadImage() {
+        const src = this.getImagePath();
         this._image = new Image();
         this._image.onload = () => {
             this._destroyed || this.updateImage();
@@ -54,7 +57,7 @@ exports.methods = {
         }
         return {
             width,
-            height
+            height,
         };
     },
 
@@ -62,21 +65,13 @@ exports.methods = {
      * 根据容器缩放
      */
     resize() {
-        const {
-            height: boxHeight,
-            width: boxWidth
-        } = this.$refs.content.getBoundingClientRect();
+        const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
         const { width: imgWidth, height: imgHeight } = this.getSize();
-        const [width, height] = getFitSize(
-            imgWidth,
-            imgHeight,
-            boxWidth,
-            boxHeight
-        );
+        const [width, height] = getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
         if (this.meta.userData.rotated) {
             this._scalingSize = {
                 width: Math.ceil(height),
-                height: Math.ceil(width)
+                height: Math.ceil(width),
             };
         }
         this.$refs.canvas.width = Math.ceil(width);
@@ -94,13 +89,7 @@ exports.methods = {
         const canvasHeight = this.$refs.canvas.height;
 
         if (this.meta.__assetType__ === 'texture') {
-            canvas.drawImage(
-                this._image,
-                0,
-                0,
-                canvasWidth,
-                canvasHeight
-            );
+            canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
             this.meta.subMetas &&
                 [this.meta.subMetas['sprite-frame']].forEach((item) => {
                     const { userData = {} } = item;
@@ -159,18 +148,11 @@ exports.methods = {
                 dHeight
             );
         }
-    }
+    },
 };
 
 exports.mounted = function() {
-    let file = join(
-        Editor.Project.path,
-        'library',
-        this.meta.uuid.substr(0, 2),
-        this.meta.uuid
-    );
-    file += this.meta.files.filter((file) => !file.includes('json'))[0];
-    this.loadImage(file);
+    this.loadImage();
     // todo
     // eventBus.on('panel:resize', this.updateImage);
 };
@@ -180,8 +162,9 @@ exports.watch = {
         deep: true,
         handler() {
             this.updateImage();
-        }
-    }
+        },
+    },
+    'meta.uuid': 'loadImage',
 };
 
 exports.destroyed = function() {

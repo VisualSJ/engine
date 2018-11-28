@@ -38,9 +38,9 @@ exports.watch = {
 exports.methods = {
     T,
 
-    async refresh() {
+    async refresh(isSaved = false) {
         try {
-            this.$root.showLoading(200);
+            !isSaved && this.$root.showLoading(200);
             // this.dataReady = false;
             const [info, meta] = await Promise.all([
                 Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.uuid),
@@ -60,7 +60,7 @@ exports.methods = {
             this.info = null;
             this.meta = null;
         } finally {
-            this.$root.hideLoading(false);
+            !isSaved && this.$root.hideLoading();
             // this.dataReady = true;
         }
     },
@@ -98,6 +98,7 @@ exports.mounted = async function() {
 
     this.$on('apply', async () => {
         try {
+            this.$root.showLoading();
             const keys = Object.keys(this.meta);
             const filterMeta = keys
                 .filter((key) => !key.startsWith('__'))
@@ -108,11 +109,13 @@ exports.mounted = async function() {
             const meta = JSON.stringify(filterMeta);
             const isSaved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', this.uuid, meta);
             if (isSaved) {
-                this.refresh();
+                this.refresh(true);
             }
             // this.dirty = false;
         } catch (err) {
             console.error(err);
+        } finally {
+            this.$root.hideLoading();
         }
     });
 };
@@ -120,7 +123,7 @@ exports.mounted = async function() {
 function buildMeta(meta, info) {
     const { source = '', files = [] } = info;
     meta.__dirty__ = false;
-    meta.__name__ = source && basename(source, extname(source));
+    meta.__name__ = getAssetName(info);
     meta.__assetType__ = getAssetType(info);
     // todo
     // if (meta.subMetas) {
@@ -137,11 +140,28 @@ function buildMeta(meta, info) {
     return meta;
 }
 
+function getAssetName(info) {
+    const { source = '', uuid } = info;
+    if (source) {
+        return basename(source, extname(source));
+    }
+    if (uuid) {
+        if (uuid.includes('@')) {
+            const arr = uuid.split('@');
+            return arr[arr.length - 1] || 'unknown';
+        }
+    }
+    return 'unknown';
+}
+
 function getAssetType(info) {
     if (info.importer === '*') {
         if (info.isDirectory) {
             return 'folder';
         }
+    }
+    if (['texture', 'texture-cube'].includes(info.importer)) {
+        return 'texture';
     }
     return info.importer;
 }

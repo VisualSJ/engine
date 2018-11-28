@@ -3,10 +3,9 @@
 const { join } = require('path');
 const { readTemplate, getFitSize } = require('../../../../utils');
 
-exports.template = readTemplate(
-    '3d',
-    './asset-section/public/image-preview.html'
-);
+const textureType = ['texture', 'texture-cube'];
+
+exports.template = readTemplate('3d', './asset-section/public/image-preview.html');
 
 exports.props = ['meta'];
 
@@ -17,11 +16,23 @@ exports.data = function() {
 };
 
 exports.methods = {
+    async getImagePath() {
+        const {
+            meta: { userData = {}, uuid },
+        } = this;
+
+        if (userData && userData.imageSource) {
+            return userData.imageSource;
+        }
+        const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', uuid);
+        return path;
+    },
+
     /**
-     * 加载指定 src 的图片
-     * @param {string} src
+     * 加载图片
      */
-    loadImage(src) {
+    async loadImage() {
+        const src = await this.getImagePath();
         this._image = new Image();
         this._image.onload = () => {
             this._destroyed || this.updateImage();
@@ -45,7 +56,7 @@ exports.methods = {
     getSize() {
         let width = 0;
         let height = 0;
-        if (this.meta.__assetType__ === 'texture') {
+        if (textureType.includes(this.meta.__assetType__)) {
             width = this._image.width;
             height = this._image.height;
         } else if (this.meta.__assetType__ === 'sprite-frame') {
@@ -62,17 +73,9 @@ exports.methods = {
      * 根据容器缩放
      */
     resize() {
-        const {
-            height: boxHeight,
-            width: boxWidth,
-        } = this.$refs.content.getBoundingClientRect();
+        const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
         const { width: imgWidth, height: imgHeight } = this.getSize();
-        const [width, height ] = getFitSize(
-            imgWidth,
-            imgHeight,
-            boxWidth,
-            boxHeight
-        );
+        const [width, height] = getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
         if (this.meta.userData.rotated) {
             this._scalingSize = {
                 width: Math.ceil(height),
@@ -92,18 +95,16 @@ exports.methods = {
         canvas.imageSmoothingEnabled = false;
         const canvasWidth = this.$refs.canvas.width;
         const canvasHeight = this.$refs.canvas.height;
+        const { subMetas } = this.meta;
 
-        if (this.meta.__assetType__ === 'texture') {
-            canvas.drawImage(
-                this._image,
-                0,
-                0,
-                canvasWidth,
-                canvasHeight
-            );
-            this.meta.subMetas &&
-                [this.meta.subMetas['sprite-frame'] ].forEach((item) => {
-                    const { userData = {} } = item;
+        if (textureType.includes(this.meta.__assetType__)) {
+            canvas.drawImage(this._image, 0, 0, canvasWidth, canvasHeight);
+            if (subMetas && subMetas['sprite-frame']) {
+                [this.meta.subMetas['sprite-frame']].forEach((item) => {
+                    if (!item || !item.userData) {
+                        return;
+                    }
+                    const { userData } = item;
                     const ratioX = canvasWidth / this._image.width;
                     const ratioY = canvasHeight / this._image.height;
                     canvas.beginPath();
@@ -117,6 +118,7 @@ exports.methods = {
                     canvas.strokeStyle = '#ff00ff';
                     canvas.stroke();
                 });
+            }
         } else if (this.meta.__assetType__ === 'sprite-frame') {
             let sWidth;
             let sHeight;
@@ -162,15 +164,8 @@ exports.methods = {
     },
 };
 
-exports.mounted = function() {
-    let file = join(
-        Editor.Project.path,
-        'library',
-        this.meta.uuid.substr(0, 2),
-        this.meta.uuid
-    );
-    file += this.meta.files.filter((file) => !file.includes('json'))[0];
-    this.loadImage(file);
+exports.mounted = async function() {
+    this.loadImage();
     // todo
     // eventBus.on('panel:resize', this.updateImage);
 };
@@ -182,6 +177,7 @@ exports.watch = {
             this.updateImage();
         },
     },
+    'meta.uuid': 'loadImage',
 };
 
 exports.destroyed = function() {

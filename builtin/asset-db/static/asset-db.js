@@ -78,8 +78,11 @@ const queryAsset = (uuid) => {
             return {
                 db: key,
                 asset: {
-                    source: `db://${key}`, uuid: `db://${key}`,
-                    isDirectory() { return false; },
+                    source: `db://${key}`,
+                    uuid: `db://${key}`,
+                    isDirectory() {
+                        return false;
+                    },
                     meta: { importer: 'database', files: [] },
                 },
             };
@@ -113,7 +116,6 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
 
 // 启动一个数据库
 Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
-
     if (info.name === 'internal' && !version) {
         console.warn(`Try 'npm run update -- module asset-db' within the bash.`);
         return;
@@ -122,9 +124,12 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     const date = new Date().getTime();
     console.log(`Start the asset(${info.name}) database...`);
     // 拼接需要使用的地址
-    const options = Object.assign({
-        protocol: protocol + info.name, // 方便后续协议和路径的替换
-    }, info);
+    const options = Object.assign(
+        {
+            protocol: protocol + info.name, // 方便后续协议和路径的替换
+        },
+        info
+    );
 
     // 保证文件夹存在
     ensureDirSync(options.target);
@@ -204,7 +209,6 @@ Worker.Ipc.on('asset-worker:query-database-info', async (event, names) => {
 
 // 查询所有资源的列表
 Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
-
     await waitReady();
 
     let assets = [];
@@ -365,6 +369,33 @@ Worker.Ipc.on('asset-worker:query-asset-meta', async (event, uuid) => {
         return event.reply(new Error('File does not exist.'), null);
     }
     event.reply(null, asset.meta);
+});
+
+// 保存资源的 meta
+Worker.Ipc.on('asset-worker:save-asset-meta', async (event, uuid, data) => {
+    if (!uuid) {
+        return event.reply(null, null);
+    }
+    const { asset, db } = queryAsset(uuid) || {};
+    if (!asset) {
+        return event.reply(null, isSaved);
+    }
+    try {
+        let isSaved = false;
+        const meta = JSON.parse(data);
+        Object.keys(asset.meta).map((key) => {
+            if (meta[key] !== undefined) {
+                asset.meta[key] = meta[key];
+            }
+        });
+        isSaved = await asset.save();
+        AssetWorker[db].reimport(asset.uuid);
+
+        return event.reply(null, isSaved);
+    } catch (err) {
+        console.error(err);
+        return event.reply(null, false);
+    }
 });
 
 /**

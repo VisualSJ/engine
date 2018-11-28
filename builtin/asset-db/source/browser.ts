@@ -149,22 +149,14 @@ module.exports = {
          * @param {*} data
          * @returns
          */
-        async 'save-asset-meta'(uuid: string, meta: any) {
+        async 'save-asset-meta'(uuid: string, meta: string) {
             if (!assetWorker) {
-                return;
-            }
-            const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
-
-            const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
-            const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));
-            // 如果不存在，停止操作
-            if (!existsSync(file)) {
-                return;
+                return false;
             }
             try {
-                await outputFile(`${file}.meta`, meta);
+                const isSaved = await assetWorker.send('asset-worker:save-asset-meta', uuid, meta);
                 console.info('asset meta saved');
-                return true;
+                return isSaved;
             } catch (err) {
                 console.error(err);
                 return false;
@@ -248,12 +240,7 @@ module.exports = {
             }
 
             // 如果其中一个数据是错误的，则停止操作
-            if (
-                dest === url ||
-                !existsSync(dest) ||
-                !statSync(dest).isDirectory() ||
-                !existsSync(url)
-            ) {
+            if (dest === url || !existsSync(dest) || !statSync(dest).isDirectory() || !existsSync(url)) {
                 return;
             }
 
@@ -472,7 +459,8 @@ async function queryAssetPath(uuidOrUrl: string) {
     if (!assetWorker) {
         throw new Error('Asset DB does not exist.');
     }
-    if (!uuidOrUrl.startsWith(protocol)) { // 没有以协议开头即为uuid
+    if (!uuidOrUrl.startsWith(protocol)) {
+        // 没有以协议开头即为uuid
         const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
         uuidOrUrl = asset.source;
     }

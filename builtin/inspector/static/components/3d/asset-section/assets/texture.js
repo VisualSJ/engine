@@ -8,7 +8,6 @@ exports.template = readTemplate('3d', './asset-section/assets/texture.html');
 exports.props = ['info', 'meta'];
 
 exports.components = {
-    [`${assetComponentPrefix}sprite-frame`]: require('./sprite-frame'),
     [`${assetComponentPrefix}image-preview`]: require('../public/image-preview'),
 };
 
