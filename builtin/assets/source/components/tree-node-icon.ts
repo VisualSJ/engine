@@ -4,9 +4,8 @@ import { existsSync, outputFileSync, readFileSync } from 'fs-extra';
 import { join } from 'path';
 
 let vm: any;
-const map = {
+const mapCommon = {
     '*': { type: 'icon', value: 'i-file' },
-    'texture-packer': { type: 'icon', value: 'i-packer' },
     database: { type: 'icon', value: 'i-database' },
     json: { type: 'icon', value: 'i-json' },
     scene: { type: 'icon', value: 'i-json' },
@@ -15,24 +14,6 @@ const map = {
     video: { type: 'icon', value: 'i-video' },
 
     // 需要生成预览图的类型
-    texture: {
-        type: 'image',
-        /**
-         * 生成 texture 的缩略图
-         * @param {*} uuid
-         * @param {*} source
-         */
-        async generateImg(asset: ItreeAsset) {
-            const thumbnail = await getDataURL(asset);
-            if (thumbnail.startsWith('data:image')) {
-                return thumbnail;
-            }
-
-            const dbInfo = dbInfos[asset.topSource];
-            const src = join(dbInfo.target, asset.source.substr(dbInfo.protocol.length));
-            return await setDataURL(src, thumbnail, { x: 0, y: 0 });
-        },
-    },
     image: {
         type: 'image',
         /**
@@ -51,41 +32,50 @@ const map = {
             return await setDataURL(src, thumbnail, { x: 0, y: 0 });
         },
     },
-    'sprite-frame': {
-        type: 'image',
-        /**
-         * 生成 texture 的缩略图
-         * @param {*} uuid
-         * @param {*} source
-         */
-        async generateImg(asset: ItreeAsset) {
-            const thumbnail = await getDataURL(asset);
-            if (thumbnail.startsWith('data:image')) {
-                return thumbnail;
-            }
+};
+const map = {
+    '2d': Object.assign(Object.assign({}, mapCommon), {
+        'texture-packer': { type: 'icon', value: 'i-packer' },
+        'sprite-frame': {
+            type: 'image',
+            /**
+             * 生成 texture 的缩略图
+             * @param {*} uuid
+             * @param {*} source
+             */
+            async generateImg(asset: ItreeAsset) {
+                const thumbnail = await getDataURL(asset);
+                if (thumbnail.startsWith('data:image')) {
+                    return thumbnail;
+                }
 
-            const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
-            if (!meta || (!meta.userData.textureUuid && !meta.userData.rawTextureUuid)) {
-                return '';
-            }
+                const meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
+                if (!meta || (!meta.userData.textureUuid && !meta.userData.rawTextureUuid)) {
+                    return '';
+                }
 
-            const textureUuid = meta.userData.textureUuid || meta.userData.rawTextureUuid;
-            const textureInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', textureUuid);
-            if (!textureInfo) {
-                return '';
-            }
+                const textureUuid = meta.userData.textureUuid || meta.userData.rawTextureUuid;
+                const textureInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', textureUuid);
+                if (!textureInfo) {
+                    return '';
+                }
 
-            const dbInfo = dbInfos[asset.topSource];
-            const src = join(dbInfo.target, textureInfo.source.substr(dbInfo.protocol.length));
-            const json = {
-                x: meta.userData.offsetX || 0,
-                y: meta.userData.offsetY || 0,
-                width: meta.userData.width,
-                height: meta.userData.height,
-            };
-            return await setDataURL(src, thumbnail, json);
+                const dbInfo = dbInfos[asset.topSource];
+                const src = join(dbInfo.target, textureInfo.source.substr(dbInfo.protocol.length));
+                const json = {
+                    x: meta.userData.offsetX || 0,
+                    y: meta.userData.offsetY || 0,
+                    width: meta.userData.width,
+                    height: meta.userData.height,
+                };
+                return await setDataURL(src, thumbnail, json);
+            },
         },
-    },
+    }),
+    '3d': Object.assign(Object.assign({}, mapCommon), {
+        fbx: { type: 'icon', value: 'i-packer' },
+        texture: { type: 'icon', value: 'i-image' },
+    }),
 };
 
 // 数据 db 的信息
@@ -164,7 +154,9 @@ export const methods = {
     async init() {
         const importer = vm.asset.importer;
         // @ts-ignore
-        const one = map[importer];
+        const nMap: any = map[Editor.Project.type];
+        // @ts-ignore
+        const one = nMap[importer];
         if (one) {
             vm.type = one.type;
             vm.value = one.value || '';
@@ -172,8 +164,8 @@ export const methods = {
                 vm.value = await one.generateImg(vm.asset);
             }
         } else {
-            vm.type = map['*'].type;
-            vm.value = map['*'].value;
+            vm.type = nMap['*'].type;
+            vm.value = nMap['*'].value;
         }
     },
 };
