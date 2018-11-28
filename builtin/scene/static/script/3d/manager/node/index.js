@@ -353,14 +353,15 @@ class NodeManager extends EventEmitter {
      * @param {*} uuid
      */
     removeNode(uuid) {
+        const node = this.query(uuid);
+        const parent = node.parent;
+
         // 发送节点修改消息
         this.emit('before-change', parent);
         Manager.Ipc.send('broadcast', 'scene:before-node-change', parent.uuid);
         this.emit('before-remove', node);
         Manager.Ipc.send('broadcast', 'scene:before-node-remove', node.uuid);
 
-        const node = this.query(uuid);
-        const parent = node.parent;
         parent.removeChild(node);
 
         // 发送节点修改消息
