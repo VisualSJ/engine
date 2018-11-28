@@ -91,6 +91,31 @@ class Operation extends EventEmitter {
     exitPointerLock() {
         ipcManager.send('lock-pointer', false);
     }
+
+    /**
+     * 发送
+     * @param {*} message
+     * @param  {...any} args
+     */
+    emit(message, ...args) {
+        let events = this._events[message];
+        if (!events) {
+            return;
+        }
+
+        if (!Array.isArray(events)) {
+            events = [events];
+        }
+
+        for (let i = 0; i < events.length; i++) {
+            const handler = events[i];
+            const result = handler(...args);
+            // 如果监听函数返回了 false，则直接中断之后的所有处理
+            if (result === false) {
+                return;
+            }
+        }
+    }
 }
 
 module.exports = new Operation();

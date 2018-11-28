@@ -96,3 +96,15 @@ ipcRenderer.on('webview-ipc:send-reply', (event, error, args) => {
     ipc.isLock = false;
     ipc.step();
 });
+
+// host 发送过来的消息
+ipcRenderer.on('webview-ipc:force-send', async (event, options) => {
+    let handler = ipc._events[options.message];
+
+    try {
+        handler(...options.arguments);
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+});

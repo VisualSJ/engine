@@ -167,10 +167,12 @@ class Camera extends EventEmitter {
             vec3.add(this.pos, this.pos, vec3.scale(v3a, this.right, -dx * this.panningSpeed));
             vec3.add(this.pos, this.pos, vec3.scale(v3a, this.up, dy * this.panningSpeed));
             this.node.setPosition(this.pos);
+            return false;
         } else if (this.camera_move_mode === CameraMoveMode.WANDER) { // right button: rotation
             this.euler.x -= dy * this.rotationSpeed;
             this.euler.y -= dx * this.rotationSpeed;
             this.node.setRotationFromEuler(this.euler.x, this.euler.y, this.euler.z);
+            return false;
         }
 
         return true;

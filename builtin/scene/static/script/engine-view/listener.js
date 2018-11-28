@@ -32,11 +32,22 @@ const utils = {
 module.exports = function(elem) {
     elem.addEventListener('mousedown', (event) => {
         const bcr = elem.getBoundingClientRect();
-        elem.forwarding('Operation', 'emit', ['mousedown', utils.createMouseEvent(event, bcr)]);
+
+        elem.ipc.forceSend('call-method', {
+            module: 'Operation',
+            handler: 'emit',
+            params: ['mousedown', utils.createMouseEvent(event, bcr)],
+        });
 
         function mouseup(event) {
             const bcr = elem.getBoundingClientRect();
-            elem.forwarding('Operation', 'emit', ['mouseup', utils.createMouseEvent(event, bcr)]);
+
+            elem.ipc.forceSend('call-method', {
+                module: 'Operation',
+                handler: 'emit',
+                params: ['mouseup', utils.createMouseEvent(event, bcr)],
+            });
+
             document.removeEventListener('mouseup', mouseup);
         }
 
@@ -45,19 +56,38 @@ module.exports = function(elem) {
 
     elem.addEventListener('mousemove', (event) => {
         const bcr = elem.getBoundingClientRect();
-        elem.forwarding('Operation', 'emit', ['mousemove', utils.createMouseEvent(event, bcr)]);
+
+        elem.ipc.forceSend('call-method', {
+            module: 'Operation',
+            handler: 'emit',
+            params: ['mousemove', utils.createMouseEvent(event, bcr)],
+        });
     });
 
     elem.addEventListener('wheel', (event) => {
         const bcr = elem.getBoundingClientRect();
-        elem.forwarding('Operation', 'emit', ['wheel', utils.createMouseEvent(event, bcr)]);
+
+        elem.ipc.forceSend('call-method', {
+            module: 'Operation',
+            handler: 'emit',
+            params: ['wheel', utils.createMouseEvent(event, bcr)],
+        });
     });
 
     elem.addEventListener('keydown', (event) => {
-        elem.forwarding('Operation', 'emit', ['keydown', utils.createKeyboardEvent(event)]);
+        elem.ipc.forceSend('call-method', {
+            module: 'Operation',
+            handler: 'emit',
+            params: ['keydown', utils.createKeyboardEvent(event)],
+        });
     });
 
     elem.addEventListener('keyup', (event) => {
-        elem.forwarding('Operation', 'emit', ['keyup', , utils.createKeyboardEvent(event)]);
+
+        elem.ipc.forceSend('call-method', {
+            module: 'Operation',
+            handler: 'emit',
+            params: ['keyup', , utils.createKeyboardEvent(event)],
+        });
     });
 };

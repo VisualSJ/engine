@@ -1,5 +1,7 @@
 'use strict';
 
+const profile = Editor.Profile.load('profile://local/packages/scene.json');
+
 let $scene: any = null;
 let $loading: any = null;
 let $path: any = null;
@@ -14,6 +16,13 @@ export function init(element: any) {
  * 场景所有对外提供的操作消息接口
  */
 export function apply(messages: any) {
+    /**
+     * 查询当前场景是否准备就绪
+     */
+    messages['query-is-ready'] = async () => {
+        return $loading.hidden;
+    };
+
     /**
      * 查询一个节点的 dump 数据
      */
@@ -83,5 +92,10 @@ export function apply(messages: any) {
             return null;
         }
         return await $scene.forwarding('Asset', 'querySerializedMaterial', [options]);
+    };
+
+    messages['query-current-scene'] = async () => {
+        const uuid = profile.get('current-scene');
+        return uuid || '';
     };
 }

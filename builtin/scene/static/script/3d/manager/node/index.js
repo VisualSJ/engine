@@ -23,9 +23,12 @@ let uuid2node = {};
  * 节点管理器
  *
  * Events:
- *   node.on('change', (node) => {});
- *   node.on('add', (node) => {});
- *   node.on('remove', (node) => {});
+ *   node.on('before-change', (node) => {});
+ *   node.on('before-add', (node) => {});
+ *   node.on('before-remove', (node) => {});
+ *   node.on('changed', (node) => {});
+ *   node.on('added', (node) => {});
+ *   node.on('removed', (node) => {});
  */
 class NodeManager extends EventEmitter {
     constructor() {
@@ -107,17 +110,25 @@ class NodeManager extends EventEmitter {
             return;
         }
 
+        // 触发修改前的事件
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+        if (path === 'parent') {
+            // 发送节点修改消息
+            Manager.Ipc.send('broadcast', 'scene:before-node-change', node.parent.uuid);
+            this.emit('change', node.parent);
+        }
+
         // 恢复数据
         await dumpUtils.restoreProperty(node, path, dump);
 
-        // 发送节点修改消息
+        // 触发修改后的事件
+        this.emit('changed', node);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', node);
-
         if (path === 'parent') {
             // 发送节点修改消息
             Manager.Ipc.send('broadcast', 'scene:node-changed', node.parent.uuid);
-            this.emit('change', node.parent);
+            this.emit('changed', node.parent);
         }
         return true;
     }
@@ -151,11 +162,14 @@ class NodeManager extends EventEmitter {
             return false;
         }
 
+        // 发送节点修改消息
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
         // 移动顺序
         if (path === 'children') {
             // 过滤掉类似 Foreground Background 的节点
             const children = data.filter((child) => !(child._objFlags & cc.Object.Flags.HideInHierarchy));
-
             const child = children[target];
             child.setSiblingIndex(target + offset);
         } else {
@@ -164,8 +178,8 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
+        this.emit('changed', node);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', node);
 
         return true;
     }
@@ -205,12 +219,23 @@ class NodeManager extends EventEmitter {
             return false;
         }
 
-        // 删除某个 item
-        const temp = data.splice(index, 1);
+        // 发送节点修改消息
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
+        if (path === '_components') {
+            const comp = data[index];
+            this.emit('before-component-add', comp);
+            comp.destroy();
+            this.emit('component-added', comp);
+        } else {
+            // 删除某个 item
+            data.splice(index, 1);
+        }
 
         // 发送节点修改消息
+        this.emit('changed', node);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', node);
 
         return true;
     }
@@ -233,11 +258,15 @@ class NodeManager extends EventEmitter {
         }
 
         if (component) {
+            // 发送节点修改消息
+            this.emit('before-change', node);
+            Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
             node.addComponent(component);
 
             // 发送节点修改消息
+            this.emit('changed', node);
             Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-            this.emit('change', node);
         } else {
             console.warn(`create component failed: ${uuid} does not exist`);
             return false;
@@ -256,11 +285,15 @@ class NodeManager extends EventEmitter {
             return false;
         }
 
+        // 发送节点修改消息
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
         node.removeComponent(component);
 
         // 发送节点修改消息
+        this.emit('changed', node);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', node);
     }
 
     /**
@@ -291,16 +324,21 @@ class NodeManager extends EventEmitter {
             node.name = name;
         }
 
+        this.emit('before-add', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-create', node.uuid);
+        this.emit('before-change', parent);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
         parent.addChild(node);
 
         // 爬取节点树上的所有节点数据
         await this.add(node);
 
         // 发送节点修改消息
+        this.emit('added', node);
         Manager.Ipc.send('broadcast', 'scene:node-created', node.uuid);
+        this.emit('changed', parent);
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-        this.emit('change', parent);
-        this.emit('add', node);
 
         return node.uuid;
     }
@@ -310,15 +348,21 @@ class NodeManager extends EventEmitter {
      * @param {*} uuid
      */
     removeNode(uuid) {
+        // 发送节点修改消息
+        this.emit('before-change', parent);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', parent.uuid);
+        this.emit('before-remove', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-remove', node.uuid);
+
         const node = this.query(uuid);
         const parent = node.parent;
         parent.removeChild(node);
 
         // 发送节点修改消息
+        this.emit('changed', parent);
         Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
+        this.emit('removed', node);
         Manager.Ipc.send('broadcast', 'scene:node-removed', node.uuid);
-        this.emit('change', parent);
-        this.emit('remove', node);
 
         return parent.uuid;
     }

@@ -111,6 +111,18 @@ class HostIpc extends EventEmitter {
         this.isLock = true;
         this.$webview.send('webview-ipc:send', item);
     }
+
+    /**
+     * 强制发送，不管任何数据
+     * @param {*} message
+     * @param  {...any} args
+     */
+    forceSend(message, ...args) {
+        this.$webview.send('webview-ipc:force-send', {
+            message,
+            arguments: args,
+        });
+    }
 }
 
 module.exports = HostIpc;
