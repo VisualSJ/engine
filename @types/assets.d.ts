@@ -12,15 +12,16 @@ declare interface IaddAsset {
 }
 
 declare interface ItreeAsset {
-    files: Array<string>; // 来自 assets-db 查询数据的字段
+    uuid: string;
     importer: string;
-    isDirectory: boolean;
+    type: string;
     source: string;
     file: string; // 磁盘路径
-    subAssets: any;
-    uuid: string;
-    readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
+    library: any; // object 多文件的 library 磁盘路径
+    isDirectory: boolean;
     visible: boolean; // 是否显示
+    readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
+    subAssets: any;
 
     // 以下是扩展的数据
     name: string; // 文件名，包含后缀

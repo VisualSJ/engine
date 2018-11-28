@@ -28,6 +28,7 @@ export function data() {
         assets: [], // 当前树形在可视区域的资源节点
         selects: [], // 已选中项的 uuid
         folds: {}, // 用于记录已展开的节点
+        types: { file: 1 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
         renameSource: '', // 需要 rename 的节点的 url，只有一个
         intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称

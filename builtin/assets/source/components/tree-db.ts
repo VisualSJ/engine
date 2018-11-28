@@ -155,7 +155,6 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.parentSource = dir.join('/');
     asset.topSource = dir.slice(0, 2).join('/');
     asset.isRoot = dir.length === 1 ? true : false;
-    // 这个兼容处理 window 和 mac 上对 database 的 isDirectory 不同的数据返回，window 上 true, mac 上 false
     asset.isDirectory = asset.isRoot ? true : asset.isDirectory;
     asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
@@ -269,6 +268,9 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
                 index = calcAssetPosition(asset, index, 0);
             }
         }
+
+        // 收集 type 数据
+        vm.types[asset.type] = 1;
     });
     // 返回序号
     return index;
