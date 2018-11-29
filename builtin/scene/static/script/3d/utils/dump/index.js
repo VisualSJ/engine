@@ -187,6 +187,8 @@ async function restoreProperty(node, path, dump) {
         case 'cc.Texture':
         case 'cc.Material':
         case 'cc.Asset':
+        case 'cc.Skeleton':
+        case 'cc.TextureCube':
             if (!dump.value.uuid) {
                 property[key] = null;
                 break;
