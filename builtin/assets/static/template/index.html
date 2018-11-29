@@ -4,8 +4,8 @@
             :title="t('menu.createMenu', language)"
             @click="popupNew($event)"
         ></i>
-        <i class="i-search"
-            :title="t(searchType, language)"
+        <i class="search-type i-search"
+            :type="searchType"
             @click="popupSearchType"
         ></i>
         <ui-input tabindex="-1" ref="search" 

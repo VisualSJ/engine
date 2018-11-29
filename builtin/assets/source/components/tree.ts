@@ -73,6 +73,16 @@ export const watch = {
      */
     search() {
         vm.doSearch();
+
+        // 重新定位到选中项
+        if (vm.search === '') {
+            vm.intoView = '';
+            vm.$nextTick(() => {
+                if (vm.search === '') {
+                    vm.intoView = vm.getFirstSelect();
+                }
+            });
+        }
     },
     /**
      * 当前选中项变动
@@ -85,15 +95,6 @@ export const watch = {
      */
     allExpand() {
         vm.$parent.allExpand = vm.allExpand;
-
-        if (vm.allExpand === true) {
-            // 重新定位
-            const intoView = vm.intoView;
-            vm.intoView = ''; // 先置顶
-            vm.$nextTick(() => {
-                vm.intoView = intoView;
-            });
-        }
     },
 };
 
@@ -115,7 +116,7 @@ export const methods = {
     /**
      * 刷新树形
      */
-    async refresh() {
+    async refresh(intoView = false) {
         if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
             return;
         }
@@ -141,6 +142,10 @@ export const methods = {
                 if (asset) {
                     vm.intoView = asset.uuid;
                 }
+            } else if (intoView) {
+                vm.$nextTick(() => {
+                    utils.scrollIntoView(vm.intoView);
+                });
             }
         }
     },
@@ -518,17 +523,10 @@ export const methods = {
      */
     doSearch() {
         // 搜索有变动都先滚回顶部
-        vm.intoView = '';
+        utils.scrollIntoView();
 
         // 重新计算
         vm.changeData();
-
-        // 重新定位到选中项
-        vm.$nextTick(() => {
-            if (vm.search === '') {
-                vm.intoView = vm.getFirstSelect();
-            }
-        });
     },
 
     /**

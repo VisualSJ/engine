@@ -261,7 +261,7 @@ export async function ready() {
                 // 清空原数据
                 vm.clear();
 
-                await vm.$refs.tree.refresh();
+                await vm.$refs.tree.refresh(true);
                 vm.ready = true;
             },
             /**
