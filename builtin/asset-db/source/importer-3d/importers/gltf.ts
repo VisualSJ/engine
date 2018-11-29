@@ -1,6 +1,7 @@
 import { Asset, Importer, VirtualAsset } from 'asset-db';
 import * as fs from 'fs';
 import { readJson } from 'fs-extra';
+import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, GlTf, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
@@ -22,7 +23,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.2';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -53,8 +54,7 @@ export default class GltfImporter extends Importer {
                 if (!gltfBuffer.uri) {
                     return new Buffer(0);
                 }
-                const bufferPath = path.resolve(path.dirname(gltfFilePath), gltfBuffer.uri);
-                return fs.readFileSync(bufferPath);
+                return this._getBufferData(gltfFilePath, gltfBuffer.uri);
             });
         }
         return new GltfConverter(gltf, buffers, gltfFilePath);
@@ -66,6 +66,28 @@ export default class GltfImporter extends Importer {
         } else {
             return name.replace(/[ <>:'\/\\|?*\x00-\x1F]/g, '-');
         }
+    }
+
+    private static _getBufferData(gltfFilePath: string, uri: string): Buffer {
+        if (!uri.startsWith('data:')) {
+            const bufferPath = path.resolve(path.dirname(gltfFilePath), uri);
+            return fs.readFileSync(bufferPath);
+        } else {
+            const dataUrl = parseDataUrl(uri);
+            if (!dataUrl) {
+                throw new Error(`Bad data uri.${uri}`);
+            }
+            return new Buffer(dataUrl.toBuffer().buffer);
+        }
+    }
+
+    private static _getImagePath(gltfFilePath: string, uri: string): string | null {
+        if (!uri.startsWith('data:')) {
+            return path.resolve(path.dirname(gltfFilePath), uri);
+        } else {
+            console.warn(`We currently doesn't support data uri for image.`);
+        }
+        return null;
     }
 
     /**
@@ -163,8 +185,10 @@ export default class GltfImporter extends Importer {
                 if (gltfTexture.source !== undefined) {
                     const gltfImage = gltfConverter.gltf.images![gltfTexture.source];
                     if (gltfImage.uri) {
-                        const imagePath = path.resolve(path.dirname(gltfConverter.path), gltfImage.uri);
-                        (subAsset.userData as Texture2DAssetUserData).imageSource = imagePath;
+                        const imagePath = GltfImporter._getImagePath(gltfConverter.path, gltfImage.uri);
+                        if (imagePath) {
+                            (subAsset.userData as Texture2DAssetUserData).imageSource = imagePath;
+                        }
                     }
                 }
                 assetTable.textures[index] = subAsset.uuid;
