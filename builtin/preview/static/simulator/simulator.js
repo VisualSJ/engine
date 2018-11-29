@@ -204,7 +204,13 @@ async function writeMain() {
 async function writeCurrentScene() {
     const dest = join(simulatorRoot, 'preview-scene.json');
     const asset = await Editor.Ipc.requestToPackage('build', 'get-current-scene');
-    copySync(asset.files[0], dest);
+
+    const filepath = asset.library['.json'];
+
+    if (filepath) {
+        copySync(filepath, dest);
+    }
+
     return;
 }
 

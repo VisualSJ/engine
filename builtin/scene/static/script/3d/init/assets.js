@@ -18,9 +18,9 @@ module.exports = function() {
 
         try {
             const info = await Manager.Ipc.send('query-asset-info', uuid);
-            let url = info.files[0]
-                .replace(/^\S+(\/|\\)library(\/|\\)/, '')
-                .replace(/\.[^\.]+$/, '.json');
+            const lib = 'library';
+            const filepath = info.library['.json'];
+            const url = filepath.substr(filepath.lastIndexOf(lib) + lib.length + 1).replace(/\\/g, '/');
 
             callback(null, `import://${url}`, false, assets.getCtor(info.importer));
         } catch (e) {

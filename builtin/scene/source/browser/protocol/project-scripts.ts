@@ -72,10 +72,7 @@ export async function handler(request: any, callback: any) {
         // convert url to path
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', urlObj.hostname);
         source = info.source.substr(5);
-        file = info.files[0];
-        if (/\.map/.test(file)) {
-            file = info.files[1];
-        }
+        file = info.library['.js'];
     } catch (error) { }
 
     if (!file) {

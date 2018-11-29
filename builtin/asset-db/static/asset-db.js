@@ -1,7 +1,7 @@
 'use strict';
 
 const { parse } = require('url');
-const { join, relative, isAbsolute } = require('path');
+const { join, relative, isAbsolute, resolve } = require('path');
 const { ensureDirSync } = require('fs-extra');
 const { AssetDB, version } = require('asset-db');
 
@@ -236,7 +236,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 uuid: `db://${name}`,
                 importer: 'database',
                 isDirectory: false,
-                files: [],
+                library: {},
                 subAssets: {},
                 visible: dbInfos[name].visible,
                 readOnly: dbInfos[name].readOnly,
@@ -259,9 +259,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 importer: asset.meta.importer,
                 type: importer.assetType || 'cc.Asset',
                 isDirectory: await asset.isDirectory(),
-                files: asset.meta.files.map((ext) => {
-                    return asset.library + ext;
-                }),
+                library: getLibrary(asset),
                 loadPluginInNative: asset.meta.loadPluginInNative,
                 loadPluginInWeb: asset.meta.loadPluginInWeb,
                 isPlugin: asset.meta.isPlugin,
@@ -333,18 +331,16 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
     const importer = db ? db.name2importer[asset.meta.importer] : null;
 
     const info = {
-        source: asset.source ? source2url(assetInfo.db, asset.source) : null,
-        file: asset.source,
         uuid: asset.uuid,
         importer: asset.meta.importer,
         type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
+        source: asset.source ? source2url(assetInfo.db, asset.source) : null,
+        file: asset.source,
+        library: getLibrary(asset),
         isDirectory: await asset.isDirectory(),
-        files: asset.meta.files.map((ext) => {
-            return asset.library + ext;
-        }),
-        subAssets: {},
         visible: dbInfo.visible,
         readOnly: dbInfo.readOnly,
+        subAssets: {},
     };
 
     searchSubAssets(info, asset, db);
@@ -399,6 +395,24 @@ Worker.Ipc.on('asset-worker:save-asset-meta', async (event, uuid, data) => {
 });
 
 /**
+ * 设置 asset 的 library 字段
+ * @param {*} asset
+ */
+function getLibrary(asset) {
+    const rt = {};
+
+    asset.meta.files.forEach((ext) => {
+        if (/\.\w+/.test(ext)) { // is extname
+            rt[ext] = asset.library + ext;
+        } else {
+            rt[ext] = resolve(asset.library, ext);
+        }
+    });
+
+    return rt;
+}
+
+/**
  * 扫描资源
  * @param {*} parent
  * @param {*} asset
@@ -409,18 +423,16 @@ function searchSubAssets(parent, asset, db) {
         const subAsset = asset.subAssets[name];
         const importer = db.name2importer[subAsset.meta.importer] || null;
         parent.subAssets[name] = {
-            source: null,
-            file: null,
             uuid: subAsset.uuid,
             importer: subAsset.meta.importer,
             type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
+            source: null,
+            file: null,
+            library: getLibrary(asset),
             isDirectory: false,
-            files: subAsset.meta.files.map((ext) => {
-                return subAsset.library + ext;
-            }),
-            subAssets: {},
             visible: parent.visible,
             readOnly: parent.readOnly,
+            subAssets: {},
         };
         searchSubAssets(parent.subAssets[name], subAsset, db);
     }
@@ -441,6 +453,10 @@ function searchSubAssets(parent, asset, db) {
  * @param {*} names
  */
 function queryDatabaseInfo(names) {
+    if (!names) { // 有可能传 null 进来
+        return {};
+    }
+
     // 支持多个查询
     const isArray = Array.isArray(names);
     if (!isArray) {

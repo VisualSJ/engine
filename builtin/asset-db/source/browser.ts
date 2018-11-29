@@ -125,7 +125,28 @@ module.exports = {
             if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
-            return await queryAssetPath(uuidOrUrl);
+
+            if (!uuidOrUrl.startsWith(protocol)) { // 没有以协议开头即为uuid
+                const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
+                uuidOrUrl = asset.source;
+            }
+
+            const dbInfo = await assetWorker.send('asset-worker:query-database-info', uuidOrUrl);
+
+            return join(dbInfo.target, uuidOrUrl.substr(dbInfo.protocol.length));
+        },
+
+        /**
+         * 查询资源对应在 library 的资源配置
+         * @param uuid
+         */
+        async 'query-asset-library'(uuidOrUrl: string) {
+            if (!assetWorker) {
+                throw new Error('Asset DB does not exist.');
+            }
+            const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
+
+            return asset.library;
         },
 
         /**
@@ -450,22 +471,4 @@ async function createWorker() {
     assetWorker.on('asset-worker:asset-delete', (event: any, uuid: string) => {
         Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
     });
-}
-
-/**
- * 查询资源的文件路径
- */
-async function queryAssetPath(uuidOrUrl: string) {
-    if (!assetWorker) {
-        throw new Error('Asset DB does not exist.');
-    }
-    if (!uuidOrUrl.startsWith(protocol)) {
-        // 没有以协议开头即为uuid
-        const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
-        uuidOrUrl = asset.source;
-    }
-
-    const dbInfo = await assetWorker.send('asset-worker:query-database-info', uuidOrUrl);
-
-    return join(dbInfo.target, uuidOrUrl.substr(dbInfo.protocol.length));
 }

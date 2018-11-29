@@ -86,10 +86,9 @@ window.Editor = window.Editor ? Editor : {
                     const callback = args[1];
 
                     const info = await Manager.Ipc.send('query-asset-info', uuid);
-
-                    let url = info.files[0]
-                        .replace(/^\S+(\/|\\)library(\/|\\)/, '')
-                        .replace(/\.\S+$/, '.json');
+                    const lib = 'library';
+                    const filepath = info.library['.json'];
+                    const url = filepath.substr(filepath.lastIndexOf(lib) + lib.length + 1).replace(/\\/g, '/');
 
                     callback && callback(null, {
                         url: `import://${url}`,

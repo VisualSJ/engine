@@ -51,11 +51,11 @@ async function writScripts() {
         let ext = extname(tempPath);
 
         let name = basename(tempPath, ext);
-        let scriptName = basename(asset.files[0]).replace(asset.uuid, name);
-        let mapName = basename(asset.files[1]).replace(asset.uuid, name);
+        let scriptName = basename(asset.library['.js']).replace(asset.uuid, name);
+        let mapName = basename(asset.library['.js.map']).replace(asset.uuid, name);
         let content = getModules(tempPath);
         outputFileSync(join(path, 'assets', scriptName), content);
-        copyFileSync(asset.files[1], join(path, 'assets', mapName));
+        copyFileSync(asset.library['.js.map'], join(path, 'assets', mapName));
     }
     return path;
 }

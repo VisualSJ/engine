@@ -76,8 +76,11 @@ export async function start() {
             const json = await Editor.Ipc.requestToPanel('scene', 'query-scene-json');
             res.end(json);
         } else {
-            const filePath = await asset.files[0];
-            res.sendFile(filePath);
+            const filepath = asset.library['.json'];
+
+            if (filepath) {
+                res.sendFile(filepath);
+            }
         }
 
     });
