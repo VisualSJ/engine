@@ -57,7 +57,7 @@ export default class GltfImporter extends Importer {
                 return fs.readFileSync(bufferPath);
             });
         }
-        return new GltfConverter(gltf, buffers);
+        return new GltfConverter(gltf, buffers, gltfFilePath);
     }
 
     private static _validateAssetName(name: string | undefined) {
@@ -163,7 +163,8 @@ export default class GltfImporter extends Importer {
                 if (gltfTexture.source !== undefined) {
                     const gltfImage = gltfConverter.gltf.images![gltfTexture.source];
                     if (gltfImage.uri) {
-                        (subAsset.userData as Texture2DAssetUserData).imageSource = gltfImage.uri;
+                        const imagePath = path.resolve(path.dirname(gltfConverter.path), gltfImage.uri);
+                        (subAsset.userData as Texture2DAssetUserData).imageSource = imagePath;
                     }
                 }
                 assetTable.textures[index] = subAsset.uuid;
@@ -445,12 +446,16 @@ class BufferBlob {
 class GltfConverter {
     private _nodePathTable: string[] | null = null;
 
-    constructor(private _gltf: GlTf, private _buffers: Buffer[]) {
+    constructor(private _gltf: GlTf, private _buffers: Buffer[], private _gltfFilePath: string) {
         this._nodePathTable = this._createNodePathTable();
     }
 
     get gltf() {
         return this._gltf;
+    }
+
+    get path() {
+        return this._gltfFilePath;
     }
 
     public createMesh(gltfMesh: Mesh) {
@@ -693,14 +698,13 @@ class GltfConverter {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material.effectName = 'builtin-effect-unlit';
+        material.effectName = 'builtin-effect-phong';
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                material.define('USE_TEXTURE', true);
-                material.setProperty('mainTexture', textures[pbrMetallicRoughness.baseColorTexture.index]);
+                material.define('USE_DIFFUSE_TEXTURE', true);
+                material.setProperty('diffuse_texture', textures[pbrMetallicRoughness.baseColorTexture.index]);
             } else {
-                material.define('USE_COLOR', true);
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
                     const c = pbrMetallicRoughness.baseColorFactor;
@@ -710,7 +714,7 @@ class GltfConverter {
                     // @ts-ignore
                     color = new cc.Color(255, 255, 255, 255);
                 }
-                material.setProperty('color', color);
+                material.setProperty('diffuseColor', color);
             }
         }
 

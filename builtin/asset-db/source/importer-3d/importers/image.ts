@@ -50,7 +50,7 @@ export default class ImageImporter extends Importer {
         if (!(await asset.existsInLibrary('.json'))) {
             // @ts-ignore
             const image = new cc.ImageAsset();
-            image._setRawAsset(asset.basename);
+            image._setRawAsset(asset.extname);
             // @ts-ignore
             await asset.saveToLibrary('.json', Manager.serialize(image));
 
