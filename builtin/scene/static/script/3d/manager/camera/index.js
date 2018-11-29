@@ -6,11 +6,6 @@ const operationManager = require('../operation');
 const NodeQueryUtils = require('../node');
 const NodeUtils = require('../../../utils/node');
 
-let vec3;
-let quat;
-let v3a;
-let v3b;
-
 // wasd 按键提示
 const $info = document.createElement('div');
 $info.hidden = true;
@@ -32,20 +27,14 @@ $info.innerHTML = `
 `;
 document.body.appendChild($info);
 
-const tickINterval = 1000 / 60;   //60fps
+const tickInterval = 1000 / 60; // 60fps
 function startTicking(fn, ...args) {
-    if (fn.timer) {
-        return;
-    }
-    $info.hidden = false;
-    fn.timer = setInterval(fn, tickINterval, ...args);
+    if (fn.timer) return;
+    fn.timer = setInterval(fn, tickInterval, ...args);
 }
 
 function stopTicking(fn) {
-    if (!fn.timer) {
-        return;
-    }
-    $info.hidden = true;
+    if (!fn.timer) return;
     clearInterval(fn.timer);
     fn.timer = 0;
 }
@@ -58,13 +47,16 @@ let CameraMoveMode = cc.Enum({
     WANDER: 4, //漫游
 });
 
+const { vec3, quat } = cc.vmath;
+let v3a = cc.v3(), v3b = cc.v3(); // moving
+let v3c = cc.v3(), v3d = cc.v3(), qt = cc.quat(); // tweening
+
 /**
  * 摄像机管理器
  *
  * 编辑器视角与实际游戏视角是不同的，所以需要单独管理编辑器摄像机。
  * 编辑器模式下，游戏内的其他摄像机需要关闭（现阶段是在引擎内 hack 实现）。
  */
-
 class Camera extends EventEmitter {
 
     constructor() {
@@ -75,6 +67,24 @@ class Camera extends EventEmitter {
         this.rotationSpeed = 0.5;
         this.panningSpeed = 0.2;
         this.wheelSpeed = 0.1;
+
+        this.homePos = cc.v3(50, 50, 50);
+        this.homeRot = quat.fromViewUp(cc.quat(), vec3.normalize(v3a, this.homePos));
+        // temps to store transform
+        this.pos = cc.v3();
+        this.rot = cc.quat();
+        this.euler = cc.v3();
+        // temps to store directions
+        this.id_right = cc.v3(1, 0, 0);
+        this.id_up = cc.v3(0, 1, 0);
+        this.id_forward = cc.v3(0, 0, 1);
+        this.right = cc.v3(this.id_right);
+        this.up = cc.v3(this.id_up);
+        this.forward = cc.v3(this.id_forward);
+        // temps to store velocity
+        this.velocity = cc.v3();
+        this.curMovSpeed = this.movingSpeed;
+
         // per-frame callback
         this.move = () => {
             this.node.getPosition(this.pos);
@@ -85,19 +95,21 @@ class Camera extends EventEmitter {
             this.node.setPosition(vec3.add(v3b, this.pos, v3b));
         };
 
-        this.camera_focus_dist = 50;
-        this.startCameraPos = cc.v3();
-        this.tweenMoveUpdate = (offset, time) => {
-            let curPassTime = Date.now() - this.startMoveTime;
-            if (curPassTime >= time) {
-                stopTicking(this.tweenMoveUpdate);
-                this.pos = this.startCameraPos.add(offset);
-            } else {
-                let percentOffset = cc.v3();
-                vec3.scale(percentOffset, offset, curPassTime / time);
-                this.pos = this.startCameraPos.add(percentOffset);
-            }
-            this.node.setWorldPosition(this.pos);
+        // tweening
+        this.startPos = cc.v3();
+        this.startRot = cc.quat();
+        this.tween = (targetPos, targetRot, time = 300) => {
+            let startMoveTime = Date.now();
+            if (targetPos) this.node.getPosition(this.startPos);
+            if (targetRot) this.node.getRotation(this.startRot);
+            let tweening = () => {
+                let curPassTime = Date.now() - startMoveTime;
+                let t = curPassTime / time;
+                if (t >= 1) { stopTicking(tweening); t = 1; }
+                if (targetPos) this.node.setPosition(vec3.lerp(v3c, this.startPos, targetPos, t));
+                if (targetRot) this.node.setRotation(quat.slerp(qt, this.startRot, targetRot, t));
+            };
+            startTicking(tweening);
         };
     }
 
@@ -105,32 +117,10 @@ class Camera extends EventEmitter {
      * 初始化摄像机并挂到场景中
      */
     init() {
-        vec3 = cc.vmath.vec3;
-        quat = cc.vmath.quat;
-        v3a = vec3.create();
-        v3b = vec3.create();
-
-        // temps to store transform
-        this.pos = vec3.create(50, 50, 50);
-        this.rot = quat.create();
-        this.euler = vec3.create();
-        // temps to store directions
-        this.id_right = vec3.create(1, 0, 0);
-        this.id_up = vec3.create(0, 1, 0);
-        this.id_forward = vec3.create(0, 0, 1);
-        this.right = vec3.clone(this.id_right);
-        this.up = vec3.clone(this.id_up);
-        this.forward = vec3.clone(this.id_forward);
-        // temps to store velocity
-        this.velocity = vec3.create();
-        this.curMovSpeed = this.movingSpeed;
-
         this._grid = createGrid(50, 50);
         this._camera = createCamera(cc.color(51, 51, 51, 255));
-        this._camera.far = 10000;
         this.node = this._camera.node;
         this.instance = this._camera._camera;
-        this.home();
         this.camera_move_mode = CameraMoveMode.NONE;
 
         operationManager.on('mousedown', this.onMouseDown.bind(this));
@@ -139,6 +129,7 @@ class Camera extends EventEmitter {
         operationManager.on('wheel', this.onMouseWheel.bind(this));
         operationManager.on('keydown', this.onKeyDown.bind(this));
         operationManager.on('keyup', this.onKeyUp.bind(this));
+        this.home();
     }
 
     onMouseDown(event) {
@@ -148,14 +139,13 @@ class Camera extends EventEmitter {
             this.node.getPosition(this.pos);
             vec3.transformQuat(this.right, this.id_right, this.rot);
             vec3.transformQuat(this.up, this.id_up, this.rot);
-            operationManager.requestPointerLock();
         } else if (event.rightButton) { // right button: rotation
             this.camera_move_mode = CameraMoveMode.WANDER;
             quat.toEuler(this.euler, this.rot);
             startTicking(this.move);
-            operationManager.requestPointerLock();
+            $info.hidden = false;
         }
-
+        operationManager.requestPointerLock();
         this.emit('cameraMoveMode', this.camera_move_mode);
     }
 
@@ -173,7 +163,6 @@ class Camera extends EventEmitter {
             this.node.setRotationFromEuler(this.euler.x, this.euler.y, this.euler.z);
             return false;
         }
-
         return true;
     }
 
@@ -181,6 +170,7 @@ class Camera extends EventEmitter {
         this.camera_move_mode = CameraMoveMode.NONE;
         this.emit('cameraMoveMode', this.camera_move_mode);
         operationManager.exitPointerLock();
+        $info.hidden = true;
         stopTicking(this.move);
     }
 
@@ -195,7 +185,6 @@ class Camera extends EventEmitter {
 
     onKeyDown(event) {
         this.shiftKey = event.shiftKey;
-
         switch (event.key.toLowerCase()) {
             case 'd': this.velocity.x = this.curMovSpeed; break;
             case 'a': this.velocity.x = -this.curMovSpeed; break;
@@ -215,58 +204,27 @@ class Camera extends EventEmitter {
             case 'q': if (this.velocity.y < 0) { this.velocity.y = 0; } break;
             case 's': if (this.velocity.z > 0) { this.velocity.z = 0; } break;
             case 'w': if (this.velocity.z < 0) { this.velocity.z = 0; } break;
+            case 'f': this.focusCameraToNodes(Selection.query()); break;
             case 'h': this.home(); break;
         }
     }
 
-    adjustSceneToNodes(ids, margin = 50) {
-        vec3.set(v3a, 0, 0, 0);
-        ids.forEach((id) => {
-            let node = cc.engine.getInstanceById(id);
-            vec3.add(v3a, v3a, node.getWorldPosition(v3b));
-        });
-        vec3.scale(v3a, v3a, 1 / ids.length);
-
-        this.node.getRotation(this.rot);
-        vec3.transformQuat(this.forward, this.id_forward, this.rot);
-        vec3.add(v3a, v3a, vec3.scale(v3b, this.forward, margin));
-        this.node.setPosition(v3a);
-    }
-
-    home(margin = 50) {
-        this.node.setPosition(margin, margin, margin);
-        this.node.lookAt(vec3.create());
-    }
-
-    focusCameraToPos(targetPos, dist) {
-        let cameraDir = cc.v3();
-        let offset = cc.v3();
-
-        this.node.getRotation(this.rot);
-        vec3.transformQuat(cameraDir, cc.v3(0, 0, -1), this.rot);
-        vec3.scale(offset, cameraDir, -dist);
-        targetPos.addSelf(offset);
-        this.node.getWorldPosition(this.pos);
-        vec3.sub(offset, targetPos, this.pos);
-
-        let duration = 0.3;
-        this.startMoveTime = Date.now();
-        this.node.getWorldPosition(this.startCameraPos);
-        startTicking(this.tweenMoveUpdate, offset, duration * 1000);
+    home() {
+        this.tween(this.homePos, this.homeRot);
     }
 
     focusCameraToNodes(nodes) {
-        if (nodes.length <= 0) {
-            return;
-        }
-
-        nodes = nodes.map((id) => {
-            return NodeQueryUtils.query(id);
-        });
-
+        if (nodes.length <= 0) return;
+        nodes = nodes.map((id) => NodeQueryUtils.query(id));
         let worldPos = NodeUtils.getCenterWorldPos3D(nodes);
-        let minRange = NodeUtils.getMinRangeOfNodes(nodes);
-        this.focusCameraToPos(worldPos, minRange * 3);
+        let minRange = NodeUtils.getMinRangeOfNodes(nodes) * 3;
+
+        this.node.getRotation(this.rot);
+        vec3.transformQuat(this.forward, this.id_forward, this.rot);
+        vec3.scale(v3c, this.forward, minRange);
+        vec3.add(v3d, worldPos, v3c);
+
+        this.tween(v3d);
     }
 }
 
