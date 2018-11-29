@@ -13,7 +13,8 @@
       "../../@types/editor",
       "../../@types/asset-db/glTF",
       "../../@types/asset-db/equirect-cubemap-faces-js",
-      "../../@types/asset-db/fbx2gltf"
+      "../../@types/asset-db/fbx2gltf",
+      "../../@types/asset-db/parse-data-url"
     ],
     "esModuleInterop": true
   }
