@@ -189,7 +189,7 @@ async function restoreProperty(node, path, dump) {
         case 'cc.Asset':
             if (!dump.value.uuid) {
                 property[key] = null;
-                return;
+                break;
             }
             await new Promise((resolve, reject) => {
                 cc.AssetLibrary.loadAsset(dump.value.uuid, (err, asset) => {
@@ -214,6 +214,14 @@ async function restoreProperty(node, path, dump) {
         case '_lscale':
             node.setScale(node._lscale);
             break;
+    }
+
+    // 如果修改的是数组内的属性，应该把数组重新赋值一次，用于触发引擎的 setter
+    if (Array.isArray(property)) {
+        const index = spath.lastIndexOf('.');
+        const arrayPath = spath.substr(0, index);
+        const data = get(node, arrayPath);
+        data[spath.substr(index + 1)] = property;
     }
 }
 
