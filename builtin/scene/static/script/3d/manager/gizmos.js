@@ -13,8 +13,16 @@ scene.on('reload', (error, scene) => {
     gizmo.onSceneLoaded();
 });
 
-node.on('change', (node) => {
+node.on('changed', (node) => {
     gizmo.onNodeChanged(node);
+});
+
+node.on('component-added', (comp, node) => {
+    gizmo.onComponentAdded(comp, node);
+});
+
+node.on('before-component-remove', (comp, node) => {
+    gizmo.onBeforeComponentRemove(comp, node);
 });
 
 EditorCamera.on('cameraMoveMode', (mode) => {

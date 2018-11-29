@@ -2,8 +2,7 @@ const NodeUtils = require('../../../../utils/node');
 let DirectionLightController = require('../controller/direction-light-controller');
 let PointLightController = require('../controller/sphere-controller');
 let SpotLightController = require('../controller/cone-controller');
-let Gizmo = require('../gizmo');
-const GizmoManager = require('../../index');
+let Gizmo = require('../gizmo-base');
 const { create3DNode } = require('../../engine');
 
 class LightComponentGizmo extends Gizmo {
@@ -17,10 +16,6 @@ class LightComponentGizmo extends Gizmo {
     }
 
     onShow() {
-        if (!this._isInited) {
-            this.createController();
-            this._isInited = true;
-        }
         this.updateControllerData();
         this.updateControllerTransform();
     }

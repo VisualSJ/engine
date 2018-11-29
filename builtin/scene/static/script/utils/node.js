@@ -354,6 +354,10 @@ Utils.setEulerAngles = function(node, value) {
     node.setRotationFromEuler(value.x, value.y, value.z);
 };
 
+Utils.getWorldScale3D = function(node) {
+    return node.getWorldScale();
+};
+
 Utils.getCenterWorldPos3D = function(nodes) {
     var minX = null;
     var minY = null;

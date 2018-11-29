@@ -3,7 +3,6 @@
 const { EventEmitter } = require('events');
 const { createCamera, createGrid } = require('./utils');
 const operationManager = require('../operation');
-const Selection = require('../selection');
 const NodeQueryUtils = require('../node');
 const NodeUtils = require('../../../utils/node');
 
@@ -196,11 +195,6 @@ class Camera extends EventEmitter {
 
     onKeyDown(event) {
         this.shiftKey = event.shiftKey;
-
-        if (event.key.toLowerCase() === 'f') {
-            let selections = Selection.query();
-            this.focusCameraToNodes(selections);
-        }
 
         switch (event.key.toLowerCase()) {
             case 'd': this.velocity.x = this.curMovSpeed; break;

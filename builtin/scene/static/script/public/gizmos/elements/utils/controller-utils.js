@@ -200,4 +200,13 @@ ControllerUtils.wireframeBox = function(center, size, color) {
     return boxNode;
 };
 
+ControllerUtils.frustum = function(fov, aspect, near, far, color) {
+    let frustumNode = create3DNode('frustumNode');
+    addMeshToNode(frustumNode,
+        ControllerShape.Frustum(fov, aspect, near, far));
+    setMeshColor(frustumNode, color);
+
+    return frustumNode;
+};
+
 module.exports = ControllerUtils;

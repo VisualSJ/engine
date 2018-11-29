@@ -2,11 +2,13 @@
 
 const selection = require('../../public/selection');
 const operationManager = require('./operation');
-const cameraManager = require('./camera').EditorCamera;
+const {
+    CameraMoveMode, EditorCamera,
+} = require('./camera');
 
-operationManager.on('hit', (data) => {
+operationManager.on('mouseup', (data) => {
     const bcr = document.body.getBoundingClientRect();
-    cameraManager.instance.screenPointToRay(data.x, bcr.height - data.y, bcr.width, bcr.height, selection.ray);
+    EditorCamera.instance.screenPointToRay(data.x, bcr.height - data.y, bcr.width, bcr.height, selection.ray);
     let res = cc.director._renderSystem._scene.raycast(selection.ray);
     let minDist = Number.MAX_VALUE;
     let resultNode = null;
@@ -31,7 +33,20 @@ operationManager.on('hit', (data) => {
     if (resultNode && resultNode.uuid) {
         selection.clear();
         selection.select(resultNode.uuid);
+    } else {
+        // 等事件处理顺序完善后再开启这个功能
+        // if (data.leftButton) {  //左键没选中东西则取消当前所选
+        //     selection.clear();
+        // }
     }
+});
+
+operationManager.on('keydown', (event) => {
+    if (event.key.toLowerCase() === 'f') {
+        let selections = selection.query();
+        EditorCamera.focusCameraToNodes(selections);
+    }
+
 });
 
 module.exports = selection;

@@ -8,7 +8,7 @@ function close(a, b) {
 
 let _tempMatrix = cc.vmath.mat4.create();
 
-class Gizmo {
+class GizmoBase {
     constructor(target) {
         this.hovering = false;
         this.selecting = false;
@@ -244,4 +244,4 @@ class Gizmo {
     }
 }
 
-module.exports = Gizmo;
+module.exports = GizmoBase;

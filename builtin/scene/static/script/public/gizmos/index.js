@@ -160,7 +160,9 @@ module.exports = {
     },
 
     destoryGizmo(gizmo) {
-        gizmo.hide();
+        if (gizmo) {
+            gizmo.hide();
+        }
     },
 
     showNodeGizmo(node) {
@@ -239,6 +241,10 @@ module.exports = {
      * @param {*} ids
      */
     select(newId, ids) {
+        if (!newId || !ids) {
+            return;
+        }
+
         let newSelecedNode = NodeUtils.query(newId);
         if (!newSelecedNode) {
             return;
@@ -445,5 +451,13 @@ module.exports = {
         if (node != null) {
             node.emit('change');
         }
+    },
+
+    onComponentAdded(comp, node) {
+        this.showNodeGizmo(node);
+    },
+
+    onBeforeComponentRemove(comp, node) {
+        this.destoryGizmo(comp.gizmo);
     },
 };

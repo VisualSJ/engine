@@ -1,4 +1,4 @@
-let Gizmo = require('../gizmo');
+let Gizmo = require('../gizmo-base');
 
 class TransformGizmo extends Gizmo {
     constructor(target) {

@@ -11,6 +11,7 @@ class ControllerBase {
     constructor(rootNode) {
         this._position = cc.v3(0, 0, 0);
         this._rotation = cc.quat(0, 0, 0, 1);
+        this._scale = cc.v3(1, 1, 1);
         this._updated = false;
 
         // for 3d
@@ -159,6 +160,14 @@ class ControllerBase {
         this.updateController();
     }
 
+    getScale() {
+        return this._scale;
+    }
+    setScale(value) {
+        this._scale = value;
+        this.updateController();
+    }
+
     updateController() {
         this.updateController3D();
     }
@@ -187,7 +196,7 @@ class ControllerBase {
     adjustControllerSize() {
         // 根据和相机的距离，对坐标系进行整体放缩
         let scalar = this.getDistScalar();
-        this.shape.setScale(scalar, scalar, scalar);
+        this.shape.setScale(this._scale.mul(scalar));
     }
 
     needRender(node) {

@@ -6,6 +6,7 @@ const NodeUtils = require('../../../../utils/node');
 let TransformGizmo = require('./transform-gizmo');
 let RotationController = require('../controller/rotation-controller');
 const GizmoManager = require('../../index');
+const operationManager = require('../../../operation');
 
 class RotationGizmo extends TransformGizmo {
     init() {
@@ -50,6 +51,8 @@ class RotationGizmo extends TransformGizmo {
                 this._offsetList.push(nodeWorldPos.sub(this._center));
             }
         }
+
+        operationManager.requestPointerLock();
     }
 
     onControllerMouseMove(event) {
@@ -116,6 +119,8 @@ class RotationGizmo extends TransformGizmo {
         if (this._controller.updated) {
             this.commitChanges();
         }
+
+        operationManager.exitPointerLock();
     }
 
     onGizmoKeyDown(event) {

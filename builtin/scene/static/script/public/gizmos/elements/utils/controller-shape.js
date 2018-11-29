@@ -4,6 +4,7 @@ module.exports = ControllerShape;
 
 const { gfx, createMesh } = require('../../engine');
 const { vec3, quat } = cc.vmath;
+const MathUtil = require('../../../../utils/math');
 
 ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height = 2, opts = {}) {
     let halfHeight = height * 0.5;
@@ -496,6 +497,26 @@ ControllerShape.Lines = function(vertices, indices) {
     });
 };
 
+ControllerShape.CalcBoxPoints = function(center, size) {
+    let halfSize = cc.v3();
+    vec3.scale(halfSize, size, 0.5);
+    let points = [];
+
+    points[0] = center.add(cc.v3(-halfSize.x, -halfSize.y, -halfSize.z));
+    points[1] = center.add(cc.v3(-halfSize.x, halfSize.y, -halfSize.z));
+    points[2] = center.add(cc.v3(halfSize.x, halfSize.y, -halfSize.z));
+    points[3] = center.add(cc.v3(halfSize.x, -halfSize.y, -halfSize.z));
+    points[4] = center.add(cc.v3(-halfSize.x, -halfSize.y, -halfSize.z));
+
+    points[5] = center.add(cc.v3(-halfSize.x, -halfSize.y, halfSize.z));
+    points[6] = center.add(cc.v3(-halfSize.x, halfSize.y, halfSize.z));
+    points[7] = center.add(cc.v3(halfSize.x, halfSize.y, halfSize.z));
+    points[8] = center.add(cc.v3(halfSize.x, -halfSize.y, halfSize.z));
+    points[9] = center.add(cc.v3(-halfSize.x, -halfSize.y, halfSize.z));
+
+    return points;
+};
+
 ControllerShape.WireframeBox = function(center, size) {
     let points = ControllerShape.CalcBoxPoints(center, size);
     let indices = [];
@@ -514,4 +535,51 @@ ControllerShape.WireframeBox = function(center, size) {
         indices: indices,
         primitiveType: gfx.PT_LINES,
     });
+};
+
+ControllerShape.CalcFrustum = function(fov, aspect, near, far) {
+    let points = [];
+    let indices = [];
+
+    let nearHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * near;
+    let nearHalfWidth = nearHalfHeight * aspect;
+
+    points[0] = cc.v3(-nearHalfWidth, -nearHalfHeight, near);
+    points[1] = cc.v3(-nearHalfWidth, nearHalfHeight, near);
+    points[2] = cc.v3(nearHalfWidth, nearHalfHeight, near);
+    points[3] = cc.v3(nearHalfWidth, -nearHalfHeight, near);
+
+    let farHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * far;
+    let farHalfWidth = farHalfHeight * aspect;
+    points[4] = cc.v3(-farHalfWidth, -farHalfHeight, far);
+    points[5] = cc.v3(-farHalfWidth, farHalfHeight, far);
+    points[6] = cc.v3(farHalfWidth, farHalfHeight, far);
+    points[7] = cc.v3(farHalfWidth, -farHalfHeight, far);
+
+    for (let i = 1; i < 4; i++) {
+        indices.push(i - 1, i);
+    }
+    indices.push(0, 3);
+    for (let i = 5; i < 8; i++) {
+        indices.push(i - 1, i);
+    }
+    indices.push(4, 7);
+
+    for (let i = 0; i < 4; i++) {
+        indices.push(i, i + 4);
+    }
+
+    return { vertices: points, indices: indices };
+};
+
+ControllerShape.Frustum = function(fov, aspect, near, far) {
+    let frustumData = ControllerShape.CalcFrustum(fov, aspect, near, far);
+
+    return createMesh(
+        {
+            positions: frustumData.vertices,
+            normals: Array(frustumData.vertices.length).fill(cc.v3(0, 1, 0)),
+            indices: frustumData.indices,
+            primitiveType: gfx.PT_LINES,
+        });
 };
