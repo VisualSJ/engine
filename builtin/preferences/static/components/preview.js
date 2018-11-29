@@ -8,7 +8,7 @@ exports.template = fs.readFileSync(join(__dirname, '../template/preview.html'), 
 exports.props = ['preview'];
 exports.data = function() {
     return {
-        devices: {}
+        devices: {},
     };
 };
 
@@ -55,8 +55,10 @@ exports.methods = {
             if (value !== 'customize') {
                 let direction = this.preview.simulator_device_orientation;
                 // 要根据当前设置的方向调整对应读取设备配置的宽高
-                this.preview.simulator_width = direction === 'vertical'? this.devices[value].width : this.devices[value].height;
-                this.preview.simulator_height = direction === 'vertical'? this.devices[value].height : this.devices[value].width; 
+                this.preview.simulator_width = direction === 'vertical' ?
+                 this.devices[value].width : this.devices[value].height;
+                this.preview.simulator_height = direction === 'vertical' ?
+                 this.devices[value].height : this.devices[value].width;
             }
         }
 
@@ -77,7 +79,7 @@ exports.methods = {
     // 获取支持的设备信息
     async getDevice() {
         this.devices = await Editor.Ipc.requestToPackage('preview', 'get-device');
-    }
+    },
 };
 
 exports.mounted = function() {

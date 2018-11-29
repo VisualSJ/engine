@@ -38,7 +38,7 @@ export function load() {
     // 应用皮肤
     const theme = profile.get('general.theme') || '';
     Editor.Theme.use(theme);
-    let lan = navigator.language.toLowerCase();
+    let lan = app.getLocale();
     if (lan.indexOf('zh') >= 0) {
         lan = 'zh';
     } else {
@@ -47,9 +47,6 @@ export function load() {
     // 应用语言
     const language = profile.get('general.language') || lan;
     Editor.I18n.switch(language);
-    // 应用皮肤主题
-    // const color = profile.get('themeColor') || 'default';
-    // Editor.Theme.useColor(color);
 }
 
 export function unload() {}

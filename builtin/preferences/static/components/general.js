@@ -15,7 +15,7 @@ exports.methods = {
      * 翻译
      * @param key
      */
-    t(key, language) {
+    t(key) {
         const name = `preferences.general.${key}`;
         return Editor.I18n.t(name);
     },

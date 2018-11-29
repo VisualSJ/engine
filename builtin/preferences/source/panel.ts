@@ -85,6 +85,7 @@ export async function ready() {
                 // @ts-ignore
                 this.save();
             },
+
             /**
              * 翻译
              * @param key
@@ -93,6 +94,7 @@ export async function ready() {
                 const name = `preferences.${key}`;
                 return Editor.I18n.t(name);
             },
+
             /**
              * 查询项目配置
              * @param {*} key
@@ -119,9 +121,11 @@ export async function ready() {
             async getData(type: string) {
                 const keys = Object.keys(this[type]);
                 const config = await Editor.Ipc.requestToPackage('preferences', 'get-setting', type);
-                for (const key of keys) {
-                    if (key in config) {
-                        this.preview[key] = config[key];
+                if (config) {
+                    for (const key of keys) {
+                        if (key in config && config[key]) {
+                            this.preview[key] = config[key];
+                        }
                     }
                 }
             },
