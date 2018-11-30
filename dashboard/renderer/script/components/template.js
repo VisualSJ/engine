@@ -52,7 +52,9 @@ exports.methods = {
      */
     createProject() {
         let template = this.list[this.activeIndex];
-        if (!this.isEmptyDir(this.directoryPath)) {
+        if (!fs.existsSync(this.directoryPath)) {
+            fse.ensureDirSync(this.directoryPath);
+        } else if (!this.isEmptyDir(this.directoryPath)) {
             dialog.show({
                 type: 'warning',
                 title: '警告',
@@ -64,6 +66,7 @@ exports.methods = {
                     project.open(this.directoryPath);
                 }
             });
+            return;
         }
         project.create(this.directoryPath, template.path);
         project.open(this.directoryPath);
@@ -84,11 +87,11 @@ exports.methods = {
     },
 
     /**
-     * 检测当前文件夹是否为空
+     * 检测新建文件夹目录是否为空
      * @param {*} path
      */
     isEmptyDir(path) {
-        let files = fs.readdirSync(ps.dirname(path));
+        let files = fs.readdirSync(path);
         return !files || !files.length;
     },
 };
