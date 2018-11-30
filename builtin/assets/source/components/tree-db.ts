@@ -1,4 +1,5 @@
 'use strict';
+import { extname } from 'path';
 
 export const protocol = 'db://';
 export const uuidAssets: any = {};
@@ -146,12 +147,11 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
  * @param name 完整的文件名称
  */
 function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
-    const [fileName, fileExt] = name.split('.');
     const subAssets = Object.keys(asset.subAssets);
 
     asset.name = name;
-    asset.fileName = fileName;
-    asset.fileExt = fileExt ? fileExt : '';
+    asset.fileExt = extname(name);
+    asset.fileName = name.substr(0, name.lastIndexOf(asset.fileExt));
     asset.parentSource = dir.join('/');
     asset.topSource = dir.slice(0, 2).join('/');
     asset.isRoot = dir.length === 1 ? true : false;

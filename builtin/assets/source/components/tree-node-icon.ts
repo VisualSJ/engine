@@ -27,8 +27,7 @@ const mapCommon = {
                 return thumbnail;
             }
 
-            const dbInfo = dbInfos[asset.topSource];
-            const src = join(dbInfo.target, asset.source.substr(dbInfo.protocol.length));
+            const src = asset.library[`${asset.fileExt}`];
             return await setDataURL(src, thumbnail, { x: 0, y: 0 });
         },
     },
@@ -95,8 +94,6 @@ async function getDataURL(asset: ItreeAsset) {
 }
 
 async function setDataURL(src: string, cachePath: string, json: any) {
-    // console.log(src, cachePath);
-
     const img = document.createElement('img');
     img.src = src;
     await new Promise((resolve, reject) => {

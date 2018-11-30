@@ -249,3 +249,33 @@ exports.closestCanPasteAsset = (uuid: string) => {
         return;
     }
 };
+
+/**
+ * 外部修改资源后，检测需要闪烁下资源
+ */
+exports.twinkleAssets = {
+    stop: false,
+    timer: '',
+    sleep(time: number) {
+        // 停止检测，遇到用户主动导入文件，复制文件夹等操作
+        this.stop = true;
+
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.stop = false;
+        }, time || 2000);
+
+        // 避免一些无效的记录一直存在
+        db.vm.twinkles = [];
+    },
+    add(uuid: string) {
+        if (!this.stop) {
+            db.vm.twinkles.push(uuid);
+
+            // 动画结束后删除
+            setTimeout(() => {
+                db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
+            }, 2000);
+        }
+    },
+};

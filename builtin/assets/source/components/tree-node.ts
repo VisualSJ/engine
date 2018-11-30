@@ -19,6 +19,7 @@ export const components = {
 export const props: string[] = [
     'asset',
     'selects',
+    'twinkles',
     'renameSource',
 ];
 
@@ -153,7 +154,7 @@ export const methods = {
         let newName = this.$refs.input.value.trim();
 
         // 文件名称带有后缀，此时不能只发后缀
-        if (newName.toLowerCase() === '.' + asset.fileExt) {
+        if (newName.toLowerCase() === asset.fileExt) {
             newName = '';
         }
 

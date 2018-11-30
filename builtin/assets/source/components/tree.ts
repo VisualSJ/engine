@@ -27,6 +27,7 @@ export function data() {
         state: '',
         assets: [], // 当前树形在可视区域的资源节点
         selects: [], // 已选中项的 uuid
+        twinkles: [], // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         types: { file: 1 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
         renameSource: '', // 需要 rename 的节点的 url，只有一个
@@ -279,6 +280,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
+        utils.twinkleAssets.add(uuid);
         vm.refresh();
     },
 
@@ -319,7 +321,7 @@ export const methods = {
                 filedata = '';
             }
         }
-
+        utils.twinkleAssets.sleep();
         vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
 
         parent.state = '';
@@ -506,6 +508,10 @@ export const methods = {
             return;
         }
         asset.state = 'loading'; // 显示 loading 效果
+
+        // 暂停闪烁检测
+        utils.twinkleAssets.sleep();
+
         // 重名命资源
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'rename-asset', asset.uuid, name);
 
@@ -670,6 +676,7 @@ export const methods = {
             do {
                 file = json.files[index];
                 index++;
+                utils.twinkleAssets.sleep();
             } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, toAsset.source));
 
             return;
@@ -697,6 +704,8 @@ export const methods = {
             if (toAsset.uuid === fromParent.uuid) {
                 return;
             }
+
+            utils.twinkleAssets.sleep();
 
             // @ts-ignore 移动资源
             Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
@@ -748,6 +757,7 @@ export const methods = {
             asset = utils.getAssetFromTree(copiedUuids[index]);
             index++;
             isLegal = !utils.canNotCopyAsset(asset);
+            utils.twinkleAssets.sleep();
         } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 

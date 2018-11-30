@@ -1,6 +1,7 @@
 <ui-drag-item class="tree-node"
     :draggable="draggable"
     :state="state"
+    :twinkle="twinkles.indexOf(asset.uuid) !== -1" 
     :active="selects.indexOf(asset.uuid) !== -1" 
     :style="{ paddingLeft: asset.left + 'px' }"
     :class="{'parent':asset.isParent}"
