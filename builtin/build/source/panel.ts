@@ -4,7 +4,6 @@ import { shell } from 'electron';
 import { readFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { basename, join, relative } from 'path';
-const builder = require('./../static/scripts/builder.js');
 const PlatformConfigs = require('./../static/scripts/platforms-config.js');
 
 const Vue = require('vue/dist/vue.js');
@@ -56,7 +55,7 @@ export async function ready() {
             checkSuccss: true,
             state: 'info',
             message: '',
-            progressRate: 0,
+            progressRate: '100%',
         },
         computed: {
             selectAll: {
@@ -213,13 +212,15 @@ export async function ready() {
             },
 
             // 构建项目
-            _build() {
+            async _build() {
                 const data = {
                     platform: this.platform,
                     source_map: this.source_map,
                     name: this.name,
                     start_scene: this.start_scene,
+                    debug: this.debug,
                     scenes: [],
+                    dest: join(Editor.Project.path, this.build_path, this.platform),
                 };
                 data.scenes = this.scenes.map((item: any) => {
                     if (item.choose) {
@@ -229,21 +230,11 @@ export async function ready() {
                         });
                     }
                 });
-
-                const options = Object.assign(data, this.$refs.children._data);
+                const excludedModules: any[] = [];
+                const options = Object.assign(data, this.$refs.children._data, {excludedModules});
                 options.embedWebDebugger =
                 (this.platform === 'web-mobile' || this.platform === 'fb-instant-games') && options.debug;
-                builder.build(options);
-                // 监听编译状态变化
-                builder.on('changeState', (state: string, message: string) => {
-                    this.state = state;
-                    this.message = message;
-                });
-
-                // 监听构建进度
-                builder.on('progress', (rate: number) => {
-                    this.progressRate = rate + '%';
-                });
+                Editor.Ipc.sendToPackage('build', 'build', options);
             },
         },
         components: {

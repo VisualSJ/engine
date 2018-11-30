@@ -15,8 +15,6 @@ const address = require('address');
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
 const insertGlobals = require('insert-module-globals');
 
-const TEMP_PATH = join(Editor.App.project, 'temp');
-
 let script2uuid = {}; // 脚本映射表
 
 const DB_PROTOCOL_HEADER = 'db://';
@@ -166,33 +164,24 @@ async function getCustomConfig(type, config) {
             info = {
                 designWidth: config.simulator_width || 960,
                 designHeight: config.simulator_height || 480,
-                groupList: await getProSetting('group-list') || ['default'],
-                collisionMatrix: await getProSetting('collision-matrix') || [[true]],
-                rawAssets: {},
             };
             break;
         case 'build-release':
             info = {
-                designWidth: config.simulator_width || 960,
-                designHeight: config.simulator_height || 480,
-                groupList: await getProSetting('group-list') || ['default'],
-                collisionMatrix: await getProSetting('collision-matrix') || [[true]],
-
-                rawAssets: {},
+                designWidth: await getProSetting('preview.design_width') || 960,
+                designHeight: await getProSetting('preview.design_height') || 480,
             };
             break;
         default:
-            let groupList = await getProSetting('preview.group_list');
-            let collisionMatrix = await getProSetting('preview.collision_matrix');
             info = {
                 designWidth: 960,
                 designHeight: 480,
-                groupList: groupList || ['default'],
-                collisionMatrix: collisionMatrix || [[true]],
-                rawAssets: {},
             };
             break;
     }
+    info.groupList = await getProSetting('preview.group_list') || ['default'];
+    info.collisionMatrix =  await getProSetting('preview.collision_matrix') || ['default'];
+    info.rawAssets = {};
     return info;
 }
 
@@ -365,11 +354,10 @@ async function buildSetting(options, config) {
     }
     const setting = Object.assign(options, tempConfig);
     setting.launchScene = currenScene.source;
-    setting.title = `Cocos ${Editor.Project.type} | ${basename(currenScene.source)}`;
 
     // 预览模式下的 canvas 宽高要以实际场景中的 cavas 为准
     if (options.type === 'preview') {
-        let json = readJSONSync(currenScene.files[0]);
+        let json = readJSONSync(currenScene.library['.json']);
         let info = json.find((item) => {
             return item.__type__ === 'cc.Canvas';
         });
@@ -429,10 +417,12 @@ async function getPreviewUrl() {
 }
 
 module.exports = {
-    buildSetting,
     getModules,
     getCurrentScene,
     getProSetting,
     getGroSetting,
     getPreviewUrl,
+    getCustomConfig,
+    queryAssets,
+    getScriptsCache,
 };

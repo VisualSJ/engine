@@ -63,8 +63,8 @@
     </div>
     <footer>
         <div class="progress">
-            <span class="bar" :state="{width: progressRate}"></span>
-            <div :class="state">{{message}}</div>
+            <span class="bar" :style="{width: progressRate}"></span>
+            <div :class="state">{{message ? message : 'progress'}}</div>
         </div>
         <div class="btn-group">
             <ui-button class="green" @confirm.stop="onBuild" :disabled = "!btnState.build">构建</ui-button>

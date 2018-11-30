@@ -54,8 +54,8 @@
 <script type="text/javascript">
 (function () {
     // open web debugger console
-    if (typeof VConsole !== 'undefined') {
-        window.vConsole = new VConsole();
+    if (typeof eruda !== 'undefined') {
+       eruda.init();
     }
 
     var splash = document.getElementById('splash');

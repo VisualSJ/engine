@@ -2,8 +2,9 @@
 
 import { createReadStream, existsSync } from 'fs-extra';
 import http from 'http';
-import { join } from 'path';
+import { basename , join } from 'path';
 import { start as startSocket } from './socket';
+const Mobiledetect = require('mobile-detect');
 const { DEVICES} = require('./../static/utils/util');
 const express = require('express');
 const ipc = require('@base/electron-base-ipc');
@@ -98,6 +99,7 @@ export async function start() {
         }
         res.sendFile(path);
     });
+
     app.get('/res/raw-*',  async (req: any, res: any) => {
         let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
         if (!existsSync(path)) {
@@ -105,9 +107,23 @@ export async function start() {
         }
         res.sendFile(path);
     });
+
     // 渲染主页
     app.get('/', (req: any, res: any, next: any) => {
-        res.render('index', { title: 'cocos 3d', tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty') });
+        const userAgent = req.header('user-agent');
+        const md = new Mobiledetect(userAgent);
+        res.render('index',
+        {
+            title: `Cocos ${Editor.Project.type} | ${basename(Editor.Project.path)}`,
+            tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty'),
+            enableDebugger: !!md.mobile() || (-1 !== userAgent.indexOf('MicroMessenger')),
+        });
+    });
+
+    // 依赖模块文件
+    app.get('/node_modules/*', async (req: any, res: any) => {
+        const path = join(Editor.App.path, '/node_modules', req.params[0]); // 获取文件名路径
+        res.sendFile(path);
     });
 
     server = http.createServer(app);

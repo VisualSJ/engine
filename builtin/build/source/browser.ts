@@ -1,7 +1,8 @@
 'use strict';
 
 let pkg: any = null;
-const { buildSetting, getModules, getCurrentScene} = require('./../static/scripts/utils.js');
+const { getModules, getCurrentScene} = require('./../static/scripts/utils.js');
+const builder = require('./../static/scripts/builder.js');
 const profile = Editor.Profile.load('profile://global/packages/builder.json');
 const address = require('address');
 /**
@@ -35,12 +36,25 @@ export const messages = {
     },
 
 // ******************** 获取构建相关脚本的处理方法 ********************/
+
+    /**
+     * 项目构建
+     * @param {object} options
+     */
+    async build(options: object) {
+        builder.build(options);
+        // 监听编译状态变化
+        builder.on('changeState', (rate: number, state: string, message: string) => {
+            console.log(rate, state, message);
+        });
+    },
+
     /**
      * 构建 setting 脚本
      * @param {object} options
      */
     async 'build-setting'(options: object, config: object) {
-        const setting = await buildSetting(options, config);
+        const setting = await builder.buildSetting(options, config);
         return setting;
     },
 

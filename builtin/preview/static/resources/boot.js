@@ -176,8 +176,6 @@
 
     // 绑定相关按钮处理事件
     function handles() {
-        // init title
-        document.title = _CCSettings.title;
 
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;
@@ -396,8 +394,6 @@
     async function onload() {
         // 初始化 select 选项设置
         initPreviewOptions();
-        // 初始化 canvas 大小
-        // updateResolution();
         // init operation event
         handles();
         // load scene file

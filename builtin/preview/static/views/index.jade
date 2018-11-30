@@ -42,3 +42,21 @@
     script(type='text/javascript' charset='utf-8' src='/boot.js')
     script(type='text/javascript' charset='utf-8' src='/socket.io/socket.io.js')
     script(type='text/javascript' charset='utf-8' src='/engine/bin/.cache/dev/__quick_compile__.js')
+    if enableDebugger
+        script(type='text/javascript' charset='utf-8' src='node_modules/eruda/eruda.min.js')
+        script(type='text/javascript').
+          eruda.init();
+    script(type='text/javascript' charset='utf-8' src='/engine/bin/.cache/dev/__quick_compile__.js')
+    //- TODO 埋点
+    //- if CA
+    //-   script(type='text/javascript' charset='utf-8' src='app/editor/static/preview-templates/cocos-analytics/cocosAnalytics.min.js')
+    //-   script(type='text/javascript').
+    //-     try {
+    //-       cocosAnalytics.init({
+    //-         appID: !{CA.appID},
+    //-         appSecret: !{CA.appSecret},
+    //-         channel: !{CA.channel},
+    //-         version: !{CA.version}
+    //-       });
+    //-     }
+    //-     catch (e) {} 
