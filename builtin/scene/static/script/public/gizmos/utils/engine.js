@@ -44,7 +44,7 @@ if (Engine.isCreator2x) { /////////////////////////////////////////////////////
     node.opacity = opacity;
   };
   const CameraTool = require('../2d/manager/camera');
-  const ControllerShapeCollider = require('./elements/utils/controller-shape-collider');
+  const ControllerShapeCollider = require('../3d/elements/utils/controller-shape-collider');
   Engine.getRaycastResults = function(rootNode, x, y) {
     let ray = CameraTool._camera.getRay(cc.v3(x, y, 1));
     let results = cc.geomUtils.intersect.raycast(rootNode, ray, (modelRay, node, distance) => {
@@ -114,7 +114,7 @@ if (Engine.isCreator2x) { /////////////////////////////////////////////////////
   Engine.setNodeOpacity = function(node, opacity) {
     node.modelColor.a = opacity;
   };
-  const CameraTool = require('../../3d/manager/camera').EditorCamera;
+  const CameraTool = require('../../../3d/manager/camera').EditorCamera;
   const cmp = (a, b) => { return a.distance - b.distance; };
   const ray = cc.geometry.ray.create();
   Engine.getRaycastResults = function(rootNode, x, y) {

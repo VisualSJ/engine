@@ -1,8 +1,11 @@
 'use strict';
-const NodeUtils = require('../../../../utils/node');
+const Utils = require('../../../utils');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
+const GizmoUtils = Utils.GizmoUtils;
 let PositionController = require('../controller/position-controller');
 let TransformGizmo = require('./transform-gizmo');
-const GizmoManager = require('../../index');
+const TransformToolData = require('../../../utils/transform-tool-data');
 class PositionGizmo extends TransformGizmo {
     init() {
         this.nodesWorldPosList = [];
@@ -22,14 +25,6 @@ class PositionGizmo extends TransformGizmo {
         this._controller.onControllerMouseUp = this.onControllerMouseUp.bind(this);
     }
 
-    visible() {
-        return true;
-    }
-
-    dirty() {
-        return true;
-    }
-
     onControllerMouseDown() {
         this.nodesWorldPosList.length = 0;
         let topNodes = this.topNodes;
@@ -39,20 +34,7 @@ class PositionGizmo extends TransformGizmo {
     }
 
     onControllerMouseMove(/*event*/) {
-        if (this._controller.updated) {
-            this.recordChanges();
-
-            let deltaPos = this._controller.getDeltaPosition();
-            let topNodes = this.topNodes;
-            let curNodePos;
-            for (let i = 0; i < this.nodesWorldPosList.length; ++i) {
-                curNodePos = this.nodesWorldPosList[i].add(deltaPos);
-                NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
-
-                // 发送节点修改消息
-                Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
-            }
-        }
+        this.updateDataFromController();
 
         // update controller transform
         this.updateControllerTransform();
@@ -119,16 +101,21 @@ class PositionGizmo extends TransformGizmo {
         this.commitChanges();
     }
 
-    onKeyDown(/*event*/) {
+    updateDataFromController() {
+        if (this._controller.updated) {
+            this.recordChanges();
 
-    }
+            let deltaPos = this._controller.getDeltaPosition();
+            let topNodes = this.topNodes;
+            let curNodePos;
+            for (let i = 0; i < this.nodesWorldPosList.length; ++i) {
+                curNodePos = this.nodesWorldPosList[i].add(deltaPos);
+                NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
 
-    onKeyUp(/*event*/) {
-
-    }
-
-    onUpdate() {
-
+                // 发送节点修改消息
+                Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+            }
+        }
     }
 
     // 由于inspect之类的地方也会修改位置旋转等，所以暂时在update里调用可以确保位置一直是正确的，更好的
@@ -137,13 +124,13 @@ class PositionGizmo extends TransformGizmo {
         let node = this.node;
         let worldPos;
         let worldRot = cc.quat(0, 0, 0, 1);
-        if (GizmoManager.pivot === 'center') {
-            worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
+        if (TransformToolData.pivot === 'center') {
+            worldPos = GizmoUtils.getCenterWorldPos3D(this.target);
         } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
         }
 
-        if (GizmoManager.coordinate !== 'global') {
+        if (TransformToolData.coordinate !== 'global') {
             worldRot = NodeUtils.getWorldRotation3D(node);
         }
 

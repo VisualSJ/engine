@@ -29,12 +29,12 @@ document.body.appendChild($info);
 
 const tickInterval = 1000 / 60; // 60fps
 function startTicking(fn, ...args) {
-    if (fn.timer) return;
+    if (fn.timer) { return; }
     fn.timer = setInterval(fn, tickInterval, ...args);
 }
 
 function stopTicking(fn) {
-    if (!fn.timer) return;
+    if (!fn.timer) { return; }
     clearInterval(fn.timer);
     fn.timer = 0;
 }
@@ -100,14 +100,14 @@ class Camera extends EventEmitter {
         this.startRot = cc.quat();
         this.tween = (targetPos, targetRot, time = 300) => {
             let startMoveTime = Date.now();
-            if (targetPos) this.node.getPosition(this.startPos);
-            if (targetRot) this.node.getRotation(this.startRot);
+            if (targetPos) { this.node.getPosition(this.startPos); }
+            if (targetRot) { this.node.getRotation(this.startRot); }
             let tweening = () => {
                 let curPassTime = Date.now() - startMoveTime;
                 let t = curPassTime / time;
                 if (t >= 1) { stopTicking(tweening); t = 1; }
-                if (targetPos) this.node.setPosition(vec3.lerp(v3c, this.startPos, targetPos, t));
-                if (targetRot) this.node.setRotation(quat.slerp(qt, this.startRot, targetRot, t));
+                if (targetPos) { this.node.setPosition(vec3.lerp(v3c, this.startPos, targetPos, t)); }
+                if (targetRot) { this.node.setRotation(quat.slerp(qt, this.startRot, targetRot, t)); }
             };
             startTicking(tweening);
         };
@@ -214,7 +214,7 @@ class Camera extends EventEmitter {
     }
 
     focusCameraToNodes(nodes) {
-        if (nodes.length <= 0) return;
+        if (nodes.length <= 0) { return; }
         nodes = nodes.map((id) => NodeQueryUtils.query(id));
         let worldPos = NodeUtils.getCenterWorldPos3D(nodes);
         let minRange = NodeUtils.getMinRangeOfNodes(nodes) * 3;

@@ -1,9 +1,11 @@
-const NodeUtils = require('../../../../utils/node');
+'use strict';
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
 let DirectionLightController = require('../controller/direction-light-controller');
 let PointLightController = require('../controller/sphere-controller');
 let SpotLightController = require('../controller/cone-controller');
 let Gizmo = require('../gizmo-base');
-const { create3DNode } = require('../../engine');
+const { create3DNode } = require('../../../utils/engine');
 
 class LightComponentGizmo extends Gizmo {
     init() {

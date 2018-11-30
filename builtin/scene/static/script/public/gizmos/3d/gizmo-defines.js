@@ -3,7 +3,7 @@
 let GizmoDefines = {};
 module.exports = GizmoDefines;
 
-GizmoDefines.GizmosUtils = require('./utils');
+//GizmoDefines.GizmosUtils = require('../utils/utils');
 
 // for transform tool
 GizmoDefines.position = require('./elements/transform/position-gizmo');

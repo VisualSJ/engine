@@ -4,10 +4,11 @@ const quat = cc.vmath.quat;
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 let ControllerShape = require('../utils/controller-shape');
-const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode } = require('../../engine');
+const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode } = require('../../../utils/engine');
 
-const NodeUtils = require('../../../../utils/node');
-const EditorMath = require('../../../../utils/math');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
+const EditorMath = External.EditorMath;
 
 class RotationController extends ControllerBase {
     constructor(rootNode) {

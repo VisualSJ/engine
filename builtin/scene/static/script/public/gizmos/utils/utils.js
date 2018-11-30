@@ -1,6 +1,7 @@
 'use strict';
 
-const NodeUtils = Editor.require('scene://utils/node');
+const External = require('./external');
+const NodeUtils = External.NodeUtils;
 
 var GizmosUtils = {};
 module.exports = GizmosUtils;

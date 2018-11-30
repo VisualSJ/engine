@@ -2,8 +2,9 @@
 const vec3 = cc.vmath.vec3;
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
-const NodeUtils = require('../../../../utils/node');
-const { getRaycastResults, setNodeOpacity, panPlaneLayer } = require('../../engine');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
+const { getRaycastResults, setNodeOpacity, panPlaneLayer } = require('../../../utils/engine');
 
 class PositionController extends ControllerBase {
     constructor(rootNode) {

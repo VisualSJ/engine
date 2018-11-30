@@ -1,11 +1,12 @@
 'use strict';
 const vec3 = cc.vmath.vec3;
 const vec2 = cc.vmath.vec2;
-const EditorCamera = require('../../../../3d/manager/camera').EditorCamera;
-const NodeUtils = require('../../../../utils/node');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
+const EditorCamera = External.EditorCamera;
 const ControllerUtils = require('../utils/controller-utils');
 const ControllerShapeCollider = require('../utils/controller-shape-collider');
-const { isCreator2x, create3DNode, setMeshColor, getModel } = require('../../engine');
+const { isCreator2x, create3DNode, setMeshColor, getModel } = require('../../../utils/engine');
 
 class ControllerBase {
     constructor(rootNode) {

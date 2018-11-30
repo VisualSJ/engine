@@ -2,9 +2,10 @@
 var ControllerShape = {};
 module.exports = ControllerShape;
 
-const { gfx, createMesh } = require('../../engine');
+const { gfx, createMesh } = require('../../../utils/engine');
 const { vec3, quat } = cc.vmath;
-const MathUtil = require('../../../../utils/math');
+const External = require('../../../utils/external');
+const MathUtil = External.EditorMath;
 
 ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height = 2, opts = {}) {
     let halfHeight = height * 0.5;
@@ -544,17 +545,17 @@ ControllerShape.CalcFrustum = function(fov, aspect, near, far) {
     let nearHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * near;
     let nearHalfWidth = nearHalfHeight * aspect;
 
-    points[0] = cc.v3(-nearHalfWidth, -nearHalfHeight, near);
-    points[1] = cc.v3(-nearHalfWidth, nearHalfHeight, near);
-    points[2] = cc.v3(nearHalfWidth, nearHalfHeight, near);
-    points[3] = cc.v3(nearHalfWidth, -nearHalfHeight, near);
+    points[0] = cc.v3(-nearHalfWidth, -nearHalfHeight, -near);
+    points[1] = cc.v3(-nearHalfWidth, nearHalfHeight, -near);
+    points[2] = cc.v3(nearHalfWidth, nearHalfHeight, -near);
+    points[3] = cc.v3(nearHalfWidth, -nearHalfHeight, -near);
 
     let farHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * far;
     let farHalfWidth = farHalfHeight * aspect;
-    points[4] = cc.v3(-farHalfWidth, -farHalfHeight, far);
-    points[5] = cc.v3(-farHalfWidth, farHalfHeight, far);
-    points[6] = cc.v3(farHalfWidth, farHalfHeight, far);
-    points[7] = cc.v3(farHalfWidth, -farHalfHeight, far);
+    points[4] = cc.v3(-farHalfWidth, -farHalfHeight, -far);
+    points[5] = cc.v3(-farHalfWidth, farHalfHeight, -far);
+    points[6] = cc.v3(farHalfWidth, farHalfHeight, -far);
+    points[7] = cc.v3(farHalfWidth, -farHalfHeight, -far);
 
     for (let i = 1; i < 4; i++) {
         indices.push(i - 1, i);

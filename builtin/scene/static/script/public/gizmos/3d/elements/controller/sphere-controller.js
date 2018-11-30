@@ -3,8 +3,8 @@
 let ControllerBase = require('./controller-base');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const NodeUtils = require('../../../../utils/node');
-const { gfx, create3DNode, getModel, updateVBAttr } = require('../../engine');
+
+const { gfx, create3DNode, getModel, updateVBAttr } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 

@@ -3,7 +3,8 @@ const vec3 = cc.vmath.vec3;
 // const Tools = require('../tools');
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
-const NodeUtils = require('../../../../utils/node');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
 
 class ScaleController extends ControllerBase {
     constructor(rootNode) {

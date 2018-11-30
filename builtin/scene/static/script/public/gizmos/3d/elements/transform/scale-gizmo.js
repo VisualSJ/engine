@@ -1,9 +1,12 @@
 'use strict';
 
-const NodeUtils = require('../../../../utils/node');
+const Utils = require('../../../utils');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
+const GizmoUtils = Utils.GizmoUtils;
 let TransformGizmo = require('./transform-gizmo');
 let ScaleController = require('../controller/scale-controller');
-const GizmoManager = require('../../index');
+const TransformToolData = require('../../../utils/transform-tool-data');
 
 class ScaleGizmo extends TransformGizmo {
     init() {
@@ -37,8 +40,8 @@ class ScaleGizmo extends TransformGizmo {
             this._localScaleList.push(scale);
         }
 
-        if (GizmoManager.pivot === 'center') {
-            this._center = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
+        if (TransformToolData.pivot === 'center') {
+            this._center = GizmoUtils.getCenterWorldPos3D(this.target);
             this._offsetList.length = 0;
             for (let i = 0; i < topNodes.length; ++i) {
                 let nodeWorldPos = NodeUtils.getWorldPosition3D(topNodes[i]);
@@ -48,50 +51,7 @@ class ScaleGizmo extends TransformGizmo {
     }
 
     onControllerMouseMove() {
-
-        if (this._controller.updated) {
-            this.recordChanges();
-
-            let i;
-            let scaleDelta = this._controller.getDeltaScale();
-            let scale = cc.v3(1.0 + scaleDelta.x, 1.0 + scaleDelta.y, 1.0 + scaleDelta.z);
-            let newScale = cc.v3();
-            let topNodes = this.topNodes;
-
-            if (GizmoManager.pivot === 'center') {
-                let curNodePos;
-                for (i = 0; i < this._localScaleList.length; ++i) {
-
-                    newScale.x = this._localScaleList[i].x * scale.x;
-                    newScale.y = this._localScaleList[i].y * scale.y;
-                    newScale.z = this._localScaleList[i].z * scale.z;
-
-                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
-
-                    let offset = cc.v3(
-                        this._offsetList[i].x * scale.x,
-                        this._offsetList[i].y * scale.y,
-                        this._offsetList[i].z * scale.z
-                    );
-
-                    curNodePos = this._center.add(offset);
-                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
-                    // 发送节点修改消息
-                    Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
-                }
-            } else {
-                for (i = 0; i < this._localScaleList.length; ++i) {
-                    newScale.x = this._localScaleList[i].x * scale.x;
-                    newScale.y = this._localScaleList[i].y * scale.y;
-                    newScale.z = this._localScaleList[i].z * scale.z;
-
-                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
-                    // 发送节点修改消息
-                    Manager.Ipc.send('broadcast', 'scene:node-changed', topNodes[i].uuid);
-                }
-            }
-        }
-
+        this.updateDataFromController();
         // update scaleController transform
         this.updateControllerTransform();
     }
@@ -100,14 +60,6 @@ class ScaleGizmo extends TransformGizmo {
         if (this._controller.updated) {
             this.commitChanges();
         }
-    }
-
-    onKeyDown(event) {
-
-    }
-
-    onKeyUp(event) {
-
     }
 
     onGizmoKeyDown(event) {
@@ -166,21 +118,54 @@ class ScaleGizmo extends TransformGizmo {
         this.commitChanges();
     }
 
-    visible() {
-        return true;
-    }
-
-    dirty() {
-        return true;
-    }
-
     setScaleWithPrecision(node, newScale, precision) {
         newScale = NodeUtils.makeVec3InPrecision(newScale, precision);
         node.setScale(newScale.x, newScale.y, newScale.z);
     }
 
-    onUpdate() {
+    updateDataFromController() {
+        if (this._controller.updated) {
+            this.recordChanges();
 
+            let i;
+            let scaleDelta = this._controller.getDeltaScale();
+            let scale = cc.v3(1.0 + scaleDelta.x, 1.0 + scaleDelta.y, 1.0 + scaleDelta.z);
+            let newScale = cc.v3();
+            let topNodes = this.topNodes;
+
+            if (TransformToolData.pivot === 'center') {
+                let curNodePos;
+                for (i = 0; i < this._localScaleList.length; ++i) {
+
+                    newScale.x = this._localScaleList[i].x * scale.x;
+                    newScale.y = this._localScaleList[i].y * scale.y;
+                    newScale.z = this._localScaleList[i].z * scale.z;
+
+                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
+
+                    let offset = cc.v3(
+                        this._offsetList[i].x * scale.x,
+                        this._offsetList[i].y * scale.y,
+                        this._offsetList[i].z * scale.z
+                    );
+
+                    curNodePos = this._center.add(offset);
+                    NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
+                    // 发送节点修改消息
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                }
+            } else {
+                for (i = 0; i < this._localScaleList.length; ++i) {
+                    newScale.x = this._localScaleList[i].x * scale.x;
+                    newScale.y = this._localScaleList[i].y * scale.y;
+                    newScale.z = this._localScaleList[i].z * scale.z;
+
+                    this.setScaleWithPrecision(topNodes[i], newScale, 3);
+                    // 发送节点修改消息
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                }
+            }
+        }
     }
 
     updateControllerTransform() {
@@ -188,8 +173,8 @@ class ScaleGizmo extends TransformGizmo {
         let worldPos;
         let worldRot = cc.quat(0, 0, 0, 1);
 
-        if (GizmoManager.pivot === 'center') {
-            worldPos = Editor.GizmosUtils.getCenterWorldPos3D(this.target);
+        if (TransformToolData.pivot === 'center') {
+            worldPos = GizmoUtils.getCenterWorldPos3D(this.target);
         } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
 

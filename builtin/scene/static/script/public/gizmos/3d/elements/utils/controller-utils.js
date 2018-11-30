@@ -1,8 +1,9 @@
 'use strict';
 let ControllerShape = require('./controller-shape');
-const NodeUtils = require('../../../../utils/node');
+const External = require('../../../utils/external');
+const NodeUtils = External.NodeUtils;
 const ControllerShapeCollider = require('./controller-shape-collider');
-const { gfx, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../engine');
+const { gfx, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
 let ControllerUtils = {};
 
 ControllerUtils.YELLOW = new cc.Color(255, 255, 0);
