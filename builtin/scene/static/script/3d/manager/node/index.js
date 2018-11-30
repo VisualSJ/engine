@@ -10,6 +10,8 @@ const { get } = require('lodash');
 const utils = require('./utils');
 const uuidUtils = require('../../../utils/uuid');
 
+const { promisify } = require('util');
+
 const dumpUtils = require('../../utils/dump');
 const getComponentFunctionOfNode = require('../../utils/get-component-function-of-node');
 
@@ -346,6 +348,45 @@ class NodeManager extends EventEmitter {
         Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
 
         return node.uuid;
+    }
+
+    /**
+     * 从一个资源创建对应的节点
+     * @param {*} parentUuid
+     * @param {*} assetUuid
+     * @param {*} index
+     */
+    async createNodeFromAsset(parentUuid, assetUuid) {
+        if (!cc.director._scene) {
+            return;
+        }
+
+        const parent = this.query(parentUuid);
+        try {
+            const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
+            const node = cc.instantiate(asset);
+
+            this.emit('before-add', node);
+            Manager.Ipc.send('broadcast', 'scene:before-node-create', node.uuid);
+            this.emit('before-change', parent);
+            Manager.Ipc.send('broadcast', 'scene:before-node-change', parentUuid);
+
+            parent.addChild(node);
+
+            // 爬取节点树上的所有节点数据
+            await this.add(node);
+
+            // 发送节点修改消息
+            this.emit('added', node);
+            Manager.Ipc.send('broadcast', 'scene:node-created', node.uuid);
+            this.emit('changed', parent);
+            Manager.Ipc.send('broadcast', 'scene:node-changed', parentUuid);
+
+            return node.uuid;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
     }
 
     /**

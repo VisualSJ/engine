@@ -160,6 +160,13 @@ export function apply(messages: any) {
             return null;
         }
 
+        if (options.assetUuid) {
+            return await $scene.forwarding('Node', 'createNodeFromAsset', [
+                options.parent,
+                options.assetUuid,
+            ]);
+        }
+
         // 返回 uuid
         return await $scene.forwarding('Node', 'createNode', [
             options.parent,

@@ -12,6 +12,7 @@ import ImageImporter from './importers/image';
 import JavascriptImporter from './importers/javascript';
 import JsonImporter from './importers/json';
 import MaterialImporter from './importers/material';
+import PrefabImporter from './importers/prefab';
 import SceneImporter from './importers/scene';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
@@ -69,4 +70,5 @@ export function register(database: AssetDB) {
     database.register(new FbxImporter(), '.fbx');
 
     database.register(new MaterialImporter(), '.mtl');
+    database.register(new PrefabImporter(), '.prefab');
 }

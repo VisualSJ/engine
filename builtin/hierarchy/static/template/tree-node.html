@@ -5,6 +5,7 @@
     :style="{ paddingLeft: node.left + 'px' }"
     :class="{'parent':node.isParent}"
     :expand="node.isExpand"
+    :prefab="node.prefab"
     @mousedown="mouseDown($event, node)"
     @click="click($event, node)"
     @dragstart="dragStart($event, node)" 

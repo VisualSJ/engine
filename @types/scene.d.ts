@@ -33,9 +33,11 @@ interface RemoveArrayOptions {
 // create-node 消息的 options 定义
 interface CreateNodeOptions {
     parent: string;
-    name: string;
     components?: string[];
-    dump?: NodeDump;
+
+    name?: string;
+    dump?: NodeDump; // node 初始化应用的数据
+    assetUuid?: string; // 如果发送了资源 id，则从资源内创建对应的节点
 }
 
 interface RemoveNodeOptions {

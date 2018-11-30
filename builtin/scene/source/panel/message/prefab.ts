@@ -1,0 +1,30 @@
+'use strict';
+
+let $scene: any = null;
+let $loading: any = null;
+let $path: any = null;
+
+export function init(element: any) {
+    $scene = element.$.scene;
+    $loading = element.$.loading;
+    $path = element.$.path;
+}
+
+/**
+ * 场景所有对外提供的操作消息接口
+ */
+export function apply(messages: any) {
+    /**
+     * 打开场景的调试工具
+     */
+    messages['generate-prefab-data'] = async (uuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+        const json = await $scene.forwarding('Prefab', 'generate', [
+            uuid,
+        ]);
+
+        return json;
+    };
+}

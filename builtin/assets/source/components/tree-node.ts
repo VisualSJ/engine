@@ -235,7 +235,7 @@ export const methods = {
      * @param event
      * @param uuid
      */
-    drop(event: Event, asset: ItreeAsset) {
+    async drop(event: Event, asset: ItreeAsset) {
         event.preventDefault(); // 重要：阻止默认打开一些文件的行为
         event.stopPropagation();
         // @ts-ignore
@@ -275,6 +275,14 @@ export const methods = {
 
         data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
+
+        // hack: 资源 uuid 长度大于22，所以小于 22 的识别为 node
+        if (data.from.length <= 22) {
+            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', data.from);
+            const json = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', data.from);
+            Editor.Ipc.sendToPackage('asset-db', 'create-asset', `${data.to}/${dump.name.value}.prefab`, json);
+            return;
+        }
 
         // @ts-ignore
         this.$emit('ipcDrop', data);

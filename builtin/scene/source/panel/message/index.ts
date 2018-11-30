@@ -15,10 +15,16 @@ import {
     init as queryInit,
 } from './query';
 
+import {
+    apply as prefabApply,
+    init as prefabInit,
+} from './prefab';
+
 export function init(element: any) {
     broadcastInit(element);
     operationInit(element);
     queryInit(element);
+    prefabInit(element);
 }
 
 export function apply() {
@@ -26,5 +32,6 @@ export function apply() {
     broadcastApply(messages);
     operationApply(messages);
     queryApply(messages);
+    prefabApply(messages);
     return messages;
 }

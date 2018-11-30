@@ -18,6 +18,8 @@ const manager = {
     Selection: null,
     Operation: null,
     Gizmo: null,
+    Assets: null,
+    Prefab: null,
 
     get serialize() {
         return this._serialize();
@@ -37,6 +39,7 @@ function isReady(bool) {
         manager.Operation = require('./operation');
         manager.Gizmo = require('./gizmos');
         manager.Asset = require('./asset');
+        manager.Prefab = require('./prefab');
 
         ipc.ready();
     }

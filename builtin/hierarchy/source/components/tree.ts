@@ -668,6 +668,36 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
+        // hack: 资源的 uuid length 等于 22
+        if (uuids[0].length >= 22) {
+            uuids.forEach(async (assetUuid) => {
+                await Editor.Ipc.requestToPanel('scene', 'create-node', {
+                    parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
+                    assetUuid,
+                });
+
+                if (json.insert === 'inside') {
+                    return;
+                }
+
+                let offset = toIndex - toArr.length; // 目标索引减去自身索引
+                if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                    offset += 1;
+                } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                    offset -= 1;
+                }
+
+                // 在父级里平移
+                await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
+                    uuid: toParent.uuid,  // 父级 uuid
+                    path: 'children',
+                    target: toArr.length,
+                    offset,
+                });
+            });
+            return;
+        }
+
         // 多节点的移动，根据现有排序的顺序执行
         const groups: any[] = uuids.map((uuid: string) => {
             return utils.getGroupFromTree(db.nodesTree, uuid);

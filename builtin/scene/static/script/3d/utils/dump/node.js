@@ -23,7 +23,7 @@ function dump(node) {
         parentData.value.uuid = node.parent.uuid;
     }
 
-    return {
+    const dump = {
         __type__: 'cc.' + node.constructor.name, // cc.Node or cc.Scene
         __comps__: node._components.map((comp) => {
             return componentUtils.dump(comp);
@@ -68,6 +68,17 @@ function dump(node) {
             value: { x: scale.x, y: scale.y, z: scale.z },
         },
     };
+
+    if (node._prefab && node._prefab.asset) {
+        dump.__prefab__ = {
+            uuid: node._prefab.asset._uuid,
+            rootName: node._prefab.root && node._prefab.root.name,
+            rootUuid: node._prefab.root && node._prefab.root.uuid,
+            sync: node._prefab.root && node._prefab.root._prefab.sync,
+        };
+    }
+
+    return dump;
 }
 
 module.exports = {
