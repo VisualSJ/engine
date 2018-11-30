@@ -13,15 +13,15 @@ let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
 
-nodeManager.on('change', (node) => {
+nodeManager.on('changed', (node) => {
     record(node.uuid);
 });
 
-nodeManager.on('add', (node) => {
+nodeManager.on('added', (node) => {
     record(node.uuid);
 });
 
-nodeManager.on('remove', (node) => {
+nodeManager.on('removed', (node) => {
     // 注意：删除节点不需要保存之前的状态，因为它的父节点 children 已做了 change 的变更记录
 });
 

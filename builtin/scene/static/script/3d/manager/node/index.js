@@ -115,8 +115,10 @@ class NodeManager extends EventEmitter {
         Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
         if (path === 'parent') {
             // 发送节点修改消息
-            Manager.Ipc.send('broadcast', 'scene:before-node-change', node.parent.uuid);
-            this.emit('change', node.parent);
+            if (node.parent) {
+                Manager.Ipc.send('broadcast', 'scene:before-node-change', node.parent.uuid);
+                this.emit('before-change', node.parent);
+            }
         }
 
         // 恢复数据

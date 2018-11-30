@@ -24,7 +24,7 @@ function dump(node) {
     }
 
     return {
-        __type__: node.constructor.name, // Node or Scene
+        __type__: 'cc.' + node.constructor.name, // cc.Node or cc.Scene
         __comps__: node._components.map((comp) => {
             return componentUtils.dump(comp);
         }),
@@ -32,13 +32,13 @@ function dump(node) {
         parent: parentData,
         children: {
             type: 'Array',
-            itemType: 'Node',
+            itemType: 'cc.Node',
             value: node.children
                 .map((child) => {
                     if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
                         return null;
                     }
-                    return { type: 'Node', value: { uuid: child.uuid } };
+                    return { type: 'cc.Node', value: { uuid: child.uuid } };
                 })
                 .filter(Boolean),
         },

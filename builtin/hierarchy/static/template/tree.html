@@ -1,4 +1,4 @@
-<ui-drag-area class="tree" dropable="node"
+<ui-drag-area class="tree" dropable="cc.Node"
     :state="state"
     :style="{ top: top + 'px' }"
     @dragenter="dragEnter($event)"
@@ -6,7 +6,7 @@
     @drop="drop($event)"
     @click="click($event)"
 >
-    <tree-node type="node"
+    <tree-node type="cc.Node"
         v-for="(node,index) in nodes" 
         :key="index"
         :node="node"

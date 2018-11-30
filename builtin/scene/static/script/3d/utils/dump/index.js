@@ -115,8 +115,8 @@ async function restoreProperty(node, path, dump) {
     }
 
     switch (dump.type) {
-        case 'Scene':
-        case 'Node':
+        case 'cc.Scene':
+        case 'cc.Node':
             const nodeManaer = require('../../manager/node');
             const node = nodeManaer.query(dump.value);
             if (key === 'parent') {
@@ -125,7 +125,7 @@ async function restoreProperty(node, path, dump) {
                 property[key] = node;
             }
             break;
-        case 'Vec3':
+        case 'cc.Vec3': //TODO: 是否需要 cc. 开头
             if (key) {
                 property[key].x = dump.value.x;
                 property[key].y = dump.value.y;
@@ -136,7 +136,7 @@ async function restoreProperty(node, path, dump) {
                 property.z = dump.value.z;
             }
             break;
-        case 'Vec2':
+        case 'cc.Vec2':
             if (key === 'scale') {
                 property.scaleX = dump.value.x;
                 property.scaleY = dump.value.y;
@@ -159,7 +159,7 @@ async function restoreProperty(node, path, dump) {
                 property.y = dump.value.y;
             }
             break;
-        case 'Size':
+        case 'cc.Size':
             if (key === 'size') {
                 property.width = dump.value.width;
                 property.height = dump.value.height;
@@ -174,7 +174,6 @@ async function restoreProperty(node, path, dump) {
                 property.height = dump.value.height;
             }
             break;
-        case 'Color':
         case 'cc.Color':
             // 3d opacity、color 由 effect 控制，无需更改 opacity
             const { a, r, g, b } = dump.value;
