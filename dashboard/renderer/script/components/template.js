@@ -42,7 +42,7 @@ exports.watch = {
             .callback((error, templates) => {
                 this.list = templates;
             });
-    }
+    },
 };
 
 exports.methods = {
@@ -57,7 +57,7 @@ exports.methods = {
                 type: 'warning',
                 title: '警告',
                 message: '该文件夹内已存在文件',
-                buttons: ['直接覆盖同名文件', '重新选择路径']
+                buttons: ['直接覆盖同名文件', '重新选择路径'],
             }).then((array) => {
                 if (array[0] === 0) {
                     project.create(this.directoryPath, template.path);
@@ -65,6 +65,8 @@ exports.methods = {
                 }
             });
         }
+        project.create(this.directoryPath, template.path);
+        project.open(this.directoryPath);
     },
 
     // 打开文件夹弹框
@@ -86,9 +88,9 @@ exports.methods = {
      * @param {*} path
      */
     isEmptyDir(path) {
-        let files = fs.readdirSync(path);
+        let files = fs.readdirSync(ps.dirname(path));
         return !files || !files.length;
-    }
+    },
 };
 
 exports.mounted = function() {
