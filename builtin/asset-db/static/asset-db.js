@@ -428,7 +428,7 @@ function searchSubAssets(parent, asset, db) {
             type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
             source: null,
             file: null,
-            library: getLibrary(asset),
+            library: getLibrary(subAsset),
             isDirectory: false,
             visible: parent.visible,
             readOnly: parent.readOnly,
