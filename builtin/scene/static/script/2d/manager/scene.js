@@ -1,7 +1,7 @@
 'use strict';
 
 const manager = {
-    node: require('./node')
+    node: require('./node'),
 };
 
 const camera = require('./camera');
@@ -95,7 +95,7 @@ function queryNodeTree(uuid) {
             name: node.name,
             type: node.constructor.name.replace('_', '.'),
             uuid: node._id,
-            children: children.length ? children : null
+            children: children.length ? children : null,
         };
     };
 

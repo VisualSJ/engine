@@ -642,7 +642,7 @@ export const methods = {
 
         data.to = db.nodesTree.uuid; // cc.Scene 根节点
         data.insert = 'inside';
-        vm.drop(data);
+        vm.ipcDrop(data);
     },
 
     /**
