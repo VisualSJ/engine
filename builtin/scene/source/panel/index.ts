@@ -50,7 +50,7 @@ export const methods = {
      */
     async redo() {
         Editor.Ipc.sendToPanel('scene', 'redo');
-    }
+    },
 };
 
 export const messages = messageApply();
@@ -77,7 +77,7 @@ export async function ready() {
 export async function beforeClose() {
     const dirty = await panel.$.scene.forwarding('Scene', 'queryDirty');
 
-    if (dirty) {
+    if (!dirty) {
         return;
     }
 

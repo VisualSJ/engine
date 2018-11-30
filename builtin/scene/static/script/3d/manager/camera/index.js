@@ -139,14 +139,18 @@ class Camera extends EventEmitter {
             this.node.getPosition(this.pos);
             vec3.transformQuat(this.right, this.id_right, this.rot);
             vec3.transformQuat(this.up, this.id_up, this.rot);
+            operationManager.requestPointerLock();
+            this.emit('cameraMoveMode', this.camera_move_mode);
+            return false;
         } else if (event.rightButton) { // right button: rotation
             this.camera_move_mode = CameraMoveMode.WANDER;
             quat.toEuler(this.euler, this.rot);
             startTicking(this.move);
             $info.hidden = false;
+            operationManager.requestPointerLock();
+            this.emit('cameraMoveMode', this.camera_move_mode);
+            return false;
         }
-        operationManager.requestPointerLock();
-        this.emit('cameraMoveMode', this.camera_move_mode);
     }
 
     onMouseMove(event) {

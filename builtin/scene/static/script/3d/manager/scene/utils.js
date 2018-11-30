@@ -17,6 +17,22 @@ exports.loadSceneByUuid = async function loadSceneByUuid(uuid) {
 };
 
 /**
+ * 从一个场景节点加载场景
+ */
+exports.loadSceneByNode = async function loadSceneByNode(scene) {
+    return new Promise((resolve, reject) => {
+        let timer = null;
+        cc.director.runSceneImmediate(scene, (error) => {
+            clearTimeout(timer);
+            resolve();
+        });
+        timer = setTimeout(() => {
+            reject('Open scene timeout...');
+        }, 3000);
+    });
+};
+
+/**
  * 从一个序列化后的 json 内加载场景
  */
 exports.loadSceneByJson = async function loadSceneByJson(json) {

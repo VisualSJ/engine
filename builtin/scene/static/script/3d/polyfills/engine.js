@@ -8,9 +8,13 @@ class Engine extends EventEmitter {
         super();
         this.attachedObjsForEditor = {};
     }
+
+    off() { }
+
     getDesignResolutionSize() {
         return { width: 1280, height: 760 }; // 手写的设计分辨率
     }
+
     setDesignResolutionSize() { }
 }
 

@@ -94,8 +94,18 @@ export function apply(messages: any) {
         return await $scene.forwarding('Asset', 'querySerializedMaterial', [options]);
     };
 
+    /**
+     * 查询当前显示的场景
+     */
     messages['query-current-scene'] = async () => {
         const uuid = profile.get('current-scene');
         return uuid || '';
+    };
+
+    /**
+     * 查询当前场景是否被修改
+     */
+    messages['query-dirty'] = async () => {
+        return await $scene.forwarding('Scene', 'queryDirty');
     };
 }

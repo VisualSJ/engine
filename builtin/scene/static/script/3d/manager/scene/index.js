@@ -29,21 +29,21 @@ class SceneManager extends EventEmitter {
      * @param {*} uuid 场景资源的 uuid
      */
     async open(uuid) {
-        if (uuid === currentSceneUuid) {
+        if (uuid && uuid === currentSceneUuid) {
             return;
         }
-
-        if (currentSceneUuid) {
-            await close();
-        }
-
         currentSceneUuid = uuid;
+
+        await this.close();
+
         // cc.view.resizeWithBrowserSize(true);
 
-        try {
-            await ipc.send('query-asset-info', uuid);
-        } catch (error) {
-            uuid = '';
+        if (uuid) {
+            try {
+                await ipc.send('query-asset-info', uuid);
+            } catch (error) {
+                uuid = '';
+            }
         }
 
         if (uuid) {
@@ -63,7 +63,8 @@ class SceneManager extends EventEmitter {
             const canvas = new cc.Node('Canvas');
             canvas.parent = scene;
             canvas.addComponent(cc.Canvas);
-            cc.director.runSceneImmediate(scene);
+            await utils.loadSceneByNode(scene);
+            currentSceneData = this.serialize();
             !this.ignore && this.emit('open', null, cc.director._scene);
         }
 
@@ -87,8 +88,8 @@ class SceneManager extends EventEmitter {
                 currentSceneData = null;
                 // 发送节点修改消息
                 Manager.Ipc.send('broadcast', 'scene:close');
-                resolve();
                 !this.ignore && this.emit('close');
+                resolve();
             }, 300);
         });
     }
@@ -137,8 +138,15 @@ class SceneManager extends EventEmitter {
     serialize() {
         let asset = new cc.SceneAsset();
         asset.scene = cc.director.getScene();
-        cc.Object._deferredDestroy();
+        // cc.Object._deferredDestroy();
         return Manager.serialize(asset);
+    }
+
+    /**
+     * 同步场景的序列化数据到缓存
+     */
+    syncSceneData() {
+        currentSceneData = this.serialize();
     }
 
     /**
@@ -211,7 +219,7 @@ class SceneManager extends EventEmitter {
             return false;
         }
 
-        if (this.serialize() !== currentSceneData) {
+        if (this.serialize() === currentSceneData) {
             return false;
         }
 

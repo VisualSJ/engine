@@ -35,9 +35,9 @@ operationManager.on('mouseup', (data) => {
         selection.select(resultNode.uuid);
     } else {
         // 等事件处理顺序完善后再开启这个功能
-        // if (data.leftButton) {  //左键没选中东西则取消当前所选
-        //     selection.clear();
-        // }
+        if (data.leftButton) {  //左键没选中东西则取消当前所选
+            selection.clear();
+        }
     }
 });
 

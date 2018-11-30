@@ -69,6 +69,10 @@ export function apply(messages: any) {
         const url = 'db://assets/NewScene.scene';
         const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
         uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);
+
+        // 同步一下缓存数据
+        await $scene.forwarding('Scene', 'syncSceneData');
+
         profile.set('current-scene', uuid);
         profile.save();
         console.log(`Save scene: ${source}`);

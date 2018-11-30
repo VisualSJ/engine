@@ -342,6 +342,7 @@ module.exports = {
                 this.curSelectNode.emit(customEvent.type, customEvent);
                 return true;
             }
+            return false;
         }
     },
 
@@ -399,7 +400,7 @@ module.exports = {
         if (this.curSelectNode != null) {
             this.curSelectNode.emit(customEvent.type, customEvent);
             this.curSelectNode = null;
-            return true;
+            return false;
         } else {
             let results = getRaycastResults(this.gizmoRootNode, x, y);
 

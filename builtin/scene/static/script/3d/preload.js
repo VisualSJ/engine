@@ -49,4 +49,4 @@ requestAnimationFrame(async () => {
 // 进程刷新的时候，需要广播
 window.addEventListener('beforeunload', () => {
     Manager.Ipc.send('broadcast', 'scene:close');
-}, 3000);
+});
