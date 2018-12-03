@@ -55,7 +55,7 @@ module.exports = async function(info) {
         noCache: false,
         groupList: [],
         collisionMatrix: null,
-        effects: builtinEffectUUIDs
+        effects: builtinEffectUUIDs,
     };
     // todo
     // 重写引擎内的资源相关函数

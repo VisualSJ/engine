@@ -130,8 +130,8 @@ exports.methods = {
                     });
                 });
             }
-            // reset 避免上次操作遗留的 effectMap
-            if (type === 'reset') {
+            // reset、effect变更需要刷新 effectMap
+            if (['reset', 'effect'].includes(type)) {
                 this.getEffectMap();
             }
         } catch (err) {
