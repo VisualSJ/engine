@@ -289,7 +289,7 @@ export const methods = {
      * @param asset
      * @param json
      */
-    async ipcAdd(json: IaddAsset, uuid: string) {
+    async ipcAdd(json: IaddAsset, uuid: string, filedata: any) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
@@ -300,25 +300,29 @@ export const methods = {
         }
 
         let url = parent.source;
-        switch (json.ext) {
-            case 'folder': url += '/New Folder'; break;
-            default: url += '/New File.' + json.ext; break;
+        if (!json.name) {
+            switch (json.ext) {
+                case 'folder': json.name = '/New Folder'; break;
+                default: json.name = '/New File.' + json.ext; break;
+            }
         }
+
+        url += json.name;
 
         parent.state = 'loading';
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
 
-        let filedata;
         if (json.ext === 'folder') {
-            filedata = null;
-        } else {
+            filedata = null; // 注意，文件夹的内容必须传 null 过去
+        }
+        if (filedata === undefined) {
+            filedata = '';
+
             const filetype = db.extToFileType[json.ext];
             if (filetype) {
                 filedata = readFileSync(join(__dirname, `../../static/filecontent/${filetype}`), 'utf8');
-            } else {
-                filedata = '';
             }
         }
         utils.twinkleAssets.sleep();
@@ -644,11 +648,6 @@ export const methods = {
             opacity: 0,
         };
 
-        // 没有源 或者 不是拖动
-        if (!json.from || json.insert !== 'inside') {
-            return;
-        }
-
         // 鼠标在此节点释放
         let toAsset: any = utils.getAssetFromTree(json.to);
 
@@ -661,9 +660,9 @@ export const methods = {
         }
 
         // 从外部拖文件进来
-        if (json.from === 'osFile') {
+        if (json.type === 'osFile') {
             if (!Array.isArray(json.files)) { // 容错处理
-                json.files = [];
+                return;
             }
 
             let index = 0;
@@ -679,38 +678,45 @@ export const methods = {
                 utils.twinkleAssets.sleep();
             } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, toAsset.source));
 
-            return;
+        } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
+            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
+            const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', json.from);
+            vm.ipcAdd({ name: `${dump.name.value}.prefab` }, json.to, content);
+
+        } else {
+            if (!json.from) {
+                return;
+            }
+            const uuids = json.from.split(',');
+            // 多资源移动，根据现有排序的顺序执行
+            const groups: any[] = uuids.map((uuid: string) => {
+                return utils.getGroupFromTree(db.assetsTree, uuid);
+            }).filter(Boolean).sort((a, b) => {
+                return a[0].top - b[0].top;
+            });
+
+            groups.forEach((group: any) => {
+                const [fromAsset, fromIndex, fromArr, fromParent] = group;
+                if (utils.canNotCopyAsset(fromAsset)) {
+                    return;
+                }
+
+                const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
+                if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
+                    return;
+                }
+
+                // 资源移动仍在原来的目录内，不需要移动
+                if (toAsset.uuid === fromParent.uuid) {
+                    return;
+                }
+
+                utils.twinkleAssets.sleep();
+
+                // @ts-ignore 移动资源
+                Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
+            });
         }
-        const uuids = json.from.split(',');
-        // 多资源移动，根据现有排序的顺序执行
-        const groups: any[] = uuids.map((uuid: string) => {
-            return utils.getGroupFromTree(db.assetsTree, uuid);
-        }).filter(Boolean).sort((a, b) => {
-            return a[0].top - b[0].top;
-        });
-
-        groups.forEach((group: any) => {
-            const [fromAsset, fromIndex, fromArr, fromParent] = group;
-            if (utils.canNotCopyAsset(fromAsset)) {
-                return;
-            }
-
-            const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
-            if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
-                return;
-            }
-
-            // 资源移动仍在原来的目录内，不需要移动
-            if (toAsset.uuid === fromParent.uuid) {
-                return;
-            }
-
-            utils.twinkleAssets.sleep();
-
-            // @ts-ignore 移动资源
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
-        });
-
     },
 
     /**

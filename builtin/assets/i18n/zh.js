@@ -29,13 +29,13 @@ module.exports = {
         copy: '复制',
         paste: '粘贴',
         delete: '删除',
-        rename: '重名命',
+        rename: '重命名',
         revealInlibrary: '在资源目录中显示',
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',
     },
 
     operate: {
-        renameFail: '重名命失败：已存在相同名称的文件',
+        renameFail: '重命名失败：已存在相同名称的文件',
     },
 };

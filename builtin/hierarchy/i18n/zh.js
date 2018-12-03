@@ -17,11 +17,11 @@ module.exports = {
         copy: '复制',
         paste: '粘贴',
         delete: '删除',
-        rename: '重名命',
+        rename: '重命名',
         showUuid: '显示节点 UUID 和路径',
     },
 
     operate: {
-        renameFail: '不能对此节点重名命'
-    }
+        renameFail: '不能对此节点重命名',
+    },
 };

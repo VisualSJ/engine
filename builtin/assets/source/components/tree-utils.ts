@@ -275,7 +275,7 @@ exports.twinkleAssets = {
             // 动画结束后删除
             setTimeout(() => {
                 db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
-            }, 2000);
+            }, 1000);
         }
     },
 };

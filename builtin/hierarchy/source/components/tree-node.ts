@@ -180,7 +180,10 @@ export const methods = {
             uuid = this.selects.join(',');
         }
         // @ts-ignore
-        event.dataTransfer.setData('dragData', JSON.stringify({ from: uuid }));
+        event.dataTransfer.setData('dragData', JSON.stringify({
+            from: uuid,
+            type: 'cc.Node',
+        }));
         // @ts-ignore 给其他面板使用
         event.dataTransfer.setData('value', uuid);
 

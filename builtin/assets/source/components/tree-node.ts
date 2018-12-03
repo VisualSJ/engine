@@ -186,7 +186,10 @@ export const methods = {
             uuid = this.selects.join(',');
         }
         // @ts-ignore
-        event.dataTransfer.setData('dragData', JSON.stringify({ from: uuid }));
+        event.dataTransfer.setData('dragData', JSON.stringify({
+            from: uuid,
+            type: asset.type,
+         }));
         // @ts-ignore 给其他面板使用
         event.dataTransfer.setData('value', uuid);
 
@@ -267,7 +270,7 @@ export const methods = {
         // @ts-ignore
         const localFiles = Array.from(event.dataTransfer.files);
         if (localFiles && localFiles.length > 0) { // 从外部拖文件进来
-            data.from = 'osFile';
+            data.type = 'osFile';
             data.insert = 'inside';
             // @ts-ignore
             data.files = localFiles;
@@ -275,14 +278,6 @@ export const methods = {
 
         data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
-
-        // hack: 资源 uuid 长度大于22，所以小于 22 的识别为 node
-        if (data.from.length <= 22) {
-            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', data.from);
-            const json = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', data.from);
-            Editor.Ipc.sendToPackage('asset-db', 'create-asset', `${data.to}/${dump.name.value}.prefab`, json);
-            return;
-        }
 
         // @ts-ignore
         this.$emit('ipcDrop', data);

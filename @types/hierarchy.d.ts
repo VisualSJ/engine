@@ -1,6 +1,13 @@
 declare interface IdragNode {
-    from: string; // 被拖动的节点
-    to: string; // 被指向的节点
+    /**
+     * 拖动 start 的起始赋值
+     * 赋值节点各自的类型
+     * 外部资源的情况包括资源可能的所有类型，
+     * 是否接受该类型需要在 drop 中明确判断
+     */
+    type: string; 
+    from?: string; // 被拖动的节点 uuid
+    to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
 }
 
@@ -14,8 +21,11 @@ declare interface ItreeNode {
     uuid: string;
     type: string;
     children: ItreeNode[];
+    prefab: any;
+    parent: string;
 
     // 以下是扩展的数据
+    isPrefab: boolean; // 是否是 prefab
     readOnly: boolean; // 是否是只读
     top: number; // top 位置
     left: number; // 缩进的大小

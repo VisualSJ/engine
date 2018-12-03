@@ -1,6 +1,14 @@
 declare interface IdragAsset {
-    from: string; // 被拖动的节点
-    to: string; // 被指向的节点
+    /**
+     * 拖动 start 的起始赋值
+     * 赋值资源各自的类型
+     * 外部拖进来的文件 type = 'osFile'
+     * 外部节点的情况包括节点可能的所有类型，
+     * 是否接受该类型需要在 drop 中明确判断
+     */
+    type: string; 
+    from?: string; // 被拖动的节点 uuid
+    to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
     files?: string[]; // 拖拽中带上外部系统文件
 }

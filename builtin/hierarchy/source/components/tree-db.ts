@@ -73,47 +73,26 @@ export function calcNodesTree() {
  */
 export async function addNode(uuid: string) {
     // 获取该节点最新数据
-    const dumpData = await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+    const dumpTree = await Editor.Ipc.requestToPackage('scene', 'query-node-tree', uuid);
     // 更新当前数据
-    return addNodeIntoTree(dumpData);
+    return addNodeIntoTree(dumpTree);
 }
 
 /**
  * 添加节点后数据调整
  */
-function addNodeIntoTree(dumpData: any) {
-    const uuid = dumpData.uuid.value;
-    const type = dumpData.__type__;
-    const parentUuid = dumpData.parent.value.uuid;
-
-    const newNode: ItreeNode = {
-        name: dumpData.name.value,
-        uuid,
-        children: [],
-        type,
-
-        readOnly: false,
-        top: 0,
-        left: 0,
-        depth: 0,
-        isParent: false,
-        isExpand: false,
-        state: '',
-        parentUuid,
-        _height: 0,
-        height: 0,
-    };
+function addNodeIntoTree(newNode: any) {
     uuidNodes[newNode.uuid] = newNode;
 
     // 父级节点
-    let parentNode = uuidNodes[parentUuid];
+    let parentNode = uuidNodes[newNode.parent];
     if (!parentNode) {
         parentNode = nodesTree;
     }
     if (!Array.isArray(parentNode.children)) {
         parentNode.children = [];
     }
-    parentNode.children.push(newNode);
+    vm.$set(parentNode.children, parentNode.children.length, newNode);
     parentNode.isExpand = true;
 
     return newNode;
@@ -267,6 +246,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.state = node.state ? node.state : '';
         node.isParent = node.children && node.children.length > 0 ? true : false;
         node.parentUuid = nodes.uuid;
+        node.isPrefab = !!node.prefab;
 
         if (node.isExpand === undefined) {
             Object.defineProperty(node, 'isExpand', {
