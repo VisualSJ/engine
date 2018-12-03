@@ -49,6 +49,10 @@ function generate(nodeUuid) {
     const node = nodeManager.query(nodeUuid);
     const prefab = new cc.Prefab();
 
+    // 发送节点修改消息
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.send('broadcast', 'scene:before-node-change', node.uuid);
+
     utils.walkNode(node, (child) => {
         const info = new cc._PrefabInfo();
         info.asset = prefab;
@@ -56,6 +60,10 @@ function generate(nodeUuid) {
         info.fileId = child.uuid; // todo fileID
         child._prefab = info;
     });
+
+    // 发送节点修改消息
+    nodeManager.emit('changed', node);
+    Manager.Ipc.send('broadcast', 'scene:node-changed', node.uuid);
 
     const dump = utils.getDumpableNode(node);
     prefab.data = dump;
