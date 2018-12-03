@@ -47,11 +47,11 @@ export function apply(messages: any) {
     /**
      * 查询当前场景的节点树信息
      */
-    messages['query-node-tree'] = async () => {
+    messages['query-node-tree'] = async (uuid: string) => {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Scene', 'queryNodeTree');
+        return await $scene.forwarding('Scene', 'queryNodeTree', [uuid]);
     };
 
     /**

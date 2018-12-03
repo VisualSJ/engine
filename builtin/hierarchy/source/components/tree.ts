@@ -439,8 +439,7 @@ export const methods = {
             }
 
             if (current) {
-                Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-                Editor.Ipc.sendToPackage('selection', 'select', 'node', current.uuid);
+                this.ipcResetSelect(current.uuid);
             }
         }
     },

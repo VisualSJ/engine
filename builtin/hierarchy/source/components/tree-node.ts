@@ -35,6 +35,9 @@ export const computed = {
 
         // @ts-ignore
         if (this.renameUuid === node.uuid) {
+            // @ts-ignore 选中该节点，即更新了属性检查器
+            this.$emit('ipcSingleSelect', node.uuid);
+
             // @ts-ignore
             this.inputFocus();
             return 'input';
