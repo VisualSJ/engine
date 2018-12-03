@@ -57,7 +57,7 @@ function createGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
     let mtl = new cc.Material();
-    mtl.effectName = 'builtin-effect-unlit';
+    mtl.effectName = 'builtin-effect-unlit-transparent';
     mtl.define('USE_COLOR', true);
     mtl.setProperty('color', cc.color('#555555'));
     model.material = mtl;

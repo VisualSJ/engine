@@ -100,7 +100,11 @@ if (Engine.isCreator2x) { /////////////////////////////////////////////////////
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = mesh;
     let mtl = new cc.Material();
-    mtl.effectName = 'builtin-effect-gizmo';
+    if (mesh.getSubMesh(0)._primitiveType < Engine.gfx.PT_TRIANGLES) {
+      mtl.effectName = 'builtin-effect-unlit-transparent';
+      mtl.define('USE_COLOR', true);
+      mtl.effect.getActiveTechnique().passes[0].setDepth(false);
+    } else mtl.effectName = 'builtin-effect-gizmo';
     mtl.setProperty('color', node.modelColor);
     let pass = mtl._effect.getActiveTechnique().passes[0];
     if (opts.cullMode) { pass.setCullMode(opts.cullMode); }

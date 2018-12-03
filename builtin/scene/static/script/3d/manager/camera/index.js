@@ -208,7 +208,6 @@ class Camera extends EventEmitter {
             case 'q': if (this.velocity.y < 0) { this.velocity.y = 0; } break;
             case 's': if (this.velocity.z > 0) { this.velocity.z = 0; } break;
             case 'w': if (this.velocity.z < 0) { this.velocity.z = 0; } break;
-            case 'f': this.focusCameraToNodes(Selection.query()); break;
             case 'h': this.home(); break;
         }
     }
