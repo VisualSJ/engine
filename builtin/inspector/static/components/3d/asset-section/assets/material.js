@@ -1,6 +1,7 @@
 'use strict';
-const {readFile} = require('fs');
+const { readFile } = require('fs');
 const { readTemplate } = require('../../../../utils');
+const { eventBus } = require('../../../../utils/eventBus');
 
 exports.template = readTemplate('3d', './asset-section/assets/material.html');
 
@@ -32,6 +33,11 @@ exports.data = function() {
 
 exports.mounted = function() {
     this.refresh();
+    eventBus.addListener('effect-update', this.onEffectChanged);
+};
+
+exports.beforeDestroy = function() {
+    eventBus.removeListener('effect-update', this.onEffectChanged);
 };
 
 exports.computed = {
@@ -41,25 +47,25 @@ exports.computed = {
 
     propsList() {
         if (this.effectMap && this.effectMap.props) {
-             const {props} = this.effectMap;
-             const {_props = {}} = this.material || {};
-             props.map((item) => {
-                const {key} = item;
+            const { props } = this.effectMap;
+            const { _props = {} } = this.material || {};
+            props.map((item) => {
+                const { key } = item;
                 if (key in _props && _props[key] !== undefined) {
                     item.value = _props[key];
                 }
             });
-             return props;
+            return props;
         }
         return [];
     },
 
     definesList() {
         if (this.effectMap && this.effectMap.defines) {
-            const {defines} = this.effectMap;
-            const {_defines = {}} = this.material || {};
+            const { defines } = this.effectMap;
+            const { _defines = {} } = this.material || {};
             defines.map((item) => {
-                const {key} = item;
+                const { key } = item;
                 if (key in _defines && _defines[key] !== undefined) {
                     item.value = _defines[key];
                 }
@@ -77,8 +83,12 @@ exports.watch = {
 };
 
 exports.methods = {
+    async onEffectChanged() {
+        await this.refresh('effect');
+    },
+
     async getEffectMap() {
-        const {builtinEffects, effectName} = this;
+        const { builtinEffects, effectName } = this;
         const effect = builtinEffects[effectName];
         if (!effect) {
             this.effectMap = {};
@@ -86,7 +96,17 @@ exports.methods = {
         this.effectMap = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', effectName);
     },
 
-    async refresh(isReset = false) {
+    async getEffects() {
+        try {
+            const effects = await Editor.Ipc.requestToPackage('scene', 'query-builtin-effects');
+            this.builtinEffects = effects || {};
+        } catch (err) {
+            console.error(err);
+            this.builtinEffects = {};
+        }
+    },
+
+    async refresh(type) {
         if (!this.meta) {
             this.effectName = '';
             this.props = {};
@@ -94,20 +114,24 @@ exports.methods = {
             return;
         }
         try {
-            const builtinEffects = await Editor.Ipc.requestToPackage('scene', 'query-builtin-effects');
-            const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', this.meta.uuid);
-            readFile(path, (err, data) => {
-                if (err) {
-                    throw(err);
-                }
-                const material = JSON.parse(data);
-                this.material = material;
-                this.effectName = this.material ?  this.material._effectName : '';
-                this.builtinEffects = builtinEffects ? builtinEffects : {};
-                this.dirty = false;
-            });
+            await this.getEffects();
+            if (type !== 'effect') {
+                const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', this.meta.uuid);
+                await new Promise((resolve, reject) => {
+                    readFile(path, (err, data) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        const material = JSON.parse(data);
+                        this.material = material;
+                        this.effectName = this.material ? this.material._effectName : '';
+                        this.dirty = false;
+                        resolve();
+                    });
+                });
+            }
             // reset 避免上次操作遗留的 effectMap
-            if (isReset) {
+            if (type === 'reset') {
                 this.getEffectMap();
             }
         } catch (err) {
@@ -125,7 +149,7 @@ exports.methods = {
 
     onPropertyChanged(event) {
         const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
-        const {path, value, compType} = dump || {};
+        const { path, value, compType } = dump || {};
 
         if (path && path.includes('.')) {
             try {
@@ -152,42 +176,36 @@ exports.methods = {
         }
     },
     reset() {
-        this.refresh(true);
+        this.refresh('reset');
     },
 
     async apply() {
         try {
-            const {material, effectName} = this;
+            const { material, effectName } = this;
             const options = {
                 effectName,
                 _props: {},
                 _defines: {},
             };
             this.propsList.map((item) => {
-                const {key} = item;
+                const { key } = item;
                 if (key in material._props) {
                     options._props[key] = material._props[key];
                 }
             });
 
             this.definesList.map((item) => {
-                const {key} = item;
+                const { key } = item;
                 if (key in material._defines) {
                     options._defines[key] = material._defines[key];
                 }
             });
 
             const result = await Editor.Ipc.requestToPackage('scene', 'query-serialized-material', options);
-            const isSaved = await Editor.Ipc.requestToPackage(
-                'asset-db',
-                'save-asset',
-                this.info.uuid,
-                result
-            );
+            const isSaved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', this.info.uuid, result);
             if (isSaved) {
                 this.refresh();
             }
-
         } catch (err) {
             console.log(err);
         }

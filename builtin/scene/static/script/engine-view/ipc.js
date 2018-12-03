@@ -59,6 +59,20 @@ const messages = {
         return scripts;
     },
 
+    async 'query-effects'() {
+        // 查询所有 *.effect
+        const assets = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+        const effects = assets
+            .map((asset) => {
+                if (asset.importer === 'effect') {
+                    return asset.uuid;
+                }
+            })
+            .filter(Boolean);
+
+        return effects;
+    },
+
     /**
      * 查询一个资源的信息
      * scene 场景加载资源的时候需要使用

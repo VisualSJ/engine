@@ -1,8 +1,6 @@
 'use strict';
 
-const profile = Editor.Profile.load(
-    'profile://local/packages/scene.json'
-);
+const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 let $scene: any = null;
 let $loading: any = null;
@@ -18,7 +16,6 @@ export function init(element: any) {
  * 场景正在监听的所有广播消息
  */
 export function apply(messages: any) {
-
     // 记录当前选中的节点的 uuid
     let selectNodeUuid = '';
 
@@ -76,7 +73,6 @@ export function apply(messages: any) {
         selectNodeUuid = uuid;
         const path = await $scene.forwarding('Scene', 'queryNodePath', [uuid]);
         $path.innerHTML = path;
-
     };
 
     /**
@@ -101,30 +97,41 @@ export function apply(messages: any) {
 
     /**
      * 新建资源
-     *   如果新建的是脚本，需要导入到场景内
      */
     messages['asset-db:asset-add'] = async (uuid: string) => {
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
 
         switch (info.importer) {
             case 'javascript':
+                // 如果新建的是脚本，需要导入到场景内
                 $scene.forwarding('Script', 'loadScripts', [[uuid]]);
                 break;
+            case 'effect':
+                $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
         }
     };
 
     /**
      * 修改资源广播
-     *   如果修改的是脚本，需要更新场景内的脚本数据
      */
     messages['asset-db:asset-change'] = async (uuid: string) => {
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
 
         switch (info.importer) {
             case 'javascript':
+                // 如果修改的是脚本，需要更新场景内的脚本数据
                 $scene.forwarding('Script', 'loadScripts', [[uuid]]);
                 break;
+            case 'effect':
+                $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
         }
     };
 
+    /**
+     * 刪除资源广播
+     */
+    messages['asset-db:asset-delete'] = (uuid: string) => {
+        // 如果删除的是 effect，需要通知更新 effect 列表
+        $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
+    };
 }

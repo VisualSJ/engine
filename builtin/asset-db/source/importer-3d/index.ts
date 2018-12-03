@@ -1,6 +1,7 @@
 'use strict';
 
 import { AssetDB } from 'asset-db';
+import EffectImporter from './importers/effect';
 import FbxImporter from './importers/fbx';
 import GltfImporter, {
     GltfAnimationImporter,
@@ -71,4 +72,5 @@ export function register(database: AssetDB) {
 
     database.register(new MaterialImporter(), '.mtl');
     database.register(new PrefabImporter(), '.prefab');
+    database.register(new EffectImporter(), '.effect');
 }

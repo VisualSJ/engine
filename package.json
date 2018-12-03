@@ -72,6 +72,7 @@
         "iconv-lite": "^0.4.24",
         "insert-module-globals": "^7.2.0",
         "jade": "^1.11.0",
+        "js-sha3": "^0.8.0",
         "jsondiffpatch": "^0.3.11",
         "lodash": "^4.17.10",
         "merge-source-map": "^1.1.0",

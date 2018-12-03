@@ -19,9 +19,6 @@ requestAnimationFrame(async () => {
     // 引擎加载完成后立即注册全局的 Manager
     window.Manager = manager;
 
-    // 重写引擎内的资源相关函数
-    await require('./init/assets')();
-
     // 重写 loadRes、loadResArray、loadResDir 相关函数
     await require('./init/loader')();
 
@@ -37,9 +34,19 @@ requestAnimationFrame(async () => {
 
     // 加载脚本
     const scripts = await Manager.Ipc.send('query-scripts');
-    await Promise.all(scripts.map((uuid) => {
-        return manager.Script.loadScript(uuid);
-    }));
+    await Promise.all(
+        scripts.map((uuid) => {
+            return manager.Script.loadScript(uuid);
+        })
+    );
+
+    // 处理 effect
+    const effects = await Manager.Ipc.send('query-effects');
+    await Promise.all(
+        effects.map((uuid) => {
+            return manager.Effect.registerEffect(uuid);
+        })
+    );
 
     // 启动场景，之前启动了的话，会在 open 方法内被终止
     const scene = await Manager.Ipc.send('query-scene');

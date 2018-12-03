@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+const { eventBus } = require('../static/utils/eventBus');
 
 const Vue = require('vue/dist/vue.js');
 
@@ -61,10 +62,26 @@ export const messages = {
      */
     'selection:select'(type: string, uuid: string) {
         if (vm) {
-            setTimeout(() => {
+            clearTimeout(vm._unselectTimer);
+            if (vm.element === type && vm.uuid === uuid) {
+                return;
+            }
+            clearTimeout(vm.selectTimer);
+            vm.selectTimer = setTimeout(() => {
                 vm.element = type;
                 vm.uuid = uuid;
-            }, 200);
+            }, 50);
+        }
+    },
+    'selection:unselect'(type: string, uuid: string) {
+        if (vm) {
+            clearTimeout(vm._unselectTimer);
+            if (vm.element === type && vm.uuid === uuid) {
+                vm._unselectTimer = setTimeout(() => {
+                    vm.element = '';
+                    vm.uuid = '';
+                }, 50);
+            }
         }
     },
     /**
@@ -76,6 +93,9 @@ export const messages = {
             vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
             vm.$refs.inspector3d && vm.$refs.inspector3d.refresh();
         }
+    },
+    async 'scene:effect-update'(uuid: string) {
+        eventBus.emit('effect-update');
     },
 };
 

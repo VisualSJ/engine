@@ -102,7 +102,7 @@ if (Engine.isCreator2x) { /////////////////////////////////////////////////////
     let mtl = new cc.Material();
     mtl.effectName = 'builtin-effect-gizmo';
     mtl.setProperty('color', node.modelColor);
-    let pass = mtl._effect.getTechnique('transparent').passes[0];
+    let pass = mtl._effect.getActiveTechnique().passes[0];
     if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
     model.material = mtl;
   };

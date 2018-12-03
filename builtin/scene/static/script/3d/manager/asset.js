@@ -5,11 +5,7 @@
  * @returns {{}}
  */
 function queryBuiltinEffects() {
-    return Object.keys(cc.game._builtins).filter((key) => /effect/.test(key))
-    .reduce((acc, cur) => {
-        acc[cur] = cc.game._builtins[cur];
-        return acc;
-    }, {});
+    return cc.EffectAsset.getAll();
 }
 
 /**
@@ -18,7 +14,7 @@ function queryBuiltinEffects() {
  * @returns {{props: any[], defines: any[]}}
  */
 function queryEffectDataForInspector(effectName) {
-    const effect = cc.game._builtins[effectName];
+    const effect = cc.EffectAsset.get(effectName);
     if (!effect) {
         return {};
     }

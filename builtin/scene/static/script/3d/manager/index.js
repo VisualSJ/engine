@@ -41,6 +41,8 @@ function isReady(bool) {
         manager.Asset = require('./asset');
         manager.Prefab = require('./prefab');
 
+        manager.Effect = require('./effects');
+
         ipc.ready();
     }
     return readyFlag;
