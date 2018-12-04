@@ -90,6 +90,15 @@ export const messages = {
     },
 
     /**
+     * 鼠标移入某个物体
+     * @param type
+     * @param uuid
+     */
+    hover(type?: string, uuid?: string) {
+        Editor.Ipc.sendToAll('selection:hover', type, uuid);
+    },
+
+    /**
      * 查询最后一个选中的物体类型
      */
     'query-last-select-type'() {
@@ -113,7 +122,7 @@ export const messages = {
      */
     'query-select'(type: string) {
         return selection[type] || [];
-    }
+    },
 
 };
 

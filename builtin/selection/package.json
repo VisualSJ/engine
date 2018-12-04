@@ -1,5 +1,7 @@
 {
     "name": "selection",
     "version": "0.0.1",
+    "description": "Node and Asset selection manager",
+
     "main": "./dist/browser.js"
 }

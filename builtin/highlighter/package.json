@@ -1,0 +1,7 @@
+{
+    "name": "hightlighter",
+    "version": "0.0.1",
+    "description": "Node and Asset hightlight manager",
+
+    "main": "./browser.js"
+}
