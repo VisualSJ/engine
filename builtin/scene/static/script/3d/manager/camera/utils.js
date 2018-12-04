@@ -2,7 +2,6 @@
 
 function grid (width, length, segw, segl) {
     let positions = [];
-    let normals = [];
     let uvs = [];
     let indices = [];
 
@@ -10,43 +9,33 @@ function grid (width, length, segw, segl) {
     let hl = length * 0.5;
     let dw = width / segw;
     let dl = length / segl;
-    let i = 0;
-    let minPos = cc.vmath.vec3.create(-hw, 0, -hl);
-    let maxPos = cc.vmath.vec3.create( hw, 0,  hl);
-    let boundingRadius = Math.max(hw, hl);
 
-    for (let x = -hw; x <= hw; x += dw, i += 2) {
-        positions.push(x, 0, -hl);
-        uvs.push((x + hw) / width, 0);
-        normals.push(0, 1, 0);
-
-        positions.push(x, 0,  hl);
-        uvs.push((x + hw) / width, 1);
-        normals.push(0, 1, 0);
-
-        indices.push(i, i + 1);
+    // here we store directional info of the grid layout inside uvs, not actual uvs
+    function addLine(x1, z1, x2, z2) {
+        let idx = positions.length / 3;
+        if (x1 === x2) {
+            positions.push(x1 + 0.01, 0, z1); uvs.push(1, 0);
+            positions.push(x1 - 0.01, 0, z1); uvs.push(0, 0);
+            positions.push(x1 + 0.01, 0, z2); uvs.push(1, 0);
+            positions.push(x1 - 0.01, 0, z2); uvs.push(0, 0);
+        } else {
+            positions.push(x1, 0, z1 - 0.01); uvs.push(0, 1);
+            positions.push(x1, 0, z1 + 0.01); uvs.push(1, 1);
+            positions.push(x2, 0, z1 - 0.01); uvs.push(0, 1);
+            positions.push(x2, 0, z1 + 0.01); uvs.push(1, 1);
+        }
+        indices.push(idx, idx + 1, idx + 2, idx + 2, idx + 1, idx + 3);
     }
-    for (let z = -hl; z <= hl; z += dl, i += 2) {
-        positions.push(-hw, 0, z);
-        uvs.push(0, (z + hl) / length);
-        normals.push(0, 1, 0);
 
-        positions.push( hw, 0, z);
-        uvs.push(1, (z + hl) / length);
-        normals.push(0, 1, 0);
-
-        indices.push(i, i + 1);
-    }
+    for (let x = -hw; x <= hw; x += dw)
+        addLine(x, -hl, x, hl);
+    for (let z = -hl; z <= hl; z += dl)
+        addLine(-hw, z, hw, z);
 
     return {
         positions,
         uvs,
-        normals,
-        indices,
-        minPos,
-        maxPos,
-        boundingRadius,
-        primitiveType: cc.gfx.PT_LINES
+        indices
     };
 }
 
@@ -57,9 +46,7 @@ function createGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
     let mtl = new cc.Material();
-    mtl.effectName = 'builtin-effect-unlit-transparent';
-    mtl.define('USE_COLOR', true);
-    mtl.setProperty('color', cc.color('#555555'));
+    mtl.effectName = 'builtin-effect-grid';
     model.material = mtl;
     return node;
 }
@@ -68,10 +55,10 @@ function createCamera(color) {
     let node = new cc.Node('Editor Camera');
     node.parent = Manager.backgroundNode;
     let camera = node.addComponent(cc.CameraComponent);
-    camera.far = 10000;
-    camera.color = color;
-    camera.onLoad();
-    camera.onEnable();
+    camera.far = 10000; camera.color = color;
+    camera.onLoad(); camera.onEnable();
+    let light = node.addComponent(cc.LightComponent);
+    light.onLoad(); light.onEnable();
     return camera;
 }
 
