@@ -1,10 +1,11 @@
-@red: #ec7063;
-@orange: #f0ad4e;
-@yellow: #f4d03f;
-@green: #2ece54;
-@cyan: #00bcd4;
-@blue: #3498db;
-@purple: #d78eef;
+@i-red: #ec7063;
+@i-orange: #f0ad4e;
+@i-yellow: #f4d03f;
+@i-green: #6dd66d;
+@i-cyan: #00bcd4;
+@i-blue: #3498db;
+@i-purple: #d78eef;
+@i-white: #f5f5f5;
 [class^="i-"],
 [class*=" i-"] {
     font-family: "assets" !important;
@@ -15,107 +16,91 @@
     display: inline-block;
 }
 
+.i-animation,
 .i-javascript {
-    color: @red;
+    color: @i-red;
 }
 
+.i-list,
 .i-json {
-    color: @yellow;
+    color: @i-yellow;
 }
 
 .i-code {
-    color: @red;
+    color: @i-red;
 }
 
 .i-image {
-    color: @cyan;
+    color: @i-cyan;
 }
 
+.i-mesh,
 .i-typescript {
-    color: @purple;
+    color: @i-purple;
 }
 
+.i-material {
+    color: @i-white;
+}
+
+.i-effect,
+.i-robot,
 .i-folder {
-    color: @blue;
+    color: @i-blue;
 }
 
-.i-packer {
-    color: @green;
+.i-model {
+    color: @i-green;
+
 }
 
 // 以上是 tree-node-icon 的颜色，不需要频繁变动
-.i-database:before {
-    content: "\e62c";
-}
+.i-list:before { content: "\e60a"; }
 
-.i-search:before {
-    content: "\e726";
-}
+.i-animation:before { content: "\e623"; }
 
-.i-unlock:before {
-    content: "\e72c";
-}
+.i-database:before { content: "\e62c"; }
 
-.i-packer:before {
-    content: "\e886";
-}
+.i-search:before { content: "\e726"; }
 
-.i-arrow-right:before {
-    content: "\e6df";
-}
+.i-unlock:before { content: "\e72c"; }
 
-.i-add:before {
-    content: "\e64d";
-}
+.i-file:before { content: "\e60c"; }
 
-.i-folder:before {
-    content: "\e616";
-}
+.i-arrow-right:before { content: "\e6df"; }
 
-.i-full-over:before {
-    content: "\e600";
-}
+.i-add:before { content: "\e64d"; }
 
-.i-full:before {
-    content: "\e602";
-}
+.i-folder:before { content: "\e616"; }
 
-.i-lock:before {
-    content: "\e900";
-}
+.i-robot:before { content: "\e6f3"; }
 
-.i-refresh:before {
-    content: "\ee63";
-}
+.i-full-over:before { content: "\e600"; }
 
-.i-javascript:before {
-    content: "\e601";
-}
+.i-full:before { content: "\e602"; }
 
-.i-image:before {
-    content: "\e603";
-}
+.i-lock:before { content: "\e900"; }
 
-.i-json:before {
-    content: "\e604";
-}
+.i-refresh:before { content: "\ee63"; }
 
-.i-video:before {
-    content: "\e605";
-}
+.i-video:before { content: "\e76c"; }
 
-.i-zip:before {
-    content: "\e606";
-}
+.i-model:before { content: "\e775"; }
 
-.i-typescript:before {
-    content: "\e607";
-}
+.i-material:before { content: "\ef44"; }
 
-.i-file:before {
-    content: "\e608";
-}
+.i-javascript:before { content: "\e601"; }
 
-.i-code:before {
-    content: "\e609";
-}
+.i-image:before { content: "\e603"; }
+
+.i-json:before { content: "\e604"; }
+
+.i-zip:before { content: "\e606"; }
+
+.i-typescript:before { content: "\e607"; }
+
+.i-code:before { content: "\e609"; }
+
+.i-effect:before { content: "\e63c"; }
+
+.i-mesh:before { content: "\e60b"; }

@@ -72,8 +72,15 @@ const map = {
         },
     }),
     '3d': Object.assign(Object.assign({}, mapCommon), {
-        fbx: { type: 'icon', value: 'i-packer' },
+        fbx: { type: 'icon', value: 'i-list' },
         texture: { type: 'icon', value: 'i-image' },
+        effect: { type: 'icon', value: 'i-effect' },
+        material: { type: 'icon', value: 'i-material' },
+        prefab: { type: 'icon', value: 'i-model' },
+        'gltf-material': { type: 'icon', value: 'i-material' },
+        'gltf-skeleton': { type: 'icon', value: 'i-robot' },
+        'gltf-mesh': { type: 'icon', value: 'i-mesh' },
+        'gltf-animation': { type: 'icon', value: 'i-animation' },
     }),
 };
 
@@ -152,7 +159,7 @@ export const methods = {
         const importer = vm.asset.importer;
         // @ts-ignore
         const nMap: any = map[Editor.Project.type];
-        // @ts-ignore
+
         const one = nMap[importer];
         if (one) {
             vm.type = one.type;
