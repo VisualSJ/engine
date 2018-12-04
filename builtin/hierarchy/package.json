@@ -16,7 +16,6 @@
     },
 
     "main": "./dist/browser.js",
-    "disabled": false,
     "description": "hierarchy",
     "panel": {
         "title": "i18n:hierarchy.title",

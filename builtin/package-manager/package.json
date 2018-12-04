@@ -39,6 +39,5 @@
         "height": 650
     },
     "description": "A simple package debugger",
-    "author": "Yanna",
-    "disabled": false
+    "author": "Yanna"
 }

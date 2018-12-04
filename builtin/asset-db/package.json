@@ -10,6 +10,5 @@
 
     "main": "./dist/browser.js",
     "dependencies": {},
-    "description": "A aseet-db",
-    "disabled": false
+    "description": "A aseet-db"
 }

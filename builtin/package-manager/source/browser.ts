@@ -2,8 +2,9 @@
 
 let pkg: any = null;
 import { existsSync } from 'fs';
-import { copySync,  ensureDirSync, outputJsonSync, readJsonSync } from 'fs-extra';
-import { basename , join } from 'path';
+import { copySync, ensureDirSync, outputJsonSync, readJsonSync } from 'fs-extra';
+import { basename, join } from 'path';
+
 /**
  * 打开 package-manager 面板
  */
@@ -48,7 +49,7 @@ export const messages = {
     },
     'import-packages:project'() {
         importPackages('project');
-    }
+    },
 };
 
 export function load() {
@@ -100,7 +101,7 @@ function importPackages(type: string = 'project') {
     }
     const path = join(pkgPath, './package');
     Editor.Dialog.openDirectory({
-        title : '请选择插件包文件夹',
+        title: '请选择插件包文件夹',
         label: '导入插件包',
         root: path,
     }).then((filePath: string) => {

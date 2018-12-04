@@ -2,6 +2,8 @@
     "name": "ui-preview",
     "version": "0.0.1",
 
+    "description": "ui-preview about editor",
+
     "menu": {
         "i18n:menu.develop/i18n:ui-preview.title": {
             "message": "open",
@@ -11,8 +13,7 @@
     },
 
     "main": "./dist/browser.js",
-    "disabled": false,
-    "description": "ui-preview about editor",
+    "windows": "./static/scripts/windows.js",
     "panel": {
         "title": "i18n:ui-preview.title",
         "main": "./dist/panel.js",
@@ -22,6 +23,6 @@
         "width": 400,
         "height": 600
     },
-    "detail": "ui-preview",
-    "author": "cocos 3d"
+
+    "author": "Cocos"
 }

@@ -47,6 +47,13 @@ class View extends window.HTMLElement {
 
         // 载入指定页面
         this.$scene.loadURL(`packages://scene/static/template/${Editor.Project.type}-webview.html`);
+
+        // 等待 webview 初始化完成
+        await new Promise((resolve) => {
+            this.$scene.addEventListener('dom-ready', () => {
+                resolve();
+            });
+        });
     }
 
     /**

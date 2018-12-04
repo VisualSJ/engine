@@ -42,7 +42,8 @@ export function apply(messages: any) {
      */
     messages['asset-db:ready'] = () => {
         const uuid = profile.get('current-scene');
-        if (!uuid) {
+        // uuid 不存在，或者已经打开了场景的情况下，不需要重新打开场景
+        if (!uuid && !$loading.hidden) {
             return;
         }
         $scene.forwarding('Scene', 'open', [uuid]);

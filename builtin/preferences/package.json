@@ -10,7 +10,6 @@
     },
 
     "main": "./dist/browser.js",
-    "disabled": false,
     "description": "preferences about editor",
     "panel": {
         "title": "i18n:preferences.title",

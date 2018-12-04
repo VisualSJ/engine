@@ -1,6 +1,6 @@
 'use strict';
 
-import { existsSync , readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { join } from 'path';
 const Vue = require('vue/dist/vue.js');
@@ -16,7 +16,7 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 export const $ = {
-    'package-manager': '.package-manager'
+    'package-manager': '.package-manager',
 };
 
 /**
@@ -33,7 +33,7 @@ export const messages = {
     // 更新获取的 packages 信息
     'package-manager:update-packages'() {
         vm.init();
-    }
+    },
 };
 
 export async function ready() {
@@ -47,14 +47,14 @@ export async function ready() {
             tabs: {
                 internal: '内置',
                 project: '项目',
-                home: '全局',
+                global: '全局',
                 // store: '商店',
             },
             activeTab: 'internal',
         },
         mounted() {
             this.init();
-            Editor.Ipc.sendToPackage('package-manager', 'start-watch');
+            // Editor.Ipc.sendToPackage('package-manager', 'start-watch');
         },
         computed: {
             // @ts-ignore
@@ -62,17 +62,36 @@ export async function ready() {
                 // @ts-ignore
                 return this.packages.filter((item: any) => {
                     // @ts-ignore
-                    return (item.type === this.activeTab) && (item.name.indexOf(this.queryKey) !== -1);
+                    return (item.type === this.activeTab) && (item.info.name.indexOf(this.queryKey) !== -1);
                 });
-            }
+            },
         },
         methods: <any>{
             /**
              * 初始化，获取已加载的插件包信息
              */
             async init() {
-                const packages = await Editor.Ipc.requestToPackage('package-manager', 'get-packgaes');
-                this.packages = packages;
+                // @ts-ignore
+                const list = Editor.remote.Package.getPackages().map((item: any) => {
+                    return {
+                        name: item.info.name,
+                        enable: item.enable,
+                        info: item.info,
+                        invalid: item.invalid,
+                        path: item.path,
+                    };
+                });
+                list.forEach((item: any) => {
+                    if (item.path.indexOf(Editor.App.path) !== -1) {
+                        item.type = 'internal';
+                    } else if (item.path.indexOf(Editor.App.home) !== -1) {
+                        item.type = 'global';
+                    } else {
+                        item.type = 'project';
+                    }
+                    delete item.pkg;
+                });
+                this.packages = list;
             },
             /**
              * 查询插件
@@ -82,11 +101,11 @@ export async function ready() {
             },
             // 新建插件
             addPlugin() {
-                Editor.Ipc.sendToPackage('package-manager', 'add-packages', this.activeTab);
+                // Editor.Ipc.sendToPackage('package-manager', 'add-packages', this.activeTab);
             },
             // 导入插件
             importPlugin() {
-                Editor.Ipc.sendToPackage('package-manager', 'import-packages', this.activeTab);
+                // Editor.Ipc.sendToPackage('package-manager', 'import-packages', this.activeTab);
             },
         },
         components: {
@@ -96,5 +115,5 @@ export async function ready() {
 
 }
 
-export async function beforeClose() {}
-export async function close() {}
+export async function beforeClose() { }
+export async function close() { }

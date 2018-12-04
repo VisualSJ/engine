@@ -50,24 +50,24 @@ export const methods = {
                     label: `${cmd} in global`,
                     click() {
                         Editor.Ipc.sendToPackage('pkg-manager', 'handle-packages', cmd, path, type);
-                    }
+                    },
                 },
                 {
                     label: `${cmd} in project`,
                     click() {
                         Editor.Ipc.sendToPackage('pkg-manager', 'handle-packages', cmd, path, type, true);
-                    }
-                }
-            ]
+                    },
+                },
+            ],
         });
     },
 };
 export const props: object = [
-    'package'
+    'package',
 ];
 
-export function mounted() {}
+export function mounted() { }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
-export async function close() {}
+export async function close() { }

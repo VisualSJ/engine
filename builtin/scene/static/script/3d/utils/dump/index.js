@@ -118,7 +118,7 @@ async function restoreProperty(node, path, dump) {
         case 'cc.Scene':
         case 'cc.Node':
             const nodeManaer = require('../../manager/node');
-            const node = nodeManaer.query(dump.value);
+            const node = nodeManaer.query(dump.value.uuid);
             if (key === 'parent') {
                 node.addChild(property);
             } else {

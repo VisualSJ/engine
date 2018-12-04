@@ -10,7 +10,6 @@
     },
 
     "main": "./dist/browser.js",
-    "disabled": false,
     "description": "setting about project",
     "panel": {
         "title": "i18n:project-setting.title",

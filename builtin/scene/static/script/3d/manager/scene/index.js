@@ -34,8 +34,6 @@ class SceneManager extends EventEmitter {
         }
         currentSceneUuid = uuid;
 
-        await this.close();
-
         // cc.view.resizeWithBrowserSize(true);
 
         if (uuid) {

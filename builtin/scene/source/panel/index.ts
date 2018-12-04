@@ -59,10 +59,10 @@ export async function ready() {
     // @ts-ignore
     panel = this;
 
+    messageInit(panel);
+
     // 初始化引擎管理器
     await panel.$.scene.init();
-
-    messageInit(panel);
 
     // 显示版本号
     panel.$.version.innerHTML = 'Version: ' + panel.$.scene.version;
