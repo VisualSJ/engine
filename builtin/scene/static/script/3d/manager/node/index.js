@@ -59,6 +59,13 @@ class NodeManager extends EventEmitter {
      */
     add(node) {
         uuid2node[node._id] = node;
+
+        // prefab 节点有子节点
+        if (Array.isArray(node.children)) {
+            node.children.forEach((child) => {
+                this.add(child);
+            });
+        }
     }
 
     /**
@@ -338,7 +345,6 @@ class NodeManager extends EventEmitter {
 
         parent.addChild(node);
 
-        // 爬取节点树上的所有节点数据
         await this.add(node);
 
         // 发送节点修改消息

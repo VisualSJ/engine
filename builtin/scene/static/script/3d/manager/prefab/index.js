@@ -8,21 +8,78 @@
 const nodeManager = require('../node');
 const utils = require('./utils');
 
+nodeManager.on('changed', (node) => {
+    if (!node.parent || node.parent instanceof cc.Scene) {
+        return;
+    }
+
+    if (!!node.parent._prefab) {
+        link(node);
+    } else {
+        // root 是自己，说明自己是 prefab 根节点，不需要剔除
+        if (node._prefab && node._prefab.root === node) {
+            return;
+        }
+        unlink(node);
+    }
+});
+
+nodeManager.on('added', (node) => {
+    if (node.parent && !!node.parent._prefab) {
+        link(node);
+    }
+});
+nodeManager.on('removed', (node) => {
+    // root 是自己，说明自己是 prefab 根节点，不需要剔除
+    if (node._prefab && node._prefab.root === node) {
+        return;
+    }
+    unlink(node);
+});
+
 /**
  * 将一个 node 与一个 prefab 关联到一起
- * @param {*} assetUuid
- * @param {*} nodeUuid
+ * @param {*} nodeUuid 也支持 node 对象
+ * @param {*} assetUuid TODO: 待定
  */
 function link(nodeUuid, assetUuid) {
-    const asset = cc.AssetLibrary.load();
+    let node = nodeUuid;
+    if (typeof nodeUuid === 'string') {
+        node = nodeManager.query(nodeUuid);
+    }
+
+    const parentPrefab = node.parent._prefab;
+
+    const info = new cc._PrefabInfo();
+    info.asset = asset || parentPrefab.asset;
+    info.root = parentPrefab.root;
+    info.fileId = node.uuid;
+    node._prefab = info;
+
+    if (Array.isArray(node.children)) {
+        node.children.forEach((child) => {
+            link(child);
+        });
+    }
 }
 
 /**
  * 将一个节点，与当前挂载的 prefab 解除连接
- * @param {*} nodeUuid
+ * @param {*} nodeUuid 也支持 node 对象
  */
 function unlink(nodeUuid) {
+    let node = nodeUuid;
+    if (typeof nodeUuid === 'string') {
+        node = nodeManager.query(nodeUuid);
+    }
 
+    node._prefab = undefined;
+
+    if (Array.isArray(node.children)) {
+        node.children.forEach((child) => {
+            unlink(child);
+        });
+    }
 }
 
 /**

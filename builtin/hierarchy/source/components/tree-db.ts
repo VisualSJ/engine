@@ -92,9 +92,20 @@ function addNodeIntoTree(newNode: any) {
     if (!Array.isArray(parentNode.children)) {
         parentNode.children = [];
     }
-    vm.$set(parentNode.children, parentNode.children.length, newNode);
+
+    let index = parentNode.children.findIndex((child: any) => child === newNode);
+    if (index === -1) {
+        index = parentNode.children.length;
+    }
+    vm.$set(parentNode.children, index, newNode);
     parentNode.isExpand = true;
 
+    // 显示节点中可能附带的 children 节点，例如 prefab
+    if (Array.isArray(newNode.children)) {
+        newNode.children.forEach((child: any) => {
+            addNodeIntoTree(child);
+        });
+    }
     return newNode;
 }
 
@@ -191,6 +202,9 @@ function changeNode3D(newData: any) {
             node[key] = newData[key].value;
         }
     });
+
+    // 针对 prefab 属性做的处理
+    node.prefab = newData.__prefab__ ? true : false;
 
     if (!Array.isArray(node.children)) {
         node.children = [];
