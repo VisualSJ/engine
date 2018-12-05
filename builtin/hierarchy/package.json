@@ -10,11 +10,6 @@
         }
     },
 
-    "runtime-resource": {
-        "name": "hierarchy",
-        "path": "../static/internal"
-    },
-
     "main": "./dist/browser.js",
     "description": "hierarchy",
     "panel": {

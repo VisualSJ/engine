@@ -183,6 +183,14 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     }
 });
 
+// 停止一个数据库
+Worker.Ipc.on('asset-worker:shutdown-database', async (event, name) => {
+    const db = AssetWorker[name];
+    db.stop();
+    delete AssetWorker[name];
+    Worker.Ipc.send('asset-worker:close', name);
+});
+
 // 翻译 url
 Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
     if (isAbsolute(url)) {

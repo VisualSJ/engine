@@ -132,11 +132,16 @@ export const messages = {
     /**
      * asset db 关闭
      * 打开 loading 状态，并隐藏资源树
+     * @param name 具体某一个 db 被关闭了
      */
-    'asset-db:close'() {
+    'asset-db:close'(name: string) {
+        if (name) {
+            vm.refresh();
+            return;
+        }
+
         panel.staging();
         vm.clear();
-
     },
     /**
      * asset db 广播通知添加了 asset

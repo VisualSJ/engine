@@ -11,6 +11,7 @@
       "../../node_modules/@types/node",
       "../../node_modules/@types/fs-extra",
       "../../@types/editor",
+      "../../@types/asset-db",
       "../../@types/asset-db/glTF",
       "../../@types/asset-db/equirect-cubemap-faces-js",
       "../../@types/asset-db/fbx2gltf",

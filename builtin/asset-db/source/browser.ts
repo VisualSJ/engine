@@ -2,7 +2,7 @@
 
 import { statSync } from 'fs';
 import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
-import { basename, extname, join, relative } from 'path';
+import { basename, extname, join } from 'path';
 import { getName } from './utils';
 
 const worker = require('@base/electron-worker');
@@ -11,22 +11,15 @@ const worker = require('@base/electron-worker');
 const assetDBs = [
     {
         name: 'internal',
-        target: join(__dirname, '../static/internal', 'assets'),
-        library: join(Editor.Project.path, 'library'),
-        temp: join(Editor.Project.path, 'temp/asset-db/internal'),
-        visible: true,
-        readOnly: false,
+        target: join(__dirname, '../static/internal/assets'),
     },
     {
         name: 'assets',
         target: join(Editor.Project.path, 'assets'),
-        library: join(Editor.Project.path, 'library'),
-        temp: join(Editor.Project.path, 'temp/asset-db/assets'),
-        visible: true,
-        readOnly: false,
     },
 ];
-let isReady: number = 0; // 支持多 db, 当 isReady === assetDBs.length 才是全部 ready
+let startedNumber: number = 0; // 支持多 db, 当 startedNumber === assetDBs.length 才是全部 ready, isReady = true
+let isReady: boolean = false; // 既定的 db 已全部启动
 let assetWorker: any = null;
 const protocol = 'db://'; // 支持多 db , 不再列出具体的 db://assets 或 db://internal
 
@@ -40,7 +33,38 @@ module.exports = {
          * 查询是否准备完成
          */
         'query-is-ready'() {
-            return isReady === assetDBs.length;
+            return isReady;
+        },
+
+        /**
+         * 插件自身状态变更
+         * @param state 插件状态 'enable', 'disable'
+         * @param path 插件的磁盘路径（一个文件夹）
+         * @param info 插件的配置包信息，包括 { pkg, enable }
+         */
+        'editor3d-lib-package:emit'(state: string, path: string, info: any) {
+            if (!assetWorker) {
+                throw new Error('Asset DB does not exist.');
+            }
+            if (!isReady) {
+                return;
+            }
+
+            // @ts-ignore
+            const db = info.pkg['runtime-resource'];
+            if (!db) {
+                return;
+            }
+
+            const config = Object.assign({
+                target: join(path, db.path || ''),
+            }, db);
+
+            if (info.enable === true) {
+                assetWorker.send('asset-worker:startup-database', legealDbConfig(config));
+            } else {
+                assetWorker.send('asset-worker:shutdown-database', db.name || info.pkg.name);
+            }
         },
 
         /**
@@ -403,7 +427,7 @@ module.exports = {
         worker.close('asset-db');
 
         // 更新主进程标记以及广播消息
-        isReady = 0;
+        startedNumber = 0;
         Editor.Ipc.sendToAll('asset-db:close');
     },
 };
@@ -431,30 +455,49 @@ async function createWorker() {
             utils: info.utils,
         });
 
+        // 检查所有插件中是否有需要启动的 db
+        mergeAssetDBsFromPackages();
+
         // 启动数据库
-        assetDBs.forEach((config) => {
-            assetWorker.send('asset-worker:startup-database', config);
+        assetDBs.forEach((config: IruntimeResource) => {
+            assetWorker.send('asset-worker:startup-database', legealDbConfig(config));
         });
     });
 
     // 如果 worker 检测到正在刷新
     assetWorker.on('refresh', () => {
         Editor.Ipc.sendToAll('asset-db:close');
-        isReady = 0;
+
+        startedNumber = 0;
+        isReady = false;
     });
 
     // 如果 worker 检测到关闭
     assetWorker.on('closed', () => {
         Editor.Ipc.sendToAll('asset-db:close');
-        isReady = 0;
+
+        startedNumber = 0;
+        isReady = false;
     });
 
     // 更新主进程标记以及广播消息
     assetWorker.on('asset-worker:ready', async (event: any, name: string) => {
-        isReady++;
-        if (isReady === assetDBs.length) {
+        startedNumber++;
+
+        if (!isReady && startedNumber === assetDBs.length) {
             Editor.Ipc.sendToAll('asset-db:ready');
+            isReady = true;
         }
+
+        if (isReady) {
+            // 成功启动了一个追加的 package db，参数 name 是 runtime-resource 里的 name 值
+            Editor.Ipc.sendToAll('asset-db:added', name);
+        }
+    });
+
+    // 一个 db 被关闭了
+    assetWorker.on('asset-worker:close', async (event: any, name: string) => {
+        Editor.Ipc.sendToAll('asset-db:close', name);
     });
 
     // workder 检测到了插入资源
@@ -471,4 +514,39 @@ async function createWorker() {
     assetWorker.on('asset-worker:asset-delete', (event: any, uuid: string) => {
         Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
     });
+}
+
+function mergeAssetDBsFromPackages() {
+    const dirnames = Object.keys(Editor.Package.packages);
+    dirnames.forEach((dirname) => {
+        // @ts-ignore
+        const pkg: any = Editor.Package.packages[dirname];
+        const db: IruntimeResource = pkg['runtime-resource'];
+        if (db) {
+            assetDBs.push(Object.assign({
+                target: join(dirname, db.path || ''),
+            }, db));
+        }
+    });
+}
+
+/**
+ * 补充一个 db 的其他配置
+ * @param config 来自 package.json 的 runtime-resouece 字段
+ */
+function legealDbConfig(config: IruntimeResource) {
+    const option = {
+        // 两外两个重要配置 name, target 的值，来自于参数 config
+        temp: join(Editor.Project.path, 'temp/asset-db', config.name),
+
+        // 以下配置固定
+        library: join(Editor.Project.path, 'library'),
+        visible: true,
+        readOnly: false,
+    };
+
+    Object.assign(option, config);
+
+    // 返回新的配置对象
+    return option;
 }
