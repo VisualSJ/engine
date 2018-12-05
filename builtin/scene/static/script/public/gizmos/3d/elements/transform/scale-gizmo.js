@@ -91,7 +91,7 @@ class ScaleGizmo extends TransformGizmo {
         this.recordChanges();
 
         let curScale = cc.v3();
-        this.topNodes.forEach(function(node) {
+        this.topNodes.forEach(function (node) {
             node.getScale(curScale);
 
             curScale.x = curScale.x + dif.x;

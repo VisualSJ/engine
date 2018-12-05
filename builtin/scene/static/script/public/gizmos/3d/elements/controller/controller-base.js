@@ -7,6 +7,8 @@ const EditorCamera = External.EditorCamera;
 const ControllerUtils = require('../utils/controller-utils');
 const ControllerShapeCollider = require('../utils/controller-shape-collider');
 const { isCreator2x, create3DNode, setMeshColor, getModel } = require('../../../utils/engine');
+let TransformToolData = require('../../../utils/transform-tool-data');
+const Utils = require('../../../utils');
 
 class ControllerBase {
     constructor(rootNode) {
@@ -27,17 +29,25 @@ class ControllerBase {
         this._twoPI = Math.PI * 2;
         this._halfPI = Math.PI / 2;
         this._degreeToRadianFactor = Math.PI / 180;
+    }
 
-        // for 2d
-        this._is2D = isCreator2x;
-        this._2DScale = 1;
+    get is2D() {
+        return TransformToolData.is2D;
+    }
+
+    get scale2D() {
+        return TransformToolData.scale2D;
     }
 
     createShapeNode(name) {
         this.shape = create3DNode(name);
         this.shape.parent = this._rootNode;
+    }
 
-        EditorCamera.node.on('transform-changed', this.onEditorCameraMoved, this);
+    registerSizeChangeEvents() {
+        EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
+        TransformToolData.on('dimension-changed', this.onDimensionChanged.bind(this));
+        TransformToolData.on('scale2D-changed', this.onScale2DChanged.bind(this));
     }
 
     onEditorCameraMoved() {
@@ -98,7 +108,7 @@ class ControllerBase {
                 this.onMouseMove(event);
             }
             event.stopPropagation();
-
+            Utils.repaintEngine();
         }.bind(this));
 
         node.on('mouseUp', function(event) {
@@ -127,6 +137,7 @@ class ControllerBase {
                 this.onHoverIn(event);
             }
             event.stopPropagation();
+            Utils.repaintEngine();
         }.bind(this));
 
         node.on('hoverOut', function(event) {
@@ -136,6 +147,7 @@ class ControllerBase {
                 this.onHoverOut(event);
             }
             event.stopPropagation();
+            Utils.repaintEngine();
         }.bind(this));
     }
 
@@ -183,8 +195,8 @@ class ControllerBase {
     getDistScalar() {
         let scalar = 1;
 
-        if (this._is2D) {
-            scalar = 1 / this._2DScale;
+        if (this.is2D) {
+            scalar = 1 / this.scale2D;
         } else {
             let cameraNode = EditorCamera._camera.node;
             let dist = ControllerUtils.getCameraDistanceFactor(this._position, cameraNode);
@@ -284,15 +296,20 @@ class ControllerBase {
         }
     }
 
-    setDimension(is2D) {
-        this._is2D = is2D;
-        this.show();
-        this.updateController();
+    get visible() {
+        return this.shape.active;
     }
 
-    set2DScale(scale) {
-        this._2DScale = scale;
-        this.updateController();
+    onDimensionChanged() {
+        if (this.visible) {
+            this.show();
+        }
+    }
+
+    onScale2DChanged() {
+        if (this.visible) {
+            this.adjustControllerSize();
+        }
     }
 }
 

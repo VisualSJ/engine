@@ -53,23 +53,23 @@ class PositionGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 
         let offset = event.shiftKey ? 10 : 1;
 
         let dif = cc.v2();
-        if (keyCode === 'left') {
+        if (keyCode === 'arrowleft') {
             dif.x = -offset;
-        } else if (keyCode === 'right') {
+        } else if (keyCode === 'arrowright') {
             dif.x = offset;
-        } else if (keyCode === 'up') {
+        } else if (keyCode === 'arrowup') {
             dif.y = offset;
-        } else if (keyCode === 'down') {
+        } else if (keyCode === 'arrowdown') {
             dif.y = -offset;
         }
 
@@ -91,10 +91,10 @@ class PositionGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 

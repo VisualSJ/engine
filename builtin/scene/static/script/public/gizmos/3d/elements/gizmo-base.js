@@ -1,4 +1,5 @@
 'use strict';
+let Utils = require('../../utils');
 
 let EPSILON = 1e-6;
 
@@ -54,23 +55,20 @@ class GizmoBase {
 
     getGizmoRoot() {
         if (!this._rootNode) {
-            this._rootNode = Manager.foregroundNode.getChildByName('gizmoRoot');
+            this._rootNode = Utils.getGizmoRoot();
         }
 
         return this._rootNode;
     }
 
     recordChanges() {
-        // this.nodes.forEach( node => {
-        //     _Scene.Undo.recordNode( node.uuid );
-        // });
-
+        this.nodes.forEach((node) => {
+            Utils.recordNode(node);
+        });
     }
 
     commitChanges() {
-        // AnimUtils.recordNodeChanged(this.nodes);
-        // _Scene.Undo.commit();
-
+        Utils.commitChanges(this.nodes);
     }
 
     //判断当前选中节点是否被锁定

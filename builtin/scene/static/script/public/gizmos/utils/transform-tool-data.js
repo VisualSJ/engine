@@ -1,10 +1,16 @@
 'use strict';
+let EventEmitter = require('events');
 
-class TransformToolData {
+class TransformToolData extends EventEmitter {
     constructor() {
+        super();
         this._toolName = 'position';   // position/rotation/scale
         this._coordinate = 'local'; // local/global
         this._pivot = 'pivot';  // pivot/center
+
+        // for 2d
+        this._is2D = false;
+        this._scale2D = 1.0;
     }
 
     get toolName() {
@@ -27,6 +33,22 @@ class TransformToolData {
     }
     set pivot(value) {
         this._pivot = value;
+    }
+
+    get is2D() {
+        return this._is2D;
+    }
+    set is2D(value) {
+        this._is2D = value;
+        this.emit('dimension-changed', this._is2D);
+    }
+
+    get scale2D() {
+        return this._scale2D;
+    }
+    set scale2D(value) {
+        this._scale2D = value;
+        this.emit('scale2D-changed', this._scale2D);
     }
 }
 

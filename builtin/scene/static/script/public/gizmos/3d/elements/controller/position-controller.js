@@ -59,6 +59,7 @@ class PositionController extends ControllerBase {
 
     initShape() {
         this.createShapeNode('PositionController');
+        this.registerSizeChangeEvents();
 
         // x axis
         this.createAxis('x', cc.Color.RED, cc.v3(-90, -90, 0));
@@ -195,7 +196,7 @@ class PositionController extends ControllerBase {
     }
 
     onShow() {
-        if (this._is2D) {
+        if (this.is2D) {
             this._axisDataMap.z.topNode.active = false;
             this._axisDataMap.xz.topNode.active = false;
             this._axisDataMap.yz.topNode.active = false;

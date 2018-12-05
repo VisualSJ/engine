@@ -11,12 +11,13 @@ class ScaleController extends ControllerBase {
         super(rootNode);
 
         this._deltaScale = cc.v3(0, 0, 0);
-        this._scaleFactor = 10;
+        this._scaleFactor = 125;
         this.initShape();
     }
 
     initShape() {
         this.createShapeNode('ScaleController');
+        this.registerSizeChangeEvents();
 
         let baseCubeSize = 25;
         let axisLength = 140;
@@ -144,7 +145,7 @@ class ScaleController extends ControllerBase {
     }
 
     onShow() {
-        if (this._is2D) {
+        if (this.is2D) {
             this._axisDataMap.z.topNode.active = false;
             this.updateController();
         } else {

@@ -57,6 +57,8 @@ class RotationController extends ControllerBase {
 
     initShape() {
         this.createShapeNode('RotationController');
+        this.registerSizeChangeEvents();
+
         this._baseRadius = 100;
         this._tubeRadius = 3;
 
@@ -119,7 +121,7 @@ class RotationController extends ControllerBase {
         let crossDir = cc.v3();
         this._indicatorStartDir = cc.v3();
 
-        if (this._is2D) {
+        if (this.is2D) {
             if (this.isHitOnAxisArrow(event.node, event.axisName)) {
                 vec3.transformQuat(hitDir, cc.v3(1, 0, 0), this._rotation);
             } else {
@@ -208,7 +210,7 @@ class RotationController extends ControllerBase {
         this._indicator.sectorNode.active = false;
         this._deltaRotation = cc.quat(0, 0, 0, 1);
 
-        if (this._is2D) {
+        if (this.is2D) {
             this._axisDataMap.w.indicatorCircle.active = false;
             this._axisDataMap.w.normalTorusNode.active = true;
             this._axisDataMap.w.topNode.active = true;
@@ -260,7 +262,7 @@ class RotationController extends ControllerBase {
     }
 
     onShow() {
-        if (this._is2D) {
+        if (this.is2D) {
             this._axisDataMap.x.topNode.active = false;
             this._axisDataMap.y.topNode.active = false;
             this._axisDataMap.z.topNode.active = false;

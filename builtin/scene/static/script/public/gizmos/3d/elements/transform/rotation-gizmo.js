@@ -90,15 +90,15 @@ class RotationGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 
         let delta = event.shiftKey ? 10 : 1; // right and down
-        if (keyCode === 'right' || keyCode === 'down') {
+        if (keyCode === 'arrowright' || keyCode === 'arrowdown') {
             delta *= -1;
         }
 
@@ -161,10 +161,10 @@ class RotationGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 
@@ -182,9 +182,9 @@ class RotationGizmo extends TransformGizmo {
 
     updateDataFromController() {
         if (this._controller.updated) {
-            // this.target.forEach(node => {
-            //     _Scene.Undo.recordNode(node.uuid);
-            // });
+            this.target.forEach(node => {
+                Utils.recordNode(node);
+            });
 
             let i;
             let rot = cc.quat(0, 0, 0, 1);

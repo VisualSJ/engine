@@ -3,8 +3,7 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let BoxController = require('../controller/box-controller');
 let Gizmo = require('../gizmo-base');
-const { create3DNode } = require('../../../utils/engine');
-let aabb = External.GeometryUtils.aabb;
+const { getBoudingBox } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
@@ -12,6 +11,7 @@ class ModelComponentGizmo extends Gizmo {
     init() {
         this._degreeToRadianFactor = Math.PI / 180;
         this.createController();
+        this._isInited = true;
     }
 
     onShow() {
@@ -40,30 +40,27 @@ class ModelComponentGizmo extends Gizmo {
             return;
         }
 
-        if (this.target instanceof cc.ModelComponent) {
-            let node = this.node;
+        // if (this.target instanceof cc.ModelComponent ||
+        //     this.target instanceof cc.MeshRenderer) {
+        let node = this.node;
 
-            let mesh = this.target.mesh;
-            if (mesh) {
-                this._controller.show();
-                let boundingBox = aabb.fromPoints(aabb.create(), mesh.minPosition, mesh.maxPosition);
-                let size = cc.v3();
+        let boundingBox = getBoudingBox(this.target);
+        if (boundingBox) {
+            this._controller.show();
+            let size = cc.v3();
 
-                let worldScale = NodeUtils.getWorldScale3D(node);
-                let worldPos = NodeUtils.getWorldPosition3D(node);
-                let worldRot = NodeUtils.getWorldRotation3D(node);
-                this._controller.setScale(worldScale);
-                this._controller.setPosition(worldPos);
-                this._controller.setRotation(worldRot);
+            let worldScale = NodeUtils.getWorldScale3D(node);
+            let worldPos = NodeUtils.getWorldPosition3D(node);
+            let worldRot = NodeUtils.getWorldRotation3D(node);
+            this._controller.setScale(worldScale);
+            this._controller.setPosition(worldPos);
+            this._controller.setRotation(worldRot);
 
-                vec3.scale(size, boundingBox.halfExtents, 2);
-                let center = cc.v3(boundingBox.center.x, boundingBox.center.y, boundingBox.center.z);
-                this._controller.updateSize(center, size);
-            } else {
-                this._controller.hide();
-            }
+            vec3.scale(size, boundingBox.halfExtents, 2);
+            let center = cc.v3(boundingBox.center.x, boundingBox.center.y, boundingBox.center.z);
+            this._controller.updateSize(center, size);
         } else {
-            console.error('target is not a cc.ModelComponent');
+            this._controller.hide();
         }
     }
 
