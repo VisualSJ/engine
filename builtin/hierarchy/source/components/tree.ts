@@ -611,6 +611,7 @@ export const methods = {
         this.selectBox = {
             opacity: top + '!important',
             top: top + 'px',
+
             left: left + 'px',
             height: height + 'px',
         };
@@ -641,6 +642,8 @@ export const methods = {
 
         data.to = db.nodesTree.uuid; // cc.Scene 根节点
         data.insert = 'inside';
+        // @ts-ignore
+        data.copy = event.ctrlKey;
         vm.ipcDrop(data);
     },
 
@@ -655,13 +658,13 @@ export const methods = {
             opacity: 0,
         };
 
-        const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
-
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
         // 明确接受 cc.Prefab 资源作为节点
         if (json.type === 'cc.Prefab') {
+            const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
+
             await Editor.Ipc.requestToPanel('scene', 'create-node', {
                 parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
                 assetUuid: json.from,
@@ -691,109 +694,14 @@ export const methods = {
                 return;
             }
 
-            if (json.from.search(json.to) !== -1) { // 移动的元素有重叠
+            if (json.copy) { // 按住了 ctrl 键，拖动复制
+                copiedUuids = json.from.split(',');
+                vm.paste(json.to);
                 return;
             }
 
-            const uuids = json.from.split(',');
-
-            // 多节点的移动，根据现有排序的顺序执行
-            const groups: any[] = uuids.map((uuid: string) => {
-                return utils.getGroupFromTree(db.nodesTree, uuid);
-            }).filter(Boolean).sort((a, b) => {
-                return a[0].top - b[0].top;
-            });
-
-            // 开始执行
-            groups.forEach((group: any) => {
-                (async (group) => {
-                    const [fromNode, fromIndex, fromArr, fromParent] = group;
-
-                    const isSubChild = utils.getGroupFromTree(fromNode, json.to);
-                    if (isSubChild[0]) { // toNode 节点是 fromNode 的子集，所以父不能移到子里面
-                        return;
-                    }
-
-                    // 移动的索引变动
-                    let offset = 0;
-                    // 受变动的节点
-                    let affectNode;
-
-                    // 内部平级移动
-                    // @ts-ignore
-                    if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
-                        // @ts-ignore
-                        affectNode = utils.getNodeFromMap(fromParent.uuid); // 元素的父级
-
-                        offset = toIndex - fromIndex; // 目标索引减去自身索引
-                        if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
-                            offset += 1;
-                        } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                            offset -= 1;
-                        }
-
-                        if (offset === 0) {
-                            return;
-                        }
-
-                        Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                            uuid: toParent.uuid,  // 被移动的节点的父级 uuid
-                            path: 'children',
-                            target: fromIndex, // 被移动的节点所在的索引
-                            offset,
-                        });
-                    } else { // 跨级移动
-                        // 先从原来的父级删除
-                        await Editor.Ipc.sendToPackage('scene', 'remove-node', { uuid: fromNode.uuid });
-
-                        // 再开始移动
-                        if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
-                            // @ts-ignore
-                            affectNode = utils.getNodeFromMap(toNode.uuid); // 元素自身
-                            Editor.Ipc.sendToPackage('scene', 'set-property', {
-                                uuid: fromNode.uuid,
-                                path: 'parent',
-                                dump: {
-                                    type: toNode.type,
-                                    value: toNode.uuid, // 被 drop 的元素就是父级
-                                },
-                            });
-                        } else { // 跨级插入 'before', 'after'
-                            // @ts-ignore
-                            affectNode = utils.getNodeFromMap(toParent); // 元素的父级
-                            await Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
-                                uuid: fromNode.uuid,
-                                path: 'parent',
-                                dump: {
-                                    type: toParent.type,
-                                    value: toParent.uuid, // 被 drop 的元素的父级
-                                },
-                            });
-
-                            offset = toIndex - toArr.length; // 目标索引减去自身索引
-                            if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
-                                offset += 1;
-                            } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                                offset -= 1;
-                            }
-
-                            // 在父级里平移
-                            await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                                uuid: toParent.uuid,  // 父级 uuid
-                                path: 'children',
-                                target: toArr.length,
-                                offset,
-                            });
-                        }
-
-                        if (affectNode) {
-                            affectNode.state = 'loading'; // 显示 loading 效果
-                        }
-                    }
-                })(group);
-            });
+            vm.move(json);
         }
-
     },
 
     /**
@@ -863,6 +771,128 @@ export const methods = {
                 })(parent, node.uuid);
             });
         }
+    },
+
+    /**
+     * 移动
+     */
+    move(json: IdragNode) {
+        if (!json || !json.from || !json.to) {
+            return;
+        }
+
+        const uuids = json.from.split(',');
+
+        // @ts-ignore
+        if (uuids.includes(json.to)) { // 移动的元素有重叠
+            return;
+        }
+
+        const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
+
+        // 多节点的移动，根据现有排序的顺序执行
+        const groups: any[] = uuids.map((uuid: string) => {
+            return utils.getGroupFromTree(db.nodesTree, uuid);
+        }).filter(Boolean).sort((a, b) => {
+            return a[0].top - b[0].top;
+        });
+
+        // 开始执行
+        groups.forEach((group: any) => {
+            (async (group) => {
+                const [fromNode, fromIndex, fromArr, fromParent] = group;
+
+                const isSubChild = utils.getGroupFromTree(fromNode, json.to);
+                if (isSubChild[0]) { // toNode 节点是 fromNode 的子集，所以父不能移到子里面
+                    return;
+                }
+
+                // 移动的索引变动
+                let offset = 0;
+                // 受变动的节点
+                let affectNode;
+
+                // 内部平级移动
+                // @ts-ignore
+                if (['before', 'after'].includes(json.insert) && fromParent.uuid === toParent.uuid) {
+                    // @ts-ignore
+                    affectNode = utils.getNodeFromMap(fromParent.uuid); // 元素的父级
+
+                    offset = toIndex - fromIndex; // 目标索引减去自身索引
+                    if (offset < 0 && json.insert === 'after') { // 小于 0 的偏移默认是排在目标元素之前，如果是 after 要 +1
+                        offset += 1;
+                    } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                        offset -= 1;
+                    }
+
+                    if (offset === 0) {
+                        return;
+                    }
+
+                    Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
+                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid
+                        path: 'children',
+                        target: fromIndex, // 被移动的节点所在的索引
+                        offset,
+                    });
+                } else { // 跨级移动
+                    if (fromParent === toNode) { // 仍在原来的层级中
+                        return;
+                    }
+
+                    // 先从原来的父级删除
+                    await Editor.Ipc.sendToPackage('scene', 'remove-node', { uuid: fromNode.uuid });
+
+                    // 再开始移动
+                    if (json.insert === 'inside') { // 丢进元素里面，被放在尾部
+                        // @ts-ignore
+                        affectNode = utils.getNodeFromMap(toNode.uuid); // 元素自身
+                        Editor.Ipc.sendToPackage('scene', 'set-property', {
+                            uuid: fromNode.uuid,
+                            path: 'parent',
+                            dump: {
+                                type: toNode.type,
+                                value: {
+                                    uuid: toNode.uuid, // 被 drop 的元素就是父级
+                                },
+                            },
+                        });
+                    } else { // 跨级插入 'before', 'after'
+                        // @ts-ignore
+                        affectNode = utils.getNodeFromMap(toParent); // 元素的父级
+                        await Editor.Ipc.sendToPackage('scene', 'set-property', { // 先丢进父级
+                            uuid: fromNode.uuid,
+                            path: 'parent',
+                            dump: {
+                                type: toParent.type,
+                                value: {
+                                    uuid: toParent.uuid, // 被 drop 的元素就是父级
+                                },
+                            },
+                        });
+
+                        offset = toIndex - toArr.length; // 目标索引减去自身索引
+                        if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                            offset += 1;
+                        } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                            offset -= 1;
+                        }
+
+                        // 在父级里平移
+                        await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
+                            uuid: toParent.uuid,  // 父级 uuid
+                            path: 'children',
+                            target: toArr.length,
+                            offset,
+                        });
+                    }
+
+                    if (affectNode) {
+                        affectNode.state = 'loading'; // 显示 loading 效果
+                    }
+                }
+            })(group);
+        });
     },
 
     /**

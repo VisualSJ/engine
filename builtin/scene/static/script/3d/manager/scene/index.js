@@ -168,7 +168,7 @@ class SceneManager extends EventEmitter {
                 name: node.name,
                 type: 'cc.' + node.constructor.name,
                 uuid: node._id,
-                children: children.length ? children : null,
+                children: children.length ? children : [],
                 prefab: !!node._prefab,
                 parent: node.parent && node.parent.uuid || '',
             };

@@ -33,7 +33,7 @@ export const methods = {
     /**
      * 暂存页面数据
      */
-    async staging() {
+    staging() {
         const uuidsIsExpand = [];
         for (const uuid in vm.$refs.tree.folds) {
             if (vm.$refs.tree.folds[uuid]) {
@@ -60,14 +60,14 @@ export const methods = {
     /**
      * 刷新面板
      */
-    async refresh() {
+    refresh() {
         vm.refresh();
     },
     /**
      * 全选
      * 也配置成为了键盘事件，下同
      */
-    async selectAll(event: Event) {
+    selectAll(event: Event) {
         if (event) {
             event.stopPropagation();
             event.preventDefault();
@@ -78,43 +78,43 @@ export const methods = {
     /**
      * 焦点面板搜索
      */
-    async find() {
+    find() {
         vm.$refs.search.focus();
     },
     /**
      * 复制资源
      */
-    async copy() {
+    copy() {
         vm.$refs.tree.copy();
     },
     /**
      * 粘贴资源
      */
-    async paste() {
+    paste() {
         vm.$refs.tree.paste();
     },
     /**
      * 删除资源
      */
-    async delete() {
-        vm.$refs.tree.delete();
+    delete() {
+        vm.$refs.tree.ipcDelete();
     },
-    async up() {
+    up() {
         vm.$refs.tree.upDownLeftRight('up');
     },
-    async down() {
+    down() {
         vm.$refs.tree.upDownLeftRight('down');
     },
-    async left() {
+    left() {
         vm.$refs.tree.upDownLeftRight('left');
     },
-    async right() {
+    right() {
         vm.$refs.tree.upDownLeftRight('right');
     },
-    async shiftUp() {
+    shiftUp() {
         vm.$refs.tree.shiftUpDown('up');
     },
-    async shiftDown() {
+    shiftDown() {
         vm.$refs.tree.shiftUpDown('down');
     },
 };

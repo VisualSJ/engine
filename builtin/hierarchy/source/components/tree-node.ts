@@ -280,7 +280,8 @@ export const methods = {
 
         data.to = node.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
-
+        // @ts-ignore
+        data.copy = event.ctrlKey;
         // @ts-ignore
         this.$emit('ipcDrop', data);
     },

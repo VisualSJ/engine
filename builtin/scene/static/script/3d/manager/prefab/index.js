@@ -7,17 +7,20 @@
 
 const nodeManager = require('../node');
 const utils = require('./utils');
+const ipc = require('../ipc');
 
 nodeManager.on('changed', (node) => {
     if (!node.parent || node.parent instanceof cc.Scene) {
         return;
     }
 
-    if (!!node.parent._prefab) {
+    if (!!node.parent._prefab && !node._prefab) {
         link(node);
-    } else {
+    }
+
+    if (!node.parent._prefab && node._prefab) {
         // root 是自己，说明自己是 prefab 根节点，不需要剔除
-        if (node._prefab && node._prefab.root === node) {
+        if (node._prefab.root === node) {
             return;
         }
         unlink(node);
@@ -42,11 +45,20 @@ nodeManager.on('removed', (node) => {
  * @param {*} nodeUuid 也支持 node 对象
  * @param {*} assetUuid TODO: 待定
  */
-function link(nodeUuid, assetUuid) {
+async function link(nodeUuid, assetUuid) {
     let node = nodeUuid;
     if (typeof nodeUuid === 'string') {
         node = nodeManager.query(nodeUuid);
     }
+
+    let asset = assetUuid;
+    if (typeof assetUuid === 'string') {
+        asset = await ipc.send('query-asset-info', assetUuid);
+    }
+
+    // 发送节点修改消息
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.send('broadcast', 'scene:before-node-change', node.uuid);
 
     const parentPrefab = node.parent._prefab;
 
@@ -58,9 +70,15 @@ function link(nodeUuid, assetUuid) {
 
     if (Array.isArray(node.children)) {
         node.children.forEach((child) => {
-            link(child);
+            if (!!child.parent._prefab && !child._prefab) {
+                link(child);
+            }
         });
     }
+
+    // 发送节点修改消息
+    nodeManager.emit('changed', node);
+    Manager.Ipc.send('broadcast', 'scene:node-changed', node.uuid);
 }
 
 /**
@@ -68,18 +86,33 @@ function link(nodeUuid, assetUuid) {
  * @param {*} nodeUuid 也支持 node 对象
  */
 function unlink(nodeUuid) {
+
     let node = nodeUuid;
     if (typeof nodeUuid === 'string') {
         node = nodeManager.query(nodeUuid);
     }
 
+    // 发送节点修改消息
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.send('broadcast', 'scene:before-node-change', node.uuid);
+
     node._prefab = undefined;
 
     if (Array.isArray(node.children)) {
         node.children.forEach((child) => {
-            unlink(child);
+            if (!child.parent._prefab && child._prefab) {
+                // root 是自己，说明自己是 prefab 根节点，不需要剔除
+                if (child._prefab.root === child) {
+                    return;
+                }
+                unlink(child);
+            }
         });
     }
+
+    // 发送节点修改消息
+    nodeManager.emit('changed', node);
+    Manager.Ipc.send('broadcast', 'scene:node-changed', node.uuid);
 }
 
 /**

@@ -276,6 +276,12 @@ function resetNodeChildren(parentNode, childrenIds) {
 
     uuids.forEach((uuid) => {
         const node = nodeManaer.query(uuid);
+
+        // 重要：需要过滤隐藏节点
+        if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
+            return;
+        }
+
         node.parent = null;
     });
 

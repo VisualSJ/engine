@@ -45,8 +45,9 @@ function toNodesTree(arr: ItreeNode[]) {
     nodesTree = arr;
 
     function step(node: ItreeNode) {
-        uuidNodes[node.uuid] = node;
+        legealNodeAttr(node);
 
+        uuidNodes[node.uuid] = node;
         if (node.children && node.children.length > 0) {
             node.children.forEach((child: ItreeNode) => {
                 step(child);
@@ -55,6 +56,23 @@ function toNodesTree(arr: ItreeNode[]) {
     }
 
     step(nodesTree);
+}
+
+/**
+ * 添加一个节点必要的属性
+ * @param node
+ */
+function legealNodeAttr(node: ItreeNode) {
+    Object.assign(node, {
+        state: '',
+        depth: 0,
+        top: 0,
+        left: 0,
+        isParent: false,
+        parentUuid: '',
+        isPrefab: false,
+    });
+    return node;
 }
 
 /**
@@ -89,15 +107,13 @@ function addNodeIntoTree(newNode: any) {
     if (!parentNode) {
         parentNode = nodesTree;
     }
-    if (!Array.isArray(parentNode.children)) {
-        parentNode.children = [];
-    }
 
     let index = parentNode.children.findIndex((child: any) => child === newNode);
     if (index === -1) {
         index = parentNode.children.length;
     }
-    vm.$set(parentNode.children, index, newNode);
+
+    vm.$set(parentNode.children, index, legealNodeAttr(newNode));
     parentNode.isExpand = true;
 
     // 显示节点中可能附带的 children 节点，例如 prefab
@@ -152,10 +168,6 @@ function changeNode2D(newData: any) {
         }
     });
 
-    if (!Array.isArray(node.children)) {
-        node.children = [];
-    }
-
     // children 是否有变动
     const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
     const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value));
@@ -206,10 +218,6 @@ function changeNode3D(newData: any) {
     // 针对 prefab 属性做的处理
     node.prefab = newData.__prefab__ ? true : false;
 
-    if (!Array.isArray(node.children)) {
-        node.children = [];
-    }
-
     // children 是否有变动，注意 2d 和 3d 数据结构有差别: children
     const nowChildren = JSON.stringify(node.children.map((one: ItreeNode) => one.uuid));
     const newChildren = JSON.stringify(newData.children.value.map((one: any) => one.value.uuid));
@@ -257,7 +265,6 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.depth = depth;
         node.top = start;
         node.left = depth * iconWidth + padding;
-        node.state = node.state ? node.state : '';
         node.isParent = node.children && node.children.length > 0 ? true : false;
         node.parentUuid = nodes.uuid;
         node.isPrefab = !!node.prefab;
