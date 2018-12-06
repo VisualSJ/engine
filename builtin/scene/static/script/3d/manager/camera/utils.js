@@ -46,7 +46,7 @@ function createGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
     let mtl = new cc.Material();
-    mtl.effectName = 'builtin-effect-grid';
+    mtl.effectName = '__editor-grid';
     model.material = mtl;
     return node;
 }

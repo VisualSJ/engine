@@ -347,7 +347,7 @@ Utils.setWorldRotation3D = function(node, value) {
 };
 
 Utils.getEulerAngles = function(node) {
-    return cc.vmath.quat.toEuler(tempQuat, node.getRotation(tempVec3));
+    return node.eulerAngles;
 };
 
 Utils.setEulerAngles = function(node, value) {

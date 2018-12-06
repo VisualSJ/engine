@@ -25,8 +25,6 @@ requestAnimationFrame(async () => {
     // 重写引擎的部分方法
     await require('./init/utils')(info.utils);
 
-    // 启动部分管理系统（camera 等）
-    await require('./init/system')();
     await require('./polyfills/engine');
 
     // 标记已经准备就绪
@@ -48,6 +46,8 @@ requestAnimationFrame(async () => {
         })
     );
 
+    // 启动场景相关的编辑系统（camera 等）
+    await require('./init/system')();
     // 启动场景，之前启动了的话，会在 open 方法内被终止
     const scene = await Manager.Ipc.send('query-scene');
     await manager.Scene.open(scene || '');

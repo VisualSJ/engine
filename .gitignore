@@ -2,6 +2,7 @@
 .*
 !.npmrc
 yarn*
+effects.json
 
 # node 模块
 node_modules/

@@ -39,7 +39,7 @@
   attribute vec3 a_position;
   attribute vec3 a_normal;
   uniform   mat4 model;
-  uniform   mat4 viewProj;
+  uniform   mat4 _viewProj_;
   uniform   mat3 normalMatrix;
   varying   vec2 matcapUV;
 
@@ -62,7 +62,7 @@
       mat4 skinMat = skinMatrix();
       pos = skinMat * pos;
     #endif
-    pos = viewProj * model * pos;
+    pos = _viewProj_ * model * pos;
     gl_Position = pos;
 
     vec4 normal = vec4(a_normal, 0);

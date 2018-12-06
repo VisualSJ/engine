@@ -43,7 +43,7 @@ class Engine3D extends EngineInterface {
             mtl.effectName = 'builtin-effect-unlit-transparent';
             mtl.define('USE_COLOR', true);
             mtl.effect.getActiveTechnique().passes[0].setDepth(false);
-        } else { mtl.effectName = 'builtin-effect-gizmo'; }
+        } else { mtl.effectName = '__editor-gizmo'; }
         mtl.setProperty('color', node.modelColor);
         let pass = mtl._effect.getActiveTechnique().passes[0];
         if (opts.cullMode) { pass.setCullMode(opts.cullMode); }

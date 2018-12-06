@@ -1,8 +1,9 @@
 import { Asset, Importer } from 'asset-db';
 import { readFileSync } from 'fs-extra';
 import { basename, extname } from 'path';
-// todo
-const { buildEffect } = require('../../../../../resources/3d/engine/cocos/renderer/bin/shdc-lib.js');
+const shdcLib = require('../../../static/shdc-lib');
+shdcLib.addChunksCache('builtin/asset-db/static/chunks');
+
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
@@ -50,7 +51,7 @@ export default class EffectImporter extends Importer {
                 const content = readFileSync(asset.source, {
                     encoding: 'utf-8',
                 });
-                const effect = buildEffect(filename, content);
+                const effect = shdcLib.buildEffect(filename, content);
                 // @ts-ignore
                 let result = new cc.EffectAsset();
                 result = Object.assign(result, effect);
