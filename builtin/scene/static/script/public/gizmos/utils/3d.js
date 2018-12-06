@@ -13,7 +13,9 @@ class Utils3D extends UtilsInterface {
     }
 
     broadcastMessage(message, param) {
-        Manager.Ipc.send('broadcast', message, param);
+        let node = param;
+        Manager.Node.emit('changed', node);
+        Manager.Ipc.send('broadcast', message, node.uuid);
     }
 
     getGizmoRoot() {

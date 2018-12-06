@@ -62,7 +62,7 @@ class PositionGizmo extends TransformGizmo {
 
         let offset = event.shiftKey ? 10 : 1;
 
-        let dif = cc.v2();
+        let dif = cc.v3();
         if (keyCode === 'arrowleft') {
             dif.x = -offset;
         } else if (keyCode === 'arrowright') {
@@ -80,8 +80,10 @@ class PositionGizmo extends TransformGizmo {
             node.getPosition(curPos);
             curPos = curPos.add(dif);
             node.setPosition(curPos.x, curPos.y, curPos.z);
-
+            Utils.broadcastMessage('scene:node-changed', node);
         });
+
+        Utils.repaintEngine();
     }
 
     onGizmoKeyUp(event) {
@@ -113,7 +115,7 @@ class PositionGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
             }
         }
     }

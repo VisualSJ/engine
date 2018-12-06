@@ -135,6 +135,7 @@ class RotationGizmo extends TransformGizmo {
                 curNodePos = center.add(offsetPos);
                 NodeUtils.setWorldPosition3D(node, curNodePos);
                 NodeUtils.setWorldRotation3D(node, rot);
+                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
             }
 
             // rotate controller
@@ -150,8 +151,10 @@ class RotationGizmo extends TransformGizmo {
                 }
 
                 NodeUtils.setWorldRotation3D(topNodes[i], rot);
+                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
             }
         }
+        Utils.repaintEngine();
     }
 
     onGizmoKeyUp(event) {
@@ -182,7 +185,7 @@ class RotationGizmo extends TransformGizmo {
 
     updateDataFromController() {
         if (this._controller.updated) {
-            this.target.forEach(node => {
+            this.target.forEach((node) => {
                 Utils.recordNode(node);
             });
 
@@ -210,7 +213,7 @@ class RotationGizmo extends TransformGizmo {
                     NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
                 }
             } else {
                 for (i = 0; i < topNodes.length; ++i) {
@@ -222,7 +225,7 @@ class RotationGizmo extends TransformGizmo {
 
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
                 }
             }
         }

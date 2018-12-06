@@ -69,36 +69,39 @@ class ScaleGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 
         let offset = event.shiftKey ? 1 : 0.1;
         let dif = cc.v2();
-        if (keyCode === 'left') {
+        if (keyCode === 'arrowleft') {
             dif.x = offset * -1;
-        } else if (keyCode === 'right') {
+        } else if (keyCode === 'arrowright') {
             dif.x = offset;
-        } else if (keyCode === 'up') {
+        } else if (keyCode === 'arrowup') {
             dif.y = offset;
-        } else if (keyCode === 'down') {
+        } else if (keyCode === 'arrowdown') {
             dif.y = offset * -1;
         }
 
         this.recordChanges();
 
         let curScale = cc.v3();
-        this.topNodes.forEach(function (node) {
+        this.topNodes.forEach(function(node) {
             node.getScale(curScale);
 
             curScale.x = curScale.x + dif.x;
             curScale.y = curScale.y + dif.y;
 
             this.setScaleWithPrecision(node, curScale, 3);
+            Utils.broadcastMessage('scene:node-changed', node);
         }.bind(this));
+
+        Utils.repaintEngine();
     }
 
     onGizmoKeyUp(event) {
@@ -108,10 +111,10 @@ class ScaleGizmo extends TransformGizmo {
 
         let keyCode = event.key.toLowerCase();
 
-        if (keyCode !== 'left' &&
-            keyCode !== 'right' &&
-            keyCode !== 'up' &&
-            keyCode !== 'down') {
+        if (keyCode !== 'arrowleft' &&
+            keyCode !== 'arrowright' &&
+            keyCode !== 'arrowup' &&
+            keyCode !== 'arrowdown') {
             return;
         }
 
@@ -152,7 +155,7 @@ class ScaleGizmo extends TransformGizmo {
                     curNodePos = this._center.add(offset);
                     NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
                 }
             } else {
                 for (i = 0; i < this._localScaleList.length; ++i) {
@@ -162,7 +165,7 @@ class ScaleGizmo extends TransformGizmo {
 
                     this.setScaleWithPrecision(topNodes[i], newScale, 3);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i].uuid);
+                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
                 }
             }
         }

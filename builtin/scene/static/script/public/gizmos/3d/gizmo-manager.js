@@ -5,10 +5,11 @@ const NodeQueryUtils = require('../../../3d/manager/node');
 const Selection = require('../../selection');
 const TransformToolData = require('../utils/transform-tool-data');
 const operationManager = require('../../operation');
+const WorldAxisController = require('./elements/controller/world-axis-controller');
 
 let hitPoint = cc.v3();
 
-module.exports = {
+class GizmoManager {
     init() {
         this.gizmoRootNode = create3DNode('gizmoRoot');
         this.gizmoRootNode.parent = Manager.foregroundNode;
@@ -37,7 +38,10 @@ module.exports = {
         Selection.on('unselect', (uuid) => {
             this.unselect([uuid]);
         });
-    },
+
+        // world axis gizmo
+        this._worldAxisController = new WorldAxisController(this.gizmoRootNode);
+    }
 
     onSceneLoaded() {
         // 需要场景加载完对Node的active才有效果
@@ -46,15 +50,15 @@ module.exports = {
         // 软刷新后保留原先的gizmo
         let selectedNodes = Selection.query();
         this.select(selectedNodes);
-    },
+    }
 
     get transformTool() {
         return this._transformTool;
-    },
+    }
 
     get transformToolName() {
         return TransformToolData.toolName;
-    },
+    }
 
     set transformToolName(toolName) {
         TransformToolData.toolName = toolName;
@@ -71,11 +75,11 @@ module.exports = {
             this._transformTool = tool;
             this.edit(curEditNodes);
         }
-    },
+    }
 
     get coordinate() {
         return TransformToolData.coordinate;
-    },
+    }
 
     set coordinate(value) {
         TransformToolData.coordinate = value;
@@ -83,11 +87,11 @@ module.exports = {
         if (this._transformTool) {
             this.edit(this._transformTool.target);
         }
-    },
+    }
 
     get pivot() {
         return TransformToolData.pivot;
-    },
+    }
 
     set pivot(value) {
         TransformToolData.pivot = value;
@@ -95,15 +99,15 @@ module.exports = {
         if (this._transformTool) {
             this.edit(this._transformTool.target);
         }
-    },
+    }
 
     lockGizmoTool(value) {
         this._isGizmoToolLocked = value;
-    },
+    }
 
     isGizmoToolLocked() {
         return this._isGizmoToolLocked;
-    },
+    }
 
     getGizmoToolByName(toolName) {
         let tool = this._gizmoToolMap[toolName];
@@ -124,7 +128,7 @@ module.exports = {
 
             }
             if (gizmoDef != null) {
-                this._gizmoToolMap[toolName] = this.createGizmo(gizmoDef);
+                this._gizmoToolMap[toolName] = this.createGizmo(toolName, gizmoDef);
                 tool = this._gizmoToolMap[toolName];
             } else {
                 console.error('Unknown transform tool %s', toolName);
@@ -132,9 +136,9 @@ module.exports = {
         }
 
         return tool;
-    },
+    }
 
-    createGizmo(gizmoDef, target) {
+    createGizmo(name, gizmoDef, target) {
         if (gizmoDef == null) {
             return;
         }
@@ -145,23 +149,31 @@ module.exports = {
             gizmoObjList = [];
             newGizmoObj = new gizmoDef(target);
             gizmoObjList.push(newGizmoObj);
+            this._gizmosPool[name] = gizmoObjList;
         } else {
             for (let i = 0; i < gizmoObjList.length; i++) {
                 if (!gizmoObjList[i].visible()) {
                     newGizmoObj = gizmoObjList[i];
+                    newGizmoObj.target = target;
                     break;
                 }
+            }
+
+            //如果当前池中没有可用的obj
+            if (!newGizmoObj) {
+                newGizmoObj = new gizmoDef(target);
+                gizmoObjList.push(newGizmoObj);
             }
         }
 
         return newGizmoObj;
-    },
+    }
 
     destoryGizmo(gizmo) {
         if (gizmo) {
             gizmo.hide();
         }
-    },
+    }
 
     showNodeGizmo(node) {
         let gizmoDef = null;
@@ -171,7 +183,7 @@ module.exports = {
             let className = cc.js.getClassName(node);
             gizmoDef = GizmoDefines[className];
             if (gizmoDef) {
-                gizmoObj = this.createGizmo(gizmoDef, node);
+                gizmoObj = this.createGizmo(className, gizmoDef, node);
                 gizmoObj.show();
                 node.gizmo = gizmoObj;
             }
@@ -179,17 +191,22 @@ module.exports = {
 
         // for component gizmo
         node._components.forEach((component) => {
-            if (component.gizmo == null) {
+            let needShow = node.active && component.enabled;
+            if (needShow && component.gizmo == null) {
+                gizmoDef = null;
+                gizmoObj = null;
                 let componentName = cc.js.getClassName(component);
+
+                // builtin component gizmo
                 gizmoDef = GizmoDefines.components[componentName];
                 if (gizmoDef != null) {
-                    gizmoObj = this.createGizmo(gizmoDef, component);
+                    gizmoObj = this.createGizmo(componentName, gizmoDef, component);
                     gizmoObj.show();
                     component.gizmo = gizmoObj;
                 }
             }
         });
-    },
+    }
 
     hideNodeGizmo(node) {
         if (node.gizmo) {
@@ -204,7 +221,26 @@ module.exports = {
                 component.gizmo = null;
             }
         });
-    },
+    }
+
+    onComponentEnable(id) {
+        let component = cc.engine.getInstanceById(id);
+        //let className = cc.js.getClassName(component);
+
+        let index = this.svg.selection.indexOf(component.node.uuid);
+        //当前component所在node为选中状态
+        if (index !== -1) {
+            this.showNodeGizmo(component.node);
+        }
+    }
+
+    onComponentDisable(id) {
+        let component = cc.engine.getInstanceById(id);
+        if (component && component.gizmo) {
+            this.destoryGizmo(component.gizmo);
+            component.gizmo = null;
+        }
+    }
 
     /**
      *
@@ -231,7 +267,7 @@ module.exports = {
                 component.gizmo[key] = states[key];
             });
         });
-    },
+    }
 
     /**
      * 选中节点
@@ -266,7 +302,7 @@ module.exports = {
         });
 
         this.edit(nodes);
-    },
+    }
 
     /**
      * 取消选中
@@ -297,7 +333,7 @@ module.exports = {
                 return !!node;
             })
         );
-    },
+    }
 
     edit(nodes) {
         if (nodes.length === 0) {
@@ -320,7 +356,7 @@ module.exports = {
 
         this.transformTool.target = nodes;
         this.transformTool.show();
-    },
+    }
 
     onMouseDown(event) {
         if (event.leftButton) {
@@ -344,11 +380,11 @@ module.exports = {
             }
             return false;
         }
-    },
+    }
 
     onMouseWheel(event) {
 
-    },
+    }
 
     onMouseMove(event) {
         let x = event.x;
@@ -391,7 +427,8 @@ module.exports = {
 
         }
 
-    },
+    }
+
     onMouseUp(event) {
         let x = event.x;
         let y = cc.game.canvas.height - event.y;
@@ -409,7 +446,8 @@ module.exports = {
             }
         }
 
-    },
+    }
+
     onMouseLeave(/*event*/) {
         let customEvent = new cc.Event('mouseLeave', true);
 
@@ -417,7 +455,8 @@ module.exports = {
             this.curSelectNode.emit(customEvent.type, customEvent);
             this.curSelectNode = null;
         }
-    },
+    }
+
     onKeyDown(event) {
 
         // test
@@ -437,26 +476,33 @@ module.exports = {
                 this.transformTool.onGizmoKeyDown(event);
             }
         }
-    },
+    }
     onKeyUp(event) {
         if (this.transformTool) {
             if (this.transformTool.onGizmoKeyUp) {
                 this.transformTool.onGizmoKeyUp(event);
             }
         }
-    },
+    }
 
     onNodeChanged(node) {
         if (node != null) {
             node.emit('change');
         }
-    },
+
+        // 目前node的active,component的enable都走nodechange事件，
+        // 先在这里统一处理，把Node的所有gizmo重置一遍。
+        this.hideNodeGizmo(node);
+        this.showNodeGizmo(node);
+    }
 
     onComponentAdded(comp, node) {
         this.showNodeGizmo(node);
-    },
+    }
 
     onBeforeComponentRemove(comp, node) {
         this.destoryGizmo(comp.gizmo);
-    },
-};
+    }
+}
+
+module.exports = new GizmoManager();
