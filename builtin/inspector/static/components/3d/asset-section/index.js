@@ -19,6 +19,7 @@ exports.components = {
     [`${prefix}javascript`]: readComponent(__dirname, './assets/javascript'),
     [`${prefix}folder`]: readComponent(__dirname, './assets/folder'),
     [`${prefix}image`]: readComponent(__dirname, './assets/image'),
+    [`${prefix}effect`]: readComponent(__dirname, './assets/effect'),
 };
 
 exports.data = function() {

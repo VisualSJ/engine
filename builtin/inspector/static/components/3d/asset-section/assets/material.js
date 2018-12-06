@@ -26,7 +26,7 @@ exports.data = function() {
         dirty: false,
         // 当前材质
         material: null,
-        builtinEffects: {},
+        allEffects: {},
         dirty: false,
     };
 };
@@ -42,7 +42,7 @@ exports.beforeDestroy = function() {
 
 exports.computed = {
     effectTypes() {
-        return Object.keys(this.builtinEffects);
+        return Object.keys(this.allEffects).filter((key) => !key.startsWith('_'));
     },
 
     propsList() {
@@ -88,8 +88,8 @@ exports.methods = {
     },
 
     async getEffectMap() {
-        const { builtinEffects, effectName } = this;
-        const effect = builtinEffects[effectName];
+        const { allEffects, effectName } = this;
+        const effect = allEffects[effectName];
         if (!effect) {
             this.effectMap = {};
         }
@@ -98,11 +98,11 @@ exports.methods = {
 
     async getEffects() {
         try {
-            const effects = await Editor.Ipc.requestToPackage('scene', 'query-builtin-effects');
-            this.builtinEffects = effects || {};
+            const effects = await Editor.Ipc.requestToPackage('scene', 'query-all-effects');
+            this.allEffects = effects || {};
         } catch (err) {
             console.error(err);
-            this.builtinEffects = {};
+            this.allEffects = {};
         }
     },
 
@@ -124,7 +124,16 @@ exports.methods = {
                         }
                         const material = JSON.parse(data);
                         this.material = material;
-                        this.effectName = this.material ? this.material._effectName : '';
+                        const uuid = material && material._effectAsset ? material._effectAsset.__uuid__ : '';
+                        if (!uuid) {
+                            this.effectName = '';
+                        } else {
+                            const effect = Object.values(this.allEffects).find((item) => item.uuid === uuid);
+                            if (!effect) {
+                                throw new Error('The effect specified by the material does not exist');
+                            }
+                            this.effectName = effect._name;
+                        }
                         this.dirty = false;
                         resolve();
                     });
@@ -135,7 +144,7 @@ exports.methods = {
                 this.getEffectMap();
             }
         } catch (err) {
-            console.error(err);
+            console.warn(err);
             this.effectName = '';
             this.props = {};
             this.defines = {};
@@ -205,6 +214,8 @@ exports.methods = {
             const isSaved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', this.info.uuid, result);
             if (isSaved) {
                 this.refresh();
+                // todo
+                Editor.Ipc.requestToPackage('scene', 'soft-reload');
             }
         } catch (err) {
             console.log(err);

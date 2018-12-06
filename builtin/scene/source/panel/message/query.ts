@@ -67,11 +67,11 @@ export function apply(messages: any) {
     /**
      * 查询所有内置 Effects
      */
-    messages['query-builtin-effects'] = async () => {
+    messages['query-all-effects'] = async () => {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Asset', 'queryBuiltinEffects');
+        return await $scene.forwarding('Asset', 'queryAllEffects');
     };
 
     /**

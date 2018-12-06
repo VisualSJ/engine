@@ -36,13 +36,13 @@
         </div>
         
         <boolean
-            :name="T('folder','is_subpackage')"
+            :name="T('instruction', 'folder','is_subpackage')"
             :meta="meta"
             path="isSubpackage"
         ></boolean>
         <string
             v-if="meta.isSubpackage"
-            :name="T('folder', 'subpackage_name')"
+            :name="T('instruction', 'folder', 'subpackage_name')"
             :meta="meta"
             :placeholder="subPackageName(info.source)"
             path="subpackageName"

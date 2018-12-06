@@ -20,7 +20,6 @@ export function init(element: any) {
  * 场景所有对外提供的操作消息接口
  */
 export function apply(messages: any) {
-
     /**
      * 打开场景的调试工具
      */
@@ -107,11 +106,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Node', 'setProperty', [
-            options.uuid,
-            options.path,
-            options.dump,
-        ]);
+        return await $scene.forwarding('Node', 'setProperty', [options.uuid, options.path, options.dump]);
     };
 
     /**
@@ -138,7 +133,7 @@ export function apply(messages: any) {
             options.uuid,
             options.path,
             options.target,
-            options.offset,
+            options.offset
         ]);
     };
 
@@ -149,11 +144,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'removeArrayElement', [
-            options.uuid,
-            options.path,
-            options.index,
-        ]);
+        await $scene.forwarding('Node', 'removeArrayElement', [options.uuid, options.path, options.index]);
     };
 
     /**
@@ -165,18 +156,11 @@ export function apply(messages: any) {
         }
 
         if (options.assetUuid) {
-            return await $scene.forwarding('Node', 'createNodeFromAsset', [
-                options.parent,
-                options.assetUuid,
-            ]);
+            return await $scene.forwarding('Node', 'createNodeFromAsset', [options.parent, options.assetUuid]);
         }
 
         // 返回 uuid
-        return await $scene.forwarding('Node', 'createNode', [
-            options.parent,
-            options.name,
-            options.dump,
-        ]);
+        return await $scene.forwarding('Node', 'createNode', [options.parent, options.name, options.dump]);
     };
 
     /**
@@ -186,9 +170,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'removeNode', [
-            options.uuid,
-        ]);
+        await $scene.forwarding('Node', 'removeNode', [options.uuid]);
     };
 
     /**
@@ -198,10 +180,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'createComponent', [
-            options.uuid,
-            options.component,
-        ]);
+        await $scene.forwarding('Node', 'createComponent', [options.uuid, options.component]);
     };
 
     /**
@@ -211,10 +190,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'removeComponent', [
-            options.uuid,
-            options.component,
-        ]);
+        await $scene.forwarding('Node', 'removeComponent', [options.uuid, options.component]);
     };
 
     /**
@@ -256,6 +232,13 @@ export function apply(messages: any) {
             return null;
         }
         await $scene.forwarding('History', 'redo');
+    };
+
+    messages['soft-reload'] = async () => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('Scene', 'softReload');
     };
 }
 

@@ -1,11 +1,17 @@
 'use stirct';
 
 /**
- * 返回包含所有内置 Effect 的对象
+ * 返回包含所有 Effect 的对象
  * @returns {{}}
  */
-function queryBuiltinEffects() {
-    return cc.EffectAsset.getAll();
+function queryAllEffects() {
+    const effects = cc.EffectAsset.getAll();
+    // get uuid from prototype chain
+    Object.keys(effects).map((key) => {
+        effects[key].uuid = effects[key]._uuid;
+    });
+
+    return effects;
 }
 
 /**
@@ -46,10 +52,10 @@ function buildEffectData(data = {}) {
             const typeName = info.instanceType.name;
             const compType = typeMap[typeName];
             const type = assetMap[typeName];
-            let {displayName: name, value} = info;
+            let { displayName: name, value } = info;
 
             if (compType === 'cc-dragable' && value === null) {
-                value = {uuid: null};
+                value = { uuid: null };
             }
 
             if (compType === 'cc-color') {
@@ -61,12 +67,11 @@ function buildEffectData(data = {}) {
                 };
             }
 
-            return {value, key, compType, type, name, path: `_${cur}.${key}`};
+            return { value, key, compType, type, name, path: `_${cur}.${key}` };
         });
 
         return acc;
     }, {});
-
 }
 
 /**
@@ -75,7 +80,7 @@ function buildEffectData(data = {}) {
  * @returns {string}
  */
 function querySerializedMaterial(options) {
-    const {effectName, _props, _defines} = options;
+    const { effectName, _props, _defines } = options;
     const material = new cc.Material();
 
     material.effectName = effectName;
@@ -86,7 +91,7 @@ function querySerializedMaterial(options) {
 }
 
 module.exports = {
-    queryBuiltinEffects,
+    queryAllEffects,
     queryEffectDataForInspector,
     querySerializedMaterial,
 };

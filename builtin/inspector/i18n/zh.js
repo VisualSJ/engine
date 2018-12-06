@@ -18,12 +18,6 @@ module.exports = {
     edit_button: '编辑',
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
-    javascript: {
-        plugin: '导入为插件',
-        loadPluginInWeb: '允许 Web 平台加载',
-        loadPluginInEditor: '允许编辑器加载',
-        loadPluginInNative: '允许 Native 平台加载',
-    },
     block_input_events: {
         brief_help: '该组件将拦截所有输入事件，防止输入穿透到下层节点，一般用于上层 UI 的背景。',
     },
@@ -191,11 +185,58 @@ module.exports = {
         error_not_compiled: '脚本编译失败，请检查报错信息并进行修正，该组件将在修正后自动还原。',
     },
     empty_component_message: '组件没有可展示属性',
-    folder: {
-        is_subpackage: '配置为子包',
-        subpackage_name: '子包名',
-    },
     assets: {
         resources_tips,
+    },
+    instruction: {
+        node: {
+            active: '该节点是否处于激活状态',
+            name: '节点在场景和层级中的名称',
+            prefab_sync_mode: '自动同步模式',
+            prefab_unsync_mode: '手动同步模式',
+            prefab_select: '在资源管理器中选中该 prefab 资源',
+            prefab_revert: '将场景中的 prefab 实例恢复到资源保存时的状态',
+            prefab_apply: '更新 prefab 资源到将和场景中的 prefab 实例一致',
+            prefab_btn_select: '选择',
+            prefab_btn_revert: '回退',
+            prefab_btn_apply: '保存',
+            position: '相对父节点的位置坐标，以像素为单位',
+            rotation: '相对父节点的旋转，以度为单位，输入正值时顺时针旋转',
+            scale: '节点的整体缩放比例，会影响所有子节点',
+            anchor: '节点位置和旋转的基准点，(0,0)表示左下角，(1,1)表示右上角',
+            size: '节点的内容尺寸，以像素为单位，在排版中至关重要。修改 size 不会影响子节点。',
+            color: '节点的颜色，会影响节点上的渲染组件的颜色显示',
+            opacity: '节点的不透明度，会影响本节点和所有子节点上渲染组件的不透明度',
+            group: '节点的分组，会影响节点的 碰撞或其他 信息。分组的配置可以在 项目设置 中进行详细设置。',
+        },
+        component: {
+            header: '点击可在属性检查器中折叠/展开组件属性',
+            enabled: '是否每帧调用组件中的 update 方法，对于渲染组件来说，关闭这个选项也会关闭渲染',
+            script: '定义该组件的脚本资源，点击可以在资源管理器中高亮脚本',
+            help: '帮助文档',
+        },
+        javascript: {
+            plugin: '导入为插件',
+            loadPluginInWeb: '允许 Web 平台加载',
+            loadPluginInEditor: '允许编辑器加载',
+            loadPluginInNative: '允许 Native 平台加载',
+        },
+        scene: {
+            async_load_assets: '延迟加载资源',
+            auto_release_assets: '自动释放资源',
+        },
+        prefab: {
+            OptimizationPolicy: '优化策略',
+            OptimizationPolicy_AUTO: '自动调整',
+            OptimizationPolicy_SINGLE_INSTANCE: '优化单次创建性能',
+            OptimizationPolicy_MULTI_INSTANCE: '优化多次创建性能',
+        },
+        audio: {
+            download_mode: '加载模式',
+        },
+        folder: {
+            is_subpackage: '配置为子包',
+            subpackage_name: '子包名',
+        },
     },
 };

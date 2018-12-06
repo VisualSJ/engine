@@ -18,12 +18,6 @@ module.exports = {
     edit_button: 'Edit',
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
-    javascript: {
-        plugin: 'Import As Plugin',
-        loadPluginInWeb: 'Load In Web',
-        loadPluginInEditor: 'Load In Editor',
-        loadPluginInNative: 'Load In Native',
-    },
     block_input_events: {
         brief_help: `This component will block all input events,
             preventing the input from penetrating into the underlying node,
@@ -199,11 +193,61 @@ module.exports = {
             This component will be restored once compiling error is gone.`,
     },
     empty_component_message: 'The component has not properties to display',
-    folder: {
-        is_subpackage: 'Subpackage',
-        subpackage_name: 'Subpackage Name',
-    },
     assets: {
         resources_tips,
+    },
+    instruction: {
+        add_component: 'Add Component',
+        node: {
+            active: 'Is this Node active?',
+            name: 'Node name in the Scene and Node Tree',
+            prefab_sync_mode: 'Auto sync mode',
+            prefab_unsync_mode: 'Manual sync mode',
+            prefab_select: 'Select the prefab asset in Assets panel',
+            prefab_revert: 'Discard changes to the prefab node in scene',
+            prefab_apply: 'Apply changes back to the prefab asset',
+            position: 'Position coordinates, relative to the parent Node, in pixels',
+            rotation: 'The clockwise degrees of rotation relative to the parent',
+            scale: 'Scale. Modifying scale on this Node and all child Nodes',
+            anchor: 'Anchor point (0,0) is the lower left corner, (1,1) indicates the top right corner',
+            size: 'Content size, in pixels. Modifying this size does not affect the child Nodes.',
+            color: 'Color. Modifying color on this Node and all child Nodes',
+            opacity: 'Opacity. Modifying opacity on this Node and all child Nodes',
+            prefab_btn_select: 'Select',
+            prefab_btn_revert: 'Go Back',
+            prefab_btn_apply: 'Save',
+            group: `Node Group relative to the collision and other information.
+                Group settings can change in Project Settings Panel.`,
+        },
+        component: {
+            header: 'Click the component name to collapse/expand component properties',
+            enabled: `Check this option to call update of the component in each frame.
+                Turning off this option will stop rendering.`,
+            script: 'The script asset of the component. Tap to highlight the script in Assets panel',
+            help: 'Help Document',
+        },
+        javascript: {
+            plugin: 'Import As Plugin',
+            loadPluginInWeb: 'Load In Web',
+            loadPluginInEditor: 'Load In Editor',
+            loadPluginInNative: 'Load In Native',
+        },
+        scene: {
+            async_load_assets: 'Async Load Assets',
+            auto_release_assets: 'Auto Release Assets',
+        },
+        prefab: {
+            OptimizationPolicy: 'Optimization Policy',
+            OptimizationPolicy_AUTO: 'Auto adjust',
+            OptimizationPolicy_SINGLE_INSTANCE: 'For single instance creation',
+            OptimizationPolicy_MULTI_INSTANCE: 'For multiple instance creation',
+        },
+        audio: {
+            download_mode: 'Download Mode',
+        },
+        folder: {
+            is_subpackage: 'Subpackage',
+            subpackage_name: 'Subpackage Name',
+        },
     },
 };
