@@ -8,7 +8,7 @@ const componentUtils = require('./component');
  */
 function dump(node) {
     const position = node._lpos;
-    const rotation = node._lrot;
+    const rotation = node._euler;
     const scale = node._lscale;
 
     const properties = {

@@ -89,8 +89,8 @@ async function restoreProperty(node, path, dump) {
     path = path.replace('position', '_lpos');
     // 如果修改的是 scale.x || scale.y 实际修改的应该是 node._scale.x || node._scale.y
     path = path.replace('scale', '_lscale');
-    // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._rot.x || node._rot.y
-    path = path.replace('rotation', '_lrot');
+    // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._euler.x || node._euler.y
+    path = path.replace('rotation', '_euler');
 
     const keys = (path || '').split('.');
     const key = keys.pop();
@@ -209,8 +209,8 @@ async function restoreProperty(node, path, dump) {
         case '_lpos':
             node.setPosition(node._lpos);
             break;
-        case '_lrot':
-            node.setRotation(node._lrot);
+        case '_euler':
+            node.setRotationFromEuler(node._euler.x, node._euler.y, node._euler.z);
             break;
         case '_lscale':
             node.setScale(node._lscale);
