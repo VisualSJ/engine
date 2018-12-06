@@ -1,6 +1,7 @@
 'use strict';
 
 import { AssetDB } from 'asset-db';
+import BufferImporter from './importers/buffer';
 import EffectImporter from './importers/effect';
 import FbxImporter from './importers/fbx';
 import GltfImporter, {
@@ -56,6 +57,9 @@ export function register(database: AssetDB) {
 
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
+
+    // bin 文件导入
+    database.register(new BufferImporter(), ['.bin']);
 
     database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
     database.register(new TextureImporter(), '.texture');
