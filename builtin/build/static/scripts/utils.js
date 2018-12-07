@@ -420,6 +420,7 @@ function requestToPackage(...args) {
  */
 function updateProgress(msg, rate) {
     Worker.Ipc.send('build-worker:update-progress', msg, rate);
+    console.log(`build:${msg} ${rate}`);
 }
 
 // 查询当前项目配置的子包信息

@@ -1,9 +1,8 @@
 const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
-const {requestToPackage, getDestPathNoExt} = require('./utils');
-const {outputFileSync, readJSONSync, copyFileSync, ensureDirSync} = require('fs-extra');
+const {requestToPackage, getDestPathNoExt, updateProgress} = require('./utils');
+const {outputFileSync, readJSONSync, copyFile, ensureDirSync} = require('fs-extra');
 const {join, dirname, extname} = require('path');
-const _ = require('lodash');
 
 class AssetBuilder {
     init() {
@@ -15,19 +14,39 @@ class AssetBuilder {
         this.exportSimpleFormat = !platformInfo.stripDefaultValues || platformInfo.exportSimpleProject;
         this.shouldExportScript = !platformInfo.exportSimpleProject;
         this.initFlag = true;
+        this.copyPaths = [];
     }
 
-    async build(rawAssets, scenes) {
-        this.init();
-        for (let item of scenes) {
-            await this.buildAsset(item.uuid);
-        }
-        for (let key of Object.keys(rawAssets)) {
-            let assets = rawAssets[key];
-            for (let uuid of Object.keys(assets)) {
-                await this.buildAsset(uuid);
+    build(rawAssets, scenes) {
+        return new Promise(async (resolve, reject) => {
+            updateProgress('build assets...');
+            this.init();
+            for (let item of scenes) {
+                await this.buildAsset(item.uuid);
             }
-        }
+            for (let key of Object.keys(rawAssets)) {
+                let assets = rawAssets[key];
+                for (let uuid of Object.keys(assets)) {
+                    await this.buildAsset(uuid);
+                }
+            }
+            Promise.all(this.copyPaths.map((paths) => {
+                return new Promise((resolve, reject) => {
+                    copyFile(paths.src, paths.dest, (error) => {
+                        if (error) {
+                            reject(error);
+                        }
+                        resolve();
+                    });
+                });
+            })).then(() => {
+                updateProgress('build assets success', 30);
+                resolve();
+            }).catch((error) => {
+                reject(error);
+                console.log(`copy asset error: ${error}`);
+            });
+        });
     }
 
     async buildAsset(uuid) {
@@ -38,7 +57,7 @@ class AssetBuilder {
             ignoreEditorOnly: true,
         });
         asset._uuid = uuid;
-        let nativePath = await this.compress(asset);
+        this.compress(asset);
     }
 
     // 压缩构建
@@ -94,15 +113,10 @@ class AssetBuilder {
             }
             return;
         }
-        copyFileSync(src, dest);
-        return dest;
+        this.copyPaths.push({
+            src,
+            dest,
+        });
     }
-
-    // 根据查出来依赖的 uuid 来拷贝相关资源
-    copyAsset(uuid) {
-        let asset = requestToPackage('asset-db', 'query-asset-info', uuid);
-        // let extname =
-    }
-
 }
 module.exports = new AssetBuilder();

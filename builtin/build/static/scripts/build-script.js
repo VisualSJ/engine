@@ -1,6 +1,6 @@
 const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
-const { sortScripts} = require('./utils');
+const { sortScripts, updateProgress} = require('./utils');
 const Browserify = require('browserify');
 const gulp = require('gulp');
 const {readFileSync} = require('fs');
@@ -26,144 +26,153 @@ class ScriptBuilder {
         this.uglify = require(util).uglify;
     }
 
-    build(scripts) {
-        if (scripts.length < 1) {
+    async build(scripts) {
+        updateProgress('build scripts...');
+        if (!scripts || scripts.length < 1) {
+            updateProgress('build scripts sucess', 15);
             return;
         }
         this.init();
         let scriptInfo = sortScripts(scripts); // 分类脚本，分为子包和主包
         this._allScripts = scriptInfo.allScripts;
         rawPathToLibPath = scriptInfo.rawPathToLibPath;
-        this._buildScript(scriptInfo.mainScrips);
-        this._buildScript(scriptInfo.subScrips);
+        await this._buildScript(scriptInfo.mainScrips);
+        await this._buildScript(scriptInfo.subScrips);
     }
 
     _buildScript(srcPaths) {
-        if (srcPaths.length < 1) {
-            return;
-        }
-        // sort scripts for https://github.com/cocos-creator/fireball/issues/4854
-        srcPaths.sort();
-        let options = this.options;
-        let paths = this.paths;
-        let opt = {
-            debug: !!options.sourceMaps,
-            basedir: paths.project,
-            builtins: [
-                // See: node_modules/Browserify/lib/builtins.js
-                'assert',
-                'buffer',
-                //'child_process',
-                //'cluster',
-                'console',
-                'constants',
-                'crypto',
-                //'dgram',
-                //'dns',
-                'domain',
-                'events',
-                //'fs',
-                'http',
-                'https',
-                //'module',
-                //'net',
-                'os',
-                'path',
-                'punycode',
-                'querystring',
-                //'readline',
-                //'repl',
-                'stream',
-                '_stream_duplex',
-                '_stream_passthrough',
-                '_stream_readable',
-                '_stream_transform',
-                '_stream_writable',
-                'string_decoder',
-                'sys',
-                'timers',
-                //'tls',
-                'tty',
-                'url',
-                'util',
-                'vm',
-                'zlib',
-                '_process',
-            ],
-            extensions: ['.ts', '.coffee'],
-            ignoreMissing: true,
-            externalRequireName: 'window.__require',
-            prelude: prelude,
-            // detectGlobals: false
-            // browserField: false
-        };
-
-        let browserify;
-        // 缓存的配置好打包参数的 Browserify 实例化对象
-        if (options.cacheBrowserify) {
-            // https://github.com/royriojas/persistify
-            browserify = persistify(opt, {
-                recreate: options.recreateCache,
-                cacheId: options.platform + '_' + !!options.debug + '_' + !!options.sourceMaps,
-                cacheDir: options.cacheBrowserify,
-            });
-        } else {
-            // 用来打包编译脚本便于在浏览器中使用
-            // https://github.com/substack/node-Browserify#methods
-            browserify = new Browserify(opt);
-        }
-
-        patchBrowserifyToRedirectPathToRaw(browserify);
-
-        for (let i = 0; i < srcPaths.length; ++i) {
-            var file = srcPaths[i];
-            browserify.add(file);
-            // expose the filename so as to avoid specifying relative path in require()
-            browserify.require(file, {
-                expose: basename(file, extname(file)),
-            });
-        }
-
-        for (let i = 0; i < allScripts.length; ++i) {
-            let file = allScripts[i];
-            if (srcPaths.indexOf(file) === -1) {
-                browserify.exclude(rawPathToLibPath[file]);
+        return new Promise((resolve, reject) => {
+            if (srcPaths.length < 1) {
+                resolve();
             }
-        }
+            // sort scripts for https://github.com/cocos-creator/fireball/issues/4854
+            srcPaths.sort();
+            let options = this.options;
+            let paths = this.paths;
+            let opt = {
+                debug: !!options.sourceMaps,
+                basedir: paths.project,
+                builtins: [
+                    // See: node_modules/Browserify/lib/builtins.js
+                    'assert',
+                    'buffer',
+                    //'child_process',
+                    //'cluster',
+                    'console',
+                    'constants',
+                    'crypto',
+                    //'dgram',
+                    //'dns',
+                    'domain',
+                    'events',
+                    //'fs',
+                    'http',
+                    'https',
+                    //'module',
+                    //'net',
+                    'os',
+                    'path',
+                    'punycode',
+                    'querystring',
+                    //'readline',
+                    //'repl',
+                    'stream',
+                    '_stream_duplex',
+                    '_stream_passthrough',
+                    '_stream_readable',
+                    '_stream_transform',
+                    '_stream_writable',
+                    'string_decoder',
+                    'sys',
+                    'timers',
+                    //'tls',
+                    'tty',
+                    'url',
+                    'util',
+                    'vm',
+                    'zlib',
+                    '_process',
+                ],
+                extensions: ['.ts', '.coffee'],
+                ignoreMissing: true,
+                externalRequireName: 'window.__require',
+                prelude: prelude,
+                // detectGlobals: false
+                // browserField: false
+            };
 
-        let bundle = browserify.bundle()
-            .on('error', function(error) {
-                error = new Error(nicifyError(error));
-                if (gulp.isRunning) {
-                    gulp.stop(error);
+            let browserify;
+            // 缓存的配置好打包参数的 Browserify 实例化对象
+            if (options.cacheBrowserify) {
+                // https://github.com/royriojas/persistify
+                browserify = persistify(opt, {
+                    recreate: options.recreateCache,
+                    cacheId: options.platform + '_' + !!options.debug + '_' + !!options.sourceMaps,
+                    cacheDir: options.cacheBrowserify,
+                });
+            } else {
+                // 用来打包编译脚本便于在浏览器中使用
+                // https://github.com/substack/node-Browserify#methods
+                browserify = new Browserify(opt);
+            }
+
+            patchBrowserifyToRedirectPathToRaw(browserify);
+
+            for (let i = 0; i < srcPaths.length; ++i) {
+                var file = srcPaths[i];
+                browserify.add(file);
+                // expose the filename so as to avoid specifying relative path in require()
+                browserify.require(file, {
+                    expose: basename(file, extname(file)),
+                });
+            }
+
+            for (let i = 0; i < allScripts.length; ++i) {
+                let file = allScripts[i];
+                if (srcPaths.indexOf(file) === -1) {
+                    browserify.exclude(rawPathToLibPath[file]);
                 }
-            })
-            .pipe(source(paths.bundledScript));
+            }
 
-        // Uglify
-        bundle = bundle.pipe(buffer());
+            let bundle = browserify.bundle()
+                .on('error', function(error) {
+                    error = new Error(nicifyError(error));
+                    if (gulp.isRunning) {
+                        gulp.stop(error);
+                    }
+                })
+                .pipe(source(paths.bundledScript));
 
-        if (options.sourceMaps) {
-            bundle = bundle.pipe(sourcemaps.init({loadMaps: true}));
-        }
+            // Uglify
+            bundle = bundle.pipe(buffer());
 
-        let isNative = !!platfomConfig[options.platform].isNative;
-        bundle = bundle.pipe(this.uglify('build', {
-            jsb: isNative,
-            wechatgame: options.platform === 'wechatgame',
-            qqplay: options.platform === 'qqplay',
-            debug: options.debug,
-        }));
+            if (options.sourceMaps) {
+                bundle = bundle.pipe(sourcemaps.init({loadMaps: true}));
+            }
 
-        if (options.sourceMaps) {
-            bundle = bundle.pipe(refineSourceMap(rawPathToLibPath, paths.project))
-                            .pipe(sourcemaps.write('./'));
-        }
+            let isNative = !!platfomConfig[options.platform].isNative;
+            bundle = bundle.pipe(this.uglify('build', {
+                jsb: isNative,
+                wechatgame: options.platform === 'wechatgame',
+                qqplay: options.platform === 'qqplay',
+                debug: options.debug,
+            }));
 
-        bundle = bundle.pipe(gulp.dest(paths.project));
+            if (options.sourceMaps) {
+                bundle = bundle.pipe(refineSourceMap(rawPathToLibPath, paths.project))
+                                .pipe(sourcemaps.write('./'));
+            }
 
-        bundle.on('end', () => {
-            console.log('end');
+            bundle = bundle.pipe(gulp.dest(paths.project));
+
+            bundle.on('end', (error) => {
+                if (error) {
+                    reject(error);
+                }
+                updateProgress('build scripts sucess', 15);
+                // todo 细节优化
+                resolve();
+            });
         });
     }
 }

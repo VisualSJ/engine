@@ -43,81 +43,70 @@ class Builder {
         this.shouldExportScript = !platformInfo.exportSimpleProject;
         this._type = config.type;
         this._options = options;
-        this._paths = await this._buildPaths(options.dest, options.debug, config);
+        this._paths = this._buildPaths(options.dest, options.debug, config);
         buildResult.options = options;
-        updateProgress('start build', 0);
     }
 
     // 项目构建
     async build(options, config) {
+        let startTime = new Date().getTime();
         await this._init(options, config);
         // 先清空文件夹
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
-        updateProgress('build engine...', 0);
-        // 构建切割引擎
-        await this._buildEngine();
-        updateProgress('build engine success', '10%');
-
-        updateProgress('build index html...');
-        // 构建拷贝模板 index 文件
-        await this._buildHtml();
-        updateProgress('build index html success', '15%');
-
-        updateProgress('build index main.js...');
-        this._buildMain();
-        updateProgress('build index main.js success', '20%');
-
-        updateProgress('resolove static resource...');
-        await this._resolveStatic();
-        updateProgress('resolove static resource', '25%');
-
         updateProgress('build setting...');
-        // 构建 settings 脚本,写入脚本
+        // 构建 settings 脚本,写入脚本 20%
         let settings = await this.buildSetting({
             scenes: options.scenes,
             debug: options.debug,
             platform: options.platform,
             type: 'build-release', // 构建 setting 的种类
         });
-        updateProgress('build setting success', '40%');
+        updateProgress('build setting...', 20);
 
-        updateProgress('build assets...');
-        // 资源拷贝资源
-        assetBuilder.build(settings.rawAssets, settings.scenes);
-        updateProgress('build assets success', '70%');
-
-        updateProgress('build scripts...');
-        // 打包构建脚本
-        scriptBuilder.build(settings.scripts);
-        updateProgress('build scripts success', '90%');
-
-        updateProgress('compress setting.js...');
-        // 压缩 settings 脚本并保存在相应位置
-        settings = this._compressSetting(settings);
-        updateProgress('compress setting.js success', '99%');
-        updateProgress('build success', '100%');
+        // 并发任务
+        Promise.all([
+            this._buildHtml(), // 构建拷贝模板 index.html 文件 5%
+            this._buildMain(), // 构建拷贝模板 main.js 文件 5%
+            this._resolveStatic(), // 其他静态资源拷贝 5%
+            this._buildEngine(), // 构建切割引擎 15%
+            this._compressSetting(settings), // 压缩 settings 脚本并保存在相应位置 5%
+            assetBuilder.build(settings.rawAssets, settings.scenes), // 资源拷贝资源 30%
+            scriptBuilder.build(settings.scripts), // 打包构建脚本 15%
+        ]).then(() => {
+            let endTime = new Date().getTime();
+            updateProgress(`build sucess in ${endTime - startTime} ms`);
+        });
     }
 
-    // 拷贝静态资源文件
+    // 拷贝静态资源文件 5%
     _resolveStatic() {
-        Promise.all(STATIC_RESOURCE.map((file) => {
-            return new Promise((resolve, reject) => {
-                let src = join(__dirname, './../build-templates/common', file);
-                let dest = join(this._paths.dest, file);
-                copyFile(src, dest, (error) => {
-                    if (error) {
-                        console.error(`copy file error: ${error}`);
-                        reject(error);
-                    }
-                    resolve();
+        return new Promise((resolve, reject) => {
+            updateProgress('resolove static resource...');
+            Promise.all(STATIC_RESOURCE.map((file) => {
+                return new Promise((resolve, reject) => {
+                    let src = join(__dirname, './../build-templates/common', file);
+                    let dest = join(this._paths.dest, file);
+                    copyFile(src, dest, (error) => {
+                        if (error) {
+                            console.error(`copy file error: ${error}`);
+                            reject(error);
+                        }
+                        resolve();
+                    });
                 });
+            })).then(() => {
+                updateProgress('resolove static resource success', 5);
+                resolve();
+            }).catch((error) => {
+                reject(error);
             });
-        }));
+        });
     }
 
-    // 构建基础 index.html 模板部分的代码
-    async _buildHtml() {
+    // 构建基础 index.html 模板部分的代码 5%
+    _buildHtml() {
+        updateProgress('build index html...');
         let options = this._options;
         const webDebuggerString = `<script src="${basename(this._paths.webDebuggerSrc)}"></script>`;
         const data = {
@@ -131,10 +120,12 @@ class Builder {
         const content = ejs.render(readFileSync(join(this._paths.tmplBase, options.platform, 'index.html'), 'utf8'),
          data);
         outputFileSync(join(this._paths.dest, 'index.html'), content);
+        updateProgress('build index html success', 5);
     }
 
     // 构建基础 main.js 模板部分的代码
     _buildMain() {
+        updateProgress('build main.js...');
         let options = this._options;
         let contents = readFileSync(join(this._paths.tmplBase, 'common', 'main.js'), 'utf8');
         // qqplay set REMOTE_SERVER_ROOT value
@@ -158,71 +149,84 @@ class Builder {
         };
         const content = ejs.render(contents, data);
         outputFileSync(join(this._paths.dest, 'main.js'), content);
+        updateProgress('build main.js success', 5);
     }
 
     // 构建引擎模块
-    async _buildEngine() {
-        // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
-        if (this._type === '3d') {
-            await copySync(join(this._paths.engine, 'bin/cocos-3d.min.js'),
-             join(this._paths.dest, this._options.cocosJsName));
-            return;
-        }
+    _buildEngine() {
+        updateProgress('build engine...');
+        return new Promise(async (resolve, reject) => {
+            // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
+            if (this._type === '3d') {
+                await copySync(join(this._paths.engine, 'bin/cocos-3d.min.js'),
+                join(this._paths.dest, this._options.cocosJsName));
+                updateProgress('build engine success', 15);
+                resolve();
+                return;
+            }
 
-        let {isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer} = this._options;
-        let {dest, src, jsCacheExcludes, engine, jsCache} = this._paths;
-        let buildDest = isNativePlatform ? src : dest;
-        let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
-        if (existsSync(jsCacheExcludes)) {
-            let json = readJSONSync(jsCacheExcludes);
-            enginSameFlag = enginVersion === json.version &&
-                nativeRenderer === json.nativeRenderer &&
-                json.excludes.toString() === excludedModules.toString() &&
-                json.sourceMaps === opts.sourceMaps;
-        }
+            let {isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer} = this._options;
+            let {dest, src, jsCacheExcludes, engine, jsCache} = this._paths;
+            let buildDest = isNativePlatform ? src : dest;
+            let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
+            if (existsSync(jsCacheExcludes)) {
+                let json = readJSONSync(jsCacheExcludes);
+                enginSameFlag = enginVersion === json.version &&
+                    nativeRenderer === json.nativeRenderer &&
+                    json.excludes.toString() === excludedModules.toString() &&
+                    json.sourceMaps === opts.sourceMaps;
+            }
 
-        // 与缓存内容一致无需再次编译
-        if (enginSameFlag && existsSync(paths.jsCache)) {
-            copySync(jsCache, join(dest, basename(jsCache)));
-            return;
-        }
+            // 与缓存内容一致无需再次编译
+            if (enginSameFlag && existsSync(paths.jsCache)) {
+                copySync(jsCache, join(dest, basename(jsCache)));
+                updateProgress('build engine success', 15);
+                resolve();
+                return;
+            }
 
-        // 构建编译引擎
-        let modules = readJSONSync(join(engine, 'modules.json'));
-        if (!modules || modules.length < 0) {
-            console.error(`${join(engine, 'modules.json')} does not exist`);
-            // TODO 通知消息报错
-            return;
-        }
-        const excludes = [];
-        // 存在模块设置数据，则整理数据
-        if (excludedModules && excludedModules.length > 0) {
-            excludedModules.forEach(function(exName) {
-                modules.some(function(item) {
-                    if (item.name === exName) {
-                        if (item.entries) {
-                            item.entries.forEach(function(file) {
-                                excludes.push(join(engine, file));
-                            });
+            // 构建编译引擎
+            let modules = readJSONSync(join(engine, 'modules.json'));
+            if (!modules || modules.length < 0) {
+                console.error(`${join(engine, 'modules.json')} does not exist`);
+                // TODO 通知消息报错
+                reject(new Error(`${join(engine, 'modules.json')} does not exist`));
+                return;
+            }
+            const excludes = [];
+            // 存在模块设置数据，则整理数据
+            if (excludedModules && excludedModules.length > 0) {
+                excludedModules.forEach(function(exName) {
+                    modules.some(function(item) {
+                        if (item.name === exName) {
+                            if (item.entries) {
+                                item.entries.forEach(function(file) {
+                                    excludes.push(join(engine, file));
+                                });
+                            }
+                            updateProgress('build engine success', 15);
+                            resolve();
+                            return;
                         }
-                        return true;
-                    }
+                    });
                 });
-            });
-        }
+            }
 
-        // 执行 gulp 任务，编译 cocos js
-        await this._buildCocosJs(excludes, buildDest);
+            // 执行 gulp 任务，编译 cocos js
+            await this._buildCocosJs(excludes, buildDest);
 
-        // 拷贝编译后的 js 文件
-        copySync(jsCache, join(dest, basename(jsCache)));
-        // 保存模块数据
-        writeFileSync(paths.jsCacheExcludes, JSON.stringify({
-            excludes: excludedModules,
-            version: enginVersion,
-            nativeRenderer,
-            sourceMaps,
-        }), null, 4);
+            // 拷贝编译后的 js 文件
+            copySync(jsCache, join(dest, basename(jsCache)));
+            // 保存模块数据
+            writeFileSync(paths.jsCacheExcludes, JSON.stringify({
+                excludes: excludedModules,
+                version: enginVersion,
+                nativeRenderer,
+                sourceMaps,
+            }), null, 4);
+            updateProgress('build engine success', 15);
+            resolve();
+        });
     }
 
     _buildCocosJs(excludes, dest) {
@@ -258,7 +262,7 @@ class Builder {
     }
 
     // 构建需要的各种路径集合
-    async _buildPaths(dest, debug, config) {
+    _buildPaths(dest, debug, config) {
         let paths = {
             dest,
             tmplBase: join(__dirname, './../build-templates'),
@@ -287,7 +291,9 @@ class Builder {
 
     // 压缩 settings
     _compressSetting(settings) {
+        updateProgress('compress setting.js...');
         if (this._options.debug) {
+            updateProgress('compress setting.js success', 5);
             return settings;
         }
         let uuidIndices = {};
@@ -439,6 +445,7 @@ class Builder {
             content += `(${settingsInitFunction.toString()})(${WINDOW_HEADER});`;
         }
         outputFileSync(that._paths.settings, content);
+        updateProgress('compress setting.js success', 5);
         return settings;
     }
 
@@ -485,10 +492,10 @@ class Builder {
         }
         setting.rawAssets.assets = assetObj.assets;
         setting.rawAssets.internal = assetObj.internal;
-        delete setting.type;
-        if (options.type !== 'build-release') {
+        if (options.type === 'build-release') {
             return setting;
         }
+        delete setting.type;
         return `${WINDOW_HEADER} = ${JSON.stringify(setting)}`;
     }
 }

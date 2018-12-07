@@ -41,7 +41,7 @@ export const messages = {
     'build:update-progress'(msg: string, rate: any) {
         vm.message = msg;
         if (rate) {
-            vm.progressRate = rate;
+            vm.rate += rate;
         }
     },
 };
@@ -66,7 +66,7 @@ export async function ready() {
             checkSuccss: true,
             state: 'info',
             message: '',
-            progressRate: 0,
+            rate: 0,
         },
         computed: {
             selectAll(): any {
@@ -97,6 +97,10 @@ export async function ready() {
                 set(newValue: any) {
 
                 },
+            },
+            progressRate(): string {
+                // @ts-ignore
+                return this.rate + '%';
             },
         },
         methods: <any>{
@@ -223,6 +227,7 @@ export async function ready() {
 
             // 构建项目
             async _build() {
+                this.rate = 0;
                 const data = {
                     platform: this.platform,
                     source_map: this.source_map,
