@@ -283,7 +283,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         }
 
         if (vm.folds[node.uuid] === undefined) {
-            vm.$set(vm.folds, node.uuid, false); // 默认不展开节点
+            vm.$set(vm.folds, node.uuid, vm.firstAllExpand);
         }
 
         if (node.height === undefined) {

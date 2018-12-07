@@ -27,6 +27,7 @@ export function data() {
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
         folds: {}, // 用于记录已展开的节点
+        firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         renameUuid: '', // 需要 rename 的节点的 url，只有一个
         intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称

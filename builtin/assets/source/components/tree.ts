@@ -29,6 +29,7 @@ export function data() {
         selects: [], // 已选中项的 uuid
         twinkles: [], // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
+        firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         types: { file: 1, 'cc.Node': 2 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
         renameSource: '', // 需要 rename 的节点的 url，只有一个
         intoView: '', // 定位显示资源，uuid, 只有一个

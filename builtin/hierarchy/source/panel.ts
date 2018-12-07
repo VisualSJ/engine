@@ -48,10 +48,14 @@ export const methods = {
      */
     async unstaging() {
         // 初始化缓存的折叠数据
-        const folds = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging-fold');
+        const expand = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging-fold');
 
-        if (folds) {
-            const uuidsIsExpand = JSON.parse(folds);
+        if (expand === 'false') {
+            vm.$refs.tree.firstAllExpand = false;
+        } else if (expand === 'true') {
+            vm.$refs.tree.firstAllExpand = true;
+        } else if (expand) {
+            const uuidsIsExpand = JSON.parse(expand);
             uuidsIsExpand.forEach((uuid: string) => {
                 vm.$set(vm.$refs.tree.folds, uuid, true);
             });

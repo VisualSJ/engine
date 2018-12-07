@@ -22,10 +22,19 @@ export const messages = {
 
     /**
      * 查询暂存的折叠数据
+     * 编辑器配置默认节点折叠状态：
+     * 全部展开：expand_all
+     * 全部折叠：collapse_all
      */
-    'query-staging-fold'(): string {
+    async 'query-staging-fold'() {
         if (!expand) {
-            expand = profile.get('expand') || '[]';
+            const setting = await Editor.Ipc.requestToPackage('preferences', 'get-setting', 'general.node_tree');
+
+            switch (setting) {
+                case 'collapse_all': expand = 'false'; break;
+                case 'expand_all': expand = 'true'; break;
+                default: expand = profile.get('expand') || '[]'; break;
+            }
         }
 
         return expand;

@@ -220,7 +220,7 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
         }
 
         if (vm.folds[asset.uuid] === undefined) {
-            vm.$set(vm.folds, asset.uuid, false);
+            vm.$set(vm.folds, asset.uuid, vm.firstAllExpand);
         }
 
         if (asset.height === undefined) {
