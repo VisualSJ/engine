@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { extname, join } from 'path';
 
 const db = require('./tree-db');
@@ -118,16 +118,18 @@ export const methods = {
     /**
      * 刷新树形
      */
-    async refresh(intoView = false) {
+    refresh(intoView = false) {
         if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
             return;
         }
+
+        const delay = intoView ? 0 : 300; // 类似刷新的操作不需要延迟
 
         isRefreshing = true;
         setTimeout(() => { // 整体延迟
             isRefreshing = false;
             run();
-        }, 300);
+        }, delay);
 
         async function run() {
             await db.refresh();
@@ -321,9 +323,9 @@ export const methods = {
         if (filedata === undefined) {
             filedata = '';
 
-            const filetype = db.extToFileType[json.ext];
-            if (filetype) {
-                filedata = readFileSync(join(__dirname, `../../static/filecontent/${filetype}`), 'utf8');
+            const filepath = join(__dirname, `../../static/filecontent/${json.ext}`);
+            if (existsSync(filepath)) {
+                filedata = readFileSync(filepath, 'utf8');
             }
         }
         utils.twinkleAssets.sleep();

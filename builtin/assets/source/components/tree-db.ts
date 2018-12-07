@@ -17,12 +17,6 @@ export let vm: any; // 承接 tree vm 的参数配置
 export const assetHeight: number = 20; // 配置每个资源的高度，需要与css一致
 export const iconWidth: number = 18; // 树形节点 icon 的宽度
 export const padding: number = 4; // 树形头部的间隔，为了保持美观
-export const extToFileType = {
-    js: 'javascript',
-    fire: 'scene',
-    json: 'json',
-    ts: 'typescript',
-};
 
 /**
  * refresh 的时候需要重置数据

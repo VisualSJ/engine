@@ -50,6 +50,21 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                         type: 'separator',
                     },
                     {
+                        label: Editor.I18n.t('assets.menu.newMaterials'),
+                        click() {
+                            self.$emit('ipcAdd', { ext: 'mtl' }, asset.uuid);
+                        },
+                    },
+                    {
+                        label: Editor.I18n.t('assets.menu.newEffect'),
+                        click() {
+                            self.$emit('ipcAdd', { ext: 'effect' }, asset.uuid);
+                        },
+                    },
+                    {
+                        type: 'separator',
+                    },
+                    {
                         label: Editor.I18n.t('assets.menu.newAnimationClip'),
                         click() {
                             self.$emit('ipcAdd', { ext: 'anim' }, asset.uuid);

@@ -26,6 +26,8 @@ module.exports = {
         newAnimationClip: 'Animation Clip',
         newAutoAtlas: 'Auto Atlas',
         newLabelAtlas: 'Label Atlas',
+        newMaterials: 'Materials',
+        newEffect: 'Effect',
         copy: '复制',
         paste: '粘贴',
         delete: '删除',

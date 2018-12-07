@@ -50,6 +50,21 @@ exports.popupNew = (event: Event) => {
                 type: 'separator',
             },
             {
+                label: Editor.I18n.t('assets.menu.newMaterials'),
+                click() {
+                    db.vm.$refs.tree.ipcAdd({ ext: 'mtl' });
+                },
+            },
+            {
+                label: Editor.I18n.t('assets.menu.newEffect'),
+                click() {
+                    db.vm.$refs.tree.ipcAdd({ ext: 'effect' });
+                },
+            },
+            {
+                type: 'separator',
+            },
+            {
                 label: Editor.I18n.t('assets.menu.newAnimationClip'),
                 click() {
                     db.vm.$refs.tree.ipcAdd({ ext: 'anim' });
@@ -63,9 +78,6 @@ exports.popupNew = (event: Event) => {
                 click() {
                     db.vm.$refs.tree.ipcAdd({ ext: 'pac' });
                 },
-            },
-            {
-                type: 'separator',
             },
             {
                 label: Editor.I18n.t('assets.menu.newLabelAtlas'),
@@ -156,6 +168,21 @@ exports.popupContext = (event: Event) => {
                         label: Editor.I18n.t('assets.menu.newScene'),
                         click() {
                             db.vm.$refs.tree.ipcAdd({ ext: 'fire' });
+                        },
+                    },
+                    {
+                        type: 'separator',
+                    },
+                    {
+                        label: Editor.I18n.t('assets.menu.newMaterials'),
+                        click() {
+                            db.vm.$refs.tree.ipcAdd({ ext: 'mtl' });
+                        },
+                    },
+                    {
+                        label: Editor.I18n.t('assets.menu.newEffect'),
+                        click() {
+                            db.vm.$refs.tree.ipcAdd({ ext: 'effect' });
                         },
                     },
                     {
