@@ -5,7 +5,6 @@ const { ipcRenderer } = require('electron');
 const { serializeError, deserializeError } = require('./utils');
 
 class WebviewIpc extends EventEmitter {
-
     constructor() {
         super();
 
@@ -41,6 +40,16 @@ class WebviewIpc extends EventEmitter {
     }
 
     /**
+     * 强制发送，不管任何数据
+     * @param {*} message
+     * @param  {...any} args
+     */
+    forceSend(message, ...args) {
+        const item = { message, arguments: args };
+        ipcRenderer.sendToHost('webview-ipc:force-send', item);
+    }
+
+    /**
      * 执行发送消息任务
      * 如果没有准备就绪，会等到准备就绪后执行
      */
@@ -61,7 +70,7 @@ class WebviewIpc extends EventEmitter {
     }
 }
 
-const ipc = module.exports = new WebviewIpc();
+const ipc = (module.exports = new WebviewIpc());
 
 // host 发送过来的消息
 ipcRenderer.on('webview-ipc:send', async (event, options) => {
@@ -77,13 +86,11 @@ ipcRenderer.on('webview-ipc:send', async (event, options) => {
     }
 
     if (data instanceof Promise) {
-        data
-            .then((data) => {
-                ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
-            })
-            .catch((error) => {
-                ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
-            });
+        data.then((data) => {
+            ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
+        }).catch((error) => {
+            ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
+        });
         return;
     }
     ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);

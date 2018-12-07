@@ -4,7 +4,6 @@ const { EventEmitter } = require('events');
 const { serializeError, deserializeError } = require('./utils');
 
 class HostIpc extends EventEmitter {
-
     constructor(webview) {
         super();
         // webview element
@@ -35,13 +34,11 @@ class HostIpc extends EventEmitter {
                 }
 
                 if (data instanceof Promise) {
-                    data
-                        .then((data) => {
-                            this.$webview.send('webview-ipc:send-reply', null, data);
-                        })
-                        .catch((error) => {
-                            this.$webview.send('webview-ipc:send-reply', serializeError(error));
-                        });
+                    data.then((data) => {
+                        this.$webview.send('webview-ipc:send-reply', null, data);
+                    }).catch((error) => {
+                        this.$webview.send('webview-ipc:send-reply', serializeError(error));
+                    });
                     return;
                 }
                 this.$webview.send('webview-ipc:send-reply', null, data);
@@ -62,6 +59,17 @@ class HostIpc extends EventEmitter {
                 this.step();
             }
 
+            if (event.channel === 'webview-ipc:force-send') {
+                const [options] = event.args;
+                const handler = this._events[options.message];
+
+                try {
+                    handler(...options.arguments);
+                } catch (error) {
+                    console.error(error);
+                    return;
+                }
+            }
         });
 
         this.$webview.addEventListener('did-start-loading', () => {
