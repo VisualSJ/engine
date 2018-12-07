@@ -33,6 +33,7 @@ class View extends window.HTMLElement {
         this.$scene.setAttribute('preload', `file://${preload}`);
         this.$scene.setAttribute('disablewebsecurity', '');
         this.$scene.setAttribute('style', 'pointer-events: none;');
+        this.$scene.setAttribute('src', `packages://scene/static/template/${Editor.Project.type}-webview.html`);
         this.appendChild(this.$scene);
 
         // 查询引擎数据, 并指定 webview 加载
@@ -44,9 +45,6 @@ class View extends window.HTMLElement {
 
         // 初始化键盘监听事件
         initListener(this);
-
-        // 载入指定页面
-        this.$scene.loadURL(`packages://scene/static/template/${Editor.Project.type}-webview.html`);
 
         // 等待 webview 初始化完成
         await new Promise((resolve) => {
