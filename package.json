@@ -8,6 +8,7 @@
         "build": "node ./scripts/build-css.js & node ./scripts/build-js.js",
         "build:css": "node ./scripts/build-css.js",
         "build:effect": "node ./scripts/build-effect.js",
+        "refresh": "touch ./builtin/asset-db/static/internal/assets/*",
         "watch:css": "node ./scripts/watch-css.js",
         "build:js": "node ./scripts/build-js.js",
         "update": "node ./scripts/update.js",

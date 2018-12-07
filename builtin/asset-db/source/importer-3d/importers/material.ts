@@ -39,17 +39,11 @@ export default class MaterialImporter extends Importer {
         try {
             // 如果当前资源没有导入，则开始导入当前资源
             if (!(await asset.existsInLibrary('.json'))) {
-                const json = JSON.parse(await readFile(asset.source, 'utf8'));
+                const content = await readFile(asset.source, 'utf8');
+                // TODO: uuid dependency
+                // let uuid = JSON.parse(content)._effectAsset.__uuid__;
 
-                await new Promise((resolve) => {
-                    // @ts-ignore
-                    cc.AssetLibrary.loadJson(json, (error, result) => {
-                        // @ts-ignore
-                        asset.saveToLibrary('.json', Manager.serialize(result));
-                        resolve();
-                    });
-                });
-
+                asset.saveToLibrary('.json', content);
                 updated = true;
             }
 

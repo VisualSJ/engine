@@ -517,7 +517,7 @@ async function createWorker() {
 }
 
 function mergeAssetDBsFromPackages() {
-    const dirnames = Object.keys(Editor.Package.packages);
+    const dirnames = Object.keys({});
     dirnames.forEach((dirname) => {
         // @ts-ignore
         const pkg: any = Editor.Package.packages[dirname];

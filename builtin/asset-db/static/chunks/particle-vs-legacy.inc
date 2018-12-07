@@ -15,11 +15,11 @@ void lpvs_main() {
 #endif
 
 #if !USE_WORLD_SPACE
-//   // simulate in world space. apply model matrix on CPU side.
+//   // simulate in world space. apply _model matrix on CPU side.
 // #else
-  pos = model * pos;
+  pos = _model * pos;
   #if USE_STRETCHED_BILLBOARD
-  velocity = model * velocity;
+  velocity = _model * velocity;
   #endif
 #endif
 
@@ -33,10 +33,10 @@ void lpvs_main() {
 
   computeVertPos(pos, cornerOffset
   #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
-    , _view_
+    , _view
   #endif
   #if USE_STRETCHED_BILLBOARD
-    , _eye_
+    , _eye
     , velocity
     , velocityScale
     , lengthScale
@@ -45,7 +45,7 @@ void lpvs_main() {
   #endif
   );
 
-  pos = _viewProj_ * pos;
+  pos = _viewProj * pos;
 
   uv = computeUV(a_uv.z, a_uv.xy, frameTile) * mainTiling + mainOffset;
 

@@ -18,26 +18,26 @@ struct LightInfo {
 
 #if NUM_DIR_LIGHTS > 0
   #pragma for id in range(0, NUM_DIR_LIGHTS)
-    uniform vec3 _dir_light_{id}_direction;
-    uniform vec3 _dir_light_{id}_color;
+    uniform vec3 _dir_light{id}_direction;
+    uniform vec3 _dir_light{id}_color;
   #pragma endFor
 #endif
 
 #if NUM_POINT_LIGHTS > 0
   #pragma for id in range(0, NUM_POINT_LIGHTS)
-    uniform vec3 _point_light_{id}_position;
-    uniform vec3 _point_light_{id}_color;
-    uniform float _point_light_{id}_range;
+    uniform vec3 _point_light{id}_position;
+    uniform vec3 _point_light{id}_color;
+    uniform float _point_light{id}_range;
   #pragma endFor
 #endif
 
 #if NUM_SPOT_LIGHTS > 0
   #pragma for id in range(0, NUM_SPOT_LIGHTS)
-    uniform vec3 _spot_light_{id}_position;
-    uniform vec3 _spot_light_{id}_direction;
-    uniform vec3 _spot_light_{id}_color;
-    uniform vec2 _spot_light_{id}_spot;
-    uniform float _spot_light_{id}_range;
+    uniform vec3 _spot_light{id}_position;
+    uniform vec3 _spot_light{id}_direction;
+    uniform vec3 _spot_light{id}_color;
+    uniform vec2 _spot_light{id}_spot;
+    uniform float _spot_light{id}_range;
   #pragma endFor
 #endif
 
@@ -97,7 +97,7 @@ LightInfo computeSpotLighting(
   #include <shadow-mapping>
 #endif
 
-uniform vec3 _eye_;
+uniform vec3 _eye;
 
 varying vec3 pos_w;
 varying vec3 normal_w;
@@ -169,7 +169,7 @@ uniform float ao;
   }
 #endif
 
-// Cook-Torrance BRDF model
+// Cook-Torrance BRDF _model
 // D() Normal distribution function (Trowbridge-Reitz GGX)
 // https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
 float distributionGGX(vec3 N, vec3 H, float roughness) {
@@ -274,7 +274,7 @@ vec4 frag() {
   #if USE_NORMAL_TEXTURE
     N = getNormalFromTexture();
   #endif
-  vec3 V = normalize(_eye_ - pos_w);
+  vec3 V = normalize(_eye - pos_w);
 
   // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
   // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -288,7 +288,7 @@ vec4 frag() {
   #if NUM_POINT_LIGHTS > 0
     #pragma for id in range(0, NUM_POINT_LIGHTS)
       LightInfo pointLight{id};
-      pointLight{id} = computePointLighting(_point_light_{id}_position, pos_w, _point_light_{id}_color, _point_light_{id}_range);
+      pointLight{id} = computePointLighting(_point_light{id}_position, pos_w, _point_light{id}_color, _point_light{id}_range);
       Lo += brdf(pointLight{id}, N, V, F0, albedo, metallic, roughness);
     #pragma endFor
   #endif
@@ -296,7 +296,7 @@ vec4 frag() {
   #if NUM_DIR_LIGHTS > 0
     #pragma for id in range(0, NUM_DIR_LIGHTS)
       LightInfo directionalLight{id};
-      directionalLight{id} = computeDirectionalLighting(_dir_light_{id}_direction, _dir_light_{id}_color);
+      directionalLight{id} = computeDirectionalLighting(_dir_light{id}_direction, _dir_light{id}_color);
       Lo += brdf(directionalLight{id}, N, V, F0, albedo, metallic, roughness);
     #pragma endFor
   #endif
@@ -304,7 +304,7 @@ vec4 frag() {
   #if NUM_SPOT_LIGHTS > 0
     #pragma for id in range(0, NUM_SPOT_LIGHTS)
       LightInfo spotLight{id};
-      spotLight{id} = computeSpotLighting(_spot_light_{id}_position, pos_w, _spot_light_{id}_direction, _spot_light_{id}_color, _spot_light_{id}_spot, _spot_light_{id}_range);
+      spotLight{id} = computeSpotLighting(_spot_light{id}_position, pos_w, _spot_light{id}_direction, _spot_light{id}_color, _spot_light{id}_spot, _spot_light{id}_range);
       Lo += brdf(spotLight{id}, N, V, F0, albedo, metallic, roughness);
     #pragma endFor
   #endif
@@ -356,7 +356,7 @@ vec4 frag() {
     float shadow = 1.0;
     #if NUM_SHADOW_LIGHTS > 0
       #pragma for id in range(0, NUM_SHADOW_LIGHTS)
-        shadow *= computeShadowESM(_shadowMap__{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale__{id}, _darkness__{id}, _frustumEdgeFalloff__{id});
+        shadow *= computeShadowESM(_shadowMap_{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale_{id}, _darkness_{id}, _frustumEdgeFalloff_{id});
       #pragma endFor
     #endif
     vec3 color = (ambient + Lo) * shadow;

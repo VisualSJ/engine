@@ -25,8 +25,8 @@
 %% sp-vs {
   attribute vec3 a_position;
 
-  uniform mat4 model;
-  uniform mat4 _viewProj_;
+  uniform mat4 _model;
+  uniform mat4 _viewProj;
 
   #if USE_TEXTURE
     attribute vec2 a_uv0;
@@ -34,7 +34,7 @@
   #endif
 
   void main () {
-    vec4 pos = _viewProj_ * model * vec4(a_position, 1);
+    vec4 pos = _viewProj * _model * vec4(a_position, 1);
 
     #if USE_TEXTURE
       uv0 = a_uv0;

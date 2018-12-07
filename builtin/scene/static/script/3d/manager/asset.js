@@ -83,7 +83,7 @@ function querySerializedMaterial(options) {
     const { effectName, _props, _defines } = options;
     const material = new cc.Material();
 
-    material.effectName = effectName;
+    material._effectAsset = cc.EffectAsset.get(effectName);
     material._props = _props;
     material._defines = _defines;
 

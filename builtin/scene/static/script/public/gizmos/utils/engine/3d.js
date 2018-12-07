@@ -42,11 +42,13 @@ class Engine3D extends EngineInterface {
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
             mtl.effectName = 'builtin-effect-unlit-transparent';
             mtl.define('USE_COLOR', true);
-            mtl.effect.getActiveTechnique().passes[0].setDepth(false);
+            if (mtl.effect) mtl.effect.getActiveTechnique().passes[0].setDepth(false);
         } else { mtl.effectName = '__editor-gizmo'; }
         mtl.setProperty('color', node.modelColor);
-        let pass = mtl._effect.getActiveTechnique().passes[0];
-        if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
+        if (mtl.effect) {
+            let pass = mtl.effect.getActiveTechnique().passes[0];
+            if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
+        }
         model.material = mtl;
     }
 

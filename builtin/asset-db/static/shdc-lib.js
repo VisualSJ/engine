@@ -15,7 +15,7 @@ let rangePragma = /range\(([\d.,\s]+)\)\s(\w+)/;
 let defaultPragma = /default\(([\d.,]+)\)/;
 let namePragma = /name\(([^)]+)\)/;
 let precision = /(low|medium|high)p/;
-let builtins = /_\w+_/;
+let builtins = /^_\w+/;
 
 function convertType(t) { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 

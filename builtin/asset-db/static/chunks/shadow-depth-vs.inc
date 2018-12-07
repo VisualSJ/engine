@@ -2,11 +2,11 @@
 
 attribute vec3 a_position;
 
-uniform mat4 model;
-uniform mat4 _lightViewProjMatrix_;
-uniform float _minDepth_;
-uniform float _maxDepth_;
-uniform float _bias_;
+uniform mat4 _model;
+uniform mat4 _lightViewProjMatrix;
+uniform float _minDepth;
+uniform float _maxDepth;
+uniform float _bias;
 varying float vDepth;
 
 #if USE_SKINNING
@@ -21,7 +21,7 @@ vec4 vert() {
     pos = skinMat * pos;
   #endif
 
-  // compute vDepth according to active camera's _minDepth_ and _maxDepth_.
-  vDepth = ((gl_Position.z + _minDepth_) / (_minDepth_ + _maxDepth_)) + _bias_;
-  return _lightViewProjMatrix_ * model * pos;
+  // compute vDepth according to active camera's minDepth and maxDepth.
+  vDepth = ((gl_Position.z + _minDepth) / (_minDepth + _maxDepth)) + _bias;
+  return _lightViewProjMatrix * _model * pos;
 }

@@ -275,7 +275,7 @@ void gpvs_main() {
   velocity *= speedModifier;
 #endif
 #if !USE_WORLD_SPACE
-  pos = model * pos;
+  pos = _model * pos;
   #if USE_STRETCHED_BILLBOARD
     velocity = rotateQuat(velocity, u_worldRot);
   #endif
@@ -331,10 +331,10 @@ void gpvs_main() {
 
   computeVertPos(pos, cornerOffset
   #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
-    , _view_
+    , _view
   #endif
   #if USE_STRETCHED_BILLBOARD
-    , _eye_
+    , _eye
     , velocity
     , velocityScale
     , lengthScale
@@ -343,7 +343,7 @@ void gpvs_main() {
   #endif
   );
 
-  pos = _viewProj_ * pos;
+  pos = _viewProj * pos;
 
   float frameIndex = 0.;
 #if TEXTURE_ANIMATION_ENABLE

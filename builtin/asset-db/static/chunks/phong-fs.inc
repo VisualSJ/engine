@@ -16,7 +16,7 @@ LightInfo computeDirectionalLighting(
   vec3 lightDirection,
   vec3 lightColor,
   vec3 normal,
-  vec3 _viewDirection_,
+  vec3 viewDirection,
   float glossiness
 ) {
   LightInfo lightingResult;
@@ -26,7 +26,7 @@ LightInfo computeDirectionalLighting(
   ndl = max(0.0, dot(normal, lightDir));
   lightingResult.diffuse = lightColor * ndl;
 
-  vec3 dirH = normalize(_viewDirection_ + lightDir);
+  vec3 dirH = normalize(viewDirection + lightDir);
   ndh = max(0.0, dot(normal, dirH));
   ndh = (ndl == 0.0) ? 0.0: ndh;
   ndh = pow(ndh, max(1.0, glossiness * 128.0));
@@ -41,7 +41,7 @@ LightInfo computePointLighting(
   float lightRange,
   vec3 normal,
   vec3 positionW,
-  vec3 _viewDirection_,
+  vec3 viewDirection,
   float glossiness
 ) {
   LightInfo lightingResult;
@@ -55,7 +55,7 @@ LightInfo computePointLighting(
   ndl = max(0.0, dot(normal, lightDir));
   lightingResult.diffuse = lightColor * ndl * attenuation;
 
-  vec3 dirH = normalize(_viewDirection_ + lightDir);
+  vec3 dirH = normalize(viewDirection + lightDir);
   ndh = max(0.0, dot(normal, dirH));
   ndh = (ndl == 0.0) ? 0.0: ndh;
   ndh = pow(ndh, max(1.0, glossiness * 128.0));
@@ -72,7 +72,7 @@ LightInfo computeSpotLighting(
   vec2 lightSpot,
   vec3 normal,
   vec3 positionW,
-  vec3 _viewDirection_,
+  vec3 viewDirection,
   float glossiness
 ) {
   LightInfo lightingResult;
@@ -91,7 +91,7 @@ LightInfo computeSpotLighting(
   ndl = max(0.0, dot(normal, lightDir));
   lightingResult.diffuse = lightColor * ndl * attenuation * cosConeAngle;
 
-  vec3 dirH = normalize(_viewDirection_ + lightDir);
+  vec3 dirH = normalize(viewDirection + lightDir);
   ndh = max(0.0, dot(normal, dirH));
   ndh = (ndl == 0.0) ? 0.0: ndh;
   ndh = pow(ndh, max(1.0, glossiness * 128.0));
@@ -102,33 +102,33 @@ LightInfo computeSpotLighting(
 
 #if NUM_DIR_LIGHTS > 0
   #pragma for id in range(0, NUM_DIR_LIGHTS)
-    uniform vec3 _dir_light_{id}_direction;
-    uniform vec3 _dir_light_{id}_color;
+    uniform vec3 _dir_light{id}_direction;
+    uniform vec3 _dir_light{id}_color;
   #pragma endFor
 #endif
 
 #if NUM_POINT_LIGHTS > 0
   #pragma for id in range(0, NUM_POINT_LIGHTS)
-    uniform vec3 _point_light_{id}_position;
-    uniform vec3 _point_light_{id}_color;
-    uniform float _point_light_{id}_range;
+    uniform vec3 _point_light{id}_position;
+    uniform vec3 _point_light{id}_color;
+    uniform float _point_light{id}_range;
   #pragma endFor
 #endif
 
 #if NUM_SPOT_LIGHTS > 0
   #pragma for id in range(0, NUM_SPOT_LIGHTS)
-    uniform vec3 _spot_light_{id}_position;
-    uniform vec3 _spot_light_{id}_direction;
-    uniform vec3 _spot_light_{id}_color;
-    uniform float _spot_light_{id}_range;
-    uniform vec2 _spot_light_{id}_spot;
+    uniform vec3 _spot_light{id}_position;
+    uniform vec3 _spot_light{id}_direction;
+    uniform vec3 _spot_light{id}_color;
+    uniform float _spot_light{id}_range;
+    uniform vec2 _spot_light{id}_spot;
   #pragma endFor
 #endif
 
 LightInfo getPhongLighting(
   vec3 normal,
   vec3 positionW,
-  vec3 _viewDirection_,
+  vec3 viewDirection,
   float glossiness
 ) {
   LightInfo result;
@@ -137,7 +137,7 @@ LightInfo getPhongLighting(
   LightInfo dirLighting;
   #if NUM_DIR_LIGHTS > 0
     #pragma for id in range(0, NUM_DIR_LIGHTS)
-      dirLighting = computeDirectionalLighting(_dir_light_{id}_direction,_dir_light_{id}_color,normal, _viewDirection_, glossiness);
+      dirLighting = computeDirectionalLighting(_dir_light{id}_direction,_dir_light{id}_color,normal, viewDirection, glossiness);
       result.diffuse += dirLighting.diffuse;
       result.specular += dirLighting.specular;
     #pragma endFor
@@ -146,8 +146,8 @@ LightInfo getPhongLighting(
   LightInfo pointLighting;
   #if NUM_POINT_LIGHTS > 0
     #pragma for id in range(0, NUM_POINT_LIGHTS)
-      pointLighting = computePointLighting(_point_light_{id}_position, _point_light_{id}_color, _point_light_{id}_range,
-                                          normal, positionW, _viewDirection_, glossiness);
+      pointLighting = computePointLighting(_point_light{id}_position, _point_light{id}_color, _point_light{id}_range,
+                                          normal, positionW, viewDirection, glossiness);
       result.diffuse += pointLighting.diffuse;
       result.specular += pointLighting.specular;
     #pragma endFor
@@ -156,8 +156,8 @@ LightInfo getPhongLighting(
   LightInfo spotLighting;
   #if NUM_SPOT_LIGHTS > 0
     #pragma for id in range(0, NUM_SPOT_LIGHTS)
-      spotLighting = computeSpotLighting(_spot_light_{id}_position, _spot_light_{id}_direction, _spot_light_{id}_color,
-                      _spot_light_{id}_range, _spot_light_{id}_spot,normal, positionW, _viewDirection_, glossiness);
+      spotLighting = computeSpotLighting(_spot_light{id}_position, _spot_light{id}_direction, _spot_light{id}_color,
+                      _spot_light{id}_range, _spot_light{id}_spot,normal, positionW, viewDirection, glossiness);
       result.diffuse += spotLighting.diffuse;
       result.specular += spotLighting.specular;
     #pragma endFor
@@ -170,8 +170,8 @@ LightInfo getPhongLighting(
   #include <shadow-mapping>
 #endif
 
-uniform vec3 _eye_;
-uniform vec3 _sceneAmbient_;
+uniform vec3 _eye;
+uniform vec3 _sceneAmbient;
 
 varying vec3 normal_w;
 varying vec3 pos_w;
@@ -282,7 +282,7 @@ vec4 composePhongShading(LightInfo lighting, phongMaterial mtl, float shadow)
 
 vec4 frag () {
   LightInfo phongLighting;
-  vec3 _viewDirection_ = normalize(_eye_ - pos_w);
+  vec3 viewDirection = normalize(_eye - pos_w);
 
   phongMaterial mtl = getPhongMaterial();
   #if USE_ALPHA_TEST
@@ -292,14 +292,14 @@ vec4 frag () {
   #if USE_NORMAL_TEXTURE
     normal = getNormal(pos_w, normal);
   #endif
-  phongLighting = getPhongLighting(normal, pos_w, _viewDirection_, mtl.glossiness);
-  phongLighting.diffuse += _sceneAmbient_;
+  phongLighting = getPhongLighting(normal, pos_w, viewDirection, mtl.glossiness);
+  phongLighting.diffuse += _sceneAmbient;
 
   #if USE_SHADOW_MAP
     float shadow = 1.0;
     #if NUM_SHADOW_LIGHTS > 0
       #pragma for id in range(0, NUM_SHADOW_LIGHTS)
-        shadow *= computeShadowESM(_shadowMap__{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale__{id}, _darkness__{id}, _frustumEdgeFalloff__{id});
+        shadow *= computeShadowESM(_shadowMap_{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale_{id}, _darkness_{id}, _frustumEdgeFalloff_{id});
       #pragma endFor
     #endif
     vec4 finalColor = composePhongShading(phongLighting, mtl, shadow);

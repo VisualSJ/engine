@@ -3,9 +3,9 @@
 attribute vec3 a_position;
 attribute vec3 a_normal;
 
-uniform mat4 model;
-uniform mat4 _viewProj_;
-uniform mat3 normalMatrix;
+uniform mat4 _model;
+uniform mat4 _viewProj;
+uniform mat3 _normalMatrix;
 
 varying vec3 normal_w;
 varying vec3 pos_w;
@@ -24,9 +24,9 @@ varying vec3 pos_w;
 #if USE_SHADOW_MAP
   #if NUM_SHADOW_LIGHTS > 0
     #pragma for id in range(0, NUM_SHADOW_LIGHTS)
-      uniform mat4 _lightViewProjMatrix__{id};
-      uniform float _minDepth__{id};
-      uniform float _maxDepth__{id};
+      uniform mat4 _lightViewProjMatrix_{id};
+      uniform float _minDepth_{id};
+      uniform float _maxDepth_{id};
       varying vec4 pos_lightspace_{id};
       varying float vDepth_{id};
     #pragma endFor
@@ -41,8 +41,8 @@ vec4 vert () {
     pos = skinMat * pos;
   #endif
 
-  pos_w = (model * pos).xyz;
-  pos = _viewProj_ * model * pos;
+  pos_w = (_model * pos).xyz;
+  pos = _viewProj * _model * pos;
 
   #if USE_NORMAL_TEXTURE || USE_DIFFUSE_TEXTURE || USE_EMISSIVE_TEXTURE
     uv0 = a_uv0 * mainTiling + mainOffset;
@@ -52,13 +52,13 @@ vec4 vert () {
   #if USE_SKINNING
     normal = skinMat * normal;
   #endif
-  normal_w = normalMatrix * normal.xyz;
+  normal_w = _normalMatrix * normal.xyz;
 
   #if USE_SHADOW_MAP
     #if NUM_SHADOW_LIGHTS > 0
       #pragma for id in range(0, NUM_SHADOW_LIGHTS)
-        pos_lightspace_{id} = _lightViewProjMatrix__{id} * vec4(pos_w, 1.0);
-        vDepth_{id} = (pos_lightspace_{id}.z + _minDepth__{id}) / (_minDepth__{id} + _maxDepth__{id});
+        pos_lightspace_{id} = _lightViewProjMatrix_{id} * vec4(pos_w, 1.0);
+        vDepth_{id} = (pos_lightspace_{id}.z + _minDepth_{id}) / (_minDepth_{id} + _maxDepth_{id});
       #pragma endFor
     #endif
   #endif

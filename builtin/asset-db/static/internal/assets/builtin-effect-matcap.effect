@@ -38,9 +38,9 @@
 %% matcap-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
-  uniform   mat4 model;
-  uniform   mat4 _viewProj_;
-  uniform   mat3 normalMatrix;
+  uniform   mat4 _model;
+  uniform   mat4 _viewProj;
+  uniform   mat3 _normalMatrix;
   varying   vec2 matcapUV;
 
   #if USE_MAIN_TEX
@@ -62,14 +62,14 @@
       mat4 skinMat = skinMatrix();
       pos = skinMat * pos;
     #endif
-    pos = _viewProj_ * model * pos;
+    pos = _viewProj * _model * pos;
     gl_Position = pos;
 
     vec4 normal = vec4(a_normal, 0);
     #if USE_SKINNING
       normal = skinMat * normal;
     #endif
-    normal = vec4(normalize(normalMatrix * normal.xyz), 0);
+    normal = vec4(normalize(_normalMatrix * normal.xyz), 0);
     matcapUV = normal.xy;
     matcapUV = matcapUV * 0.5 + 0.5;
   }

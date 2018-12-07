@@ -2,8 +2,8 @@
 
 attribute vec3 a_position;
 
-uniform mat4 model;
-uniform mat4 _viewProj_;
+uniform mat4 _model;
+uniform mat4 _viewProj;
 
 #if USE_TEXTURE
   attribute vec2 a_uv0;
@@ -23,7 +23,7 @@ vec4 vert () {
     pos = skinMatrix() * pos;
   #endif
 
-  pos = _viewProj_ * model * pos;
+  pos = _viewProj * _model * pos;
 
   #if USE_TEXTURE
     uv0 = a_uv0 * mainTiling + mainOffset;

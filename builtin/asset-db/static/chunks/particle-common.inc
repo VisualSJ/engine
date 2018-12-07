@@ -2,12 +2,12 @@
 uniform vec2 frameTile;
 uniform vec2 mainTiling;
 uniform vec2 mainOffset;
-uniform mat4 model;
-uniform mat4 _viewProj_;
-uniform mat4 _view_;
+uniform mat4 _model;
+uniform mat4 _viewProj;
+uniform mat4 _view;
 
 #if USE_STRETCHED_BILLBOARD
-  uniform vec3 _eye_;
+  uniform vec3 _eye;
   uniform float velocityScale;
   uniform float lengthScale;
 #endif
@@ -20,7 +20,7 @@ void computeVertPos(inout vec4 pos, vec2 vertOffset
   , mat4 view
 #endif
 #if USE_STRETCHED_BILLBOARD
-  , vec3 eye
+  , vec3 _eye
   , vec4 velocity
   , float velocityScale
   , float lengthScale
@@ -33,7 +33,7 @@ void computeVertPos(inout vec4 pos, vec2 vertOffset
   vec3 camUp = normalize(vec3(view[0][1], view[1][1], view[2][1]));
   pos.xyz += (camRight * vertOffset.x) + (camUp * vertOffset.y);
 #elif USE_STRETCHED_BILLBOARD
-  vec3 camRight = normalize(cross(pos.xyz - eye, velocity.xyz));
+  vec3 camRight = normalize(cross(pos.xyz - _eye, velocity.xyz));
   vec3 camUp = velocity.xyz * velocityScale + normalize(velocity.xyz) * lengthScale * size;
   pos.xyz += (camRight * abs(vertOffset.x) * sign(vertOffset.y)) - camUp * xIndex;
 #elif USE_HORIZONTAL_BILLBOARD
