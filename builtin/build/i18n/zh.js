@@ -19,6 +19,7 @@ module.exports = {
     select_all: '全选',
     open_compile_file: '打开编译日志文件',
     source_map: 'Source Maps',
+    debug_mode: '打开构建调试工具',
     error: {
         build_error: '构建错误',
         dirty_info: '没有保存，请先保存相关信息再进行构建。',

@@ -57,7 +57,7 @@
                 <div slot="content"><ui-checkbox checked path="inline_SpriteFrames"></ui-checkbox></div>
             </ui-prop>
         </div>
-        <component :is="platform" :info="{build_path}" ref="children"></component>
+        <component :is="platform" :info="{build_path, platform}" ref="children"></component>
         <div class="line"><ui-prop type="boolean" :label="t('debug')" :value="debug"></ui-prop></div>
         <div class="line"><ui-prop type="boolean" :label="t('source_map')" :value="source_map"></ui-prop></div>
     </div>
@@ -67,7 +67,7 @@
             <div :class="state">{{message ? message : 'progress'}}</div>
         </div>
         <div class="btn-group">
-            <ui-button class="green" @confirm.stop="onBuild" :disabled = "!btnState.build">构建</ui-button>
+            <ui-button class="green" @confirm.stop="onBuild" >构建</ui-button>
             <i class="iconfont i-arrow-right"></i>
             <ui-button class="green" :disabled = "!btnState.compile">编译</ui-button>
             <i class="iconfont i-arrow-right" v-if="!btnState.compile"></i>

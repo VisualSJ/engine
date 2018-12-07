@@ -8,7 +8,6 @@ const Concat = require('concat-stream');
 const xtend = require('xtend'); // 用于扩展对象的插件包
 const builtins = require('browserify/lib/builtins.js');
 const lodash = require('lodash'); // 排序
-const address = require('address');
 
 // const mdeps = new Mdeps(mpConfig);
 
@@ -18,11 +17,16 @@ const insertGlobals = require('insert-module-globals');
 let script2uuid = {}; // 脚本映射表
 
 const DB_PROTOCOL_HEADER = 'db://';
-const WINDOW_HEADER = 'window._CCSettings =';
 const PREVIEW_PATH = 'preview-scripts';
-const RAWASSET_SPATH = join(Editor.App.project, '/assets');
-const INTERNAL_PATH = join(Editor.App.path, 'builtin/asset-db/static/internal/assets');
 
+const commonInfo = {};
+
+// 初始化数据
+function initInfo(info) {
+    Object.assign(commonInfo, info);
+    commonInfo.RAWASSET_SPATH = join(commonInfo.project, '/assets');
+    commonInfo.INTERNAL_PATH = join(commonInfo.app, 'builtin/asset-db/static/internal/assets');
+}
 // 判断是否是脚本
 function isScript(assetType) {
     return assetType === 'javascript' || assetType === 'coffeescript' || assetType === 'typescript';
@@ -88,7 +92,7 @@ async function getScriptsCache(scripts) {
             try {
                 parsedScripts = JSON.parse(str).scripts;
             } catch (err) {
-                Editor.error(err);
+                console.error(err);
             }
             let newScripts = updateNodeModules(parsedScripts);
             resolve(newScripts);
@@ -138,13 +142,13 @@ async function getScriptsCache(scripts) {
         // 所以这里使用 fileCache 来提前传入文件内容
         mpConfig.fileCache = {};
         for (let path of scripts) {
-            let rawPath = join(Editor.App.project, getRightUrl(path.file));
+            let rawPath = join(commonInfo.project, getRightUrl(path.file));
             mpConfig.fileCache[rawPath] = readFileSync(rawPath, 'utf8');
         }
         let md = new Mdeps(mpConfig);
         md.pipe(JSONStream.stringify()).pipe(concat);
         for (let path of scripts) {
-            let rawPath = join(Editor.App.project, getRightUrl(path.file));
+            let rawPath = join(commonInfo.project, getRightUrl(path.file));
             md.write({ file: rawPath });
         }
         md.end();
@@ -187,7 +191,7 @@ async function getCustomConfig(type, config) {
 
 // 将绝对路径转换为 preview-script 路径下的
 function rawPathToAssetPath(path) {
-    let mainPoint = path.replace(Editor.App.project, PREVIEW_PATH);
+    let mainPoint = path.replace(commonInfo.project, PREVIEW_PATH);
     return mainPoint.replace(/\\/g, '/');
 }
 
@@ -213,43 +217,57 @@ function getRightUrl(path) {
  * @returns
  */
 function getAssetUrl(path, type) {
-    // let rawPath = join(Editor.App.project, getRightUrl(path));
+    // let rawPath = join(commonInfo.project, getRightUrl(path));
     let rawPath = '';
     var mountPoint = getRightUrl(path);
     var inAssets = inInternal = false;
     if (mountPoint.startsWith('assets')) {
         inAssets = true;
-        rawPath = join(Editor.App.project, mountPoint);
+        rawPath = join(commonInfo.project, mountPoint);
     } else if (mountPoint.startsWith('internal')) {
         inInternal = true;
-        rawPath = join(INTERNAL_PATH, mountPoint.replace(/\binternal/, ''));
+        rawPath = join(commonInfo.INTERNAL_PATH, mountPoint.replace(/\binternal/, ''));
     }
     // subAsset 类型的路径需要去掉扩展名
     if (type) {
         rawPath = rawPath.replace(extname(rawPath), '');
     }
     if (inAssets) {
-        rawPath = relative(RAWASSET_SPATH, rawPath).replace('resources\\', '');
+        rawPath = relative(commonInfo.RAWASSET_SPATH, rawPath).replace('resources\\', '');
     } else if (inInternal) {
-        rawPath = relative(INTERNAL_PATH, rawPath).replace('resources\\', '');
+        rawPath = relative(commonInfo.INTERNAL_PATH, rawPath).replace('resources\\', '');
     }
     return rawPath.replace(/\\/g, '\/');
 }
 
 // 查询资源的相关信息
-async function queryAssets() {
-    let assetList = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+async function queryAssets(scenes) {
+    let assetList = await requestToPackage('asset-db', 'query-assets');
 
     // 根据 source 排序，否则贴图资源会无法正确贴图
     assetList = lodash.sortBy(assetList, (asset) => {
         return asset.source;
     });
+    let dependUuid = [];
+    let sceneList = [];
+    if (scenes) {
+        // 获取当前构建选择场景的依赖资源
+        for (let scene of scenes) {
+            let library = await requestToPackage('asset-db', 'query-asset-library', scene.uuid);
+            const json = readJSONSync(library['.json']);
+            let detail = new cc.deserialize.Details();
+            cc.deserialize(json, detail, {
+                ignoreEditorOnly: true,
+            });
+            dependUuid.push(...detail.uuidList);
+        }
+        sceneList = scenes;
+    }
 
     let assets = {};
     let internal = {};
     let plugins = [];
     let scripts = [];
-    let sceneList = [];
     script2uuid = {};
     for (let i = 0, len = assetList.length; i < len; i++) {
         let asset = assetList[i];
@@ -257,6 +275,11 @@ async function queryAssets() {
             continue;
         }
         if (isScript(asset.importer)) {
+            // 如果是构建编译，遇到脚本则直接跳过，构建有另外处理脚本的机制，无需再去分析内部依赖文件
+            if (scenes) {
+                scripts.push(asset);
+                continue;
+            }
             if (asset.isPlugin) {
                 if (isNative && asset.loadPluginInNative) {
                     plugins.push(asset.uuid);
@@ -270,7 +293,14 @@ async function queryAssets() {
             continue;
         }
         if (asset.importer === 'scene') {
+            if (scenes) {
+                continue;
+            }
             sceneList.push({ url: asset.source, uuid: asset.uuid });
+            continue;
+        }
+        // 并非构建场景依赖的资源并且路径不在 resource 下，不做打包
+        if (scenes && dependUuid.indexOf(asset.uuid) === -1 && !asset.source.startsWith('db://assets/resources')) {
             continue;
         }
         // ********************* 资源类型 ********************** //
@@ -296,24 +326,20 @@ async function queryAssets() {
             internal[asset.uuid].push(getAssetUrl(asset.source), asset.type);
         }
     }
-    return { assets, internal, plugins, scripts, sceneList };
-}
 
-// 构建打包
-function compressPackedAssets() {
-    return {};
+    return { assets, internal, plugins, scripts, sceneList };
 }
 
 // 获取当前展示场景的数据信息
 async function getCurrentScene(uuid) {
-    let currenUuid = await Editor.Ipc.requestToPackage('scene', 'query-current-scene');
+    let currenUuid = await requestToPackage('scene', 'query-current-scene');
     if (!uuid) {
         uuid = await getProSetting('preview.start_scene');
         if ((uuid && uuid === 'current_scene') || typeof(uuid) === 'object' || !uuid) {
             uuid = currenUuid;
         }
     }
-    const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    const asset = await requestToPackage('asset-db', 'query-asset-info', uuid);
     if (uuid === currenUuid) {
         asset.currenSceneFlag = true;
     }
@@ -325,7 +351,7 @@ async function getCurrentScene(uuid) {
  * @param {*} key
  */
 async function getProSetting(key) {
-    let value = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', key);
+    let value = await requestToPackage('project-setting', 'get-setting', key);
     return value;
 }
 
@@ -335,58 +361,15 @@ async function getProSetting(key) {
  * @returns
  */
 async function getGroSetting(key) {
-    return await Editor.Ipc.requestToPackage('preferences', 'get-setting', key);
-}
-
-/**
- * 获取 setting 的脚本信息
- * @param {*} options 脚本配置信息(除 type 之外的可以直接放置进 setting 的部分)
- * @param {*} config 其他平台配置 (需要处理后方能加进 setting 的部分)
- * @returns
- */
-async function buildSetting(options, config) {
-    let tempConfig = await getCustomConfig(options.type, config);
-    let currenScene;
-    if (config && config.start_scene) {
-        currenScene = await getCurrentScene(config.start_scene);
-    } else {
-        currenScene = await getCurrentScene();
-    }
-    const setting = Object.assign(options, tempConfig);
-    setting.launchScene = currenScene.source;
-
-    // 预览模式下的 canvas 宽高要以实际场景中的 cavas 为准
-    if (options.type === 'preview') {
-        let json = readJSONSync(currenScene.library['.json']);
-        let info = json.find((item) => {
-            return item.__type__ === 'cc.Canvas';
-        });
-        // 存在 canvas 节点数据则更新分辨率
-        if (info) {
-            setting.designWidth = info._designResolution.width;
-            setting.designHeight = info._designResolution.height;
-        }
-    }
-
-    setting.packedAssets = compressPackedAssets(options.packedAssets) || {};
-    setting.md5AssetsMap = {};
-    let obj = await queryAssets();
-    setting.rawAssets.assets = obj.assets;
-    setting.rawAssets.internal = obj.internal;
-    if (options.type !== 'build-release') {
-        setting.scenes = obj.sceneList;
-    }
-    setting.scripts = await getScriptsCache(obj.scripts);
-    delete setting.type;
-    return WINDOW_HEADER + JSON.stringify(setting);
+    return await requestToPackage('preferences', 'get-setting', key);
 }
 
 function getLibraryPath(uuid, extname) {
-    return join(Editor.Project.path, 'library', uuid.substr(0, 2), uuid + extname);
+    return join(commonInfo.project, 'library', uuid.substr(0, 2), uuid + extname);
 }
 
 function getModules(path) {
-    let rawPath = join(Editor.App.project, path);
+    let rawPath = join(commonInfo.project, path);
     let uuid = script2uuid[path];
     let previewPath = rawPathToAssetPath(rawPath);
     let libraryPath = getLibraryPath(uuid, extname(rawPath));
@@ -411,9 +394,66 @@ function getModules(path) {
     return HEADER + rightContent + FOOTER;
 }
 
-async function getPreviewUrl() {
-    const port = await Editor.Ipc.requestToPackage('preview', 'get-port');
-    return `http://${address.ip()}:${port}`;
+/**
+ * 根据 uuid 获取打包后的路径信息
+ * @param {*} uuid
+ */
+function getDestPathNoExt(dest, uuid) {
+    return join(dest, 'import', uuid.slice(0, 2), uuid);
+}
+
+function requestToPackage(...args) {
+    return new Promise((resolve, reject) => {
+        Worker.Ipc.send('build-worker:request-package', ...args).callback((err, data) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(data);
+        });
+    });
+}
+
+/**
+ * 通知当前构建进度消息
+ * @param {*} msg 消息内容
+ * @param {*} rate 当前进度
+ */
+function updateProgress(msg, rate) {
+    Worker.Ipc.send('build-worker:update-progress', msg, rate);
+}
+
+// 查询当前项目配置的子包信息
+function querySubPackages() {
+    // todo 查询子包
+    return [];
+}
+
+// 将脚本根据子包设置，分类
+function sortScripts(scripts) {
+    let subScrips = [];
+    let subPackages = querySubPackages();
+    // todo 根据子包做脚本过滤拆分
+    // if (subPackages.length > 0) {
+    //     return {
+    //         mainScrips: scripts,
+    //     };
+    // }
+    // hack
+    let mainScrips = [];
+    let rawPathToLibPath = {};
+    scripts.forEach((script) => {
+        let rawPath = join(commonInfo.project, getRightUrl(script.source));
+        let libraryPath = script.library['.js'];
+        rawPathToLibPath[rawPath] = libraryPath;
+        mainScrips.push(rawPath);
+    });
+    allScripts = mainScrips;
+    return {
+        mainScrips,
+        subScrips,
+        allScripts,
+        rawPathToLibPath,
+    };
 }
 
 module.exports = {
@@ -421,8 +461,12 @@ module.exports = {
     getCurrentScene,
     getProSetting,
     getGroSetting,
-    getPreviewUrl,
     getCustomConfig,
     queryAssets,
     getScriptsCache,
+    initInfo,
+    requestToPackage,
+    getDestPathNoExt,
+    sortScripts,
+    updateProgress,
 };

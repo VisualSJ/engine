@@ -15,7 +15,7 @@ Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
 let panel: any = null;
-
+let vm: any = null;
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
@@ -33,20 +33,31 @@ export const fonts = [{
 
 export const methods = {};
 
-export const messages = {};
+export const messages = {
+    refresh() {
+        // vm && vm.initData();
+    },
+    // 更新当前构建进度
+    'build:update-progress'(msg: string, rate: any) {
+        vm.message = msg;
+        if (rate) {
+            vm.progressRate = rate;
+        }
+    },
+};
 
 export async function ready() {
 
     // @ts-ignore
     panel = this;
 
-    new Vue({
+    vm = new Vue({
         el: panel.$.build,
         data: {
             // 配置的默认值
             platform: 'web-mobile',
             build_path: './build',
-            debug: true,
+            debug: false,
             source_map: false,
             // 需要动态获取的默认配置
             name: '', // 游戏名称
@@ -55,33 +66,16 @@ export async function ready() {
             checkSuccss: true,
             state: 'info',
             message: '',
-            progressRate: '100%',
+            progressRate: 0,
         },
         computed: {
-            selectAll: {
-                get(): any {
+            selectAll(): any {
+                // @ts-ignore
+                const value = this.scenes.some((item: any) => {
                     // @ts-ignore
-                    const value = this.scenes.some((item: any) => {
-                        // @ts-ignore
-                        return (item.uuid !== this.start_scene && item.choose === false);
-                    });
-                    return !value;
-                },
-                set(newValue: boolean) {
-                    // @ts-ignore
-                    this.scenes = this.scenes.map((item: any) => {
-                        let chooseValue = newValue;
-                        // @ts-ignore
-                        if (item.uuid === this.start_scene) {
-                            chooseValue = item.choose;
-                        }
-                        return {
-                            uuid: item.uuid,
-                            url: item.url,
-                            choose: chooseValue,
-                        };
-                    });
-                },
+                    return (item.uuid !== this.start_scene && item.choose === false);
+                });
+                return !value;
             },
             btnState: {
                 get() {
@@ -182,6 +176,22 @@ export async function ready() {
                         ensureDirSync(buildPath);
                         this.checkSuccss = true;
                         break;
+                    case 'selectAll':
+                        // @ts-ignore
+                        this.scenes = this.scenes.map((item: any) => {
+                            let chooseValue = value;
+                            // @ts-ignore
+                            if (item.uuid === this.start_scene) {
+                                chooseValue = item.choose;
+                            }
+                            return {
+                                uuid: item.uuid,
+                                url: item.url,
+                                choose: chooseValue,
+                            };
+                        });
+                        this.checkSuccss = false;
+                        break;
                     default:
                         this.checkSuccss = true;
                         break;
@@ -222,14 +232,18 @@ export async function ready() {
                     scenes: [],
                     dest: join(Editor.Project.path, this.build_path, this.platform),
                 };
-                data.scenes = this.scenes.map((item: any) => {
+                const scenes: any = [];
+                this.scenes.map((item: any) => {
                     if (item.choose) {
-                        return({
+                        scenes.push({
+                            // @ts-ignore
                             uuid: item.uuid,
+                            // @ts-ignore
                             url: item.url,
                         });
                     }
                 });
+                data.scenes = scenes;
                 const excludedModules: any[] = [];
                 const options = Object.assign(data, this.$refs.children._data, {excludedModules});
                 options.embedWebDebugger =

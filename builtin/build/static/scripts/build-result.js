@@ -7,6 +7,8 @@ class BuildResults {
         this._buildAssets = null;
         this._packedAssets = null;
         this.settings = null;
+        this.paths = null;
+        this.options = null;
     }
 
     /**

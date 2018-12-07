@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-const {getPreviewUrl} = require('./../../static/scripts/utils.js');
+const {getPreviewUrl} = require('./../utils');
 
 export const template = readFileSync(join(__dirname, '../../static/template/components/web-mobile.html'), 'utf8');
 export function data() {
@@ -30,7 +30,7 @@ export const methods = {
     // 预览该路径地址
     preview() {
         // @ts-ignore
-        Editor.Ipc.sendToPackage('preview', 'open-terminal', this.preview_url);
+        Editor.Ipc.sendToPackage('preview', 'open-terminal', join(this.preview_url, this.info.platform, 'index.html'));
     },
 };
 export const props: object = [

@@ -5,6 +5,9 @@
     "menu": {
         "i18n:menu.project/i18n:build.title": {
             "message": "open"
+        },
+        "i18n:menu.develop/i18n:build.debug_mode": {
+            "message": "open-devtools"
         }
     },
 

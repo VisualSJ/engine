@@ -19,6 +19,7 @@ module.exports = {
     select_all: 'Select All',
     open_compile_file: 'Open compile log file',
     source_map: 'Source Maps',
+    debug_mode: 'Open Assets DevTools',
     error: {
         build_error: 'Build Error',
         dirty_info: 'not saved. Please build project after saveing project.',

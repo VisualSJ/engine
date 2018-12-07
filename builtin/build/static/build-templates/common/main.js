@@ -1,5 +1,5 @@
 // QQPlay window need to be inited first
-if (<%=isQQPlay%>) {
+if (<%=isQQPlay %>; ) {
     BK.Script.loadlib('GameRes://libs/qqplay-adapter.js');
 }
 
@@ -71,7 +71,7 @@ window.boot = function () {
         cc.view.enableRetina(true);
         cc.view.resizeWithBrowserSize(true);
 
-        if (!<%=isWeChatGame%> && !<%=isQQPlay%>) {
+        if (!< %= isWeChatGame % > && !<%=isQQPlay %> ) {
             if (cc.sys.isBrowser) {
                 setLoadingDisplay();
             }
@@ -79,8 +79,7 @@ window.boot = function () {
             if (cc.sys.isMobile) {
                 if (settings.orientation === 'landscape') {
                     cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
-                }
-                else if (settings.orientation === 'portrait') {
+                } else if (settings.orientation === 'portrait') {
                     cc.view.setOrientation(cc.macro.ORIENTATION_PORTRAIT);
                 }
                 cc.view.enableAutoFullScreen([
@@ -131,18 +130,16 @@ window.boot = function () {
     // jsList
     var jsList = settings.jsList;
 
-    if (<%=isQQPlay%>) {
+    if ( < {%=isQQPlay%> }) {
         BK.Script.loadlib(<%=projectCode%>);
-    }
-    else {
+    } else {
         var bundledScript = settings.debug ? 'src/project.dev.js' : 'src/project.js';
         if (jsList) {
             jsList = jsList.map(function (x) {
                 return 'src/' + x;
             });
             jsList.push(bundledScript);
-        }
-        else {
+        } else {
             jsList = [bundledScript];
         }
     }
@@ -160,10 +157,8 @@ window.boot = function () {
 
     cc.game.run(option, onStart);
 };
-
-// main.js is qqplay and jsb platform entry file, so we must leave platform init code here
-if (<%=isQQPlay%>) {
-    BK.Script.loadlib('GameRes://src/settings.js');
+<%if(isQQPlay) {%>
+  BK.Script.loadlib('GameRes://src/settings.js');
     BK.Script.loadlib(<%=engineCode%>);
     BK.Script.loadlib('GameRes://libs/qqplay-downloader.js');
 
@@ -183,10 +178,10 @@ if (<%=isQQPlay%>) {
     cc.loader.insertPipeAfter(prevPipe, qqPlayDownloader);
     <Inject plugin code>
     window.boot();
-}
-else if (window.jsb) {
+<% } %>
+if (window.jsb) {
     require('src/settings.js');
-    require('src/cocos2d-jsb.js');
+    require('src/<%=engineCode%>-jsb.js');
     require('jsb-adapter/engine/index.js');
     window.boot();
 }
