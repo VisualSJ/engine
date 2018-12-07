@@ -8,6 +8,7 @@ import GltfImporter, {
     GltfAnimationImporter,
     GltfMaterialImporter,
     GltfMeshImporter,
+    GltfPrefabImporter,
     GltfSkeletonImporter
 } from './importers/gltf';
 import ImageImporter from './importers/image';
@@ -67,10 +68,11 @@ export function register(database: AssetDB) {
     database.register(new TextureCubeFaceImporter(), '.texture-cube-face');
 
     database.register(new GltfImporter(), '.gltf');
-    database.register(new GltfMeshImporter(), '.gltf.mesh');
-    database.register(new GltfAnimationImporter(), '.gltf.animation');
-    database.register(new GltfSkeletonImporter(), '.gltf.skeleton');
-    database.register(new GltfMaterialImporter(), '.gltf.material');
+    database.register(new GltfMeshImporter());
+    database.register(new GltfAnimationImporter());
+    database.register(new GltfSkeletonImporter());
+    database.register(new GltfMaterialImporter());
+    database.register(new GltfPrefabImporter());
 
     database.register(new FbxImporter(), '.fbx');
 

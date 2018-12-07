@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { readJson } from 'fs-extra';
 import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
-import { Accessor, Animation, GlTf, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
+import { Accessor, Animation, GlTf, Material, Mesh, Node, Scene, Skin } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 
 // All sub-assets share the same gltf converter.
@@ -17,6 +17,11 @@ interface IGltfAssetTable {
     skeletons?: Array<string | null>;
     textures?: Array<string | null>;
     materials?: Array<string | null>;
+}
+
+function loadAssetSync(uuid: string) {
+    // @ts-ignore
+    return Manager.serialize.asAsset(uuid);
 }
 
 export default class GltfImporter extends Importer {
@@ -198,6 +203,11 @@ export default class GltfImporter extends Importer {
         // Import materials
         if (gltfConverter.gltf.materials) {
             assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, '.material', 'gltf-material');
+        }
+
+        // Import scenes
+        if (gltfConverter.gltf.scenes) {
+            await createSubAssets(gltfConverter.gltf.scenes, '.scene', 'gltf-scene');
         }
     }
 }
@@ -426,7 +436,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
         const textureTable = !assetTable.textures ? [] :
             // @ts-ignore
-            assetTable.textures.map((textureUUID) => Manager.serialize.asAsset(textureUUID));
+            assetTable.textures.map((textureUUID) => loadAssetSync(textureUUID));
 
         // @ts-ignore
         const material = gltfConverter.createMaterial(
@@ -434,6 +444,53 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(material));
+
+        return true;
+    }
+}
+
+export class GltfPrefabImporter extends GltfSubAssetImporter {
+    // 版本号如果变更，则会强制重新导入
+    get version() {
+        return '1.0.1';
+    }
+
+    // importer 的名字，用于指定 importer as 等
+    get name() {
+        return 'gltf-scene';
+    }
+
+    get assetType() {
+        return 'cc.Prefab';
+    }
+
+    /**
+     * 判断是否允许使用当前的 importer 进行导入
+     * @param asset
+     */
+    public async validate(asset: VirtualAsset) {
+        return true;
+    }
+
+    public async import(asset: VirtualAsset) {
+        if (await asset.existsInLibrary('.json')) {
+            return false;
+        }
+
+        if (!asset.parent) {
+            return false;
+        }
+
+        const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
+
+        const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
+
+        // @ts-ignore
+        const prefab = gltfConverter.createScene(
+            gltfConverter.gltf.scenes![asset.userData.gltfIndex as number], assetTable);
+
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(prefab));
 
         return true;
     }
@@ -465,6 +522,109 @@ class BufferBlob {
         });
         return result.buffer;
     }
+}
+
+// @ts-ignore
+function walkNode(node: cc.Node, fx: (node: cc.Node) => void) {
+    fx(node);
+    // @ts-ignore
+    node.children.forEach((childNode: cc.Node) => walkNode(childNode, fx));
+}
+
+// @ts-ignore
+function visitObjTypeReferences(node: cc.Node, visitor) {
+    const parseFireClass = (obj: any, klass?: any) => {
+        klass = klass || obj.constructor;
+        const props = klass.__values__;
+        for (const key of props) {
+            const value = obj[key];
+            if (value && typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    for (let i = 0; i < value.length; i++) {
+                        // @ts-ignore
+                        if (cc.isValid(value)) {
+                            visitor(value, '' + i, value[i]);
+                        }
+                    }
+                    // @ts-ignore
+                } else if (cc.isValid(value)) {
+                    visitor(obj, key, value);
+                }
+            }
+        }
+    };
+
+    for (const component of node._components) {
+        parseFireClass(component);
+    }
+}
+
+// @ts-ignore
+function getDumpableNode(node: cc.Node, quiet?: boolean) {
+    // deep clone, since we dont want the given node changed by codes below
+    // @ts-ignore
+    node = cc.instantiate(node);
+
+    walkNode(node, (item) => {
+        // strip other node or components references
+        visitObjTypeReferences(item, (obj: any, key: any, val: any) => {
+            let shouldStrip = false;
+            let targetName;
+            // @ts-ignore
+            if (val instanceof cc.Component.EventHandler) {
+                val = val.target;
+            }
+            // @ts-ignore
+            if (val instanceof cc.Component) {
+                val = val.node;
+            }
+            // @ts-ignore
+            if (val instanceof cc._BaseNode) {
+                if (!val.isChildOf(node)) {
+                    shouldStrip = true;
+                    targetName = val.name;
+                }
+            }
+            if (shouldStrip) {
+                obj[key] = null;
+                // @ts-ignore
+                if (!CC_TEST && !quiet) {
+                    console.error(
+                        'Reference "%s" of "%s" to external scene object "%s" can not be saved in prefab asset.',
+                        key, obj.name || node.name, targetName
+                    );
+                }
+            }
+        });
+
+        // 清空 prefab 中的 uuid，这些 uuid 不会被用到，不应该保存到 prefab 资源中，以免每次保存资源都发生改变。
+        item._id = '';
+        for (const component of item._components) {
+            component._id = '';
+        }
+    });
+
+    node._prefab.sync = false;  // not syncable by default
+
+    return node;
+}
+
+// @ts-ignore
+function generatePrefab(node: cc.Node) {
+    // @ts-ignore
+    const prefab = new cc.Prefab();
+    walkNode(node, (childNode) => {
+        // @ts-ignore
+        const info = new cc._PrefabInfo();
+        info.asset = prefab;
+        info.root = node;
+        info.fileId = childNode.uuid; // todo fileID
+        childNode._prefab = info;
+    });
+
+    const dump = getDumpableNode(node);
+    prefab.data = dump;
+    return prefab;
 }
 
 class GltfConverter {
@@ -770,6 +930,123 @@ class GltfConverter {
         }
 
         return texture;
+    }
+
+    // @ts-ignore
+    public createScene(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable): cc.Node[] {
+        const sceneNode = this._getSceneNode(gltfScene, gltfAssetsTable);
+        if (this._gltf.animations !== undefined) {
+            const animationComponent = sceneNode.addComponent('cc.AnimationComponent');
+            this._gltf.animations.forEach((gltfAnimation, index) => {
+                const animationUUID = gltfAssetsTable.animations![index];
+                if (animationUUID) {
+                    animationComponent.addClip(gltfAnimation.name, loadAssetSync(animationUUID));
+                }
+            });
+        }
+        return generatePrefab(sceneNode);
+    }
+
+    private _getSceneNode(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable) {
+        const nodes = new Array(this._gltf.nodes!.length);
+        // @ts-ignore
+        const getNode = (index: number, root: cc.Node) => {
+            if (nodes[index] !== undefined) {
+                return nodes[index];
+            }
+            const gltfNode = this._gltf.nodes![index];
+            const node = this._createNode(gltfNode, gltfAssetsTable, root);
+            nodes[index] = node;
+            if (gltfNode.children !== undefined) {
+                gltfNode.children.forEach((childIndex) => {
+                    const childNode = getNode(childIndex, root || node);
+                    childNode.parent = node;
+                });
+            }
+            return node;
+        };
+
+        // @ts-ignore
+        const rootNodes: cc.Node[] = [];
+        if (gltfScene.nodes !== undefined) {
+            gltfScene.nodes.forEach((rootIndex) => {
+                const rootNode = getNode(rootIndex, null);
+                rootNodes.push(rootNode);
+            });
+        }
+
+        if (rootNodes.length === 1) {
+            return rootNodes[0];
+        }
+
+        // @ts-ignore
+        const result = new cc.Node();
+        result.name = gltfScene.name;
+        rootNodes.forEach((node) => node.parent = result);
+        return result;
+    }
+
+    // @ts-ignore
+    private _createNode(gltfNode: Node, gltfAssetsTable: IGltfAssetTable, root: cc.Node) {
+        const node = this._createEmptyNode(gltfNode);
+        if (gltfNode.mesh !== undefined) {
+            let modelComponent = null;
+            if (gltfNode.skin === undefined) {
+                modelComponent = node.addComponent('cc.ModelComponent');
+            } else {
+                modelComponent = node.addComponent('cc.SkinningModelComponent');
+                const skeleton = gltfAssetsTable.skeletons![gltfNode.skin];
+                if (skeleton) {
+                    modelComponent._skeleton = loadAssetSync(skeleton);
+                }
+                modelComponent._skinningRoot = root;
+            }
+            const mesh = gltfAssetsTable.meshes![gltfNode.mesh];
+            if (mesh) {
+                modelComponent._mesh = loadAssetSync(mesh);
+            }
+            const gltfMesh = this.gltf.meshes![gltfNode.mesh];
+            const materials = gltfMesh.primitives.map((gltfPrimitive) => {
+                if (gltfPrimitive.material === undefined) {
+                    return null;
+                } else {
+                    const material = gltfAssetsTable.materials![gltfPrimitive.material];
+                    if (material) {
+                        return loadAssetSync(material);
+                    }
+                }
+            });
+            modelComponent._materials = materials;
+        }
+        return node;
+    }
+
+    private _createEmptyNode(gltfNode: Node) {
+        // @ts-ignore
+        const node = new cc.Node(gltfNode.name);
+        if (gltfNode.translation) {
+            node.setPosition(
+                gltfNode.translation[0],
+                gltfNode.translation[1],
+                gltfNode.translation[2]
+            );
+        }
+        if (gltfNode.rotation) {
+            node.setRotation(
+                gltfNode.rotation[0],
+                gltfNode.rotation[1],
+                gltfNode.rotation[2],
+                gltfNode.rotation[3]
+            );
+        }
+        if (gltfNode.scale) {
+            node.setScale(
+                gltfNode.scale[0],
+                gltfNode.scale[1],
+                gltfNode.scale[2]
+            );
+        }
+        return node;
     }
 
     private _getNodePath(node: number) {
