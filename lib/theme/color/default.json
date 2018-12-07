@@ -1,4 +1,19 @@
 {
+    "--panel-focus-c": "#717171",
+    "--panel-hover-c": "#555",
+    "--panel-active-c": "#09f",
+
+    "--panel-header-bg": "#474747",
+    "--panel-header-hover-c": "#333",
+
+    "--panel-content-bg": "#333",
+    "--panel-content-shadow": "rgba(0, 0, 0, 0.2)",
+
+    "--item-hover-c": "#f90",
+    "--item-hover-bg": "#444",
+    "--item-active-c": "#fff",
+    "--item-active-bg": "#059",
+
     "--focus-c": "#fd942b",
     "--hover-c": "#d1d1d1",
     "--disabled-c": "#7d7d7d",
@@ -6,18 +21,12 @@
     "--border-dark-c": "#171717",
     "--main-dark-bg": "#333",
     "--main-bg": "#474747",
+    
     "--default-text-c": "#bdbdbd",
-
-    "--panel-focus-c": "#717171",
-    "--panel-hover-c": "#555",
-    "--panel-focus-text-c":"white",
 
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",
     "--blue-c": "#3d85c6",
-
-    "--item-hover-c": "#059",
-    "--item-blur-c": "#444",
   
     "--border-radius-n": "0.25em",
     "--opacity-n": "0.6",

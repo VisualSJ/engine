@@ -1,24 +1,31 @@
 {
+    "--panel-focus-c": "#b8b8b8",
+    "--panel-hover-c": "#ccc",
+
+    "--panel-header-bg": "#f1f1f1",
+    "--panel-header-hover-c": "#d6d6d6",
+
+    "--panel-content-bg": "#ffffff",
+    "--panel-content-shadow": "rgba(0, 0, 0, 0.2)",
+
+    "--item-hover-c": "#f90",
+    "--item-hover-bg": "#d6d6d6",
+    "--item-active-c": "#fff",
+    "--item-active-bg": "#09f",
+
     "--focus-c": "#f36b12",
     "--hover-c": "#6c7075",
     "--disabled-c": "#7d7d7d",
     "--border-c": "#867e7e",
     "--border-dark-c": "#a29e9e",
     "--main-dark-bg": "#d6d6d6",
-    "--main-bg": "white",
+    "--main-bg": "#f1f1f1",
     "--default-text-c": "#797474",
-
-    "--panel-focus-c": "#b8b8b8",
-    "--panel-hover-c": "#ccc",
-    "--panel-focus-text-c":"white",
 
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",
     "--blue-c": "#3d85c6",
 
-    "--item-hover-c": "#059",
-    "--item-blur-c": "#444",
-  
     "--border-radius-n": "0.25em",
     "--opacity-n": "0.6",
   

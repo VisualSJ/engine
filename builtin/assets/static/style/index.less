@@ -1,10 +1,7 @@
 @import './icon';
-@red: #ec7063;
-@drag-bgcolor: #0c8a0c;
 :host {
     position: relative;
     display: flex;
-    color: #ccc;
     >.assets {
         flex: 1;
         display: flex;
@@ -44,8 +41,7 @@
     padding: 2px;
     overflow: hidden;
     font-size: 12px;
-    background-color: #474747;
-    color: #bdbdbd;
+    background-color: var(--panel-header-bg);
     white-space: nowrap;
     [class^="i-"],
     [class*=" i-"] {
@@ -60,7 +56,7 @@
         transition: all .2s ease;
         overflow: hidden;
         &:hover {
-            background-color: #666;
+            background-color: var(--panel-header-hover-c);
         }
     }
     >ui-input {
@@ -76,7 +72,7 @@
             left: 0;
             top: -7px;
             z-index: 1;
-            color: @red;
+            color: var(--red-c);
             font-family: sans-serif;
             transform: scale(0.7);
             font-size: 12px;
@@ -95,8 +91,8 @@
     flex: 1;
     position: relative;
     overflow-y: auto;
-    box-shadow: inset 0 0 8px 2px rgba(0, 0, 0, 0.2);
-    background-color: #333;
+    box-shadow: inset 0 0 8px 2px var(--panel-content-shadow);
+    background-color: var(--panel-content-bg);
     .scroll-bar {
         position: absolute;
         left: 0;
@@ -112,7 +108,7 @@
         z-index: 1;
         pointer-events: none;
         width: 100%;
-        border: 2px solid @drag-bgcolor;
+        border: 2px solid #0c8a0c;
         box-sizing: border-box;
         transition: left 0.3s ease-in-out, top 0.3s ease-in-out, height 0.3s ease-in-out;
     }
@@ -126,8 +122,7 @@
     padding: 2px;
     overflow: hidden;
     font-size: 11px;
-    background-color: #474747;
-    color: #bdbdbd;
+    background-color: var(--panel-header-bg);
     min-height: 20px;
     word-break: break-all;
 }

@@ -1,5 +1,4 @@
 @import './icon.less';
-@drag-bgcolor: #0c8a0c;
 :host {
     position: relative;
     display: flex;
@@ -43,7 +42,7 @@
     padding: 2px;
     overflow: hidden;
     font-size: 12px;
-    background-color: var(--main-bg);
+    background-color: var(--panel-header-bg);
     white-space: nowrap;
     [class^="i-"],
     [class*=" i-"] {
@@ -57,7 +56,7 @@
         transition: all .2s ease;
         overflow: hidden;
         &:hover {
-            background-color: var(--panel-hover-c);
+            background-color: var(--panel-header-hover-c);
         }
     }
     >ui-input {
@@ -70,6 +69,8 @@
     flex: 1;
     position: relative;
     overflow-y: auto;
+    box-shadow: inset 0 0 8px 2px var(--panel-content-shadow);
+    background-color: var(--panel-content-bg);
     .scroll-bar {
         position: absolute;
         left: 0;
@@ -86,7 +87,7 @@
         right: 0;
         z-index: 0;
         pointer-events: none;
-        background-color: @drag-bgcolor;
+        background-color: #0c8a0c;
         box-sizing: border-box;
         transition: top 0.3s, height 0.3s;
     }

@@ -1,16 +1,22 @@
-@orange: #f90;
-@blue: #09f;
-@green: #0f0;
 .tree-node {
     display: flex;
     height: 20px;
     line-height: 20px;
     font-size: 12px;
-    &[active="true"] {
-        background-color: rgba(255, 255, 255, 0.1);
+    &[state] {
+        &:hover {
+            color: var(--item-hover-c);
+            background-color: var(--item-hover-bg);
+            .lock {
+                display: inline-block;
+            }
+        }
     }
-    &[invalid="true"] {
-        color: #717171
+    &[isPrefab] {
+        color: #03ad21;
+    }
+    &[active="true"] {
+        background-color: var(--item-hover-c);
     }
     &[state="input"] {
         background-color: transparent !important;
@@ -18,23 +24,12 @@
     &[draging] {
         background-color: transparent !important;
     }
-    &[state] {
-        &:hover {
-            color: var(--focus-c);
-            background-color: var(--item-blur-c);
-            .lock {
-                display: inline-block;
-            }
-        }
-    }
     &[expand="true"] {
         .arrow {
             transform: rotate(90deg);
         }
     }
-    &[isPrefab] {
-        color: #09f;
-    }
+
     .arrow {
         height: 20px;
         line-height: 20px;
@@ -59,9 +54,9 @@
         right: 4px;
         z-index: 100;
         font-size: 12px;
-        color: #ccc !important;
+        color: var(--default-text-c) !important;
         &:hover {
-            color: @orange  !important;
+            color: var(--item-hover-c)!important;
         }
         &.i-lock {
             display: inline-block;
@@ -84,9 +79,9 @@
     .rename {
         font-size: 12px;
         outline: none;
-        border: 1px solid @blue;
-        background-color: #252525;
-        color: #ccc;
+        border: 1px solid var(--panel-active-c);
+        color: var(--default-text-c);
+        background-color: transparent;
         padding-left: 4px;
         margin-left: 22px;
         vertical-align: middle;
@@ -107,7 +102,7 @@
     &[hoving] {
         >.tree-node {
             &[insert] {
-                color: @orange;
+                color: var(--item-hover-c);
             }
         }
     }
@@ -116,8 +111,8 @@
 :host([focused]) {
     .tree {
         .tree-node[active="true"] {
-            background: var(--panel-focus-c);
-            color: var(--panel-focus-text-c);
+            color: var(--item-active-c);
+            background-color: var(--item-active-bg);
         }
     }
 }
