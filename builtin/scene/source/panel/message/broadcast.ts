@@ -40,7 +40,7 @@ export function apply(messages: any) {
      *   检查最后打开的一个场景 uuid
      *   通知 webview 打开最后打开的这个 uuid
      */
-    messages['asset-db:ready'] = () => {
+    messages['asset-db:ready'] = (...args: any[]) => {
         const uuid = profile.get('current-scene');
         // uuid 不存在，或者已经打开了场景的情况下，不需要重新打开场景
         if (!uuid && !$loading.hidden) {

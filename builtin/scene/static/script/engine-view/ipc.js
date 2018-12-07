@@ -7,6 +7,19 @@
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 const messages = {
+    ///////////
+    // 通知消息
+    async 'notice:engine-ready'() {
+        const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+        if (ready) {
+            this.ipc.forceSend('call-method', {
+                module: 'Startup',
+                handler: 'init',
+                params: [],
+            });
+        }
+    },
+
     //////////////////////
     // 查询消息
 
@@ -16,8 +29,11 @@ const messages = {
      */
     'query-engine'() {
         return {
+            // 引擎的路径
             path: this.info.path,
+            // 引擎对应的 utils 位置
             utils: this.info.utils,
+            // 是否需要编译
             compile: this.info.compile,
         };
     },

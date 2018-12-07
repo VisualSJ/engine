@@ -4,11 +4,6 @@ const ipc = require('../../public/ipc/webview');
 
 // host 调用 scene 的指定方法
 ipc.on('call-method', async (options) => {
-    // 防止初始化之前使用接口
-    if (!Manager.isReady()) {
-        throw new Error(`The scene is not ready.`);
-    }
-
     const mod = Manager[options.module];
     if (!mod) {
         throw new Error(`Module [${options.module}] does not exist.`);

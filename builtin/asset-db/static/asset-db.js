@@ -106,7 +106,7 @@ Worker.Ipc.on('asset-worker:init', async (event, info) => {
     AssetInfo.dist = info.dist;
     AssetInfo.utils = info.utils;
 
-    Manager._serialize = function () {
+    Manager._serialize = function() {
         return require(info.utils + '/serialize');
     };
 
@@ -179,7 +179,6 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
         console.log(`The asset database is ready: ${new Date() - date}ms`);
     } catch (error) {
         console.error(error);
-        console.error(`Try 'npm run update -- --module asset-db' within the bash.`);
     }
 });
 

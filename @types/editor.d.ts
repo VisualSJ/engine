@@ -48,7 +48,7 @@ interface Menu {
 
 interface Package {
     // browser
-    packages: Object,
+    getPackages: Function,
     load: Function;
     loadFolder: Function;
     unload: Function;
@@ -82,7 +82,7 @@ interface Ipc {
     requestToPanel: Function,
 }
 
-interface UI {}
+interface UI { }
 
 interface Logger {
     on: Function;

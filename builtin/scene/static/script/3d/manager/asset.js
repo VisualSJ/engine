@@ -87,7 +87,7 @@ function querySerializedMaterial(options) {
     material._props = _props;
     material._defines = _defines;
 
-    return Manager.serialize(material);
+    return Manager.Utils.serialize(material);
 }
 
 module.exports = {

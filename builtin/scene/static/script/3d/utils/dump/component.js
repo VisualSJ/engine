@@ -149,7 +149,7 @@ function dumpObjectField(obj, expectedType) {
 
     // 引擎数据类型
     if (obj instanceof cc.ValueType) {
-        const result = Manager.serialize(obj, { stringify: false });
+        const result = Manager.Utils.serialize(obj, { stringify: false });
 
         const dump = type.dump(ctor);
         dump.type = result.__type__;

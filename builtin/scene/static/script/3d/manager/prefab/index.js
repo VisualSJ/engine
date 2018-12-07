@@ -157,7 +157,7 @@ function generate(nodeUuid) {
 
     const dump = utils.getDumpableNode(node);
     prefab.data = dump;
-    return Manager.serialize(prefab);
+    return Manager.Utils.serialize(prefab);
 }
 
 module.exports = {

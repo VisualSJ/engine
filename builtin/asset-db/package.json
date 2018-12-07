@@ -8,7 +8,7 @@
         }
     },
 
-    "main": "./dist/browser.js",
+    "main": "./dist/browser/index.js",
     "dependencies": {},
     "description": "A aseet-db"
 }

@@ -1,11 +1,11 @@
 'use strict';
 
-const assets = require('../../assets');
+const assets = require('../../../../assets');
 
 window.Editor = window.Editor ? Editor : {
 
     get serialize() {
-        return Manager.serialize;
+        return Manager.Utils.serialize;
     },
 
     // 适配 Editor.require()
@@ -43,7 +43,10 @@ window.Editor = window.Editor ? Editor : {
 
     // 适配 Editor.Utils.UuidUtils.uuid()
     Utils: {
-        UuidUtils: require('../../../../../../engine/static/utils/2d/serialize/uuid'),
+        // todo Hack
+        get UuidUtils() {
+            return Manager.Utils.uuid;
+        },
         UuidCache: {
             cache() { },
         },

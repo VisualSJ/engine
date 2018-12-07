@@ -128,8 +128,8 @@ export const messages = {
      * asset db 准备就绪
      * 刷新数据
      */
-    async 'asset-db:ready'() {
-        await panel.unstaging();
+    async 'asset-db:ready'(name: string) {
+        // await panel.unstaging();
         vm.refresh();
     },
 
@@ -139,13 +139,8 @@ export const messages = {
      * @param name 具体某一个 db 被关闭了
      */
     'asset-db:close'(name: string) {
-        if (name) {
-            vm.refresh();
-            return;
-        }
-
-        panel.staging();
-        vm.clear();
+        // await panel.unstaging();
+        vm.refresh();
     },
     /**
      * asset db 广播通知添加了 asset
@@ -365,10 +360,7 @@ export async function ready() {
     await panel.unstaging();
 
     // db 就绪状态才需要查询数据
-    const isReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-    if (isReady) {
-        vm.refresh();
-    }
+    vm.refresh();
 }
 
 export async function beforeClose() { }

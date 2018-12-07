@@ -1,8 +1,40 @@
 'use stirct';
 
-const assets = require('../assets');
+const assets = require('../../assets');
+const ipc = require('../ipc');
 
-module.exports = function() {
+/**
+ * 重写引擎的 assetLibrary 部分方法
+ * 目的是让引擎的资源加载走编辑器的流程
+ */
+function assetLibrary() {
+    // 设置（HACK）资源目录地址
+    let dirname = 'import://';
+    cc.AssetLibrary.init({
+        libraryPath: dirname,
+    });
+    cc.url._rawAssets = dirname;
+    cc.game.config = {};
+    cc.AssetLibrary.queryAssetInfo = async function(uuid, callback) {
+        try {
+            const info = await ipc.send('query-asset-info', uuid);
+            const lib = 'library';
+            const filepath = info.library['.json'];
+            const url = filepath.substr(filepath.lastIndexOf(lib) + lib.length + 1).replace(/\\/g, '/');
+
+            callback(null, `import://${url}`, false, assets.getCtor(info.importer));
+        } catch (e) {
+            const error = new Error('Can not get asset url by uuid "' + uuid + '", the asset may be deleted.');
+            error.errorCode = 'db.NOTFOUND';
+            callback(error);
+        }
+    };
+}
+
+/**
+ * 编辑器内重写 loader 内的方法
+ */
+function loader() {
     var loader = cc.loader;
 
     function checkImporter(importer, includedImporters, excludedImporters) {
@@ -10,7 +42,7 @@ module.exports = function() {
         excludedImporters && !Array.isArray(excludedImporters) && (excludedImporters = [excludedImporters]);
         // check if type is in includedTypes
         return (!includedImporters || includedImporters.some((val) => importer === val)) &&
-        (!excludedImporters || !excludedImporters.some((val) => importer === val));
+            (!excludedImporters || !excludedImporters.some((val) => importer === val));
     }
 
     function searchSingleAsset(asset, reg, importer, callback) {
@@ -174,4 +206,7 @@ module.exports = function() {
             completeCallback(error);
         }
     };
-};
+}
+
+exports.assetLibrary = assetLibrary;
+exports.loader = loader;

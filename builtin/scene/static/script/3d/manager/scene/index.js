@@ -109,7 +109,7 @@ class SceneManager extends EventEmitter {
      * 软刷新，备份当前场景的数据，并重启场景
      */
     async softReload() {
-        const json = Manager.serialize(cc.director.getScene());
+        const json = Manager.Utils.serialize(cc.director.getScene());
 
         // 发送节点修改消息
         Manager.Ipc.send('broadcast', 'scene:close');
@@ -137,7 +137,7 @@ class SceneManager extends EventEmitter {
         let asset = new cc.SceneAsset();
         asset.scene = cc.director.getScene();
         // cc.Object._deferredDestroy();
-        return Manager.serialize(asset);
+        return Manager.Utils.serialize(asset);
     }
 
     /**

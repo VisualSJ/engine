@@ -29,7 +29,10 @@ export function init(element: any) {
 
 export function apply() {
     const messages: any = {};
-    broadcastApply(messages);
+    // @ts-ignore
+    if (process.type === 'renderer') {
+        broadcastApply(messages);
+    }
     operationApply(messages);
     queryApply(messages);
     prefabApply(messages);
