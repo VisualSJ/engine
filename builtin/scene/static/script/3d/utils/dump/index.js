@@ -199,8 +199,12 @@ async function restoreProperty(node, path, dump) {
                 });
             });
             break;
-        case 'enums':
-            dump.value -= 0;
+        case 'cc.Enum':
+        case 'Enum': {
+            if (!isNaN(Number(dump.value))) {
+                dump.value -= 0;
+            }
+        }
         default:
             property[key] = dump.value;
     }

@@ -15,15 +15,12 @@ module.exports = {
 
 const publicCompsPath = join(__dirname, '../components/public/');
 
-const publicComps = readdirSync(publicCompsPath).reduce(
-    (prev, next) => {
-        const key = basename(next, extname(next));
-        prev[key] = require(join(publicCompsPath, next));
+const publicComps = readdirSync(publicCompsPath).reduce((prev, next) => {
+    const key = basename(next, extname(next));
+    prev[key] = require(join(publicCompsPath, next));
 
-        return prev;
-    },
-    {}
-);
+    return prev;
+}, {});
 
 /**
  * 读取模版文件
@@ -93,7 +90,7 @@ function getFitSize(imgWidth, imgHeight, boxWidth, boxHeight) {
             width = (imgWidth * boxHeight) / imgHeight;
         }
     }
-    return [width, height ];
+    return [width, height];
 }
 
 function checkIsAsset(types) {
@@ -101,11 +98,12 @@ function checkIsAsset(types) {
 }
 
 function checkIsNumber(type) {
-    return ['Integer', 'Float' ].includes(type);
+    return ['Integer', 'Float'].includes(type);
 }
 
 const convertMap = {
     'cc.Node': 'cc-dragable',
+    'cc.Enum': 'enum',
 };
 
 /**
@@ -122,7 +120,7 @@ function getComponentType(target) {
         return 'number';
     }
 
-    if (checkIsAsset([type, ...extendTypes ])) {
+    if (checkIsAsset([type, ...extendTypes])) {
         return 'cc-dragable';
     }
 
@@ -146,13 +144,7 @@ function getComponentType(target) {
  */
 function build2DProp(path, key, item, attrs) {
     // 将原有 type 保存到 originType 以便处理结束后恢复原有 type
-    const {
-        properties,
-        type: originType,
-        value,
-        extends: extendTypes,
-        default: defaultVal,
-    } = item;
+    const { properties, type: originType, value, extends: extendTypes, default: defaultVal } = item;
     const hasCompType = getComponentType(item);
 
     let isAsset = false;
@@ -173,9 +165,7 @@ function build2DProp(path, key, item, attrs) {
         }
 
         if (extendTypes) {
-            isAsset = [originType, ...extendTypes ].some((item) =>
-                ['cc.Asset', 'cc.RawAsset' ].includes(item)
-            );
+            isAsset = [originType, ...extendTypes].some((item) => ['cc.Asset', 'cc.RawAsset'].includes(item));
 
             isNode = extendTypes.includes('cc.Object');
         }
@@ -184,10 +174,7 @@ function build2DProp(path, key, item, attrs) {
     isAsset && (item.compType = 'cc.Asset');
     isNode && (item.compType = 'cc.Node');
 
-    if (
-        Array.isArray(value) &&
-        (Reflect.has(item, 'default') || Array.isArray(defaultVal))
-    ) {
+    if (Array.isArray(value) && (Reflect.has(item, 'default') || Array.isArray(defaultVal))) {
         item.type = 'Array';
 
         if (isAsset) {
@@ -210,19 +197,12 @@ function build2DProp(path, key, item, attrs) {
         }
     }
 
-    if (
-        item.type === 'Object' &&
-        (value === null || value === undefined)
-    ) {
+    if (item.type === 'Object' && (value === null || value === undefined)) {
         typeNull = true;
         // console.log(`refresh ${item} typenull is ${typeNull}`);
     }
 
-    if (
-        !typeNull &&
-        item.attrs.type &&
-        item.attrs.type !== originType
-    ) {
+    if (!typeNull && item.attrs.type && item.attrs.type !== originType) {
         if (extendTypes) {
             if (!extendTypes.includes(item.attrs.type)) {
                 typeError = true;
@@ -244,12 +224,8 @@ function build2DProp(path, key, item, attrs) {
             for (let i = 0; i < value.length; i++) {
                 const item = value[i];
                 // Array 子元素的 buildProp 需要 extends、properties 类型判断
-                extendTypes &&
-                    !item.extends &&
-                    (item.extends = [...extendTypes ]);
-                properties &&
-                    !item.properties &&
-                    (item.properties = { ...properties });
+                extendTypes && !item.extends && (item.extends = [...extendTypes]);
+                properties && !item.properties && (item.properties = { ...properties });
                 buildProp(`${path}.${i}`, `[${i}]`, item, attrs);
             }
         } else if (item.type === 'Object') {
@@ -262,13 +238,7 @@ function build2DProp(path, key, item, attrs) {
             Object.keys(item.value).map((key) => {
                 const subItemAttrs = properties && properties[key];
                 if (subItemAttrs) {
-                    item.value[key] &&
-                        buildProp(
-                            `${path}.${key}`,
-                            key,
-                            item.value[key],
-                            subItemAttrs
-                        );
+                    item.value[key] && buildProp(`${path}.${key}`, key, item.value[key], subItemAttrs);
                 }
             });
         }
@@ -283,7 +253,7 @@ function build3DProp(path, key, item, attrs) {
     item.compType = getComponentType(item);
     item.attrs = { ...attrs };
 
-    const {type, value } = item;
+    const { type, value } = item;
     let typeNull = false;
     let typeError = false;
 
@@ -301,14 +271,14 @@ function build3DProp(path, key, item, attrs) {
         }
         if (!typeNull && attrs.type && attrs.type !== type) {
             // type 类型不一致
-           if (item.extends) {
+            if (item.extends) {
                 // extends 类型与 attrs.type 不匹配
-               if (!item.extends.includes(attrs.type)) {
-                   typeError = true;
-               }
-           } else {
-               typeError = true;
-           }
+                if (!item.extends.includes(attrs.type)) {
+                    typeError = true;
+                }
+            } else {
+                typeError = true;
+            }
         }
 
         if (typeNull) {

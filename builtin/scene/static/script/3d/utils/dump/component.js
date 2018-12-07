@@ -231,10 +231,10 @@ function dumpField(component, key, expectedType, attrs) {
         return null;
     }
 
-    const currentType = (typeof component[key]).replace(/^\s/, (str) => {
+    let currentType = (typeof component[key]).replace(/^\s/, (str) => {
         return str.toUpperCase();
     });
-    if (expectedType === 'Enum' && typeof val === 'number') {
+    if (expectedType === 'Enum' && typeof component[key] === 'number') {
         currentType = 'Enum';
     }
     if (expectedType === 'Integer' || expectedType === 'Float') {
