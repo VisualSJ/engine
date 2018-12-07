@@ -87,8 +87,12 @@ export const methods = {
     async open(event: Event, asset: ItreeAsset) {
         const { fileExt } = asset;
 
-        if (open[fileExt]) {
-            open[fileExt](asset);
+        if (asset.isDirectory) {
+            this.toggle(event, asset);
+        } else {
+            if (open[fileExt]) {
+                open[fileExt](asset);
+            }
         }
     },
     /**
@@ -278,6 +282,8 @@ export const methods = {
 
         data.to = asset.isSubAsset ? asset.parentUuid : asset.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
+        // @ts-ignore
+        data.copy = event.ctrlKey;
 
         // @ts-ignore
         this.$emit('ipcDrop', data);

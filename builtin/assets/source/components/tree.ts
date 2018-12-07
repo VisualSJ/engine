@@ -616,15 +616,17 @@ export const methods = {
             data.files = localFiles;
         }
 
-        data.to = rootUuid; // 都归于根节点
-        data.insert = 'inside';
-
         if (data.from) {  // 如果从根节点移动，则不需要移动
-            const arr = utils.getGroupFromTree(db.assetsTree, data.from, 'uuid');
-            if (arr[3] && arr[3].uuid === data.to) {  // 如果从根节点移动，又落回根节点，则不需要移动
+            const [node, index, arr, parent] = utils.getGroupFromTree(db.assetsTree, data.from, 'uuid');
+            if (parent && parent.uuid === rootUuid) {  // 如果从根节点移动，又落回根节点，则不需要移动
                 return;
             }
         }
+
+        data.to = rootUuid; // 都归于根节点
+        data.insert = 'inside';
+        // @ts-ignore
+        data.copy = event.ctrlKey;
         // @ts-ignore
         vm.ipcDrop(data);
     },
@@ -687,35 +689,14 @@ export const methods = {
             if (!json.from) {
                 return;
             }
-            const uuids = json.from.split(',');
-            // 多资源移动，根据现有排序的顺序执行
-            const groups: any[] = uuids.map((uuid: string) => {
-                return utils.getGroupFromTree(db.assetsTree, uuid);
-            }).filter(Boolean).sort((a, b) => {
-                return a[0].top - b[0].top;
-            });
+            if (json.copy) { // 按住了 ctrl 键，拖动复制
+                const uuids = json.from.split(',');
+                vm.copy(uuids);
+                vm.paste(json.to);
+                return;
+            }
 
-            groups.forEach((group: any) => {
-                const [fromAsset, fromIndex, fromArr, fromParent] = group;
-                if (utils.canNotCopyAsset(fromAsset)) {
-                    return;
-                }
-
-                const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
-                if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
-                    return;
-                }
-
-                // 资源移动仍在原来的目录内，不需要移动
-                if (toAsset.uuid === fromParent.uuid) {
-                    return;
-                }
-
-                utils.twinkleAssets.sleep();
-
-                // @ts-ignore 移动资源
-                Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
-            });
+            vm.move(json, toAsset);
         }
     },
 
@@ -723,12 +704,16 @@ export const methods = {
      * 复制资源
      * @param uuid
      */
-    copy(uuid: string) {
-        // 来自右击菜单的单个选中，右击节点不在已选项目里
-        if (uuid && !vm.selects.includes(uuid)) {
-            copiedUuids = [uuid];
-        } else {
-            copiedUuids = vm.selects.slice();
+    copy(uuid: string | string[]) {
+        if (Array.isArray(uuid)) {
+            copiedUuids = uuid;
+        } else { // uuid 是 字符
+            // 来自右击菜单的单个选中，右击节点不在已选项目里
+            if (uuid && !vm.selects.includes(uuid)) {
+                copiedUuids = [uuid];
+            } else {
+                copiedUuids = vm.selects.slice();
+            }
         }
 
         // 过滤不可复制的节点
@@ -765,6 +750,51 @@ export const methods = {
             isLegal = !utils.canNotCopyAsset(asset);
             utils.twinkleAssets.sleep();
         } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
+    },
+
+    /**
+     * 移动
+     */
+    move(json: IdragAsset, toAsset: ItreeAsset) {
+        if (!json || !json.from || !json.to) {
+            return;
+        }
+
+        const uuids = json.from.split(',');
+
+        // @ts-ignore
+        if (uuids.includes(json.to)) { // 移动的元素有重叠
+            return;
+        }
+
+        // 多资源移动，根据现有排序的顺序执行
+        const groups: any[] = uuids.map((uuid: string) => {
+            return utils.getGroupFromTree(db.assetsTree, uuid);
+        }).filter(Boolean).sort((a, b) => {
+            return a[0].top - b[0].top;
+        });
+
+        groups.forEach((group: any) => {
+            const [fromAsset, fromIndex, fromArr, fromParent] = group;
+            if (utils.canNotCopyAsset(fromAsset)) {
+                return;
+            }
+
+            const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
+            if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
+                return;
+            }
+
+            // 资源移动仍在原来的目录内，不需要移动
+            if (toAsset.uuid === fromParent.uuid) {
+                return;
+            }
+
+            utils.twinkleAssets.sleep();
+
+            // @ts-ignore 移动资源
+            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
+        });
     },
 
     /**

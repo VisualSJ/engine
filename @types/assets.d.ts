@@ -10,6 +10,7 @@ declare interface IdragAsset {
     from?: string; // 被拖动的节点 uuid
     to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
+    copy: boolean; // 是否是拖动复制
     files?: string[]; // 拖拽中带上外部系统文件
 }
 
