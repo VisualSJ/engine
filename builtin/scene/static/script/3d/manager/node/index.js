@@ -42,6 +42,7 @@ class NodeManager extends EventEmitter {
      * @param {*} scene
      */
     init(scene) {
+        uuid2node = {};
         scene && utils.walk(scene, uuid2node);
         this.emit('inited', this.queryUuids());
     }

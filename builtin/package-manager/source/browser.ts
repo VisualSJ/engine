@@ -15,7 +15,7 @@ export const messages = {
     // 获取插件管理器内存储的插件信息
     'get-packgaes'() {
         const packages: any[] = [];
-        const tempPkgs = Editor.Package.packages;
+        const tempPkgs = Editor.Package.getPackages();
         Object.keys(tempPkgs).forEach((name: any) => {
             // @ts-ignore
             packages.push(tempPkgs[name]);
@@ -60,9 +60,7 @@ export function load() {
     });
 }
 
-export function unload() {
-
-}
+export function unload() {}
 
 /**
  * 创建新插件

@@ -116,6 +116,7 @@ class SceneManager extends EventEmitter {
 
         try {
             await utils.loadSceneByJson(json);
+            await nodeManager.init(cc.director._scene);
             !this.ignore && this.emit('reload', null, cc.director._scene);
         } catch (error) {
             console.error('Open scene failed: ' + uuid);
@@ -157,7 +158,6 @@ class SceneManager extends EventEmitter {
          * @param node
          */
         const step = (node) => {
-
             if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
                 return null;
             }
@@ -170,7 +170,7 @@ class SceneManager extends EventEmitter {
                 uuid: node._id,
                 children: children.length ? children : [],
                 prefab: !!node._prefab,
-                parent: node.parent && node.parent.uuid || '',
+                parent: (node.parent && node.parent.uuid) || '',
             };
         };
 
