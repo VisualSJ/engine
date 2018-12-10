@@ -271,6 +271,15 @@ function restoreNode(node, dumpdata) {
 }
 
 /**
+ * 还原一个节点内部组件属性
+ * @param {*} node
+ * @param {*} compos
+ */
+function restoreComponent(node, compos) {
+    // TODO:
+}
+
+/**
  * 重设节点的 children
  * 来自 redo undo 的重置
  */

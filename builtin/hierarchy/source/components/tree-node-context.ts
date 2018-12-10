@@ -2,7 +2,7 @@
 const { shell } = require('electron');
 const utils = require('./tree-utils');
 
-exports.menu = (self: any, node: ItreeNode) => {
+exports.menu = (event: Event, self: any, node: ItreeNode) => {
     Editor.Menu.popup({
         // @ts-ignore
         x: event.pageX,

@@ -96,7 +96,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        context.menu(this, node);
+        context.menu(event, this, node);
     },
     /**
      * 选中某个节点
