@@ -24,11 +24,11 @@ export const template = readFileSync(
 export const fonts = [
     {
         name: 'console',
-        file: 'packages://console/static/iconfont.woff'
-    }
+        file: 'packages://console/static/iconfont.woff',
+    },
 ];
 export const $ = {
-    'console-panel': '.console-panel'
+    'console-panel': '.console-panel',
 };
 
 export const methods = {
@@ -38,7 +38,7 @@ export const methods = {
      */
     async record(log: string) {
         manager.addItem(log);
-    }
+    },
 };
 
 export const messages = {};
@@ -55,7 +55,7 @@ export const listeners = {
      */
     show() {
         manager.update();
-    }
+    },
 };
 
 export async function ready() {
@@ -67,7 +67,7 @@ export async function ready() {
             return {
                 change: false,
                 fontSize: 12,
-                lineHeight: 26
+                lineHeight: 26,
             };
         },
         methods: <any>{
@@ -112,15 +112,15 @@ export async function ready() {
                             label: 'editor log',
                             click() {
                                 // todo 打开文件对应处理
-                            }
+                            },
                         },
                         {
                             label: 'cocos console log',
                             click() {
                                 // todo 打开文件对应处理
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 });
             },
             /**
@@ -141,8 +141,8 @@ export async function ready() {
             },
         },
         components: {
-            'console-list': require('./components/list')
-        }
+            'console-list': require('./components/list'),
+        },
     });
     manager.setUpdateFn(vm.update);
     manager.setLineHeight(vm.lineHeight);

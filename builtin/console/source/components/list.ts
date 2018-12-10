@@ -1,8 +1,8 @@
 'use strict';
 
 import { readFileSync } from 'fs';
+import { copy } from 'iclipboard';
 import { join } from 'path';
-import { copy } from 'iclipboard'
 
 const manager = require('../manager');
 const outputList = manager.outputList;
@@ -17,7 +17,7 @@ export const name = 'console-list';
 export const props = {
     value: { type: Boolean },
     fontSize: { type: Number },
-    lineHeight: { type: Number }
+    lineHeight: { type: Number },
 };
 
 export function data() {
@@ -27,7 +27,7 @@ export function data() {
         timer: null,
         cacheListLength: 0,
         showList: [],
-        wrapperStyle: { height: 0 }
+        wrapperStyle: { height: 0 },
     };
 }
 
@@ -82,7 +82,7 @@ export const methods: any = {
             fold: true,
             show: false,
             stack: [],
-            translateY: -1000
+            translateY: -1000,
         };
     },
     /**
@@ -194,10 +194,10 @@ export const methods: any = {
      * @param {*} event
      * @param {*} item
      */
-    showMenuPast(event:any, item:any) {
+    showMenuPast(event: any, item: any) {
         let info = item.title;
         if (item.rows > 1) {
-            item.content.forEach((str:string)=> {
+            item.content.forEach((str: string) => {
                 info += str;
             });
         }
@@ -210,9 +210,9 @@ export const methods: any = {
                     click() {
                         copy(info);
                         console.log(info);
-                    }
-                }
-            ]
+                    },
+                },
+            ],
         });
     },
 };

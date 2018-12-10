@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+const {app} = require('electron').remote;
 
 const Vue = require('vue/dist/vue.js');
 
@@ -78,7 +79,7 @@ export async function ready() {
         methods: <any>{
             dataChange(type: string) {
                 // @ts-ignore
-                Object.keys(this.preview).forEach((key) => {
+                Object.keys(this[type]).forEach((key) => {
                     // @ts-ignore
                     this.set(key, type);
                 });
@@ -124,13 +125,20 @@ export async function ready() {
                 if (config) {
                     for (const key of keys) {
                         if (key in config && config[key]) {
-                            this.preview[key] = config[key];
+                            this[type][key] = config[key];
                         }
                     }
                 }
             },
         },
         mounted() {
+            let lan = app.getLocale();
+            if (lan.indexOf('zh') >= 0) {
+                lan = 'zh';
+            } else {
+                lan = 'en';
+            }
+            this.general.language = lan;
             this.getData('general');
             this.getData('preview');
         },
