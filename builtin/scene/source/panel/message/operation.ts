@@ -65,8 +65,14 @@ export function apply(messages: any) {
             return;
         }
 
-        const url = 'db://assets/NewScene.scene';
+        const url = 'db://assets/NewScene.fire';
         const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
+
+        // todo: HACK
+        await new Promise((resolve) => {
+            setTimeout(resolve, 500);
+        });
+
         uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);
 
         // 同步一下缓存数据
@@ -133,7 +139,7 @@ export function apply(messages: any) {
             options.uuid,
             options.path,
             options.target,
-            options.offset
+            options.offset,
         ]);
     };
 
