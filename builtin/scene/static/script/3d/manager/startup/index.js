@@ -1,15 +1,18 @@
 'use strict';
 
-const manager = require('../index');
 const ipc = require('../ipc');
-const scene = require('../scene');
 
 const polyfills = require('./polyfills');
 const engine = require('./engine');
 const overwrite = require('./overwrite');
 
-async function run() {
-    const info = await ipc.send('query-engine');
+const scene = require('../scene');
+// const manager = require('../index');
+
+/**
+ * 启动引擎
+ */
+async function init(info) {
     await polyfills.editor();
 
     await engine.requireEngine(info.path);
@@ -21,34 +24,79 @@ async function run() {
     await engine.configureStartup();
     await engine.openEngine();
     await engine.configureEngine();
+}
 
-    // 标记已经准备就绪
-    await manager.isReady(true, info);
+/**
+ * 启动各个管理器
+ */
+async function manager(info) {
 
-    // 处理 effect
-    const effects = await ipc.send('query-effects');
-    await Promise.all(
-        effects.map((uuid) => {
-            return manager.Effect.registerEffect(uuid);
-        })
-    );
+    const backup = {
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+    };
 
-    await manager.Camera.init();
-    await manager.Gizmo.init();
+    console.warn = function(...args) {
+        backup.warn(...args);
+        ipc.send('console', 'warn', ...args);
+    };
+    console.error = function(...args) {
+        backup.error(...args);
+        ipc.send('console', 'error', ...args);
+    };
 
+    const manager = window.Manager = {
+        Utils: require(info.utils),
+    };
+
+    // 用于编辑器绘制的背景和前景节点
+    const foregroundNode = new cc.Node('Editor Scene Foreground');
+    const backgroundNode = new cc.Node('Editor Scene Background');
+
+    // 编辑器使用的节点不需要存储和显示在层级管理器
+    foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+    backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+
+    // 这些节点应该是常驻节点
+    cc.game.addPersistRootNode(foregroundNode);
+    cc.game.addPersistRootNode(backgroundNode);
+
+    manager.foregroundNode = foregroundNode;
+    manager.backgroundNode = backgroundNode;
+
+    // 启动 effect 管理器，注册资源数据库内的 effect 资源
+    await require('../effects').init();
+
+    // 启动脚本管理器，注册资源数据库内的 effect 资源
+    await require('../scripts').init();
+
+    // 给 Manager 挂上所有的管理器
+    manager.Ipc = require('../ipc');
+    manager.Camera = require('../camera').EditorCamera;
+    manager.Scene = require('../scene');
+    manager.Node = require('../node');
+    manager.Script = require('../scripts');
+    manager.History = require('../history');
+    manager.Operation = require('../operation');
+    manager.Gizmo = require('../gizmos');
+    manager.Asset = require('../asset');
+    manager.Prefab = require('../prefab');
+    manager.Effect = require('../effects');
     manager.Selection = require('../selection');
 
-    // 加载脚本
-    const scripts = await ipc.send('query-scripts');
-    await Promise.all(
-        scripts.map((uuid) => {
-            return manager.Script.loadScript(uuid);
-        })
-    );
+    // 创建编辑器使用的 camera
+    manager.Camera.init();
+
+    // 创建 gizmo
+    manager.Gizmo.init();
+
+    // 标记准备就绪，开始接收主窗口发送过来的 ipc 消息
+    ipc.ready();
 
     // 启动场景，之前启动了的话，会在 open 方法内被终止
     const uuid = await ipc.send('query-scene');
     await scene.open(uuid || '');
 }
 
-exports.run = run;
+exports.init = init;
+exports.manager = manager;

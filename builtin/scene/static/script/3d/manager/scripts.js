@@ -1,7 +1,14 @@
 'use stirct';
 
-const scene = require('./scene');
+const ipc = require('./ipc');
 const uuidUtils = require('../../utils/uuid');
+
+async function init() {
+    const uuids = await ipc.send('query-scripts');
+    await Promise.all(uuids.map((uuid) => {
+        return loadScript(uuid);
+    }));
+}
 
 /**
  * 传入 uuid，加载指定的文件
@@ -51,16 +58,10 @@ async function loadScripts(uuids) {
     await Promise.all(uuids.map((uuid) => {
         return loadScript(uuid);
     }));
-
-    // await scene.close();
-    // // 启动场景
-    // const uuid = await Manager.Ipc.send('query-scene');
-    // if (typeof uuid === 'string') {
-    //     await scene.open(uuid);
-    // }
 }
 
 module.exports = {
+    init,
     loadScript,
     loadScripts,
 };

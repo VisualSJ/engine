@@ -9,9 +9,9 @@ const startup = require('./manager/startup');
 //   3. 启动引擎进程内的模块管理器
 //   4. 重写资源加载相关的函数
 requestAnimationFrame(async () => {
-    window.Manager = require('./manager');
-    // 初始化引擎
-    startup.run();
+    const info = await ipc.send('query-engine');
+    await startup.init(info);
+    await startup.manager(info);
 });
 
 // 进程刷新的时候，需要广播
