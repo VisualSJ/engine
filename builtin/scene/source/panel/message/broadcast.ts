@@ -125,6 +125,13 @@ export function apply(messages: any) {
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
+                break;
+            case 'material':
+                // todo 按需刷新
+                $scene.forwarding('Scene', 'softReload');
+                break;
+            default:
+                break;
         }
     };
 

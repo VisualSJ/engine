@@ -139,6 +139,10 @@ exports.methods = {
                     });
                 });
             }
+            // refresh is done by listening asset-change
+            //  else {
+            //     Editor.Ipc.requestToPackage('scene', 'soft-reload');
+            // }
             // reset、effect变更需要刷新 effectMap
             if (['reset', 'effect'].includes(type)) {
                 this.getEffectMap();
@@ -214,8 +218,8 @@ exports.methods = {
             const isSaved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', this.info.uuid, result);
             if (isSaved) {
                 this.refresh();
-                // todo
-                Editor.Ipc.requestToPackage('scene', 'soft-reload');
+                // refresh is done by listening asset-change
+                // Editor.Ipc.requestToPackage('scene', 'soft-reload');
             }
         } catch (err) {
             console.log(err);

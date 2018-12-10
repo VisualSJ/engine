@@ -47,7 +47,7 @@ function dump(ctor) {
         if (isAnyChildClassOf(ctor, cc._BaseNode, cc.Component)) {
             properties._id = {
                 type: cc.String,
-                visible: false
+                visible: false,
             };
         }
 
@@ -95,10 +95,8 @@ function dumpAttribute(attrs) {
         attribute.type = attrs.type;
     }
 
-    if ('readonly' in attrs) {
-        attribute.readonly = !!attrs.readonly;
-    } else if (!attrs.hasSetter) {
-        attribute.readonly = true;
+    if (attrs.readonly) {
+        attribute.readonly = attrs.readonly;
     }
 
     if ('default' in attrs) {
@@ -108,7 +106,9 @@ function dumpAttribute(attrs) {
             attribute.default = null;
         } else if (attribute.default !== null && !attribute.type) {
             // 如果类型没有正常获取，并且有默认值，则使用默认值的类型作为类型
-            attribute.type = (typeof attribute.default).replace(/^\s/, (str) => { return str.toUpperCase(); });
+            attribute.type = (typeof attribute.default).replace(/^\s/, (str) => {
+                return str.toUpperCase();
+            });
 
             if (attribute.type) {
                 if (attribute.type !== 'Object' || attribute.default.constructor === Object) {
@@ -121,6 +121,8 @@ function dumpAttribute(attrs) {
                 }
             }
         }
+    } else if (!attrs.hasSetter) {
+        attribute.readonly = true;
     }
 
     if (typeof attrs.visible === 'boolean') {
