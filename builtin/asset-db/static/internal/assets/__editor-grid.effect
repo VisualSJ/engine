@@ -46,7 +46,7 @@
     pos_w.xz += scale * vec2((a_uv0.x * 2.0 - 1.0) * dist * 0.002);
 
     gl_Position = _viewProj * vec4(pos_w, 1.0);
-	  gl_Position.z += 0.01; // nudge depth to avoid z-fighting at origin
+	  gl_Position.z += 0.0001; // nudge depth to avoid z-fighting at origin
   }
 }
 
