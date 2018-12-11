@@ -5,9 +5,8 @@ const ps = require('path');
 exports.load = function() {
     // HACK: 每个窗口自己注册自己的 uuid 翻译方法
     Editor.UI.DragObject.setNameTranslator(async (uuid) => {
-
         // 资源
-        if (uuid.length > 22) {
+        if (uuid && uuid.length > 22) {
             try {
                 const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
                 if (!info) {
@@ -18,7 +17,7 @@ exports.load = function() {
                 }
                 const arr = uuid.split('@');
                 return arr[arr.length - 1];
-            } catch (error) { }
+            } catch (error) {}
             return uuid;
         }
 
@@ -29,7 +28,7 @@ exports.load = function() {
                 return uuid;
             }
             return info.name.value;
-        } catch (error) { }
+        } catch (error) {}
         return uuid;
     });
 };
