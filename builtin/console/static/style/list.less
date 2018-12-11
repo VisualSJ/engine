@@ -14,7 +14,7 @@ section {
     flex: 1;
     display: flex;
     overflow-y: auto;
-    background:  var(--main-dark-bg);
+    background:  var(--panel-content-bg);
 }
 
 .item {
@@ -44,6 +44,7 @@ section {
             margin: 0;
             white-space: nowrap;
             text-overflow: ellipsis;
+            font: inherit;
         }
     }
     .details ~ .stack {
@@ -57,10 +58,7 @@ section {
         transform: rotate(90deg);
     }
     &.dark {
-        background: var(--main-bg);
-    }
-    &:hover {
-        // background: var(--panel-hover-c);
+        background: #40404066;
     }
 }
 .item[fold] {
@@ -75,13 +73,9 @@ section {
 }
 
 .item[type='warn'] {
-    color: #990;
+    color: #bfc74f;
 }
 
 .item[type='error'] {
-    color: #da2121;
-}
-
-.item[type='info'] {
-    color: #09f;
+    color: #ff8080;
 }

@@ -20,7 +20,10 @@
     "--border-dark-c": "#a29e9e",
     "--main-dark-bg": "#d6d6d6",
     "--main-bg": "#f1f1f1",
+
     "--default-text-c": "#797474",
+    "--font-size":"12px",
+    "--font-mono":"Consolas",
 
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",

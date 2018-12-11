@@ -66,8 +66,12 @@ export async function ready() {
         data() {
             return {
                 change: false,
-                fontSize: 12,
-                lineHeight: 26,
+                tabbar: {
+                    fontSize: 12,
+                    lineHeight: 26,
+                    filterType: 'all',
+                    filterRegex: false,
+                },
             };
         },
         methods: <any>{
@@ -80,26 +84,25 @@ export async function ready() {
                 Editor.Logger.clear();
                 manager.clear();
             },
-            onCollapse(event: any) {
-                manager.setCollapse(event.target.checked);
-            },
             onFilterRegex(event: any) {
-                manager.setFilterRegex(event.target.checked);
+                manager.setFilterRegex(event.target.value);
+                this.dataChange('filterRegex', event.target.value);
             },
+            // 筛选 log 信息
             onFilterText(event: any) {
                 manager.setFilterText(event.target.value);
             },
 
             // 设置字体大小
             setFontSize(event: any) {
-                this.fontSize = parseInt(event.target.value, 10);
-                manager.setFontSize(this.fontSize);
+                manager.setFontSize(event.target.value);
+                this.dataChange('fontSize', parseInt(event.target.value, 10));
             },
 
             // 设置行间距
             setLineHeight(event: any) {
-                this.lineHeight = parseInt(event.target.value, 10);
-                manager.setLineHeight(this.lineHeight);
+                manager.setLineHeight(event.target.value);
+                this.dataChange('lineHeight', parseInt(event.target.value, 10));
             },
 
             // 点击生成右键菜单
@@ -129,6 +132,7 @@ export async function ready() {
              */
             onFilterType(event: any) {
                 manager.setFilterType(event.target.value);
+                this.dataChange('filterType', event.target.value);
             },
 
             /**
@@ -136,19 +140,43 @@ export async function ready() {
              * @param key
              */
             t(key: string) {
-                const name = `preferences.${key}`;
+                const name = `consol.${key}`;
                 return Editor.I18n.t(name);
+            },
+
+            dataChange(key: string, value: any) {
+                this.tabbar[key] = value;
+                Editor.Ipc.sendToPackage('console', 'set-setting', `tabbar.${key}`, value);
+                Editor.Ipc.sendToPackage('console', 'save-setting');
+            },
+
+            /**
+             * 初始化数据
+             */
+            async ininData() {
+                const tabbar = await Editor.Ipc.requestToPackage('console', 'get-setting', 'tabbar');
+                if (!tabbar) {
+                    return;
+                }
+                for (const key of Object.keys(tabbar)) {
+                    if (key in this.tabbar && tabbar[key]) {
+                        this.tabbar[key] = tabbar[key];
+                    }
+                }
             },
         },
         components: {
             'console-list': require('./components/list'),
         },
+        async mounted() {
+            await this.ininData();
+            manager.setUpdateFn(this.update);
+            manager.setLineHeight(this.tabbar.lineHeight);
+            const list = Editor.Logger.query();
+            manager.addItems(list);
+            Editor.Logger.on('record', panel.record);
+        },
     });
-    manager.setUpdateFn(vm.update);
-    manager.setLineHeight(vm.lineHeight);
-    const list = Editor.Logger.query();
-    manager.addItems(list);
-    Editor.Logger.on('record', panel.record);
 }
 
 export async function beforeClose() {}

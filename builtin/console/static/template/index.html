@@ -14,12 +14,12 @@
         <ui-input class="ml10" @input="onFilterText"></ui-input>
 
         <!-- 是否启用正则 -->
-        <ui-checkbox  class="ml10" @confirm="onFilterRegex">
-            <span>Regex</span>
+        <ui-checkbox  class="ml10" :value="tabbar.filterRegex" @confirm="onFilterRegex">
+            <span>{{t('tabbar.regex')}}</span>
         </ui-checkbox>
 
         <!-- 筛选种类 -->
-        <ui-select class="ml10" value="all" @confirm="onFilterType">
+        <ui-select class="ml10" :value="tabbar.filterType" @confirm="onFilterType">
             <option value="all">all</option>
             <option value="log">log</option>
             <option value="success">success</option>
@@ -27,10 +27,10 @@
             <option value="error">error</option>
         </ui-select>
 
-        <!-- 调整字间距 -->
+        <!-- 调整字体大小 -->
         <div class="flex-center">
             <span class="select-label i-fontsize ml10"></span>
-            <ui-select :value="fontSize"  @confirm="setFontSize">
+            <ui-select :value="tabbar.fontSize"  @confirm="setFontSize">
                 <option  v-for="item in 20" v-if="item > 8" :value="item">{{item}}</option>
             </ui-select>
         </div>
@@ -38,12 +38,12 @@
         <!-- 调整行间距 -->
         <div class="flex-center">
             <span class="select-label i-lineheight ml10"></span>
-            <ui-select :value="lineHeight" @confirm="setLineHeight">
+            <ui-select :value="tabbar.lineHeight" @confirm="setLineHeight">
                 <option  v-for="item in 36" v-if="item > 19" :value="item">{{item}}</option>
             </ui-select>
         </div>
 
-        <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox>
+        <!-- <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox> -->
     </header>
-    <console-list v-model="change" :font-size="fontSize" :line-height="lineHeight"></console-list>
+    <console-list v-model="change" :font-size="tabbar.fontSize" :line-height="tabbar.lineHeight"></console-list>
 </div>

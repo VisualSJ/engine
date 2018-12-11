@@ -126,7 +126,6 @@ header .preview select::after {
 header .info {
     flex: 1;
     line-height: 1.8em;
-    font-size: 0.8em;
     justify-content: flex-end;
     align-items: center;
 }

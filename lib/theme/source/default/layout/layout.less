@@ -36,7 +36,7 @@
 
 :host {
   display: flex;
-  font-size: 12px;
+  font: inherit;
 }
 
 dock-layout[direction="none"] {
@@ -78,6 +78,7 @@ dock-tab {
   padding: 0 6px;
   border-color: var(--border-dark-c);
   box-sizing: border-box;
+  font: inherit;
   &:hover {
     color: var(--hover-c);
   }
@@ -92,7 +93,7 @@ dock-tab[active] {
 }
 
 dock-tab>span:last-child {
-  font-size: 12px;
+  font: inherit;
   position: relative;
   top: -1px;
   padding-right: 2px;

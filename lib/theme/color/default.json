@@ -23,6 +23,8 @@
     "--main-bg": "#474747",
     
     "--default-text-c": "#bdbdbd",
+    "--font-size":"12px",
+    "--font-mono":"Consolas",
 
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",
