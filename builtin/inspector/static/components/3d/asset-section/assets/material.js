@@ -53,8 +53,10 @@ exports.computed = {
                 const { key } = item;
                 if (key in _props && _props[key] !== null) {
                     item.value = _props[key];
-                    item.value.uuid = item.value.__uuid__;
-                    delete item.value.__uuid__;
+                    if (item.value.__uuid__) {
+                        item.value.uuid = item.value.__uuid__;
+                        delete item.value.__uuid__;
+                    }
                 }
             });
             return props;
@@ -164,7 +166,7 @@ exports.methods = {
 
     onPropertyChanged(event) {
         const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
-        const { path, value, compType } = dump || {};
+        const { path, value } = dump || {};
 
         if (path && path.includes('.')) {
             try {

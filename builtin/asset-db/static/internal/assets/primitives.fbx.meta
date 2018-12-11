@@ -6,10 +6,10 @@
     ".json"
   ],
   "subMetas": {
-    "cone.mesh": {
+    "capsule.mesh": {
       "ver": "1.0.0",
       "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
       "files": [
         ".json",
         ".bin"
@@ -17,45 +17,6 @@
       "subMetas": {},
       "userData": {
         "gltfIndex": 0
-      }
-    },
-    "torus.mesh": {
-      "ver": "1.0.0",
-      "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
-      "files": [
-        ".json",
-        ".bin"
-      ],
-      "subMetas": {},
-      "userData": {
-        "gltfIndex": 1
-      }
-    },
-    "sphere.mesh": {
-      "ver": "1.0.0",
-      "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
-      "files": [
-        ".json",
-        ".bin"
-      ],
-      "subMetas": {},
-      "userData": {
-        "gltfIndex": 2
-      }
-    },
-    "quad.mesh": {
-      "ver": "1.0.0",
-      "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
-      "files": [
-        ".json",
-        ".bin"
-      ],
-      "subMetas": {},
-      "userData": {
-        "gltfIndex": 3
       }
     },
     "plane.mesh": {
@@ -68,13 +29,52 @@
       ],
       "subMetas": {},
       "userData": {
+        "gltfIndex": 1
+      }
+    },
+    "cone.mesh": {
+      "ver": "1.0.0",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 2
+      }
+    },
+    "torus.mesh": {
+      "ver": "1.0.0",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 3
+      }
+    },
+    "sphere.mesh": {
+      "ver": "1.0.0",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
         "gltfIndex": 4
       }
     },
-    "cylinder.mesh": {
+    "quad.mesh": {
       "ver": "1.0.0",
       "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
       "files": [
         ".json",
         ".bin"
@@ -84,10 +84,10 @@
         "gltfIndex": 5
       }
     },
-    "capsule.mesh": {
+    "cylinder.mesh": {
       "ver": "1.0.0",
       "importer": "gltf-mesh",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
       "files": [
         ".json",
         ".bin"
@@ -138,13 +138,13 @@
   "userData": {
     "assetTable": {
       "meshes": [
+        "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
-        "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
-        "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
         "1263d74c-8167-4928-91a6-4e2672411f47@box.mesh"
       ],
       "materials": [

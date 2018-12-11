@@ -29,27 +29,29 @@ function queryEffectDataForInspector(effectName) {
 }
 
 let buildEffectData = (function() {
+    const { Vec2, Vec3, Vec4, Color, Mat4 } = cc;
+    const { Texture2D, TextureCube } = cc.gfx;
     const typeMap = {
-        Number: 'number',
-        Boolean: 'boolean',
-        Vec2: 'cc-vec2',
-        Vec3: 'cc-vec3',
-        Vec4: 'cc-vec4',
-        Color: 'cc-color',
-        Mat4: 'cc-mat4',
-        Texture2D: 'cc-dragable',
-        TextureCube: 'cc-dragable',
+        [Number]: 'number',
+        [Boolean]: 'boolean',
+        [Vec2]: 'cc-vec2',
+        [Vec3]: 'cc-vec3',
+        [Vec4]: 'cc-vec4',
+        [Color]: 'cc-color',
+        [Mat4]: 'cc-mat4',
+        [Texture2D]: 'cc-dragable',
+        [TextureCube]: 'cc-dragable',
     };
     const assetMap = {
-        Texture2D: 'cc.Texture2D',
-        TextureCube: 'cc.TextureCube',
+        [Texture2D]: 'cc.Texture2D',
+        [TextureCube]: 'cc.TextureCube',
     };
     return function (data = {}) {
         return Object.keys(data).reduce((acc, cur) => {
             const item = data[cur];
             acc[cur] = Object.keys(item).map((key) => {
                 const info = item[key];
-                const typeName = info.instanceType.name;
+                const typeName = info.instanceType;
                 const compType = typeMap[typeName];
                 const type = assetMap[typeName];
                 let { displayName, value } = info;
