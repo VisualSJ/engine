@@ -6,8 +6,15 @@ const {
     CameraMoveMode, EditorCamera,
 } = require('./camera');
 
-operationManager.on('mouseup', (data) => {
+let mouseDownTime = 0;
+
+operationManager.on('mousedown', (data) => {
     if (!data.leftButton) return;
+    mouseDownTime = Date.now();
+});
+operationManager.on('mouseup', (data) => {
+    // TODO: 框选
+    if (!data.leftButton || Date.now() - mouseDownTime > 500) return;
     const bcr = document.body.getBoundingClientRect();
     EditorCamera.instance.screenPointToRay(data.x, bcr.height - data.y, bcr.width, bcr.height, selection.ray);
     let res = cc.director._renderSystem._scene.raycast(selection.ray);
