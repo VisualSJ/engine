@@ -43,7 +43,8 @@ class CameraComponentGizmo extends Gizmo {
             let node = this.node;
             let camComp = this.target;
             let aspect = cc.winSize.width / cc.winSize.height;
-            this._controller.updateSize(camComp.fov, aspect, camComp.near, camComp.far);
+            this._controller.updateSize(camComp.projection, camComp.orthoHeight,
+                camComp.fov, aspect, camComp.near, camComp.far);
 
             let worldPos = NodeUtils.getWorldPosition3D(node);
             let worldRot = NodeUtils.getWorldRotation3D(node);

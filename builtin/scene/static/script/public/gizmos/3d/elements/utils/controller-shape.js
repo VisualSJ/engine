@@ -507,13 +507,11 @@ ControllerShape.CalcBoxPoints = function(center, size) {
     points[1] = center.add(cc.v3(-halfSize.x, halfSize.y, -halfSize.z));
     points[2] = center.add(cc.v3(halfSize.x, halfSize.y, -halfSize.z));
     points[3] = center.add(cc.v3(halfSize.x, -halfSize.y, -halfSize.z));
-    points[4] = center.add(cc.v3(-halfSize.x, -halfSize.y, -halfSize.z));
 
-    points[5] = center.add(cc.v3(-halfSize.x, -halfSize.y, halfSize.z));
-    points[6] = center.add(cc.v3(-halfSize.x, halfSize.y, halfSize.z));
-    points[7] = center.add(cc.v3(halfSize.x, halfSize.y, halfSize.z));
-    points[8] = center.add(cc.v3(halfSize.x, -halfSize.y, halfSize.z));
-    points[9] = center.add(cc.v3(-halfSize.x, -halfSize.y, halfSize.z));
+    points[4] = center.add(cc.v3(-halfSize.x, -halfSize.y, halfSize.z));
+    points[5] = center.add(cc.v3(-halfSize.x, halfSize.y, halfSize.z));
+    points[6] = center.add(cc.v3(halfSize.x, halfSize.y, halfSize.z));
+    points[7] = center.add(cc.v3(halfSize.x, -halfSize.y, halfSize.z));
 
     return points;
 };
@@ -522,13 +520,19 @@ ControllerShape.WireframeBox = function(center, size) {
     let points = ControllerShape.CalcBoxPoints(center, size);
     let indices = [];
 
-    for (let i = 1; i < points.length; i++) {
+    for (let i = 1; i < 4; i++) {
         indices.push(i - 1, i);
     }
+    indices.push(0, 3);
 
-    indices.push(1, 6);
-    indices.push(2, 7);
-    indices.push(3, 8);
+    for (let i = 5; i < 8; i++) {
+        indices.push(i - 1, i);
+    }
+    indices.push(4, 7);
+
+    for (let i = 0; i < 4; i++) {
+        indices.push(i, i + 4);
+    }
 
     return createMesh({
         positions: points,
@@ -538,20 +542,30 @@ ControllerShape.WireframeBox = function(center, size) {
     });
 };
 
-ControllerShape.CalcFrustum = function(fov, aspect, near, far) {
+ControllerShape.CalcFrustum = function(isOrtho, orthoHeight, fov, aspect, near, far) {
     let points = [];
     let indices = [];
+    let nearHalfHeight;
+    let nearHalfWidth;
+    let farHalfHeight;
+    let farHalfWidth;
 
-    let nearHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * near;
-    let nearHalfWidth = nearHalfHeight * aspect;
+    if (isOrtho) {
+        nearHalfHeight = farHalfHeight = orthoHeight / 2;
+        nearHalfWidth = farHalfWidth = nearHalfHeight * aspect;
+    } else {
+        nearHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * near;
+        nearHalfWidth = nearHalfHeight * aspect;
+
+        farHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * far;
+        farHalfWidth = farHalfHeight * aspect;
+    }
 
     points[0] = cc.v3(-nearHalfWidth, -nearHalfHeight, -near);
     points[1] = cc.v3(-nearHalfWidth, nearHalfHeight, -near);
     points[2] = cc.v3(nearHalfWidth, nearHalfHeight, -near);
     points[3] = cc.v3(nearHalfWidth, -nearHalfHeight, -near);
 
-    let farHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * far;
-    let farHalfWidth = farHalfHeight * aspect;
     points[4] = cc.v3(-farHalfWidth, -farHalfHeight, -far);
     points[5] = cc.v3(-farHalfWidth, farHalfHeight, -far);
     points[6] = cc.v3(farHalfWidth, farHalfHeight, -far);

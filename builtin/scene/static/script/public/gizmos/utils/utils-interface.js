@@ -40,9 +40,9 @@ class UtilsInterface {
 
     /**
      * 记录结点当前信息
-     * @param {节点} node
+     * @param {节点} nodes
      */
-    recordNode(node) {
+    recordChanges(nodes) {
     }
 
     /**

@@ -49,12 +49,16 @@ class PositionController extends ControllerBase {
         NodeUtils.setEulerAngles(borderPlane, rotation);
         borderPlane.setPosition(pos.x, pos.y, pos.z);
         let panPlane = ControllerUtils.plane(100000, 100000);
-        panPlane.parent = borderPlane;
+        panPlane.parent = this._rootNode;
         panPlane.name = axisName + 'PanPlane';
         panPlane.active = false;
         panPlane._layer = panPlaneLayer;
+        NodeUtils.setEulerAngles(panPlane, rotation);
         setNodeOpacity(panPlane, 0);
         this.initAxis(borderPlane, axisName, color);
+
+        let axisData = this._axisDataMap[axisName];
+        axisData.panPlane = panPlane;
     }
 
     initShape() {
@@ -83,13 +87,6 @@ class PositionController extends ControllerBase {
         this.hide();
     }
 
-    onInitAxis(node, axisName) {
-        if (axisName.length > 1) {
-            let axisData = this._axisDataMap[axisName];
-            axisData.panPlane = node.getChildByName(axisName + 'PanPlane');
-        }
-    }
-
     getDeltaPosition() {
         return this._deltaPosition;
     }
@@ -104,6 +101,7 @@ class PositionController extends ControllerBase {
         if (this._mouseDownAxis.length > 1) {
             this._isInPanDrag = true;
             this._dragPanPlane = this._axisDataMap[this._mouseDownAxis].panPlane;
+            this._dragPanPlane.setPosition(this._position);
             this._dragPanPlane.active = true;
             this._mouseDownOnPlanePos = cc.v3();
             this.getPositionOnPanPlane(this._mouseDownOnPlanePos, event.x, event.y, this._dragPanPlane);

@@ -185,9 +185,7 @@ class RotationGizmo extends TransformGizmo {
 
     updateDataFromController() {
         if (this._controller.updated) {
-            this.target.forEach((node) => {
-                Utils.recordNode(node);
-            });
+            this.recordChanges();
 
             let i;
             let rot = cc.quat(0, 0, 0, 1);

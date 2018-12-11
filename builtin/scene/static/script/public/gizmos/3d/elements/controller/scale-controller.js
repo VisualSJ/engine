@@ -1,6 +1,5 @@
 'use strict';
 const vec3 = cc.vmath.vec3;
-// const Tools = require('../tools');
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 const External = require('../../../utils/external');

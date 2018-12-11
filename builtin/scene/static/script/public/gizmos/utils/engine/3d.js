@@ -42,7 +42,7 @@ class Engine3D extends EngineInterface {
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
             mtl.effectName = 'builtin-effect-unlit-transparent';
             mtl.define('USE_COLOR', true);
-            if (mtl.effect) mtl.effect.getActiveTechnique().passes[0].setDepth(false);
+            if (mtl.effect) { mtl.effect.getActiveTechnique().passes[0].setDepth(false); }
         } else { mtl.effectName = '__editor-gizmo'; }
         mtl.setProperty('color', node.modelColor);
         if (mtl.effect) {
@@ -95,6 +95,37 @@ class Engine3D extends EngineInterface {
         }
 
         return boundingBox;
+    }
+
+    getRootBoneNode(component) {
+        let rootBoneNode = null;
+        if (component instanceof cc.SkinningModelComponent) {
+            if (component.skeleton) {
+                let joints = component.skeleton.joints;
+                if (joints && joints.length > 0 && component._skinningTarget) {
+                    rootBoneNode = component._skinningTarget.get(joints[0]);
+                }
+            }
+        } else {
+            console.error('target is not a cc.SkinningModelComponent');
+        }
+
+        return rootBoneNode;
+    }
+
+    getRootBindPose(component) {
+        let rootBindPose = null;
+
+        if (component instanceof cc.SkinningModelComponent) {
+            let skeleton = component.skeleton;
+            if (skeleton) {
+                rootBindPose = skeleton.bindposes[0];
+            }
+        } else {
+            console.error('target is not a cc.SkinningModelComponent');
+        }
+
+        return rootBindPose;
     }
 }
 

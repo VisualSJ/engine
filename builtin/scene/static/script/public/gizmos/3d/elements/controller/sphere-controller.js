@@ -51,8 +51,8 @@ class SphereController extends ControllerBase {
     }
 
     updateSize(center, radius) {
-        this._center = center ? center : this._center;
-        this._radius = radius ? radius : this._radius;
+        this._center = center;
+        this._radius = radius;
 
         Object.keys(this._circleDataMap).forEach((key) => {
             let arcPositions = ControllerShape.CalcArcPoints(

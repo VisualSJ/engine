@@ -236,7 +236,8 @@ class NodeManager extends EventEmitter {
         if (path === '_components') {
             const comp = data[index];
             this.emit('before-component-remove', comp);
-            comp.destroy();
+            comp._destroyImmediate();
+            node.removeComponent(comp);
             this.emit('component-removed', comp);
         } else {
             // 删除某个 item

@@ -28,7 +28,6 @@ class GizmoManager {
         this._gizmoToolMap = {};
         this._selection = [];
         this._gizmosPool = {};
-        this._isGizmoToolLocked = false;
 
         // selection events
         Selection.on('select', (uuid, uuids) => {
@@ -44,6 +43,7 @@ class GizmoManager {
     }
 
     onSceneLoaded() {
+        this.clearAllGizmos();
         // 需要场景加载完对Node的active才有效果
         this.transformToolName = 'position';
 
@@ -102,11 +102,11 @@ class GizmoManager {
     }
 
     lockGizmoTool(value) {
-        this._isGizmoToolLocked = value;
+        TransformToolData.isLocked = value;
     }
 
     isGizmoToolLocked() {
-        return this._isGizmoToolLocked;
+        return TransformToolData.isLocked;
     }
 
     getGizmoToolByName(toolName) {
@@ -136,6 +136,15 @@ class GizmoManager {
         }
 
         return tool;
+    }
+
+    clearAllGizmos() {
+        Object.keys(this._gizmosPool).forEach((key) => {
+            let gizmoObjList = this._gizmosPool[key];
+            gizmoObjList.forEach((gizmo) => {
+                this.destoryGizmo(gizmo);
+            });
+        });
     }
 
     createGizmo(name, gizmoDef, target) {
@@ -176,6 +185,10 @@ class GizmoManager {
     }
 
     showNodeGizmo(node) {
+        if (!node) {
+            return;
+        }
+
         let gizmoDef = null;
         let gizmoObj = null;
         // node gizmo
@@ -209,6 +222,10 @@ class GizmoManager {
     }
 
     hideNodeGizmo(node) {
+        if (!node) {
+            return;
+        }
+
         if (node.gizmo) {
             this.destoryGizmo(node.gizmo);
             node.gizmo = null;
@@ -493,7 +510,17 @@ class GizmoManager {
         // 目前node的active,component的enable都走nodechange事件，
         // 先在这里统一处理，把Node的所有gizmo重置一遍。
         this.hideNodeGizmo(node);
-        this.showNodeGizmo(node);
+
+        let index = this._selection.indexOf(node.uuid);
+        if (index !== -1) {
+            this.showNodeGizmo(node);
+        }
+    }
+
+    onNodeRemoved(node) {
+        if (node != null) {
+            this.hideNodeGizmo(node);
+        }
     }
 
     onComponentAdded(comp, node) {

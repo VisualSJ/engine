@@ -17,8 +17,8 @@ class WorldAxisController extends ControllerBase {
     }
 
     createAxis(axisName, color, rotation) {
-        let baseArrowHeadHeight = 5;
-        let baseArrowHeadRadius = 2;
+        // let baseArrowHeadHeight = 5;
+        // let baseArrowHeadRadius = 2;
         let baseArrowBodyHeight = 28;
 
         // let axisNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,

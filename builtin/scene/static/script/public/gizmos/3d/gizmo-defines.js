@@ -14,4 +14,5 @@ GizmoDefines.scale = require('./elements/transform/scale-gizmo');
 GizmoDefines.components = {};
 GizmoDefines.components['cc.LightComponent'] = require('./elements/components/light-component-gizmo');
 GizmoDefines.components['cc.ModelComponent'] = require('./elements/components/model-component-gizmo');
+GizmoDefines.components['cc.SkinningModelComponent'] = require('./elements/components/skinning-model-component-gizmo');
 GizmoDefines.components['cc.CameraComponent'] = require('./elements/components/camera-component-gizmo');

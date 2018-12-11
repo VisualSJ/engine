@@ -17,6 +17,10 @@ node.on('changed', (node) => {
     gizmo.onNodeChanged(node);
 });
 
+node.on('removed', (node) => {
+    gizmo.onNodeRemoved(node);
+});
+
 node.on('component-added', (comp, node) => {
     gizmo.onComponentAdded(comp, node);
 });

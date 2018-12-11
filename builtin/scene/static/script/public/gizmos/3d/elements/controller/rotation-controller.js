@@ -5,7 +5,7 @@ let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 let ControllerShape = require('../utils/controller-shape');
 const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode } = require('../../../utils/engine');
-
+const Utils = require('../../../utils');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 const EditorMath = External.EditorMath;
@@ -158,7 +158,7 @@ class RotationController extends ControllerBase {
         });
 
         // 锁定鼠标
-        cc.game.canvas.requestPointerLock();
+        Utils.requestPointerLock();
 
         // debug
         // let debugDir = cc.v3();
@@ -206,7 +206,7 @@ class RotationController extends ControllerBase {
         // if (this._dirNode)
         //     this._dirNode.destroy();
 
-        document.exitPointerLock();
+        Utils.exitPointerLock();
         this._indicator.sectorNode.active = false;
         this._deltaRotation = cc.quat(0, 0, 0, 1);
 

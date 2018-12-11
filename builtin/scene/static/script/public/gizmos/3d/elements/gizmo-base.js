@@ -62,12 +62,15 @@ class GizmoBase {
     }
 
     recordChanges() {
-        this.nodes.forEach((node) => {
-            Utils.recordNode(node);
-        });
+        // 因为会在mousemove中调用，确保一次操作变动只record一次
+        if (!this._recorded) {
+            Utils.recordChanges(this.nodes);
+            this._recorded = true;
+        }
     }
 
     commitChanges() {
+        this._recorded = false;
         Utils.commitChanges(this.nodes);
     }
 

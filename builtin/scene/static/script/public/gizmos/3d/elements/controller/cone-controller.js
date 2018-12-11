@@ -77,9 +77,9 @@ class ConeController extends ControllerBase {
     }
 
     updateSize(center, radius, height) {
-        this._center = center ? center : this._center;
-        this._radius = radius ? radius : this._radius;
-        this._height = height ? height : this._height;
+        this._center = center;
+        this._radius = radius;
+        this._height = height;
 
         // update cone line
         let lineData = this.getConeLineData();

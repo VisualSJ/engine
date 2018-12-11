@@ -22,8 +22,10 @@ class Utils2D extends UtilsInterface {
             cc.engine.repaintInEditMode();
         }
     }
-    recordNode(node) {
-        _Scene.Undo.recordNode(node.uuid);
+    recordChanges(nodes) {
+        nodes.forEach((node) => {
+            _Scene.Undo.recordNode(node.uuid);
+        });
     }
 
     commitChanges(nodes) {

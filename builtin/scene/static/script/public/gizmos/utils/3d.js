@@ -26,8 +26,8 @@ class Utils3D extends UtilsInterface {
         // do nothing
     }
 
-    recordNode(node) {
-        // todo
+    recordChanges(nodes) {
+        Manager.History.snapshot();
     }
 
     commitChanges(nodes) {

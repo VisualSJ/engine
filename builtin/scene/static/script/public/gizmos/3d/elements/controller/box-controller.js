@@ -90,8 +90,8 @@ class BoxController extends ControllerBase {
     }
 
     updateSize(center, size) {
-        this._center = center ? center : this._center;
-        this._size = size ? size : this._size;
+        this._center = center;
+        this._size = size;
 
         let positions = ControllerShape.CalcBoxPoints(this._center, this._size);
 
