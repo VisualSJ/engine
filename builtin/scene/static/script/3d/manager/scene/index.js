@@ -33,6 +33,8 @@ class SceneManager extends EventEmitter {
             return;
         }
         currentSceneUuid = uuid;
+        Manager.Ipc.send('broadcast', 'scene:close');
+        this.emit('close');
 
         // cc.view.resizeWithBrowserSize(true);
 
@@ -214,15 +216,21 @@ class SceneManager extends EventEmitter {
      * 查询当前运行的场景是否被修改
      */
     queryDirty() {
-        if (!currentSceneData) {
+        try {
+            if (!currentSceneData) {
+                return false;
+            }
+
+            if (this.serialize() === currentSceneData) {
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error(error);
             return false;
         }
 
-        if (this.serialize() === currentSceneData) {
-            return false;
-        }
-
-        return true;
     }
 }
 

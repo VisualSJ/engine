@@ -90,6 +90,9 @@ async function manager(info) {
     // 创建 gizmo
     manager.Gizmo.init();
 
+    // 创建 gizmo
+    manager.Selection.init();
+
     // 标记准备就绪，开始接收主窗口发送过来的 ipc 消息
     ipc.ready();
 

@@ -61,6 +61,8 @@ export function apply(messages: any) {
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         if (asset) {
             await outputFile(asset.file, text);
+            // 同步一下缓存数据
+            await $scene.forwarding('Scene', 'syncSceneData');
             console.log(`Save scene: ${asset.source}`);
             return;
         }

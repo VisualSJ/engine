@@ -68,6 +68,20 @@ class View extends window.HTMLElement {
         });
     }
 
+    /**
+     * 强制发送，不等待队列
+     * @param {*} module
+     * @param {*} handler
+     * @param {*} params
+     */
+    async forceForwarding(module, handler, params = []) {
+        return await this.ipc.forceSend('call-method', {
+            module,
+            handler,
+            params,
+        });
+    }
+
     ///////////////////
 
     /**

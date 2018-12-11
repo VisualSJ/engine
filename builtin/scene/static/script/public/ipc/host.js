@@ -6,6 +6,9 @@ const { serializeError, deserializeError } = require('./utils');
 class HostIpc extends EventEmitter {
     constructor(webview) {
         super();
+        this.forceID = 0;
+        this.forceMap = {};
+
         // webview element
         this.$webview = webview;
 
@@ -51,6 +54,13 @@ class HostIpc extends EventEmitter {
                 item.callback(deserializeError(error), data);
                 this.isLock = false;
                 this.step();
+            }
+
+            if (event.channel === 'webview-ipc:force-send-reply') {
+                const [id, error, data] = event.args;
+                const callback = this.forceMap[id];
+                delete this.forceMap[id];
+                callback && callback(deserializeError(error), data);
             }
 
             // webview ipc 准备就绪的消息
@@ -126,9 +136,21 @@ class HostIpc extends EventEmitter {
      * @param  {...any} args
      */
     forceSend(message, ...args) {
-        this.$webview.send('webview-ipc:force-send', {
-            message,
-            arguments: args,
+        return new Promise((resolve, reject) => {
+            const id = this.forceID++;
+
+            this.forceMap[id] = function(error, data) {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(data);
+            };
+
+            this.$webview.send('webview-ipc:force-send', {
+                id,
+                message,
+                arguments: args,
+            });
         });
     }
 }

@@ -121,6 +121,18 @@
       "userData": {
         "gltfIndex": 0
       }
+    },
+    "Root-Scene.scene": {
+      "ver": "1.0.1",
+      "importer": "gltf-scene",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@Root-Scene.scene",
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 0
+      }
     }
   },
   "userData": {

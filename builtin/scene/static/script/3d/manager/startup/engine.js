@@ -45,6 +45,10 @@ async function openEngine() {
             collisionMatrix: null,
         }, resolve);
     });
+
+    // 如果不设置宽高，会导致网格、gizmo 部分线条出现锯齿
+    const bcr = document.body.getBoundingClientRect();
+    cc.view.setCanvasSize(bcr.width, bcr.height);
 }
 
 /**

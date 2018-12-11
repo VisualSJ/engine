@@ -8,6 +8,9 @@ exports.loadSceneByUuid = async function loadSceneByUuid(uuid) {
         let timer = null;
         cc.director._loadSceneByUuid(uuid, (error) => {
             clearTimeout(timer);
+            if (error) {
+                return reject(error);
+            }
             resolve();
         });
         timer = setTimeout(() => {
@@ -24,6 +27,9 @@ exports.loadSceneByNode = async function loadSceneByNode(scene) {
         let timer = null;
         cc.director.runSceneImmediate(scene, (error) => {
             clearTimeout(timer);
+            if (error) {
+                return reject(error);
+            }
             resolve();
         });
         timer = setTimeout(() => {
@@ -42,6 +48,9 @@ exports.loadSceneByJson = async function loadSceneByJson(json) {
             let timer = null;
             cc.director.runSceneImmediate(scene, (error) => {
                 clearTimeout(timer);
+                if (error) {
+                    return reject(error);
+                }
                 resolve();
             });
             timer = setTimeout(() => {

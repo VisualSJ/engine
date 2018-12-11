@@ -106,6 +106,6 @@ export function apply(messages: any) {
      * 查询当前场景是否被修改
      */
     messages['query-dirty'] = async () => {
-        return await $scene.forwarding('Scene', 'queryDirty');
+        return await $scene.forceForwarding('Scene', 'queryDirty');
     };
 }

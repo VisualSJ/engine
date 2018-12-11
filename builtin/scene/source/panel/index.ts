@@ -75,7 +75,7 @@ export async function ready() {
  * 检查关闭阶段需要检查是否场景更改了未保存
  */
 export async function beforeClose() {
-    const dirty = await panel.$.scene.forwarding('Scene', 'queryDirty');
+    const dirty = await panel.$.scene.forceForwarding('Scene', 'queryDirty');
 
     if (!dirty) {
         return;

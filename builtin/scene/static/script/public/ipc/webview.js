@@ -109,8 +109,10 @@ ipcRenderer.on('webview-ipc:force-send', async (event, options) => {
     let handler = ipc._events[options.message];
 
     try {
-        handler(...options.arguments);
+        const data = await handler(...options.arguments);
+        ipcRenderer.sendToHost('webview-ipc:force-send-reply', options.id, null, data);
     } catch (error) {
+        ipcRenderer.sendToHost('webview-ipc:force-send-reply', options.id, serializeError(error), null);
         console.error(error);
         return;
     }
