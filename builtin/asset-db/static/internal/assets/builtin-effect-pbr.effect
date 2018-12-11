@@ -45,7 +45,7 @@
     },
     "metallic": {
       "type": "float",
-      "value": 1
+      "value": 0.5
     },
     "metallic_texture": {
       "type": "sampler2D",
@@ -53,7 +53,7 @@
     },
     "roughness": {
       "type": "float",
-      "value": 0.5
+      "value": 0.7
     },
     "roughness_texture": {
       "type": "sampler2D",

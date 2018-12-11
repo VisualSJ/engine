@@ -40,7 +40,7 @@ float computeFallOff(float esm, vec2 coords, float frustumEdgeFalloff) {
 //   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
 // }
 
-float computeShadowESM(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, float _depthScale, float darkness, float frustumEdgeFalloff) {
+float computeShadowESM(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, float depthScale, float darkness, float frustumEdgeFalloff) {
   vec2 projCoords = pos_lightspace.xy / pos_lightspace.w;
   vec2 shadowUV = projCoords * 0.5 + vec2(0.5);
   if (shadowUV.x < 0.0 || shadowUV.x > 1.0 || shadowUV.y < 0.0 || shadowUV.y > 1.0) {
@@ -49,7 +49,7 @@ float computeShadowESM(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, f
   float currentDepth = clamp(vDepth, 0.0, 1.0);
   float closestDepth = unpackRGBAToDepth(texture2D(shadowMap, shadowUV));
   //float esm = clamp(exp(min(87.0, -_depthScale * (currentDepth - closestDepth))), 1.0 - darkness, 1.0);
-  float esm = clamp(exp(-_depthScale * (currentDepth - closestDepth)), 1.0 - darkness, 1.0);
+  float esm = clamp(exp(-depthScale * (currentDepth - closestDepth)), 1.0 - darkness, 1.0);
   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
 }
 

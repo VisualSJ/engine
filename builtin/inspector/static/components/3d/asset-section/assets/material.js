@@ -51,8 +51,10 @@ exports.computed = {
             const { _props = {} } = this.material || {};
             props.map((item) => {
                 const { key } = item;
-                if (key in _props && _props[key] !== undefined) {
+                if (key in _props && _props[key] !== null) {
                     item.value = _props[key];
+                    item.value.uuid = item.value.__uuid__;
+                    delete item.value.__uuid__;
                 }
             });
             return props;
@@ -66,7 +68,7 @@ exports.computed = {
             const { _defines = {} } = this.material || {};
             defines.map((item) => {
                 const { key } = item;
-                if (key in _defines && _defines[key] !== undefined) {
+                if (key in _defines && _defines[key]) {
                     item.value = _defines[key];
                 }
             });
@@ -177,11 +179,7 @@ exports.methods = {
 
                 if (item) {
                     this.dirty = true;
-                    if (compType === 'cc-dragable') {
-                        item[key] = value.uuid;
-                    } else {
-                        item[key] = value;
-                    }
+                    item[key] = value;
                 }
             } catch (err) {
                 console.error(err);
@@ -194,11 +192,12 @@ exports.methods = {
 
     async apply() {
         try {
-            const { material, effectName } = this;
+            const { material, effectName, effectMap } = this;
             const options = {
                 effectName,
                 _props: {},
                 _defines: {},
+                effectMap
             };
             this.propsList.map((item) => {
                 const { key } = item;

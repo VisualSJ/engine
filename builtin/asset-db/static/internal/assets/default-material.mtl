@@ -4,10 +4,7 @@
   "_objFlags": 0,
   "_native": "",
   "_defines": {},
-  "_props": {
-    "metallic": 0,
-    "roughness": 0.5
-  },
+  "_props": {},
   "_effectAsset": {
     "__uuid__": "e84e3815-d4ad-4777-a70c-a59f8425d4c1"
   }

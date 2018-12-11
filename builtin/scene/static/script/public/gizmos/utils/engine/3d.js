@@ -39,15 +39,16 @@ class Engine3D extends EngineInterface {
         let model = node.addComponent(cc.ModelComponent);
         model.mesh = mesh;
         let mtl = new cc.Material();
+        mtl.effectName = '__editor-gizmo';
+        // for lines
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
-            mtl.effectName = 'builtin-effect-unlit-transparent';
-            mtl.define('USE_COLOR', true);
-            if (mtl.effect) { mtl.effect.getActiveTechnique().passes[0].setDepth(false); }
-        } else { mtl.effectName = '__editor-gizmo'; }
+            mtl.effect.LOD = 0; // no lighting
+            node.modelColor.a = opts.alpha || 128; // blend in
+        }
         mtl.setProperty('color', node.modelColor);
         if (mtl.effect) {
             let pass = mtl.effect.getActiveTechnique().passes[0];
-            if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
+            if (opts.cullMode !== undefined) pass.setCullMode(opts.cullMode);
         }
         model.material = mtl;
     }

@@ -3,11 +3,33 @@
     {
       "queue": "transparent",
       "priority": 1000,
-      "lod": 0,
+      "lod": 100,
       "passes": [
         {
           "vert": "gizmo-vs",
           "frag": "gizmo-fs",
+          "stage": "default",
+          "cullMode": "none",
+          "depthTest": false,
+          "depthWrite": false,
+          "blend": true,
+          "blendEq": "add",
+          "blendSrc": "srcAlpha",
+          "blendDst": "oneMinusSrcAlpha",
+          "blendAlphaEq": "add",
+          "blendSrcAlpha": "one",
+          "blendDstAlpha": "oneMinusSrcAlpha"
+        }
+      ]
+    },
+    {
+      "queue": "transparent",
+      "priority": 1000,
+      "lod": 0,
+      "passes": [
+        {
+          "vert": "gizmo-vs",
+          "frag": "color-fs",
           "stage": "default",
           "cullMode": "none",
           "depthTest": false,
@@ -92,5 +114,13 @@
     vec3 diffuse = color.rgb * (0.2 + LTC_Evaluate(N, V, pos_l, mat3(1), points) * 0.8);
 
     gl_FragColor = linearToGammaSpaceRGBA(vec4(diffuse, color.a));
+  }
+}
+
+%% color-fs {
+  #include <gamma-correction>
+  uniform vec4 color;
+  void main() {
+    gl_FragColor = linearToGammaSpaceRGBA(color);
   }
 }

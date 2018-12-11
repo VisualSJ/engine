@@ -28,7 +28,7 @@ function queryEffectDataForInspector(effectName) {
     return buildEffectData(data);
 }
 
-function buildEffectData(data = {}) {
+let buildEffectData = (function() {
     const typeMap = {
         Number: 'number',
         Boolean: 'boolean',
@@ -44,51 +44,85 @@ function buildEffectData(data = {}) {
         Texture2D: 'cc.Texture2D',
         TextureCube: 'cc.TextureCube',
     };
+    return function (data = {}) {
+        return Object.keys(data).reduce((acc, cur) => {
+            const item = data[cur];
+            acc[cur] = Object.keys(item).map((key) => {
+                const info = item[key];
+                const typeName = info.instanceType.name;
+                const compType = typeMap[typeName];
+                const type = assetMap[typeName];
+                let { displayName, value } = info;
 
-    return Object.keys(data).reduce((acc, cur) => {
-        const item = data[cur];
-        acc[cur] = Object.keys(item).map((key) => {
-            const info = item[key];
-            const typeName = info.instanceType.name;
-            const compType = typeMap[typeName];
-            const type = assetMap[typeName];
-            let { displayName: name, value } = info;
+                if (compType === 'cc-dragable' && value === null) {
+                    value = { uuid: null };
+                }
 
-            if (compType === 'cc-dragable' && value === null) {
-                value = { uuid: null };
-            }
+                if (compType === 'cc-color') {
+                    value = {
+                        r: value.r,
+                        g: value.g,
+                        b: value.b,
+                        a: value.a,
+                    };
+                }
 
-            if (compType === 'cc-color') {
-                value = {
-                    r: value.r,
-                    g: value.g,
-                    b: value.b,
-                    a: value.a,
-                };
-            }
+                return { value, key, compType, type, name: displayName, path: `_${cur}.${key}` };
+            });
 
-            return { value, key, compType, type, name, path: `_${cur}.${key}` };
-        });
+            return acc;
+        }, {});
+    }
+})();
 
-        return acc;
-    }, {});
-}
 
 /**
  * 返回创建的 material 系列化数据
  * @param {{effectName: string, _props: {}, _defines: {}}} options
  * @returns {string}
  */
-function querySerializedMaterial(options) {
-    const { effectName, _props, _defines } = options;
-    const material = new cc.Material();
+let querySerializedMaterial = (function() {
+    let find = (effectMap, type, name) => effectMap[type].find(e => e.key === name);
+    let typeMap = {
+        'number': v => v.value || 0,
+        'boolean': v => v.value || false,
+        'cc-vec2': v => cc.v2(v.value),
+        'cc-vec3': v => cc.v3(v.value),
+        'cc-vec4': v => cc.v4(v.value),
+        'cc-color': v => cc.color(v.value),
+        'cc-mat4': v => cc.mat4(v.value),
+        'cc-dragable': v => {
+            let res = null;
+            switch (v.type) {
+            case 'cc.Texture2D': res = new cc.Texture2D();
+            case 'cc.TextureCube': res = new cc.TextureCube();
+            }
+            res._uuid = v.value && v.value.uuid;
+            return res;
+        }
+    }
+    return function (options) {
+        const { effectName, _props, _defines, effectMap } = options;
+        let props = {}, defines = {};
+        for (let name in _props) {
+            let info = find(effectMap, 'props', name);
+            props[name] = typeMap[info.compType](info);
+            if (props[name] === null) delete props[name];
+        }
+        for (let name in _defines) {
+            let info = find(effectMap, 'defines', name);
+            defines[name] = typeMap[info.compType](info);
+            if (defines[name] === false) delete defines[name];
+        }
 
-    material._effectAsset = cc.EffectAsset.get(effectName);
-    material._props = _props;
-    material._defines = _defines;
+        const material = new cc.Material();
+        material._effectAsset = cc.EffectAsset.get(effectName);
+        material._props = props;
+        material._defines = defines;
 
-    return Manager.Utils.serialize(material);
-}
+        return Manager.Utils.serialize(material);
+    }
+})();
 
 module.exports = {
     queryAllEffects,
