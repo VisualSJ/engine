@@ -51,6 +51,14 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                 },
             },
             {
+                label: Editor.I18n.t('hierarchy.menu.duplicate'),
+                enabled: !utils.canNotCopyNode(node),
+                click(event: Event) {
+                    // @ts-ignore
+                    self.$emit('duplicate', node.uuid);
+                },
+            },
+            {
                 label: Editor.I18n.t('hierarchy.menu.delete'),
                 enabled: !utils.canNotDeleteNode(node),
                 click() {

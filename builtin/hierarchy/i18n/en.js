@@ -18,10 +18,11 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
+        duplicate: 'Duplicate',
         showUuid: 'Show Node UUID and PAth',
     },
 
     operate: {
-        renameFail: 'Rename Fail'
-    }
+        renameFail: 'Rename Fail',
+    },
 };

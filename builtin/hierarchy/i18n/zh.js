@@ -14,10 +14,11 @@ module.exports = {
         newNode: '创建',
         newNodeEmpty: '空节点',
 
-        copy: '复制',
+        copy: '拷贝',
         paste: '粘贴',
         delete: '删除',
         rename: '重命名',
+        duplicate: '复制节点',
         showUuid: '显示节点 UUID 和路径',
     },
 

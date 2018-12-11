@@ -719,7 +719,7 @@ export const methods = {
     },
 
     /**
-     * 复制节点
+     * 拷贝节点
      * @param uuid
      */
     copy(uuid: string) {
@@ -735,7 +735,7 @@ export const methods = {
      * 粘贴
      * @param uuid 粘贴到这个节点里面
      */
-    paste(uuid: string) {
+    async paste(uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
@@ -743,7 +743,8 @@ export const methods = {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        _forEach(copiedUuids, uuid);
+        const newSelected: string[] = []; // 新的选中项切换为新节点
+        let selectedTimer: any; // 重新选中的定时器
 
         async function _forEach(uuids: string[], parent: string) {
             // 多节点的复制，根据现有排序的顺序执行
@@ -761,17 +762,96 @@ export const methods = {
                 }
 
                 (async (parent, uuid) => {
-                    const newParent = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+                    const newNodeUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
                         parent,
                         dump: uuid,
                     });
 
+                    newSelected.push(newNodeUuid);
+
+                    clearTimeout(selectedTimer);
+                    selectedTimer = setTimeout(() => {
+                        vm.ipcResetSelect(newSelected);
+                    }, 200);
+
                     if (childrenUuids && childrenUuids.length > 0) {
-                        _forEach(childrenUuids, newParent);
+                        await _forEach(childrenUuids, newNodeUuid);
                     }
                 })(parent, node.uuid);
             });
         }
+        await _forEach(copiedUuids, uuid);
+    },
+
+    /**
+     * 复制节点
+     * @param uuid
+     */
+    async duplicate(uuid: string) {
+        let uuids = vm.selects.slice();
+
+        // 来自右击菜单的单个选中，右击节点不在已选项目里
+        if (uuid !== undefined && !vm.selects.includes(uuid)) {
+            uuids = [uuid];
+        }
+
+        if (uuids.length === 0) {
+            return;
+        }
+
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
+        const newSelected: string[] = []; // 新的选中项切换为选中项的对应复制节点
+        let selectedTimer: any; // 重新选中的定时器
+
+        async function _forEach(uuids: string[], parentUuid?: string) {
+            // 多节点的复制，根据现有排序的顺序执行
+            const nodes: any[] = uuids.map((uuid: string) => {
+                return utils.getGroupFromTree(db.nodesTree, uuid)[0];
+            }).filter(Boolean).sort((a, b) => {
+                return a.top - b.top;
+            });
+
+            nodes.forEach((node: ItreeNode) => {
+                let parent = parentUuid;
+                if (!parent) {
+                    parent = node.parentUuid;
+                }
+
+                if (!parent) {
+                    return;
+                }
+
+                // 循环其子集
+                let childrenUuids;
+                if (Array.isArray(node.children)) {
+                    childrenUuids = node.children.map((child: ItreeNode) => child.uuid);
+                }
+
+                (async (parent, uuid) => {
+                    const newNodeUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+                        parent,
+                        dump: uuid,
+                    });
+
+                    if (!parentUuid) {
+                        newSelected.push(newNodeUuid);
+
+                        clearTimeout(selectedTimer);
+                        selectedTimer = setTimeout(() => {
+                            vm.ipcResetSelect(newSelected);
+                        }, 200);
+                    }
+
+                    if (childrenUuids && childrenUuids.length > 0) {
+                        await _forEach(childrenUuids, newNodeUuid);
+                    }
+                })(parent, node.uuid);
+            });
+
+        }
+        await _forEach(uuids);
     },
 
     /**

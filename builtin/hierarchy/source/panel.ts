@@ -86,7 +86,7 @@ export const methods = {
         vm.$refs.search.focus();
     },
     /**
-     * 复制资源
+     * 拷贝节点
      */
     copy() {
         vm.$refs.tree.copy();
@@ -96,6 +96,12 @@ export const methods = {
      */
     paste() {
         vm.$refs.tree.paste();
+    },
+    /**
+     * 复制节点
+     */
+    duplicate() {
+        vm.$refs.tree.duplicate();
     },
     /**
      * 删除资源

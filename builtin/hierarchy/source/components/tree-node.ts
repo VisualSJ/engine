@@ -194,9 +194,6 @@ export const methods = {
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';
         // @ts-ignore
         event.dataTransfer.setDragImage(img, 0, 0);
-
-        // 取消选中，避免样式重叠
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
     },
     /**
      * 拖动到元素的上面
