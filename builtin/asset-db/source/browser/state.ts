@@ -10,8 +10,7 @@ function notice() {
     if (list.length !== 0 || isReady) {
         return;
     }
-    isReady = true;
-    Editor.Ipc.sendToAll('asset-db:ready');
+    setReady(true);
 }
 
 /**
@@ -52,4 +51,13 @@ export function close(name: string) {
 
 export function getReady() {
     return isReady;
+}
+
+export function setReady(val: boolean) {
+    isReady = val;
+    if (val) {
+        Editor.Ipc.sendToAll('asset-db:ready');
+    } else {
+        Editor.Ipc.sendToAll('asset-db:close');
+    }
 }

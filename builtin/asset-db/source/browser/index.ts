@@ -5,7 +5,7 @@ import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'f
 import { basename, extname, join } from 'path';
 import { getName } from './utils';
 
-import { close, getReady, open, ready } from './state';
+import { close, getReady, open, ready, setReady } from './state';
 
 const worker = require('@base/electron-worker');
 
@@ -30,7 +30,6 @@ module.exports = {
      * ${action}-${method}
      */
     messages: {
-
         async 'query-is-ready'() {
             return getReady();
         },
@@ -146,7 +145,8 @@ module.exports = {
                 throw new Error('Asset DB does not exist.');
             }
 
-            if (!uuidOrUrl.startsWith(protocol)) { // 没有以协议开头即为uuid
+            if (!uuidOrUrl.startsWith(protocol)) {
+                // 没有以协议开头即为uuid
                 const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
                 uuidOrUrl = asset.source;
             }
@@ -440,7 +440,6 @@ async function createWorker() {
 
     // 启动 worker 后的初始化操作
     assetWorker.on('asset-worker:startup', () => {
-
         // 初始化自进程
         assetWorker.send('asset-worker:init', {
             engine: info.path,
@@ -466,21 +465,24 @@ async function createWorker() {
                 return;
             }
             open(data.name);
-            assetWorker.send('asset-worker:startup-database', legealDbConfig({
-                name: data.name,
-                target: data.path,
-            }));
+            assetWorker.send(
+                'asset-worker:startup-database',
+                legealDbConfig({
+                    name: data.name,
+                    target: data.path,
+                })
+            );
         });
     });
 
     // 如果 worker 检测到正在刷新
     assetWorker.on('refresh', () => {
-        Editor.Ipc.sendToAll('asset-db:close');
+        setReady(false);
     });
 
     // 如果 worker 检测到关闭
     assetWorker.on('closed', () => {
-        Editor.Ipc.sendToAll('asset-db:close');
+        setReady(false);
     });
 
     // 更新主进程标记以及广播消息
