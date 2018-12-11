@@ -22,6 +22,7 @@
         "@babel/plugin-proposal-class-properties": "^7.1.0",
         "@babel/plugin-proposal-decorators": "^7.1.6",
         "@babel/preset-env": "^7.1.6",
+        "@babel/preset-typescript": "^7.1.0",
         "@base/electron-base-ipc": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-base-ipc.tgz",
         "@base/electron-i18n": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-i18n.tgz",
         "@base/electron-logger": "http://192.168.52.109/TestBuilds/Editor-3d/resources/master/@base/electron-logger.tgz",

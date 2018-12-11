@@ -1,14 +1,14 @@
-const Fs             = require('fs-extra');
-const Path           = require('path');
-const Mdeps          = require('module-deps');
-const JSONStream     = require('JSONStream');
-const Concat         = require('concat-stream');
+const Fs = require('fs-extra');
+const Path = require('path');
+const Mdeps = require('module-deps');
+const JSONStream = require('JSONStream');
+const Concat = require('concat-stream');
 const BrowserResolve = require('browser-resolve');
-const Async          = require('async');
-const Del            = require('del');
-const xtend          = require('xtend');
-const builtins       = require('browserify/lib/builtins.js');
-const Lodash         = require('lodash');
+const Async = require('async');
+const Del = require('del');
+const xtend = require('xtend');
+const builtins = require('browserify/lib/builtins.js');
+const Lodash = require('lodash');
 
 // const babelPlugin    = require('./plugins/babel');
 // const modulePlugin   = require('./plugins/module');
@@ -75,7 +75,7 @@ Object.assign(Compiler.prototype, {
 
         let watcher = Chokidar.watch(pattern, {
             ignored: Path.join(this.out, '**'),
-            ignoreInitial: true
+            ignoreInitial: true,
         });
 
         watcher.on('all', (event, path) => {
@@ -131,7 +131,7 @@ Object.assign(Compiler.prototype, {
 
         if (opts.clear) {
             try {
-                Del.sync(out, {force: true});
+                Del.sync(out, { force: true });
             } catch (err) {
                 Editor.error(err);
             }
@@ -259,12 +259,12 @@ Object.assign(Compiler.prototype, {
             let tempPath = this.getDstPath(path);
 
             if (Fs.existsSync(tempPath)) {
-                Del.sync(tempPath, {force: true});
+                Del.sync(tempPath, { force: true });
             }
 
             let tempInfoPath = tempPath + '.info.json';
             if (Fs.existsSync(tempInfoPath)) {
-                Del.sync(tempInfoPath, {force: true});
+                Del.sync(tempInfoPath, { force: true });
             }
 
             return tempPath;
@@ -298,7 +298,7 @@ Object.assign(Compiler.prototype, {
 
         let script = {
             src: path,
-            dst: this.getDstPath(path)
+            dst: this.getDstPath(path),
         };
 
         let stats = Fs.statSync(path);
@@ -403,13 +403,18 @@ Object.assign(Compiler.prototype, {
         });
 
         let mopts = {
-            extensions: [ '.js', '.json' ],
+            extensions: ['.js', '.json'],
 
             // ignore missing module, or it will break analyse process。
-            ignoreMissing: true
+            ignoreMissing: true,
         };
 
         mopts.resolve = (id, parent, cb) => {
+            // 如果目录下有 ${id}.ts 则直接使用 ts 文件
+            const dirname = Path.dirname(parent.filename);
+            if (Fs.existsSync(Path.join(dirname, id) + '.ts')) {
+                id = id + '.ts';
+            }
             parent.paths = require.main.paths.concat(parent.paths);
             BrowserResolve(id, parent, (err, path) => {
                 if (!err && (deep || !this._isFileInCache(path))) {
@@ -429,7 +434,7 @@ Object.assign(Compiler.prototype, {
             fallback,   // async fallback handler to be called if the cache doesn't hold the given file
             cb) => {
 
-            process.nextTick(function() {
+            process.nextTick(function () {
                 if (!deep && file !== path) {
                     fallback('module.exports = {};', cb);
                 } else {
@@ -442,7 +447,7 @@ Object.assign(Compiler.prototype, {
             let insertGlobals = require('insert-module-globals');
             mopts.globalTransform = (file) => {
                 return insertGlobals(file, {
-                    vars: this.globals
+                    vars: this.globals,
                 });
             };
         }

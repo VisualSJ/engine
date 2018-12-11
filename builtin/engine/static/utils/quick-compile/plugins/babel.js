@@ -15,22 +15,22 @@ module.exports = function() {
                 sourceFileName: `enginesource:///${script.src}`,
                 compact: false,
                 filename: script.src, // search path for babelrc
-                presets: ['@babel/preset-env'],
+                presets: ['@babel/preset-env', '@babel/preset-typescript'],
                 plugins: [
                     // make sure that transform-decorators-legacy comes before transform-class-properties.
                     [
                         '@babel/plugin-proposal-decorators',
-                        { legacy: true }
+                        { legacy: true },
                     ],
                     [
                         '@babel/plugin-proposal-class-properties',
-                        { loose: true }
+                        { loose: true },
                     ],
-                    'add-module-exports'
-                ]
+                    'add-module-exports',
+                ],
             });
 
             script.source = result.code;
-        }
+        },
     };
 };
