@@ -1,4 +1,4 @@
-import { Asset, Importer, VirtualAsset } from 'asset-db';
+import { Asset, Importer, VirtualAsset, queryUuidFromUrl } from 'asset-db';
 import * as fs from 'fs';
 import { readJson } from 'fs-extra';
 import parseDataUrl from 'parse-data-url';
@@ -28,7 +28,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.3';
+        return '1.0.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -441,8 +441,8 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         // @ts-ignore
         const material = gltfConverter.createMaterial(
             gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable, (effectName) => {
-                // return loadAssetSync(this.assetDB!.query(effectName));
-                return loadAssetSync('0504e5ab-d2a3-4c79-bba0-2aed51da577e');
+                const uuid = queryUuidFromUrl(effectName);
+                return loadAssetSync(uuid);
             });
 
         // @ts-ignore
@@ -890,7 +890,7 @@ class GltfConverter {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material._effectAsset = effectGetter('internal://builtin-effect-phong');
+        material._effectAsset = effectGetter('internal://builtin-effect-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
