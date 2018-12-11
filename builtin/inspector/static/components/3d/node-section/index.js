@@ -5,7 +5,7 @@ const { readTemplate, readComponent, T, build3DProp } = require('../../../utils'
 
 exports.template = readTemplate('3d', './node-section/index.html');
 
-exports.props = ['uuid' ];
+exports.props = ['uuid'];
 
 exports.components = {
     'node-props': readComponent(__dirname, './node-props'),
@@ -197,6 +197,26 @@ exports.methods = {
                             params: {
                                 uuid,
                                 component: 'cc.SkyboxComponent',
+                            },
+                        },
+                        {
+                            label: 'Sphere Collider Component',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: {
+                                uuid,
+                                component: 'cc.SphereColliderComponent',
+                            },
+                        },
+                        {
+                            label: 'Box Collider Component',
+                            click() {
+                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
+                            },
+                            params: {
+                                uuid,
+                                component: 'cc.BoxColliderComponent',
                             },
                         },
                     ],
