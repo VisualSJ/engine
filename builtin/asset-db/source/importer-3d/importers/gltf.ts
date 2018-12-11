@@ -440,7 +440,10 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
         // @ts-ignore
         const material = gltfConverter.createMaterial(
-            gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable);
+            gltfConverter.gltf.materials![asset.userData.gltfIndex as number], textureTable, (effectName) => {
+                // return loadAssetSync(this.assetDB!.query(effectName));
+                return loadAssetSync('0504e5ab-d2a3-4c79-bba0-2aed51da577e');
+            });
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(material));
@@ -878,11 +881,16 @@ class GltfConverter {
     }
 
     // @ts-ignore
-    public createMaterial(gltfMaterial: Material, textures: cc.Texture[]) {
+    public createMaterial(
+        gltfMaterial: Material,
+        // @ts-ignore
+        textures: cc.Texture[],
+        // @ts-ignore
+        effectGetter: (name: string) => cc.EffectAsset) {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material.effectName = 'builtin-effect-phong';
+        material._effectAsset = effectGetter('internal://builtin-effect-phong');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
