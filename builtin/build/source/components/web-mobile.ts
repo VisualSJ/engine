@@ -1,5 +1,6 @@
 'use strict';
 
+import { shell } from 'electron';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 const {getPreviewUrl} = require('./../utils');
@@ -30,7 +31,7 @@ export const methods = {
     // 预览该路径地址
     preview() {
         // @ts-ignore
-        Editor.Ipc.sendToPackage('preview', 'open-terminal', join(this.preview_url, this.info.platform, 'index.html'));
+        shell.openExternal(this.preview_url);
     },
 };
 export const props: object = [

@@ -402,6 +402,11 @@ function getDestPathNoExt(dest, uuid) {
     return join(dest, 'import', uuid.slice(0, 2), uuid);
 }
 
+/**
+ * 转发worker 内与其他插件的 ipc 消息
+ * @param {*} args 通讯参数
+ * @returns
+ */
 function requestToPackage(...args) {
     return new Promise((resolve, reject) => {
         Worker.Ipc.send('build-worker:request-package', ...args).callback((err, data) => {

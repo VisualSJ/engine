@@ -13,11 +13,23 @@ let app: any = null;
 let server: any = null;
 let port = 7456;
 let enginPath: string = '';
+
+let _buildMiddleware: any;
 /**
  * 获取当前的端口
  */
 export function getPort() {
     return port;
+}
+
+/**
+ * 设置构建的静态资源路径
+ * @export
+ * @param {string} path
+ */
+export function setPreviewBuildPath(path: string) {
+    const express = require('express');
+    _buildMiddleware = express.static(path);
 }
 
 /**
@@ -124,6 +136,18 @@ export async function start() {
     app.get('/node_modules/*', async (req: any, res: any) => {
         const path = join(Editor.App.path, '/node_modules', req.params[0]); // 获取文件名路径
         res.sendFile(path);
+    });
+
+    // ============================
+    // Preview Build
+    // ============================
+
+    app.use('/build', (req: any, res: any, next: any) => {
+        if (_buildMiddleware) {
+            _buildMiddleware(req, res, next);
+        } else {
+            res.send('Please build your game project first!');
+        }
     });
 
     server = http.createServer(app);

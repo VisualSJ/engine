@@ -1,5 +1,5 @@
 const { getCustomConfig, queryAssets, getScriptsCache ,
-     getCurrentScene, updateProgress} = require('./utils');
+     getCurrentScene, updateProgress, requestToPackage} = require('./utils');
 const {join, basename} = require('path');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync} = require('fs-extra');
 const {readFileSync, existsSync, copyFile} = require('fs');
@@ -9,7 +9,7 @@ const platfomConfig = require('./platforms-config');
 const WINDOW_HEADER = 'window._CCSettings';
 const assetBuilder = require('./build-asset');
 const scriptBuilder = require('./build-script');
-const STATIC_RESOURCE = [
+const STATIC_RESOURCE = [ // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
     'style-mobile.css',
@@ -70,12 +70,13 @@ class Builder {
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
             this._resolveStatic(), // 其他静态资源拷贝 5%
             this._buildEngine(), // 构建切割引擎 15%
-            this._compressSetting(settings), // 压缩 settings 脚本并保存在相应位置 5%
             assetBuilder.build(settings.rawAssets, settings.scenes), // 资源拷贝资源 30%
             scriptBuilder.build(settings.scripts), // 打包构建脚本 15%
+            this._compressSetting(settings), // 压缩 settings 脚本并保存在相应位置 5%
         ]).then(() => {
             let endTime = new Date().getTime();
             updateProgress(`build sucess in ${endTime - startTime} ms`);
+            requestToPackage('preview', 'set-build-path', this._paths.dest);
         });
     }
 
@@ -229,6 +230,13 @@ class Builder {
         });
     }
 
+    /**
+     *  执行 gulp 任务，编译 cocos js
+     * @param {*} excludes
+     * @param {*} dest
+     * @returns
+     * @memberof Builder
+     */
     _buildCocosJs(excludes, dest) {
         return new Promise((resolve) => {
             let {engine} = this._paths;
@@ -261,7 +269,7 @@ class Builder {
         });
     }
 
-    // 构建需要的各种路径集合
+    // 构建缓存需要的各种路径集合
     _buildPaths(dest, debug, config) {
         let paths = {
             dest,
@@ -289,7 +297,7 @@ class Builder {
         return paths;
     }
 
-    // 压缩 settings
+    // 压缩 settings 脚本并保存
     _compressSetting(settings) {
         updateProgress('compress setting.js...');
         if (this._options.debug) {
@@ -450,7 +458,7 @@ class Builder {
     }
 
     /**
-     * 获取 setting 的脚本信息
+     * 构建 setting 的脚本信息
      * @param {*} options 脚本配置信息(除 type 之外的可以直接放置进 setting 的部分)
      * @param {*} config 其他平台配置 (需要处理后方能加进 setting 的部分)
      * @returns JSON
@@ -492,6 +500,7 @@ class Builder {
         }
         setting.rawAssets.assets = assetObj.assets;
         setting.rawAssets.internal = assetObj.internal;
+        buildResult.settings = setting;
         if (options.type === 'build-release') {
             return setting;
         }

@@ -1,7 +1,7 @@
 'use strict';
 
-import { BrowserWindow , shell } from 'electron';
-import { getPort, start, stop } from './express';
+import { shell } from 'electron';
+import { getPort, setPreviewBuildPath, start , stop } from './express';
 import { emitReload } from './socket';
 const ipc = require('@base/electron-base-ipc');
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
@@ -29,16 +29,20 @@ export const messages = {
         }
     },
 
+    /**
+     * 设置构建的静态资源路径
+     * @param {string} path 路径
+     */
+    'set-build-path'(path: string) {
+        setPreviewBuildPath(path);
+    },
+
     //////////////////////////
 
     /**
      * 根据 previewPlatform 类型打开对应终端预览界面
      */
-    'open-terminal'(url: string) {
-        if (url) {
-            shell.openExternal(url);
-            return;
-        }
+    'open-terminal'() {
         if (previewPlatform === 'browser') {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {

@@ -20,6 +20,7 @@ module.exports = {
     open_compile_file: 'Open compile log file',
     source_map: 'Source Maps',
     debug_mode: 'Open Assets DevTools',
+    eruda: 'eruda',
     error: {
         build_error: 'Build Error',
         dirty_info: 'not saved. Please build project after saveing project.',

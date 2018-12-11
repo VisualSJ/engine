@@ -1,8 +1,7 @@
+<%if(isQQPlay) {%>
 // QQPlay window need to be inited first
-if (<%=isQQPlay %>; ) {
-    BK.Script.loadlib('GameRes://libs/qqplay-adapter.js');
-}
-
+BK.Script.loadlib('GameRes://libs/qqplay-adapter.js');
+<% } %>
 window.boot = function () {
     var settings = window._CCSettings;
     window._CCSettings = undefined;
@@ -71,7 +70,7 @@ window.boot = function () {
         cc.view.enableRetina(true);
         cc.view.resizeWithBrowserSize(true);
 
-        if (!< %= isWeChatGame % > && !<%=isQQPlay %> ) {
+        if (!<%=isWeChatGame%> && !<%=isQQPlay %> ) {
             if (cc.sys.isBrowser) {
                 setLoadingDisplay();
             }
@@ -129,11 +128,11 @@ window.boot = function () {
 
     // jsList
     var jsList = settings.jsList;
-
-    if ( < {%=isQQPlay%> }) {
-        BK.Script.loadlib(<%=projectCode%>);
-    } else {
-        var bundledScript = settings.debug ? 'src/project.dev.js' : 'src/project.js';
+	<%if(isQQPlay) {%>
+		BK.Script.loadlib(<%=projectCode%>);
+	<% } %>
+	<%if(!isQQPlay){%>
+		var bundledScript = settings.debug ? 'src/project.dev.js' : 'src/project.js';
         if (jsList) {
             jsList = jsList.map(function (x) {
                 return 'src/' + x;
@@ -142,8 +141,10 @@ window.boot = function () {
         } else {
             jsList = [bundledScript];
         }
-    }
+	<% } %>
+	<%if(includeAnySDK) {%>
     <Inject anysdk scripts>
+	<% } %>
     var option = {
         id: 'GameCanvas',
         scenes: settings.scenes,
@@ -158,26 +159,26 @@ window.boot = function () {
     cc.game.run(option, onStart);
 };
 <%if(isQQPlay) {%>
-  BK.Script.loadlib('GameRes://src/settings.js');
-    BK.Script.loadlib(<%=engineCode%>);
-    BK.Script.loadlib('GameRes://libs/qqplay-downloader.js');
+BK.Script.loadlib('GameRes://src/settings.js');
+BK.Script.loadlib(<%=engineCode%>);
+BK.Script.loadlib('GameRes://libs/qqplay-downloader.js');
 
-    var ORIENTATIONS = {
-        'portrait': 1,
-        'landscape left': 2,
-        'landscape right': 3
-    };
-    BK.Director.screenMode = ORIENTATIONS[window._CCSettings.orientation];
-    initAdapter();
-    cc.game.once(cc.game.EVENT_ENGINE_INITED, function () {
-        initRendererAdapter();
-    });
+var ORIENTATIONS = {
+	'portrait': 1,
+	'landscape left': 2,
+	'landscape right': 3
+};
+BK.Director.screenMode = ORIENTATIONS[window._CCSettings.orientation];
+initAdapter();
+cc.game.once(cc.game.EVENT_ENGINE_INITED, function () {
+	initRendererAdapter();
+});
 
-    qqPlayDownloader.REMOTE_SERVER_ROOT = "";
-    var prevPipe = cc.loader.md5Pipe || cc.loader.assetLoader;
-    cc.loader.insertPipeAfter(prevPipe, qqPlayDownloader);
-    <Inject plugin code>
-    window.boot();
+qqPlayDownloader.REMOTE_SERVER_ROOT = "";
+var prevPipe = cc.loader.md5Pipe || cc.loader.assetLoader;
+cc.loader.insertPipeAfter(prevPipe, qqPlayDownloader);
+<Inject plugin code>
+window.boot();
 <% } %>
 if (window.jsb) {
     require('src/settings.js');

@@ -1,5 +1,4 @@
 <div>
-    <div class="line"><ui-prop :label="t('merge_start_scene')" type="boolean"></ui-prop></div>
     <div class="line">
         <ui-prop :label="t('orientation')">
             <div slot="content">
@@ -10,9 +9,9 @@
             </div>
         </ui-prop>
     </div>
-    <div class="line">
+    <div class="line preview-url">
         <ui-prop :label="t('preview_url')">
-            <div slot="content"><a :href="preview_url" @click="preview">{{preview_url}}</a></div>
+            <div slot="content"><span @click="preview">{{preview_url}}</span></div>
         </ui-prop>
     </div>
     <div class="line"><ui-prop :label="t('eruda')" type="boolean"></ui-prop></div>
