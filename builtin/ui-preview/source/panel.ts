@@ -16,7 +16,7 @@ export const style = readFileSync(join(__dirname, '../dist/index.css'));
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
 
 export const $ = {
-    'ui-preview': '.ui-preview'
+    'ui-preview': '.ui-preview',
 };
 
 export const methods = {};
@@ -30,8 +30,8 @@ export async function ready() {
         el: panel.$['ui-preview'],
         data: {
             uiCollectors: ['dialog', 'button', 'input', 'num-input', 'checkbox', 'slider',
-             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop', 'textarea'],
-            chooseIndex: 'textarea'
+             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop', 'textarea', 'progress'],
+            chooseIndex: 'progress',
         },
         beforeCreate() {
 
@@ -59,6 +59,7 @@ export async function ready() {
             'test-drag': require('./components/ui-drag'),
             'test-prop': require('./components/ui-prop'),
             'test-textarea': require('./components/ui-textarea'),
+            'test-progress': require('./components/ui-progress'),
 
             'test-dialog': require('./components/ui-dialog'),
         },

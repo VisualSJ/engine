@@ -37,10 +37,10 @@
 
 <script type="text/javascript">
 (function () {
+  <% if (webDebugger) { %>
     // open web debugger console
-    if (typeof eruda !== 'undefined') {
-       eruda.init();
-    }
+    eruda.init();
+  <% } %>
 
     var splash = document.getElementById('splash');
     splash.style.display = 'block';

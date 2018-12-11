@@ -1,0 +1,30 @@
+<main>
+    <section>
+        <h1>Standard</h1>
+        <div class="line">
+            <ui-progress :value="testValue1"></ui-progress>
+            <ui-button class="red" @click="ctlValue('testValue1','add')">+</ui-button>
+            <ui-button class="green"  @click="ctlValue('testValue1')">-</ui-button>
+        </div>
+        <div class="line">
+            <ui-progress class="label" :value="testValue2"></ui-progress>
+            <ui-button class="red"  @click="ctlValue('testValue2','add')">+</ui-button>
+            <ui-button class="green"  @click="ctlValue('testValue2')">-</ui-button>
+        </div>
+    </section>
+    <section class="section size">
+        <h1>Size</h1>
+        <div class="size-12">
+            <span>12px: </span>
+            <ui-progress class="label" value="20"></ui-progress>
+        </div>
+        <div class="size-16">
+            <span>16px: </span>
+            <ui-progress class="label" value="40"></ui-progress>
+        </div>
+        <div class="size-20">
+            <span>20px: </span>
+            <ui-progress class="label" value="60"></ui-progress>
+        </div>
+    </section>
+</main>

@@ -1,0 +1,53 @@
+<style>
+    section.progress {
+        border-bottom: 1px solid #333;
+        padding: 10px;
+    }
+
+    section.progress:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<section class="progress">
+    <ui-progress value="50"></ui-progress>
+    <ui-progress value="50" class="label"></ui-progress>
+</section>
+
+<section class="progress size">
+    <h1>Size</h1>
+    <style>
+        .size div {
+            margin-bottom: 10px;
+        }
+
+        .size div span {
+            display: inline-block;
+            width: 60px;
+        }
+
+        .size-12 {
+            font-size: 12px;
+        }
+
+        .size-16 {
+            font-size: 16px;
+        }
+
+        .size-20 {
+            font-size: 20px;
+        }
+    </style>
+    <div class="size-12">
+        <span>12px: </span>
+        <ui-progress value="20"></ui-progress>
+    </div>
+    <div class="size-16">
+        <span>16px: </span>
+        <ui-progress value="40"></ui-progress>
+    </div>
+    <div class="size-20">
+        <span>20px: </span>
+        <ui-progress value="60"></ui-progress>
+    </div>
+</section>
