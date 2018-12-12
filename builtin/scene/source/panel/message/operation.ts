@@ -1,8 +1,6 @@
 'use strict';
 
 import { outputFile } from 'fs-extra';
-import { basename } from 'path';
-const ipc = require('@base/electron-base-ipc');
 
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
@@ -42,7 +40,6 @@ export function apply(messages: any) {
         await $scene.forwarding('Scene', 'open', [uuid]);
         profile.set('current-scene', uuid);
         profile.save();
-        await changeTitle(uuid);
     };
 
     /**
@@ -248,23 +245,4 @@ export function apply(messages: any) {
         }
         await $scene.forwarding('Scene', 'softReload');
     };
-}
-
-/**
- * 通知 window 窗口并更改对应的 title 数据
- * @param {string} uuid
- */
-async function changeTitle(uuid: string) {
-    let title = `Editor 3D - ${basename(Editor.App.project)} - `;
-    if (uuid) {
-        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-        if (asset && asset.source) {
-            title += asset.source;
-        } else {
-            title += 'Untitled';
-        }
-    } else {
-        title += 'Untitled';
-    }
-    ipc.send('editor3d-lib-windows:change-title', title);
 }

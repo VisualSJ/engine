@@ -1,6 +1,9 @@
 'use strict';
 
+const ipc = require('@base/electron-base-ipc');
 const panelMessage = require('../panel/message').apply();
+
+import { basename } from 'path';
 
 export const messages = {
     /**
@@ -8,6 +11,26 @@ export const messages = {
      */
     open() {
         Editor.Panel.open('scene');
+    },
+
+    async 'scene:ready'(uuid: string) {
+        let title = `Editor 3D - ${basename(Editor.App.project)} - `;
+        if (uuid) {
+            const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+            if (asset && asset.source) {
+                title += asset.source;
+            } else {
+                title += 'Untitled';
+            }
+        } else {
+            title += 'Untitled';
+        }
+        ipc.broadcast('notice:editor-title-change', title);
+    },
+
+    'scene:close'() {
+        const title = `Editor 3D - ${basename(Editor.App.project)}`;
+        ipc.broadcast('notice:editor-title-change', title);
     },
 };
 

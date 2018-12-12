@@ -73,7 +73,7 @@ class SceneManager extends EventEmitter {
 
         if (currentSceneData) {
             // 发送节点修改消息
-            Manager.Ipc.send('broadcast', 'scene:ready');
+            Manager.Ipc.send('broadcast', 'scene:ready', currentSceneUuid);
             Manager.Ipc.send('set-scene', uuid);
         }
     }
@@ -129,7 +129,7 @@ class SceneManager extends EventEmitter {
 
         if (currentSceneData) {
             // 发送节点修改消息
-            Manager.Ipc.send('broadcast', 'scene:ready');
+            Manager.Ipc.send('broadcast', 'scene:ready', currentSceneUuid);
         }
     }
 

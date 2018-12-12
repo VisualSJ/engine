@@ -2,14 +2,16 @@
 
 const { EventEmitter } = require('events');
 const { ipcRenderer } = require('electron');
-const { serializeError, deserializeError } = require('./utils');
+const { serializeError, deserializeError, Storage } = require('./utils');
 
 class WebviewIpc extends EventEmitter {
     constructor() {
         super();
 
+        this._storage = new Storage();
+
         // 发送到 webview 的消息的队列
-        this.sendQueue = [];
+        this._sendQueue = [];
 
         this.isLock = false;
     }
@@ -29,11 +31,12 @@ class WebviewIpc extends EventEmitter {
                 resolve(data);
             };
 
-            this.sendQueue.push({
+            const id = this._storage.add({
                 message,
                 arguments: args,
                 callback,
             });
+            this._sendQueue.push(id);
 
             this.step();
         });
@@ -45,8 +48,27 @@ class WebviewIpc extends EventEmitter {
      * @param  {...any} args
      */
     forceSend(message, ...args) {
-        const item = { message, arguments: args };
-        ipcRenderer.sendToHost('webview-ipc:force-send', item);
+        return new Promise((resolve, reject) => {
+            const callback = function(error, data) {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(data);
+            };
+
+            const id = this._storage.add({
+                callback,
+            });
+
+            this.$webview.send('webview-ipc:force-send', id.message, args);
+        });
+    }
+
+    /**
+     * 清空之前队列内的数据
+     */
+    clear() {
+        this.sendQueue.length = 0;
     }
 
     /**
@@ -54,12 +76,17 @@ class WebviewIpc extends EventEmitter {
      * 如果没有准备就绪，会等到准备就绪后执行
      */
     step() {
-        const item = this.sendQueue[0];
-        if (this.isLock || !item) {
+        if (this.isLock) {
             return;
         }
+        const id = this._sendQueue.shift();
+        if (id === undefined) {
+            return;
+        }
+
         this.isLock = true;
-        ipcRenderer.sendToHost('webview-ipc:send', item);
+        const data = this._storage.get(id);
+        ipcRenderer.sendToHost('webview-ipc:send', id, data.message, data.arguments);
     }
 
     /**
@@ -73,46 +100,46 @@ class WebviewIpc extends EventEmitter {
 const ipc = (module.exports = new WebviewIpc());
 
 // host 发送过来的消息
-ipcRenderer.on('webview-ipc:send', async (event, options) => {
-    let handler = ipc._events[options.message];
+ipcRenderer.on('webview-ipc:send', async (event, id, message, params) => {
+    const handler = ipc._events[message];
 
     let data;
     try {
-        data = handler(...options.arguments);
+        data = handler(...params);
     } catch (error) {
         console.error(error);
-        ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
+        ipcRenderer.sendToHost('webview-ipc:send-reply', id, serializeError(error));
         return;
     }
 
     if (data instanceof Promise) {
         data.then((data) => {
-            ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
+            ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
         }).catch((error) => {
-            ipcRenderer.sendToHost('webview-ipc:send-reply', serializeError(error));
+            ipcRenderer.sendToHost('webview-ipc:send-reply', id, serializeError(error));
         });
         return;
     }
-    ipcRenderer.sendToHost('webview-ipc:send-reply', null, data);
+    ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
 });
 
 // 当前页面发给 host 的返回消息
-ipcRenderer.on('webview-ipc:send-reply', (event, error, args) => {
-    const item = ipc.sendQueue.shift();
-    item.callback(deserializeError(error), args);
+ipcRenderer.on('webview-ipc:send-reply', (event, id, error, args) => {
+    const item = ipc._storage.get(id);
+    item && item.callback && item.callback(deserializeError(error), args);
     ipc.isLock = false;
     ipc.step();
 });
 
 // host 发送过来的消息
-ipcRenderer.on('webview-ipc:force-send', async (event, options) => {
-    let handler = ipc._events[options.message];
+ipcRenderer.on('webview-ipc:force-send', async (event, id, message, params) => {
+    let handler = ipc._events[message];
 
     try {
-        const data = await handler(...options.arguments);
-        ipcRenderer.sendToHost('webview-ipc:force-send-reply', options.id, null, data);
+        const data = await handler(...params);
+        ipcRenderer.sendToHost('webview-ipc:force-send-reply', id, null, data);
     } catch (error) {
-        ipcRenderer.sendToHost('webview-ipc:force-send-reply', options.id, serializeError(error), null);
+        ipcRenderer.sendToHost('webview-ipc:force-send-reply', id, serializeError(error), null);
         console.error(error);
         return;
     }
