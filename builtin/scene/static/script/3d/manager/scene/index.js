@@ -61,8 +61,14 @@ class SceneManager extends EventEmitter {
         } else {
             const scene = new cc.Scene();
             const canvas = new cc.Node('Canvas');
+            const light = new cc.Node('Light');
+            const camera = new cc.Node('Camera');
             canvas.parent = scene;
+            light.parent = scene;
+            camera.parent = scene;
             canvas.addComponent(cc.Canvas);
+            light.addComponent(cc.LightComponent);
+            camera.addComponent(cc.CameraComponent);
             await utils.loadSceneByNode(scene);
             currentSceneData = this.serialize();
             !this.ignore && this.emit('open', null, cc.director._scene);

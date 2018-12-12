@@ -1,1 +1,93 @@
-[{"__type__":"cc.SceneAsset","scene":{"__id__":1}},{"__type__":"cc.Scene","_children":[{"__id__":2}]},{"__type__":"cc.Node","_name":"Canvas","_parent":{"__id__":1},"_children":[],"_components":[{"__id__":3}]},{"__type__":"cc.Canvas","node":{"__id__":2},"_fitWidth":false,"_fitHeight":true,"_designResolution":{"__type__":"cc.Size","width":960,"height":640}}]
+[
+    { "__type__": "cc.SceneAsset", "scene": { "__id__": 1 } },
+    { "__type__": "cc.Scene", "_children": [{ "__id__": 2 }, { "__id__": 4 }, { "__id__": 6 }] },
+    {
+        "__type__": "cc.Node",
+        "_name": "Canvas",
+        "_parent": { "__id__": 1 },
+        "_children": [],
+        "_components": [{ "__id__": 3 }]
+    },
+    {
+        "__type__": "cc.Canvas",
+        "node": { "__id__": 2 },
+        "_fitWidth": false,
+        "_fitHeight": true,
+        "_designResolution": { "__type__": "cc.Size", "width": 960, "height": 640 }
+    },
+    {
+        "__type__": "cc.Node",
+        "_name": "Light",
+        "_parent": { "__id__": 1 },
+        "_children": [],
+        "_components": [{ "__id__": 5 }]
+    },
+    {
+        "__type__": "cc.LightComponent",
+        "_name": "",
+        "_objFlags": 0,
+        "node": {
+            "__id__": 4
+        },
+        "_enabled": true,
+        "_type": 0,
+        "_color": {
+          "__type__": "cc.Color",
+          "r": 255,
+          "g": 255,
+          "b": 255,
+          "a": 255
+        },
+        "_intensity": 1,
+        "_range": 1,
+        "_spotAngle": 60,
+        "_spotExp": 1,
+        "_shadowType": 0,
+        "_shadowResolution": 1024,
+        "_shadowDarkness": 0.5,
+        "_shadowMinDepth": 1,
+        "_shadowMaxDepth": 1000,
+        "_shadowDepthScale": 250,
+        "_shadowFrustumSize": 50,
+        "_shadowBias": 0.0005
+    },
+    {
+        "__type__": "cc.Node",
+        "_name": "Camera",
+        "_parent": { "__id__": 1 },
+        "_children": [],
+        "_components": [{ "__id__": 7 }]
+    },
+    {
+        "__type__": "cc.CameraComponent",
+        "_name": "",
+        "_objFlags": 0,
+        "node": {
+            "__id__": 6
+        },
+        "_projection": 1,
+        "_priority": 0,
+        "_fov": 45,
+        "_orthoHeight": 10,
+        "_near": 0.01,
+        "_far": 1000,
+        "_color": {
+            "__type__": "cc.Color",
+            "r": 255,
+            "g": 255,
+            "b": 255,
+            "a": 255
+        },
+        "_depth": 1,
+        "_stencil": 0,
+        "_clearFlags": 3,
+        "_rect": {
+            "__type__": "cc.Rect",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+        }
+    }
+
+]

@@ -50,6 +50,7 @@
     background: var(--image-bg);
     border: 1px solid var(--border-dark-c);
     border-radius: 4px;
+    line-height: 1.8em;
 }
 
 .info-btn .i-folder {
