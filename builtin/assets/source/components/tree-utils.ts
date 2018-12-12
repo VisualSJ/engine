@@ -251,25 +251,30 @@ exports.closestCanPasteAsset = (uuid: string) => {
 };
 
 /**
- * 外部修改资源后，检测需要闪烁下资源
+ * 外部修改资源后，检测需要闪烁一下的资源
  */
-exports.twinkleAssets = {
-    stop: false,
-    timer: '',
+exports.twinkle = {
+    watch: true,
+    start() {
+        this.watch = true;
+    },
+    stop() {
+        this.watch = false;
+    },
     sleep(time: number) {
         // 停止检测，遇到用户主动导入文件，复制文件夹等操作
-        this.stop = true;
+        this.watch = false;
 
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
-            this.stop = false;
+            this.watch = true;
         }, time || 2000);
 
         // 避免一些无效的记录一直存在
         db.vm.twinkles = [];
     },
     add(uuid: string) {
-        if (!this.stop) {
+        if (this.watch) {
             db.vm.twinkles.push(uuid);
 
             // 动画结束后删除

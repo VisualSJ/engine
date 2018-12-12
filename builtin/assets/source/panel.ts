@@ -129,7 +129,7 @@ export const messages = {
      * 刷新数据
      */
     async 'asset-db:ready'(name: string) {
-        // await panel.unstaging();
+        vm.ready = true;
         vm.refresh();
     },
 
@@ -139,8 +139,8 @@ export const messages = {
      * @param name 具体某一个 db 被关闭了
      */
     'asset-db:close'(name: string) {
-        // await panel.unstaging();
-        vm.refresh();
+        vm.ready = false;
+        vm.clear();
     },
     /**
      * asset db 广播通知添加了 asset
@@ -266,14 +266,12 @@ export async function ready() {
                 vm.clear();
 
                 await vm.$refs.tree.refresh(true);
-                vm.ready = true;
             },
             /**
              * 清空
              */
             clear() {
                 vm.$refs.tree.clear();
-                vm.ready = false;
             },
             /**
              * 全部节点是否展开
@@ -360,7 +358,10 @@ export async function ready() {
     await panel.unstaging();
 
     // db 就绪状态才需要查询数据
-    vm.refresh();
+    vm.ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    if (vm.ready) {
+        vm.refresh();
+    }
 }
 
 export async function beforeClose() { }

@@ -258,7 +258,6 @@ export const methods = {
             return;
         } else {
             event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
-            $tree.removeAttribute('hoving'); // 由于阻断需要手动删除
         }
 
         if (node.readOnly) { // 不可用节点，比如 uuid 不存在

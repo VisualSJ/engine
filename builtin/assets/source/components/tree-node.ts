@@ -244,7 +244,7 @@ export const methods = {
      */
     async drop(event: Event, asset: ItreeAsset) {
         event.preventDefault(); // 重要：阻止默认打开一些文件的行为
-        event.stopPropagation();
+
         // @ts-ignore
         const target: any = event.currentTarget;
         const insert = target.getAttribute('insert');
@@ -256,6 +256,8 @@ export const methods = {
         const $tree = this.$parent.$el;
         if (!$tree.hasAttribute('hoving')) {
             return;
+        } else {
+            event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
         }
 
         if (asset.readOnly) { // 不可用节点，比如 uuid 不存在

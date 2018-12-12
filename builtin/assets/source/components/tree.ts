@@ -41,6 +41,8 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: {}, // 拖动时高亮的目录区域 {top, left, height}
+        db,
+        utils,
     };
 }
 
@@ -283,7 +285,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        utils.twinkleAssets.add(uuid);
+        utils.twinkle.add(uuid);
         vm.refresh();
     },
 
@@ -328,7 +330,7 @@ export const methods = {
                 filedata = readFileSync(filepath, 'utf8');
             }
         }
-        utils.twinkleAssets.sleep();
+        utils.twinkle.sleep();
         vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
 
         parent.state = '';
@@ -517,7 +519,7 @@ export const methods = {
         asset.state = 'loading'; // 显示 loading 效果
 
         // 暂停闪烁检测
-        utils.twinkleAssets.sleep();
+        utils.twinkle.sleep();
 
         // 重名命资源
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'rename-asset', asset.uuid, name);
@@ -680,7 +682,7 @@ export const methods = {
             do {
                 file = json.files[index];
                 index++;
-                utils.twinkleAssets.sleep();
+                utils.twinkle.sleep();
             } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, toAsset.source));
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
@@ -751,7 +753,7 @@ export const methods = {
             asset = utils.getAssetFromTree(copiedUuids[index]);
             index++;
             isLegal = !utils.canNotCopyAsset(asset);
-            utils.twinkleAssets.sleep();
+            utils.twinkle.sleep();
         } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 
@@ -793,7 +795,7 @@ export const methods = {
                 return;
             }
 
-            utils.twinkleAssets.sleep();
+            utils.twinkle.sleep();
 
             // @ts-ignore 移动资源
             Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
