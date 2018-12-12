@@ -268,6 +268,7 @@ async function queryAssets(scenes) {
     let internal = {};
     let plugins = [];
     let scripts = [];
+    let effects = [];
     script2uuid = {};
     for (let i = 0, len = assetList.length; i < len; i++) {
         let asset = assetList[i];
@@ -299,6 +300,9 @@ async function queryAssets(scenes) {
             sceneList.push({ url: asset.source, uuid: asset.uuid });
             continue;
         }
+        if (asset.importer === 'effect') {
+            effects.push(asset.uuid);
+        }
         // 并非构建场景依赖的资源并且路径不在 resource 下，不做打包
         if (scenes && dependUuid.indexOf(asset.uuid) === -1 && !asset.source.startsWith('db://assets/resources')) {
             continue;
@@ -327,7 +331,7 @@ async function queryAssets(scenes) {
         }
     }
 
-    return { assets, internal, plugins, scripts, sceneList };
+    return { assets, internal, plugins, scripts, sceneList , effects};
 }
 
 // 获取当前展示场景的数据信息

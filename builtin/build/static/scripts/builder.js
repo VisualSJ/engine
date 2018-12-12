@@ -494,6 +494,7 @@ class Builder {
             assetObj = await queryAssets();
             setting.scenes = assetObj.sceneList;
             setting.scripts = await getScriptsCache(assetObj.scripts);
+            setting.effects = assetObj.effects;
         } else {
             assetObj = await queryAssets(setting.scenes);
             setting.scripts = assetObj.scripts;
