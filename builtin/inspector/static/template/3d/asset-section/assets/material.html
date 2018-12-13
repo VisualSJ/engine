@@ -1,4 +1,4 @@
-<div @property-changed="onPropertyChanged">
+<div class="asset-wrapper" :class="{[meta.__assetType__]: true}" @property-changed="onPropertyChanged">
     <!-- 头部工具栏 -->
    <header
         class="asset-header"
@@ -26,7 +26,7 @@
         </ui-button>
     </header>
 
-    <div class="effect-content">
+    <div class="effect-content props">
 
         <div class="vue-comp-ui enum">
             <div class="name">
