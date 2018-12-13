@@ -1,24 +1,23 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "transparent",
-      "priority": -1000,
-      "lod": 100,
-      "passes": [
+      queue: transparent-1000
+      lod: 100
+      passes: [
         {
-          "vert": "grid-vs",
-          "frag": "grid-fs",
-          "stage": "default",
-          "cullMode": "none",
-          "depthTest": true,
-          "depthWrite": false,
-          "blend": true,
-          "blendEq": "add",
-          "blendSrc": "srcAlpha",
-          "blendDst": "oneMinusSrcAlpha",
-          "blendAlphaEq": "add",
-          "blendSrcAlpha": "one",
-          "blendDstAlpha": "oneMinusSrcAlpha"
+          vert: grid-vs
+          frag: grid-fs
+          stage: default
+          cullMode: none
+          depthTest: true
+          depthWrite: false
+          blend: true
+          blendEq: add
+          blendSrc: srcAlpha
+          blendDst: oneMinusSrcAlpha
+          blendAlphaEq: add
+          blendSrcAlpha: one
+          blendDstAlpha: oneMinusSrcAlpha
         }
       ]
     }

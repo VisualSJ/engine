@@ -20,7 +20,7 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
     cylinderNode.parent = axisNode;
     addMeshToNode(cylinderNode,
         //ControllerShape.Cylinder(bodyRadius, bodyRadius, bodyHeight, 10, 10));
-        ControllerShape.LineWithBoundingBox(bodyHeight), { alpha: 200 });
+        ControllerShape.LineWithBoundingBox(bodyHeight), { alpha: 200, noDepthTestForLines: true });
     setMeshColor(cylinderNode, color);
     cylinderNode.eulerAngles = cc.v3(0, 0, 90);
     let csc = cylinderNode.addComponent(ControllerShapeCollider);
@@ -67,7 +67,7 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     function createBorder(startPos, endPos, color) {
         let borderNode = create3DNode('border');
         addMeshToNode(borderNode,
-            ControllerShape.Line(startPos, endPos), { alpha: 200 });
+            ControllerShape.Line(startPos, endPos), { alpha: 200, noDepthTestForLines: true });
         setMeshColor(borderNode, color);
         borderNode.parent = borderPlane;
         return borderNode;

@@ -29,14 +29,8 @@ function registerEffect(uuid) {
                 console.error(err);
                 return reject(err);
             }
-            if (cc.EffectAsset && cc.EffectAsset.register) {
-                uuidSet.add(uuid);
-                cc.EffectAsset.register(asset);
-                ipc.send('broadcast', 'scene:effect-update', uuid);
-
-                return resolve();
-            }
-            console.warn(`cannot call method cc.EffectAsset.register`);
+            uuidSet.add(uuid);
+            ipc.send('broadcast', 'scene:effect-update', uuid);
             resolve();
         });
     });

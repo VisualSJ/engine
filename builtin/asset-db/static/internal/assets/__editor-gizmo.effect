@@ -1,55 +1,70 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "transparent",
-      "priority": 1000,
-      "lod": 100,
-      "passes": [
+      queue: transparent+1000
+      lod: 100
+      passes: [
         {
-          "vert": "gizmo-vs",
-          "frag": "gizmo-fs",
-          "stage": "default",
-          "cullMode": "none",
-          "depthTest": false,
-          "depthWrite": false,
-          "blend": true,
-          "blendEq": "add",
-          "blendSrc": "srcAlpha",
-          "blendDst": "oneMinusSrcAlpha",
-          "blendAlphaEq": "add",
-          "blendSrcAlpha": "one",
-          "blendDstAlpha": "oneMinusSrcAlpha"
-        }
-      ]
-    },
-    {
-      "queue": "transparent",
-      "priority": 1000,
-      "lod": 0,
-      "passes": [
-        {
-          "vert": "gizmo-vs",
-          "frag": "color-fs",
-          "stage": "default",
-          "cullMode": "none",
-          "depthTest": false,
-          "depthWrite": false,
-          "blend": true,
-          "blendEq": "add",
-          "blendSrc": "srcAlpha",
-          "blendDst": "oneMinusSrcAlpha",
-          "blendAlphaEq": "add",
-          "blendSrcAlpha": "one",
-          "blendDstAlpha": "oneMinusSrcAlpha"
+          vert: gizmo-vs
+          frag: gizmo-fs
+          stage: default
+          cullMode: none
+          depthTest: false
+          depthWrite: false
+          blend: true
+          blendSrc: srcAlpha
+          blendDst: oneMinusSrcAlpha
         }
       ]
     }
-  ],
+    {
+      queue: transparent+1000
+      lod: 50
+      passes: [
+        {
+          vert: line-vs
+          frag: front-fs
+          stage: default
+          cullMode: none
+          blend: true
+          blendSrc: srcAlpha
+          blendDst: oneMinusSrcAlpha
+        }
+      ]
+    }
+    {
+      queue: transparent+1000
+      lod: 0
+      passes: [
+        {
+          vert: line-vs
+          frag: front-fs
+          stage: default
+          cullMode: none
+          depthTest: true
+          blend: true
+          blendSrc: srcAlpha
+          blendDst: one
+        }
+        {
+          vert: line-vs
+          frag: back-fs
+          stage: default
+          cullMode: none
+          depthTest: true
+          depthFunc: greater
+          blend: true
+          blendSrc: srcAlpha
+          blendDst: one
+        }
+      ]
+    }
+  ]
 
-  "properties": {
-    "color": {
-      "type": "color4",
-      "value": [1, 1, 1, 1]
+  properties: {
+    color: {
+      type: color4
+      value: [1, 1, 1, 1]
     }
   }
 %}
@@ -117,10 +132,30 @@
   }
 }
 
-%% color-fs {
+%% line-vs {
+  attribute vec3 a_position;
+
+  uniform mat4 _model;
+  uniform mat4 _viewProj;
+
+  void main () {
+    gl_Position = _viewProj * _model * vec4(a_position, 1);
+    gl_Position.z -= 0.0001;
+  }
+}
+
+%% front-fs {
   #include <gamma-correction>
   uniform vec4 color;
   void main() {
     gl_FragColor = linearToGammaSpaceRGBA(color);
+  }
+}
+
+%% back-fs {
+  #include <gamma-correction>
+  uniform vec4 color;
+  void main() {
+    gl_FragColor = linearToGammaSpaceRGBA(vec4(color.rgb, color.a * 0.2));
   }
 }

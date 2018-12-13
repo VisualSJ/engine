@@ -1,36 +1,36 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "opaque",
-      "lod": 100,
-      "passes": [
+      queue: opaque
+      lod: 100
+      passes: [
         {
-          "vert": "matcap-vs",
-          "frag": "matcap-fs",
-          "stage": "default",
-          "depthTest": true,
-          "depthWrite": true
+          vert: matcap-vs
+          frag: matcap-fs
+          stage: default
+          depthTest: true
+          depthWrite: true
         }
       ]
     }
-  ],
+  ]
 
-  "properties": {
-    "mainTex": {
-      "type": "sampler2D",
-      "value": null
-    },
-    "matcapTex": {
-      "type": "sampler2D",
-      "value": null
-    },
-    "colorFactor": {
-      "type": "float",
-      "value": 0.5
-    },
-    "color": {
-      "type": "color4",
-      "value": [1, 1, 1, 1]
+  properties: {
+    mainTex: {
+      type: sampler2D
+      value: null
+    }
+    matcapTex: {
+      type: sampler2D
+      value: null
+    }
+    colorFactor: {
+      type: float
+      value: 0.5
+    }
+    color: {
+      type: color4
+      value: [1, 1, 1, 1]
     }
   }
 %}

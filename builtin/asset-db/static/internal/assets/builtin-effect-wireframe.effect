@@ -1,22 +1,22 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "opaque",
-      "lod": 100,
-      "passes": [
+      queue: opaque
+      lod: 100
+      passes: [
         {
-          "vert": "wire-vs",
-          "frag": "wire-fs",
-          "stage": "default",
-          "depthTest": true
+          vert: wire-vs
+          frag: wire-fs
+          stage: default
+          depthTest: true
         }
       ]
     }
-  ],
-  "properties": {
-    "color": {
-      "type": "color3",
-      "value": [1, 1, 1]
+  ]
+  properties: {
+    color: {
+      type: color3
+      value: [1, 1, 1]
     }
   }
 %}

@@ -365,9 +365,6 @@
         let json = await getCurrentScene();
         // init assets
         cc.AssetLibrary.init(AssetOptions);
-        await new Promise((resolve) => {
-            cc.BuiltinResMgr.initEffects(window._CCSettings.effects, resolve);
-        });
          // load stashed scene
         cc.AssetLibrary.loadJson(json,
             (err, sceneAsset) => {

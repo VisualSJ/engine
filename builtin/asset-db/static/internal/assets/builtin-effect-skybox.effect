@@ -1,24 +1,23 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "opaque",
-      "priority" : -1000,
-      "lod": 200,
-      "passes": [
+      queue: opaque-1000
+      lod: 200
+      passes: [
         {
-          "vert": "sky-vs",
-          "frag": "sky-fs",
-          "stage": "default",
-          "cullMode": "none"
+          vert: sky-vs
+          frag: sky-fs
+          stage: default
+          cullMode: none
         }
       ]
     }
-  ],
+  ]
 
-  "properties": {
-    "cubeMap": {
-      "type": "samplerCube",
-      "value": null
+  properties: {
+    cubeMap: {
+      type: samplerCube
+      value: null
     }
   }
 %}

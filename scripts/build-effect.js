@@ -50,8 +50,8 @@ for (let i = 0; i < files.length; ++i) {
   code += '  {\n';
   code += `    "name": "${effect.name}",\n`;
   code += `    "techniques": ${JSON.stringify(effect.techniques)},\n`;
-  code += `    "properties": ${JSON.stringify(effect.properties)},\n`;
+  code += `    "properties": ${JSON.stringify(effect.properties || {})},\n`;
   code += `    "shaders": ${indent(stringifyShaders(effect.shaders), 4)}\n`;
   code += '  },\n';
 }
-fs.writeFileSync('effects.json', `[\n${code.slice(0, -2)}\n]\n`, { encoding: 'utf8' });
+fs.writeFileSync('effects.js', `export default [\n${code.slice(0, -2)}\n];\n`, { encoding: 'utf8' });

@@ -42,7 +42,7 @@ class Engine3D extends EngineInterface {
         mtl.effectName = '__editor-gizmo';
         // for lines
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
-            mtl.effect.LOD = 0; // no lighting
+            mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
             node.modelColor.a = opts.alpha || 128; // blend in
         }
         mtl.setProperty('color', node.modelColor);

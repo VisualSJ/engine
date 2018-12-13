@@ -1,23 +1,23 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "opaque",
-      "passes": [
+      queue: opaque
+      passes: [
         {
-          "vert": "sp-vs",
-          "frag": "sp-fs",
-          "stage": "default",
-          "depthTest": true,
-          "depthWrite": true
+          vert: sp-vs
+          frag: sp-fs
+          stage: default
+          depthTest: true
+          depthWrite: true
         }
       ]
     }
-  ],
+  ]
 
-  "properties": {
-    "color": {
-      "type": "color4",
-      "value": [0.4, 0.4, 0.4, 1]
+  properties: {
+    color: {
+      type: color4
+      value: [0.4, 0.4, 0.4, 1]
     }
   }
 %}

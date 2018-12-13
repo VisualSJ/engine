@@ -3,6 +3,7 @@
 const tokenizer = require('glsl-tokenizer/string');
 const mappings = require('./offline-mappings');
 const { sha3_224 } = require('js-sha3');
+const HJSON = require('hjson');
 
 let includeRE = /#include +<([\w-.]+)>/gm;
 let defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
@@ -268,16 +269,17 @@ let buildShader = function(vertName, fragName, cache) {
 // effects
 // ==================
 
-let queueRE = /(\w+)(?:([+-])(\d+))?/;
+let queueRE = /(\w+)\s*(?:([+-])\s*(\d+))?/;
 let parseQueue = function (queue) {
+  let res = { queue: 0, priority: 0 };
   let m = queueRE.exec(queue);
-  if (m === null) return 0;
-  let q = mappings.RenderQueue[m[1].toUpperCase()];
+  if (m === null) return res;
+  res.queue = mappings.RenderQueue[m[1].toUpperCase()];
   if (m.length === 4) {
-    if (m[2] === '+') q += parseInt(m[3]);
-    if (m[2] === '-') q -= parseInt(m[3]);
+    if (m[2] === '+') res.priority = parseInt(m[3]);
+    if (m[2] === '-') res.priority = -parseInt(m[3]);
   }
-  return q;
+  return res;
 };
 
 function mapPassParam(p) {
@@ -296,10 +298,8 @@ function buildEffectJSON(json) {
   // map param's type offline.
   for (let j = 0; j < json.techniques.length; ++j) {
     let jsonTech = json.techniques[j];
-    jsonTech.queue = parseQueue(jsonTech.queue ? jsonTech.queue : 'opaque');
-    if (jsonTech.priority == null) {
-        jsonTech.priority = 0;
-    }
+    let { queue, priority } = parseQueue(jsonTech.queue ? jsonTech.queue : 'opaque');
+    jsonTech.queue = queue; jsonTech.priority = priority;
     for (let k = 0; k < jsonTech.passes.length; ++k) {
       let pass = jsonTech.passes[k];
       if (pass.stage == null) {
@@ -333,7 +333,7 @@ let parseEffect = (function() {
   };
   return function (content) {
     let effectCap = effectRE.exec(content);
-    let effect = JSON.parse(`{${effectCap[1]}}`), templates = {};
+    let effect = HJSON.parse(`{${effectCap[1]}}`), templates = {};
     content = content.substring(effectCap.index + effectCap[0].length);
     let blockCap = blockRE.exec(content);
     while (blockCap) {

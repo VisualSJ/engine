@@ -1,19 +1,18 @@
 %{
-  "techniques": [
+  techniques: [
     {
-      "queue": "opaque",
-      "lod": 100,
-      "passes": [
+      queue: opaque
+      lod: 100
+      passes: [
         {
-          "vert": "line-vs",
-          "frag": "line-fs",
-          "stage": "default",
-          "depthTest": true
+          vert: line-vs
+          frag: line-fs
+          stage: default
+          depthTest: true
         }
       ]
     }
-  ],
-  "properties": {}
+  ]
 %}
 
 %% line-vs {

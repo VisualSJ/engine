@@ -75,6 +75,7 @@
         "gulp-rev-all": "github:cocos-creator/gulp-rev-all",
         "gulp-sourcemaps": "^2.6.4",
         "highlight.js": "^9.12.0",
+        "hjson": "^3.1.2",
         "iclipboard": "^1.0.1",
         "iconv-lite": "^0.4.24",
         "insert-module-globals": "^7.2.0",
