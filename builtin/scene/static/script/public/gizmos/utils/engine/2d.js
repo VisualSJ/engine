@@ -64,7 +64,7 @@ class Engine2D extends EngineInterface {
                 }
             }
             return distance;
-        }, function(node) {
+        }, function (node) {
             let hasMesh = node.getComponent(cc.MeshRenderer);
             if (hasMesh == null || node.active === false) {
                 return false;
@@ -124,6 +124,30 @@ class Engine2D extends EngineInterface {
         }
 
         return rootBindPose;
+    }
+
+    getCameraData(component) {
+        let cameraData = null;
+
+        if (component instanceof cc.Camera) {
+            cameraData = {};
+            if (component.ortho) {
+                cameraData.projection = 0;
+            }
+            else {
+                cameraData.projection = 1;
+            }
+
+            cameraData.orthoHeight = component.orthoSize;
+            cameraData.fov = component.fov;
+            cameraData.aspect = cc.winSize.width / cc.winSize.height;
+            cameraData.near = component.nearClip;
+            cameraData.far = component.farClip;
+        } else {
+            console.error('target is not a cc.CameraComponent');
+        }
+
+        return cameraData;
     }
 }
 

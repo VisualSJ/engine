@@ -3,13 +3,14 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let FrustumController = require('../controller/frustum-controller');
 let Gizmo = require('../gizmo-base');
-const { create3DNode } = require('../../../utils/engine');
+const { getCameraData } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
 class CameraComponentGizmo extends Gizmo {
     init() {
         this.createController();
+        this._isInited = true;
     }
 
     onShow() {
@@ -38,21 +39,17 @@ class CameraComponentGizmo extends Gizmo {
             return;
         }
 
-        if (this.target instanceof cc.CameraComponent) {
-
+        let cameraData = getCameraData(this.target);
+        if (cameraData) {
             let node = this.node;
-            let camComp = this.target;
-            let aspect = cc.winSize.width / cc.winSize.height;
-            this._controller.updateSize(camComp.projection, camComp.orthoHeight,
-                camComp.fov, aspect, camComp.near, camComp.far);
+            this._controller.updateSize(cameraData.projection, cameraData.orthoHeight,
+                cameraData.fov, cameraData.aspect, cameraData.near, cameraData.far);
 
             let worldPos = NodeUtils.getWorldPosition3D(node);
             let worldRot = NodeUtils.getWorldRotation3D(node);
 
             this._controller.setPosition(worldPos);
             this._controller.setRotation(worldRot);
-        } else {
-            console.error('target is not a cc.CameraComponent');
         }
     }
 

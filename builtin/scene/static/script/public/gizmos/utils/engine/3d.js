@@ -40,7 +40,6 @@ class Engine3D extends EngineInterface {
         model.mesh = mesh;
         let mtl = new cc.Material();
         mtl.effectName = '__editor-gizmo';
-        // for lines
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
             mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
             node.modelColor.a = opts.alpha || 128; // blend in
@@ -48,7 +47,7 @@ class Engine3D extends EngineInterface {
         mtl.setProperty('color', node.modelColor);
         if (mtl.effect) {
             let pass = mtl.effect.getActiveTechnique().passes[0];
-            if (opts.cullMode !== undefined) pass.setCullMode(opts.cullMode);
+            if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
         }
         model.material = mtl;
     }
@@ -127,6 +126,24 @@ class Engine3D extends EngineInterface {
         }
 
         return rootBindPose;
+    }
+
+    getCameraData(component) {
+        let cameraData = null;
+
+        if (component instanceof cc.CameraComponent) {
+            cameraData = {};
+            cameraData.projection = component.projection;
+            cameraData.orthoHeight = component.orthoHeight;
+            cameraData.fov = component.fov;
+            cameraData.aspect = cc.winSize.width / cc.winSize.height;
+            cameraData.near = component.near;
+            cameraData.far = component.far;
+        } else {
+            console.error('target is not a cc.CameraComponent');
+        }
+
+        return cameraData;
     }
 }
 

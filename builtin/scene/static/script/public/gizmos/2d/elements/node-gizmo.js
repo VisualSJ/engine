@@ -1,17 +1,18 @@
 'use strict';
 
 const NodeUtils = Editor.require('scene://utils/node');
+const TransformToolData = require('../../utils/transform-tool-data');
 
 let _tempMatrix = cc.vmath.mat4.create();
 let _tempVec3 = cc.v3();
 let _tempQuat = cc.quat();
 
 class NodeGizmo extends Editor.Gizmo {
-    init () {
+    init() {
         this._currentName = this.target.name;
     }
 
-    onCreateRoot () {
+    onCreateRoot() {
         let root = this._root;
         root.bounds = root.polygon();
         root.compGroup = root.group();
@@ -29,25 +30,25 @@ class NodeGizmo extends Editor.Gizmo {
         });
 
         let labelBBox = label.bbox();
-        labelBG.width(labelBBox.width+10);
+        labelBG.width(labelBBox.width + 10);
         labelBG.height(labelBBox.height);
 
         root.labelBG = labelBG;
         root.label = label;
 
         let errorInfo = root.errorInfo = root.group();
-        errorInfo.l1 = errorInfo.line( 0, 0, 0, 0 ).stroke( { width: 1, color: '#f00' } );
-        errorInfo.l2 = errorInfo.line( 0, 0, 0, 0 ).stroke( { width: 1, color: '#f00' } );
+        errorInfo.l1 = errorInfo.line(0, 0, 0, 0).stroke({ width: 1, color: '#f00' });
+        errorInfo.l2 = errorInfo.line(0, 0, 0, 0).stroke({ width: 1, color: '#f00' });
     }
 
-    visible () {
+    visible() {
         // TODO: #1076
         let sizeNegative = false; //this.target.width < 0 || this.target.height < 0;
-        return this.selecting || this.editing || this.hovering || sizeNegative;
+        return TransformToolData.is2D && (this.selecting || this.editing || this.hovering || sizeNegative);
     }
 
-    onUpdate () {
-        let editing  = this.selecting || this.editing;
+    onUpdate() {
+        let editing = this.selecting || this.editing;
         let hovering = this.hovering;
 
         // TODO: #1076
@@ -80,7 +81,7 @@ class NodeGizmo extends Editor.Gizmo {
                 [v3.x, v3.y],
                 [v4.x, v4.y]
             ])
-            .fill('none');
+                .fill('none');
 
             // draw component local bounds
             let comps = node._components.filter(comp => {
@@ -116,13 +117,13 @@ class NodeGizmo extends Editor.Gizmo {
                 obb[3] = this.worldToPixel(obb[3]);
 
                 bounds.plot(obb)
-                .fill('none');
+                    .fill('none');
 
-                if ( editing ) {
-                    bounds.stroke({color: '#09f', width: 1});
+                if (editing) {
+                    bounds.stroke({ color: '#09f', width: 1 });
                 }
                 else if (hovering) {
-                    bounds.stroke({color: '#999', width: 1});
+                    bounds.stroke({ color: '#999', width: 1 });
                 }
             });
 
@@ -144,29 +145,29 @@ class NodeGizmo extends Editor.Gizmo {
                 )
                 .rotate(rotation, 0.0, 0.0)
                 ;
-            if ( this._currentName !== node.name ) {
+            if (this._currentName !== node.name) {
                 this._currentName = node.name;
                 this._root.label.text(this._currentName);
                 let labelBBox = this._root.label.bbox();
-                this._root.labelBG.width(labelBBox.width+10);
+                this._root.labelBG.width(labelBBox.width + 10);
                 this._root.labelBG.height(labelBBox.height);
             }
 
-            if ( editing ) {
-                this._root.bounds.stroke({color: '#09f', width: 1});
+            if (editing) {
+                this._root.bounds.stroke({ color: '#09f', width: 1 });
 
                 // this._root.label.fill('#fff');
                 // this._root.labelBG.fill('#09f');
                 // this._root.labelBG.stroke({color: '#09f', width: 1});
                 this._root.label.fill('none');
                 this._root.labelBG.fill('none');
-                this._root.labelBG.stroke({color: 'none', width: 1});
+                this._root.labelBG.stroke({ color: 'none', width: 1 });
             }
-            else if ( hovering ) {
-                this._root.bounds.stroke({color: '#999', width: 1});
+            else if (hovering) {
+                this._root.bounds.stroke({ color: '#999', width: 1 });
                 this._root.label.fill('#333');
                 this._root.labelBG.fill('#999');
-                this._root.labelBG.stroke({color: '#999', width: 1});
+                this._root.labelBG.stroke({ color: '#999', width: 1 });
             }
         }
         else {

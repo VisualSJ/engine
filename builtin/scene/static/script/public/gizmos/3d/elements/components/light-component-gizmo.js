@@ -15,6 +15,7 @@ class LightComponentGizmo extends Gizmo {
         this._curLightType = 0; // 0:direction, 1:point, 2:spot
         this._degreeToRadianFactor = Math.PI / 180;
         this.createController();
+        this._isInited = true;
     }
 
     onShow() {

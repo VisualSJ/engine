@@ -38,6 +38,9 @@ class EngineInterface {
 
     getRootBindPose(component) {
     }
+
+    getCameraData(component) {
+    }
 }
 
 module.exports = EngineInterface;
