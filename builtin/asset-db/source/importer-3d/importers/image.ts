@@ -9,7 +9,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.2';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -56,7 +56,7 @@ export default class ImageImporter extends Importer {
 
             let importType = asset.userData.type as (ImageImportType | undefined);
             if (importType === undefined) {
-                importType = 'raw';
+                importType = 'texture';
                 asset.userData.type = importType;
             }
 
@@ -65,12 +65,12 @@ export default class ImageImporter extends Importer {
                     break;
                 case 'texture':
                 case 'normal map':
-                    const texture2DSubAsset = await asset.createSubAsset('texture', 'texture');
+                    const texture2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
                     Object.assign(texture2DSubAsset.userData, makeDefaultTexture2DAssetUserData());
                     (texture2DSubAsset.userData as Texture2DAssetUserData).imageSource = asset.source;
                     break;
                 case 'texture cube':
-                    const textureCubeSubAsset = await asset.createSubAsset('texture cube', 'texture-cube');
+                    const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
                     Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
                     (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageSource = asset.source;
                     break;

@@ -25,7 +25,7 @@ export default class TextureCubeImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -120,7 +120,7 @@ export class TextureCubeFaceImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -174,6 +174,7 @@ export class TextureCubeFaceImporter extends Importer {
 
         // @ts-ignore
         const image = new cc.ImageAsset();
+        image._setRawAsset('.png');
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(image));
 
