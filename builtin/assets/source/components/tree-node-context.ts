@@ -143,7 +143,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
             {
                 label: Editor.I18n.t('assets.menu.revealInExplorer'),
                 enabled: !utils.canNotShowInExplorer(asset),
-                async click() {
+                click() {
                     shell.showItemInFolder(asset.file);
                 },
             },

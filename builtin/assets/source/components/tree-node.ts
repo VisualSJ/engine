@@ -242,7 +242,7 @@ export const methods = {
      * @param event
      * @param uuid
      */
-    async drop(event: Event, asset: ItreeAsset) {
+    drop(event: Event, asset: ItreeAsset) {
         event.preventDefault(); // 重要：阻止默认打开一些文件的行为
 
         // @ts-ignore
@@ -258,6 +258,7 @@ export const methods = {
             return;
         } else {
             event.stopPropagation(); // 由于在 tree 环节也监听的 drop 事件，避免重复行为，这里阻断
+            $tree.removeAttribute('hoving'); // 由于冒泡阻断了，需要手动移除状态
         }
 
         if (asset.readOnly) { // 不可用节点，比如 uuid 不存在

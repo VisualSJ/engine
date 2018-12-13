@@ -578,18 +578,6 @@ export const methods = {
     },
 
     /**
-     * 拖动且移出本面板时，选框隐藏
-     */
-    hideSelectBox() {
-        clearTimeout(vm.timerDrag);
-        vm.timerDrag = setTimeout(() => {
-            vm.selectBox = {
-                opacity: 0,
-            };
-        }, 500);
-    },
-
-    /**
      * 拖动中感知当前所处的文件夹，高亮此文件夹
      */
     dragOver(uuid: string, position: string) {
@@ -630,9 +618,7 @@ export const methods = {
 
         // @ts-ignore
         this.selectBox = {
-            opacity: top + '!important',
             top: top + 'px',
-
             left: left + 'px',
             height: height + 'px',
         };
@@ -674,11 +660,6 @@ export const methods = {
      * @param json
      */
     async ipcDrop(json: IdragNode) {
-        // @ts-ignore 选框立即消失
-        this.selectBox = {
-            opacity: 0,
-        };
-
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 

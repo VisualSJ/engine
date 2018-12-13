@@ -307,12 +307,12 @@ export const methods = {
         let url = parent.source;
         if (!json.name) {
             switch (json.ext) {
-                case 'folder': json.name = '/New Folder'; break;
-                default: json.name = '/New File.' + json.ext; break;
+                case 'folder': json.name = 'New Folder'; break;
+                default: json.name = 'New File.' + json.ext; break;
             }
         }
 
-        url += json.name;
+        url += `/${json.name}`;
 
         parent.state = 'loading';
         if (parent.isExpand === false) {
@@ -580,23 +580,10 @@ export const methods = {
         }
         // @ts-ignore
         this.selectBox = {
-            opacity: top + '!important',
             left: vm.$parent.$refs.viewBox.scrollLeft + 'px',
             top: top + 'px',
             height: height + 'px',
         };
-    },
-
-    /**
-     * 效果优化：拖动且移出本面板时，选框隐藏
-     */
-    hideSelectBox() {
-        clearTimeout(vm.timerDrag);
-        vm.timerDrag = setTimeout(() => {
-            vm.selectBox = {
-                opacity: 0,
-            };
-        }, 500);
     },
 
     /**
@@ -658,6 +645,7 @@ export const methods = {
      * @param event
      */
     dragEnter(event: Event) {
+        // @ts-ignore
         vm.dragOver(vm.assets[0].uuid);
     },
 
@@ -667,11 +655,6 @@ export const methods = {
      * @param json
      */
     async ipcDrop(json: IdragAsset) {
-        // @ts-ignore 选框立即消失
-        this.selectBox = {
-            opacity: 0,
-        };
-
         // 鼠标在此节点释放
         let toAsset: any = utils.getAssetFromTree(json.to);
 
