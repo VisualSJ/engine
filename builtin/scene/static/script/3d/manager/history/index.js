@@ -147,7 +147,7 @@ function redo() {
 /**
  * 场景刷新
  */
-function restore() {
+async function restore() {
     const dumpdata = steps[index][method];
     Object.assign(stepData, dumpdata);
 
@@ -167,7 +167,7 @@ function restore() {
         const node = nodeManager.query(uuid);
         if (node) {
             // 还原节点
-            dumpUtils.restoreNode(node, stepData[uuid]);
+            await dumpUtils.restoreNode(node, stepData[uuid]);
             // 广播已变动的节点
             Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
         }

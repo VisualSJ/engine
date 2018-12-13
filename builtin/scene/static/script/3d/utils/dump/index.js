@@ -82,21 +82,29 @@ function dumpNode(node) {
  * @param property
  */
 async function restoreProperty(node, path, dump) {
-    // dump 的时候将 _components 转成了 __comps__
-    path = path.replace('__comps__', '_components');
+    let key;
+    let keys;
+    let spath;
+    let property;
+    if (typeof path === 'string') {
+        // dump 的时候将 _components 转成了 __comps__
+        path = path.replace('__comps__', '_components'); // TODO: 这个好像下文没用到，__comps__ 已单独处理
 
-    // path 如果是是 position.x || position.y 实际修改的应该是 node._lpos.x || node._lpos.y
-    path = path.replace('position', '_lpos');
-    // 如果修改的是 scale.x || scale.y 实际修改的应该是 node._scale.x || node._scale.y
-    path = path.replace('scale', '_lscale');
-    // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._euler.x || node._euler.y
-    path = path.replace('rotation', '_euler');
+        // path 如果是是 position.x || position.y 实际修改的应该是 node._lpos.x || node._lpos.y
+        path = path.replace('position', '_lpos');
+        // 如果修改的是 scale.x || scale.y 实际修改的应该是 node._scale.x || node._scale.y
+        path = path.replace('scale', '_lscale');
+        // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._euler.x || node._euler.y
+        path = path.replace('rotation', '_euler');
 
-    const keys = (path || '').split('.');
-    const key = keys.pop();
-    const spath = keys.join('.');
-
-    const property = spath ? get(node, spath) : node;
+        keys = (path || '').split('.');
+        key = keys.pop();
+        spath = keys.join('.');
+        property = spath ? get(node, spath) : node;
+    } else {
+         key = path;
+         property = node;
+    }
 
     if (key === 'length' && Array.isArray(property)) {
         // 修改数组长度需要取上一层的 key 才能有对应的 attr
@@ -189,6 +197,7 @@ async function restoreProperty(node, path, dump) {
         case 'cc.Skeleton':
         case 'cc.TextureCube':
         case 'cc.AnimationClip':
+        case 'cc.Script':
             if (!dump.value.uuid) {
                 property[key] = null;
                 break;
@@ -200,12 +209,21 @@ async function restoreProperty(node, path, dump) {
                 });
             });
             break;
+        case 'Array': {
+            await Promise.all(dump.value.map(async (item, index) => {
+                return await restoreProperty(property[key], index, item);
+            }));
+
+            property[key].length = dump.value.length;
+            break;
+        }
         case 'cc.Enum':
         case 'Enum': {
             if (!isNaN(Number(dump.value))) {
                 dump.value -= 0;
             }
         }
+
         default:
             property[key] = dump.value;
     }
@@ -223,7 +241,7 @@ async function restoreProperty(node, path, dump) {
     }
 
     // 如果修改的是数组内的属性，应该把数组重新赋值一次，用于触发引擎的 setter
-    if (Array.isArray(property)) {
+    if (Array.isArray(property) && spath) {
         const index = spath.lastIndexOf('.');
         const arrayPath = spath.substr(0, index);
         const data = get(node, arrayPath);
@@ -236,7 +254,7 @@ async function restoreProperty(node, path, dump) {
  * @param {*} node
  * @param {*} dumpdata
  */
-function restoreNode(node, dumpdata) {
+async function restoreNode(node, dumpdata) {
     for (const path in dumpdata) {
         if (!(path in dumpdata)) {
             continue;
@@ -247,9 +265,9 @@ function restoreNode(node, dumpdata) {
         if (['__type__', 'group'].includes(path)) {
             continue;
         } else if (path === '__comps__') {
-            data.forEach((compos) => {
-                restoreComponent(node, compos);
-            });
+            for (let i = 0, ii = data.length; i < ii; i++) {
+                await restoreComponent(node._components[i], data[i]);
+            }
         } else if (path === 'uuid') {
             if (node.uuid !== data.value) {
                 console.error(`node.uuid is '${node.uuid}' not the same as the data.value '${data.value}'.`);
@@ -265,7 +283,7 @@ function restoreNode(node, dumpdata) {
             if (node instanceof cc.Scene) {
                 continue;
             }
-            restoreProperty(node, path, data);
+            await restoreProperty(node, path, data);
         }
     }
 }
@@ -275,8 +293,20 @@ function restoreNode(node, dumpdata) {
  * @param {*} node
  * @param {*} compos
  */
-function restoreComponent(node, compos) {
-    // TODO:
+async function restoreComponent(component, compos) {
+    const { value } = compos;
+
+    for (const path in value) {
+        if (!(path in value)) {
+            continue;
+        }
+
+        const property = compos.properties[path];
+        if (property.readonly === true || property.visible === false) {
+            continue;
+        }
+        await restoreProperty(component, path, value[path]);
+    }
 }
 
 /**
