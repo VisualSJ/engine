@@ -10,6 +10,17 @@ const WorldAxisController = require('./elements/controller/world-axis-controller
 let hitPoint = cc.v3();
 
 class GizmoManager {
+
+    queryToolName() {
+        return this.transformToolName;
+    }
+
+    setTransformToolName(name) {
+        if (['position', 'rotation', 'scale'].includes(name)) {
+            this.transformToolName = name;
+        }
+    }
+
     init() {
         this.gizmoRootNode = create3DNode('gizmoRoot');
         this.gizmoRootNode.parent = Manager.foregroundNode;
@@ -479,9 +490,9 @@ class GizmoManager {
         // test
         if (!this.isGizmoToolLocked()) {
             switch (event.key.toLowerCase()) {
-                case 'w': this.transformToolName = 'position'; break;
-                case 'e': this.transformToolName = 'rotation'; break;
-                case 'r': this.transformToolName = 'scale'; break;
+                // case 'w': this.transformToolName = 'position'; break;
+                // case 'e': this.transformToolName = 'rotation'; break;
+                // case 'r': this.transformToolName = 'scale'; break;
                 case 'g': this.coordinate = 'global'; break;
                 case 'l': this.coordinate = 'local'; break;
             }
@@ -531,5 +542,9 @@ class GizmoManager {
         this.destoryGizmo(comp.gizmo);
     }
 }
+
+TransformToolData.on('tool-name-changed', (name) => {
+    Manager.Ipc.send('broadcast', 'scene:gizmo-tool-changed', name);
+});
 
 module.exports = new GizmoManager();

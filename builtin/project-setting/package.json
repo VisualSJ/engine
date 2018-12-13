@@ -19,5 +19,10 @@
         "min-height": 200,
         "width": 700,
         "height": 500
+    },
+
+    "toolbar": {
+        "position": "right",
+        "file": "./static/toolbar.js"
     }
 }

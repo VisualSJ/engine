@@ -14,10 +14,10 @@ export function start(server: any) {
     app = io(server);
     app.on('connection', (socket: any) => {
         deviceNum = app.eio.clientsCount;
-        ipc.broadcast('package-preview:device-num-change', deviceNum);
+        Editor.Ipc.sendToAll('preview:device-num-change', deviceNum);
         socket.on('disconnect', () => {
             deviceNum = app.eio.clientsCount;
-            ipc.broadcast('package-preview:device-num-change', deviceNum);
+            Editor.Ipc.sendToAll('preview:device-num-change', deviceNum);
         });
     });
 }

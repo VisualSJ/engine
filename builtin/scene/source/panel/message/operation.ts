@@ -255,4 +255,11 @@ export function apply(messages: any) {
         }
         await $scene.forwarding('Scene', 'softReload');
     };
+
+    messages['change-gizmo-tool'] = async (name: string) => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('Gizmo', 'setTransformToolName', [name]);
+    };
 }

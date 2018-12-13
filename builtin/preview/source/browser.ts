@@ -1,11 +1,10 @@
 'use strict';
 
 import { shell } from 'electron';
-import { getPort, setPreviewBuildPath, start , stop } from './express';
+import { getPort, setPreviewBuildPath, start, stop } from './express';
 import { emitReload } from './socket';
-const ipc = require('@base/electron-base-ipc');
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
-const {DEVICES} = require('./../static/utils/util.js');
+const { DEVICES } = require('./../static/utils/util.js');
 const simulator = require('./../static/simulator/simulator.js');
 let previewPlatform = 'browser';
 let pkg: any = null;
@@ -62,7 +61,7 @@ export const messages = {
      * 刷新浏览器预览页面
      */
     'device-change'(deviceNum: number) {
-        ipc.send('package-preview:device-num-change', deviceNum);
+        Editor.Ipc.sendToAll('preview:device-num-change', deviceNum);
     },
 
     /**
@@ -76,6 +75,10 @@ export const messages = {
         const port = getPort();
         return port;
     },
+
+    'change-platform'(platform: string) {
+        previewPlatform = platform;
+    },
 };
 
 export async function load() {
@@ -87,11 +90,3 @@ export async function load() {
 export function unload() {
     stop();
 }
-
-ipc.on('package-preview:get-port', (event: any) => {
-    event.reply(null, getPort());
-});
-
-ipc.on('package-preview:change-preview-platform', (event: any, platform: string) => {
-    previewPlatform = platform;
-});

@@ -2,12 +2,11 @@
 
 import { createReadStream, existsSync } from 'fs-extra';
 import http from 'http';
-import { basename , join } from 'path';
+import { basename, join } from 'path';
 import { start as startSocket } from './socket';
 const Mobiledetect = require('mobile-detect');
-const { DEVICES} = require('./../static/utils/util');
+const { DEVICES } = require('./../static/utils/util');
 const express = require('express');
-const ipc = require('@base/electron-base-ipc');
 
 let app: any = null;
 let server: any = null;
@@ -72,15 +71,15 @@ export async function start() {
         res.sendFile(path);
     }),
 
-    // 获取项目对应类型的脚本文件
-    app.get('/preview-scripts/*', async (req: any, res: any) => {
-        // 设置（HACK）资源目录地址
-        res.writeHead(200, {
-            'Content-Type': 'text/javascript',
+        // 获取项目对应类型的脚本文件
+        app.get('/preview-scripts/*', async (req: any, res: any) => {
+            // 设置（HACK）资源目录地址
+            res.writeHead(200, {
+                'Content-Type': 'text/javascript',
+            });
+            const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
+            res.end(str);
         });
-        const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
-        res.end(str);
-    });
 
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene.json', async (req: any, res: any) => {
@@ -112,7 +111,7 @@ export async function start() {
         res.sendFile(path);
     });
 
-    app.get('/res/raw-*',  async (req: any, res: any) => {
+    app.get('/res/raw-*', async (req: any, res: any) => {
         let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
         if (!existsSync(path)) {
             path = join(Editor.App.path, 'builtin/asset-db/static/internal/library', req.params[0]);
@@ -125,11 +124,11 @@ export async function start() {
         const userAgent = req.header('user-agent');
         const md = new Mobiledetect(userAgent);
         res.render('index',
-        {
-            title: `Cocos ${Editor.Project.type} | ${basename(Editor.Project.path)}`,
-            tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty'),
-            enableDebugger: !!md.mobile() || (-1 !== userAgent.indexOf('MicroMessenger')),
-        });
+            {
+                title: `Cocos ${Editor.Project.type} | ${basename(Editor.Project.path)}`,
+                tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty'),
+                enableDebugger: !!md.mobile() || (-1 !== userAgent.indexOf('MicroMessenger')),
+            });
     });
 
     // 依赖模块文件
@@ -161,7 +160,7 @@ export async function start() {
                         port++;
                         server.removeListener('listening', handler.listener);
                         reject(`Port ${port - 1} is occupied`);
-                        ipc.broadcast('package-preview:port-change', port);
+                        Editor.Ipc.sendToAll('preview:port-change', port);
                     },
                     listener() {
                         server.removeListener('error', handler.error);

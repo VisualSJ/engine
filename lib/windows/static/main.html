@@ -31,29 +31,24 @@
     </div>
 
     <!-- 顶部工具条 -->
-    <header id="toolBar">
-        <div class="tools"></div>
-        <div class="preview">
-            <select id="platforms" :value="platforms" @change="changePlatform">
-                <option value="simulator">模拟器</option>
-                <option value="browser">浏览器</option>
-            </select>
-            <div id="preview-play" class="info-btn"
-                @click="startPreview()"
-            >
-                <i class="iconfont i-arrow-right "></i>
-            </div>
-            <div id="preview-reload" class="info-btn" 
-                @click="refreshPreview()"
-             v-if="deviceNumber > 0">
-                <i class="i-refresh iconfont"></i>
-            </div>
+    <header id="toolbar">
+        <div class="left">
+            <buttons
+                v-for="file in left"
+                :file="file"
+            ></buttons>
         </div>
-        <div class="info flex">
-            <span class="info-wifi">{{ipAddress}}<i class="iconfont i-wifi"></i><div class="QRcode-wrap"> <canvas class="QRcode" id='codeCanvas'></canvas> <span>扫一扫直接预览</span></div></span>
-            <span class="info-notice">{{deviceNumber}}</span>
-            <span class="info-btn" @click="openFolder('project')"><i class="iconfont i-folder"></i>项目路径</span>
-            <span class="info-btn" @click="openFolder('app')"><i class="iconfont i-folder"></i>安装路径</span>
+        <div class="middle">
+            <buttons
+                v-for="file in middle"
+                :file="file"
+            ></buttons>
+        </div>
+        <div class="right">
+            <buttons
+                v-for="file in right"
+                :file="file"
+            ></buttons>
         </div>
     </header>
 

@@ -108,4 +108,11 @@ export function apply(messages: any) {
     messages['query-dirty'] = async () => {
         return await $scene.forceForwarding('Scene', 'queryDirty');
     };
+
+    /**
+     * 查询当前 gizmo 工具的名字
+     */
+    messages['query-gizmo-tool-name'] = async () => {
+        return await $scene.forceForwarding('Gizmo', 'queryToolName');
+    };
 }

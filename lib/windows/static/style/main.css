@@ -41,148 +41,30 @@
   background: var(--border-c, #999);
 }
 
-
-.info-btn {
-    margin-left: 5px;
-    padding-left: 12px;
-    padding-right: 12px;
-    white-space: nowrap;
-    background: var(--image-bg);
-    border: 1px solid var(--border-dark-c);
-    border-radius: 4px;
-    line-height: 1.8em;
-}
-
-.info-btn .i-folder {
-    margin-right: 5px;
-}
-
-.info-btn:hover {
-    cursor: pointer;
-    background: var(--image-light-bg);
-}
-
 header {
     display: flex;
     text-align: center;
-    margin: 5px 0 10px 0;
+    margin: 7px 16px 5px;
+    height: 24px;
 }
 
-header .tools {
+header .left {
     flex: 1;
-}
-
-header .preview {
     display: flex;
+    flex-direction: row;
 }
 
-header .preview svg {
-    width: 10px;
-    height: 20px;
-    fill: #999;
-    cursor: pointer;
+header .middle {
+    /* flex: 1; */
 }
 
-header .preview .info-btn {
-    width: 45px;
-}
-
-header .preview select {
-    cursor: pointer;
-    outline: 0;
-    margin: 0;
-    padding: 0.2em 0.5em;
-    border-radius: var(--border-radius-n);
-    text-decoration: none;
-    text-overflow: ellipsis;
-    border: 1px solid var(--border-dark-c);
-    background-image: var(--image-bg, linear-gradient(#585858, #444));
-    color: inherit;
-
-}
-
-header .preview select option {
-    background: var(--main-bg);
-}
-  
-header .preview select optgroup {
-    background: var(--main-bg);
-}
-
-header .preview select::after {
-  display: block;
-  content: ' ';
-  position: absolute;
-  top: 50%;
-  right: .8em;
-  pointer-events: none;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 7px solid var(--border-c);
-  margin-top: -3px
-}
-
-header .info {
+header .right {
     flex: 1;
-    line-height: 1.8em;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.flex {
     display: flex;
-    margin-right: 5px;
-    align-items: center;
+    flex-direction: row-reverse;
 }
 
-.platform-wrap {
-    padding-left: 5px;
-    border: 1px solid #575757;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.info-wifi {
-    color: green;
-    font-weight: 600;
-    position: relative;
-}
-
-.QRcode-wrap {
-    position: absolute;
-    display: none;
-    background-color: white;
-    border-radius: 5px;
-    top:4em;
-    z-index: 2;
-    padding: 10px;
-    flex-direction: column;
-    right: -10px;
-}
-
-.QRcode-wrap .QRcode {
-    border-radius: 5px;
-    width: 150px !important;
-    height: 150px !important;
-}
-
-.info-wifi:hover {
-    cursor: default;
-}
-
-.info-wifi:hover .QRcode-wrap {
+header > div > div {
     display: flex;
-}
-
-.info-notice {
-    display: inline-block;
-    background-color: #e69138;
-    margin-left: 4px;
-    color: white;
-    padding: 3px;
-    width: 0.6em;
-    line-height: 1em;
-    border-radius: 4px;
+    flex-direction: row;
 }

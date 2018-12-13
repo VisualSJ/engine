@@ -14,5 +14,15 @@
         }
     },
     "main": "./dist/browser.js",
-    "description": "preview about editor"
+    "description": "preview about editor",
+
+    "toolbar": [
+        {
+            "position": "middle",
+            "file": "./static/toolbar/middle.js"
+        }, {
+            "position": "right",
+            "file": "./static/toolbar/right.js"
+        }
+    ]
 }

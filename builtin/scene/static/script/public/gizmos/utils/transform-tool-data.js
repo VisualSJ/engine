@@ -18,7 +18,10 @@ class TransformToolData extends EventEmitter {
         return this._toolName;
     }
     set toolName(value) {
-        this._toolName = value;
+        if (!this.isLocked) {
+            this._toolName = value;
+            this.emit('tool-name-changed', this._toolName);
+        }
     }
 
     get coordinate() {
@@ -26,14 +29,20 @@ class TransformToolData extends EventEmitter {
     }
 
     set coordinate(value) {
-        this._coordinate = value;
+        if (!this.isLocked) {
+            this._coordinate = value;
+            this.emit('coordinate-changed', this._coordinate);
+        }
     }
 
     get pivot() {
         return this._pivot;
     }
     set pivot(value) {
-        this._pivot = value;
+        if (!this.isLocked) {
+            this._pivot = value;
+            this.emit('pivot-changed', this._pivot);
+        }
     }
 
     get isLocked() {
@@ -41,6 +50,7 @@ class TransformToolData extends EventEmitter {
     }
     set isLocked(value) {
         this._isLocked = value;
+        this.emit('lock-changed', this._isLocked);
     }
 
     get is2D() {
@@ -56,7 +66,7 @@ class TransformToolData extends EventEmitter {
     }
     set scale2D(value) {
         this._scale2D = value;
-        this.emit('scale2D-changed', this._scale2D);
+        this.emit('scale-2d-changed', this._scale2D);
     }
 }
 
