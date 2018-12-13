@@ -8,9 +8,31 @@ const {getPreviewUrl} = require('./../utils');
 export const template = readFileSync(join(__dirname, '../../static/template/components/web-mobile.html'), 'utf8');
 export function data() {
     return {
+        url: '',
         preview_url: '',
+        eruda: false,
     };
 }
+
+export const watch = {
+    setting: {
+        deep: true,
+        handler() {
+           // @ts-ignore
+            this.preview_url = join(url, this.setting.build_path);
+        },
+    },
+    data: {
+        deep: true,
+        handler() {
+           // @ts-ignore
+            if (this.data) {
+                // @ts-ignore
+                this.eruda = this.data.eruda;
+            }
+        },
+    },
+};
 
 export const methods = {
     /**
@@ -23,9 +45,10 @@ export const methods = {
     },
 
     async init() {
-        const url = await getPreviewUrl();
         // @ts-ignore
-        this.preview_url = join(url, this.info.build_path);
+        this.url = await getPreviewUrl();
+        // @ts-ignore
+        this.preview_url = join(this.url, this.setting.build_path);
     },
 
     // 预览该路径地址
@@ -33,9 +56,22 @@ export const methods = {
         // @ts-ignore
         shell.openExternal(this.preview_url);
     },
+
+    // 数据变化
+    onConfirm(event: any) {
+        const key = event.target.path;
+        if (!key) {
+            return;
+        }
+        // @ts-ignore
+        this[key] = event.target.value;
+        // @ts-ignore
+        this.$emit('data-change', this.setting.platform, key, event.target.value);
+    },
 };
 export const props: object = [
-    'info',
+    'setting',
+    'data',
 ];
 
 export function mounted() {

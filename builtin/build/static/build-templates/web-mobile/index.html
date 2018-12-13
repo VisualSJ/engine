@@ -37,7 +37,7 @@
   <!--<link rel="apple-touch-icon" href=".png" />-->
   <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
 
-  <link rel="stylesheet" type="text/css" href="style-mobile.css"/>
+  <link rel="stylesheet" type="text/css" href="web-mobile.css"/>
 
 </head>
 <body>
@@ -47,13 +47,13 @@
       <span style="width: 0%"></span>
     </div>
   </div>
+<script src="<%=webDebuggerSrc%>"></script>
 <script src="src/settings.js" charset="utf-8"></script>
-<%=webDebugger%>
 <script src="main.js" charset="utf-8"></script>
 
 <script type="text/javascript">
 (function () {
-  <% if (webDebugger) { %>
+  <% if (webDebuggerSrc) { %>
     // open web debugger console
     eruda.init();
   <% } %>

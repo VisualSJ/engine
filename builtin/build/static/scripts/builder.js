@@ -9,10 +9,9 @@ const platfomConfig = require('./platforms-config');
 const WINDOW_HEADER = 'window._CCSettings';
 const assetBuilder = require('./build-asset');
 const scriptBuilder = require('./build-script');
-const STATIC_RESOURCE = [ // 需要拷贝的静态资源整理
+const static_resource = [ // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
-    'style-mobile.css',
 ];
 class Builder {
     constructor() {
@@ -44,6 +43,7 @@ class Builder {
         this._type = config.type;
         this._options = options;
         this._paths = this._buildPaths(options.dest, options.debug, config);
+        static_resource[1] = options.platform + '.css';
         buildResult.options = options;
     }
 
@@ -84,7 +84,7 @@ class Builder {
     _resolveStatic() {
         return new Promise((resolve, reject) => {
             updateProgress('resolove static resource...');
-            Promise.all(STATIC_RESOURCE.map((file) => {
+            Promise.all(static_resource.map((file) => {
                 return new Promise((resolve, reject) => {
                     let src = join(__dirname, './../build-templates/common', file);
                     let dest = join(this._paths.dest, file);
@@ -109,15 +109,18 @@ class Builder {
     _buildHtml() {
         updateProgress('build index html...');
         let options = this._options;
-        const webDebuggerString = `<script src="${basename(this._paths.webDebuggerSrc)}"></script>`;
         const data = {
             project: options.name || basename(options.project),
             previewWidth: options.designWidth,
             previewHeight: options.designHeight,
             orientation: 'auto',
-            webDebugger: options.embedWebDebugger ? webDebuggerString : '',
             engine: `cocos${this._type}`,
+            webDebuggerSrc: '',
         };
+        if (options.eruda) {
+            data.webDebuggerSrc = './eruda.min.js';
+            copySync(this._paths.webDebuggerSrc, join(this._paths.dest, data.webDebuggerSrc));
+        }
         const content = ejs.render(readFileSync(join(this._paths.tmplBase, options.platform, 'index.html'), 'utf8'),
          data);
         outputFileSync(join(this._paths.dest, 'index.html'), content);
@@ -131,10 +134,6 @@ class Builder {
         let contents = readFileSync(join(this._paths.tmplBase, 'common', 'main.js'), 'utf8');
         // qqplay set REMOTE_SERVER_ROOT value
         let isQQPlay = options.platform === 'qqplay';
-        if (isQQPlay && options.qqplay && options.qqplay.REMOTE_SERVER_ROOT) {
-            let value = 'qqPlayDownloader.REMOTE_SERVER_ROOT = "' + opts.qqplay.REMOTE_SERVER_ROOT + '"';
-            contents = contents.replace(/qqPlayDownloader.REMOTE_SERVER_ROOT = ""/g, value);
-        }
         const data = {
             includeAnySDK: !!options.includeAnySDK,
             renderMode: !!options.renderMode,
@@ -148,6 +147,9 @@ class Builder {
             engine: `cocos${this._type}`,
 
         };
+        if (isQQPlay && options.qqplay && options.qqplay.REMOTE_SERVER_ROOT) {
+            data.qqplay.REMOTE_SERVER_ROOT = options.qqplay.REMOTE_SERVER_ROOT;
+        }
         const content = ejs.render(contents, data);
         outputFileSync(join(this._paths.dest, 'main.js'), content);
         updateProgress('build main.js success', 5);
@@ -494,11 +496,11 @@ class Builder {
             assetObj = await queryAssets();
             setting.scenes = assetObj.sceneList;
             setting.scripts = await getScriptsCache(assetObj.scripts);
-            setting.effects = assetObj.effects;
         } else {
             assetObj = await queryAssets(setting.scenes);
             setting.scripts = assetObj.scripts;
         }
+        setting.effects = assetObj.effects;
         setting.rawAssets.assets = assetObj.assets;
         setting.rawAssets.internal = assetObj.internal;
         buildResult.settings = setting;

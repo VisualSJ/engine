@@ -26,6 +26,9 @@ class AssetBuilder {
             }
             for (let key of Object.keys(rawAssets)) {
                 let assets = rawAssets[key];
+                if (key === 'internal') {
+                    console.log('internal');
+                }
                 for (let uuid of Object.keys(assets)) {
                     await this.buildAsset(uuid);
                 }
@@ -80,7 +83,7 @@ class AssetBuilder {
             stringify: false,
             dontStripDefault: this.exportSimpleFormat,
         });
-        outputFileSync(getDestPathNoExt(this.paths.res, asset._uuid) + '.json', contentJson);
+        outputFileSync(getDestPathNoExt(this.paths.res, asset._uuid) + '.json', JSON.stringify(contentJson));
         return nativePath;
     }
 

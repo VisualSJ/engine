@@ -7,14 +7,30 @@ const {getPreviewUrl} = require('./../utils');
 export const template = readFileSync(join(__dirname, '../../static/template/components/web-desktop.html'), 'utf8');
 export function data() {
     return {
+        url: '',
         preview_url: '',
         resolution: {
             width: 1280,
-            hright: 960,
+            height: 960,
         },
     };
 }
-
+export const watch = {
+    setting: {
+        deep: true,
+        handler() {
+           // @ts-ignore
+            this.preview_url = join(this.url, this.setting.build_path);
+        },
+    },
+    data: {
+        deep: true,
+        handler() {
+            // @ts-ignore
+            this.data && Object.assign(this.resolution, this.data.resolution);
+        },
+    },
+};
 export const methods = {
     /**
      * 翻译
@@ -28,7 +44,9 @@ export const methods = {
     async init() {
         const url = await getPreviewUrl();
         // @ts-ignore
-        this.preview_url = join(url, this.info.build_path);
+        this.preview_url = join(url, this.setting.build_path);
+        // @ts-ignore
+        this.data && Object.assign(this.resolution, this.data.resolution);
     },
 
     // 预览该路径地址
@@ -36,9 +54,22 @@ export const methods = {
         // @ts-ignore
         shell.openExternal(this.preview_url);
     },
+
+    // 数据变化
+    oncConfirm(event: any) {
+        const key = event.target.path;
+        if (!key) {
+            return;
+        }
+        // @ts-ignore
+        this[key] = event.target.value;
+        // @ts-ignore
+        this.$emit('data-change', this.setting.platform, key, event.target.value);
+    },
 };
 export const props: object = [
-    'info',
+    'setting',
+    'data',
 ];
 
 export function mounted() {

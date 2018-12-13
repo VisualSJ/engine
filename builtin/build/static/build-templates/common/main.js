@@ -69,34 +69,32 @@ window.boot = function () {
 
         cc.view.enableRetina(true);
         cc.view.resizeWithBrowserSize(true);
+		<%if(!isWeChatGame && !isQQPlay) {%>
+		if (cc.sys.isBrowser) {
+			setLoadingDisplay();
+		}
 
-        if (!<%=isWeChatGame%> && !<%=isQQPlay %> ) {
-            if (cc.sys.isBrowser) {
-                setLoadingDisplay();
-            }
+		if (cc.sys.isMobile) {
+			if (settings.orientation === 'landscape') {
+				cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
+			} else if (settings.orientation === 'portrait') {
+				cc.view.setOrientation(cc.macro.ORIENTATION_PORTRAIT);
+			}
+			cc.view.enableAutoFullScreen([
+				cc.sys.BROWSER_TYPE_BAIDU,
+				cc.sys.BROWSER_TYPE_WECHAT,
+				cc.sys.BROWSER_TYPE_MOBILE_QQ,
+				cc.sys.BROWSER_TYPE_MIUI,
+			].indexOf(cc.sys.browserType) < 0);
+		}
 
-            if (cc.sys.isMobile) {
-                if (settings.orientation === 'landscape') {
-                    cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
-                } else if (settings.orientation === 'portrait') {
-                    cc.view.setOrientation(cc.macro.ORIENTATION_PORTRAIT);
-                }
-                cc.view.enableAutoFullScreen([
-                    cc.sys.BROWSER_TYPE_BAIDU,
-                    cc.sys.BROWSER_TYPE_WECHAT,
-                    cc.sys.BROWSER_TYPE_MOBILE_QQ,
-                    cc.sys.BROWSER_TYPE_MIUI,
-                ].indexOf(cc.sys.browserType) < 0);
-            }
-
-            // Limit downloading max concurrent task to 2,
-            // more tasks simultaneously may cause performance draw back on some android system / browsers.
-            // You can adjust the number based on your own test result, you have to set it before any loading process to take effect.
-            if (cc.sys.isBrowser && cc.sys.os === cc.sys.OS_ANDROID) {
-                cc.macro.DOWNLOAD_MAX_CONCURRENT = 2;
-            }
-        }
-
+		// Limit downloading max concurrent task to 2,
+		// more tasks simultaneously may cause performance draw back on some android system / browsers.
+		// You can adjust the number based on your own test result, you have to set it before any loading process to take effect.
+		if (cc.sys.isBrowser && cc.sys.os === cc.sys.OS_ANDROID) {
+			cc.macro.DOWNLOAD_MAX_CONCURRENT = 2;
+		}
+	    <% } %>
         // init assets
         cc.AssetLibrary.init({
             libraryPath: 'res/import',
@@ -107,23 +105,24 @@ window.boot = function () {
         });
 
         var launchScene = settings.launchScene;
-
-        // load scene
-        cc.director.loadScene(launchScene, null,
-            function () {
-                if (cc.sys.isBrowser) {
-                    // show canvas
-                    var canvas = document.getElementById('GameCanvas');
-                    canvas.style.visibility = '';
-                    var div = document.getElementById('GameDiv');
-                    if (div) {
-                        div.style.backgroundImage = '';
-                    }
-                }
-                cc.loader.onProgress = null;
-                console.log('Success to load scene: ' + launchScene);
-            }
-        );
+		cc.BuiltinResMgr.initEffects(settings.effects, function (){
+			 // load scene
+			cc.director.loadScene(launchScene, null,
+				function () {
+					if (cc.sys.isBrowser) {
+						// show canvas
+						var canvas = document.getElementById('GameCanvas');
+						canvas.style.visibility = '';
+						var div = document.getElementById('GameDiv');
+						if (div) {
+							div.style.backgroundImage = '';
+						}
+					}
+					cc.loader.onProgress = null;
+					console.log('Success to load scene: ' + launchScene);
+				}
+			);
+		});
     };
 
     // jsList
@@ -143,7 +142,9 @@ window.boot = function () {
         }
 	<% } %>
 	<%if(includeAnySDK) {%>
-    <Inject anysdk scripts>
+    if (cc.sys.isNative && cc.sys.isMobile) {
+        jsList = jsList.concat(['src/anysdk/jsb_anysdk.js', 'src/anysdk/jsb_anysdk_constants.js']);
+    }
 	<% } %>
     var option = {
         id: 'GameCanvas',
@@ -173,8 +174,7 @@ initAdapter();
 cc.game.once(cc.game.EVENT_ENGINE_INITED, function () {
 	initRendererAdapter();
 });
-
-qqPlayDownloader.REMOTE_SERVER_ROOT = "";
+qqPlayDownloader.REMOTE_SERVER_ROOT = <%=qqplay.REMOTE_SERVER_ROOT%> || "";
 var prevPipe = cc.loader.md5Pipe || cc.loader.assetLoader;
 cc.loader.insertPipeAfter(prevPipe, qqPlayDownloader);
 <Inject plugin code>

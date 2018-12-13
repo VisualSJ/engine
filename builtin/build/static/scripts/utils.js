@@ -303,8 +303,9 @@ async function queryAssets(scenes) {
         if (asset.importer === 'effect') {
             effects.push(asset.uuid);
         }
-        // 并非构建场景依赖的资源并且路径不在 resource 下，不做打包
-        if (scenes && dependUuid.indexOf(asset.uuid) === -1 && !asset.source.startsWith('db://assets/resources')) {
+        // 并非构建场景依赖的资源并且路径不在 resource 下，并且资源类型不是 effect 的不做打包
+        if (asset.importer !== 'effect' && scenes && dependUuid.indexOf(asset.uuid) === -1
+        && !asset.source.startsWith('db://assets/resources')) {
             continue;
         }
         // ********************* 资源类型 ********************** //

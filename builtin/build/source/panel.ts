@@ -34,8 +34,8 @@ export const fonts = [{
 export const methods = {};
 
 export const messages = {
-    refresh() {
-        // vm && vm.initData();
+    'asset-db:ready'() {
+        !vm.isReady && vm.initData();
     },
     // 更新当前构建进度
     'build:update-progress'(msg: string, rate: any) {
@@ -54,11 +54,14 @@ export async function ready() {
     vm = new Vue({
         el: panel.$.build,
         data: {
-            // 配置的默认值
-            platform: 'web-mobile',
-            build_path: './build',
-            debug: false,
-            source_map: false,
+            setting: {
+                // 配置的默认值
+                platform: 'web-mobile',
+                build_path: './build',
+                debug: false, // 调试模式
+                source_map: false,
+                inline_SpriteFrames: false, // 是否内联所有的 SpriteFrame
+            },
             // 需要动态获取的默认配置
             name: '', // 游戏名称
             start_scene: '',
@@ -67,6 +70,8 @@ export async function ready() {
             state: 'info',
             message: '',
             rate: 0,
+            data: {},
+            isReady: false,
         },
         computed: {
             selectAll(): any {
@@ -89,7 +94,7 @@ export async function ready() {
                         obj.build = true;
                     }
                     // @ts-ignore
-                    if (this.platform === 'android' || this.platform === 'win32') {
+                    if (this.setting.platform === 'android' || this.setting.platform === 'win32') {
                         obj.compile = true;
                     }
                     return obj;
@@ -117,8 +122,19 @@ export async function ready() {
              * 数据初始化
              */
             async initData() {
+                const settingData = await Editor.Ipc.requestToPackage('build', 'get-builder-setting', 'common');
+                if (settingData) {
+                    for (const key of Object.keys(settingData)) {
+                        if (key in this.setting) {
+                            this.setting[key] = settingData[key];
+                        }
+                    }
+                }
                 this.name = basename(Editor.Project.path);
                 const scenes = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scene'});
+                if (scenes) {
+                    this.isReady = true;
+                }
                 this.scenes = scenes.map((item: any) => {
                     return {
                         uuid: item.uuid,
@@ -127,6 +143,7 @@ export async function ready() {
                     };
                 });
                 this.start_scene = this.scenes[0].uuid;
+                await this.updateData();
             },
 
             // 更新 value
@@ -134,6 +151,9 @@ export async function ready() {
                 const key = event.target.path;
                 if (!key) {
                     return;
+                }
+                if (key === 'platform') {
+                    this.updateData();
                 }
                 this.onCheckChange(key, event.target.value);
             },
@@ -153,13 +173,14 @@ export async function ready() {
 
             // 检查数据后再更新数据
             onCheckChange(key: string, value: any) {
+                const {platform} = this.setting;
                 // TODO 更多构建平台加入后，需要更新完善该检测函数
                 switch (key) {
                     case 'name':
                         break;
                     case 'build_path':
                         const buildPath = join(Editor.Project.path, value);
-                        const isNative = PlatformConfigs[this.platform].isNative;
+                        const isNative = PlatformConfigs[platform].isNative;
 
                         if (process.platform === 'win32' && isNative && buildPath.length > MAX_BUILD_PATH_FOR_WIN32) {
                             this.error(this.t('path_too_long_title'));
@@ -200,23 +221,31 @@ export async function ready() {
                         this.checkSuccss = true;
                         break;
                 }
+                // 数据监测无误后，赋值存储
                 if (this.checkSuccss) {
-                    value && (this[key] = value);
+                    if (key in this.setting) {
+                        value && (this.setting[key] = value);
+                        this.dataChanged('common', key, value);
+                        this.updateData();
+                    } else {
+                        value && (this[key] = value);
+                    }
                 }
-                // Editor.Ipc.sendToPackage('build', 'set-builder', `${key}`, this[key]);
-                // Editor.Ipc.sendToPackage('build', 'save-builder');
+
             },
 
+            // 选择构建后的文件夹
             async onChooseBuildPath() {
                 const path = await Editor.Dialog.openDirectory({
                     title: '选择发布文件夹',
                     defaultPath: Editor.Project.path,
                 });
-                this.build_path = relative(Editor.Project.path, path);
+                this.setting.build_path = relative(Editor.Project.path, path);
             },
 
+            // 打开构建发布后的文件夹
             onOpenBuildPath() {
-                shell.openExternal(join(Editor.Project.path, this.build_path));
+                shell.openExternal(join(Editor.Project.path, this.setting.build_path));
             },
 
             // 点击构建按钮
@@ -228,14 +257,15 @@ export async function ready() {
             // 构建项目
             async _build() {
                 this.rate = 0;
+                const {platform, source_map, debug, build_path} = this.setting;
                 const data = {
-                    platform: this.platform,
-                    source_map: this.source_map,
+                    platform,
+                    source_map,
                     name: this.name,
                     start_scene: this.start_scene,
-                    debug: this.debug,
+                    debug,
                     scenes: [],
-                    dest: join(Editor.Project.path, this.build_path, this.platform),
+                    dest: join(Editor.Project.path, build_path, platform),
                 };
                 const scenes: any = [];
                 this.scenes.map((item: any) => {
@@ -252,15 +282,25 @@ export async function ready() {
                 const excludedModules: any[] = [];
                 const options = Object.assign(data, this.$refs.children._data, {excludedModules});
                 options.embedWebDebugger =
-                (this.platform === 'web-mobile' || this.platform === 'fb-instant-games') && options.debug;
+                (platform === 'web-mobile' || platform === 'fb-instant-games') && options.debug;
                 Editor.Ipc.sendToPackage('build', 'build', options);
+            },
+
+            dataChanged(type: string, key: string, value: any) {
+                Editor.Ipc.sendToPackage('build', 'set-builder-setting', `${type}.${key}`, value);
+                Editor.Ipc.sendToPackage('build', 'save-builder-setting');
+            },
+
+            async updateData() {
+                const data = await Editor.Ipc.requestToPackage('build', 'get-builder-setting', this.setting.platform);
+                this.data = data;
             },
         },
         components: {
             'web-desktop' : require('./components/web-desktop'),
             'web-mobile' : require('./components/web-mobile'),
         },
-        mounted() {
+        created() {
             this.initData();
         },
     });

@@ -1,15 +1,15 @@
-<div>
+<div @confirm="oncConfirm">
     <div class="line">
         <ui-prop :label="t('resolution')">
                 <div slot="content">
-                    <ui-num-input :value="resolution.width"></ui-num-input>X
-                    <ui-num-input :value="resolution.height"></ui-num-input>
+                    <ui-num-input :value="resolution.width" path="resolution.width"></ui-num-input>X
+                    <ui-num-input :value="resolution.height" path="resolution.height"></ui-num-input>
                 </div>
         </ui-prop>
     </div>
     <div class="line preview-url">
         <ui-prop :label="t('preview_url')">
-            <div slot="content"><span >{{preview_url}}</span></div>
+            <div slot="content"><span @click="preview">{{preview_url}}</span></div>
         </ui-prop>
     </div>
 </div>

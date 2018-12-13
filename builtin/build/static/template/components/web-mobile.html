@@ -1,8 +1,8 @@
-<div>
+<div @confirm="onConfirm">
     <div class="line">
         <ui-prop :label="t('orientation')">
             <div slot="content">
-                <ui-select value="auto">
+                <ui-select value="auto" path="orientation">
                     <option value="landscape">Landscape</option> <option value="portrait">Portrait</option>
                     <option value="auto">Auto</option>
                 </ui-select>
@@ -14,5 +14,9 @@
             <div slot="content"><span @click="preview">{{preview_url}}</span></div>
         </ui-prop>
     </div>
-    <div class="line"><ui-prop :label="t('eruda')" type="boolean"></ui-prop></div>
+    <div class="line"><ui-prop :label="t('eruda')">
+        <div slot="content">
+            <div slot="content"><ui-checkbox :value="eruda" path="eruda"></ui-checkbox></div>
+        </div>
+    </ui-prop></div>
 </div>

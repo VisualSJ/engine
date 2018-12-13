@@ -16,7 +16,7 @@
   <meta name="force-rendering" content="webkit"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
   
-  <link rel="stylesheet" type="text/css" href="style-desktop.css"/>
+  <link rel="stylesheet" type="text/css" href="web-desktop.css"/>
 </head>
 <body>
 <h1 class="header"><%=project%></h1>
@@ -32,12 +32,13 @@
 
 <p class="footer">Created with <a href="http://cocos.com/cocoscreator" title="cocos creator">Cocos Creator</a></p>
 
+<script src="<%=webDebuggerSrc%>"></script>
 <script src="src/settings.js" charset="utf-8"></script>
 <script src="main.js" charset="utf-8"></script>
 
 <script type="text/javascript">
 (function () {
-  <% if (webDebugger) { %>
+  <% if (webDebuggerSrc) { %>
     // open web debugger console
     eruda.init();
   <% } %>

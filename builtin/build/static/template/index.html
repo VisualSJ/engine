@@ -9,7 +9,7 @@
         <div class="line">
             <ui-prop :label="t('platform')">
                 <div slot="content">
-                    <ui-select :value="platform" path="platform" >
+                    <ui-select :value="setting.platform" path="platform" >
                         <option value="web-mobile">Web Mobile</option>
                         <option value="web-desktop">Web Desktop</option>
                     </ui-select>
@@ -19,7 +19,7 @@
         <div class="line">
             <ui-prop :label="t('build_path')">
                 <div slot="content">
-                    <ui-input :value="build_path" path="build_path" tabindex="0"></ui-input>
+                    <ui-input :value="setting.build_path" path="build_path" tabindex="0"></ui-input>
                     <ui-button @confirm.stop="onChooseBuildPath">···</ui-button>
                     <ui-button @confirm.stop="onOpenBuildPath">打开</ui-button>
                 </div>
@@ -49,20 +49,20 @@
         </div>
         <div class="line">
             <ui-prop :label="t('inline_SpriteFrames')">
-                <div slot="content"><ui-checkbox checked path="inline_SpriteFrames"></ui-checkbox></div>
+                <div slot="content"><ui-checkbox :checked="setting.inline_SpriteFrames" path="inline_SpriteFrames"></ui-checkbox></div>
             </ui-prop>
         </div>
         <div class="line">
             <ui-prop label="MD5 Cache">
-                <div slot="content"><ui-checkbox checked path="inline_SpriteFrames"></ui-checkbox></div>
+                <div slot="content"><ui-checkbox :checked="setting.md5Cache" path="md5Cache"></ui-checkbox></div>
             </ui-prop>
         </div>
         <div class="line">
-            <ui-prop :label="t('merge_start_scene')" type="boolean"></ui-prop>
+            <ui-prop :label="t('merge_start_scene')" :value="setting.merge_start_scene" path="merge_start_scene" type="boolean"></ui-prop>
         </div>
-        <component :is="platform" :info="{build_path, platform}" ref="children"></component>
-        <div class="line"><ui-prop type="boolean" :label="t('debug')" :value="debug"></ui-prop></div>
-        <div class="line"><ui-prop type="boolean" :label="t('source_map')" :value="source_map"></ui-prop></div>
+        <component :is="setting.platform" :setting="setting" :data="data" ref="children" v-on:data-change="dataChanged"></component>
+        <div class="line"><ui-prop type="boolean" :label="t('debug')" :value="setting.debug"></ui-prop></div>
+        <div class="line"><ui-prop type="boolean" :label="t('source_map')" :value="setting.source_map"></ui-prop></div>
     </div>
     <footer>
         <div class="progress">

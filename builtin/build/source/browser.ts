@@ -19,7 +19,7 @@ export const messages = {
      * 查询记录的构建设置信息
      * @param {string} key
      */
-    'get-builder'(key: string) {
+    'get-builder-setting'(key: string) {
         return profile.get(key);
     },
 
@@ -27,12 +27,12 @@ export const messages = {
      * 设置构建项目设置
      * @param {string} key
      */
-    'set-builder'(key: string, value: any) {
+    'set-builder-setting'(key: string, value: any) {
         profile.set(key, value);
     },
 
     // 保存构建设置信息
-    'save-builder'() {
+    'save-builder-setting'() {
         profile.save();
     },
 
