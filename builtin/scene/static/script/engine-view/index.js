@@ -12,9 +12,16 @@ class View extends window.HTMLElement {
 
         this.setAttribute('tabindex', '-1');
 
+        // 默认依赖项
+        this.dependence = ['asset-db', 'engine'];
+
         this.dirty = false;
 
         this.$scene = document.createElement('webview');
+
+        this.$scene.addEventListener('did-start-loading', () => {
+            this.addDependence('engine');
+        });
 
         // 封装的 webview 通讯模块
         this.ipc = new HostIpc(this.$scene);
@@ -35,6 +42,12 @@ class View extends window.HTMLElement {
         this.$scene.setAttribute('style', 'pointer-events: none;');
         this.$scene.setAttribute('src', `packages://scene/static/template/${Editor.Project.type}-webview.html`);
         this.appendChild(this.$scene);
+
+        // 查询 asset-db 是否ready
+        const dbReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+        if (dbReady) {
+            this.removeDependence('asset-db');
+        }
 
         // 查询引擎数据, 并指定 webview 加载
         this.info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
@@ -92,12 +105,34 @@ class View extends window.HTMLElement {
         return await this.ipc.send('call-method', {
             module: 'Scene',
             handler: 'excuteComponentMethod',
-            params: [
-                options.uuid,
-                options.index,
-                ...options.methodNames,
-            ],
+            params: [options.uuid, options.index, ...options.methodNames],
         });
+    }
+
+    /**
+     * 移除依赖
+     * @param {*} item
+     * @memberof View
+     */
+    removeDependence(item) {
+        if (this.dependence.includes(item)) {
+            const index = this.dependence.findIndex((dep) => dep === item);
+            this.dependence.splice(index, 1);
+            if (this.dependence.length === 0) {
+                this.ipc.emit('dependence:ready', this.info);
+            }
+        }
+    }
+
+    /**
+     * 添加依赖
+     * @param {*} item
+     * @memberof View
+     */
+    addDependence(item) {
+        if (!this.dependence.includes(item)) {
+            this.dependence.push(item);
+        }
     }
 }
 

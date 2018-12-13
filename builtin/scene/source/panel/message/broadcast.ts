@@ -41,6 +41,7 @@ export function apply(messages: any) {
      *   通知 webview 打开最后打开的这个 uuid
      */
     messages['asset-db:ready'] = (...args: any[]) => {
+        $scene.removeDependence('asset-db');
         const uuid = profile.get('current-scene');
         // uuid 不存在，或者已经打开了场景的情况下，不需要重新打开场景
         if (!uuid && !$loading.hidden) {
@@ -54,6 +55,7 @@ export function apply(messages: any) {
      *   通知 webview 关闭场景
      */
     messages['asset-db:close'] = () => {
+        $scene.addDependence('asset-db');
         $scene.forwarding('Scene', 'close');
     };
 

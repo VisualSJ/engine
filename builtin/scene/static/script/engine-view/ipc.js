@@ -9,15 +9,18 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 const messages = {
     ///////////
     // 通知消息
-    async 'notice:engine-ready'() {
-        const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-        if (ready) {
-            this.ipc.forceSend('call-method', {
-                module: 'Startup',
-                handler: 'init',
-                params: [],
-            });
-        }
+    async 'engine:ready'() {
+        this.removeDependence('engine');
+    },
+
+    ///////////
+    // 所有依赖 ready
+    async 'dependence:ready'(info) {
+        this.ipc.forceSend('call-method', {
+            module: 'Startup',
+            handler: 'manager',
+            params: [info],
+        });
     },
 
     //////////////////////

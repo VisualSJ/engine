@@ -11,7 +11,8 @@ const startup = require('./manager/startup');
 requestAnimationFrame(async () => {
     const info = await ipc.send('query-engine');
     await startup.init(info);
-    await startup.manager(info);
+    // manager 方法通过监听 db、engine 的 ready 执行
+    //     await startup.manager(info);
 });
 
 // 进程刷新的时候，需要广播

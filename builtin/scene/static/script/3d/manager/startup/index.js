@@ -24,13 +24,16 @@ async function init(info) {
     await engine.configureStartup();
     await engine.openEngine();
     await engine.configureEngine();
+
+    window.Manager = { Startup: module.exports };
+
+    ipc.send('engine:ready');
 }
 
 /**
  * 启动各个管理器
  */
 async function manager(info) {
-
     const backup = {
         warn: console.warn.bind(console),
         error: console.error.bind(console),
@@ -45,17 +48,16 @@ async function manager(info) {
         ipc.send('console', 'error', ...args);
     };
 
-    const manager = window.Manager = {
-        Utils: require(info.utils),
-    };
+    window.Manager.Utils = require(info.utils);
+    const manager = window.Manager;
 
     // 用于编辑器绘制的背景和前景节点
     const foregroundNode = new cc.Node('Editor Scene Foreground');
     const backgroundNode = new cc.Node('Editor Scene Background');
 
     // 编辑器使用的节点不需要存储和显示在层级管理器
-    foregroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
-    backgroundNode._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
+    foregroundNode._objFlags |= cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy;
+    backgroundNode._objFlags |= cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy;
 
     // 这些节点应该是常驻节点
     cc.game.addPersistRootNode(foregroundNode);
