@@ -33,22 +33,31 @@
     <!-- 顶部工具条 -->
     <header id="toolbar">
         <div class="left">
-            <buttons
-                v-for="file in left"
-                :file="file"
-            ></buttons>
+            <template
+                v-for="item in left"
+            >
+                <buttons
+                    :file="item"
+                ></buttons>
+            </template>
         </div>
         <div class="middle">
-            <buttons
-                v-for="file in middle"
-                :file="file"
-            ></buttons>
+            <template
+                v-for="item in middle"
+            >
+                <buttons
+                    :file="item"
+                ></buttons>
+            </template>
         </div>
         <div class="right">
-            <buttons
-                v-for="file in right"
-                :file="file"
-            ></buttons>
+            <template
+                v-for="item in right"
+            >
+                <buttons
+                    :file="item"
+                ></buttons>
+            </template>
         </div>
     </header>
 

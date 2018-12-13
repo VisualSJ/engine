@@ -54,10 +54,6 @@ header .left {
     flex-direction: row;
 }
 
-header .middle {
-    /* flex: 1; */
-}
-
 header .right {
     flex: 1;
     display: flex;

@@ -24,7 +24,7 @@
     
     "--default-text-c": "#bdbdbd",
     "--font-size":"12px",
-    "--font-mono":"Consolas",
+    "--font-mono":"Consolas, Menlo, Monaco, \"Courier New\", monospace",
 
     "--red-c": "#FF8080",
     "--green-c": "#5ADD94",
