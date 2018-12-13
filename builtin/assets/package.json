@@ -47,7 +47,9 @@
             "enter": "right",
 
             "shift+up": "shiftUp",
-            "shift+down": "shiftDown"
+            "shift+down": "shiftDown",
+
+            "f2": "rename"
         }
     }
 }

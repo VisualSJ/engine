@@ -18,9 +18,7 @@ export const props: string[] = [
 ];
 
 export function data() {
-    return {
-        // state: ''
-    };
+    return {};
 }
 
 export const computed = {

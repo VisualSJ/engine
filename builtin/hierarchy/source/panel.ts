@@ -127,6 +127,9 @@ export const methods = {
     shiftDown() {
         vm.$refs.tree.shiftUpDown('down');
     },
+    rename() {
+        vm.$refs.tree.keyboardRename();
+    },
 };
 
 export const messages = {

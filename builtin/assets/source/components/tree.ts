@@ -285,7 +285,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        utils.twinkle.add(uuid);
+        utils.twinkle.add(uuid); // 手动新增的时候，由于 uuid 还不存在，不会生效。
         vm.refresh();
     },
 
@@ -495,6 +495,23 @@ export const methods = {
             Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
             Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
         }
+    },
+
+    /**
+     * 来自快捷键的 rename
+     */
+    keyboardRename() {
+        vm.selects.forEach((uuid: string) => {
+            if (!vm.renameSource) {
+                const asset = utils.getAssetFromTree(uuid);
+                if (!utils.canNotRenameAsset(asset)) {
+                    utils.scrollIntoView(uuid);
+                    vm.$nextTick(() => {
+                        vm.renameSource = asset.source;
+                    });
+                }
+            }
+        });
     },
 
     /**

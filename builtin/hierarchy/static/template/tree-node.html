@@ -26,9 +26,10 @@
         v-else
         :value="node.name"
         @blur="renameSubmit($event, node)"
-        @keyup.stop
-        @keyup.enter="renameSubmit($event, node)"
-        @keyup.esc="renameCancel($event, node)"
+        @keydown.stop
+        @blur.stop
+        @keydown.enter="renameSubmit($event, node)"
+        @keydown.esc="renameCancel($event, node)"
     >
     
     <section class="loading"

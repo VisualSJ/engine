@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { $ } from '../panel';
 
 const db = require('./tree-db');
 const utils = require('./tree-utils');
@@ -270,8 +271,10 @@ export const methods = {
      */
     async add(uuid: string) {
         await db.addNode(uuid);
-
         vm.changeData();
+        vm.$nextTick(() => {
+            utils.scrollIntoView(uuid);
+        });
     },
 
     /**
@@ -515,6 +518,23 @@ export const methods = {
             Editor.Ipc.sendToPackage('selection', 'clear', 'node');
             Editor.Ipc.sendToPackage('selection', 'select', 'node', selects);
         }
+    },
+
+    /**
+     * 来自快捷键的 rename
+     */
+    keyboardRename() {
+        vm.selects.forEach((uuid: string) => {
+            if (!vm.renameUuid) {
+                const node = utils.getNodeFromTree(uuid);
+                if (!utils.canNotRenameNode(node)) {
+                    utils.scrollIntoView(uuid);
+                    vm.$nextTick(() => {
+                        vm.renameUuid = uuid;
+                    });
+                }
+            }
+        });
     },
 
     /**

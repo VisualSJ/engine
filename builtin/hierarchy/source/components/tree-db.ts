@@ -114,6 +114,7 @@ function addNodeIntoTree(newNode: any) {
     }
 
     vm.$set(parentNode.children, index, legealNodeAttr(newNode));
+    vm.folds[parentNode.uuid] = true; // 父级节点展开
 
     // 显示节点中可能附带的 children 节点，例如 prefab
     if (Array.isArray(newNode.children)) {
