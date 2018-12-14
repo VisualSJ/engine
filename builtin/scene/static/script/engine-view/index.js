@@ -132,7 +132,9 @@ class View extends window.HTMLElement {
         if (item && !item.install) {
             const installItemNames = this.dependence.filter((item) => item.install).map((item) => item.name);
             // 未完成且有自身依赖需要发消息的依赖项
-            const hasDependItems = this.dependence.filter((item) => item.depends && !item.install && item.message);
+            const hasDependItems = this.dependence.filter(
+                (item) => item.depends && !item.install && item.message && item.name !== name
+            );
 
             // 添加当前完成的依赖名称
             installItemNames.push(name);
