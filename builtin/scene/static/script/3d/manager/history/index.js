@@ -18,8 +18,19 @@ nodeManager.on('changed', (node) => {
 });
 
 nodeManager.on('added', (node) => {
-    record(node.uuid);
+    loopRecord(node);
 });
+
+// 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
+function loopRecord(node) {
+    record(node.uuid);
+
+    if (Array.isArray(node.children)) {
+        node.children.forEach((child) => {
+            loopRecord(child);
+        });
+    }
+}
 
 nodeManager.on('removed', (node) => {
     // 注意：删除节点不需要保存之前的状态，因为它的父节点 children 已做了 change 的变更记录
