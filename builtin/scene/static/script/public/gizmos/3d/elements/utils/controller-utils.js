@@ -4,9 +4,14 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 const ControllerShapeCollider = require('./controller-shape-collider');
 const { gfx, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
-let ControllerUtils = {};
+const Utils = require('../../../utils');
+const MathUtil = External.EditorMath;
 
+const vec3 = cc.vmath.vec3;
+
+let ControllerUtils = {};
 ControllerUtils.YELLOW = new cc.Color(255, 255, 0);
+ControllerUtils.LightGizmoColor = new cc.Color(255, 255, 50);
 
 ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name) {
     if (name == null) {
@@ -19,8 +24,8 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
     let cylinderNode = create3DNode('ArrowBody');
     cylinderNode.parent = axisNode;
     addMeshToNode(cylinderNode,
-        //ControllerShape.Cylinder(bodyRadius, bodyRadius, bodyHeight, 10, 10));
-        ControllerShape.LineWithBoundingBox(bodyHeight), { alpha: 200, noDepthTestForLines: true });
+        //ControllerShape.cylinder(bodyRadius, bodyRadius, bodyHeight, 10, 10));
+        ControllerShape.lineWithBoundingBox(bodyHeight), { alpha: 200, noDepthTestForLines: true });
     setMeshColor(cylinderNode, color);
     cylinderNode.eulerAngles = cc.v3(0, 0, 90);
     let csc = cylinderNode.addComponent(ControllerShapeCollider);
@@ -30,7 +35,7 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
     let coneNode = create3DNode('ArrowHead');
     coneNode.parent = axisNode;
     addMeshToNode(coneNode,
-        ControllerShape.Cone(headRadius, headHeight), { cullMode: gfx.CULL_BACK });
+        ControllerShape.cone(headRadius, headHeight), { cullMode: gfx.CULL_BACK });
     setMeshColor(coneNode, color);
     coneNode.setPosition(cc.v3(0, bodyHeight + headHeight / 2, 0));
     csc = coneNode.addComponent(ControllerShapeCollider);
@@ -41,7 +46,7 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
 
 ControllerUtils.plane = function(width, height, color = cc.Color.RED, name = 'plane') {
     let planeNode = create3DNode(name);
-    addMeshToNode(planeNode, ControllerShape.Plane(width, height));
+    addMeshToNode(planeNode, ControllerShape.plane(width, height));
     setMeshColor(planeNode, color);
     return planeNode;
 };
@@ -57,7 +62,7 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     // plane
     let planeNode = create3DNode('Plane');
     addMeshToNode(planeNode,
-        ControllerShape.Plane(width, height));
+        ControllerShape.plane(width, height));
     setMeshColor(planeNode, color);
     setNodeOpacity(planeNode, 128);
     planeNode.parent = borderPlane;
@@ -67,7 +72,7 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     function createBorder(startPos, endPos, color) {
         let borderNode = create3DNode('border');
         addMeshToNode(borderNode,
-            ControllerShape.Line(startPos, endPos), { alpha: 200, noDepthTestForLines: true });
+            ControllerShape.line(startPos, endPos), { alpha: 200, noDepthTestForLines: true });
         setMeshColor(borderNode, color);
         borderNode.parent = borderPlane;
         return borderNode;
@@ -80,14 +85,14 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     return borderPlane;
 };
 
-ControllerUtils.circle = function(radius, color, name) {
+ControllerUtils.circle = function(center, normal, radius, color, name) {
     if (name == null) {
         name = 'circle';
     }
 
     let circleNode = create3DNode(name);
     addMeshToNode(circleNode,
-        ControllerShape.Circle(radius, 64));
+        ControllerShape.circle(center, normal, radius));
     setMeshColor(circleNode, color);
 
     return circleNode;
@@ -96,7 +101,7 @@ ControllerUtils.circle = function(radius, color, name) {
 ControllerUtils.torus = function(radius, tube, opts, color, name = 'torus') {
     let torusNode = create3DNode(name);
     addMeshToNode(torusNode,
-        ControllerShape.Torus(radius, tube, opts), { cullMode: gfx.CULL_BACK });
+        ControllerShape.torus(radius, tube, opts), { cullMode: gfx.CULL_BACK });
     setMeshColor(torusNode, color);
     let csc = torusNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = true;
@@ -111,7 +116,7 @@ ControllerUtils.cube = function(width, height, depth, color, name) {
     }
     let cubeNode = create3DNode(name);
     addMeshToNode(cubeNode,
-        ControllerShape.Cube(width, height, depth), { cullMode: gfx.CULL_BACK });
+        ControllerShape.cube(width, height, depth), { cullMode: gfx.CULL_BACK });
     setMeshColor(cubeNode, color);
     let csc = cubeNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = false;
@@ -129,7 +134,7 @@ ControllerUtils.scaleSlider = function(headWidth, bodyHeight, color, name) {
 
     let bodyNode = create3DNode('ScaleSliderBody');
     addMeshToNode(bodyNode,
-        ControllerShape.LineWithBoundingBox(bodyHeight));
+        ControllerShape.lineWithBoundingBox(bodyHeight), { noDepthTestForLines: true });
     setMeshColor(bodyNode, color);
     bodyNode.parent = scaleSliderNode;
     bodyNode.eulerAngles = cc.v3(0, 0, 90);
@@ -146,10 +151,10 @@ ControllerUtils.getCameraDistanceFactor = function(pos, camera) {
     return dist;
 };
 
-ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED) {
+ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED, opts) {
     let lineNode = create3DNode('line');
     addMeshToNode(lineNode,
-        ControllerShape.Line(startPos, endPos));
+        ControllerShape.line(startPos, endPos), opts);
     setMeshColor(lineNode, color);
 
     return lineNode;
@@ -158,16 +163,16 @@ ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED) {
 ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color = cc.Color.RED) {
     let sectorNode = create3DNode('sector');
     addMeshToNode(sectorNode,
-        ControllerShape.Sector(center, normal, fromDir, radian, radius, 60));
+        ControllerShape.sector(center, normal, fromDir, radian, radius, 60));
     setMeshColor(sectorNode, color);
 
     return sectorNode;
 };
 
-ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED) {
+ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED, opts) {
     let arcNode = create3DNode('arc');
     addMeshToNode(arcNode,
-        ControllerShape.Arc(center, normal, fromDir, radian, radius));
+        ControllerShape.arc(center, normal, fromDir, radian, radius), opts);
     setMeshColor(arcNode, color);
 
     return arcNode;
@@ -177,7 +182,7 @@ ControllerUtils.arcDirectionLine = function(center, normal, fromDir, radian,
                                             radius, length, segments, color = cc.Color.RED) {
     let arcDirNode = create3DNode('arcDirLine');
     addMeshToNode(arcDirNode,
-        ControllerShape.ArcDirectionLine(center, normal, fromDir, radian, radius, length, segments));
+        ControllerShape.arcDirectionLine(center, normal, fromDir, radian, radius, length, segments));
     setMeshColor(arcDirNode, color);
 
     return arcDirNode;
@@ -186,7 +191,7 @@ ControllerUtils.arcDirectionLine = function(center, normal, fromDir, radian,
 ControllerUtils.lines = function(vertices, indices, color = cc.Color.RED) {
     let linesNode = create3DNode('lines');
     addMeshToNode(linesNode,
-        ControllerShape.Lines(vertices, indices));
+        ControllerShape.lines(vertices, indices));
     setMeshColor(linesNode, color);
 
     return linesNode;
@@ -195,7 +200,7 @@ ControllerUtils.lines = function(vertices, indices, color = cc.Color.RED) {
 ControllerUtils.wireframeBox = function(center, size, color) {
     let boxNode = create3DNode('wireframeBox');
     addMeshToNode(boxNode,
-        ControllerShape.WireframeBox(center, size));
+        ControllerShape.wireframeBox(center, size));
     setMeshColor(boxNode, color);
 
     return boxNode;
@@ -204,10 +209,20 @@ ControllerUtils.wireframeBox = function(center, size, color) {
 ControllerUtils.frustum = function(fov, aspect, near, far, color) {
     let frustumNode = create3DNode('frustumNode');
     addMeshToNode(frustumNode,
-        ControllerShape.Frustum(fov, aspect, near, far));
+        ControllerShape.frustum(fov, aspect, near, far));
     setMeshColor(frustumNode, color);
 
     return frustumNode;
+};
+
+ControllerUtils.angle = function(from, to) {
+    let demominator = Math.sqrt(Utils.getSqrMagnitude(from) * Utils.getSqrMagnitude(to));
+    if (demominator < MathUtil.EPSILON) {
+        return 0;
+    }
+
+    let dot = MathUtil.clamp(vec3.dot(from, to) / demominator, -1, 1);
+    return Math.acos(dot) * MathUtil.R2D;
 };
 
 module.exports = ControllerUtils;

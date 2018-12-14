@@ -3,7 +3,7 @@
 let ControllerBase = require('./controller-base');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, create3DNode, getModel, updateVBAttr } = require('../../../utils/engine');
+const { gfx, setMeshColor, getModel, updateVBAttr } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
@@ -12,7 +12,7 @@ class ConeController extends ControllerBase {
         super(rootNode);
 
         this._oriDir = cc.v3(0, 0, -1);
-        this._oriColor = new cc.Color(180, 176, 114);
+        this._color = cc.Color.WHITE;
         this._center = cc.v3();
         this._radius = 100;
         this._height = 100;
@@ -30,19 +30,26 @@ class ConeController extends ControllerBase {
         this.updateSize(this._center, this._radius, value);
     }
 
+    setColor(color) {
+        setMeshColor(this._coneLineNode, color);
+        setMeshColor(this._circleNode, color);
+        this._color = color;
+    }
+
     initShape() {
         this.createShapeNode('ConeController');
 
         this._circleFromDir = cc.v3(1, 0, 0);
         // for cone line
         let lineData = this.getConeLineData();
-        let coneLineNode = ControllerUtils.lines(lineData.vertices, lineData.indices, this._oriColor);
+        let coneLineNode = ControllerUtils.lines(lineData.vertices, lineData.indices, this._color);
         coneLineNode.parent = this.shape;
+        this._coneLineNode = coneLineNode;
         this._coneLineMR = getModel(coneLineNode);
 
         // for circle
         let circleNode = ControllerUtils.arc(this._center, this._oriDir,
-            this._circleFromDir, this._twoPI, this._radius, this._oriColor);
+            this._circleFromDir, this._twoPI, this._radius, this._color);
         circleNode.parent = this.shape;
         let pos = cc.v3();
         vec3.scale(pos, this._oriDir, this._height);
@@ -56,7 +63,7 @@ class ConeController extends ControllerBase {
         let vertices = [];
         let indices = [];
 
-        let arcPoints = ControllerShape.CalcArcPoints(this._center, this._oriDir,
+        let arcPoints = ControllerShape.calcArcPoints(this._center, this._oriDir,
             this._circleFromDir, this._twoPI, this._radius, 5);
         arcPoints = arcPoints.slice(0, arcPoints.length - 1);
 
@@ -86,7 +93,7 @@ class ConeController extends ControllerBase {
         updateVBAttr(this._coneLineMR.mesh, gfx.ATTR_POSITION, lineData.vertices);
 
         // update circle
-        let circlePoints = ControllerShape.CalcArcPoints(
+        let circlePoints = ControllerShape.calcArcPoints(
             this._center, this._oriDir,
             this._circleFromDir, this._twoPI, this._radius
         );

@@ -45,9 +45,14 @@ class ControllerBase {
     }
 
     registerSizeChangeEvents() {
-        EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
+        this.registerCameraMovedEvent();
+
         TransformToolData.on('dimension-changed', this.onDimensionChanged.bind(this));
         TransformToolData.on('scale2D-changed', this.onScale2DChanged.bind(this));
+    }
+
+    registerCameraMovedEvent() {
+        EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
     }
 
     onEditorCameraMoved() {

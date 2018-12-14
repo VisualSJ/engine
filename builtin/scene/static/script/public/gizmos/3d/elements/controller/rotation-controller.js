@@ -41,13 +41,13 @@ class RotationController extends ControllerBase {
         arrowNode.parent = topNode;
         NodeUtils.setEulerAngles(arrowNode, arrowRot);
         let arcNode = ControllerUtils.arc(cc.v3(),
-            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color);
+            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color, { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.name = axisName + 'RotationArc';
 
         // indicator circle
-        arcNode = ControllerUtils.arc(cc.v3(),
-            this._axisDir[axisName], arcFromDir, this._twoPI, baseRadius, color);
+        arcNode = ControllerUtils.arc(cc.v3(), this._axisDir[axisName], arcFromDir,
+            this._twoPI, baseRadius, color, { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.active = false;
         arcNode.name = axisName + 'IndicatorCircle';
@@ -279,7 +279,7 @@ class RotationController extends ControllerBase {
     }
 
     updateRotationIndicator(normal, fromDir, radian) {
-        let positions = ControllerShape.CalcSectorPoints(
+        let positions = ControllerShape.calcSectorPoints(
             this._position, normal, fromDir, radian,
             this._baseRadius * this.getDistScalar(), 60);
 

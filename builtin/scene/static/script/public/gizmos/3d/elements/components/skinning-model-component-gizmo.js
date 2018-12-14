@@ -29,6 +29,7 @@ class SkinningModelComponentGizmo extends Gizmo {
     createController() {
         let gizmoRoot = this.getGizmoRoot();
         this._controller = new BoxController(gizmoRoot);
+        this._controller.setOpacity(150);
     }
 
     updateControllerTransform() {

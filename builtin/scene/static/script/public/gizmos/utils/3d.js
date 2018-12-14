@@ -33,6 +33,10 @@ class Utils3D extends UtilsInterface {
     commitChanges(nodes) {
         // todo
     }
+
+    getSqrMagnitude(inVec3) {
+        return cc.vmath.vec3.sqrMag(inVec3);
+    }
 }
 
 module.exports = new Utils3D();

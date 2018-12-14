@@ -41,6 +41,9 @@ class EngineInterface {
 
     getCameraData(component) {
     }
+
+    getLightData(component) {
+    }
 }
 
 module.exports = EngineInterface;

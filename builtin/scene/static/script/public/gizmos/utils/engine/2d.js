@@ -64,7 +64,7 @@ class Engine2D extends EngineInterface {
                 }
             }
             return distance;
-        }, function (node) {
+        }, function(node) {
             let hasMesh = node.getComponent(cc.MeshRenderer);
             if (hasMesh == null || node.active === false) {
                 return false;
@@ -133,8 +133,7 @@ class Engine2D extends EngineInterface {
             cameraData = {};
             if (component.ortho) {
                 cameraData.projection = 0;
-            }
-            else {
+            } else {
                 cameraData.projection = 1;
             }
 

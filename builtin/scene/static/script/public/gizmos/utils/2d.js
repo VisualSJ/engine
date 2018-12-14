@@ -32,6 +32,10 @@ class Utils2D extends UtilsInterface {
         AnimUtils.recordNodeChanged(nodes);
         _Scene.Undo.commit();
     }
+
+    getSqrMagnitude(inVec3) {
+        return cc.vmath.vec3.squaredLength(inVec3);
+    }
 }
 
 module.exports = new Utils2D();

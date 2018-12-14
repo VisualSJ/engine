@@ -51,6 +51,9 @@ class UtilsInterface {
      */
     commitChanges(nodes) {
     }
+
+    getSqrMagnitude(inVec3) {
+    }
 }
 
 module.exports = UtilsInterface;

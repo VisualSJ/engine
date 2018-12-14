@@ -5,7 +5,9 @@ let DirectionLightController = require('../controller/direction-light-controller
 let PointLightController = require('../controller/sphere-controller');
 let SpotLightController = require('../controller/cone-controller');
 let Gizmo = require('../gizmo-base');
-const { create3DNode } = require('../../../utils/engine');
+let ControllerUtils = require('../utils/controller-utils');
+const { create3DNode, getLightData } = require('../../../utils/engine');
+const MathUtil = External.EditorMath;
 
 class LightComponentGizmo extends Gizmo {
     init() {
@@ -13,7 +15,6 @@ class LightComponentGizmo extends Gizmo {
         this.Point = 1;
         this.Spot = 2;
         this._curLightType = 0; // 0:direction, 1:point, 2:spot
-        this._degreeToRadianFactor = Math.PI / 180;
         this.createController();
         this._isInited = true;
     }
@@ -36,8 +37,11 @@ class LightComponentGizmo extends Gizmo {
 
         this._lightController = [];
         this._lightController[this.Direction] = new DirectionLightController(LightGizmoRoot);
+        this._lightController[this.Direction].setColor(ControllerUtils.LightGizmoColor);
         this._lightController[this.Point] = new PointLightController(LightGizmoRoot);
+        this._lightController[this.Point].setColor(ControllerUtils.LightGizmoColor);
         this._lightController[this.Spot] = new SpotLightController(LightGizmoRoot);
+        this._lightController[this.Spot].setColor(ControllerUtils.LightGizmoColor);
         this._activeController = this._lightController[2];
     }
 
@@ -60,13 +64,13 @@ class LightComponentGizmo extends Gizmo {
             return;
         }
 
-        if (this.target instanceof cc.LightComponent) {
+        let lightData = getLightData(this.target);
+        if (lightData) {
+            if (this._activeController) {
+                this._activeController.hide();
+            }
 
-            this._curLightType = this.target.type;
-            this._lightController.forEach((controller) => {
-                controller.hide();
-            });
-
+            this._curLightType = lightData.type;
             if (this._curLightType >= this._lightController.length) {
                 console.error('no light controller of type:', this._curLightType);
                 return;
@@ -78,18 +82,16 @@ class LightComponentGizmo extends Gizmo {
                 case this.Direction:
                     break;
                 case this.Point:
-                    this._activeController.radius = this.target.range;
+                    this._activeController.radius = lightData.range;
                     break;
                 case this.Spot:
-                    let radius = Math.tan(this.target.spotAngle / 2 * this._degreeToRadianFactor) * this.target.range;
-                    this._activeController.updateSize(cc.v3(), radius, this.target.range);
+                    let radius = Math.tan(lightData.spotAngle / 2 * MathUtil.D2R) * lightData.range;
+                    this._activeController.updateSize(cc.v3(), radius, lightData.range);
                     break;
             }
 
             this._activeController.show();
             this.updateControllerTransform();
-        } else {
-            console.error('target is not a cc.LightComponent');
         }
     }
 

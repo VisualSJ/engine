@@ -1,9 +1,7 @@
 'use strict';
 
 let ControllerBase = require('./controller-base');
-let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, create3DNode, getModel, updateVBAttr } = require('../../../utils/engine');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 const EditorCamera = External.EditorCamera;
@@ -23,7 +21,8 @@ class WorldAxisController extends ControllerBase {
 
         // let axisNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
         //     baseArrowBodyHeight, color, axisName + 'Axis');
-        let axisNode = ControllerUtils.lineTo(cc.v3(), cc.v3(0, baseArrowBodyHeight, 0), color);
+        let axisNode = ControllerUtils.lineTo(cc.v3(), cc.v3(0, baseArrowBodyHeight, 0),
+            color, { noDepthTestForLines: true });
         axisNode.name = axisName + 'Axis';
         axisNode.parent = this.shape;
         NodeUtils.setEulerAngles(axisNode, rotation);
@@ -41,7 +40,7 @@ class WorldAxisController extends ControllerBase {
         // z axis
         this.createAxis('z', cc.Color.BLUE, cc.v3(90, 0, 90));
 
-        EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
+        this.registerCameraMovedEvent();
     }
 
     // don't scale when camera move

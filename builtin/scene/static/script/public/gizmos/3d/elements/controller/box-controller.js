@@ -3,7 +3,7 @@
 let ControllerBase = require('./controller-base');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, create3DNode, getModel, updateVBAttr } = require('../../../utils/engine');
+const { gfx, create3DNode, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
@@ -11,7 +11,7 @@ class BoxController extends ControllerBase {
     constructor(rootNode) {
         super(rootNode);
 
-        this._oriColor = cc.Color.WHITE;
+        this._color = cc.Color.WHITE;
         this._center = cc.v3();
         this._size = cc.v3(1, 1, 1);
 
@@ -31,6 +31,19 @@ class BoxController extends ControllerBase {
             if (this._editControllerShape) {
                 this._editControllerShape.active = false;
             }
+        }
+    }
+
+    setColor(color) {
+        if (this._wireframeBoxNode) {
+            this._color = color;
+            setMeshColor(this._wireframeBoxNode, color);
+        }
+    }
+
+    setOpacity(opacity) {
+        if (this._wireframeBoxNode) {
+            setNodeOpacity(this._wireframeBoxNode, opacity);
         }
     }
 
@@ -79,7 +92,7 @@ class BoxController extends ControllerBase {
     initShape() {
         this.createShapeNode('BoxController');
 
-        this._wireframeBoxNode = ControllerUtils.wireframeBox(this._center, this._size, this._oriColor);
+        this._wireframeBoxNode = ControllerUtils.wireframeBox(this._center, this._size, this._color);
         this._wireframeBoxNode.parent = this.shape;
         this._wireframeBoxMeshRenderer = getModel(this._wireframeBoxNode);
         this.hide();
@@ -93,7 +106,7 @@ class BoxController extends ControllerBase {
         this._center = center;
         this._size = size;
 
-        let positions = ControllerShape.CalcBoxPoints(this._center, this._size);
+        let positions = ControllerShape.calcBoxPoints(this._center, this._size);
 
         updateVBAttr(this._wireframeBoxMeshRenderer.mesh, gfx.ATTR_POSITION, positions);
 

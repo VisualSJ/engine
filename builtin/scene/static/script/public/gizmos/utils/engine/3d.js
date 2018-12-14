@@ -42,7 +42,7 @@ class Engine3D extends EngineInterface {
         mtl.effectName = '__editor-gizmo';
         if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
             mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
-            node.modelColor.a = opts.alpha || 128; // blend in
+            //node.modelColor.a = opts.alpha || 128; // blend in
         }
         mtl.setProperty('color', node.modelColor);
         if (mtl.effect) {
@@ -144,6 +144,21 @@ class Engine3D extends EngineInterface {
         }
 
         return cameraData;
+    }
+
+    getLightData(component) {
+        let lightData = null;
+
+        if (component instanceof cc.LightComponent) {
+            lightData = {};
+            lightData.type = component.type;
+            lightData.range = component.range;
+            lightData.spotAngle = component.spotAngle;
+        } else {
+            console.error('target is not a cc.LightComponent');
+        }
+
+        return lightData;
     }
 }
 

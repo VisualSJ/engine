@@ -6,8 +6,9 @@ const { gfx, createMesh } = require('../../../utils/engine');
 const { vec3, quat } = cc.vmath;
 const External = require('../../../utils/external');
 const MathUtil = External.EditorMath;
+const Utils = require('../../../utils');
 
-ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height = 2, opts = {}) {
+ControllerShape.cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height = 2, opts = {}) {
     let halfHeight = height * 0.5;
     let radialSegments = opts.radialSegments || 16;
     let heightSegments = opts.heightSegments || 1;
@@ -210,11 +211,11 @@ ControllerShape.Cylinder = function(radiusTop = 0.5, radiusBottom = 0.5, height 
     });
 };
 
-ControllerShape.Cone = function(radius, height, opts) {
-    return ControllerShape.Cylinder(0, radius, height, opts);
+ControllerShape.cone = function(radius, height, opts) {
+    return ControllerShape.cylinder(0, radius, height, opts);
 };
 
-ControllerShape.Plane = function(width, height) {
+ControllerShape.plane = function(width, height) {
     let hw = width / 2;
     let hh = height / 2;
     return createMesh({
@@ -228,7 +229,7 @@ ControllerShape.Plane = function(width, height) {
     });
 };
 
-ControllerShape.Line = function(startPos, endPos) {
+ControllerShape.line = function(startPos, endPos) {
     return createMesh({
         positions: [cc.v3(startPos.x, startPos.y, startPos.z),
         cc.v3(endPos.x, endPos.y, endPos.z)],
@@ -238,7 +239,7 @@ ControllerShape.Line = function(startPos, endPos) {
     });
 };
 
-ControllerShape.LineWithBoundingBox = function(length, size = 3) {
+ControllerShape.lineWithBoundingBox = function(length, size = 3) {
     return createMesh({
         positions: [cc.v3(), cc.v3(length, 0, 0)],
         normals: Array(2).fill(cc.v3(0, 1, 0)),
@@ -249,19 +250,14 @@ ControllerShape.LineWithBoundingBox = function(length, size = 3) {
     });
 };
 
-ControllerShape.Circle = function(radius, segments) {
-    let TwoPI = Math.PI * 2;
-    return createMesh({
-        positions: Array(segments).fill(0).map((_, i) =>
-            cc.v3(radius * Math.cos(i / segments * TwoPI),
-                radius * Math.sin(i / segments * TwoPI), 0)),
-        normals: Array(segments).fill(cc.v3(0, 0, 1)),
-        indices: [...Array(segments).keys()],
-        primitiveType: gfx.PT_LINE_LOOP,
-    });
+ControllerShape.circle = function(center, normal, radius) {
+
+    let biNormal = ControllerShape.getBiNormalByNormal(normal);
+
+    return ControllerShape.arc(center, normal, biNormal, MathUtil.TWO_PI, radius, 60);
 };
 
-ControllerShape.Cube = function(width, height, length, opts = {}) {
+ControllerShape.cube = function(width, height, length, opts = {}) {
     let ws = opts.widthSegments ? opts.widthSegments : 1;
     let hs = opts.heightSegments ? opts.heightSegments : 1;
     let ls = opts.lengthSegments ? opts.lengthSegments : 1;
@@ -356,7 +352,7 @@ ControllerShape.Cube = function(width, height, length, opts = {}) {
     });
 };
 
-ControllerShape.Torus = function(radius, tube, opts = {}) {
+ControllerShape.torus = function(radius, tube, opts = {}) {
     let radialSegments = opts.radialSegments || 30;
     let tubularSegments = opts.tubularSegments || 20;
     let arc = opts.arc || 2.0 * Math.PI;
@@ -413,9 +409,9 @@ ControllerShape.Torus = function(radius, tube, opts = {}) {
     });
 };
 
-ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius, segments = 60) {
+ControllerShape.calcArcPoints = function(center, normal, fromDir, radian, radius, segments = 60) {
     vec3.normalize(fromDir, fromDir);
-
+    vec3.normalize(normal, normal);
     let deltaRot = cc.quat(0, 0, 0, 1);
     //let count = Math.ceil(radian * segments / (Math.PI * 2));
     let count = segments;
@@ -432,38 +428,54 @@ ControllerShape.CalcArcPoints = function(center, normal, fromDir, radian, radius
     return arcPoints;
 };
 
-ControllerShape.CalcSectorPoints = function(center, normal, fromDir, radian, radius, segments) {
+ControllerShape.getBiNormalByNormal = function(normal) {
+    let biNormal = cc.v3();
+    vec3.cross(biNormal, normal, cc.v3(0, 1, 0));
+    if (Utils.getSqrMagnitude(biNormal) < 0.001) {
+        vec3.cross(biNormal, normal, cc.v3(1, 0, 0));
+    }
+
+    return biNormal;
+};
+
+ControllerShape.calcCirclePoints = function(center, normal, radius, segments = 60) {
+    let biNormal = ControllerShape.getBiNormalByNormal(normal);
+
+    return ControllerShape.calcArcPoints(center, normal, biNormal, MathUtil.TWO_PI, radius, segments);
+};
+
+ControllerShape.calcSectorPoints = function(center, normal, fromDir, radian, radius, segments) {
     let sectorPoints = [];
     sectorPoints.push(center);
-    let arcPoints = ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments);
+    let arcPoints = ControllerShape.calcArcPoints(center, normal, fromDir, radian, radius, segments);
     sectorPoints = sectorPoints.concat(arcPoints);
     return sectorPoints;
 };
 
-ControllerShape.Sector = function(center, normal, fromDir, radian, radius, segments) {
+ControllerShape.sector = function(center, normal, fromDir, radian, radius, segments) {
     return createMesh({
-        positions: ControllerShape.CalcSectorPoints(center, normal, fromDir, radian, radius, segments),
+        positions: ControllerShape.calcSectorPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments + 1).fill(cc.v3(normal)),
         indices: [...Array(segments + 1).keys()],
         primitiveType: gfx.PT_TRIANGLE_FAN,
     });
 };
 
-ControllerShape.Arc = function(center, normal, fromDir, radian, radius, segments = 60) {
+ControllerShape.arc = function(center, normal, fromDir, radian, radius, segments = 60) {
     return createMesh({
-        positions: ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments),
+        positions: ControllerShape.calcArcPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments).fill(cc.v3(normal)),
         indices: [...Array(segments).keys()],
         primitiveType: gfx.PT_LINE_STRIP,
     });
 };
 
-ControllerShape.ArcDirectionLine = function(center, normal, fromDir, radian, radius, length, segments) {
+ControllerShape.arcDirectionLine = function(center, normal, fromDir, radian, radius, length, segments) {
     let vertices = [];
     let indices = [];
 
     // add directin line
-    let arcPoints = ControllerShape.CalcArcPoints(center, normal, fromDir, radian, radius, segments);
+    let arcPoints = ControllerShape.calcArcPoints(center, normal, fromDir, radian, radius, segments);
     let endOffset = cc.v3();
     vec3.scale(endOffset, normal, length);
     for (let i = 0; i < arcPoints.length; i++) {
@@ -489,7 +501,7 @@ ControllerShape.ArcDirectionLine = function(center, normal, fromDir, radian, rad
     });
 };
 
-ControllerShape.Lines = function(vertices, indices) {
+ControllerShape.lines = function(vertices, indices) {
     return createMesh({
         positions: vertices,
         normals: Array(vertices.length).fill(cc.v3(0, 1, 0)),
@@ -498,7 +510,7 @@ ControllerShape.Lines = function(vertices, indices) {
     });
 };
 
-ControllerShape.CalcBoxPoints = function(center, size) {
+ControllerShape.calcBoxPoints = function(center, size) {
     let halfSize = cc.v3();
     vec3.scale(halfSize, size, 0.5);
     let points = [];
@@ -516,8 +528,8 @@ ControllerShape.CalcBoxPoints = function(center, size) {
     return points;
 };
 
-ControllerShape.WireframeBox = function(center, size) {
-    let points = ControllerShape.CalcBoxPoints(center, size);
+ControllerShape.wireframeBox = function(center, size) {
+    let points = ControllerShape.calcBoxPoints(center, size);
     let indices = [];
 
     for (let i = 1; i < 4; i++) {
@@ -542,7 +554,7 @@ ControllerShape.WireframeBox = function(center, size) {
     });
 };
 
-ControllerShape.CalcFrustum = function(isOrtho, orthoHeight, fov, aspect, near, far) {
+ControllerShape.calcFrustum = function(isOrtho, orthoHeight, fov, aspect, near, far) {
     let points = [];
     let indices = [];
     let nearHalfHeight;
@@ -587,8 +599,8 @@ ControllerShape.CalcFrustum = function(isOrtho, orthoHeight, fov, aspect, near, 
     return { vertices: points, indices: indices };
 };
 
-ControllerShape.Frustum = function(fov, aspect, near, far) {
-    let frustumData = ControllerShape.CalcFrustum(fov, aspect, near, far);
+ControllerShape.frustum = function(fov, aspect, near, far) {
+    let frustumData = ControllerShape.calcFrustum(fov, aspect, near, far);
 
     return createMesh(
         {
