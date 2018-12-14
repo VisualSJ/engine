@@ -125,6 +125,7 @@ export const methods = {
      * @param node
      */
     dblclick(event: Event, node: ItreeNode) {
+        // @ts-ignore
         this.$emit('ipcSingleSelect', node.uuid);
         Editor.Ipc.sendToPanel('scene', 'focus-camera', [node.uuid]);
     },
