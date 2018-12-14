@@ -9,7 +9,8 @@ import GltfImporter, {
     GltfMaterialImporter,
     GltfMeshImporter,
     GltfPrefabImporter,
-    GltfSkeletonImporter
+    GltfSkeletonImporter,
+    GltfImageImporter
 } from './importers/gltf';
 import ImageImporter from './importers/image';
 import JavascriptImporter from './importers/javascript';
@@ -73,6 +74,7 @@ export function register(database: AssetDB) {
     database.register(new GltfSkeletonImporter());
     database.register(new GltfMaterialImporter());
     database.register(new GltfPrefabImporter());
+    database.register(new GltfImageImporter());
 
     database.register(new FbxImporter(), '.fbx');
 

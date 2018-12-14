@@ -1,6 +1,6 @@
 import { Asset, Importer } from 'asset-db';
 import { extname } from 'path';
-import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
+import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData, makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
@@ -66,8 +66,8 @@ export default class ImageImporter extends Importer {
                 case 'texture':
                 case 'normal map':
                     const texture2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
-                    Object.assign(texture2DSubAsset.userData, makeDefaultTexture2DAssetUserData());
-                    (texture2DSubAsset.userData as Texture2DAssetUserData).imageSource = asset.source;
+                    Object.assign(texture2DSubAsset.userData,
+                        makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
                     break;
                 case 'texture cube':
                     const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');

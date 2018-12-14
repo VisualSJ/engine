@@ -4,11 +4,26 @@ import { applyTextureBaseAssetUserData,
     TextureBaseAssetUserData } from './texture-base';
 
 export interface Texture2DAssetUserData extends TextureBaseAssetUserData {
-    imageSource?: string;
+    isUuid?: boolean;
+    imageUuidOrPath?: string;
 }
 
 export function makeDefaultTexture2DAssetUserData(): Texture2DAssetUserData {
     return makeDefaultTextureBaseAssetUserData();
+}
+
+export function makeDefaultTexture2DAssetUserDataFromImagePath(path: string): Texture2DAssetUserData {
+    return Object.assign(makeDefaultTextureBaseAssetUserData(), {
+        isUuid: false,
+        imageUuidOrPath: path,
+    });
+}
+
+export function makeDefaultTexture2DAssetUserDataFromImageUuid(uuid: string): Texture2DAssetUserData {
+    return Object.assign(makeDefaultTextureBaseAssetUserData(), {
+        isUuid: true,
+        imageUuidOrPath: uuid,
+    });
 }
 
 export default class TextureImporter extends Importer {
@@ -55,16 +70,23 @@ export default class TextureImporter extends Importer {
             // @ts-ignore
             const texture = new cc.Texture2D();
             applyTextureBaseAssetUserData(userData, texture);
-            const imageSource = userData.imageSource as string;
-            if (imageSource) {
-                asset.rely(imageSource);
-                const imageUuid = this.assetDB!.pathToUuid(imageSource);
-                if (imageUuid) {
+
+            // Get image.
+            const imageUuidOrPath = userData.imageUuidOrPath;
+            if (imageUuidOrPath) {
+                let imageUuid: string | null = null;
+                if (userData.isUuid) {
+                    imageUuid = imageUuidOrPath;
+                } else {
+                    imageUuid = this.assetDB!.pathToUuid(imageUuidOrPath);
+                }
+                if (imageUuid !== null) {
                     // @ts-ignore
                     const image = Manager.serialize.asAsset(imageUuid);
                     texture._mipmaps = [image];
                 }
             }
+
             // @ts-ignore
             await asset.saveToLibrary('.json', Manager.serialize(texture));
 
