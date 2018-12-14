@@ -10,16 +10,40 @@ const messages = {
     ///////////
     // 通知消息
     async 'engine:ready'() {
-        this.removeDependence('engine');
+        this.installDependence('engine');
+    },
+
+    async 'engine:close'() {
+        this.uninstallDependence('engine');
+    },
+
+    ///////////
+    // 通知消息
+    async 'scene-panel:ready'() {
+        this.installDependence('scene-panel');
+    },
+
+    async 'scene-panel:close'() {
+        this.uninstallDependence('scene-panel');
+    },
+
+    ///////////
+    // 通知消息
+    async 'manager:ready'() {
+        this.installDependence('manager');
+    },
+
+    async 'manager:close'() {
+        this.uninstallDependence('manager');
     },
 
     ///////////
     // 所有依赖 ready
-    async 'dependence:ready'(info) {
-        this.ipc.forceSend('call-method', {
+    async 'manager-deps:ready'() {
+        await this.ipc.forceSend('call-method', {
             module: 'Startup',
             handler: 'manager',
-            params: [info],
+            params: [this.info],
         });
     },
 

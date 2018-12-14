@@ -17,5 +17,7 @@ requestAnimationFrame(async () => {
 
 // 进程刷新的时候，需要广播
 window.addEventListener('beforeunload', () => {
+    ipc.send('manager:close');
+    ipc.send('engine:close');
     ipc.send('broadcast', 'scene:close');
 });

@@ -97,10 +97,7 @@ async function manager(info) {
 
     // 标记准备就绪，开始接收主窗口发送过来的 ipc 消息
     ipc.ready();
-
-    // 启动场景，之前启动了的话，会在 open 方法内被终止
-    const uuid = await ipc.send('query-scene');
-    await scene.open(uuid || '');
+    ipc.send('manager:ready');
 }
 
 exports.init = init;

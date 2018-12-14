@@ -3,10 +3,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import {
-    apply as messageApply,
-    init as messageInit,
-} from './message';
+import { apply as messageApply, init as messageInit } from './message';
 
 window.customElements.define('engine-view', require('../../static/script/engine-view'));
 
@@ -66,9 +63,6 @@ export async function ready() {
 
     // 显示版本号
     panel.$.version.innerHTML = 'Version: ' + panel.$.scene.version;
-
-    const uuid = profile.get('current-scene');
-    Editor.Ipc.sendToPackage('scene', 'open-scene', uuid);
 }
 
 /**
@@ -90,9 +84,7 @@ export async function beforeClose() {
     // 如果数据被修改了，弹出提示框询问是否保存
     const code = await Editor.Dialog.show({
         title: Editor.I18n.t('scene.messages.waning'),
-        message: Editor.I18n.t(
-            'scene.messages.scenario_modified'
-        ),
+        message: Editor.I18n.t('scene.messages.scenario_modified'),
         detail: Editor.I18n.t('scene.messages.want_to_save'),
         type: 'warning',
 
@@ -122,5 +114,5 @@ export async function beforeClose() {
  */
 export async function close() {
     // 等待场景关闭
-    await Editor.Ipc.requestToPackage('scene', 'close-scene');
+    // await Editor.Ipc.requestToPackage('scene', 'close-scene');
 }

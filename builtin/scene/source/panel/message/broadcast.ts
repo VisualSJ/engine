@@ -37,26 +37,19 @@ export function apply(messages: any) {
 
     /**
      * 资源数据库就绪
-     *   检查最后打开的一个场景 uuid
-     *   通知 webview 打开最后打开的这个 uuid
+     * 安装依赖
      */
     messages['asset-db:ready'] = (...args: any[]) => {
-        $scene.removeDependence('asset-db');
-        const uuid = profile.get('current-scene');
-        // uuid 不存在，或者已经打开了场景的情况下，不需要重新打开场景
-        if (!uuid && !$loading.hidden) {
-            return;
-        }
-        $scene.forwarding('Scene', 'open', [uuid]);
+        $scene.installDependence('asset-db');
     };
 
     /**
      * 资源数据库关闭
-     *   通知 webview 关闭场景
+     * 卸载依赖
      */
     messages['asset-db:close'] = () => {
-        $scene.addDependence('asset-db');
-        $scene.forwarding('Scene', 'close');
+        $scene.uninstallDependence('asset-db');
+        // $scene.forwarding('Scene', 'close');
     };
 
     /**
