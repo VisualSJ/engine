@@ -142,7 +142,7 @@ function getComponentType(target) {
  * @param {object} item
  * @param {object} attrs
  */
-function build2DProp(path, key, item, attrs) {
+function build2DProp(path, key, item, attrs, isArrayItem = false) {
     // 将原有 type 保存到 originType 以便处理结束后恢复原有 type
     const { properties, type: originType, value, extends: extendTypes, default: defaultVal } = item;
     const hasCompType = getComponentType(item);
@@ -152,7 +152,7 @@ function build2DProp(path, key, item, attrs) {
     let typeNull = false;
     let typeError = false;
 
-    item.name = attrs.displayName ? attrs.displayName : key;
+    item.name = !isArrayItem && attrs.displayName ? attrs.displayName : key;
     item.path = path;
     item.compType = hasCompType;
     item.attrs = { ...attrs };
@@ -226,7 +226,7 @@ function build2DProp(path, key, item, attrs) {
                 // Array 子元素的 buildProp 需要 extends、properties 类型判断
                 extendTypes && !item.extends && (item.extends = [...extendTypes]);
                 properties && !item.properties && (item.properties = { ...properties });
-                buildProp(`${path}.${i}`, `[${i}]`, item, attrs);
+                buildProp(`${path}.${i}`, `[${i}]`, item, attrs, true);
             }
         } else if (item.type === 'Object') {
             if (originType === 'cc.ClickEvent') {
@@ -247,9 +247,9 @@ function build2DProp(path, key, item, attrs) {
     item.type = originType;
 }
 
-function build3DProp(path, key, item, attrs) {
+function build3DProp(path, key, item, attrs, isArrayItem = false) {
     item.path = path;
-    item.name = attrs.displayName ? attrs.displayName : key;
+    item.name = !isArrayItem && attrs.displayName ? attrs.displayName : key;
     item.compType = getComponentType(item);
     item.attrs = { ...attrs };
 
@@ -261,7 +261,7 @@ function build3DProp(path, key, item, attrs) {
         item.compType = 'array-prop';
         for (i = 0; i < value.length; i++) {
             const attrs = item.properties || {};
-            build3DProp(`${path}.${i}`, `[${i}]`, value[i], attrs);
+            build3DProp(`${path}.${i}`, `[${i}]`, value[i], attrs, true);
         }
     }
 
