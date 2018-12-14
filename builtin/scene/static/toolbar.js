@@ -83,4 +83,21 @@ exports.ready = async function() {
             Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', name);
         });
     });
+
+    document.body.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case 'w':
+            case 'W':
+                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'position');
+                break;
+            case 'e':
+            case 'E':
+                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rotation');
+                break;
+            case 'r':
+            case 'R':
+                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'scale');
+                break;
+        }
+    });
 };

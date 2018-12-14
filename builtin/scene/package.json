@@ -18,21 +18,6 @@
         },
         "i18n:menu.develop/i18n:scene.develop": {
             "message": "open-devtools"
-        },
-        "i18n:menu.operation/gizmo/transform": {
-            "message": "change-gizmo-tool",
-            "params": ["position"],
-            "accelerator": "w"
-        },
-        "i18n:menu.operation/gizmo/rotation": {
-            "message": "change-gizmo-tool",
-            "params": ["rotation"],
-            "accelerator": "e"
-        },
-        "i18n:menu.operation/gizmo/scale": {
-            "message": "change-gizmo-tool",
-            "params": ["scale"],
-            "accelerator": "r"
         }
     },
 
