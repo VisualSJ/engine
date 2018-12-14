@@ -54,7 +54,7 @@ let buildEffectData = (function() {
                 const typeName = info.instanceType;
                 const compType = typeMap[typeName];
                 const type = assetMap[typeName];
-                let { displayName, value } = info;
+                let { displayName, value, defines } = info;
 
                 if (compType === 'cc-dragable' && value === null) {
                     value = { uuid: null };
@@ -69,7 +69,7 @@ let buildEffectData = (function() {
                     };
                 }
 
-                return { value, key, compType, type, name: displayName, path: `_${cur}.${key}` };
+                return { value, key, compType, type, defines, name: displayName, path: `_${cur}.${key}` };
             });
 
             return acc;

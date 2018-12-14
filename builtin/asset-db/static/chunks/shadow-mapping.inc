@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#if NUM_SHADOW_LIGHTS > 0
-  #pragma for id in range(0, NUM_SHADOW_LIGHTS)
+#if _NUM_SHADOW_LIGHTS > 0
+  #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
     uniform sampler2D _shadowMap_{id};
     uniform float _darkness_{id};
     uniform float _depthScale_{id};

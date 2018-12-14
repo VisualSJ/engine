@@ -9,14 +9,14 @@ uniform float _maxDepth;
 uniform float _bias;
 varying float vDepth;
 
-#if USE_SKINNING
+#if _USE_SKINNING
   #include <skinning>
 #endif
 
 vec4 vert() {
   vec4 pos = vec4(a_position, 1);
 
-  #if USE_SKINNING
+  #if _USE_SKINNING
     mat4 skinMat = skinMatrix();
     pos = skinMat * pos;
   #endif

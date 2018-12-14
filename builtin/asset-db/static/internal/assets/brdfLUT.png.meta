@@ -22,7 +22,8 @@
         "magfilter": "linear",
         "premultiplyAlpha": false,
         "anisotropy": 1,
-        "imageSource": "D:\\workspace\\editor-3d\\builtin\\asset-db\\static\\internal\\assets\\brdfLUT.png"
+        "isUuid": true,
+        "imageUuidOrPath": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be"
       }
     }
   },

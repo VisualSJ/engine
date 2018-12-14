@@ -48,7 +48,7 @@
     varying   vec2 uv0;
   #endif
 
-  #if USE_SKINNING
+  #if _USE_SKINNING
     #include <skinning>
   #endif
 
@@ -58,7 +58,7 @@
     #endif
 
     vec4 pos = vec4(a_position, 1);
-    #if USE_SKINNING
+    #if _USE_SKINNING
       mat4 skinMat = skinMatrix();
       pos = skinMat * pos;
     #endif
@@ -66,7 +66,7 @@
     gl_Position = pos;
 
     vec4 normal = vec4(a_normal, 0);
-    #if USE_SKINNING
+    #if _USE_SKINNING
       normal = skinMat * normal;
     #endif
     normal = vec4(normalize(_normalMatrix * normal.xyz), 0);

@@ -3,7 +3,7 @@
 attribute vec4 a_weights;
 attribute vec4 a_joints;
 
-#if USE_JOINTS_TEXTURE
+#if _USE_JOINTS_TEXTURE
 uniform sampler2D _u_jointsTexture;
 uniform float _u_jointsTextureSize;
 

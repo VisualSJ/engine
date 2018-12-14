@@ -232,7 +232,7 @@ function validateAssetName(name: string | undefined) {
     if (!name) {
         return undefined;
     } else {
-        return name.replace(/[ <>:'\/\\|?*\x00-\x1F#]/g, '-');
+        return name.replace(/[ <>:'#\/\\|?*\x00-\x1F]/g, '-');
     }
 }
 

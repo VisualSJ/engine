@@ -45,6 +45,34 @@ function glslStripComment(code) {
   return result;
 }
 
+/**
+ * say we are parsing this program:
+ * ```
+ *    // ..
+ * 12 #if USE_COLOR
+ *      // ..
+ * 34   #if USE_TEXTURE
+ *        // ..
+ * 56   #endif
+ *      // ..
+ * 78 #endif
+ *    // ..
+ * ```
+ *
+ * the output would be:
+ * ```
+ * // the complete define list
+ * defines = [ { name: 'USE_COLOR', type: 'boolean' }, { type: 'USE_TEXTURE', name: 'boolean' } ]
+ * // bookkeeping: define dependency throughout the code
+ * cache = {
+ *   lines: [12, 34, 56, 78],
+ *   12: [ 'USE_COLOR' ],
+ *   34: [ 'USE_COLOR', 'USE_TEXTURE' ],
+ *   56: [ 'USE_COLOR' ],
+ *   78: []
+ * }
+ * ````
+ */
 function extractDefines(tokens, defines, cache) {
   let curDefs = [], save = (line) => {
     cache[line] = curDefs.reduce((acc, val) => acc.concat(val), []);
@@ -54,15 +82,17 @@ function extractDefines(tokens, defines, cache) {
     let t = tokens[i], str = t.data, id, df;
     if (t.type !== 'preprocessor') continue;
     str = str.split(whitespaces);
-    if (str[0] === '#endif') {
+    if (str[0] === '#endif') { // pop one level up
         curDefs.pop(); save(t.line); continue;
-    } else if (str[0] === '#else') {
+    } else if (str[0] === '#else') { // just clear this level
       curDefs[curDefs.length - 1].length = 0; save(t.line); continue;
-    } else if (str[0] === '#pragma') {
+    } else if (str[0] === '#pragma') { // pragma treatments
+      // everything inside a pragma loop will be ignored, marked as 0
       if (str[1] === 'for') { curDefs.push(0); save(t.line); }
       else if (str[1] === 'endFor') { curDefs.pop(); save(t.line); }
+      // record the tags for the next parsing stage
       else if (str[1][0] === '#') cache[t.line] = str.splice(1);
-      else {
+      else { // custom numeric define ranges
         let mc = rangePragma.exec(t.data);
         if (!mc) continue;
         let def = defines.find(d => d.name === mc[2]);
@@ -72,21 +102,26 @@ function extractDefines(tokens, defines, cache) {
       }
       continue;
     } else if (!ifprocessor.test(str[0])) continue;
-    if (str[0] === '#elif') { curDefs.pop(); save(t.line); }
+    if (str[0] === '#elif') { curDefs.pop(); save(t.line); } // pop one level up
     let defs = [];
     str.splice(1).some(s => {
       id = s.match(ident);
       if (id) { // is identifier
         defs.push(id[0]);
         df = defines.find(d => d.name === id[0]);
-        if (df) return; // first encounter
-        defines.push(df = { name: id[0], type: 'boolean' });
+        if (!df) defines.push(df = { name: id[0], type: 'boolean' });
       } else if (comparators.test(s)) df.type = 'number';
-      else if (s === '||') return true;
+      else if (s === '||') return true; // rely only on the first one
     });
     curDefs.push(defs); save(t.line);
   }
-  return defines;
+  // filter out builtins
+  // defines = defines.filter(d => !builtins.test(d.name));
+  // for (let key in cache) {
+  //   if (key === 'lines') continue;
+  //   cache[key] = cache[key].filter(name => !builtins.test(name));
+  // }
+  // return defines;
 }
 
 function extractParams(tokens, cache, uniforms, attributes, extensions) {

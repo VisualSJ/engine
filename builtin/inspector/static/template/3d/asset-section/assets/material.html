@@ -10,14 +10,14 @@
             {{meta ? meta.__name__ : ''}}
         </div>
         <span class="flex-1"></span>
-    
+
         <ui-button class="tiny red transparent"
             :disabled="!dirty"
             @confirm.stop="reset($event)"
         >
             <i class="iconfont icon-close-b"></i>
         </ui-button>
-    
+
         <ui-button class="tiny green transparent"
             :disabled="!dirty"
             @confirm.stop="apply($event)"
@@ -56,23 +56,13 @@
             </div>
         </div>
 
-        <!-- defines -->
-        <component 
-            v-for="(item, index) in definesList"
+        <!-- properties -->
+        <component
+            v-for="(item, index) in displayList"
             :name="item.name || item.key"
             :is="item.compType"
             :dump="item"
             :key="item.key"
         ></component>
-
-        <!-- props -->
-        <component 
-            v-for="(item, index) in propsList"
-            :name="item.name || item.key"
-            :is="item.compType"
-            :dump="item"
-            :key="item.key"
-        ></component>
-
     </div>
 </div>

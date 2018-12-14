@@ -12,14 +12,14 @@ uniform mat4 _viewProj;
   varying vec2 uv0;
 #endif
 
-#if USE_SKINNING
+#if _USE_SKINNING
   #include <skinning>
 #endif
 
 vec4 vert () {
   vec4 pos = vec4(a_position, 1);
 
-  #if USE_SKINNING
+  #if _USE_SKINNING
     pos = skinMatrix() * pos;
   #endif
 

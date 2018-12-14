@@ -17,13 +17,13 @@ uniform mat3 _normalMatrix;
   varying vec2 uv0;
 #endif
 
-#if USE_SKINNING
+#if _USE_SKINNING
   #include <skinning>
 #endif
 
-#if USE_SHADOW_MAP
-  #if NUM_SHADOW_LIGHTS > 0
-    #pragma for id in range(0, NUM_SHADOW_LIGHTS)
+#if _USE_SHADOW_MAP
+  #if _NUM_SHADOW_LIGHTS > 0
+    #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
       uniform mat4 _lightViewProjMatrix_{id};
       uniform float _minDepth_{id};
       uniform float _maxDepth_{id};
@@ -36,7 +36,7 @@ uniform mat3 _normalMatrix;
 vec4 vert () {
   vec4 pos = vec4(a_position, 1);
 
-  #if USE_SKINNING
+  #if _USE_SKINNING
     mat4 skinMat = skinMatrix();
     pos = skinMat * pos;
   #endif
@@ -49,14 +49,14 @@ vec4 vert () {
   #endif
 
   vec4 normal = vec4(a_normal, 0);
-  #if USE_SKINNING
+  #if _USE_SKINNING
     normal = skinMat * normal;
   #endif
   normal_w = _normalMatrix * normal.xyz;
 
-  #if USE_SHADOW_MAP
-    #if NUM_SHADOW_LIGHTS > 0
-      #pragma for id in range(0, NUM_SHADOW_LIGHTS)
+  #if _USE_SHADOW_MAP
+    #if _NUM_SHADOW_LIGHTS > 0
+      #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
         pos_lightspace_{id} = _lightViewProjMatrix_{id} * vec4(pos_w, 1.0);
         vDepth_{id} = (pos_lightspace_{id}.z + _minDepth_{id}) / (_minDepth_{id} + _maxDepth_{id});
       #pragma endFor

@@ -45,11 +45,39 @@ exports.computed = {
         return Object.keys(this.allEffects).filter((key) => !key.startsWith('_'));
     },
 
+    displayList() {
+        let props = this.propsList, defs = this.definesList;
+        let tree = {}, curDefs = {};
+
+        // sort by define dependencies
+        for (let name in props) {
+            let prop = props[name], cur = tree;
+            prop.defines.forEach(d => {
+                if (!cur[d]) cur[d] = {};
+                cur = cur[d];
+                curDefs[d] = true;
+            });
+            if (!cur.props) cur.props = [];
+            cur.props.push(prop);
+        }
+
+        let traverse = node => {
+            let list = node.props || [];
+            delete node.props;
+            for (let def in node) {
+                list.push(defs.find(d => d.key === def));
+                list = list.concat(traverse(node[def]));
+            }
+            return list;
+        };
+        return traverse(tree);
+    },
+
     propsList() {
         if (this.effectMap && this.effectMap.props) {
             const { props } = this.effectMap;
             const { _props = {} } = this.material || {};
-            props.map((item) => {
+            props.forEach((item) => {
                 const { key } = item;
                 if (key in _props && _props[key] !== null) {
                     item.value = _props[key];
@@ -68,7 +96,7 @@ exports.computed = {
         if (this.effectMap && this.effectMap.defines) {
             const { defines } = this.effectMap;
             const { _defines = {} } = this.material || {};
-            defines.map((item) => {
+            defines.forEach((item) => {
                 const { key } = item;
                 if (key in _defines && _defines[key]) {
                     item.value = _defines[key];
