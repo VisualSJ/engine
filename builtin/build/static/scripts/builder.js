@@ -13,6 +13,9 @@ const static_resource = [ // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
 ];
+
+const projectScripts = require('./project-scripts');
+
 class Builder {
     constructor() {
         this._paths = null;
@@ -63,6 +66,7 @@ class Builder {
             type: 'build-release', // 构建 setting 的种类
         });
         updateProgress('build setting...', 20);
+        projectScripts.load(settings.scripts);
 
         // 并发任务
         Promise.all([
@@ -161,7 +165,7 @@ class Builder {
         return new Promise(async (resolve, reject) => {
             // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
             if (this._type === '3d') {
-                await copySync(join(this._paths.engine, 'bin/cocos-3d.min.js'),
+                await copySync(join(this._paths.engine, 'bin/cocos-3d.dev.js'),
                 join(this._paths.dest, this._options.cocosJsName));
                 updateProgress('build engine success', 15);
                 resolve();

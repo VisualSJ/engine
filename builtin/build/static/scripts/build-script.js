@@ -7,12 +7,13 @@ const {readFileSync} = require('fs');
 const {join, basename, extname} = require('path');
 // // misc
 const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
+const viniBuffer = require('vinyl-buffer');
 const sourcemaps = require('gulp-sourcemaps');
-
 // browserify prelude
 const prelude = readFileSync(join(__dirname, './_prelude.js'), 'utf8');
-
+const CAN_NOT_FIND = 'Cannot find module ';
+var COMPILE_ERR_TAG = 'Compile error:';
+var ERROR_PREFIX = 'Error: ';    // 去掉异常自动加上的前缀
 let rawPathToLibPath = {};
 /**
  * 构建打包脚本的类
@@ -24,6 +25,7 @@ class ScriptBuilder {
         this.options = buildResult.options;
         let util = join(this.paths.engine, 'gulp/util/utils');
         this.uglify = require(util).uglify;
+
     }
 
     async build(scripts) {
@@ -37,13 +39,14 @@ class ScriptBuilder {
         this._allScripts = scriptInfo.allScripts;
         rawPathToLibPath = scriptInfo.rawPathToLibPath;
         await this._buildScript(scriptInfo.mainScrips);
-        await this._buildScript(scriptInfo.subScrips);
+        // await this._buildScript(scriptInfo.subScrips);
     }
 
     _buildScript(srcPaths) {
         return new Promise((resolve, reject) => {
             if (srcPaths.length < 1) {
                 resolve();
+                return;
             }
             // sort scripts for https://github.com/cocos-creator/fireball/issues/4854
             srcPaths.sort();
@@ -116,23 +119,23 @@ class ScriptBuilder {
                 browserify = new Browserify(opt);
             }
 
-            patchBrowserifyToRedirectPathToRaw(browserify);
+            // patchBrowserifyToRedirectPathToRaw(browserify);
 
             for (let i = 0; i < srcPaths.length; ++i) {
                 var file = srcPaths[i];
-                browserify.add(file);
+                browserify.add(rawPathToLibPath[file]);
                 // expose the filename so as to avoid specifying relative path in require()
-                browserify.require(file, {
+                browserify.require(rawPathToLibPath[file], {
                     expose: basename(file, extname(file)),
                 });
             }
 
-            for (let i = 0; i < allScripts.length; ++i) {
-                let file = allScripts[i];
-                if (srcPaths.indexOf(file) === -1) {
-                    browserify.exclude(rawPathToLibPath[file]);
-                }
-            }
+            // for (let i = 0; i < allScripts.length; ++i) {
+            //     let file = allScripts[i];
+            //     if (srcPaths.indexOf(file) === -1) {
+            //         browserify.exclude(rawPathToLibPath[file]);
+            //     }
+            // }
 
             let bundle = browserify.bundle()
                 .on('error', function(error) {
@@ -144,19 +147,19 @@ class ScriptBuilder {
                 .pipe(source(paths.bundledScript));
 
             // Uglify
-            bundle = bundle.pipe(buffer());
+            bundle = bundle.pipe(viniBuffer());
 
             if (options.sourceMaps) {
                 bundle = bundle.pipe(sourcemaps.init({loadMaps: true}));
             }
 
             let isNative = !!platfomConfig[options.platform].isNative;
-            bundle = bundle.pipe(this.uglify('build', {
-                jsb: isNative,
-                wechatgame: options.platform === 'wechatgame',
-                qqplay: options.platform === 'qqplay',
-                debug: options.debug,
-            }));
+            // bundle = bundle.pipe(this.uglify('build', {
+            //     jsb: isNative,
+            //     wechatgame: options.platform === 'wechatgame',
+            //     qqplay: options.platform === 'qqplay',
+            //     debug: options.debug,
+            // }));
 
             if (options.sourceMaps) {
                 bundle = bundle.pipe(refineSourceMap(rawPathToLibPath, paths.project))

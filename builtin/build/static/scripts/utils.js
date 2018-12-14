@@ -1,6 +1,6 @@
 const { basename, join, relative, extname } = require('path');
 const { readFileSync } = require('fs');
-const { copyFileSync, ensureDir, outputFileSync, readJSONSync} = require('fs-extra');
+const { readJSONSync} = require('fs-extra');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
 const JSONStream = require('JSONStream');
