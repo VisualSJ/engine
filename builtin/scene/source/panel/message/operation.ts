@@ -262,4 +262,13 @@ export function apply(messages: any) {
         }
         await $scene.forwarding('Gizmo', 'setTransformToolName', [name]);
     };
+
+    messages['focus-camera'] = async (uuids: string[] | null) => {
+        if (!$scene) {
+            return null;
+        }
+        if (uuids) {
+            await $scene.forwarding('Camera', 'focusCameraToNodes', [uuids]);
+        }
+    };
 }

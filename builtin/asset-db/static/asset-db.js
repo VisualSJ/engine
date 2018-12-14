@@ -122,7 +122,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
     }
 
     const date = new Date().getTime();
-    console.log(`Start the asset(${info.name}) database...`);
+    console.log(`Start the '${info.name}' database...`);
     // 拼接需要使用的地址
     const options = Object.assign(
         {
@@ -176,7 +176,7 @@ Worker.Ipc.on('asset-worker:startup-database', async (event, info) => {
             let func = waitTask.shift();
             func();
         }
-        console.log(`The asset database is ready: ${new Date() - date}ms`);
+        console.log(`The '${info.name}' database is started: ${new Date() - date}ms`);
     } catch (error) {
         console.error(error);
     }

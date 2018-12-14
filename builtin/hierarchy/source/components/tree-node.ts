@@ -120,6 +120,16 @@ export const methods = {
     },
 
     /**
+     * 双击某个节点
+     * @param event
+     * @param node
+     */
+    dblclick(event: Event, node: ItreeNode) {
+        this.$emit('ipcSingleSelect', node.uuid);
+        Editor.Ipc.sendToPanel('scene', 'focus-camera', [node.uuid]);
+    },
+
+    /**
      * 节点折叠切换
      * @param uuid
      */

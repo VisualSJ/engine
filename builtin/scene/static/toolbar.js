@@ -84,7 +84,7 @@ exports.ready = async function() {
         });
     });
 
-    document.body.addEventListener('keydown', (event) => {
+    document.body.addEventListener('keydown', async (event) => {
         switch (event.key) {
             case 'w':
             case 'W':
@@ -98,6 +98,12 @@ exports.ready = async function() {
             case 'R':
                 Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'scale');
                 break;
+            case 'f':
+            case 'F':
+                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+                if (uuids && uuids.length) {
+                    Editor.Ipc.sendToPanel('scene', 'focus-camera', uuids);
+                }
         }
     });
 };

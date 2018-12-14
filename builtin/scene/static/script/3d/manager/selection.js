@@ -42,13 +42,6 @@ selection.init = function() {
             }
         }
     });
-
-    operationManager.on('keydown', (event) => {
-        if (event.key.toLowerCase() === 'f') {
-            let selections = selection.query();
-            EditorCamera.focusCameraToNodes(selections);
-        }
-    });
 };
 
 module.exports = selection;
