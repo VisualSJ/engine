@@ -77,9 +77,11 @@ export const messages = {
         if (vm) {
             clearTimeout(vm._unselectTimer);
             if (vm.element === type && vm.uuid === uuid) {
-                vm._unselectTimer = setTimeout(() => {
-                    vm.element = '';
-                    vm.uuid = '';
+                vm._unselectTimer = setTimeout((uuid) => {
+                    if (uuid === vm.uuid) {
+                        vm.element = '';
+                        vm.uuid = '';
+                    }
                 }, 50);
             }
         }
@@ -190,6 +192,6 @@ export async function ready() {
     });
 }
 
-export async function beforeClose() { }
+export async function beforeClose() {}
 
-export async function close() { }
+export async function close() {}

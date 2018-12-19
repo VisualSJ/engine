@@ -61,10 +61,9 @@ function bindEvent(operator) {
 /**
  * 所有场景的操作管理
  */
-class Operation extends EventEmitter {
-
+class Operation {
     constructor() {
-        super();
+        // super();
         /**
          * 窗口变化
          * resize
@@ -78,6 +77,8 @@ class Operation extends EventEmitter {
          * keydown
          * keyup
          */
+        this._events = new Map();
+
         bindEvent(this);
         window.addEventListener('load', () => {
             bindEvent(this);
@@ -98,23 +99,73 @@ class Operation extends EventEmitter {
      * @param  {...any} args
      */
     emit(message, ...args) {
-        let events = this._events[message];
+        const events = this._events.get(message);
         if (!events) {
             return;
         }
 
-        if (!Array.isArray(events)) {
-            events = [events];
-        }
-
         for (let i = 0; i < events.length; i++) {
             const handler = events[i];
-            const result = handler(...args);
+            let result;
+            if ('function' === typeof handler) {
+                result = handler(...args);
+            } else {
+                const { listener } = handler;
+                result = listener(...args);
+            }
             // 如果监听函数返回了 false，则直接中断之后的所有处理
             if (result === false) {
                 return;
             }
         }
+    }
+
+    /**
+     * 重写 on 方法
+     * @param {String} type
+     * @param {Function} listener
+     * @param {Number=} priority 数值越大优先级越高
+     * @memberof Operation
+     */
+    on(type, listener, priority) {
+        return this.addListener(type, listener, priority);
+    }
+
+    /**
+     * 重写 addListener 方法
+     * @param {String} type
+     * @param {Function} listener
+     * @param {Number=} priority
+     * @memberof Operation
+     */
+    addListener(type, listener, priority) {
+        if (!this._events.has(type)) {
+            this._events.set(type, []);
+        }
+        const events = this._events.get(type);
+        if (!priority) {
+            events.push(listener);
+        } else {
+            let index = 0;
+            let endLoop = false;
+            for (let i = 0; i < events.length && !endLoop; i++) {
+                if (!events[i].priority) {
+                    index = i;
+                    endLoop = true;
+                    break;
+                }
+                if (events[i].priority < priority) {
+                    index = i;
+                    endLoop = true;
+                    break;
+                }
+                index++;
+            }
+
+            events.splice(index, 0, { listener, priority });
+        }
+
+        return this;
     }
 }
 
