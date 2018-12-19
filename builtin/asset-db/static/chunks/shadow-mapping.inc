@@ -73,3 +73,13 @@ float computeShadowPCF(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, f
 
   return computeFallOff(min(1.0, visibility + 1.0 - darkness), projCoords, frustumEdgeFalloff);
 }
+
+float computeShadow() {
+  float shadow = 1.0;
+  #if _NUM_SHADOW_LIGHTS > 0
+    #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
+      shadow *= computeShadowESM(_shadowMap_{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale_{id}, _darkness_{id}, _frustumEdgeFalloff_{id});
+    #pragma endFor
+  #endif
+  return shadow;
+}

@@ -1,6 +1,7 @@
 'use strict';
 
 const tokenizer = require('glsl-tokenizer/string');
+const parser = require('glsl-parser/direct');
 const mappings = require('./offline-mappings');
 const { sha3_224 } = require('js-sha3');
 const HJSON = require('hjson');
@@ -16,7 +17,7 @@ let rangePragma = /range\(([\d.,\s]+)\)\s(\w+)/;
 let defaultPragma = /default\(([\d.,]+)\)/;
 let namePragma = /name\(([^)]+)\)/;
 let precision = /(low|medium|high)p/;
-let builtins = /^_\w+/;
+let builtins = /^_\w+$/;
 
 function convertType(t) { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 
@@ -49,9 +50,9 @@ function glslStripComment(code) {
  * say we are parsing this program:
  * ```
  *    // ..
- * 12 #if USE_COLOR
+ * 12 #if USE_LIGHTING
  *      // ..
- * 34   #if USE_TEXTURE
+ * 34   #if NUM_LIGHTS > 0
  *        // ..
  * 56   #endif
  *      // ..
@@ -62,35 +63,40 @@ function glslStripComment(code) {
  * the output would be:
  * ```
  * // the complete define list
- * defines = [ { name: 'USE_COLOR', type: 'boolean' }, { type: 'USE_TEXTURE', name: 'boolean' } ]
+ * defines = [ { name: 'USE_LIGHTING', type: 'boolean' }, { name: 'NUM_LIGHTS', type: 'number' } ]
  * // bookkeeping: define dependency throughout the code
  * cache = {
  *   lines: [12, 34, 56, 78],
- *   12: [ 'USE_COLOR' ],
- *   34: [ 'USE_COLOR', 'USE_TEXTURE' ],
- *   56: [ 'USE_COLOR' ],
+ *   12: [ 'USE_LIGHTING' ],
+ *   34: [ 'USE_LIGHTING', 'NUM_LIGHTS' ],
+ *   56: [ 'USE_LIGHTING' ],
  *   78: []
  * }
  * ````
  */
 function extractDefines(tokens, defines, cache) {
-  let curDefs = [], save = (line) => {
+  let loopBegIdx = 0, curDefs = [], save = (line) => {
     cache[line] = curDefs.reduce((acc, val) => acc.concat(val), []);
     cache.lines.push(line);
   };
-  for (let i = 0; i < tokens.length; ++i) {
+  for (let i = 0; i < tokens.length; ) {
     let t = tokens[i], str = t.data, id, df;
-    if (t.type !== 'preprocessor') continue;
+    if (t.type !== 'preprocessor' || str.startsWith('#extension')) { i++; continue; }
+    tokens.splice(i, 1); // strip out other preprocessor tokens for parser to work
     str = str.split(whitespaces);
     if (str[0] === '#endif') { // pop one level up
-        curDefs.pop(); save(t.line); continue;
+      curDefs.pop(); save(t.line); continue;
     } else if (str[0] === '#else') { // just clear this level
       curDefs[curDefs.length - 1].length = 0; save(t.line); continue;
     } else if (str[0] === '#pragma') { // pragma treatments
-      // everything inside a pragma loop will be ignored, marked as 0
-      if (str[1] === 'for') { curDefs.push(0); save(t.line); }
-      else if (str[1] === 'endFor') { curDefs.pop(); save(t.line); }
-      // record the tags for the next parsing stage
+      // pragma loops are ignored and left to runtime
+      // here we jsut strip out all of them
+      if (str[1] === 'for') loopBegIdx = i;
+      else if (str[1] === 'endFor') {
+        tokens.splice(loopBegIdx, i - loopBegIdx);
+        i = loopBegIdx;
+      }
+      // record the tags for the next extraction stage
       else if (str[1][0] === '#') cache[t.line] = str.splice(1);
       else { // custom numeric define ranges
         let mc = rangePragma.exec(t.data);
@@ -107,21 +113,16 @@ function extractDefines(tokens, defines, cache) {
     str.splice(1).some(s => {
       id = s.match(ident);
       if (id) { // is identifier
-        defs.push(id[0]);
+        let d = curDefs.reduce((acc, val) => acc.concat(val), defs.slice());
         df = defines.find(d => d.name === id[0]);
-        if (!df) defines.push(df = { name: id[0], type: 'boolean' });
+        if (df) { if (d.length < df.defines.length) df.defines = d; }
+        else defines.push(df = { name: id[0], type: 'boolean', defines: d });
+        defs.push(id[0]);
       } else if (comparators.test(s)) df.type = 'number';
-      else if (s === '||') return true; // rely only on the first one
+      else if (s === '||') return defs = []; // ignore logical OR defines all together
     });
     curDefs.push(defs); save(t.line);
   }
-  // filter out builtins
-  // defines = defines.filter(d => !builtins.test(d.name));
-  // for (let key in cache) {
-  //   if (key === 'lines') continue;
-  //   cache[key] = cache[key].filter(name => !builtins.test(name));
-  // }
-  // return defines;
 }
 
 function extractParams(tokens, cache, uniforms, attributes, extensions) {
@@ -136,7 +137,6 @@ function extractParams(tokens, cache, uniforms, attributes, extensions) {
     else if (tp === 'preprocessor' && str.startsWith('#extension')) dest = extensions;
     else continue;
     let defines = getDefs(t.line), param = {};
-    if (defines.findIndex(i => !i) >= 0) continue; // inside pragmas
     if (dest === uniforms && builtins.test(tokens[i+4].data)) continue;
     if (dest === extensions) {
       if (defines.length !== 1) console.warn('extensions must be under controll of exactly 1 define');
@@ -149,7 +149,7 @@ function extractParams(tokens, cache, uniforms, attributes, extensions) {
       param.name = tokens[i+offset+2].data;
       param.type = convertType(tokens[i+offset].data);
       let tags = cache[t.line - 1];
-      if (tags && tags[0][0] === '#') { // tags
+      if (tags && tags[0] && tags[0][0] === '#') { // tags
         let mc = defaultPragma.exec(tags.join(''));
         if (mc && mc[1].length > 0) {
           mc = JSON.parse(`[${mc[1]}]`);
@@ -260,26 +260,29 @@ let expandStructMacro = (function() {
   };
 })();
 
-let assembleShader = (function() {
+let getChunkByName = (function() {
   let entryRE = /([\w-]+)(?::(\w+))?/;
-  let integrity = /void\s+main\s*\([\w\s,]*\)/;
+  return function(name, cache) {
+    let entryCap = entryRE.exec(name), entry = entryCap[2] || 'main', content = cache[entryCap[1]];
+    if (!content) { console.error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
+    return [ content, entry ];
+  };
+})();
+
+let wrapEntry = (function() {
   let wrapperFactory = (vert, fn) => `\nvoid main() { ${vert ? 'gl_Position' : 'gl_FragColor'} = ${fn}(); }\n`;
-  return function(name, cache, vert) {
-    let entryCap = entryRE.exec(name), content = cache[entryCap[1]];
-    if (!content) { console.error(`shader ${entryCap[1]} not found!`); return ''; }
-    if (!entryCap[2]) {
-      if (!integrity.test(content)) console.warn(`shader main entry not found in ${name}!`);
-      return cache[name];
-    }
-    return content + wrapperFactory(vert, entryCap[2]);
+  return function(content, name, entry, ast, isVert) {
+    if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
+      console.error(`entry function ${name} not found`);
+    return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
   };
 })();
 
 let buildShader = function(vertName, fragName, cache) {
-  let vert = assembleShader(vertName, cache, true);
-  let frag = assembleShader(fragName, cache);
+  let [ vert, vEntry ] = getChunkByName(vertName, cache, true);
+  let [ frag, fEntry ] = getChunkByName(fragName, cache);
 
-  let defines = [], defCache = { lines: [] }, tokens;
+  let defines = [], defCache = { lines: [] }, tokens, ast;
   let uniforms = [], attributes = [], extensions = [];
 
   vert = glslStripComment(vert);
@@ -288,6 +291,10 @@ let buildShader = function(vertName, fragName, cache) {
   tokens = tokenizer(vert);
   extractDefines(tokens, defines, defCache);
   extractParams(tokens, defCache, uniforms, attributes, extensions);
+  try {
+    ast = parser(tokens);
+    vert = wrapEntry(vert, vertName, vEntry, ast, true);
+  } catch (e) { console.error(`parse ${vertName} failed: ${e}`); }
 
   defCache = { lines: [] };
   frag = glslStripComment(frag);
@@ -296,6 +303,10 @@ let buildShader = function(vertName, fragName, cache) {
   tokens = tokenizer(frag);
   extractDefines(tokens, defines, defCache);
   extractParams(tokens, defCache, uniforms, attributes, extensions);
+  try {
+    ast = parser(tokens);
+    frag = wrapEntry(frag, fragName, fEntry, ast);
+  } catch (e) { console.error(`parse ${fragName} failed: ${e}`); }
 
   return { vert, frag, defines, uniforms, attributes, extensions };
 };

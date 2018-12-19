@@ -118,7 +118,7 @@ class Camera extends EventEmitter {
      */
     init() {
         this._grid = createGrid(50, 50);
-        this._camera = createCamera(cc.color(51, 51, 51, 255));
+        [ this._camera, this._light ] = createCamera(cc.color(51, 51, 51, 255));
         this.node = this._camera.node;
         this.instance = this._camera._camera;
         this.camera_move_mode = CameraMoveMode.NONE;
@@ -130,6 +130,9 @@ class Camera extends EventEmitter {
         operationManager.on('keydown', this.onKeyDown.bind(this));
         operationManager.on('keyup', this.onKeyUp.bind(this));
         this.home();
+
+        // TODO: light switch
+        // operationManager.on('scene-changed', b => this._light.enabled = b);
     }
 
     onMouseDown(event) {

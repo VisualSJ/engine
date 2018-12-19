@@ -59,7 +59,7 @@ function createCamera(color) {
     camera.onLoad(); camera.onEnable();
     let light = node.addComponent(cc.LightComponent);
     light.onLoad(); light.onEnable();
-    return camera;
+    return [ camera, light ];
 }
 
 module.exports = {

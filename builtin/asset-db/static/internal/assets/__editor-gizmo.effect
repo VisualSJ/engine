@@ -23,7 +23,7 @@
       passes: [
         {
           vert: line-vs
-          frag: front-fs
+          frag: line-fs:front
           stage: default
           cullMode: none
           blend: true
@@ -38,7 +38,7 @@
       passes: [
         {
           vert: line-vs
-          frag: front-fs
+          frag: line-fs:front
           stage: default
           cullMode: none
           depthTest: true
@@ -48,7 +48,7 @@
         }
         {
           vert: line-vs
-          frag: back-fs
+          frag: line-fs:back
           stage: default
           cullMode: none
           depthTest: true
@@ -144,18 +144,13 @@
   }
 }
 
-%% front-fs {
+%% line-fs {
   #include <gamma-correction>
   uniform vec4 color;
-  void main() {
-    gl_FragColor = linearToGammaSpaceRGBA(color);
+  vec4 front() {
+    return linearToGammaSpaceRGBA(color);
   }
-}
-
-%% back-fs {
-  #include <gamma-correction>
-  uniform vec4 color;
-  void main() {
-    gl_FragColor = linearToGammaSpaceRGBA(vec4(color.rgb, color.a * 0.2));
+  vec4 back() {
+    return linearToGammaSpaceRGBA(vec4(color.rgb, color.a * 0.2));
   }
 }

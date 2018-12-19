@@ -20,7 +20,7 @@ vec4 vert () {
   vec4 pos = vec4(a_position, 1);
 
   #if _USE_SKINNING
-    pos = skinMatrix() * pos;
+    skinVertex(pos);
   #endif
 
   pos = _viewProj * _model * pos;

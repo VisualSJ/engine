@@ -176,7 +176,7 @@ uniform vec3 _sceneAmbient;
 varying vec3 normal_w;
 varying vec3 pos_w;
 
-#if USE_NORMAL_TEXTURE || USE_DIFFUSE_TEXTURE || USE_EMISSIVE_TEXTURE
+#if USE_DIFFUSE_TEXTURE || USE_NORMAL_TEXTURE || USE_EMISSIVE_TEXTURE
   varying vec2 uv0;
 #endif
 
@@ -244,14 +244,14 @@ phongMaterial getPhongMaterial() {
   #endif
 
   #if USE_EMISSIVE
-    result.emissive = gammaToLinearSpaceRGB(emissiveColor);
+    result.emissive = emissiveColor;
     #if USE_EMISSIVE_TEXTURE
       result.emissive *= gammaToLinearSpaceRGB(texture2D(emissive_texture, uv0).rgb);
     #endif
   #endif
 
   #if USE_SPECULAR
-    result.specular = gammaToLinearSpaceRGB(specularColor);
+    result.specular = specularColor;
     #if USE_SPECULAR_TEXTURE
       result.specular = gammaToLinearSpaceRGB(texture2D(specular_texture, uv0).rgb);
     #endif
@@ -296,13 +296,7 @@ vec4 frag () {
   phongLighting.diffuse += _sceneAmbient;
 
   #if _USE_SHADOW_MAP
-    float shadow = 1.0;
-    #if _NUM_SHADOW_LIGHTS > 0
-      #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
-        shadow *= computeShadowESM(_shadowMap_{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale_{id}, _darkness_{id}, _frustumEdgeFalloff_{id});
-      #pragma endFor
-    #endif
-    vec4 finalColor = composePhongShading(phongLighting, mtl, shadow);
+    vec4 finalColor = composePhongShading(phongLighting, mtl, computeShadow());
   #else
     vec4 finalColor = composePhongShading(phongLighting, mtl, 1.0);
   #endif

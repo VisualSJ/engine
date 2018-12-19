@@ -49,7 +49,7 @@ exports.computed = {
         let props = this.propsList, defs = this.definesList;
         let tree = {}, curDefs = {};
 
-        // sort by define dependencies
+        // sort props by define dependencies
         for (let name in props) {
             let prop = props[name], cur = tree;
             prop.defines.forEach(d => {
@@ -60,7 +60,14 @@ exports.computed = {
             if (!cur.props) cur.props = [];
             cur.props.push(prop);
         }
+        // add dangling defines
+        for (let name in defs) {
+            let def = defs[name];
+            if (curDefs[def.key] || def.key[0] === '_') continue;
+            def.defines.concat(def.key).reduce((node, d) => node[d] || (node[d] = {}), tree);
+        }
 
+        // harvest from the tree
         let traverse = node => {
             let list = node.props || [];
             delete node.props;
@@ -70,6 +77,7 @@ exports.computed = {
             }
             return list;
         };
+
         return traverse(tree);
     },
 

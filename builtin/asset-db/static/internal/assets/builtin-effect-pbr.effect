@@ -99,5 +99,9 @@
       type: float
       value: 9
     }
+    alphaTestThreshold: {
+      type: float
+      value: 0
+    }
   }
 %}
