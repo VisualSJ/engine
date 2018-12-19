@@ -113,7 +113,7 @@ exports.getGroupFromTree = (obj: ItreeNode, value: string = '', key: string = 'u
  * 在树形中找单个节点
  */
 exports.getNodeFromTree = (uuid: string) => {
-    return exports.getGroupFromTree(db.nodesTree, uuid)[0];
+    return db.uuidNodes[uuid];
 };
 
 /**
@@ -221,3 +221,43 @@ exports.expandNode = (uuid: string): boolean => {
     }
     return true;
 };
+
+/**
+ * 获取被拷贝节点的 dumpdata 数据
+ * @param uuids 数组格式
+ */
+export async function getCopyData(uuids: string[]) {
+    const rt: any = {
+        uuids: [],
+        dumps: {},
+    };
+
+    // 剔除不能被复制的节点
+    for (const uuid of uuids) {
+        const node = exports.getNodeFromTree(uuid);
+        if (!exports.canNotCopyNode(node)) {
+            rt.uuids.push(uuid);
+            await getDump(uuid);
+        }
+    }
+
+    async function getDump(uuid: string) {
+        if (!uuid) {
+            return;
+        }
+
+        const node = exports.getNodeFromTree(uuid);
+        if (!exports.canNotCopyNode(node)) {
+            const dumpdata = await db.getDumpdata(uuid);
+            rt.dumps[uuid] = dumpdata;
+
+            // 循环子节点
+            if (Array.isArray(dumpdata.children.value)) {
+                for (const child of dumpdata.children.value) {
+                    await getDump(child.value.uuid);
+                }
+            }
+        }
+    }
+    return rt;
+}

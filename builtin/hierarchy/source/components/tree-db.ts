@@ -97,6 +97,25 @@ export async function addNode(uuid: string) {
 }
 
 /**
+ * 获取节点 dumpdata
+ */
+export async function getDumpdata(uuid: string) {
+    return await Editor.Ipc.requestToPackage('scene', 'query-node', uuid);
+}
+
+/**
+ * 粘贴节点到指定父级
+ * @param parent  父级 uuid
+ * @param dump  被复制的节点 dump 数据
+ */
+export async function pasteNode(parent: string, dump: any) {
+    return await Editor.Ipc.requestToPackage('scene', 'create-node', {
+        parent,
+        dump,
+    });
+}
+
+/**
  * 添加节点后数据调整
  */
 function addNodeIntoTree(newNode: any) {
@@ -155,8 +174,7 @@ function changeNode2D(newData: any) {
     // 现有的节点数据
     const node = uuidNodes[uuid];
 
-    if (!node) {
-        console.error('Can not find the node.');
+    if (!node) { // 节点没有在面板的数据中
         return;
     }
     // 属性是值类型的修改
@@ -203,7 +221,11 @@ function changeNode3D(newData: any) {
     const node = uuidNodes[uuid];
 
     if (!node) {
-        console.error('Can not find the node.');
+        /**
+         * 节点没有在面板的数据中
+         * 有一种情况是：添加节点，在 add 过程中赋值某些属性，又发了 ipc change,
+         * 由于 add 还需要一个 await: query-node-tree 所以节点还没有在 uuidNodes 里
+         */
         return;
     }
     // 属性是值类型的修改

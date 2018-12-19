@@ -326,14 +326,17 @@ class NodeManager extends EventEmitter {
         const parent = this.query(uuid);
         const node = new cc.Node();
 
+        // 一般情况下是 dumpdata
         if (dump) {
-            const dumpData = this.queryDump(dump);
+            if (typeof dump === 'string') { // 给定 uuid 的情况
+                dump = this.queryDump(dump);
+            }
             // 这几个属性不需要赋给一个新节点
-            delete dumpData.uuid;
-            delete dumpData.parent;
-            delete dumpData.children;
+            delete dump.uuid;
+            delete dump.parent;
+            delete dump.children;
 
-            dumpUtils.restoreNode(node, dumpData);
+            dumpUtils.restoreNode(node, dump);
         }
 
         if (name) {

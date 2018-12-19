@@ -266,7 +266,12 @@ async function restoreNode(node, dumpdata) {
             continue;
         } else if (path === '__comps__') {
             for (let i = 0, ii = data.length; i < ii; i++) {
-                await restoreComponent(node._components[i], data[i]);
+                let component = node._components[i];
+                const compos = data[i];
+                if (!component) { // 尚未生成 component
+                    component = node.addComponent(compos.type);
+                }
+                await restoreComponent(component, compos);
             }
         } else if (path === 'uuid') {
             if (node.uuid !== data.value) {

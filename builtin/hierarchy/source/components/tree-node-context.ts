@@ -2,7 +2,7 @@
 const { shell } = require('electron');
 const utils = require('./tree-utils');
 
-exports.menu = (event: Event, self: any, node: ItreeNode) => {
+exports.menu = (event: Event, vm: any, node: ItreeNode) => {
     Editor.Menu.popup({
         // @ts-ignore
         x: event.pageX,
@@ -17,7 +17,7 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                         label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                         click() {
                             // @ts-ignore
-                            self.$emit('ipcAdd', { type: 'node' }, node.uuid);
+                            vm.$emit('ipcAdd', { type: 'node' }, node.uuid);
                         },
                     },
                 ],
@@ -29,8 +29,11 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                 label: Editor.I18n.t('hierarchy.menu.copy'),
                 enabled: !utils.canNotCopyNode(node),
                 click() {
-                    // @ts-ignore
-                    self.$emit('copy', node.uuid);
+                    if (!vm.selects.includes(node.uuid)) {
+                        vm.$emit('copy', [node.uuid]);
+                    } else {
+                        vm.$emit('copy', vm.selects);
+                    }
                 },
             },
             {
@@ -38,7 +41,7 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                 enabled: !utils.canNotPasteNode(node),
                 click() {
                     // @ts-ignore
-                    self.$emit('paste', node.uuid);
+                    vm.$emit('paste', node.uuid);
                 },
             },
             { type: 'separator' },
@@ -47,15 +50,18 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                 enabled: !utils.canNotRenameNode(node),
                 click(event: Event) {
                     // @ts-ignore
-                    self.rename(node);
+                    vm.rename(node);
                 },
             },
             {
                 label: Editor.I18n.t('hierarchy.menu.duplicate'),
                 enabled: !utils.canNotCopyNode(node),
                 click(event: Event) {
-                    // @ts-ignore
-                    self.$emit('duplicate', node.uuid);
+                    if (!vm.selects.includes(node.uuid)) {
+                        vm.$emit('duplicate', [node.uuid]);
+                    } else {
+                        vm.$emit('duplicate', vm.selects);
+                    }
                 },
             },
             {
@@ -63,7 +69,7 @@ exports.menu = (event: Event, self: any, node: ItreeNode) => {
                 enabled: !utils.canNotDeleteNode(node),
                 click() {
                     // @ts-ignore
-                    self.$emit('ipcDelete', node.uuid);
+                    vm.$emit('ipcDelete', node.uuid);
                 },
             },
             { type: 'separator' },
