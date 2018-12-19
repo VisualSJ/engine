@@ -326,21 +326,28 @@ class NodeManager extends EventEmitter {
         const parent = this.query(uuid);
         const node = new cc.Node();
 
-        // 一般情况下是 dumpdata
-        if (dump) {
-            if (typeof dump === 'string') { // 给定 uuid 的情况
-                dump = this.queryDump(dump);
-            }
-            // 这几个属性不需要赋给一个新节点
-            delete dump.uuid;
-            delete dump.parent;
-            delete dump.children;
-
-            dumpUtils.restoreNode(node, dump);
-        }
-
         if (name) {
             node.name = name;
+        }
+
+        if (dump) {
+            const dumpData = this.queryDump(dump);
+
+            // 这几个属性不需要赋给一个新节点
+            delete dumpData.uuid;
+            delete dumpData.parent;
+            delete dumpData.children;
+
+            // 有 __prefab__ 数据的情况
+            if (dumpData.__prefab__) {
+                const root = parent._prefab ? parent._prefab.root : node;
+                Object.assign(dumpData.__prefab__, {
+                    rootUuid: root.uuid,
+                    rootName: root.name,
+                });
+            }
+
+            await dumpUtils.restoreNode(node, dumpData);
         }
 
         this.emit('before-add', node);

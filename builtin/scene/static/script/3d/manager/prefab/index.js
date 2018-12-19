@@ -53,7 +53,7 @@ async function link(nodeUuid, assetUuid) {
 
     let asset = assetUuid;
     if (typeof assetUuid === 'string') {
-        asset = await ipc.send('query-asset-info', assetUuid);
+        asset = Manager.Utils.serialize.asAsset(assetUuid);
     }
 
     // 发送节点修改消息

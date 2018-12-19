@@ -102,8 +102,8 @@ async function restoreProperty(node, path, dump) {
         spath = keys.join('.');
         property = spath ? get(node, spath) : node;
     } else {
-         key = path;
-         property = node;
+        key = path;
+        property = node;
     }
 
     if (key === 'length' && Array.isArray(property)) {
@@ -284,6 +284,8 @@ async function restoreNode(node, dumpdata) {
         } else if (path === 'children') {
             const uuids = data.value.map((one) => one.value.uuid); // 没有 children 的情况，map 后 uuids = []，需要有这个空数组
             resetNodeChildren(node, uuids);
+        } else if (path === '__prefab__') {
+            await restorePrefab(node, data);
         } else {
             if (node instanceof cc.Scene) {
                 continue;
@@ -291,6 +293,16 @@ async function restoreNode(node, dumpdata) {
             await restoreProperty(node, path, data);
         }
     }
+}
+
+async function restorePrefab(node, prefab) {
+    const root = Manager.Node.query(prefab.rootUuid);
+
+    const info = new cc._PrefabInfo();
+    info.asset = Manager.Utils.serialize.asAsset(prefab.uuid);
+    info.root = root ? root : node;
+    info.fileId = node.uuid;
+    node._prefab = info;
 }
 
 /**
@@ -319,12 +331,11 @@ async function restoreComponent(component, compos) {
  * 来自 redo undo 的重置
  */
 function resetNodeChildren(parentNode, childrenIds) {
-    const nodeManaer = require('../../manager/node');
     // 全部移除
     const uuids = parentNode.children.map((node) => node.uuid);
 
     uuids.forEach((uuid) => {
-        const node = nodeManaer.query(uuid);
+        const node = Manager.Node.query(uuid);
 
         // 重要：需要过滤隐藏节点
         if (node._objFlags & cc.Object.Flags.HideInHierarchy) {
@@ -336,7 +347,7 @@ function resetNodeChildren(parentNode, childrenIds) {
 
     // 重新添加
     childrenIds.forEach((uuid) => {
-        const node = nodeManaer.query(uuid);
+        const node = Manager.Node.query(uuid);
         if (node) {
             node.parent = null;
             parentNode.addChild(node);
