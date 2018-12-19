@@ -94,8 +94,8 @@ async function restoreProperty(node, path, dump) {
         path = path.replace('position', '_lpos');
         // 如果修改的是 scale.x || scale.y 实际修改的应该是 node._scale.x || node._scale.y
         path = path.replace('scale', '_lscale');
-        // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node._euler.x || node._euler.y
-        path = path.replace('rotation', '_euler');
+        // 如果修改的是 rotation.x || rotation.y 实际修改的应该是 node.eulerAngle.x || node.eulerAngle.y
+        path = path.replace('rotation', 'eulerAngles');
 
         keys = (path || '').split('.');
         key = keys.pop();
@@ -135,9 +135,11 @@ async function restoreProperty(node, path, dump) {
             break;
         case 'cc.Vec3': //TODO: 是否需要 cc. 开头
             if (key) {
-                property[key].x = dump.value.x;
-                property[key].y = dump.value.y;
-                property[key].z = dump.value.z;
+                const prop = property[key];
+                prop.x = dump.value.x;
+                prop.y = dump.value.y;
+                prop.z = dump.value.z;
+                property[key] = prop;
             } else {
                 property.x = dump.value.x;
                 property.y = dump.value.y;
@@ -160,8 +162,10 @@ async function restoreProperty(node, path, dump) {
             }
 
             if (key) {
-                property[key].x = dump.value.x;
-                property[key].y = dump.value.y;
+                const prop = property[key];
+                prop.x = dump.value.x;
+                prop.y = dump.value.y;
+                property[key] = prop;
             } else {
                 property.x = dump.value.x;
                 property.y = dump.value.y;
@@ -175,8 +179,10 @@ async function restoreProperty(node, path, dump) {
             }
 
             if (key) {
-                property[key].width = dump.value.width;
-                property[key].height = dump.value.height;
+                const prop = property[key];
+                prop.width = dump.value.width;
+                prop.height = dump.value.height;
+                property[key] = prop;
             } else {
                 property.width = dump.value.width;
                 property.height = dump.value.height;
@@ -232,8 +238,8 @@ async function restoreProperty(node, path, dump) {
         case '_lpos':
             node.setPosition(node._lpos);
             break;
-        case '_euler':
-            node.setRotationFromEuler(node._euler.x, node._euler.y, node._euler.z);
+        case 'eulerAngles':
+            node.setRotationFromEuler(node.eulerAngle.x, node.eulerAngle.y, node.eulerAngle.z);
             break;
         case '_lscale':
             node.setScale(node._lscale);
