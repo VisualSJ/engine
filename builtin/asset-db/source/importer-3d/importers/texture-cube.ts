@@ -1,11 +1,11 @@
-import { Asset, Importer, VirtualAsset } from 'asset-db';
+import { Asset, Importer, VirtualAsset, queryPathFromUrl } from 'asset-db';
 import equirectToCubemapFaces from 'equirect-cubemap-faces-js';
 import { applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
     TextureBaseAssetUserData } from './texture-base';
 
 export interface TextureCubeAssetUserData extends TextureBaseAssetUserData {
-    imageSource?: string;
+    imageDatabaseUri?: string;
 }
 
 export function makeDefaultTextureCubeAssetUserData(): TextureCubeAssetUserData {
@@ -25,7 +25,7 @@ export default class TextureCubeImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.2';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -63,7 +63,7 @@ export default class TextureCubeImporter extends Importer {
 
             const userData = asset.userData as TextureCubeAssetUserData;
 
-            const imageSource = userData.imageSource as string;
+            const imageSource = queryPathFromUrl(userData.imageDatabaseUri as string);
             if (!imageSource) {
                 return false;
             }

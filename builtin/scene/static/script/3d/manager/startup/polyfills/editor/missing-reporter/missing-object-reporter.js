@@ -3,6 +3,7 @@ var ObjectWalker = require('./object-walker');
 // var NodeUtils = Editor.require('app://editor/page/scene-utils/utils/node');
 
 var MissingReporter = require('./missing-reporter');
+var _ = require('lodash');
 
 //function getAttr (parsingObjects, parsingKeys) {
 //    var attrOwner = null;

@@ -1,11 +1,11 @@
-import { Asset, Importer, VirtualAsset } from 'asset-db';
+import { Asset, Importer, VirtualAsset, queryUuidFromUrl } from 'asset-db';
 import { applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
     TextureBaseAssetUserData } from './texture-base';
 
 export interface Texture2DAssetUserData extends TextureBaseAssetUserData {
     isUuid?: boolean;
-    imageUuidOrPath?: string;
+    imageUuidOrDatabaseUri?: string;
 }
 
 export function makeDefaultTexture2DAssetUserData(): Texture2DAssetUserData {
@@ -30,7 +30,7 @@ export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.3';
+        return '1.0.10';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -72,13 +72,13 @@ export default class TextureImporter extends Importer {
             applyTextureBaseAssetUserData(userData, texture);
 
             // Get image.
-            const imageUuidOrPath = userData.imageUuidOrPath;
-            if (imageUuidOrPath) {
+            const imageUuidOrDatabaseUri = userData.imageUuidOrDatabaseUri;
+            if (imageUuidOrDatabaseUri) {
                 let imageUuid: string | null = null;
                 if (userData.isUuid) {
-                    imageUuid = imageUuidOrPath;
+                    imageUuid = imageUuidOrDatabaseUri;
                 } else {
-                    imageUuid = this.assetDB!.pathToUuid(imageUuidOrPath);
+                    imageUuid = queryUuidFromUrl(imageUuidOrDatabaseUri);
                 }
                 if (imageUuid !== null) {
                     // @ts-ignore

@@ -10,7 +10,7 @@ export default class FbxImporter extends GltfImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.11';
     }
 
     // importer 的名字，用于指定 importer as 等

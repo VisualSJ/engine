@@ -1,7 +1,8 @@
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer, queryUrlFromPath } from 'asset-db';
 import { extname } from 'path';
-import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData, makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
+import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
+import { AssertionError } from 'assert';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
 
@@ -9,7 +10,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.3';
+        return '1.0.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -60,6 +61,11 @@ export default class ImageImporter extends Importer {
                 asset.userData.type = importType;
             }
 
+            const imageDatabaseUri = queryUrlFromPath(asset.source);
+            if (!imageDatabaseUri) {
+                throw new AssertionError({message: `${asset.source} is not found in asset-db.`});
+            }
+
             switch (importType) {
                 case 'raw':
                     break;
@@ -72,7 +78,7 @@ export default class ImageImporter extends Importer {
                 case 'texture cube':
                     const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
                     Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
-                    (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageSource = asset.source;
+                    (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
                     break;
                 case 'sprite-frame':
                     break;
