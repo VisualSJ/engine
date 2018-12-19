@@ -62,18 +62,16 @@ class Camera extends EventEmitter {
     constructor() {
         super();
         // speed controller
-        this.movingSpeed = 0.2;
+        this.movingSpeed = 30;
         this.movingSpeedShiftScale = 3;
-        this.rotationSpeed = 0.5;
+        this.rotationSpeed = 0.006;
         this.panningSpeed = 0.2;
         this.wheelSpeed = 0.1;
+        this.damping = 20.0;
 
         this.homePos = cc.v3(50, 50, 50);
         this.homeRot = quat.fromViewUp(cc.quat(), vec3.normalize(v3a, this.homePos));
-        // temps to store transform
-        this.pos = cc.v3();
-        this.rot = cc.quat();
-        this.euler = cc.v3();
+
         // temps to store directions
         this.id_right = cc.v3(1, 0, 0);
         this.id_up = cc.v3(0, 1, 0);
@@ -84,16 +82,14 @@ class Camera extends EventEmitter {
         // temps to store velocity
         this.velocity = cc.v3();
         this.curMovSpeed = this.movingSpeed;
+        this.curMouseDX = 0;
+        this.curMouseDY = 0;
 
-        // per-frame callback
-        this.move = () => {
-            this.node.getPosition(this.pos);
-            this.node.getRotation(this.rot);
-            vec3.scale(v3b, this.velocity, this.shiftKey ?
-                this.movingSpeedShiftScale : 1);
-            vec3.transformQuat(v3b, v3b, this.rot);
-            this.node.setPosition(vec3.add(v3b, this.pos, v3b));
-        };
+        // temps to store transform
+        this._curRot = quat.create();
+        this._curEye = cc.v3();
+        this._destRot = quat.create();
+        this._destEye = cc.v3();
 
         // tweening
         this.startPos = cc.v3();
@@ -111,6 +107,15 @@ class Camera extends EventEmitter {
             };
             startTicking(tweening);
         };
+
+        cc.director.on(cc.Director.EVENT_AFTER_UPDATE, this.onPostUpdate, this);
+    }
+
+    reset() {
+        this.node.getWorldRotation(this._curRot);
+        this._destRot = quat.clone(this._curRot);
+        this.node.getWorldPosition(this._curEye);
+        this._destEye = vec3.clone(this._curEye);
     }
 
     /**
@@ -122,6 +127,7 @@ class Camera extends EventEmitter {
         this.node = this._camera.node;
         this.instance = this._camera._camera;
         this.camera_move_mode = CameraMoveMode.NONE;
+        this.reset();
 
         operationManager.on('mousedown', this.onMouseDown.bind(this));
         operationManager.on('mousemove', this.onMouseMove.bind(this));
@@ -135,24 +141,35 @@ class Camera extends EventEmitter {
         // operationManager.on('scene-changed', b => this._light.enabled = b);
     }
 
+    enterPanMode() {
+        this.camera_move_mode = CameraMoveMode.PAN;
+        this.node.getPosition(this._curEye);
+        this.node.getRotation(this._curRot);
+        vec3.transformQuat(this.right, this.id_right, this._curRot);
+        vec3.transformQuat(this.up, this.id_up, this._curRot);
+        operationManager.requestPointerLock();
+        this.emit('camera-move-mode', this.camera_move_mode);
+    }
+
+    enterWanderMode() {
+        this.reset();
+        this.camera_move_mode = CameraMoveMode.WANDER;
+        $info.hidden = false;
+        this.curMouseDX = 0;
+        this.curMouseDY = 0;
+        operationManager.requestPointerLock();
+        this.emit('camera-move-mode', this.camera_move_mode);
+    }
+
     onMouseDown(event) {
-        this.node.getRotation(this.rot);
-        if (event.middleButton) { // middle button: panning
-            this.camera_move_mode = CameraMoveMode.PAN;
-            this.node.getPosition(this.pos);
-            vec3.transformQuat(this.right, this.id_right, this.rot);
-            vec3.transformQuat(this.up, this.id_up, this.rot);
-            operationManager.requestPointerLock();
-            this.emit('cameraMoveMode', this.camera_move_mode);
-            return false;
-        } else if (event.rightButton) { // right button: rotation
-            this.camera_move_mode = CameraMoveMode.WANDER;
-            quat.toEuler(this.euler, this.rot);
-            startTicking(this.move);
-            $info.hidden = false;
-            operationManager.requestPointerLock();
-            this.emit('cameraMoveMode', this.camera_move_mode);
-            return false;
+        if (this.camera_move_mode === CameraMoveMode.NONE) {
+            if (event.middleButton) { // middle button: panning
+                this.enterPanMode();
+                return false;
+            } else if (event.rightButton) { // right button: wander
+                this.enterWanderMode();
+                return false;
+            }
         }
     }
 
@@ -160,14 +177,13 @@ class Camera extends EventEmitter {
         let dx = event.moveDeltaX;
         let dy = event.moveDeltaY;
         if (this.camera_move_mode === CameraMoveMode.PAN) { // middle button: panning
-            vec3.add(this.pos, this.pos, vec3.scale(v3a, this.right, -dx * this.panningSpeed));
-            vec3.add(this.pos, this.pos, vec3.scale(v3a, this.up, dy * this.panningSpeed));
-            this.node.setPosition(this.pos);
+            vec3.scaleAndAdd(this._curEye, this._curEye, this.right, -dx * this.panningSpeed);
+            vec3.scaleAndAdd(this._curEye, this._curEye, this.up, dy * this.panningSpeed);
+            this.node.setPosition(this._curEye);
             return false;
         } else if (this.camera_move_mode === CameraMoveMode.WANDER) { // right button: rotation
-            this.euler.x -= dy * this.rotationSpeed;
-            this.euler.y -= dx * this.rotationSpeed;
-            this.node.setRotationFromEuler(this.euler.x, this.euler.y, this.euler.z);
+            this.curMouseDX = dx;
+            this.curMouseDY = dy;
             return false;
         }
         return true;
@@ -175,19 +191,22 @@ class Camera extends EventEmitter {
 
     onMouseUp(event) {
         this.camera_move_mode = CameraMoveMode.NONE;
-        this.emit('cameraMoveMode', this.camera_move_mode);
-        operationManager.exitPointerLock();
-        $info.hidden = true;
-        stopTicking(this.move);
+        this.emit('camera-move-mode', this.camera_move_mode);
+        if (event.middleButton) { // middle button: panning
+            operationManager.exitPointerLock();
+        } else if (event.rightButton) { // right button: wander
+            operationManager.exitPointerLock();
+            $info.hidden = true;
+        }
     }
 
     onMouseWheel(event) {
-        this.node.getPosition(this.pos);
-        this.node.getRotation(this.rot);
-        vec3.transformQuat(this.forward, this.id_forward, this.rot);
+        this.node.getPosition(this._curEye);
+        this.node.getRotation(this._curRot);
+        vec3.transformQuat(this.forward, this.id_forward, this._curRot);
         vec3.scale(v3a, this.forward, event.wheelDeltaY * this.wheelSpeed);
-        vec3.add(v3a, this.pos, v3a);
-        this.node.setPosition(v3a);
+        vec3.add(this._curEye, this._curEye, v3a);
+        this.node.setPosition(this._curEye);
     }
 
     onKeyDown(event) {
@@ -225,12 +244,34 @@ class Camera extends EventEmitter {
         let worldPos = NodeUtils.getCenterWorldPos3D(nodes);
         let minRange = NodeUtils.getMinRangeOfNodes(nodes) * 3;
 
-        this.node.getRotation(this.rot);
-        vec3.transformQuat(this.forward, this.id_forward, this.rot);
+        this.node.getRotation(this._curRot);
+        vec3.transformQuat(this.forward, this.id_forward, this._curRot);
         vec3.scale(v3c, this.forward, minRange);
         vec3.add(v3d, worldPos, v3c);
 
         this.tween(v3d);
+    }
+
+    onPostUpdate() {
+
+        if (this.camera_move_mode === CameraMoveMode.WANDER) {
+            let eye = this._destEye;
+            let rot = this._destRot;
+            let dt =  cc.director.getDeltaTime();
+
+            quat.rotateX(rot, rot, -this.curMouseDY * this.rotationSpeed);
+            quat.rotateAround(rot, rot, cc.v3(0, 1, 0), -this.curMouseDX * this.rotationSpeed);
+            quat.slerp(this._curRot, this._curRot, rot, dt * this.damping);
+            vec3.scale(v3b, this.velocity, this.shiftKey ?
+                this.movingSpeedShiftScale * dt : dt);
+            vec3.transformQuat(v3b, v3b, this._curRot);
+            vec3.add(eye, eye, v3b);
+            vec3.lerp(this._curEye, this._curEye, eye, dt * this.damping);
+            this.node.setPosition(this._curEye);
+            this.node.setRotation(this._curRot);
+            this.curMouseDX = 0;
+            this.curMouseDY = 0;
+        }
     }
 }
 

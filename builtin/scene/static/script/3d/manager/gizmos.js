@@ -29,7 +29,7 @@ node.on('before-component-remove', (comp, node) => {
     gizmo.onBeforeComponentRemove(comp, node);
 });
 
-EditorCamera.on('cameraMoveMode', (mode) => {
+EditorCamera.on('camera-move-mode', (mode) => {
     if (mode === CameraMoveMode.NONE) {
         gizmo.lockGizmoTool(false);
     } else if (mode === CameraMoveMode.WANDER) {

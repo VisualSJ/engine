@@ -23,6 +23,7 @@ class ModelComponentGizmo extends Gizmo {
         this._controller.hide();
         let nodes = this.nodes;
         this.unRegisterNodeEvents(nodes, this.onNodeChanged, this);
+        this.unRegisterTransformEvent(nodes, this.onNodeTransformChanged, this);
     }
 
     createController() {

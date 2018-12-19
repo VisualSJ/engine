@@ -255,7 +255,7 @@ class GizmoManager {
         let component = cc.engine.getInstanceById(id);
         //let className = cc.js.getClassName(component);
 
-        let index = this.svg.selection.indexOf(component.node.uuid);
+        let index = this._selection.indexOf(component.node.uuid);
         //当前component所在node为选中状态
         if (index !== -1) {
             this.showNodeGizmo(component.node);
