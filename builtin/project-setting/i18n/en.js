@@ -5,6 +5,7 @@ module.exports = {
     nav: {
         preview: 'Project Preview',
         groupList: 'Group List',
+        modules: 'modules',
     },
     preview: {
         start_scene: 'Preview Start Scene',
@@ -23,5 +24,12 @@ module.exports = {
         customize_resolution: 'Simulator Custom Resolution',
         vertical: 'Vertical',
         horizontal: 'Horizontal',
+    },
+    modules: {
+        title: 'Module Config',
+        info: 'Build or release will be ignore no selected modules',
+        warn: 'Please do not remove the module being used.',
+        module: 'name',
+        inquiry: 'packing',
     },
 };

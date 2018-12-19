@@ -1,8 +1,9 @@
 <div class="project">
     <div class="slider">
-        <div :active="tab === 0" @click="tab = 0">{{t('nav.preview')}}</div>
+        <div :active="tab === 'preview'" @click="tab = 'preview'">{{t('nav.preview')}}</div>
+        <div :active="tab === 'modules'" @click="tab = 'modules'">{{t('nav.modules')}}</div>
     </div>
     <section>
-        <content-preview v-if="tab === 0" :preview="preview"></content-preview>
+        <component :is="tab" :data="data"></component>
     </section>
 </div>

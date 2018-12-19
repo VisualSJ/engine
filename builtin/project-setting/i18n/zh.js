@@ -5,6 +5,7 @@ module.exports = {
     nav: {
         preview: '项目预览',
         groupList: '分组管理',
+        modules: '模块设置',
     },
     preview: {
         start_scene: '初始预览场景',
@@ -23,5 +24,12 @@ module.exports = {
         customize_resolution: '模拟器自定义分辨率设置',
         vertical: '竖屏',
         horizontal: '横屏',
+    },
+    modules: {
+        title: '模块设置',
+        info: '未勾选的模块在 "构建发布" 的时候不会打包进入引擎文件',
+        warn: '请不要将正在使用的功能模块去除，否则构建后的工程可能无法正常工作',
+        module: '模块',
+        inquiry: '是否打包',
     },
 };

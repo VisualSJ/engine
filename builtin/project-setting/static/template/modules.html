@@ -1,0 +1,26 @@
+<div class="modules">
+    <div class="info">
+        <p>{{ t('info') }}</p>
+        <p>{{ t('warn') }}</p>
+    </div>
+    <section>
+        <div class="modules-header">
+            <div class="modules-item">
+                <span class="name">打包全部模块</span>
+                <span class="checkbox"> <ui-checkbox :checked="selectAll" @confirm="onSelectAll"></ui-checkbox> </span>
+            </div>
+            <div class="modules-item">
+                <span class="name">{{ t('module') }}</span> <span class="checkbox"> {{ t('inquiry') }} </span>
+            </div>
+        </div>
+
+        <div class="modules-section" @confirm="onSelectModule">
+            <div class="modules-item" v-for="(item, key) in modules" :key="item.name">
+                <span class="name">{{ item.name }}</span>
+                <span class="checkbox">
+                    <ui-checkbox :disabled="item.locked" :checked="item.checked" :path="key"></ui-checkbox>
+                </span>
+            </div>
+        </div>
+    </section>
+</div>

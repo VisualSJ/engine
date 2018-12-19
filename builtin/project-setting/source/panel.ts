@@ -30,7 +30,7 @@ export async function ready() {
     new Vue({
         el: panel.$.project,
         data: {
-            tab: 0,
+            tab: 'preview',
             preview: {
                 start_scene: 'current_scene',
                 design_width: 960,
@@ -43,6 +43,9 @@ export async function ready() {
                 simulator_width: 960,
                 simulator_height: 480,
             },
+            modules: {
+                excluded: [],
+            },
         },
 
         watch: {
@@ -53,16 +56,31 @@ export async function ready() {
                     this.dataChange('preview');
                 },
             },
+            modules: {
+                deep: true,
+                handler() {
+                    // @ts-ignore
+                    this.dataChange('modules');
+                },
+            },
+        },
+
+        computed: {
+            data(): any {
+                // @ts-ignore
+                return this[this.tab];
+            },
         },
 
         components: {
-            'content-preview': require('../static/components/preview'),
+            preview: require('../static/components/preview'),
+            modules: require('../static/components/modules'),
         },
 
         methods: <any>{
             dataChange(type: string) {
                 // @ts-ignore
-                Object.keys(this.preview).forEach((key) => {
+                Object.keys(this[type]).forEach((key) => {
                     // @ts-ignore
                     this.set(key, type);
                 });
@@ -106,15 +124,19 @@ export async function ready() {
             async getData(type: string) {
                 const keys = Object.keys(this[type]);
                 const config = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', type);
+                if (!config) {
+                    return;
+                }
                 for (const key of keys) {
                     if (key in config) {
-                        this.preview[key] = config[key];
+                        this[type][key] = config[key];
                     }
                 }
             },
         },
         mounted() {
             this.getData('preview');
+            this.getData('modules');
         },
     });
 }
