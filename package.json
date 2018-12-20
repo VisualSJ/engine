@@ -79,6 +79,7 @@
         "hjson": "^3.1.2",
         "iclipboard": "^1.0.1",
         "iconv-lite": "^0.4.24",
+        "image-data-uri": "^2.0.0",
         "insert-module-globals": "^7.2.0",
         "jade": "^1.11.0",
         "js-sha3": "^0.8.0",

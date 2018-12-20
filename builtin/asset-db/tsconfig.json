@@ -15,7 +15,8 @@
       "../../@types/asset-db/glTF",
       "../../@types/asset-db/equirect-cubemap-faces-js",
       "../../@types/asset-db/fbx2gltf",
-      "../../@types/asset-db/parse-data-url"
+      "../../@types/asset-db/parse-data-url",
+      "../../@types/asset-db/image-data-uri"
     ],
     "esModuleInterop": true
   }
