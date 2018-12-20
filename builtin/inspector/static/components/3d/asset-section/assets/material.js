@@ -46,34 +46,44 @@ exports.computed = {
     },
 
     displayList() {
-        let props = this.propsList, defs = this.definesList;
-        let tree = {}, curDefs = {};
+        const { propsList: props, definesList: defs } = this;
+        let tree = {};
+        const curDefs = {};
 
         // sort props by define dependencies
-        for (let name in props) {
-            let prop = props[name], cur = tree;
-            prop.defines.forEach(d => {
-                if (!cur[d]) cur[d] = {};
+        for (let prop of props) {
+            // let prop = props[name];
+            let cur = tree;
+            prop.defines.forEach((d) => {
+                if (!cur[d]) {
+                    cur[d] = {};
+                }
                 cur = cur[d];
                 curDefs[d] = true;
             });
-            if (!cur.props) cur.props = [];
+            if (!cur.props) {
+                cur.props = [];
+            }
             cur.props.push(prop);
         }
         // add dangling defines
-        for (let name in defs) {
-            let def = defs[name];
-            if (curDefs[def.key] || def.key[0] === '_') continue;
+        for (let def of defs) {
+            // let def = defs[name];
+            if (curDefs[def.key] || def.key[0] === '_') {
+                continue;
+            }
             def.defines.concat(def.key).reduce((node, d) => node[d] || (node[d] = {}), tree);
         }
 
         // harvest from the tree
-        let traverse = node => {
+        let traverse = (node) => {
             let list = node.props || [];
             delete node.props;
             for (let def in node) {
-                list.push(defs.find(d => d.key === def));
-                list = list.concat(traverse(node[def]));
+                if (true) {
+                    list.push(defs.find((d) => d.key === def));
+                    list = list.concat(traverse(node[def]));
+                }
             }
             return list;
         };
@@ -119,6 +129,9 @@ exports.computed = {
 exports.watch = {
     effectName(newVal, oldVal) {
         this.getEffectMap();
+    },
+    'meta.uuid'() {
+        this.refresh('reset');
     },
 };
 
@@ -235,7 +248,7 @@ exports.methods = {
                 effectName,
                 _props: {},
                 _defines: {},
-                effectMap
+                effectMap,
             };
             this.propsList.map((item) => {
                 const { key } = item;
