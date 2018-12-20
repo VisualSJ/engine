@@ -276,8 +276,13 @@ class NodeManager extends EventEmitter {
 
             const comp = node.addComponent(component);
 
-            this.emit('component-added', comp, node);
+            // 一些组件在添加的时候，需要执行部分特殊的逻辑
+            if (comp.constructor && utils.addComponentMap[comp.constructor.name]) {
+                utils.addComponentMap[comp.constructor.name](comp, node);
+            }
+
             // 发送节点修改消息
+            this.emit('component-added', comp, node);
             this.emit('changed', node);
             Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
         } else {
