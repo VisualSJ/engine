@@ -1,9 +1,9 @@
 {
-  "ver": "1.0.1",
+  "ver": "1.0.393",
   "importer": "fbx",
   "uuid": "1263d74c-8167-4928-91a6-4e2672411f47",
   "files": [
-    ".json"
+    ".fbx"
   ],
   "subMetas": {
     "capsule.mesh": {
@@ -111,7 +111,7 @@
       }
     },
     "DefaultMaterial.material": {
-      "ver": "1.0.0",
+      "ver": "1.0.4",
       "importer": "gltf-material",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material",
       "files": [
@@ -122,10 +122,10 @@
         "gltfIndex": 0
       }
     },
-    "Root-Scene.scene": {
+    "primitives.prefab": {
       "ver": "1.0.1",
       "importer": "gltf-scene",
-      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@Root-Scene.scene",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
       "files": [
         ".json"
       ],
@@ -150,6 +150,7 @@
       "materials": [
         "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material"
       ]
-    }
+    },
+    "imageLocations": {}
   }
 }

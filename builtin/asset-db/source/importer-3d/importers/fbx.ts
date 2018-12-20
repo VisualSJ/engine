@@ -1,4 +1,4 @@
-import convert from '@robertlong/fbx2gltf';
+import convert from 'fbx2gltf';
 import { Asset } from 'asset-db';
 import * as fs from 'fs';
 import { mkdirpSync } from 'fs-extra';
@@ -10,7 +10,7 @@ export default class FbxImporter extends GltfImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return `${super.version}1`;
+        return `${super.version}3`;
     }
 
     // importer 的名字，用于指定 importer as 等

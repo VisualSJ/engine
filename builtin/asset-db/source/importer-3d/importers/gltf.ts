@@ -1,5 +1,5 @@
 import { Asset, Importer, queryUuidFromUrl, VirtualAsset, queryUrlFromPath, queryPathFromUrl } from 'asset-db';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import { readJson } from 'fs-extra';
 import parseDataUrl from 'parse-data-url';
 import * as imageDataUri from 'image-data-uri';
@@ -44,7 +44,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.37';
+        return '1.0.39';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -218,21 +218,18 @@ export default class GltfImporter extends Importer {
                         uuidOrDatabaseUri: imageDatabaseUri,
                     };
                 } else {
-                    const embededImageFileName = await this._saveEmbededImage(asset, index, gltfImage, imageUriInfo);
-                    if (embededImageFileName) {
-                        const name = generateSubAssetName(
-                            asset,
-                            gltfImage,
-                            _uniqueIndex(index, gltfConverter.gltf.images.length),
-                            '.image');
+                    const name = generateSubAssetName(
+                        asset,
+                        gltfImage,
+                        _uniqueIndex(index, gltfConverter.gltf.images.length),
+                        '.image');
 
-                        const subAsset = await asset.createSubAsset(name, 'gltf-embeded-image');
-                        subAsset.userData.path = embededImageFileName;
-                        assetTable.images[index] = {
-                            embeded: true,
-                            uuidOrDatabaseUri: subAsset.uuid,
-                        };
-                    }
+                    const subAsset = await asset.createSubAsset(name, 'gltf-embeded-image');
+                    subAsset.userData.gltfIndex = index;
+                    assetTable.images[index] = {
+                        embeded: true,
+                        uuidOrDatabaseUri: subAsset.uuid,
+                    };
                 }
             }
         }
@@ -282,37 +279,6 @@ export default class GltfImporter extends Importer {
                 'gltf-scene',
                 gltfConverter.gltf.scenes.length === 1 ? asset.basename : undefined);
         }
-    }
-
-    private async _saveEmbededImage(
-        asset: Asset, imageIndex: number, gltfImage: Image, imageUriInfo: GltfImageUriInfo) {
-        let imageData: Buffer | null = null;
-        let extName = '';
-        if (isFilesystemPath(imageUriInfo)) {
-            const imagePath = imageUriInfo.fullPath;
-            imageData = fs.readFileSync(imagePath);
-            extName = path.extname(imagePath);
-        } else {
-            const result = imageDataUri.decode(gltfImage.uri!);
-            if (result) {
-                const x = result.imageType.split('/');
-                if (x.length === 0) {
-                    console.error(`Bad data uri.${gltfImage.uri}`);
-                    return null;
-                }
-                extName = `.${x[x.length - 1]}`;
-                imageData = result.dataBuffer;
-            }
-        }
-
-        if (imageData) {
-            const assetName = generateSubAssetName(asset, gltfImage, imageIndex, '.image');
-            const imageFileName = `${assetName}${extName}`;
-            await asset.saveToLibrary(imageFileName, imageData);
-            return imageFileName;
-        }
-
-        return null;
     }
 }
 
@@ -575,16 +541,58 @@ export class GltfImageImporter extends GltfSubAssetImporter {
             return false;
         }
 
+        const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
+
+        const imageIndex = asset.userData.gltfIndex;
+
+        const gltfImage = gltfConverter.gltf.images![imageIndex];
+
         // @ts-ignore
         const imageAsset = new cc.ImageAsset();
-        if (asset.userData.path) {
-            imageAsset._setRawAsset(`${asset.parent.uuid}/${asset.userData.path}`);
+        const imageUriInfo = gltfConverter.getImageUriInfo(gltfImage.uri!);
+        const embededImageExtensionName = await this._saveEmbededImage(asset, gltfImage, imageUriInfo);
+        if (embededImageExtensionName) {
+            imageAsset._setRawAsset(embededImageExtensionName);
         }
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(imageAsset));
 
         return true;
+    }
+
+    private async _saveEmbededImage(
+        asset: VirtualAsset, gltfImage: Image, imageUriInfo: GltfImageUriInfo) {
+        let imageData: Buffer | null = null;
+        let extName = '';
+        if (isFilesystemPath(imageUriInfo)) {
+            const imagePath = imageUriInfo.fullPath;
+            try {
+                imageData = fs.readFileSync(imagePath);
+                extName = path.extname(imagePath);
+            } catch (error) {
+                console.error(`Failed to load texture with path: ${imagePath}`);
+                return null;
+            }
+        } else {
+            const result = imageDataUri.decode(gltfImage.uri!);
+            if (result) {
+                const x = result.imageType.split('/');
+                if (x.length === 0) {
+                    console.error(`Bad data uri.${gltfImage.uri}`);
+                    return null;
+                }
+                extName = `.${x[x.length - 1]}`;
+                imageData = result.dataBuffer;
+            }
+        }
+
+        if (imageData) {
+            await asset.saveToLibrary(extName, imageData);
+            return extName;
+        }
+
+        return null;
     }
 }
 
@@ -1152,6 +1160,14 @@ class GltfConverter {
 
     public getImageUriInfo(uri: string): GltfImageUriInfo {
         if (uri.startsWith('data:')) {
+            const dataUri = parseDataUrl(uri);
+            if (dataUri && dataUri.mediaType === 'image/ccmissing') {
+                const originalPath = dataUri.toBuffer().toString();
+                return {
+                    isDataUri: false,
+                    fullPath: originalPath,
+                } as GltfImagePathInfo;
+            }
             return  {
                 isDataUri: true,
             };
