@@ -1,12 +1,11 @@
-import { Asset, Importer, queryUuidFromUrl, VirtualAsset, queryUrlFromPath, queryPathFromUrl } from 'asset-db';
+import { Asset, Importer, queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl, VirtualAsset } from '@editor/asset-db';
 import * as fs from 'fs-extra';
 import { readJson } from 'fs-extra';
-import parseDataUrl from 'parse-data-url';
 import * as imageDataUri from 'image-data-uri';
+import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
-import { Accessor, Animation, GlTf, Material, Mesh, Node, Scene, Skin, Image } from '../../../../../@types/asset-db/glTF';
+import { Accessor, Animation, GlTf, Image, Material, Mesh, Node, Scene, Skin } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
-import { AssertionError } from 'assert';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -196,7 +195,7 @@ export default class GltfImporter extends Importer {
                 const imageUrl = getFinalImageUrl(gltfImage, userData, gltfConverter);
 
                 const imageOriginalName = gltfImage.name;
-                if (imageOriginalName !== undefined && typeof(imageOriginalName) === 'string') {
+                if (imageOriginalName !== undefined && typeof (imageOriginalName) === 'string') {
                     if (userData.imageLocations[imageOriginalName] === undefined) {
                         userData.imageLocations[imageOriginalName] = null;
                     }
@@ -256,7 +255,8 @@ export default class GltfImporter extends Importer {
                             const imagePath = queryPathFromUrl(userData.imageUuidOrDatabaseUri);
                             if (!imagePath) {
                                 throw new AssertionError({
-                                    message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`});
+                                    message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
+                                });
                             }
                             subAsset.rely(imagePath);
                         }
@@ -1168,7 +1168,7 @@ class GltfConverter {
                     fullPath: originalPath,
                 } as GltfImagePathInfo;
             }
-            return  {
+            return {
                 isDataUri: true,
             };
         } else {

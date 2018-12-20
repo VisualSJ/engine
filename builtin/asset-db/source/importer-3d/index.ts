@@ -1,16 +1,16 @@
 'use strict';
 
-import { AssetDB } from 'asset-db';
+import { AssetDB } from '@editor/asset-db';
 import BufferImporter from './importers/buffer';
 import EffectImporter from './importers/effect';
 import FbxImporter from './importers/fbx';
 import GltfImporter, {
     GltfAnimationImporter,
+    GltfImageImporter,
     GltfMaterialImporter,
     GltfMeshImporter,
     GltfPrefabImporter,
-    GltfSkeletonImporter,
-    GltfImageImporter
+    GltfSkeletonImporter
 } from './importers/gltf';
 import ImageImporter from './importers/image';
 import JavascriptImporter from './importers/javascript';

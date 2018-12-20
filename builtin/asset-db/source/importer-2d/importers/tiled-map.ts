@@ -1,4 +1,4 @@
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 const TMX_ENCODING = { encoding: 'utf-8' };
 const DOMParser = require('xmldom').DOMParser;
 const fs = require('fs');
@@ -16,9 +16,9 @@ function searchDependFiles(tmxFile: any, tmxFileData: any) {
         // @ts-ignore
         return cb(new Error(cc.debug.getError(7222, tmxFile)));
     }
-    let textures: any [] = [];
-    const tsxFiles: any [] = [];
-    let textureNames: any [] = [];
+    let textures: any[] = [];
+    const tsxFiles: any[] = [];
+    let textureNames: any[] = [];
     const rootElement = doc.documentElement;
     const tilesetElements = rootElement.getElementsByTagName('tileset');
     // 读取内部的 source 数据
@@ -32,7 +32,7 @@ function searchDependFiles(tmxFile: any, tmxFileData: any) {
                 const tsxContent = fs.readFileSync(tsxPath, 'utf-8');
                 const tsxDoc = new DOMParser().parseFromString(tsxContent);
                 if (tsxDoc) {
-                    const {srcs, names} = parseTilesetImages(tsxDoc, tsxPath);
+                    const { srcs, names } = parseTilesetImages(tsxDoc, tsxPath);
                     textures.concat(srcs);
                     textureNames.concat(names);
                 } else {
@@ -41,7 +41,7 @@ function searchDependFiles(tmxFile: any, tmxFileData: any) {
             }
         }
         // import images
-        const {srcs, names} = parseTilesetImages(tileset, tmxFile);
+        const { srcs, names } = parseTilesetImages(tileset, tmxFile);
         textures = textures.concat(srcs);
         textureNames = textureNames.concat(names);
     });
@@ -56,8 +56,8 @@ function searchDependFiles(tmxFile: any, tmxFileData: any) {
  */
 function parseTilesetImages(tilesetNode: any, sourcePath: any) {
     const images = tilesetNode.getElementsByTagName('image');
-    const srcs: any [] = [];
-    const names: any [] = [];
+    const srcs: any[] = [];
+    const names: any[] = [];
     Array.prototype.forEach.call(images, (image: any) => {
         const imageCfg = image.getAttribute('source');
         if (imageCfg) {
@@ -67,7 +67,7 @@ function parseTilesetImages(tilesetNode: any, sourcePath: any) {
             names.push(textureName);
         }
     });
-    return {srcs, names};
+    return { srcs, names };
 }
 export default class TiledMapImporter extends Importer {
 
@@ -120,7 +120,7 @@ export default class TiledMapImporter extends Importer {
             tiledMap.textureNames = info.textureNames;
             asset.saveToLibrary('.json', JSON.stringify({
                 __type__: 'cc.TiledMap',
-                content: this.serialize(tiledMap, asset)
+                content: this.serialize(tiledMap, asset),
             }, null, 2));
             updated = true;
         }
@@ -136,11 +136,11 @@ export default class TiledMapImporter extends Importer {
      * @memberof TiledMapImporter
      */
     private serialize(tiledMap: any, asset: Asset) {
-        const {textures, tmxXmlStr, tsxFiles} = tiledMap;
-        const textUuids: any [] = [];
+        const { textures, tmxXmlStr, tsxFiles } = tiledMap;
+        const textUuids: any[] = [];
         textures.map((src: string) => {
             // @ts-ignore
-            textUuids.push({__uuid__: this.assetDB.pathToUuid(src)});
+            textUuids.push({ __uuid__: this.assetDB.pathToUuid(src) });
         });
         return {
             _name: asset.basename,

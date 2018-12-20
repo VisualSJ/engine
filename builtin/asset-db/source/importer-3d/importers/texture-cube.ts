@@ -1,8 +1,10 @@
-import { Asset, Importer, VirtualAsset, queryPathFromUrl } from 'asset-db';
+import { Asset, Importer, queryPathFromUrl, VirtualAsset } from '@editor/asset-db';
 import equirectToCubemapFaces from 'equirect-cubemap-faces-js';
-import { applyTextureBaseAssetUserData,
+import {
+    applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
-    TextureBaseAssetUserData } from './texture-base';
+    TextureBaseAssetUserData
+} from './texture-base';
 
 export interface TextureCubeAssetUserData extends TextureBaseAssetUserData {
     imageDatabaseUri?: string;
@@ -91,7 +93,7 @@ export default class TextureCubeImporter extends Importer {
 
             const facesAssets = {};
 
-            const swapSpace = { };
+            const swapSpace = {};
             for (const face of Object.getOwnPropertyNames(faces)) {
                 const faceCanvas = (faces as any)[face] as HTMLCanvasElement;
                 (swapSpace as any)[face] = faceCanvas;
@@ -104,7 +106,7 @@ export default class TextureCubeImporter extends Importer {
             // @ts-ignore
             const texture = new cc.TextureCube();
             applyTextureBaseAssetUserData(userData, texture);
-            texture._mipmaps = [ facesAssets ];
+            texture._mipmaps = [facesAssets];
 
             // @ts-ignore
             await asset.saveToLibrary('.json', Manager.serialize(texture));

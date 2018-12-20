@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { extname } from 'path';
 
 export default class BufferImporter extends Importer {

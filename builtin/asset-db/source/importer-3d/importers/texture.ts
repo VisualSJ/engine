@@ -1,7 +1,9 @@
-import { Asset, Importer, VirtualAsset, queryUuidFromUrl } from 'asset-db';
-import { applyTextureBaseAssetUserData,
+import { Asset, Importer, queryUuidFromUrl, VirtualAsset } from '@editor/asset-db';
+import {
+    applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
-    TextureBaseAssetUserData } from './texture-base';
+    TextureBaseAssetUserData
+} from './texture-base';
 
 export interface Texture2DAssetUserData extends TextureBaseAssetUserData {
     isUuid?: boolean;

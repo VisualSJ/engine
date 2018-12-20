@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { readFile } from 'fs-extra';
 import { dirname, join } from 'path';
 
@@ -203,7 +203,7 @@ export default class TexturePackerImporter extends Importer {
             const verticesUV = _parseVertices(frame.verticesUV);
 
             if (vertices.length !== verticesUV.length) {
-              console.warn(`
+                console.warn(`
                     [${key}] vertices. \
                     length [${vertices.length}] is different with verticesUV.length [${verticesUV.length}]\
                 `);
@@ -213,7 +213,7 @@ export default class TexturePackerImporter extends Importer {
                     x: [],
                     y: [],
                     u: [],
-                    v: []
+                    v: [],
                 };
 
                 for (let i = 0; i < vertices.length; i += 2) {

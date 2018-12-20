@@ -1,6 +1,6 @@
 'use strict';
 
-import { Asset, Importer, VirtualAsset } from 'asset-db';
+import { Asset, Importer, VirtualAsset } from '@editor/asset-db';
 import { existsSync } from 'fs';
 import { clamp, getTrimRect } from '../utils';
 
@@ -48,7 +48,7 @@ export default class SpriteImporter extends Importer {
             if (!file || !existsSync(file)) {
                 throw new Error(
                     `Spriteframe import failed: The picture file [${
-                        asset.userData.textureUuid
+                    asset.userData.textureUuid
                     }] does not exist`
                 );
             }
@@ -111,7 +111,7 @@ export default class SpriteImporter extends Importer {
             JSON.stringify(
                 {
                     __type__: 'cc.SpriteFrame',
-                    content: this.serialize(sprite, asset)
+                    content: this.serialize(sprite, asset),
                 },
                 null,
                 2
@@ -181,7 +181,7 @@ export default class SpriteImporter extends Importer {
                 sprite.insetLeft,
                 sprite.insetTop,
                 sprite.insetRight,
-                sprite.insetBottom
+                sprite.insetBottom,
             ];
         }
 
@@ -192,7 +192,7 @@ export default class SpriteImporter extends Importer {
                 x: sprite.vertices.x,
                 y: sprite.vertices.y,
                 u: sprite.vertices.u,
-                v: sprite.vertices.v
+                v: sprite.vertices.v,
             };
         }
 
@@ -205,7 +205,7 @@ export default class SpriteImporter extends Importer {
             originalSize: size ? [size.width, size.height] : undefined,
             rotated: sprite._rotated ? 1 : undefined,
             capInsets,
-            vertices
+            vertices,
         };
     }
 }

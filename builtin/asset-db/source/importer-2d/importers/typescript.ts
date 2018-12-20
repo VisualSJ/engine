@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { readFile } from 'fs-extra';
 
 const babel = require('@babel/core');
@@ -81,15 +81,15 @@ export default class TypescriptImporter extends Importer {
             plugins: [
                 [
                     '@babel/plugin-proposal-decorators',
-                    { legacy: true }
+                    { legacy: true },
                 ],
                 [
                     '@babel/plugin-proposal-class-properties',
-                    { loose: true }
+                    { loose: true },
                 ],
-                'add-module-exports'
+                'add-module-exports',
             ],
-            sourceMaps: true
+            sourceMaps: true,
         });
         return { code, map };
     }

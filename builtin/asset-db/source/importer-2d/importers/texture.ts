@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { extname } from 'path';
 
 export default class ImageImporter extends Importer {
@@ -52,7 +52,7 @@ export default class ImageImporter extends Importer {
             const texture = this.createTexture(asset);
             asset.saveToLibrary('.json', JSON.stringify({
                 __type__: 'cc.Texture2D',
-                content: this.serialize(texture)
+                content: this.serialize(texture),
             }, null, 2));
 
             updated = true;

@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { readJSON } from 'fs-extra';
 
 export default class JsonImporter extends Importer {

@@ -1,5 +1,5 @@
+import { Asset } from '@editor/asset-db';
 import convert from 'fbx2gltf';
-import { Asset } from 'asset-db';
 import * as fs from 'fs';
 import { mkdirpSync } from 'fs-extra';
 import { basename, join } from 'path';
@@ -20,7 +20,7 @@ export default class FbxImporter extends GltfImporter {
 
     protected async getGltfFilePath(asset: Asset) {
         const tmpDirDir = this.assetDB!.options.temp;
-        const tmpDir = tmp.dirSync({dir: tmpDirDir, prefix: 'fbx2gltf-'});
+        const tmpDir = tmp.dirSync({ dir: tmpDirDir, prefix: 'fbx2gltf-' });
 
         // 我们必须把fbx先复制到临时目录里，因为fbx转gltf的过程中（可能）会产生.fbm文件夹
         // 如果不复制，会在assets下面产生.fbm并被asset-db导入产生.fbm.meta信息，

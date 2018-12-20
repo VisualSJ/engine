@@ -3,7 +3,7 @@
 const { parse } = require('url');
 const { join, relative, isAbsolute, resolve } = require('path');
 const { ensureDirSync } = require('fs-extra');
-const { AssetDB, version } = require('asset-db');
+const { AssetDB, version } = require('@editor/asset-db');
 const minimatch = require('minimatch');
 const protocol = 'db://';
 let isReady = false;

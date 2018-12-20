@@ -43,26 +43,11 @@ npm run build:npm
 
 ### 更新仓库以及引擎仓库
 
-更新仓库、使用的内置引擎以及 ftp 上的 tgz
+更新仓库以及使用的引擎仓库，不会自动处理冲突
 
 ```bash
 npm run update
 ```
-
-更新 tgz 包
-
-```bash
-npm run update -- --module
-npm run update -- --module @editor/dock @editor/panel
-```
-
-更新引擎
-
-```bash
-npm run update -- --repo
-```
-
-命令后带上指定的模块名字则只会更新指定模块，如果不指定，则会更新所有的 ftp 上的 tgz 包。
 
 ### 启动编辑
 

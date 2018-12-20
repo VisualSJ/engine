@@ -1,4 +1,4 @@
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { readFileSync } from 'fs-extra';
 import { basename, extname } from 'path';
 const shdcLib = require('../../../static/shdc-lib');

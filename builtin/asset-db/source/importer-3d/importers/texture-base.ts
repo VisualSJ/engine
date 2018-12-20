@@ -1,4 +1,4 @@
-import { Asset, Importer, VirtualAsset } from 'asset-db';
+'use strict';
 
 type WrapMode = 'repeat' | 'clamp-to-edge' | 'mirrored-repeat';
 
@@ -26,7 +26,7 @@ export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData 
 
 // @ts-ignore
 export function applyTextureBaseAssetUserData(userData: TextureBaseAssetUserData, texture: cc.Texture2D) {
-    const getWrapMode = (wrapMode: WrapMode) =>  {
+    const getWrapMode = (wrapMode: WrapMode) => {
         switch (wrapMode) {
             // @ts-ignore
             case 'clamp-to-edge': return cc.TextureBase.WrapMode.CLAMP_TO_EDGE;
@@ -36,7 +36,7 @@ export function applyTextureBaseAssetUserData(userData: TextureBaseAssetUserData
             case 'mirrored-repeat': return cc.TextureBase.WrapMode.MIRRORED_REPEAT;
         }
     };
-    const getFilter = (filter: Filter) =>  {
+    const getFilter = (filter: Filter) => {
         switch (filter) {
             // @ts-ignore
             case 'nearest': return cc.TextureBase.Filter.NEAREST;

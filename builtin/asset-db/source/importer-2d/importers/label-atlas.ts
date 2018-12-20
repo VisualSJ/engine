@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 
 const fntParser = require('../../../static/utils/fnt-parser');
 
@@ -14,7 +14,7 @@ function createFntConfigString(
     itemSize: ISize,
     startChar: string,
     textureName: string,
-    fontSize: number,
+    fontSize: number
 ) {
     const startCharCode = startChar.charCodeAt(0);
 
@@ -30,20 +30,20 @@ function createFntConfigString(
 
     let totalChars = 0;
     for (let col = itemSize.height; col <= spriteSize.height; col += itemSize.height) {
-      for (let row = 0; row < spriteSize.width && row + itemSize.width <= spriteSize.width; row += itemSize.width) {
-        const charCode = startCharCode + totalChars;
-        const x = row;
-        const y = col - itemSize.height;
-        const char = String.fromCharCode(charCode);
+        for (let row = 0; row < spriteSize.width && row + itemSize.width <= spriteSize.width; row += itemSize.width) {
+            const charCode = startCharCode + totalChars;
+            const x = row;
+            const y = col - itemSize.height;
+            const char = String.fromCharCode(charCode);
 
-        result += `
+            result += `
             char id=${charCode} x=${x} y=${y} width=${itemSize.width} \
             height=${itemSize.height} xoffset=0 yoffset=0 xadvance=${itemSize.width} \
             page=0 chnl=0 letter="${char}"\n\
         `;
 
-        ++totalChars;
-      }
+            ++totalChars;
+        }
     }
 
     return result;
@@ -128,11 +128,11 @@ export default class LabelAtlasImporter extends Importer {
             userData.itemHeight <= spriteAsset.userData.rawHeight
         ) {
             const fntString = createFntConfigString(
-                { width: spriteAsset.userData.rawWidth, height: spriteAsset.userData.rawHeight},
+                { width: spriteAsset.userData.rawWidth, height: spriteAsset.userData.rawHeight },
                 { width: userData.itemWidth, height: userData.itemHeight },
                 userData.startChar,
                 userData.textureName,
-                userData.fontSize,
+                userData.fontSize
             );
             userData._fntConfig = fntParser.parseFnt(fntString);
         }

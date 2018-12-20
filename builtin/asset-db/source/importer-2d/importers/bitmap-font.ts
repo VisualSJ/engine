@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from 'asset-db';
+import { Asset, Importer } from '@editor/asset-db';
 import { existsSync, readFile } from 'fs-extra';
 import { basename, dirname, join } from 'path';
 

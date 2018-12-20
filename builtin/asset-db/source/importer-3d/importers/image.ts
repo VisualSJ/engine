@@ -1,8 +1,8 @@
-import { Asset, Importer, queryUrlFromPath } from 'asset-db';
+import { Asset, Importer, queryUrlFromPath } from '@editor/asset-db';
+import { AssertionError } from 'assert';
 import { extname } from 'path';
 import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
-import { AssertionError } from 'assert';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
 
@@ -63,7 +63,7 @@ export default class ImageImporter extends Importer {
 
             const imageDatabaseUri = queryUrlFromPath(asset.source);
             if (!imageDatabaseUri) {
-                throw new AssertionError({message: `${asset.source} is not found in asset-db.`});
+                throw new AssertionError({ message: `${asset.source} is not found in asset-db.` });
             }
 
             switch (importType) {
