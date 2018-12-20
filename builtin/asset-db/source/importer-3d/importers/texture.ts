@@ -17,14 +17,14 @@ export function makeDefaultTexture2DAssetUserData(): Texture2DAssetUserData {
 export function makeDefaultTexture2DAssetUserDataFromImagePath(path: string): Texture2DAssetUserData {
     return Object.assign(makeDefaultTextureBaseAssetUserData(), {
         isUuid: false,
-        imageUuidOrPath: path,
+        imageUuidOrDatabaseUri: path,
     });
 }
 
 export function makeDefaultTexture2DAssetUserDataFromImageUuid(uuid: string): Texture2DAssetUserData {
     return Object.assign(makeDefaultTextureBaseAssetUserData(), {
         isUuid: true,
-        imageUuidOrPath: uuid,
+        imageUuidOrDatabaseUri: uuid,
     });
 }
 
@@ -32,7 +32,7 @@ export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.10';
+        return '1.0.11';
     }
 
     // importer 的名字，用于指定 importer as 等
