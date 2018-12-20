@@ -23,6 +23,8 @@ const utils = {
         return {
             ctrlKey: event.ctrlKey,
             shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
             key: event.key,
             keyCode: event.keyCode,
         };

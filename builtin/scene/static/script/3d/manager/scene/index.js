@@ -51,11 +51,15 @@ class SceneManager extends EventEmitter {
             try {
                 await utils.loadSceneByUuid(uuid);
                 currentSceneData = this.serialize();
+                // 爬取节点树上的所有节点数据
+                await nodeManager.init(cc.director._scene);
                 !this.ignore && this.emit('open', null, cc.director._scene);
             } catch (error) {
                 console.error('Open scene failed: ' + uuid);
                 console.error(error);
                 currentSceneData = null;
+                // 爬取节点树上的所有节点数据
+                await nodeManager.init(cc.director._scene);
                 !this.ignore && this.emit('open', error, null);
             }
         } else {
@@ -71,11 +75,10 @@ class SceneManager extends EventEmitter {
             camera.addComponent(cc.CameraComponent);
             await utils.loadSceneByNode(scene);
             currentSceneData = this.serialize();
+            // 爬取节点树上的所有节点数据
+            await nodeManager.init(cc.director._scene);
             !this.ignore && this.emit('open', null, cc.director._scene);
         }
-
-        // 爬取节点树上的所有节点数据
-        await nodeManager.init(cc.director._scene);
 
         if (currentSceneData) {
             // 发送节点修改消息

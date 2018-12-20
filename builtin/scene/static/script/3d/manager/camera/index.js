@@ -5,6 +5,7 @@ const { createCamera, createGrid } = require('./utils');
 const operationManager = require('../operation');
 const NodeQueryUtils = require('../node');
 const NodeUtils = require('../../../utils/node');
+const Scene = require('../scene');
 
 // wasd 按键提示
 const $info = document.createElement('div');
@@ -71,6 +72,9 @@ class Camera extends EventEmitter {
 
         this.homePos = cc.v3(50, 50, 50);
         this.homeRot = quat.fromViewUp(cc.quat(), vec3.normalize(v3a, this.homePos));
+        this._sceneViewCenter = cc.v3();
+        this.defaultViewDist = 20;    // default sceneViewCenter to Camera distance;
+        this.viewDist = 20;
 
         // temps to store directions
         this.id_right = cc.v3(1, 0, 0);
@@ -137,18 +141,134 @@ class Camera extends EventEmitter {
         operationManager.on('keyup', this.onKeyUp.bind(this));
         this.home();
 
-        // TODO: light switch
-        // operationManager.on('scene-changed', b => this._light.enabled = b);
+        Scene.on('open', (error, scene) => {
+            this.onSceneLoaded();
+        }, this);
+
+        // add listener to node events
+        NodeQueryUtils.on('changed', (node) => {
+            this.onSceneNodeChanged(node);
+        });
+        NodeQueryUtils.on('removed', (node) => {
+            this.onSceneNodeRemoved(node);
+        });
+        NodeQueryUtils.on('component-added', (comp, node) => {
+            this.onSceneNodeChanged(node);
+        }, this);
+        NodeQueryUtils.on('component-removed', (comp, node) => {
+            this.onSceneNodeChanged(node);
+        }, this);
+
+    }
+
+    onSceneLoaded() {
+        this._lightNodes = this.queryLightNodes();
+        this.checkLightsState();
+    }
+
+    onSceneNodeRemoved(node) {
+        let index = this._lightNodes.indexOf(node);
+        if (index !== -1) {
+            this._lightNodes.splice(index, 1);
+            this.checkLightsState();
+        }
+    }
+
+    onSceneNodeChanged(node) {
+        let index = this._lightNodes.indexOf(node);
+        if (index !== -1) {
+            let lightComp = node.getComponent(cc.LightComponent);
+            if (!lightComp) {
+                this._lightNodes.splice(index, 1);
+            }
+
+            this.checkLightsState();
+        }
+    }
+
+    queryLightNodes() {
+        let lightNodes = [];
+        let allNodeUuids = NodeQueryUtils.queryUuids();
+
+        allNodeUuids.forEach((id) => {
+            let node = NodeQueryUtils.query(id);
+            // exclude editor light
+            if (node !== this._light.node) {
+                let lightComp = node.getComponent(cc.LightComponent);
+                if (lightComp) {
+                    lightNodes.push(node);
+                }
+            }
+        });
+
+        return lightNodes;
+    }
+
+    isSceneHasActiveLight() {
+        let hasActive = false;
+        let noLightNode = [];
+        this._lightNodes.forEach((node) => {
+            if (node.active) {
+                let lightComp = node.getComponent(cc.LightComponent);
+                if (lightComp) {
+                    if (lightComp.enabled === true) {
+                        hasActive = true;
+                    }
+                } else {
+                    // need to remove node from list
+                    noLightNode.push(node);
+                }
+            }
+        });
+
+        noLightNode.forEach((node) => {
+            let index = this._lightNodes.indexOf(node);
+            this._lightNodes.splice(index, 1);
+        });
+
+        return hasActive;
+    }
+
+    checkLightsState() {
+        if (this.isSceneHasActiveLight()) {
+            this._light.enabled = false;
+        } else {
+            this._light.enabled = true;
+        }
+    }
+
+    updateViewCenterByDist(viewDist) {
+        this.node.getWorldPosition(this._curEye);
+        this.node.getWorldRotation(this._curRot);
+        vec3.transformQuat(this.forward, this.id_forward, this._curRot);
+        vec3.scale(v3a, this.forward, viewDist);
+        vec3.add(v3b, this._curEye, v3a);
+        this._sceneViewCenter = v3b;
+    }
+
+    enterOrbitMode() {
+        this.camera_move_mode = CameraMoveMode.ORBIT;
+        this.node.getWorldPosition(this._curEye);
+        this.node.getWorldRotation(this._curRot);
+        this.viewDist = vec3.distance(this._curEye, this._sceneViewCenter);
     }
 
     enterPanMode() {
         this.camera_move_mode = CameraMoveMode.PAN;
-        this.node.getPosition(this._curEye);
-        this.node.getRotation(this._curRot);
+        this.node.getWorldPosition(this._curEye);
+        this.node.getWorldRotation(this._curRot);
         vec3.transformQuat(this.right, this.id_right, this._curRot);
         vec3.transformQuat(this.up, this.id_up, this._curRot);
         operationManager.requestPointerLock();
         this.emit('camera-move-mode', this.camera_move_mode);
+    }
+
+    exitPanMode() {
+        this.camera_move_mode = CameraMoveMode.NONE;
+        this.emit('camera-move-mode', this.camera_move_mode);
+        operationManager.exitPointerLock();
+
+        this.updateViewCenterByDist(-this.viewDist);
     }
 
     enterWanderMode() {
@@ -161,9 +281,21 @@ class Camera extends EventEmitter {
         this.emit('camera-move-mode', this.camera_move_mode);
     }
 
+    exitWanderMode() {
+        this.camera_move_mode = CameraMoveMode.NONE;
+        this.emit('camera-move-mode', this.camera_move_mode);
+        operationManager.exitPointerLock();
+        $info.hidden = true;
+
+        this.updateViewCenterByDist(-this.viewDist);
+    }
+
     onMouseDown(event) {
         if (this.camera_move_mode === CameraMoveMode.NONE) {
-            if (event.middleButton) { // middle button: panning
+            if (event.leftButton && this.altKey) {
+                this.enterOrbitMode();
+                return false;
+            } else if (event.middleButton) { // middle button: panning
                 this.enterPanMode();
                 return false;
             } else if (event.rightButton) { // right button: wander
@@ -176,10 +308,25 @@ class Camera extends EventEmitter {
     onMouseMove(event) {
         let dx = event.moveDeltaX;
         let dy = event.moveDeltaY;
-        if (this.camera_move_mode === CameraMoveMode.PAN) { // middle button: panning
-            vec3.scaleAndAdd(this._curEye, this._curEye, this.right, -dx * this.panningSpeed);
-            vec3.scaleAndAdd(this._curEye, this._curEye, this.up, dy * this.panningSpeed);
+        if (this.camera_move_mode === CameraMoveMode.ORBIT) {
+            let rot = this._curRot;
+            quat.rotateX(rot, rot, -dy * this.rotationSpeed);
+            quat.rotateAround(rot, rot, cc.v3(0, 1, 0), -dx * this.rotationSpeed);
+            let offset = cc.v3(0, 0, this.viewDist);
+            vec3.transformQuat(offset, offset, rot);
+            vec3.add(this._curEye, this._sceneViewCenter, offset);
+            this.node.setWorldPosition(this._curEye);
+            this.node.setRotation(rot);
+        } else if (this.camera_move_mode === CameraMoveMode.PAN) { // middle button: panning
+            vec3.scale(v3a, this.right, -dx * this.panningSpeed);
+            vec3.scale(v3b, this.up, dy * this.panningSpeed);
+            vec3.add(this._curEye, this._curEye, v3a);
+            vec3.add(this._curEye, this._curEye, v3b);
             this.node.setPosition(this._curEye);
+
+            // update view center
+            vec3.add(this._sceneViewCenter, this._sceneViewCenter, v3a);
+            vec3.add(this._sceneViewCenter, this._sceneViewCenter, v3b);
             return false;
         } else if (this.camera_move_mode === CameraMoveMode.WANDER) { // right button: rotation
             this.curMouseDX = dx;
@@ -190,27 +337,33 @@ class Camera extends EventEmitter {
     }
 
     onMouseUp(event) {
-        this.camera_move_mode = CameraMoveMode.NONE;
-        this.emit('camera-move-mode', this.camera_move_mode);
-        if (event.middleButton) { // middle button: panning
-            operationManager.exitPointerLock();
+        if (event.leftButton) {
+            if (this.camera_move_mode === CameraMoveMode.ORBIT) {
+                this.camera_move_mode = CameraMoveMode.NONE;
+                this.emit('camera-move-mode', this.camera_move_mode);
+                return false;
+            }
+        } else if (event.middleButton) { // middle button: panning
+            this.exitPanMode();
         } else if (event.rightButton) { // right button: wander
-            operationManager.exitPointerLock();
-            $info.hidden = true;
+            this.exitWanderMode();
         }
     }
 
     onMouseWheel(event) {
-        this.node.getPosition(this._curEye);
-        this.node.getRotation(this._curRot);
+        this.node.getWorldPosition(this._curEye);
+        this.node.getWorldRotation(this._curRot);
         vec3.transformQuat(this.forward, this.id_forward, this._curRot);
         vec3.scale(v3a, this.forward, event.wheelDeltaY * this.wheelSpeed);
         vec3.add(this._curEye, this._curEye, v3a);
         this.node.setPosition(this._curEye);
+
+        this.viewDist = vec3.distance(this._curEye, this._sceneViewCenter);
     }
 
     onKeyDown(event) {
         this.shiftKey = event.shiftKey;
+        this.altKey = event.altKey;
         switch (event.key.toLowerCase()) {
             case 'd': this.velocity.x = this.curMovSpeed; break;
             case 'a': this.velocity.x = -this.curMovSpeed; break;
@@ -223,6 +376,7 @@ class Camera extends EventEmitter {
 
     onKeyUp(event) {
         this.shiftKey = event.shiftKey;
+        this.altKey = event.altKey;
         switch (event.key.toLowerCase()) {
             case 'd': if (this.velocity.x > 0) { this.velocity.x = 0; } break;
             case 'a': if (this.velocity.x < 0) { this.velocity.x = 0; } break;
@@ -243,6 +397,8 @@ class Camera extends EventEmitter {
         nodes = nodes.map((id) => NodeQueryUtils.query(id));
         let worldPos = NodeUtils.getCenterWorldPos3D(nodes);
         let minRange = NodeUtils.getMinRangeOfNodes(nodes) * 3;
+
+        this._sceneViewCenter = worldPos;
 
         this.node.getRotation(this._curRot);
         vec3.transformQuat(this.forward, this.id_forward, this._curRot);
