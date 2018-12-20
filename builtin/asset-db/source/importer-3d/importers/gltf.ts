@@ -254,6 +254,7 @@ export default class GltfImporter extends Importer {
                         if (!image.embeded) {
                             const imagePath = queryPathFromUrl(userData.imageUuidOrDatabaseUri);
                             if (!imagePath) {
+                                // @ts-ignore
                                 throw new AssertionError({
                                     message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
                                 });
