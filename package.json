@@ -86,6 +86,7 @@
         "jsondiffpatch": "^0.3.11",
         "lodash": "^4.17.10",
         "merge-source-map": "^1.1.0",
+        "minimatch": "^3.0.4",
         "mobile-detect": "^1.4.3",
         "module-deps": "^6.1.0",
         "mousetrap": "^1.6.2",

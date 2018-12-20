@@ -1,8 +1,7 @@
-const { getCustomConfig, queryAssets, getScriptsCache ,
-     getCurrentScene, updateProgress, requestToPackage} = require('./utils');
 const {join, basename} = require('path');
+const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync} = require('fs-extra');
-const {readFileSync, existsSync, copyFile} = require('fs');
+const {readFileSync, existsSync, copyFileSync} = require('fs');
 const ejs = require('ejs');
 const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
@@ -13,8 +12,6 @@ const static_resource = [ // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
 ];
-
-const projectScripts = require('./project-scripts');
 
 class Builder {
     constructor() {
@@ -58,15 +55,7 @@ class Builder {
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
         updateProgress('build setting...');
-        // 构建 settings 脚本,写入脚本 20%
-        let settings = await this.buildSetting({
-            scenes: options.scenes,
-            debug: options.debug,
-            platform: options.platform,
-            type: 'build-release', // 构建 setting 的种类
-        });
         updateProgress('build setting...', 20);
-        projectScripts.load(settings.scripts);
 
         // 并发任务
         Promise.all([
@@ -74,10 +63,16 @@ class Builder {
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
             this._resolveStatic(), // 其他静态资源拷贝 5%
             this._buildEngine(), // 构建切割引擎 15%
-            assetBuilder.build(settings.rawAssets, settings.scenes), // 资源拷贝资源 30%
-            scriptBuilder.build(settings.scripts), // 打包构建脚本 15%
-            this._compressSetting(settings), // 压缩 settings 脚本并保存在相应位置 5%
-        ]).then(() => {
+            this.buildSetting({// 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
+                scenes: options.scenes,
+                debug: options.debug,
+                platform: options.platform,
+                type: 'build-release', // 构建 setting 的种类
+            }, {
+                start_scene: options.start_scene,
+            }),
+        ]).then(async () => {
+            await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
             let endTime = new Date().getTime();
             updateProgress(`build sucess in ${endTime - startTime} ms`);
             requestToPackage('preview', 'set-build-path', this._paths.dest);
@@ -86,27 +81,13 @@ class Builder {
 
     // 拷贝静态资源文件 5%
     _resolveStatic() {
-        return new Promise((resolve, reject) => {
-            updateProgress('resolove static resource...');
-            Promise.all(static_resource.map((file) => {
-                return new Promise((resolve, reject) => {
-                    let src = join(__dirname, './../build-templates/common', file);
-                    let dest = join(this._paths.dest, file);
-                    copyFile(src, dest, (error) => {
-                        if (error) {
-                            console.error(`copy file error: ${error}`);
-                            reject(error);
-                        }
-                        resolve();
-                    });
-                });
-            })).then(() => {
-                updateProgress('resolove static resource success', 5);
-                resolve();
-            }).catch((error) => {
-                reject(error);
-            });
-        });
+        updateProgress('resolove static resource...');
+        Promise.all(static_resource.map((file) => {
+            let src = join(__dirname, './../build-templates/common', file);
+            let dest = join(this._paths.dest, file);
+            copyFileSync(src, dest);
+        }));
+        updateProgress('resolove static resource success', 5);
     }
 
     // 构建基础 index.html 模板部分的代码 5%
@@ -160,80 +141,76 @@ class Builder {
     }
 
     // 构建引擎模块
-    _buildEngine() {
+    async _buildEngine() {
         updateProgress('build engine...');
-        return new Promise(async (resolve, reject) => {
-            // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
-            if (this._type === '3d') {
-                await copySync(join(this._paths.engine, 'bin/cocos-3d.dev.js'),
-                join(this._paths.dest, this._options.cocosJsName));
-                updateProgress('build engine success', 15);
-                resolve();
-                return;
-            }
+        // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
+        if (this._type === '3d') {
+            await copySync(join(this._paths.engine, 'bin/cocos-3d.dev.js'),
+            join(this._paths.dest, this._options.cocosJsName));
+            updateProgress('build engine success', 15);
+            return;
+        }
 
-            let {isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer} = this._options;
-            let {dest, src, jsCacheExcludes, engine, jsCache} = this._paths;
-            let buildDest = isNativePlatform ? src : dest;
-            let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
-            if (existsSync(jsCacheExcludes)) {
-                let json = readJSONSync(jsCacheExcludes);
-                enginSameFlag = enginVersion === json.version &&
-                    nativeRenderer === json.nativeRenderer &&
-                    json.excludes.toString() === excludedModules.toString() &&
-                    json.sourceMaps === opts.sourceMaps;
-            }
+        let {isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer} = this._options;
+        let {dest, src, jsCacheExcludes, engine, jsCache} = this._paths;
+        let buildDest = isNativePlatform ? src : dest;
+        let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
+        if (existsSync(jsCacheExcludes)) {
+            let json = readJSONSync(jsCacheExcludes);
+            enginSameFlag = enginVersion === json.version &&
+                nativeRenderer === json.nativeRenderer &&
+                json.excludes.toString() === excludedModules.toString() &&
+                json.sourceMaps === opts.sourceMaps;
+        }
 
-            // 与缓存内容一致无需再次编译
-            if (enginSameFlag && existsSync(paths.jsCache)) {
-                copySync(jsCache, join(dest, basename(jsCache)));
-                updateProgress('build engine success', 15);
-                resolve();
-                return;
-            }
-
-            // 构建编译引擎
-            let modules = readJSONSync(join(engine, 'modules.json'));
-            if (!modules || modules.length < 0) {
-                console.error(`${join(engine, 'modules.json')} does not exist`);
-                // TODO 通知消息报错
-                reject(new Error(`${join(engine, 'modules.json')} does not exist`));
-                return;
-            }
-            const excludes = [];
-            // 存在模块设置数据，则整理数据
-            if (excludedModules && excludedModules.length > 0) {
-                excludedModules.forEach(function(exName) {
-                    modules.some(function(item) {
-                        if (item.name === exName) {
-                            if (item.entries) {
-                                item.entries.forEach(function(file) {
-                                    excludes.push(join(engine, file));
-                                });
-                            }
-                            updateProgress('build engine success', 15);
-                            resolve();
-                            return;
-                        }
-                    });
-                });
-            }
-
-            // 执行 gulp 任务，编译 cocos js
-            await this._buildCocosJs(excludes, buildDest);
-
-            // 拷贝编译后的 js 文件
+        // 与缓存内容一致无需再次编译
+        if (enginSameFlag && existsSync(paths.jsCache)) {
             copySync(jsCache, join(dest, basename(jsCache)));
-            // 保存模块数据
-            writeFileSync(paths.jsCacheExcludes, JSON.stringify({
-                excludes: excludedModules,
-                version: enginVersion,
-                nativeRenderer,
-                sourceMaps,
-            }), null, 4);
             updateProgress('build engine success', 15);
             resolve();
-        });
+            return;
+        }
+
+        // 构建编译引擎
+        let modules = readJSONSync(join(engine, 'modules.json'));
+        if (!modules || modules.length < 0) {
+            console.error(`${join(engine, 'modules.json')} does not exist`);
+            // TODO 通知消息报错
+            reject(new Error(`${join(engine, 'modules.json')} does not exist`));
+            return;
+        }
+        const excludes = [];
+        // 存在模块设置数据，则整理数据
+        if (excludedModules && excludedModules.length > 0) {
+            excludedModules.forEach(function(exName) {
+                modules.some(function(item) {
+                    if (item.name === exName) {
+                        if (item.entries) {
+                            item.entries.forEach(function(file) {
+                                excludes.push(join(engine, file));
+                            });
+                        }
+                        updateProgress('build engine success', 15);
+                        resolve();
+                        return;
+                    }
+                });
+            });
+        }
+
+        // 执行 gulp 任务，编译 cocos js
+        await this._buildCocosJs(excludes, buildDest);
+
+        // 拷贝编译后的 js 文件
+        copySync(jsCache, join(dest, basename(jsCache)));
+        // 保存模块数据
+        writeFileSync(paths.jsCacheExcludes, JSON.stringify({
+            excludes: excludedModules,
+            version: enginVersion,
+            nativeRenderer,
+            sourceMaps,
+        }), null, 4);
+        updateProgress('build engine success', 15);
     }
 
     /**
@@ -307,7 +284,7 @@ class Builder {
     _compressSetting(settings) {
         updateProgress('compress setting.js...');
         if (this._options.debug) {
-            updateProgress('compress setting.js success', 5);
+            this.saveSetting(settings);
             return settings;
         }
         let uuidIndices = {};
@@ -449,18 +426,26 @@ class Builder {
                 }
             }
         }
-        delete settings.scripts;
+        this.saveSetting(settings, settingsInitFunction);
+        return settings;
+    }
+
+    /**
+     * 保存脚本
+     * @param {object} settings
+     * @memberof Builder
+     */
+    saveSetting(settings, settingsInitFunction) {
         buildResult.settings = settings;
-        let content = `${WINDOW_HEADER} = ${JSON.stringify(settings, null, that._options.debug ? 4 : 0)
+        let content = `${WINDOW_HEADER} = ${JSON.stringify(settings, null, this._options.debug ? 4 : 0)
             .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/gm, '$1:')}`;
         if (settingsInitFunction) {
             // 把自解压代码放到 settings.js 中，便于代码压缩，并且避免变更 main.js。
             // 记得这里面的代码只能用 ES5
             content += `(${settingsInitFunction.toString()})(${WINDOW_HEADER});`;
         }
-        outputFileSync(that._paths.settings, content);
+        outputFileSync(this._paths.settings, content);
         updateProgress('compress setting.js success', 5);
-        return settings;
     }
 
     /**
@@ -480,8 +465,8 @@ class Builder {
         const setting = Object.assign(options, tempConfig);
         setting.launchScene = currenScene.source;
 
-        // 预览模式下的 canvas 宽高要以实际场景中的 cavas 为准
-        if (options.type === 'preview') {
+        // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
+        if (options.type !== 'build-release') {
             let json = readJSONSync(currenScene.library['.json']);
             let info = json.find((item) => {
                 return item.__type__ === 'cc.Canvas';
@@ -492,21 +477,11 @@ class Builder {
                 setting.designHeight = info._designResolution.height;
             }
         }
-
+        let scripts = await scriptBuilder.build(options.type) || {};
         setting.packedAssets = {};
         setting.md5AssetsMap = {};
-        let assetObj;
-        if (options.type !== 'build-release') {
-            assetObj = await queryAssets();
-            setting.scenes = assetObj.sceneList;
-            setting.scripts = await getScriptsCache(assetObj.scripts);
-        } else {
-            assetObj = await queryAssets(setting.scenes);
-            setting.scripts = assetObj.scripts;
-        }
-        setting.effects = assetObj.effects;
-        setting.rawAssets.assets = assetObj.assets;
-        setting.rawAssets.internal = assetObj.internal;
+        let assetBuilderResult = await assetBuilder.build(setting.scene, options.type);
+        Object.assign(setting, assetBuilderResult, {scripts});
         buildResult.settings = setting;
         if (options.type === 'build-release') {
             return setting;

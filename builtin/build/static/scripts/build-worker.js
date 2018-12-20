@@ -1,4 +1,5 @@
 const builder = require('./builder');
+const editor = require('./editor');
 const {initInfo, getModules, getCurrentScene} = require('./utils');
 const {join} = require('path');
 const buildTask = []; // 构建任务列表
@@ -13,21 +14,17 @@ const BUILD_INFO = {
 
 window.Manager = {
     BUILD_INFO,
-    get serialize() {
-        return this._serialize();
-    },
 };
-
 // 通知 worker 正在启动
 Worker.Ipc.send('build-worker:startup');
 
 // 主进程来的初始化数据
 Worker.Ipc.on('build-worker:init', async (event, info) => {
     Object.assign(BUILD_INFO, info);
-    Manager._serialize = function() {
+    editor._serialize = function() {
         return require(info.utils + '/serialize');
     };
-
+    window.Editor = editor;
     // 加载引擎
     require(join(info.engine, './bin/.cache/dev'));
     initInfo(BUILD_INFO);

@@ -34,15 +34,37 @@ export const fonts = [{
 export const methods = {};
 
 export const messages = {
-    'asset-db:ready'() {
-        !vm.isReady && vm.initData();
-    },
     // 更新当前构建进度
-    'build:update-progress'(msg: string, rate: any) {
+    'build:update-progress'(msg: string, rate: any, state: string) {
         vm.message = msg;
+        vm.state = state ? state : '';
         if (rate) {
             vm.rate += rate;
         }
+    },
+    'asset-db:ready'() {
+        !vm.isReady && vm.initData();
+    },
+    // *************** 监听资源变动，刷新面板内的场景数据 ********************//
+    // 监听到资源添加
+    async 'asset-db:asset-add'(uuid: string) {
+        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        if (asset.import === 'scene') {
+            vm.scenes.push(asset);
+        }
+    },
+    // 监听到资源修改（如重命名）
+    async 'asset-db:asset-change'(uuid: string) {
+        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        if (asset.import === 'scene') {
+            vm.scenes.push(asset);
+        }
+    },
+    // 监听到资源删除
+    'asset-db:asset-delete'(uuid: string) {
+        vm.scenes.filter((item: any) => {
+            return item.uuid !== uuid;
+        });
     },
 };
 
@@ -66,12 +88,14 @@ export async function ready() {
             name: '', // 游戏名称
             start_scene: '',
             scenes: [],
-            checkSuccss: true,
-            state: 'info',
+            checkSuccess: true,
+            state: '',
             message: '',
             rate: 0,
             data: {},
             isReady: false,
+            nameTest: true,
+            pathTest: true,
         },
         computed: {
             selectAll(): any {
@@ -82,26 +106,9 @@ export async function ready() {
                 });
                 return !value;
             },
-            btnState: {
-                get() {
-                    const obj = {
-                        build: false,
-                        compile: false,
-                        run: false,
-                    };
-                    // @ts-ignore
-                    if (this.checkSuccss) {
-                        obj.build = true;
-                    }
-                    // @ts-ignore
-                    if (this.setting.platform === 'android' || this.setting.platform === 'win32') {
-                        obj.compile = true;
-                    }
-                    return obj;
-                },
-                set(newValue: any) {
-
-                },
+            needCompile(): boolean {
+                // @ts-ignore
+                return PlatformConfigs[this.setting.platform].isNative;
             },
             progressRate(): string {
                 // @ts-ignore
@@ -158,12 +165,10 @@ export async function ready() {
                 this.onCheckChange(key, event.target.value);
             },
 
-            error(message: string) {
-                Editor.Dialog.show({
-                    type: 'error',
-                    message,
-                });
-                this.checkSuccss = false;
+            showError(msg: string) {
+                this.message = msg;
+                this.state = 'error';
+                this.rate = 0;
             },
 
             onChangeScene(event: any, index: any) {
@@ -174,32 +179,44 @@ export async function ready() {
             // 检查数据后再更新数据
             onCheckChange(key: string, value: any) {
                 const {platform} = this.setting;
+                let checkSuccess = false;
                 // TODO 更多构建平台加入后，需要更新完善该检测函数
                 switch (key) {
                     case 'name':
+                        const regex = /^[a-zA-Z0-9_-]*$/;
+                        if (!regex.test(value)) {
+                            this.showError(this.t('error.project_name_not_legal'));
+                            this.nameTest = false;
+                            return;
+                        }
+                        this.nameTest = true;
+                        checkSuccess = true;
                         break;
                     case 'build_path':
                         const buildPath = join(Editor.Project.path, value);
                         const isNative = PlatformConfigs[platform].isNative;
 
                         if (process.platform === 'win32' && isNative && buildPath.length > MAX_BUILD_PATH_FOR_WIN32) {
-                            this.error(this.t('path_too_long_title'));
+                            this.showError(this.t('path_too_long_title'));
+                            this.pathTest = false;
                             return;
                         }
 
                         if (buildPath.indexOf(' ') !== -1) {
-                            this.error(`${this.t('error.build_error')}, ${this.t('error.build_path_contains_space')}`);
+                            this.showError(`${this.t('error.build_error')}, ${this.t('error.build_path_contains_space')}`);
+                            this.pathTest = false;
                             return;
                         }
 
                         const containsChinese = /.*[\u4e00-\u9fa5]+.*$/.test(buildPath);
                         if (containsChinese) {
-                            this.error(`${this.t('error.build_error')},
+                            this.showError(`${this.t('error.build_error')},
                             ${this.t('error.build_path_contains_chinese')}`);
+                            this.pathTest = false;
                             return;
                         }
-                        ensureDirSync(buildPath);
-                        this.checkSuccss = true;
+                        this.pathTest = true;
+                        checkSuccess = true;
                         break;
                     case 'selectAll':
                         // @ts-ignore
@@ -215,23 +232,23 @@ export async function ready() {
                                 choose: chooseValue,
                             };
                         });
-                        this.checkSuccss = false;
+                        checkSuccess = true;
                         break;
                     default:
-                        this.checkSuccss = true;
-                        break;
+                        checkSuccess = true;
                 }
-                // 数据监测无误后，赋值存储
-                if (this.checkSuccss) {
+                if (checkSuccess) {
+                    this.state = '';
+                    this.message = '';
+                    // 数据监测无误后，赋值存储
                     if (key in this.setting) {
-                        value && (this.setting[key] = value);
+                        value !== undefined && (this.setting[key] = value);
                         this.dataChanged('common', key, value);
                         this.updateData();
                     } else {
-                        value && (this[key] = value);
+                        value !== undefined && (this[key] = value);
                     }
                 }
-
             },
 
             // 选择构建后的文件夹
@@ -245,7 +262,9 @@ export async function ready() {
 
             // 打开构建发布后的文件夹
             onOpenBuildPath() {
-                shell.openExternal(join(Editor.Project.path, this.setting.build_path));
+                const buildPath = join(Editor.Project.path, this.setting.build_path);
+                ensureDirSync(buildPath);
+                shell.openExternal(buildPath);
             },
 
             // 点击构建按钮
@@ -256,6 +275,14 @@ export async function ready() {
 
             // 构建项目
             async _build() {
+                if (this.message && this.state) {
+                    Editor.Dialog.show({
+                        type: this.state,
+                        message: this.message,
+                        title: this.state,
+                    });
+                    return;
+                }
                 this.rate = 0;
                 const {platform, source_map, debug, build_path} = this.setting;
                 const data = {

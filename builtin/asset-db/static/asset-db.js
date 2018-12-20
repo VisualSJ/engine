@@ -4,7 +4,7 @@ const { parse } = require('url');
 const { join, relative, isAbsolute, resolve } = require('path');
 const { ensureDirSync } = require('fs-extra');
 const { AssetDB, version } = require('asset-db');
-
+const minimatch = require('minimatch');
 const protocol = 'db://';
 let isReady = false;
 let waitTask = [];
@@ -235,19 +235,6 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
         // 存在筛选的 type(资源类型) 变量时，先判断是否有效后获取筛选对应类型资源
         if (options && options.type) {
             importers = type2importer[options.type];
-        } else {
-            // 手动添加 db 对象
-            assets.push({
-                source: `db://${name}`,
-                file: db.options.target, // 实际磁盘路径
-                uuid: `db://${name}`,
-                importer: 'database',
-                isDirectory: false,
-                library: {},
-                subAssets: {},
-                visible: dbInfos[name].visible,
-                readOnly: dbInfos[name].readOnly,
-            });
         }
 
         // 当前 db 内的所有资源
@@ -257,10 +244,14 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
             if (importers && !importers.includes(asset.meta.importer)) {
                 continue;
             }
+            let source = source2url(name, asset.source);
+            // 存在路径筛选配置，并且当前路径不符合条件
+            if (options && options.partten && !minimatch(source, options.partten)) {
+                continue;
+            }
             const importer = db.name2importer[asset.meta.importer] || null;
-
             const info = {
-                source: source2url(name, asset.source),
+                source,
                 file: asset.source, // 实际磁盘路径
                 uuid: asset.uuid,
                 importer: asset.meta.importer,
@@ -279,6 +270,22 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
 
             assets.push(info);
         }
+        // 存在筛选条件时无需返回 database 类型的资源
+        if (options && Object.keys(options).length > 0) {
+            continue;
+        }
+        // 手动添加 db 对象
+        assets.push({
+            source: `db://${name}`,
+            file: db.options.target, // 实际磁盘路径
+            uuid: `db://${name}`,
+            importer: 'database',
+            isDirectory: false,
+            library: {},
+            subAssets: {},
+            visible: dbInfos[name].visible,
+            readOnly: dbInfos[name].readOnly,
+        });
     }
 
     event.reply(null, assets);

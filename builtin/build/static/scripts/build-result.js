@@ -9,6 +9,8 @@ class BuildResults {
         this.settings = null;
         this.paths = null;
         this.options = null;
+        this.scrips = null;
+        this.script2uuid = {};
     }
 
     /**
@@ -79,7 +81,7 @@ class BuildResults {
     }
 }
 
-module.exports = BuildResults;
+module.exports = new BuildResults();
 
 function getAssetType(uuid) {
     var assetInfo = Editor.assetdb.assetInfoByUuid(uuid);

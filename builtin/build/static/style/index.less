@@ -1,6 +1,5 @@
 @import './reset';
 @import './iconfont';
-
 // ui 组件初始化
 ui-input,
 ui-num-input,
@@ -38,6 +37,9 @@ ui-prop > div[slot='content'] {
         margin: 10px 0;
         font-size: 22px;
     }
+    ui-input.error {
+        border-color: #e06f71;
+    }
 }
 
 .progress {
@@ -65,6 +67,9 @@ ui-prop > div[slot='content'] {
     }
     .info {
         position: relative;
+        &.error {
+            color:#e06f71;
+        }
     }
 }
 .container {

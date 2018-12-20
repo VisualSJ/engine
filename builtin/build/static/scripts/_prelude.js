@@ -24,4 +24,4 @@
     var i = 'function' === typeof __require && __require;
     for (var o = 0; o < r.length; o++) { s(r[o]); }
     return s;
-});
+})

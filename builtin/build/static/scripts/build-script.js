@@ -1,10 +1,11 @@
 const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
-const { sortScripts, updateProgress} = require('./utils');
+const {updateProgress, requestToPackage, getRightUrl, getScriptsCache} = require('./utils');
 const Browserify = require('browserify');
 const gulp = require('gulp');
 const {readFileSync} = require('fs');
 const {join, basename, extname} = require('path');
+const projectScripts = require('./project-scripts'); // 配置构建的脚本环境
 // // misc
 const source = require('vinyl-source-stream');
 const viniBuffer = require('vinyl-buffer');
@@ -20,26 +21,77 @@ let rawPathToLibPath = {};
  * @class ScriptsBuilder
  */
 class ScriptBuilder {
-    init() {
+    init(type) {
+        this.shoudBuild = true;
+        if (type !== 'build-release') {
+            this.shoudBuild = false;
+            return;
+        }
         this.paths = buildResult.paths;
         this.options = buildResult.options;
         let util = join(this.paths.engine, 'gulp/util/utils');
         this.uglify = require(util).uglify;
-
     }
 
-    async build(scripts) {
+    async build(type) {
         updateProgress('build scripts...');
-        if (!scripts || scripts.length < 1) {
-            updateProgress('build scripts sucess', 15);
-            return;
+        this.init(type);
+        let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
+        projectScripts.load(scripts);
+        if (!this.shoudBuild) {
+            return await this.resolveScripts(scripts);
         }
-        this.init();
-        let scriptInfo = sortScripts(scripts); // 分类脚本，分为子包和主包
+        let scriptInfo = this.sortScripts(scripts); // 查询、分类脚本，分为子包和主包
         this._allScripts = scriptInfo.allScripts;
         rawPathToLibPath = scriptInfo.rawPathToLibPath;
         await this._buildScript(scriptInfo.mainScrips);
         // await this._buildScript(scriptInfo.subScrips);
+    }
+
+    async resolveScripts(scripts) {
+        let result = [];
+        buildResult.script2uuid = {};
+        for (let asset of scripts) {
+            // todo 改脚本是否为插件
+            if (asset.isPlugin) {
+                if (isNative && asset.loadPluginInNative) {
+                    plugins.push(asset.uuid);
+                } else if (asset.loadPluginInWeb) {
+                    plugins.push(asset.uuid);
+                }
+            }
+            let url = getRightUrl(asset.source);
+            buildResult.script2uuid[url] = asset.uuid;
+            result.push({ deps: {}, file: url });
+        }
+        return await getScriptsCache(result);
+    }
+
+    // 将脚本根据子包设置，分类
+    sortScripts(scripts) {
+        let subScrips = [];
+        let subPackages = querySubPackages();
+        // todo 根据子包做脚本过滤拆分
+        // if (subPackages.length > 0) {
+        //     return {
+        //         mainScrips: scripts,
+        //     };
+        // }
+        // hack
+        let mainScrips = [];
+        let rawPathToLibPath = {};
+        scripts.forEach((script) => {
+            let rawPath = join(this.paths.project, getRightUrl(script.source));
+            let libraryPath = script.library['.js'];
+            rawPathToLibPath[rawPath] = libraryPath;
+            mainScrips.push(rawPath);
+        });
+        return {
+            mainScrips,
+            subScrips,
+            allScripts: mainScrips,
+            rawPathToLibPath,
+        };
     }
 
     _buildScript(srcPaths) {
@@ -180,6 +232,11 @@ class ScriptBuilder {
     }
 }
 
+// 查询当前项目配置的子包信息
+function querySubPackages() {
+    // todo 查询子包
+    return [];
+}
 // 错误处理函数
 function nicifyError(error) {
     function matchFormat(str, prefix, suffix) {
@@ -236,51 +293,5 @@ function nicifyError(error) {
         msg = msg + '\n' + error.annotated;
     }
     return COMPILE_ERR_TAG + ' ' + msg;
-}
-
-// 把脚本重新定位到 raw file，这样才能输出正确的编译路径。
-function patchBrowserifyToRedirectPathToRaw(browserify) {
-    if (!browserify._bresolve) {
-        let error = new Error('Failed to patch browserify');
-        if (gulp.isRunning) {
-            gulp.stop(error);
-        }
-        return;
-    }
-
-    // var dir = Path.join(paths.proj, SCRIPT_SRC);
-
-    browserify.__bresolve = browserify._bresolve;
-    browserify._bresolve = function resolve(id, opts, cb) {
-        browserify.__bresolve(id, opts, function(err, file, pkg) {
-            if (err) {
-                if (opts && opts.filename) {
-                    // still resolve required script in raw directory
-                    var rawPath = libPathToRawPath[opts.filename] || libPathToRawPath[opts.filename.toLowerCase()];
-                    if (rawPath) {
-                        opts.filename = rawPath;
-                        opts.basedir = dirname(rawPath);
-                        return resolve(id, opts, cb);
-                    } else {
-                        console.warn(`Failed to resolve script "${id}" in raw directory: `, opts);
-                    }
-                }
-                // else if (opts) {
-                //     console.warn(`Failed to resolve script "${id}", filename invalid`, opts);
-                // }
-                return cb(null, file, pkg);
-            }
-            // redirect raw script to imported
-            var libPath = rawPathToLibPath[file];
-            if (!libPath) {
-                libPath = rawPathToLibPath[file.toLowerCase()];
-                if (libPath) {
-                    console.log(`resolve "${id}" to "${libPath}" by ignoring case mistake`);
-                }
-            }
-            file = libPath || file;
-            return cb(null, file, pkg);
-        });
-    };
 }
 module.exports = new ScriptBuilder();

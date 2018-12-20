@@ -1,17 +1,24 @@
 <div class="build">
     <h2>{{ t('title') }}</h2>
-    <div class="container"  @change="onChangeValue">
+    <div class="container" @confirm="onChangeValue">
         <div class="line">
             <ui-prop :label="t('name')">
-                <div slot="content"><ui-input :value="name" path="name" tabindex="0" placeholder=""></ui-input></div>
+                <div slot="content">
+                    <ui-input
+                        :class="{error: !nameTest}"
+                        :value="name"
+                        path="name"
+                        tabindex="0"
+                        placeholder="t('name')"
+                    ></ui-input>
+                </div>
             </ui-prop>
         </div>
         <div class="line">
             <ui-prop :label="t('platform')">
                 <div slot="content">
-                    <ui-select :value="setting.platform" path="platform" >
-                        <option value="web-mobile">Web Mobile</option>
-                        <option value="web-desktop">Web Desktop</option>
+                    <ui-select :value="setting.platform" path="platform">
+                        <option value="web-mobile">Web Mobile</option> <option value="web-desktop">Web Desktop</option>
                     </ui-select>
                 </div>
             </ui-prop>
@@ -19,7 +26,12 @@
         <div class="line">
             <ui-prop :label="t('build_path')">
                 <div slot="content">
-                    <ui-input :value="setting.build_path" path="build_path" tabindex="0"></ui-input>
+                    <ui-input
+                        :class="{error: !pathTest}"
+                        :value="setting.build_path"
+                        path="build_path"
+                        tabindex="0"
+                    ></ui-input>
                     <ui-button @confirm.stop="onChooseBuildPath">···</ui-button>
                     <ui-button @confirm.stop="onOpenBuildPath">打开</ui-button>
                 </div>
@@ -39,9 +51,11 @@
                 <div slot="content">
                     <div class="line"><ui-checkbox :checked="selectAll" path="selectAll">全选</ui-checkbox></div>
                     <div class="line" v-for="(scene, index) in scenes">
-                        <ui-checkbox :checked="scene.choose" @change.stop="onChangeScene($event, index)" :disabled="start_scene === scene.uuid ? true : false">{{
-                            scene.url
-                        }}</ui-checkbox
+                        <ui-checkbox
+                            :checked="scene.choose"
+                            @change.stop="onChangeScene($event, index)"
+                            :disabled="start_scene === scene.uuid ? true : false"
+                            >{{ scene.url }}</ui-checkbox
                         ><i class="iconfont i-star" v-if="start_scene === scene.uuid"></i>
                     </div>
                 </div>
@@ -49,7 +63,9 @@
         </div>
         <div class="line">
             <ui-prop :label="t('inline_SpriteFrames')">
-                <div slot="content"><ui-checkbox :checked="setting.inline_SpriteFrames" path="inline_SpriteFrames"></ui-checkbox></div>
+                <div slot="content">
+                    <ui-checkbox :checked="setting.inline_SpriteFrames" path="inline_SpriteFrames"></ui-checkbox>
+                </div>
             </ui-prop>
         </div>
         <div class="line">
@@ -58,23 +74,46 @@
             </ui-prop>
         </div>
         <div class="line">
-            <ui-prop :label="t('merge_start_scene')" :value="setting.merge_start_scene" path="merge_start_scene" type="boolean"></ui-prop>
+            <ui-prop
+                :label="t('merge_start_scene')"
+                :value="setting.merge_start_scene"
+                path="merge_start_scene"
+                type="boolean"
+            ></ui-prop>
         </div>
-        <component :is="setting.platform" :setting="setting" :data="data" ref="children" v-on:data-change="dataChanged"></component>
-        <div class="line"><ui-prop type="boolean" :label="t('debug')" :value="setting.debug"></ui-prop></div>
-        <div class="line"><ui-prop type="boolean" :label="t('source_map')" :value="setting.source_map"></ui-prop></div>
+        <component
+            :is="setting.platform"
+            :setting="setting"
+            :data="data"
+            ref="children"
+            v-on:data-change="dataChanged"
+        ></component>
+        <div class="line">
+            <ui-prop :label="t('debug')">
+                <div slot="content">
+                    <ui-checkbox :checked="setting.debug" path="debug"></ui-checkbox>
+                </div>
+            </ui-prop>
+        </div>
+        <div class="line">
+            <ui-prop :label="t('source_map')">
+                <div slot="content">
+                    <ui-checkbox :checked="setting.source_map" path="source_map"></ui-checkbox>
+                </div>
+            </ui-prop>
+        </div>
     </div>
     <footer>
         <div class="progress">
             <span class="bar" :style="{width: progressRate}"></span>
-            <div :class="state">{{message ? message : 'progress'}}</div>
+            <div :class="['info', state]">{{ message ? message : 'progress' }}</div>
         </div>
         <div class="btn-group">
-            <ui-button class="green" @confirm.stop="onBuild" >构建</ui-button>
+            <ui-button class="green" @confirm.stop="onBuild">构建</ui-button>
             <i class="iconfont i-arrow-right"></i>
-            <ui-button v-if="btnState.compile" class="green" :disabled = "!btnState.compile">编译</ui-button>
-            <i class="iconfont i-arrow-right" v-if="btnState.compile"></i>
-            <ui-button class="green" :disabled = "!btnState.run">运行</ui-button>
+            <ui-button class="green" v-if="needCompile">编译</ui-button>
+            <i class="iconfont i-arrow-right" v-if="needCompile"></i>
+            <ui-button class="green">运行</ui-button>
         </div>
     </footer>
 </div>

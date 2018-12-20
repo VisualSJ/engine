@@ -105,24 +105,22 @@ window.boot = function () {
         });
 
         var launchScene = settings.launchScene;
-		cc.BuiltinResMgr.initEffects(settings.effects, function (){
-			 // load scene
-			cc.director.loadScene(launchScene, null,
-				function () {
-					if (cc.sys.isBrowser) {
-						// show canvas
-						var canvas = document.getElementById('GameCanvas');
-						canvas.style.visibility = '';
-						var div = document.getElementById('GameDiv');
-						if (div) {
-							div.style.backgroundImage = '';
-						}
+		 // load scene
+		cc.director.loadScene(launchScene, null,
+			function () {
+				if (cc.sys.isBrowser) {
+					// show canvas
+					var canvas = document.getElementById('GameCanvas');
+					canvas.style.visibility = '';
+					var div = document.getElementById('GameDiv');
+					if (div) {
+						div.style.backgroundImage = '';
 					}
-					cc.loader.onProgress = null;
-					console.log('Success to load scene: ' + launchScene);
 				}
-			);
-		});
+				cc.loader.onProgress = null;
+				console.log('Success to load scene: ' + launchScene);
+			}
+		);
     };
 
     // jsList

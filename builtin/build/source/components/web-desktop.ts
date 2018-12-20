@@ -56,7 +56,7 @@ export const methods = {
     },
 
     // 数据变化
-    oncConfirm(event: any) {
+    onConfirm(event: any) {
         const key = event.target.path;
         if (!key) {
             return;

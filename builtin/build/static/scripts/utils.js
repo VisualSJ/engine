@@ -1,20 +1,16 @@
 const { basename, join, relative, extname } = require('path');
 const { readFileSync } = require('fs');
-const { readJSONSync} = require('fs-extra');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
 const JSONStream = require('JSONStream');
 const Concat = require('concat-stream');
 const xtend = require('xtend'); // 用于扩展对象的插件包
 const builtins = require('browserify/lib/builtins.js');
-const lodash = require('lodash'); // 排序
-
+const buildResult = require('./build-result');
 // const mdeps = new Mdeps(mpConfig);
 
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
 const insertGlobals = require('insert-module-globals');
-
-let script2uuid = {}; // 脚本映射表
 
 const DB_PROTOCOL_HEADER = 'db://';
 const PREVIEW_PATH = 'preview-scripts';
@@ -142,13 +138,13 @@ async function getScriptsCache(scripts) {
         // 所以这里使用 fileCache 来提前传入文件内容
         mpConfig.fileCache = {};
         for (let path of scripts) {
-            let rawPath = join(commonInfo.project, getRightUrl(path.file));
+            let rawPath = join(commonInfo.project, path.file);
             mpConfig.fileCache[rawPath] = readFileSync(rawPath, 'utf8');
         }
         let md = new Mdeps(mpConfig);
         md.pipe(JSONStream.stringify()).pipe(concat);
         for (let path of scripts) {
-            let rawPath = join(commonInfo.project, getRightUrl(path.file));
+            let rawPath = join(commonInfo.project, path.file);
             md.write({ file: rawPath });
         }
         md.end();
@@ -240,101 +236,6 @@ function getAssetUrl(path, type) {
     return rawPath.replace(/\\/g, '\/');
 }
 
-// 查询资源的相关信息
-async function queryAssets(scenes) {
-    let assetList = await requestToPackage('asset-db', 'query-assets');
-
-    // 根据 source 排序，否则贴图资源会无法正确贴图
-    assetList = lodash.sortBy(assetList, (asset) => {
-        return asset.source;
-    });
-    let dependUuid = [];
-    let sceneList = [];
-    if (scenes) {
-        // 获取当前构建选择场景的依赖资源
-        for (let scene of scenes) {
-            let library = await requestToPackage('asset-db', 'query-asset-library', scene.uuid);
-            const json = readJSONSync(library['.json']);
-            let detail = new cc.deserialize.Details();
-            cc.deserialize(json, detail, {
-                ignoreEditorOnly: true,
-            });
-            dependUuid.push(...detail.uuidList);
-        }
-        sceneList = scenes;
-    }
-
-    let assets = {};
-    let internal = {};
-    let plugins = [];
-    let scripts = [];
-    let effects = [];
-    script2uuid = {};
-    for (let i = 0, len = assetList.length; i < len; i++) {
-        let asset = assetList[i];
-        if (asset.isDirectory || asset.importer === 'database') {
-            continue;
-        }
-        if (isScript(asset.importer)) {
-            // 如果是构建编译，遇到脚本则直接跳过，构建有另外处理脚本的机制，无需再去分析内部依赖文件
-            if (scenes) {
-                scripts.push(asset);
-                continue;
-            }
-            if (asset.isPlugin) {
-                if (isNative && asset.loadPluginInNative) {
-                    plugins.push(asset.uuid);
-                } else if (asset.loadPluginInWeb) {
-                    plugins.push(asset.uuid);
-                }
-            }
-            let url = asset.source.replace(DB_PROTOCOL_HEADER, '');
-            script2uuid[url] = asset.uuid;
-            scripts.push({ deps: assets.deps, file: asset.source });
-            continue;
-        }
-        if (asset.importer === 'scene') {
-            if (scenes) {
-                continue;
-            }
-            sceneList.push({ url: asset.source, uuid: asset.uuid });
-            continue;
-        }
-        if (asset.importer === 'effect') {
-            effects.push(asset.uuid);
-        }
-        // 并非构建场景依赖的资源并且路径不在 resource 下，并且资源类型不是 effect 的不做打包
-        if (asset.importer !== 'effect' && scenes && dependUuid.indexOf(asset.uuid) === -1
-        && !asset.source.startsWith('db://assets/resources')) {
-            continue;
-        }
-        // ********************* 资源类型 ********************** //
-        // cc.SpriteFrame 类型资源处理
-        if (asset.subAssets && Object.keys(asset.subAssets).length > 0) {
-            Object.keys(asset.subAssets).forEach((key) => {
-                let item = asset.subAssets[key];
-                let uuid = item.uuid;
-                if (asset.source.startsWith('db://assets')) {
-                    assets[uuid] = [];
-                    assets[uuid].push(getAssetUrl(asset.source, item.importer), item.type, 1);
-                } else if (asset.source.startsWith('db://internal')) {
-                    internal[uuid] = [];
-                    internal[uuid].push(getAssetUrl(asset.source, item.importer), item.type, 1);
-                }
-            });
-        }
-        if (asset.source.startsWith('db://assets')) {
-            assets[asset.uuid] = [];
-            assets[asset.uuid].push(getAssetUrl(asset.source), asset.type);
-        } else if (asset.source.startsWith('db://internal')) {
-            internal[asset.uuid] = [];
-            internal[asset.uuid].push(getAssetUrl(asset.source), asset.type);
-        }
-    }
-
-    return { assets, internal, plugins, scripts, sceneList , effects};
-}
-
 // 获取当前展示场景的数据信息
 async function getCurrentScene(uuid) {
     let currenUuid = await requestToPackage('scene', 'query-current-scene');
@@ -375,7 +276,7 @@ function getLibraryPath(uuid, extname) {
 
 function getModules(path) {
     let rawPath = join(commonInfo.project, path);
-    let uuid = script2uuid[path];
+    let uuid = buildResult.script2uuid[path];
     let previewPath = rawPathToAssetPath(rawPath);
     let libraryPath = getLibraryPath(uuid, extname(rawPath));
     const HEADER = `(function() {
@@ -433,51 +334,40 @@ function updateProgress(msg, rate) {
     console.log(`build:${msg} ${rate}`);
 }
 
-// 查询当前项目配置的子包信息
-function querySubPackages() {
-    // todo 查询子包
-    return [];
+/**
+ * 获取 subAsset 资源的 source 路径
+ * @param {*} uuid
+ */
+async function subAssetSource(uuid) {
+    const regex = /(.*)@/;
+    const result = uuid.match(regex);
+    let fatherUuid;
+    if (result) {
+        fatherUuid = (uuid.match(regex))[1];
+    }
+    let asset = await requestToPackage('asset-db', 'query-asset-info', fatherUuid);
+    if (!asset) {
+        console.error(`asset ${fatherUuid} is not found`);
+        return '';
+    }
+    if (asset.source) {
+        return asset.source;
+    } else {
+        return await subAssetSource(fatherUuid);
+    }
 }
-
-// 将脚本根据子包设置，分类
-function sortScripts(scripts) {
-    let subScrips = [];
-    let subPackages = querySubPackages();
-    // todo 根据子包做脚本过滤拆分
-    // if (subPackages.length > 0) {
-    //     return {
-    //         mainScrips: scripts,
-    //     };
-    // }
-    // hack
-    let mainScrips = [];
-    let rawPathToLibPath = {};
-    scripts.forEach((script) => {
-        let rawPath = join(commonInfo.project, getRightUrl(script.source));
-        let libraryPath = script.library['.js'];
-        rawPathToLibPath[rawPath] = libraryPath;
-        mainScrips.push(rawPath);
-    });
-    allScripts = mainScrips;
-    return {
-        mainScrips,
-        subScrips,
-        allScripts,
-        rawPathToLibPath,
-    };
-}
-
 module.exports = {
     getModules,
     getCurrentScene,
     getProSetting,
     getGroSetting,
     getCustomConfig,
-    queryAssets,
     getScriptsCache,
     initInfo,
     requestToPackage,
     getDestPathNoExt,
-    sortScripts,
     updateProgress,
+    getRightUrl,
+    getAssetUrl,
+    subAssetSource,
 };

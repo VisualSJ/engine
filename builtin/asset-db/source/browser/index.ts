@@ -84,7 +84,9 @@ module.exports = {
 
         /**
          * 查询资源树
-         * @param options 筛选条件配置 type: 资源类型（scripts\scene\...)
+         * @param options 筛选条件配置
+         * @param options.type 资源类型（scripts\scene\...)
+         * @param options.pattern db 路径匹配模式 (db://**)
          */
         async 'query-assets'(options: any) {
             if (!assetWorker) {
