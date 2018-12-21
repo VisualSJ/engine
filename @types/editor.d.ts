@@ -12,7 +12,6 @@ interface Editor {
     UI: UI;
     Logger: Logger;
     Profile: Profile;
-    History: History;
     Theme: Theme;
     Dialog: Dialog;
 }
@@ -95,13 +94,6 @@ interface Profile {
     load: Function;
 }
 
-interface History {
-    record: Function;
-    commit: Function;
-    clear: Function;
-    undo: Function;
-    redo: Function;
-}
 
 interface Dialog {
     show: Function,

@@ -51,6 +51,7 @@
             "shift+down": "shiftDown",
 
             "f2": "rename"
-        }
+        },
+        "undo-for-package": "scene"
     }
 }

@@ -230,7 +230,7 @@ export function apply(messages: any) {
     };
 
     /**
-     * 保存一次操作记录
+     * 撤销一次操作记录
      */
     messages.undo = async () => {
         if (!$scene) {
@@ -240,7 +240,7 @@ export function apply(messages: any) {
     };
 
     /**
-     * 保存一次操作记录
+     * 重做一次操作记录
      */
     messages.redo = async () => {
         if (!$scene) {
