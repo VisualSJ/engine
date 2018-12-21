@@ -1,5 +1,5 @@
 const buildResult = require('./build-result');
-const { getDestPathNoExt, updateProgress, requestToPackage, getAssetUrl, subAssetSource} = require('./utils');
+const { getDestPathNoExt, updateProgress, requestToPackage, getAssetUrl} = require('./utils');
 const platfomConfig = require('./platforms-config');
 const {outputFileSync, copySync, ensureDirSync, readJSONSync} = require('fs-extra');
 const {join, dirname, extname} = require('path');
@@ -7,9 +7,7 @@ const lodash = require('lodash'); // 排序、去重
 
 class AssetBuilder {
     init(type) {
-        buildResult.uuidCache = this.uuidCache = []; // 存储资源对应的打包情况
-
-        this.existsCache = buildResult.uuidCache;
+        buildResult.assetCache = this.assetCache = {}; // 存储资源对应的打包情况
         this.result = {};
         this.buildQueue = []; // 构建的资源队列
         this.shoudBuild = true;
@@ -18,7 +16,6 @@ class AssetBuilder {
             return;
         }
         // 构建时才需要的参数
-        this.assetCache = [];
         this.paths = buildResult.paths;
         this.options = buildResult.options;
         let platformInfo = platfomConfig[this.options.platform];
@@ -39,11 +36,16 @@ class AssetBuilder {
                 });
             }
             for (let item of scenes) {
-                this.uuidCache.push(item.uuid);
+                this.assetCache[item.uuid] = item;
             }
             this.result.scenes = [];
+            console.time('beginBuild');
             await this.beginBuild();
+            console.timeEnd('beginBuild');
+            console.time('resolveAsset');
             await this.resolveAsset();
+            console.timeEnd('resolveAsset');
+            // 判断是否需要打包资源
             if (!this.shoudBuild) {
                 resolve(this.result);
                 return this.result;
@@ -67,12 +69,10 @@ class AssetBuilder {
     async resolveAsset() {
         let assets = {};
         let internal = {};
-        // 去重
-        this.uuidCache = [...new Set(this.uuidCache)];
-        for (let uuid of this.uuidCache) {
-            let asset = await requestToPackage('asset-db', 'query-asset-info', uuid);
+        for (let uuid of Object.keys(this.assetCache)) {
+            let asset = this.assetCache[uuid];
             if (asset.importer === 'scene') {
-                this.result.scenes.push({ url: asset.source, uuid: asset.uuid });
+                this.result.scenes.push({ url: asset.source, uuid});
                 continue;
             }
             // ********************* 资源类型 ********************** //
@@ -82,7 +82,7 @@ class AssetBuilder {
             }
             // 没有 source, subAssets
             if (!asset.source) {
-                asset.source = await subAssetSource(asset.uuid);
+                asset.source = this.subAssetSource(asset.uuid);
                 if (asset.source.startsWith('db://assets')) {
                     assets[uuid] = [getAssetUrl(asset.source), asset.type, 1];
                 } else if (asset.source.startsWith('db://internal')) {
@@ -101,30 +101,59 @@ class AssetBuilder {
         });
     }
 
-    async beginBuild() {
-        // 查询资源库内位于 resource 文件内的资源
-        let assetsList = await requestToPackage('asset-db', 'query-assets', {
-            pattern: 'db://assets/resources/**/*',
-        });
-        for (let asset of assetsList) {
-            if (asset.isDirectory || asset.importer === 'database') {
-                continue;
-            }
-            this.uuidCache.push(asset.uuid);
+    /**
+     * 获取 subAsset 资源的 source 路径
+     * @param {*} uuid
+     */
+    subAssetSource(uuid) {
+        const regex = /(.*)@/;
+        const result = uuid.match(regex);
+        if (!result) {
+            return '';
         }
-        // 并并执行依赖查找
-        Promise.all(this.uuidCache.map(async (uuid) => {
-            await this.queryAsset(uuid);
-        }));
+        let fatherUuid = result[1];
+        let cache = this.assetCache[fatherUuid].source;
+        if (!cache) {
+            return this.subAssetSource(fatherUuid);
+        }
+        return cache;
+    }
+
+    beginBuild() {
+        return new Promise(async (resolve) => {
+            // 查询资源库内位于 resource 文件内的资源
+            let assetsList = await requestToPackage('asset-db', 'query-assets', {
+                pattern: 'db://assets/resources/**/*',
+            });
+            for (let asset of assetsList) {
+                if (asset.isDirectory || asset.importer === 'database') {
+                    continue;
+                }
+                this.assetCache[asset.uuid] = asset;
+            }
+            console.time('buildAsset');
+            // 并并执行依赖查找
+            Promise.all(Object.keys(this.assetCache).map(async (uuid) => {
+                await this.buildAsset(this.assetCache[uuid]);
+            })).then(() => {
+                console.timeEnd('buildAsset');
+                resolve();
+            });
+        });
     }
 
     /**
      * 构建资源
-     * @param {*} uuid
+     * @param {*} data
      * @memberof AssetBuilder
      */
-    async queryAsset(uuid) {
-        let library = await requestToPackage('asset-db', 'query-asset-library', uuid);
+    async buildAsset(data) {
+        let asset = data;
+        if (!data.library) {
+            asset = await requestToPackage('asset-db', 'query-asset-info', data.uuid);
+            this.assetCache[data.uuid] = asset;
+        }
+        let library = this.assetCache[asset.uuid].library ;
         // 不存在对应序列化 json 的资源，不需要去做反序列化操作，例如 fbx
         if (!library['.json']) {
             return;
@@ -133,16 +162,16 @@ class AssetBuilder {
         const deserializeDetails = new cc.deserialize.Details();
         // deatil 里面的数组分别一一对应，并且指向 asset 依赖资源的对象，不可随意更改/排序
         deserializeDetails.reset();
-        let asset = cc.deserialize(json, deserializeDetails, {
+        let deseriAsset = cc.deserialize(json, deserializeDetails, {
             createAssetRefs: true,
             ignoreEditorOnly: true,
         });
-        asset._uuid = uuid;
+        deseriAsset._uuid = asset.uuid;
         // 预览时只需找出依赖的资源，无需缓存 asset
         if (this.shoudBuild) {
             // 检查以及查找对应资源，并返回给对应 asset 数据
             deserializeDetails.assignAssetsBy((uuid) => {
-                var exists = this.existsCache[uuid];
+                var exists = this.assetCache[uuid];
                 if (exists === undefined) {
                     exists = true;
                 }
@@ -154,13 +183,12 @@ class AssetBuilder {
                     return null;
                 }
             });
-            await this.compress(asset);
+            await this.compress(deseriAsset);
         }
         // 将资源对应的依赖资源加入构建队列，并递归查询依赖
         if (deserializeDetails.uuidList.length > 0) {
             for (let uuid of deserializeDetails.uuidList) {
-                this.uuidCache.push(uuid);
-                await this.queryAsset(uuid);
+                await this.buildAsset({uuid});
             }
         }
     }

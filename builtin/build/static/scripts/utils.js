@@ -334,28 +334,6 @@ function updateProgress(msg, rate) {
     console.log(`build:${msg} ${rate}`);
 }
 
-/**
- * 获取 subAsset 资源的 source 路径
- * @param {*} uuid
- */
-async function subAssetSource(uuid) {
-    const regex = /(.*)@/;
-    const result = uuid.match(regex);
-    let fatherUuid;
-    if (result) {
-        fatherUuid = (uuid.match(regex))[1];
-    }
-    let asset = await requestToPackage('asset-db', 'query-asset-info', fatherUuid);
-    if (!asset) {
-        console.error(`asset ${fatherUuid} is not found`);
-        return '';
-    }
-    if (asset.source) {
-        return asset.source;
-    } else {
-        return await subAssetSource(fatherUuid);
-    }
-}
 module.exports = {
     getModules,
     getCurrentScene,
@@ -369,5 +347,4 @@ module.exports = {
     updateProgress,
     getRightUrl,
     getAssetUrl,
-    subAssetSource,
 };
