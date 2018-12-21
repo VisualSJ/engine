@@ -59,6 +59,7 @@
         <!-- properties -->
         <component
             v-for="(item, index) in displayList"
+            v-if="item.visible !== false"
             :name="item.name || item.key"
             :is="item.compType"
             :dump="item"

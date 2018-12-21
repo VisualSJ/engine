@@ -120,6 +120,8 @@ export function apply(messages: any) {
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
+                // todo 按需刷新
+                $scene.forwarding('Scene', 'softReload');
                 break;
             case 'material':
                 // todo 按需刷新

@@ -76,13 +76,17 @@ exports.computed = {
         }
 
         // harvest from the tree
-        let traverse = (node) => {
-            let list = node.props || [];
+        let traverse = (node, visible = true) => {
+            let list = (node.props || []).map((item) => ({ ...item, visible }));
             delete node.props;
             for (let def in node) {
                 if (true) {
-                    list.push(defs.find((d) => d.key === def));
-                    list = list.concat(traverse(node[def]));
+                    const item = defs.find((d) => d.key === def);
+                    if (item) {
+                        item.visible = visible;
+                        list.push(item);
+                        list = list.concat(traverse(node[def], visible && item.value));
+                    }
                 }
             }
             return list;
