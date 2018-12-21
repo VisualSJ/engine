@@ -57,7 +57,7 @@ function createCamera(color) {
     node.parent = Manager.backgroundNode;
     let camera = node.addComponent(cc.CameraComponent);
     camera.far = 10000; camera.color = color;
-    camera.onLoad(); camera.onEnable();
+    camera._camera.setNode(node);
     let light = node.addComponent(cc.LightComponent);
     return [ camera, light ];
 }

@@ -162,6 +162,7 @@ class Camera extends EventEmitter {
     }
 
     onSceneLoaded() {
+        cc.director._renderSystem._scene.setDebugCamera(this.instance);
         this._lightNodes = this.queryLightNodes();
         this.checkLightsState();
     }

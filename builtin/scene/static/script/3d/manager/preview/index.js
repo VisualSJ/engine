@@ -1,7 +1,12 @@
 'use strict';
 const NodeManager = require('../node');
 const Scene = require('../scene');
-const { RenderScene } = require('./utils');
+
+let props = [
+    '_lights',
+    '_models',
+    '_cameras',
+]
 
 class Preview {
 
@@ -15,7 +20,7 @@ class Preview {
         this.data = new Uint8Array(this.width * this.height * 4);
         this.image = new ImageData(new Uint8ClampedArray(this.data.buffer), this.width, this.height);
 
-        this.scene = new RenderScene();
+        this.scene = new cc.renderer.Scene();
         this.lastUpdate = Date.now();
         cc.director.on(cc.Director.EVENT_AFTER_DRAW, () => {
             let now = Date.now();
@@ -23,41 +28,35 @@ class Preview {
             this.lastUpdate = now;
             this.onPostRender();
         });
-        NodeManager.on('component-added', this.onAddComp.bind(this));
-        NodeManager.on('component-removed', this.onRemoveComp.bind(this));
-        Scene.on('open', (err, scene) => {
-            this.scene = new RenderScene();
-            scene.getComponentsInChildren(cc.CameraComponent).forEach(c => this.onAddComp(c));
-            scene.getComponentsInChildren(cc.LightComponent).forEach(c => this.onAddComp(c));
-            scene.getComponentsInChildren(cc.ModelComponent).forEach(c => this.onAddComp(c));
+        NodeManager.on('changed', this.extractActualScene.bind(this));
+        Scene.on('open', this.extractActualScene.bind(this));
+    }
+
+    isActualSceneItem(item) {
+        return cc.Layers.check(item.getNode().layer, cc.Layers.All);
+    }
+
+    extractActualScene() {
+        let internal = cc.director._renderSystem._scene, preview = this.scene;
+        // sync with current scene
+        props.forEach(p => {
+            let iList = internal[p], pList = preview[p];
+            pList.reset();
+            for (let i = 0; i < iList.length; i++) {
+                let data = iList.data[i];
+                if (this.isActualSceneItem(data))
+                pList.push(data);
+            }
         });
-    }
-
-    onAddComp(comp) {
-        if (!cc.Layers.check(comp.node.layer, cc.Layers.All)) return;
-        if (comp instanceof cc.CameraComponent) {
-            comp.onLoad(); let cam = comp._camera;
+        // override camera fbos
+        let cams = preview._cameras;
+        for (let i = 0; i < cams.length; i++) {
+            let cam = cams.data[i];
             cam.setFramebuffer(this.rt._framebuffer);
-            this.scene.addCamera(cam);
-            // TODO: user could select from camera list
-            if (this.scene.getCameraCount() === 1)
-                this.scene.setDebugCamera(this.scene.getCamera(0));
-        } else if (comp instanceof cc.LightComponent) {
-            this.scene.addLight(comp._light);
-        } else if (comp instanceof cc.ModelComponent) {
-            comp._models.forEach(m => this.scene.addModel(m));
         }
-    }
-
-    onRemoveComp(comp) {
-        if (!cc.Layers.check(comp.node.layer, cc.Layer.All)) return;
-        if (comp instanceof cc.CameraComponent) {
-            this.scene.removeCamera(comp._camera);
-        } else if (comp instanceof cc.LightComponent) {
-            this.scene.removeLight(comp._light);
-        } else if (comp instanceof cc.ModelComponent) {
-            comp._models.forEach(m => this.scene.removeModel(m));
-        }
+        // TODO: user could select from camera list
+        if (this.scene.getCameraCount() === 1)
+            this.scene.setDebugCamera(this.scene.getCamera(0));
     }
 
     onResize() {
