@@ -18,7 +18,10 @@
         "min-height": 200,
         "width": 400,
         "height": 600,
-        "undo-for-package": "scene"
+        "redirect": {
+            "undo": "scene",
+            "redo": "scene"
+        }
     },
     "panel.sprite-editor": {
         "title": "i18n:inspector.SPRITE_EDITOR.title",

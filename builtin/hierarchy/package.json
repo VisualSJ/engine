@@ -52,6 +52,9 @@
 
             "f2": "rename"
         },
-        "undo-for-package": "scene"
+        "redirect": {
+            "undo": "scene",
+            "redo": "scene"
+        }
     }
 }

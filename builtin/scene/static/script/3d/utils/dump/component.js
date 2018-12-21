@@ -91,7 +91,7 @@ function dumpByClass(obj) {
 
     if (ctor.__props__) {
         ctor.__props__.forEach((name) => {
-            const value = component[name];
+            const value = obj[name];
             const propType = compType.properties[name].type;
             const attrs = cc.Class.attr(ctor, name);
 
@@ -108,12 +108,12 @@ function dumpByClass(obj) {
                     value: null,
                 };
             } else {
-                dump.value[name] = dumpField(component, name, propType, attrs);
+                dump.value[name] = dumpField(obj, name, propType, attrs);
             }
 
             // todo 检查 visiable 属性
             if (typeof attrs.visible === 'function') {
-                var visible = checkPropVisible(component, attrs.visible);
+                var visible = checkPropVisible(obj, attrs.visible);
                 if (visible !== checkPropVisible.ERRORED) {
                     dump.value[name].visible = !!visible;
                 }
