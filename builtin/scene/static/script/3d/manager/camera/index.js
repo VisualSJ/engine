@@ -153,7 +153,7 @@ class Camera extends EventEmitter {
             this.onSceneNodeRemoved(node);
         });
         NodeQueryUtils.on('component-added', (comp, node) => {
-            this.onSceneNodeChanged(node);
+            this.onComponentAdded(comp, node);
         }, this);
         NodeQueryUtils.on('component-removed', (comp, node) => {
             this.onSceneNodeChanged(node);
@@ -166,6 +166,15 @@ class Camera extends EventEmitter {
         this.checkLightsState();
     }
 
+    onComponentAdded(comp, node) {
+        if (comp instanceof cc.LightComponent) {
+            if (!this._lightNodes.includes(node)) {
+                this._lightNodes.push(node);
+            }
+            this.checkLightsState();
+        }
+    }
+
     onSceneNodeRemoved(node) {
         let index = this._lightNodes.indexOf(node);
         if (index !== -1) {
@@ -174,6 +183,7 @@ class Camera extends EventEmitter {
         }
     }
 
+    // active/deactive, enabled/disabled
     onSceneNodeChanged(node) {
         let index = this._lightNodes.indexOf(node);
         if (index !== -1) {
@@ -389,6 +399,10 @@ class Camera extends EventEmitter {
     }
 
     home() {
+        // set view dist
+        this._sceneViewCenter = cc.v3();
+        this.viewDist = vec3.distance(this.homePos, this._sceneViewCenter);
+
         this.tween(this.homePos, this.homeRot);
     }
 
