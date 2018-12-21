@@ -38,7 +38,7 @@ exports.canNotDragNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotPasteNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node);
+    return exports.canNotDeleteNode(node) || Object.keys(db.vm.copyNodesDumpdata).length === 0;
 };
 
 /**

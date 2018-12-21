@@ -8,9 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
-let copyNodesDumpdata: any = {}; // 用于存放已复制节点的 dump 信息, { uuid: dumpdata }
-
 export const name = 'tree';
 
 export const template = readFileSync(
@@ -38,6 +35,8 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: {}, // 拖动时高亮的目录区域 {top, height}
+        copiedUuids: [], // 用于存放已复制节点的 uuid
+        copyNodesDumpdata: {}, // 用于存放已复制节点的 dump 信息, { uuid: dumpdata }
     };
 }
 
@@ -684,12 +683,7 @@ export const methods = {
             }
 
             // 在父级里平移
-            await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                uuid: toParent.uuid,  // 父级 uuid
-                path: 'children',
-                target: toArr.length,
-                offset,
-            });
+            db.moveNode(toParent.uuid, toArr.length, offset);
 
         } else if (json.type === 'cc.Node') {
             if (!json.from) {
@@ -731,8 +725,8 @@ export const methods = {
         const copyData = await utils.getCopyData(uuids);
 
         // 重置数据
-        copiedUuids = copyData.uuids;
-        copyNodesDumpdata = copyData.dumps;
+        vm.copiedUuids = copyData.uuids;
+        vm.copyNodesDumpdata = copyData.dumps;
     },
 
     /**
@@ -758,7 +752,7 @@ export const methods = {
             });
 
             for (const node of nodes) {
-                const dumpdata = copyNodesDumpdata[node.uuid];
+                const dumpdata = vm.copyNodesDumpdata[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
                 // 循环其子集
                 const children = dumpdata.children.value.map((child: any) => child.value.uuid);
@@ -769,11 +763,11 @@ export const methods = {
             }
         }
 
-        if (copiedUuids.length === 0) {
+        if (vm.copiedUuids.length === 0) {
             return;
         }
 
-        await _forEach(copiedUuids, uuid);
+        await _forEach(vm.copiedUuids, uuid);
         // 选中新的节点
         vm.ipcResetSelect(newSelected);
     },
@@ -812,6 +806,11 @@ export const methods = {
                 }
                 const dumpdata = copyData.dumps[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
+                // 移动到节点的下方
+                const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, node.uuid);
+                const offset = toIndex - toArr.length + 1;
+                await db.moveNode(parent, toArr.length, offset);
+
                 // 循环其子集
                 const children = dumpdata.children.value.map((child: any) => child.value.uuid);
                 if (children.length > 0) {
@@ -886,12 +885,7 @@ export const methods = {
                         return;
                     }
 
-                    Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid
-                        path: 'children',
-                        target: fromIndex, // 被移动的节点所在的索引
-                        offset,
-                    });
+                    await db.moveNode(toParent.uuid, fromIndex, offset);
                 } else { // 跨级移动
                     if (fromParent === toNode) { // 仍在原来的层级中
                         return;
@@ -936,12 +930,7 @@ export const methods = {
                         }
 
                         // 在父级里平移
-                        await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                            uuid: toParent.uuid,  // 父级 uuid
-                            path: 'children',
-                            target: toArr.length,
-                            offset,
-                        });
+                        await db.moveNode(toParent.uuid, toArr.length, offset);
                     }
 
                     if (affectNode) {

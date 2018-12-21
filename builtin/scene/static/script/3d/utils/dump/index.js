@@ -239,7 +239,7 @@ async function restoreProperty(node, path, dump) {
             node.setPosition(node._lpos);
             break;
         case 'eulerAngles':
-            node.setRotationFromEuler(node.eulerAngle.x, node.eulerAngle.y, node.eulerAngle.z);
+            node.setRotationFromEuler(node.eulerAngles.x, node.eulerAngles.y, node.eulerAngles.z);
             break;
         case '_lscale':
             node.setScale(node._lscale);
