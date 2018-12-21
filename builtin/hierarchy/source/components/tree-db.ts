@@ -116,21 +116,6 @@ export async function pasteNode(parent: string, dump: any) {
 }
 
 /**
- * 粘贴节点到指定父级
- * @param uuid  父级 uuid
- * @param target  现在的索引位置
- * @param offset  正负数，前后移动索引位置
- */
-export async function moveNode(uuid: string, target: number, offset: number) {
-    return await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-        uuid,
-        path: 'children',
-        target,
-        offset,
-    });
-}
-
-/**
  * 添加节点后数据调整
  */
 function addNodeIntoTree(newNode: any) {

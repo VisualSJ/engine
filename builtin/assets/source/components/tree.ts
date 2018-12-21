@@ -9,6 +9,7 @@ const utils = require('./tree-utils');
 let vm: any = null;
 
 let isRefreshing: boolean = false; // 新增项目带来的请求重新渲染树形
+let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
 
@@ -40,7 +41,6 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: {}, // 拖动时高亮的目录区域 {top, left, height}
-        copiedUuids: [], // 用于存放已复制节点的 uuid
         db,
         utils,
     };
@@ -710,32 +710,26 @@ export const methods = {
      * @param uuid
      */
     copy(uuid: string | string[]) {
-        let copies = [];
         if (Array.isArray(uuid)) {
-            copies = uuid;
+            copiedUuids = uuid;
         } else { // uuid 是 字符
             // 来自右击菜单的单个选中，右击节点不在已选项目里
             if (uuid && !vm.selects.includes(uuid)) {
-                copies = [uuid];
+                copiedUuids = [uuid];
             } else {
-                copies = vm.selects.slice();
+                copiedUuids = vm.selects.slice();
             }
         }
 
         // 过滤不可复制的节点
-        vm.copiedUuids = copies.filter((uuid: string) => {
-            return uuid && !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
-        });
-
-        // 给复制的动作反馈成功
-        vm.copiedUuids.forEach((uuid: string) => {
-            utils.twinkle.add(uuid);
+        copiedUuids.filter((uuid: string) => {
+            return !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
         });
     },
 
     /**
      * 粘贴
-     * @param uuid 粘贴到此目标节点
+     * @param uuid 粘贴到这个节点里面
      */
     async paste(uuid: string) {
         if (!uuid) {
@@ -747,44 +741,20 @@ export const methods = {
             return;
         }
 
-        const finallyCanPaste: string[] = []; // 最后可复制的项
-        vm.copiedUuids.forEach((uuid: string) => {
-            const asset = utils.getAssetFromTree(uuid);
-
-            // 节点可复制
-            const canCopy = !utils.canNotCopyAsset(asset);
-            if (!canCopy) {
-                const warn = `${Editor.I18n.t('assets.operate.copyFail')}: ${asset.name}`;
-                console.warn(warn);
-            }
-
-            // 不是此目标节点的父节点（不在它的上级文件夹里）
-            const notInside = utils.getGroupFromTree(asset, parent.uuid).length === 0 ? true : false;
-            if (!notInside) {
-                const warn = `${Editor.I18n.t('assets.operate.pasteFail_parent_into_child')}: ${asset.name}`;
-                console.warn(warn);
-            }
-
-            if (canCopy && notInside) {
-                finallyCanPaste.push(uuid);
-            }
-        });
-        if (finallyCanPaste.length === 0) {
-            return;
-        }
-
         let index = 0;
         let asset;
+        let isLegal = false;
         parent.state = 'loading'; // 显示 loading 效果
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
 
         do {
-            asset = utils.getAssetFromTree(finallyCanPaste[index]);
+            asset = utils.getAssetFromTree(copiedUuids[index]);
             index++;
+            isLegal = !utils.canNotCopyAsset(asset);
             utils.twinkle.sleep();
-        } while (await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
+        } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 
     /**

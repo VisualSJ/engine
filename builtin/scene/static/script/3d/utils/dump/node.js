@@ -72,6 +72,7 @@ function dump(node) {
     if (node._prefab && node._prefab.asset) {
         dump.__prefab__ = {
             uuid: node._prefab.asset._uuid,
+            rootName: node._prefab.root && node._prefab.root.name,
             rootUuid: node._prefab.root && node._prefab.root.uuid,
             sync: node._prefab.root && node._prefab.root._prefab.sync,
         };

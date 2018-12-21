@@ -350,6 +350,7 @@ class NodeManager extends EventEmitter {
                 const root = parent._prefab ? parent._prefab.root : node;
                 Object.assign(dump.__prefab__, {
                     rootUuid: root.uuid,
+                    rootName: root.name,
                 });
             }
 

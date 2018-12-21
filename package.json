@@ -33,7 +33,7 @@
         "@editor/asset-db": "^1.0.0",
         "@editor/dock": "^1.0.1",
         "@editor/package": "^1.0.0",
-        "@editor/panel": "^1.0.2",
+        "@editor/panel": "^1.0.3",
         "@editor/project": "^1.0.0",
         "@editor/setting": "^1.0.2",
         "@robertlong/fbx2gltf": "^0.11.0",
