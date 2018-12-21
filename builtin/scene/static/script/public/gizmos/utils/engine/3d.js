@@ -16,7 +16,7 @@ class Engine3D extends EngineInterface {
     constructor() {
         super();
         this.gfx = gfx;
-        this.panPlaneLayer = cc.Layers.PanPlanes;
+        this.panPlaneLayer = cc.Layers.Editor;
     }
 
     create3DNode(name) {

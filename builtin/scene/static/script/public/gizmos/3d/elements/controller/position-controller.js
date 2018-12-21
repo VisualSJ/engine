@@ -52,7 +52,7 @@ class PositionController extends ControllerBase {
         panPlane.parent = this._rootNode;
         panPlane.name = axisName + 'PanPlane';
         panPlane.active = false;
-        panPlane._layer = panPlaneLayer;
+        panPlane.layer = panPlaneLayer;
         NodeUtils.setEulerAngles(panPlane, rotation);
         setNodeOpacity(panPlane, 0);
         this.initAxis(borderPlane, axisName, color);

@@ -25,6 +25,7 @@ node_modules/
 
 /builtin/engine/resources
 /builtin/scene/engine
+/builtin/*/source/**/*.js
 
 # cocos2d-x
 /cocos2d-x

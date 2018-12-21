@@ -85,6 +85,7 @@ async function manager(info) {
     manager.Prefab = require('../prefab');
     manager.Effect = require('../effects');
     manager.Selection = require('../selection');
+    manager.Preview = require('../preview');
 
     // 创建编辑器使用的 camera
     manager.Camera.init();
