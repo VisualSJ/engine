@@ -857,4 +857,13 @@ export const methods = {
         }
         return vm.selects[0]; // 当前选中的资源
     },
+
+    /**
+     * 定位资源并闪烁
+     * @param uuid
+     */
+    intoTwinkle(uuid: string) {
+        utils.scrollIntoView(uuid);
+        utils.twinkle.add(uuid);
+    },
 };

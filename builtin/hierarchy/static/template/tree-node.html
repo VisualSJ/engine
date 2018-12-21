@@ -20,6 +20,7 @@
     ></i>
 
     <label class="name"
+        :twinkle="twinkles.indexOf(node.uuid) !== -1" 
         v-if="state!=='input'"
     >{{node.name}}</label>
 

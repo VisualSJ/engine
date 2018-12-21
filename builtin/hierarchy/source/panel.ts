@@ -206,6 +206,15 @@ export const messages = {
         }
         vm.unselect(uuid);
     },
+
+    /**
+     * 主动定位到资源
+     * 并让其闪烁
+     * @param uuid 选中物体的 uuid
+     */
+    intoTwinkle(uuid: string) {
+        vm.intoTwinkle(uuid);
+    },
 };
 
 export async function ready() {
@@ -343,6 +352,13 @@ export async function ready() {
              */
             resizePanel() {
                 vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
+            },
+            /**
+             * 主动定位到资源
+             * 并让其闪烁
+             */
+            intoTwinkle(uuid: string) {
+                vm.$refs.tree.intoTwinkle(uuid);
             },
         },
     });

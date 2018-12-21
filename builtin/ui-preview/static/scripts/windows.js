@@ -31,4 +31,13 @@ exports.load = function() {
         } catch (error) {}
         return uuid;
     });
+
+    // 闪烁对应面板的资源
+    Editor.UI.DragObject.setFocusedAction((uuid) => {
+        if (uuid && uuid.length > 22) { // 资源
+             Editor.Ipc.sendToPanel('assets', 'intoTwinkle', uuid);
+        } else { // 节点
+            Editor.Ipc.sendToPanel('hierarchy', 'intoTwinkle', uuid);
+        }
+    });
 };

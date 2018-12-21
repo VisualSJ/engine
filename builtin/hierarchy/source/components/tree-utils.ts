@@ -261,3 +261,40 @@ export async function getCopyData(uuids: string[]) {
     }
     return rt;
 }
+
+/**
+ * 外部修改资源后，检测需要闪烁一下的资源
+ */
+export const twinkle = {
+    timer: 0,
+    watch: true,
+    start() {
+        this.watch = true;
+    },
+    stop() {
+        this.watch = false;
+    },
+    sleep(time: number) {
+        // 停止检测，遇到用户主动导入文件，复制文件夹等操作
+        this.watch = false;
+
+        clearTimeout(this.timer);
+        // @ts-ignore
+        this.timer = setTimeout(() => {
+            this.watch = true;
+        }, time || 2000);
+
+        // 避免一些无效的记录一直存在
+        db.vm.twinkles = [];
+    },
+    add(uuid: string) {
+        if (this.watch) {
+            db.vm.twinkles.push(uuid);
+
+            // 动画结束后删除
+            setTimeout(() => {
+                db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
+            }, 1000);
+        }
+    },
+};

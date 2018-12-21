@@ -14,6 +14,7 @@ export const template = readFileSync(
 export const props: string[] = [
     'node',
     'selects',
+    'twinkles',
     'renameUuid',
 ];
 

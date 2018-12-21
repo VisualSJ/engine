@@ -19,7 +19,7 @@
     &[active="true"] {
         background-color: var(--item-hover-bg);
         transition: 0.3s opacity ease;
-        transition-delay: 0.3s 
+        transition-delay: 0.3s
     }
     &[state="input"] {
         background-color: transparent !important;
@@ -69,6 +69,12 @@
         margin-left: 22px;
         white-space: nowrap;
         padding-right: 20px;
+        &[twinkle="true"] {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+            animation-name: tada;
+            transform-origin: center;
+        }
     }
     >.loading {
         display: inline-block;
@@ -122,5 +128,30 @@
         .tree-node[active="true"] {
             opacity: 0.6;
         }
+    }
+}
+
+@keyframes tada {
+    from {
+        transform: scale3d(1, 1, 1);
+    }
+    10%,
+    20% {
+        transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg);
+    }
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+        color: var(--item-hover-c);
+    }
+    40%,
+    60%,
+    80% {
+        transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+    }
+    to {
+        transform: scale3d(1, 1, 1);
     }
 }

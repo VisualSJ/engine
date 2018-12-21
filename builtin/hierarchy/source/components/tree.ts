@@ -27,6 +27,7 @@ export function data() {
         state: '',
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
+        twinkles: [], // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         renameUuid: '', // 需要 rename 的节点的 url，只有一个
@@ -1007,5 +1008,14 @@ export const methods = {
             return db.nodesTree.uuid; // node 节点
         }
         return vm.selects[0]; // 当前选中的节点
+    },
+
+    /**
+     * 定位资源并闪烁
+     * @param uuid
+     */
+    intoTwinkle(uuid: string) {
+        utils.scrollIntoView(uuid);
+        utils.twinkle.add(uuid);
     },
 };
