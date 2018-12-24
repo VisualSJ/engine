@@ -8,7 +8,7 @@
   ],
   "subMetas": {
     "brdfLUT": {
-      "ver": "1.0.10",
+      "ver": "1.0.11",
       "importer": "texture",
       "uuid": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be@brdfLUT",
       "files": [
@@ -23,7 +23,7 @@
         "premultiplyAlpha": false,
         "anisotropy": 1,
         "isUuid": true,
-        "imageUuidOrPath": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be"
+        "imageUuidOrDatabaseUri": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be"
       }
     }
   },

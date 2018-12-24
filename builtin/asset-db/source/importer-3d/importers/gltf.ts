@@ -1,4 +1,5 @@
 import { Asset, Importer, queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl, VirtualAsset } from '@editor/asset-db';
+import { AssertionError } from 'assert';
 import * as fs from 'fs-extra';
 import { readJson } from 'fs-extra';
 import * as imageDataUri from 'image-data-uri';
