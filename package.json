@@ -27,7 +27,7 @@
         "@base/electron-i18n": "^1.0.1",
         "@base/electron-logger": "^1.0.0",
         "@base/electron-menu": "^1.0.0",
-        "@base/electron-profile": "^1.0.1",
+        "@base/electron-profile": "^1.0.2",
         "@base/electron-windows": "^1.0.0",
         "@base/electron-worker": "^1.0.1",
         "@editor/asset-db": "^1.0.0",
