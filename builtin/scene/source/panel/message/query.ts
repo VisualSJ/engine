@@ -95,6 +95,16 @@ export function apply(messages: any) {
     };
 
     /**
+     * 查询当前场景的序列化数据
+     */
+    messages['query-scene-json'] = async () => {
+        if (!$scene) {
+            return null;
+        }
+        return await $scene.forwarding('Scene', 'serialize');
+    };
+
+    /**
      * 查询当前显示的场景
      */
     messages['query-current-scene'] = async () => {
