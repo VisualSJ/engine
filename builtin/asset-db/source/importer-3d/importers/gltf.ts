@@ -1088,7 +1088,7 @@ class GltfConverter {
                     channel.scaleCurve[i] = new cc.Vec3(outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
                 }
             } else {
-                throw new Error(`Unsupported channel target path.`);
+                console.error(`Unsupported channel target path ${gltfChannel.target.path}.`);
             }
         });
 
