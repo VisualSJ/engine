@@ -5,31 +5,36 @@ const Scene = require('../scene');
 let props = [
     '_lights',
     '_models',
-    '_cameras',
+    '_cameras'
 ]
+
+let limitInvokeFrequency = function(fn, interval = 100) {
+    let invokeAndClear = fn => (...args) => { fn(...args); fn.timer = 0; };
+    return function(...args) {
+        if (fn.timer) return;
+        fn.timer = setTimeout(invokeAndClear(fn), interval, ...args);
+    };
+};
 
 class Preview {
 
     constructor() {
         this.canvas = document.getElementById('preview');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = this.width = this.canvas.clientWidth;
-        this.canvas.height = this.height = this.canvas.clientHeight;
+
+        this.width = this.canvas.clientWidth;
+        this.height = this.canvas.clientHeight;
         this.rt = new cc.RenderTexture();
         this.rt.initWithSize(this.width, this.height, cc.gfx.RB_FMT_D24S8);
         this.data = new Uint8Array(this.width * this.height * 4);
         this.image = new ImageData(new Uint8ClampedArray(this.data.buffer), this.width, this.height);
 
         this.scene = new cc.renderer.Scene();
-        this.lastUpdate = Date.now();
-        cc.director.on(cc.Director.EVENT_AFTER_DRAW, () => {
-            let now = Date.now();
-            if (now - this.lastUpdate < 100) return;
-            this.lastUpdate = now;
-            this.onPostRender();
-        });
         NodeManager.on('changed', this.extractActualScene.bind(this));
         Scene.on('open', this.extractActualScene.bind(this));
+        cc.director.on(cc.Director.EVENT_AFTER_DRAW, limitInvokeFrequency(this.onPostRender.bind(this)));
+        window.addEventListener('resize', limitInvokeFrequency(() =>
+            cc.director.once(cc.Director.EVENT_BEFORE_DRAW, this.onResize.bind(this))));
     }
 
     isActualSceneItem(item) {
@@ -55,19 +60,26 @@ class Preview {
             cam.setFramebuffer(this.rt._framebuffer);
         }
         // TODO: user could select from camera list
-        if (this.scene.getCameraCount() === 1)
-            this.scene.setDebugCamera(this.scene.getCamera(0));
+        if (preview.getCameraCount() === 1)
+            preview.setDebugCamera(preview.getCamera(0));
     }
 
     onResize() {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        if (this.canvas.clientWidth === this.width && this.canvas.clientHeight === this.height) return;
+        this.width = this.canvas.clientWidth;
+        this.height = this.canvas.clientHeight;
+        this.rt.updateSize(this.width, this.height);
+        this.data = new Uint8Array(this.width * this.height * 4);
+        this.image = new ImageData(new Uint8ClampedArray(this.data.buffer), this.width, this.height);
     }
 
     onPostRender() {
         if (!this.scene.getDebugCamera()) return;
 
-        cc.game._renderer.render(this.canvas, this.scene);
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
+
+        cc.game._renderer.render(this.scene);
         this.rt.readPixels(this.data);
 
         this.ctx.putImageData(this.image, 0, 0);

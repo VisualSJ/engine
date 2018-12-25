@@ -15,20 +15,28 @@
           blendEq: add
           blendSrc: srcAlpha
           blendDst: oneMinusSrcAlpha
-          blendAlphaEq: add
-          blendSrcAlpha: one
-          blendDstAlpha: oneMinusSrcAlpha
         }
       ]
     }
   ]
 %}
 
-
+/**
+ * a_uv0.x:
+ * 1                              1
+ * +------------------------------+
+ * |                              |
+ * +------------------------------+
+ * 0                              0
+ *
+ * a_uv0.y = 0 for lines along Z axis
+ * a_uv0.y = 1 for lines along X axis
+ */
 %% grid-vs {
   attribute vec2 a_uv0;
   attribute vec3 a_position;
 
+  uniform mat4 _view;
   uniform mat4 _viewProj;
   uniform vec3 _eye;
 
@@ -38,14 +46,15 @@
   void main () {
     uv = a_uv0;
     pos_w = a_position;
+    vec2 forward = vec2(_view[0][2], _view[2][2]);
 
-    // widen the line wrt. camera distance
-    float dist = (_eye - pos_w).y;
+    // widen the line wrt. camera-plane distance
+    float dist = abs(_eye.y);
     vec2 scale = vec2(1.0 - a_uv0.y, a_uv0.y);
     pos_w.xz += scale * vec2((a_uv0.x * 2.0 - 1.0) * dist * 0.002);
 
     gl_Position = _viewProj * vec4(pos_w, 1.0);
-	  gl_Position.z += 0.0001; // nudge depth to avoid z-fighting at origin
+	  gl_Position.z += 0.0001; // nudge on depth to avoid z-fighting at origin
   }
 }
 
