@@ -11,7 +11,7 @@ nodeManager.on('inited', (uuids) => {
 });
 
 /**
- * 获取传入 uuid 对应节点的 dump 缓存
+ * 获取传入 uuid 获取节点上一步记录的 dump 数据
  * @param {*} uuids
  */
 function getNodes(uuids) {
@@ -23,15 +23,22 @@ function getNodes(uuids) {
 }
 
 /**
- * 刷新节点树，同时返回刷新的数据
+ * 获取传入 uuid 获取节点最新的与场景一致的数据
  * @param {*} uuids
+ */
+function getNewNodes(uuids) {
+    refresh(uuids);
+    return getNodes(uuids);
+}
+
+/**
+ * 刷新缓存的节点树
+ * @param {*} uuids 数组
  */
 function refresh(uuids) {
     uuids.forEach((id) => {
         dumpMap[id] = nodeManager.queryDump(id);
     });
-
-    return getNodes(uuids);
 }
 
 /**
@@ -48,6 +55,7 @@ function reset(uuids) {
 
 module.exports = {
     getNodes,
+    getNewNodes,
     refresh,
     reset,
 };
