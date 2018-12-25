@@ -25,8 +25,16 @@ interface IGltfAssetTable {
     materials?: Array<string | null>;
 }
 
+interface IImageLocation {
+    // 模型文件中该图片的路径信息。
+    originalPath?: string | null;
+
+    // 用户设置的图片路径，Database-url 形式。
+    targetDatabaseUrl: string | null;
+}
+
 interface IImageLoctions {
-    [x: string]: string | null | undefined;
+    [x: string]: IImageLocation | undefined;
 }
 
 interface IGltfUserData {
@@ -44,7 +52,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.39';
+        return '1.0.43';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -138,6 +146,22 @@ export default class GltfImporter extends Importer {
         if (!userData.assetTable) {
             userData.assetTable = {};
         }
+
+        // 手动数据迁移，要记得有了迁移机制之后这里要删掉
+        if (userData.imageLocations) {
+            for (const key in userData.imageLocations) {
+                if (key in userData.imageLocations) {
+                    const value = userData.imageLocations[key];
+                    if (typeof value === 'string' || value === null) {
+                        const newValue: IImageLocation = {
+                            targetDatabaseUrl: value,
+                        };
+                        userData.imageLocations[key] = newValue;
+                    }
+                }
+            }
+        }
+
         if (!userData.imageLocations) {
             userData.imageLocations = {};
         }
@@ -197,8 +221,12 @@ export default class GltfImporter extends Importer {
 
                 const imageOriginalName = gltfImage.name;
                 if (imageOriginalName !== undefined && typeof (imageOriginalName) === 'string') {
-                    if (userData.imageLocations[imageOriginalName] === undefined) {
-                        userData.imageLocations[imageOriginalName] = null;
+                    const imageLocation = userData.imageLocations[imageOriginalName];
+                    if (imageLocation === undefined || imageLocation.originalPath === undefined) {
+                        userData.imageLocations[imageOriginalName] =  {
+                            originalPath: tryGetOriginalPath(gltfImage, gltfConverter),
+                            targetDatabaseUrl: null,
+                        } as IImageLocation;
                     }
                 }
 
@@ -284,6 +312,19 @@ export default class GltfImporter extends Importer {
     }
 }
 
+function tryGetOriginalPath(image: Image, gltfConverter: GltfConverter): string | null {
+    if (!image.uri) {
+        return null;
+    }
+
+    const uriInfo =  gltfConverter.getImageUriInfo(image.uri);
+    if (isFilesystemPath(uriInfo)) {
+        return uriInfo.fullPath;
+    }
+
+    return null;
+}
+
 function _uniqueIndex(index: number, length: number) {
     return length === 1 ? -1 : index;
 }
@@ -317,8 +358,14 @@ function getFinalImageUrl(gltfImage: Image, gltfUserData: IGltfUserData, gltfCon
     let imageUri = gltfImage.uri;
     if (gltfImage.name !== undefined && (typeof gltfImage.name === 'string')) {
         const remapLocation = gltfUserData.imageLocations[gltfImage.name];
-        if (remapLocation) {
-            imageUri = remapLocation;
+        if (remapLocation && remapLocation.targetDatabaseUrl) {
+            const targetPath = queryPathFromUrl(remapLocation.targetDatabaseUrl);
+            if (targetPath) {
+                imageUri = targetPath;
+            } else {
+                console.warn(`Images can only be remapped to project images.` +
+                    ` ${remapLocation.targetDatabaseUrl} doesn't refer to a project image.`);
+            }
         }
     }
     return imageUri;
