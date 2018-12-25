@@ -11,6 +11,9 @@ class BuildResults {
         this.options = null;
         this.scrips = null;
         this.script2uuid = {};
+        this.assetCache = {}; // uuid 与查找到的 asset 信息的缓存映射表
+        this.uuidDepends = {}; // 资源 uuid 有对应依赖资源 uuid 数组的映射表
+        this.jsonCache = {}; // 资源压缩序列化 json 数字据
     }
 
     /**

@@ -9,7 +9,7 @@ class AssetBuilder {
     init(type) {
         buildResult.assetCache = this.assetCache = {}; // 存储资源对应的打包情况
         this.result = {};
-        this.buildQueue = []; // 构建的资源队列
+        this.hasBuild = {};
         this.shoudBuild = true;
         if (type !== 'build-release') {
             this.shoudBuild = false;
@@ -71,22 +71,22 @@ class AssetBuilder {
         let internal = {};
         for (let uuid of Object.keys(this.assetCache)) {
             let asset = this.assetCache[uuid];
+            // 非调试模式下， uuid 需要压缩成短 uuid
+            if (this.options && !this.options.debug) {
+                uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
+            }
             if (asset.importer === 'scene') {
                 this.result.scenes.push({ url: asset.source, uuid});
                 continue;
             }
             // ********************* 资源类型 ********************** //
-            // 非调试模式下， uuid 需要压缩成短 uuid
-            if (this.options && !this.options.debug) {
-                uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
-            }
             // 没有 source, subAssets
             if (!asset.source) {
                 asset.source = this.subAssetSource(asset.uuid);
                 if (asset.source.startsWith('db://assets')) {
-                    assets[uuid] = [getAssetUrl(asset.source), asset.type, 1];
+                    assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
                 } else if (asset.source.startsWith('db://internal')) {
-                    internal[uuid] = [getAssetUrl(asset.source), asset.type, 1];
+                    internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
                 }
                 continue;
             }
@@ -144,14 +144,18 @@ class AssetBuilder {
 
     /**
      * 构建资源
-     * @param {*} data
+     * @param {*} asset
      * @memberof AssetBuilder
      */
-    async buildAsset(data) {
-        let asset = data;
-        if (!data.library) {
-            asset = await requestToPackage('asset-db', 'query-asset-info', data.uuid);
-            this.assetCache[data.uuid] = asset;
+    async buildAsset(asset) {
+        // 已经构建过的直接返回
+        if (this.hasBuild[asset.uuid]) {
+            return;
+        }
+        this.hasBuild[asset.uuid] = true;
+        if (!asset.library) {
+            asset = await requestToPackage('asset-db', 'query-asset-info', asset.uuid);
+            this.assetCache[asset.uuid] = asset;
         }
         let library = this.assetCache[asset.uuid].library ;
         // 不存在对应序列化 json 的资源，不需要去做反序列化操作，例如 fbx
@@ -187,6 +191,7 @@ class AssetBuilder {
         }
         // 将资源对应的依赖资源加入构建队列，并递归查询依赖
         if (deserializeDetails.uuidList.length > 0) {
+            buildResult.uuidDepends[asset.uuid] = deserializeDetails.uuidList;
             for (let uuid of deserializeDetails.uuidList) {
                 await this.buildAsset({uuid});
             }
@@ -199,9 +204,8 @@ class AssetBuilder {
         (this.isJSB || !asset.constructor.preventPreloadNativeObject ||
             asset instanceof ALWAYS_INCLUDE_RAW_FILES);
         // output
-        let nativePath;
         if (nativeAssetEnabled) {
-            nativePath = await this._exportNativeAsset(asset);
+            await this._exportNativeAsset(asset);
         }
         // compress 设置
         let contentJson = Editor.serialize(asset, {
@@ -210,8 +214,13 @@ class AssetBuilder {
             stringify: false, // 序列化出来的以 json 字符串形式还是 json 对象显示（ json 对象可以方便调试的时候查看）
             dontStripDefault: this.exportSimpleFormat,
         });
-        outputFileSync(getDestPathNoExt(this.paths.res, asset._uuid) + '.json', JSON.stringify(contentJson));
-        return nativePath;
+        buildResult.jsonCache[asset._uuid] = contentJson;
+
+        // 不存在依赖文件时，直接打包出来
+        // if (!buildResult.uuidDepends[asset._uuid]) {
+        //     outputFileSync(getDestPathNoExt(this.paths.res, asset._uuid) + '.json', JSON.stringify(contentJson));
+        // } else {
+        // }
     }
 
     // 导出原始资源

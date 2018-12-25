@@ -7,6 +7,7 @@ const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
 const WINDOW_HEADER = 'window._CCSettings';
 const assetBuilder = require('./build-asset');
+const assetPacker = require('./pack-asset');
 const scriptBuilder = require('./build-script');
 const static_resource = [ // 需要拷贝的静态资源整理
     'splash.png',
@@ -303,25 +304,24 @@ class Builder {
             }
 
             let rawAssets = settings.rawAssets;
-            Object.keys(rawAssets).forEach((key) => {
-                for (let uuid of Object.keys(rawAssets[key])) {
+            Object.values(rawAssets).forEach((value) => {
+                for (let uuid of Object.keys(value)) {
                     addUuid(uuid);
                 }
             });
 
             let scenes = settings.scenes;
-            for (let i = 0; i < scenes.length; ++i) {
-                addUuid(scenes[i].uuid);
+            for (let scene of scenes) {
+                addUuid(scene.uuid);
             }
 
             let packedAssets = settings.packedAssets;
-            for (let key of Object.keys(packedAssets)) {
-                packedAssets[key].forEach(addUuid);
+            for (let value of Object.values(packedAssets)) {
+                value.forEach(addUuid);
             }
 
             let md5AssetsMap = settings.md5AssetsMap;
-            for (let key of Object.keys(md5AssetsMap)) {
-                let md5Entries = md5AssetsMap[key];
+            for (let md5Entries of Object.values(md5AssetsMap)) {
                 for (let i = 0; i < md5Entries.length; i += 2) {
                     addUuid(md5Entries[i]);
                 }
@@ -484,6 +484,7 @@ class Builder {
         Object.assign(setting, assetBuilderResult, {scripts});
         buildResult.settings = setting;
         if (options.type === 'build-release') {
+            setting.packedAssets = assetPacker.pack();
             return setting;
         }
         delete setting.type;
