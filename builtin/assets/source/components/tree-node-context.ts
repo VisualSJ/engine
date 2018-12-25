@@ -8,7 +8,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
         menu: [
             {
                 label: Editor.I18n.t('assets.menu.new'),
-                enabled: !utils.canNotPasteAsset(asset),
+                enabled: !utils.canNotCreateAsset(asset),
                 submenu: [
                     {
                         label: Editor.I18n.t('assets.menu.newFolder'),

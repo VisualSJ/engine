@@ -118,7 +118,7 @@ export const methods = {
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             // @ts-ignore
-            this.$emit('ipcMultipleSelect', event.shiftKey ? true : false, asset.uuid);
+            this.$emit('ipcMultipleSelect', event.shiftKey, asset.uuid);
         } else { // 单选
             // @ts-ignore
             this.$emit('ipcSingleSelect', asset.uuid);

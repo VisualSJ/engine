@@ -10,6 +10,14 @@ exports.canNotDeleteNode = (node: ItreeNode) => {
 };
 
 /**
+ * 不能执行 创建 操作的资源
+ * @param node
+ */
+exports.canNotCreateNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
  * 不能执行 复制 操作的资源
  * @param node
  */
@@ -38,7 +46,7 @@ exports.canNotDragNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotPasteNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node);
+    return exports.canNotDeleteNode(node) || Object.keys(db.vm.copyNodesDumpdata).length === 0;
 };
 
 /**
