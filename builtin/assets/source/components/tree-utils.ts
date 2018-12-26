@@ -5,7 +5,18 @@ const db = require('./tree-db');
  * @param asset
  */
 exports.canNotDeleteAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isRoot || asset.isSubAsset || asset.readOnly ? true : false;
+    return !asset || asset.isRoot || asset.isSubAsset || asset.readOnly;
+};
+
+/**
+ * 不能执行 新增 操作的资源
+ * @param asset
+ */
+exports.canNotCreateAsset = (asset: ItreeAsset) => {
+    return !asset
+        || asset.isSubAsset
+        || asset.readOnly
+        || !asset.isDirectory;
 };
 
 /**
@@ -29,7 +40,7 @@ exports.canNotRenameAsset = (asset: ItreeAsset) => {
  * @param asset
  */
 exports.canNotDragAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isRoot || asset.readOnly ? true : false;
+    return !asset || asset.isRoot || asset.readOnly;
 };
 
 /**
@@ -37,7 +48,11 @@ exports.canNotDragAsset = (asset: ItreeAsset) => {
  * @param asset
  */
 exports.canNotPasteAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isSubAsset || asset.readOnly || !asset.isDirectory ? true : false;
+    return !asset
+        || asset.isSubAsset
+        || asset.readOnly
+        || !asset.isDirectory
+        || db.vm.copiedUuids.length === 0;
 };
 
 /**
@@ -237,11 +252,11 @@ exports.resetTreeProps = (props: any, tree: ItreeAsset[] = db.assetsTree.childre
     });
 };
 
-exports.closestCanPasteAsset = (uuid: string) => {
+exports.closestCanCreateAsset = (uuid: string) => {
     const asset = exports.getAssetFromTree(uuid);
     if (asset) {
-        if (exports.canNotPasteAsset(asset)) {
-            return exports.closestCanPasteAsset(asset.parentUuid);
+        if (exports.canNotCreateAsset(asset)) {
+            return exports.closestCanCreateAsset(asset.parentUuid);
         } else {
             return asset;
         }
@@ -271,16 +286,18 @@ exports.twinkle = {
         }, time || 2000);
 
         // 避免一些无效的记录一直存在
-        db.vm.twinkles = [];
+        db.vm.twinkles = {};
     },
-    add(uuid: string) {
-        if (this.watch) {
-            db.vm.twinkles.push(uuid);
-
-            // 动画结束后删除
-            setTimeout(() => {
-                db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
-            }, 1000);
+    add(uuid: string, animation: string = 'shake') {
+        if (!this.watch) {
+            return;
         }
+
+        db.vm.$set(db.vm.twinkles, uuid, animation);
+
+        // 动画结束后删除
+        setTimeout(() => {
+             db.vm.twinkles[uuid] = undefined;
+        }, 1000);
     },
 };

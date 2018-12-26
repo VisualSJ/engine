@@ -162,7 +162,7 @@ function getAssetType(info) {
             return 'folder';
         }
     }
-    if (['texture', 'texture-cube'].includes(info.importer)) {
+    if (['texture', 'texture-cube', 'gltf-embeded-image'].includes(info.importer)) {
         return 'texture';
     }
     return info.importer;

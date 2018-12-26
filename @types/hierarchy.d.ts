@@ -19,6 +19,7 @@ declare interface IaddNode {
 
 declare interface ItreeNode {
     name: string; // 来自 scene 场景的查询数据
+    active: boolean; // 是否在 scene 中显示
     uuid: string;
     type: string;
     children: ItreeNode[];
@@ -27,6 +28,7 @@ declare interface ItreeNode {
 
     // 以下是扩展的数据
     isPrefab: boolean; // 是否是 prefab
+    isVisible: boolean; // 根据自身和父级的 active 调整状态
     readOnly: boolean; // 是否是只读
     top: number; // top 位置
     left: number; // 缩进的大小

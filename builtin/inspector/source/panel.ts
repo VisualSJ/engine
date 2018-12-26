@@ -77,7 +77,7 @@ export const messages = {
         if (vm) {
             clearTimeout(vm._unselectTimer);
             if (vm.element === type && vm.uuid === uuid) {
-                vm._unselectTimer = setTimeout((uuid) => {
+                vm._unselectTimer = setTimeout(() => {
                     if (uuid === vm.uuid) {
                         vm.element = '';
                         vm.uuid = '';
@@ -91,7 +91,7 @@ export const messages = {
      * @param {string} uuid
      */
     async 'scene:node-changed'(uuid: string) {
-        if (vm) {
+        if (vm && !vm.intensive) {
             vm.$refs.inspector2d && vm.$refs.inspector2d.refresh();
             vm.$refs.inspector3d && vm.$refs.inspector3d.refresh();
         }
@@ -120,6 +120,8 @@ export async function ready() {
 
             element: '', // 最后选中的物体 asset | node
             uuid: '', // 选中的物体的 uuid
+
+            intensive: false,
         },
 
         components: {
@@ -173,6 +175,10 @@ export async function ready() {
                 clearTimeout(this._loaderId);
                 this._loaderId = null;
                 this.loading = false;
+            },
+
+            toggleIntensive(this: any, bool: boolean) {
+                this.intensive = bool;
             },
 
             async getData(this: any) {

@@ -177,6 +177,7 @@ class SceneManager extends EventEmitter {
 
             return {
                 name: node.name,
+                active: node.active,
                 type: 'cc.' + node.constructor.name,
                 uuid: node._id,
                 children: children.length ? children : [],
@@ -240,6 +241,18 @@ class SceneManager extends EventEmitter {
             return false;
         }
 
+    }
+
+    /**
+     * 查询当前的组件列表
+     */
+    queryComponents() {
+        return cc._componentMenuItems.map((item) => {
+            return {
+                name: item.priority !== -1 ? `cc.${item.component.name}` : item.component.name,
+                path: item.menuPath,
+            };
+        });
     }
 }
 

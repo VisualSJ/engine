@@ -1,9 +1,7 @@
-const Sharp = require('sharp');
 const Spawn = require('child_process').spawn;
-const Fs = require('fire-fs');
-const Path = require('fire-path');
+const {ensureDirSync, copy, readFileSync, writeFile, writeFileSync} = require('fs-extra');
+const Path = require('path');
 const Async = require('async');
-
 function spawnTool(tool, opts, cb) {
     let child = Spawn(tool, opts);
 
@@ -29,6 +27,17 @@ function changeSuffix(path, suffix) {
     return Path.join(Path.dirname(path), Path.basenameNoExt(path) + suffix);
 }
 
+/**
+ *
+ * 压缩图片资源入口
+ * @param {object} option
+ * @param {string} option.src 资源原始路径
+ * @param {string} option.dst 输出路径
+ * @param {string} option.platform 构建平台
+ * @param {object} option.compressOption 压缩选项设置
+ * @param {*} cb
+ * @returns
+ */
 function compress(option, cb) {
     let {src, dst, platform, compressOption} = option;
     if (platform === 'web-mobile' || platform === 'web-desktop') {
@@ -46,7 +55,7 @@ function compress(option, cb) {
         formats = compressOption.default.formats;
     }
 
-    Fs.ensureDirSync(Path.dirname(dst));
+    ensureDirSync(Path.dirname(dst));
 
     function getSuffix() {
         return formats.map((format) => {
@@ -75,7 +84,7 @@ function compress(option, cb) {
     }
 
     if (formats.length === 0) {
-        Fs.copy(src, dst, (err) => {
+        copy(src, dst, (err) => {
             if (err) {
                 console.error('Failed to copy native asset file %s to %s', src, dst);
             }
@@ -95,28 +104,36 @@ function compress(option, cb) {
     });
 }
 
+/**
+ * 压缩图片、转换图片格式
+ * @param {*} src
+ * @param {*} dst
+ * @param {*} format
+ * @param {*} cb
+ */
 function compressNormal(src, dst, format, cb) {
-    let sharp = Sharp(src);
-
-    let suffix = '.png';
-    if (format.name === 'webp') {
-        sharp = sharp.webp({quality: format.quality});
-        suffix = '.webp';
-    } else if (format.name === 'jpg') {
-        sharp = sharp.jpeg({quality: format.quality});
-        suffix = '.jpg';
-    } else if (format.name === 'png') {
-        let compressionLevel = (format.quality / 10) | 0;
-        sharp = sharp.png({compressionLevel: compressionLevel});
-    }
-
-    dst = changeSuffix(dst, suffix);
-
-    sharp.toFile(dst, (err) => {
-        cb(err);
-    });
+    let distPath = `${dst.replace(Path.extname(src), '')}.${format.name}`;
+    var img = new Image();
+    img.src = src;
+    let canvasImgType = format.name === 'jpg' ? 'jpeg' : format.name;
+    img.onload = function() {
+        var canvas = document.createElement('canvas'); //创建画布节点
+        canvas.width = this.width; //画布宽度为img宽度
+        canvas.height = this.height; //画布高度为img高度
+        var ctx = canvas.getContext('2d'); //绘制2D类型图形
+        ctx.drawImage(img, 0, 0, this.width, this.height); //在画布类绘制图片
+        var outputBase64str = canvas.toDataURL(`image/${canvasImgType}`); //输出jpg格式dataURI并压缩图片质量(取值范围0~1)
+        writeFile(distPath, outputBase64str.replace(`data:image/${format.name};base64,`, ''), 'base64', cb);
+    };
 }
 
+/**
+ * 压缩图片的主要函数
+ * @param {*} src
+ * @param {*} dst
+ * @param {*} format
+ * @param {*} cb
+ */
 function compressPVR(src, dst, format, cb) {
     let pvrTool = join(__dirname, './../tools/texture-compress/PVRTexTool/OSX_x86/PVRTexToolCLI');
     if (process.platform === 'win32') {

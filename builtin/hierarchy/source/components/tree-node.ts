@@ -113,7 +113,7 @@ export const methods = {
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             // @ts-ignore
-            this.$emit('ipcMultipleSelect', event.shiftKey ? true : false, node.uuid);
+            this.$emit('ipcMultipleSelect', event.shiftKey, node.uuid);
         } else { // 单选
             // @ts-ignore
             this.$emit('ipcSingleSelect', node.uuid);

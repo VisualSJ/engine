@@ -9,7 +9,6 @@ const utils = require('./tree-utils');
 let vm: any = null;
 
 let isRefreshing: boolean = false; // 新增项目带来的请求重新渲染树形
-let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
 
 export const name = 'tree';
 
@@ -27,7 +26,7 @@ export function data() {
         state: '',
         assets: [], // 当前树形在可视区域的资源节点
         selects: [], // 已选中项的 uuid
-        twinkles: [], // 需要闪烁的 uuid
+        twinkles: {}, // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         types: { file: 1, 'cc.Node': 2 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
@@ -41,6 +40,7 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: {}, // 拖动时高亮的目录区域 {top, left, height}
+        copiedUuids: [], // 用于存放已复制节点的 uuid
         db,
         utils,
     };
@@ -125,7 +125,7 @@ export const methods = {
             return;
         }
 
-        const delay = intoView ? 0 : 300; // 类似刷新的操作不需要延迟
+        const delay = intoView ? 0 : 150; // 类似刷新的操作不需要延迟
 
         isRefreshing = true;
         setTimeout(() => { // 整体延迟
@@ -285,7 +285,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        utils.twinkle.add(uuid); // 手动新增的时候，由于 uuid 还不存在，不会生效。
+        utils.twinkle.add(uuid, 'shrink'); // 手动新增的时候，由于 uuid 还不存在，不会生效。
         vm.refresh();
     },
 
@@ -299,7 +299,7 @@ export const methods = {
             uuid = this.getFirstSelect();
         }
 
-        const parent = utils.closestCanPasteAsset(uuid); // 自身或父级文件夹
+        const parent = utils.closestCanCreateAsset(uuid); // 自身或父级文件夹
         if (!parent) { // 没有可用的
             return;
         }
@@ -662,7 +662,7 @@ export const methods = {
         if (toAsset && !toAsset.isDirectory) {
             toAsset = utils.getAssetFromTree(toAsset.parentUuid);
         }
-        if (utils.canNotPasteAsset(toAsset)) {
+        if (utils.canNotCreateAsset(toAsset)) {
             return;
         }
 
@@ -710,51 +710,81 @@ export const methods = {
      * @param uuid
      */
     copy(uuid: string | string[]) {
+        let copies = [];
         if (Array.isArray(uuid)) {
-            copiedUuids = uuid;
+            copies = uuid;
         } else { // uuid 是 字符
             // 来自右击菜单的单个选中，右击节点不在已选项目里
             if (uuid && !vm.selects.includes(uuid)) {
-                copiedUuids = [uuid];
+                copies = [uuid];
             } else {
-                copiedUuids = vm.selects.slice();
+                copies = vm.selects.slice();
             }
         }
 
         // 过滤不可复制的节点
-        copiedUuids.filter((uuid: string) => {
-            return !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
+        vm.copiedUuids = copies.filter((uuid: string) => {
+            return uuid && !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
+        });
+
+        // 给复制的动作反馈成功
+        vm.copiedUuids.forEach((uuid: string) => {
+            utils.twinkle.add(uuid, 'light');
         });
     },
 
     /**
      * 粘贴
-     * @param uuid 粘贴到这个节点里面
+     * @param uuid 粘贴到此目标节点
      */
     async paste(uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
 
-        const parent = utils.closestCanPasteAsset(uuid); // 自身或父级文件夹
+        const parent = utils.closestCanCreateAsset(uuid); // 自身或父级文件夹
         if (!parent) { // 没有可用的
+            return;
+        }
+
+        const finallyCanPaste: string[] = []; // 最后可复制的项
+        vm.copiedUuids.forEach((uuid: string) => {
+            const asset = utils.getAssetFromTree(uuid);
+
+            // 节点可复制
+            const canCopy = !utils.canNotCopyAsset(asset);
+            if (!canCopy) {
+                const warn = `${Editor.I18n.t('assets.operate.copyFail')}: ${asset.name}`;
+                console.warn(warn);
+            }
+
+            // 不是此目标节点的父节点（不在它的上级文件夹里）
+            const notInside = utils.getGroupFromTree(asset, parent.uuid).length === 0 ? true : false;
+            if (!notInside) {
+                const warn = `${Editor.I18n.t('assets.operate.pasteFail_parent_into_child')}: ${asset.name}`;
+                console.warn(warn);
+            }
+
+            if (canCopy && notInside) {
+                finallyCanPaste.push(uuid);
+            }
+        });
+        if (finallyCanPaste.length === 0) {
             return;
         }
 
         let index = 0;
         let asset;
-        let isLegal = false;
         parent.state = 'loading'; // 显示 loading 效果
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
 
         do {
-            asset = utils.getAssetFromTree(copiedUuids[index]);
+            asset = utils.getAssetFromTree(finallyCanPaste[index]);
             index++;
-            isLegal = !utils.canNotCopyAsset(asset);
             utils.twinkle.sleep();
-        } while (isLegal && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
+        } while (asset && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 
     /**
@@ -864,6 +894,6 @@ export const methods = {
      */
     intoTwinkle(uuid: string) {
         utils.scrollIntoView(uuid);
-        utils.twinkle.add(uuid);
+        utils.twinkle.add(uuid, 'shake');
     },
 };

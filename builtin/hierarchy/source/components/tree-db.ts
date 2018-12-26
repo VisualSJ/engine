@@ -116,6 +116,21 @@ export async function pasteNode(parent: string, dump: any) {
 }
 
 /**
+ * 粘贴节点到指定父级
+ * @param uuid  父级 uuid
+ * @param target  现在的索引位置
+ * @param offset  正负数，前后移动索引位置
+ */
+export async function moveNode(uuid: string, target: number, offset: number) {
+    return await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
+        uuid,
+        path: 'children',
+        target,
+        offset,
+    });
+}
+
+/**
  * 添加节点后数据调整
  */
 function addNodeIntoTree(newNode: any) {
@@ -178,7 +193,7 @@ function changeNode2D(newData: any) {
         return;
     }
     // 属性是值类型的修改
-    ['name'].forEach((key) => {
+    ['name', 'active'].forEach((key) => {
         // @ts-ignore
         if (node[key] !== newData[key].value) {
             // @ts-ignore
@@ -229,7 +244,7 @@ function changeNode3D(newData: any) {
         return;
     }
     // 属性是值类型的修改
-    ['name'].forEach((key) => {
+    ['name', 'active'].forEach((key) => {
         // @ts-ignore
         if (node[key] !== newData[key].value) {
             // @ts-ignore
@@ -290,6 +305,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.isParent = node.children && node.children.length > 0 ? true : false;
         node.parentUuid = nodes.uuid;
         node.isPrefab = !!node.prefab;
+        node.isVisible = nodes.isVisible === false ? nodes.isVisible : node.active;
 
         if (node.isExpand === undefined) {
             Object.defineProperty(node, 'isExpand', {

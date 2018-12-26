@@ -11,12 +11,11 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
         menu: [
             {
                 label: Editor.I18n.t('hierarchy.menu.newNode'),
-                enabled: !utils.canNotPasteNode(node),
+                enabled: !utils.canNotCreateNode(node),
                 submenu: [
                     {
                         label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                         click() {
-                            // @ts-ignore
                             vm.$emit('ipcAdd', { type: 'node' }, node.uuid);
                         },
                     },
@@ -40,7 +39,6 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
                 label: Editor.I18n.t('hierarchy.menu.paste'),
                 enabled: !utils.canNotPasteNode(node),
                 click() {
-                    // @ts-ignore
                     vm.$emit('paste', node.uuid);
                 },
             },
@@ -49,7 +47,6 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
                 label: Editor.I18n.t('hierarchy.menu.rename'),
                 enabled: !utils.canNotRenameNode(node),
                 click(event: Event) {
-                    // @ts-ignore
                     vm.rename(node);
                 },
             },
@@ -68,7 +65,6 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
                 label: Editor.I18n.t('hierarchy.menu.delete'),
                 enabled: !utils.canNotDeleteNode(node),
                 click() {
-                    // @ts-ignore
                     vm.$emit('ipcDelete', node.uuid);
                 },
             },

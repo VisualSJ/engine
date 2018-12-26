@@ -27,4 +27,43 @@ exports.addComponentMap = {
      * 添加 Skybox 组件
      */
     SkyboxComponent(comp, node) { },
+
+    SphereColliderComponent(component, node) {
+        const boundingSize = getBoundingSize(node);
+        component.radius = maxComponent(boundingSize);
+    },
+
+    BoxColliderComponent(component, node) {
+        const boundingSize = getBoundingSize(node);
+        const zeroX = boundingSize.x === 0 ? 1 : 0;
+        const zeroY = boundingSize.y === 0 ? 1 : 0;
+        const zeroZ = boundingSize.z === 0 ? 1 : 0;
+        const sum = zeroX + zeroY + zeroZ;
+        if (sum === 1) {
+            const v = 0.00001;
+            if (zeroX) {
+                boundingSize.x = v;
+            } else if (zeroY) {
+                boundingSize.y = v;
+            } else {
+                boundingSize.z = v;
+            }
+        }
+        component.size = boundingSize;
+    },
 };
+
+function getBoundingSize(node) {
+    const modelComponent = node.getComponent('cc.ModelComponent');
+    if (!modelComponent) {
+        return new cc.Vec3(0, 0, 0);
+    }
+    const { minPosition, maxPosition } = modelComponent.mesh;
+    const size = new cc.Vec3();
+    cc.vmath.vec3.subtract(size, maxPosition, minPosition);
+    return size;
+}
+
+function maxComponent(v) {
+    return Math.max(v.x, Math.max(v.y, v.z));
+}

@@ -80,13 +80,11 @@ exports.computed = {
             let list = (node.props || []).map((item) => ({ ...item, visible }));
             delete node.props;
             for (let def in node) {
-                if (true) {
-                    const item = defs.find((d) => d.key === def);
-                    if (item) {
-                        item.visible = visible;
-                        list.push(item);
-                        list = list.concat(traverse(node[def], visible && item.value));
-                    }
+                const item = defs.find((d) => d.key === def);
+                if (item) {
+                    item.visible = visible;
+                    list.push(item);
+                    list = list.concat(traverse(node[def], visible && item.value));
                 }
             }
             return list;

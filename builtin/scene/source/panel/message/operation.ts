@@ -95,26 +95,6 @@ export function apply(messages: any) {
     };
 
     /**
-     * 查询当前场景的序列化数据
-     */
-    messages['query-scene-json'] = async () => {
-        if (!$scene) {
-            return null;
-        }
-        return await $scene.forwarding('Scene', 'serialize');
-    };
-
-    /**
-     * 查询当前场景的 uuid
-     */
-    messages['query-current-scene'] = async () => {
-        if (!$scene) {
-            return null;
-        }
-        return profile.get('current-scene');
-    };
-
-    /**
      * 设置某个元素内的属性
      */
     messages['set-property'] = async (options: SetPropertyOptions) => {

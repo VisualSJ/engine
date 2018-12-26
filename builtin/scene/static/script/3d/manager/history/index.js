@@ -57,7 +57,7 @@ function stopRecordToArchive() {
     }
 
     const oldData = cache.getNodes(records); // 取得旧数据
-    const newData = cache.refresh(records); // 刷新 dumptree, 取得新数据
+    const newData = cache.getNewNodes(records); // 刷新 dumptree, 取得新数据
 
     records.length = 0;
 
@@ -69,7 +69,7 @@ function stopRecordToArchive() {
 
 function snapshot() {
     const step = stopRecordToArchive();
-    //
+
     if (step === false) {
         return;
     }
@@ -79,6 +79,26 @@ function snapshot() {
     // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
 
     // 存入新步骤
+    if (deprecated.length > 0) {
+        const current = steps[index];
+        const prev = steps[index - 1];
+
+        /**
+         * 由于有新的 undo 带来的 changed, snapshot,
+         * 导致 steps[index + 1].undo 与 steps[index].undo 一样
+         * 需要干掉一个步骤使之连贯
+         */
+        current.redo = step.undo;
+        if (prev) {
+            current.undo = prev.redo;
+        }
+
+        // 持续操作并反复 redo undo 恰好在一个记录点上，会导致该点为了连贯性而做的数据调整使其成为多余步骤，需要将其删除
+        if (JSON.stringify(current.undo) === JSON.stringify(current.redo)) {
+            steps.splice(index, 1);
+        }
+    }
+
     steps.push(step);
 
     // 如果步骤数大于 100, 始终保持最大 100

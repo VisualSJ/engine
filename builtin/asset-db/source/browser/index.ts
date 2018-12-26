@@ -35,34 +35,6 @@ module.exports = {
         },
 
         /**
-         * 插件自身状态变更
-         * @param state 插件状态 'enable', 'disable'
-         * @param path 插件的磁盘路径（一个文件夹）
-         * @param info 插件的配置包信息，包括 { pkg, enable }
-         */
-        // 'editor3d-lib-package:emit'(state: string, path: string, info: any) {
-        //     if (!assetWorker) {
-        //         throw new Error('Asset DB does not exist.');
-        //     }
-
-        //     // @ts-ignore
-        //     const db = info.pkg['runtime-resource'];
-        //     if (!db) {
-        //         return;
-        //     }
-
-        //     const config = Object.assign({
-        //         target: join(path, db.path || ''),
-        //     }, db);
-
-        //     if (info.enable === true) {
-        //         assetWorker.send('asset-worker:startup-database', legealDbConfig(config));
-        //     } else {
-        //         assetWorker.send('asset-worker:shutdown-database', db.name || info.pkg.name);
-        //     }
-        // },
-
-        /**
          * 重启刷新数据库
          */
         'refresh-database'() {
@@ -462,7 +434,7 @@ async function createWorker() {
             autoEnable: true,
         });
         list.forEach((item: any) => {
-            const data = item.info['runtime-resources'];
+            const data = item.info['runtime-resource'];
             if (!data) {
                 return;
             }

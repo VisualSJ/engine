@@ -27,8 +27,10 @@ exports.watch = {
 
 exports.created = async function() {
     try {
-        const userScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-        this.userScripts = (userScripts || []).filter((item) => item.importer.includes('javascript'));
+        const components = await Editor.Ipc.requestToPanel('scene', 'query-components');
+        this.components = components;
+        // const userScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+        // this.userScripts = (userScripts || []).filter((item) => item.importer.includes('javascript'));
     } catch (err) {
         console.error(err);
         this.userScripts = [];
@@ -116,125 +118,50 @@ exports.methods = {
             node: {
                 uuid: { value: uuid },
             },
-            userScripts,
+            components,
         } = this;
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
-        const submenu = userScripts.map((item) => {
-            const { source, uuid: component } = item;
-            const label = basename(source, extname(source));
-            return {
-                label,
-                click() {
-                    Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                },
-                params: { uuid, component },
-            };
+
+        const menu = {};
+        components.forEach((item) => {
+            const paths = item.path.split('/');
+            const button = paths.pop();
+            let data = menu;
+            paths.forEach((path) => {
+                if (!(path in menu)) {
+                    data[path] = {};
+                }
+                data = data[path];
+            });
+            data[button] = item;
         });
 
-        Editor.Menu.popup({
-            x,
-            y,
-            menu: [
-                {
-                    label: T('component', 'components'),
-                    submenu: [
-                        {
-                            label: 'Animation Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.AnimationComponent',
-                            },
-                        },
-                        {
-                            label: 'Camera Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.CameraComponent',
-                            },
-                        },
-                        {
-                            label: 'Light Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.LightComponent',
-                            },
-                        },
-                        {
-                            label: 'Model Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.ModelComponent',
-                            },
-                        },
-                        {
-                            label: 'Skinning Model Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.SkinningModelComponent',
-                            },
-                        },
-                        {
-                            label: 'Skybox Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.SkyboxComponent',
-                            },
-                        },
-                        {
-                            label: 'Sphere Collider Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.SphereColliderComponent',
-                            },
-                        },
-                        {
-                            label: 'Box Collider Component',
-                            click() {
-                                Editor.Ipc.sendToPanel('scene', 'create-component', this.params);
-                            },
-                            params: {
-                                uuid,
-                                component: 'cc.BoxColliderComponent',
-                            },
-                        },
-                    ],
-                },
-                {
-                    label: T('component', 'others'),
-                    submenu: [],
-                },
+        function translation(obj) {
+            const array = Object.keys(obj);
+            return array.map((name) => {
+                const item = obj[name];
+                if (!('name' in item)) {
+                    return {
+                        label: name.replace(/\./g, '-'),
+                        submenu: translation(item),
+                    };
+                }
+                return {
+                    label: name.replace(/\./g, '-'),
+                    click() {
+                        Editor.Ipc.sendToPanel('scene', 'create-component', {
+                            uuid,
+                            component: item.name,
+                        });
+                    },
+                };
+            });
+        }
 
-                {
-                    label: T('component', 'scripts'),
-                    submenu,
-                },
-                {
-                    label: T('component', 'ui'),
-                    submenu: [],
-                },
-            ],
+        Editor.Menu.popup({
+            x, y,
+            menu: translation(menu),
         });
     },
 };

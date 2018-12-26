@@ -8,9 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let copiedUuids: string[] = []; // 用于存放已复制节点的 uuid
-let copyNodesDumpdata: any = {}; // 用于存放已复制节点的 dump 信息, { uuid: dumpdata }
-
 export const name = 'tree';
 
 export const template = readFileSync(
@@ -27,7 +24,7 @@ export function data() {
         state: '',
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
-        twinkles: [], // 需要闪烁的 uuid
+        twinkles: {}, // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         renameUuid: '', // 需要 rename 的节点的 url，只有一个
@@ -39,6 +36,8 @@ export function data() {
         top: 0, // 当前树形的定位 top
         scrollTop: 0, // 当前树形的滚动数据
         selectBox: {}, // 拖动时高亮的目录区域 {top, height}
+        copiedUuids: [], // 用于存放已复制节点的 uuid
+        copyNodesDumpdata: {}, // 用于存放已复制节点的 dump 信息, { uuid: dumpdata }
     };
 }
 
@@ -117,29 +116,32 @@ export const methods = {
     /**
      * 刷新树形
      */
-    async refresh() {
+    async refresh(intoView = false) {
         await db.refresh();
         if (!db.nodesTree) { // 容错处理，数据可能为空
             return;
         }
 
-        this.changeData();
+        // 准备重新定位
+        let viewUuid = '';
 
-        // @ts-ignore 准备重新定位
-        let intoView = this.intoView;
-        // @ts-ignore
-        this.intoView = '';
-        // @ts-ignore
-        const renameUuid = this.renameUuid;
-        if (renameUuid !== '') {
-            const node = utils.getNodeFromTree(renameUuid);
+        if (intoView) {
+            viewUuid = vm.intoView;
+            vm.intoView = '';
+        }
+        if (vm.renameUuid !== '') {
+            const node = utils.getNodeFromTree(vm.renameUuid);
             if (node) {
-                intoView = node.uuid;
+                viewUuid = node.uuid;
             }
         }
 
-        // @ts-ignore
-        this.intoView = intoView;
+        vm.$nextTick(() => {
+            vm.intoView = viewUuid;
+        });
+
+        this.changeData();
+
     },
 
     /**
@@ -289,7 +291,7 @@ export const methods = {
         }
 
         const parent = utils.getNodeFromTree(uuid);
-        if (utils.canNotPasteNode(parent)) {
+        if (utils.canNotCreateNode(parent)) {
             return;
         }
 
@@ -685,12 +687,7 @@ export const methods = {
             }
 
             // 在父级里平移
-            await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                uuid: toParent.uuid,  // 父级 uuid
-                path: 'children',
-                target: toArr.length,
-                offset,
-            });
+            db.moveNode(toParent.uuid, toArr.length, offset);
 
         } else if (json.type === 'cc.Node') {
             if (!json.from) {
@@ -732,9 +729,14 @@ export const methods = {
         const copyData = await utils.getCopyData(uuids);
 
         // 重置数据
-        copiedUuids = copyData.uuids;
-        copyNodesDumpdata = copyData.dumps;
-    },
+        vm.copiedUuids = copyData.uuids;
+        vm.copyNodesDumpdata = copyData.dumps;
+
+        // 给复制的动作反馈成功
+        vm.copiedUuids.forEach((uuid: string) => {
+            utils.twinkle.add(uuid, 'light');
+        });
+},
 
     /**
      * 粘贴
@@ -759,7 +761,7 @@ export const methods = {
             });
 
             for (const node of nodes) {
-                const dumpdata = copyNodesDumpdata[node.uuid];
+                const dumpdata = vm.copyNodesDumpdata[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
                 // 循环其子集
                 const children = dumpdata.children.value.map((child: any) => child.value.uuid);
@@ -770,11 +772,11 @@ export const methods = {
             }
         }
 
-        if (copiedUuids.length === 0) {
+        if (vm.copiedUuids.length === 0) {
             return;
         }
 
-        await _forEach(copiedUuids, uuid);
+        await _forEach(vm.copiedUuids, uuid);
         // 选中新的节点
         vm.ipcResetSelect(newSelected);
     },
@@ -794,7 +796,7 @@ export const methods = {
         const copyData = await utils.getCopyData(uuids);
         const newSelected: string[] = []; // 新的选中项切换为选中项的对应复制节点
 
-        async function _forEach(uuids: string[], parentUuid?: string) {
+        async function _forEach(uuids: string[], parentUuid?: string) { // parentUuid 由循环子集指定的父级
             // 多节点的复制，根据现有排序的顺序执行
             const nodes: any[] = uuids.map((uuid: string) => {
                 return utils.getGroupFromTree(db.nodesTree, uuid)[0];
@@ -803,8 +805,8 @@ export const methods = {
             });
 
             for (const node of nodes) {
-                let parent = parentUuid; // 由循环子集指定的父级
-                if (!parent) {
+                let parent = parentUuid;
+                if (!parentUuid) {
                     parent = node.parentUuid; // 节点自身的父级，即平级复制
                 }
 
@@ -813,6 +815,16 @@ export const methods = {
                 }
                 const dumpdata = copyData.dumps[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
+                // 移动到节点的下方
+                const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, node.uuid);
+                let target = toArr.length;
+                let offset = toIndex - toArr.length + 1;
+                if (parentUuid) { // 有子集循环的，原索引位置不必因为新增 +1 故在此 -1
+                    target = toIndex;
+                    offset = 0;
+                }
+                await db.moveNode(parent, target, offset);
+
                 // 循环其子集
                 const children = dumpdata.children.value.map((child: any) => child.value.uuid);
                 if (children.length > 0) {
@@ -887,12 +899,7 @@ export const methods = {
                         return;
                     }
 
-                    Editor.Ipc.sendToPackage('scene', 'move-array-element', { // 发送修改数据
-                        uuid: toParent.uuid,  // 被移动的节点的父级 uuid
-                        path: 'children',
-                        target: fromIndex, // 被移动的节点所在的索引
-                        offset,
-                    });
+                    await db.moveNode(toParent.uuid, fromIndex, offset);
                 } else { // 跨级移动
                     if (fromParent === toNode) { // 仍在原来的层级中
                         return;
@@ -937,12 +944,7 @@ export const methods = {
                         }
 
                         // 在父级里平移
-                        await Editor.Ipc.sendToPackage('scene', 'move-array-element', {
-                            uuid: toParent.uuid,  // 父级 uuid
-                            path: 'children',
-                            target: toArr.length,
-                            offset,
-                        });
+                        await db.moveNode(toParent.uuid, toArr.length, offset);
                     }
 
                     if (affectNode) {
@@ -1016,6 +1018,6 @@ export const methods = {
      */
     intoTwinkle(uuid: string) {
         utils.scrollIntoView(uuid);
-        utils.twinkle.add(uuid);
+        utils.twinkle.add(uuid, 'shake');
     },
 };

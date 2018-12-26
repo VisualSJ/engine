@@ -1,14 +1,18 @@
-const {join, basename} = require('path');
-const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage} = require('./utils');
-const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync} = require('fs-extra');
-const {readFileSync, existsSync, copyFileSync} = require('fs');
+const { join, basename , extname} = require('path');
+const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage } = require('./utils');
+const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
+const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
 const ejs = require('ejs');
+const minify = require('html-minifier').minify;
+const CleanCSS = require('clean-css');
 const buildResult = require('./build-result');
 const platfomConfig = require('./platforms-config');
 const WINDOW_HEADER = 'window._CCSettings';
 const assetBuilder = require('./build-asset');
+const assetPacker = require('./pack-asset');
 const scriptBuilder = require('./build-script');
-const static_resource = [ // 需要拷贝的静态资源整理
+const static_resource = [
+    // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
 ];
@@ -26,7 +30,7 @@ class Builder {
     async _init(options, config) {
         const tempConfig = await getCustomConfig('build-release');
         const isWeChatSubdomain = options.platform === 'wechatgame-subcontext';
-        const isWeChatGame = (options.platform === 'wechatgame' || isWeChatSubdomain);
+        const isWeChatGame = options.platform === 'wechatgame' || isWeChatSubdomain;
         const isQQPlay = options.platform === 'qqplay';
         const platformInfo = platfomConfig[options.platform];
         const nativeRenderer = !!options.nativeRenderer;
@@ -63,14 +67,18 @@ class Builder {
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
             this._resolveStatic(), // 其他静态资源拷贝 5%
             this._buildEngine(), // 构建切割引擎 15%
-            this.buildSetting({// 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
-                scenes: options.scenes,
-                debug: options.debug,
-                platform: options.platform,
-                type: 'build-release', // 构建 setting 的种类
-            }, {
-                start_scene: options.start_scene,
-            }),
+            this.buildSetting(
+                {
+                    // 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
+                    scenes: options.scenes,
+                    debug: options.debug,
+                    platform: options.platform,
+                    type: 'build-release', // 构建 setting 的种类
+                },
+                {
+                    start_scene: options.start_scene,
+                }
+            ),
         ]).then(async () => {
             await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
             let endTime = new Date().getTime();
@@ -82,11 +90,19 @@ class Builder {
     // 拷贝静态资源文件 5%
     _resolveStatic() {
         updateProgress('resolove static resource...');
-        Promise.all(static_resource.map((file) => {
-            let src = join(__dirname, './../build-templates/common', file);
-            let dest = join(this._paths.dest, file);
-            copyFileSync(src, dest);
-        }));
+        Promise.all(
+            static_resource.map((file) => {
+                let src = join(__dirname, './../build-templates/common', file);
+                let dest = join(this._paths.dest, file);
+                if (!this._options.debug && extname(file) === '.css') {
+                    const cssMinify = new CleanCSS();
+                    let data = cssMinify.minify(readFileSync(src, 'utf8'));
+                    writeFileSync(dest, data.styles, 'utf8');
+                    return;
+                }
+                copyFileSync(src, dest);
+            })
+        );
         updateProgress('resolove static resource success', 5);
     }
 
@@ -106,8 +122,18 @@ class Builder {
             data.webDebuggerSrc = './eruda.min.js';
             copySync(this._paths.webDebuggerSrc, join(this._paths.dest, data.webDebuggerSrc));
         }
-        const content = ejs.render(readFileSync(join(this._paths.tmplBase, options.platform, 'index.html'), 'utf8'),
-         data);
+        let content = ejs.render(
+            readFileSync(join(this._paths.tmplBase, options.platform, 'index.html'), 'utf8'),
+            data
+        );
+        if (!options.debug) {
+            content = minify(content, {
+                removeComments: true,
+                collapseWhitespace: true,
+                minifyJS: true,
+                minifyCSS: true,
+            });
+        }
         outputFileSync(join(this._paths.dest, 'index.html'), content);
         updateProgress('build index html success', 5);
     }
@@ -130,7 +156,6 @@ class Builder {
             engineCode: '',
             projectCode: '',
             engine: `cocos${this._type}`,
-
         };
         if (isQQPlay && options.qqplay && options.qqplay.REMOTE_SERVER_ROOT) {
             data.qqplay.REMOTE_SERVER_ROOT = options.qqplay.REMOTE_SERVER_ROOT;
@@ -145,19 +170,22 @@ class Builder {
         updateProgress('build engine...');
         // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
         if (this._type === '3d') {
-            await copySync(join(this._paths.engine, 'bin/cocos-3d.dev.js'),
-            join(this._paths.dest, this._options.cocosJsName));
+            await copySync(
+                join(this._paths.engine, 'bin/cocos-3d.dev.js'),
+                join(this._paths.dest, this._options.cocosJsName)
+            );
             updateProgress('build engine success', 15);
             return;
         }
 
-        let {isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer} = this._options;
-        let {dest, src, jsCacheExcludes, engine, jsCache} = this._paths;
+        let { isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer } = this._options;
+        let { dest, src, jsCacheExcludes, engine, jsCache } = this._paths;
         let buildDest = isNativePlatform ? src : dest;
         let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
         if (existsSync(jsCacheExcludes)) {
             let json = readJSONSync(jsCacheExcludes);
-            enginSameFlag = enginVersion === json.version &&
+            enginSameFlag =
+                enginVersion === json.version &&
                 nativeRenderer === json.nativeRenderer &&
                 json.excludes.toString() === excludedModules.toString() &&
                 json.sourceMaps === opts.sourceMaps;
@@ -204,27 +232,38 @@ class Builder {
         // 拷贝编译后的 js 文件
         copySync(jsCache, join(dest, basename(jsCache)));
         // 保存模块数据
-        writeFileSync(paths.jsCacheExcludes, JSON.stringify({
-            excludes: excludedModules,
-            version: enginVersion,
-            nativeRenderer,
-            sourceMaps,
-        }), null, 4);
+        writeFileSync(
+            paths.jsCacheExcludes,
+            JSON.stringify({
+                excludes: excludedModules,
+                version: enginVersion,
+                nativeRenderer,
+                sourceMaps,
+            }),
+            null,
+            4
+        );
         updateProgress('build engine success', 15);
     }
 
     /**
      *  执行 gulp 任务，编译 cocos js
      * @param {*} excludes
-     * @param {*} dest
      * @returns
      * @memberof Builder
      */
     _buildCocosJs(excludes, dest) {
         return new Promise((resolve) => {
-            let {engine} = this._paths;
-            let {debug, isNativePlatform, isWeChatSubdomain,
-                 sourceMaps, nativeRenderer, isWeChatGame, isQQPlay} = this._options;
+            let { engine } = this._paths;
+            let {
+                debug,
+                isNativePlatform,
+                isWeChatSubdomain,
+                sourceMaps,
+                nativeRenderer,
+                isWeChatGame,
+                isQQPlay,
+            } = this._options;
             const buildUtil = require(join(engine, 'gulp/tasks/engine'));
             let func;
             if (debug) {
@@ -272,7 +311,7 @@ class Builder {
             src: join(dest, 'src'),
             res: join(dest, 'res'),
             settings: join(dest, 'src/settings.js'),
-            jsCacheExcludes: join(paths.jsCacheDir, (debug ? '.excludes' : '.excludes-min')), // 生成的一个用于快速判断当前引擎内包含的模块
+            jsCacheExcludes: join(paths.jsCacheDir, debug ? '.excludes' : '.excludes-min'), // 生成的一个用于快速判断当前引擎内包含的模块
             jsCache: join(paths.jsCacheDir, this._options.platform, this._options.cocosJsName),
             webDebuggerSrc: join(config.app, 'node_modules/eruda/eruda.min.js'),
         });
@@ -290,7 +329,7 @@ class Builder {
         let uuidIndices = {};
         const that = this;
         function collectUuids() {
-            let uuids = settings.uuids = [];
+            let uuids = (settings.uuids = []);
             let uuidCount = {};
 
             function addUuid(uuid) {
@@ -303,25 +342,24 @@ class Builder {
             }
 
             let rawAssets = settings.rawAssets;
-            Object.keys(rawAssets).forEach((key) => {
-                for (let uuid of Object.keys(rawAssets[key])) {
+            Object.values(rawAssets).forEach((value) => {
+                for (let uuid of Object.keys(value)) {
                     addUuid(uuid);
                 }
             });
 
             let scenes = settings.scenes;
-            for (let i = 0; i < scenes.length; ++i) {
-                addUuid(scenes[i].uuid);
+            for (let scene of scenes) {
+                addUuid(scene.uuid);
             }
 
             let packedAssets = settings.packedAssets;
-            for (let key of Object.keys(packedAssets)) {
-                packedAssets[key].forEach(addUuid);
+            for (let value of Object.values(packedAssets)) {
+                value.forEach(addUuid);
             }
 
             let md5AssetsMap = settings.md5AssetsMap;
-            for (let key of Object.keys(md5AssetsMap)) {
-                let md5Entries = md5AssetsMap[key];
+            for (let md5Entries of Object.values(md5AssetsMap)) {
                 for (let i = 0; i < md5Entries.length; i += 2) {
                     addUuid(md5Entries[i]);
                 }
@@ -337,17 +375,18 @@ class Builder {
 
             // sort by reference count
             uuids.sort((a, b) => uuidCount[b] - uuidCount[a]);
-            uuids.forEach((uuid, index) => uuidIndices[uuid] = index);
+            uuids.forEach((uuid, index) => (uuidIndices[uuid] = index));
         }
+        // 先计算收集超过使用超过 1 次的 uuid
         collectUuids();
 
-        // replace uuid
+        // 将有使用到收集到 uuid 的位置替换为 uuids 的索引
         let originRawAssets = settings.rawAssets;
-        let newRawAssets = settings.rawAssets = {};
-        let assetTypes = settings.assetTypes = [];
+        let newRawAssets = (settings.rawAssets = {});
+        let assetTypes = (settings.assetTypes = []);
         for (let assetsType of Object.keys(originRawAssets)) {
             let originEntries = originRawAssets[assetsType];
-            let newEntries = newRawAssets[assetsType] = {};
+            let newEntries = (newRawAssets[assetsType] = {});
             for (let uuid of Object.keys(originEntries)) {
                 const entry = originEntries[uuid];
                 let index = uuidIndices[uuid];
@@ -437,8 +476,10 @@ class Builder {
      */
     saveSetting(settings, settingsInitFunction) {
         buildResult.settings = settings;
-        let content = `${WINDOW_HEADER} = ${JSON.stringify(settings, null, this._options.debug ? 4 : 0)
-            .replace(/"([A-Za-z_$][0-9A-Za-z_$]*)":/gm, '$1:')}`;
+        let content = `${WINDOW_HEADER} = ${JSON.stringify(settings, null, this._options.debug ? 4 : 0).replace(
+            /"([A-Za-z_$][0-9A-Za-z_$]*)":/gm,
+            '$1:'
+        )}`;
         if (settingsInitFunction) {
             // 把自解压代码放到 settings.js 中，便于代码压缩，并且避免变更 main.js。
             // 记得这里面的代码只能用 ES5
@@ -477,13 +518,14 @@ class Builder {
                 setting.designHeight = info._designResolution.height;
             }
         }
-        let scripts = await scriptBuilder.build(options.type) || {};
+        let scripts = (await scriptBuilder.build(options.type)) || {};
         setting.packedAssets = {};
         setting.md5AssetsMap = {};
         let assetBuilderResult = await assetBuilder.build(setting.scene, options.type);
-        Object.assign(setting, assetBuilderResult, {scripts});
+        Object.assign(setting, assetBuilderResult, { scripts });
         buildResult.settings = setting;
         if (options.type === 'build-release') {
+            setting.packedAssets = assetPacker.pack();
             return setting;
         }
         delete setting.type;

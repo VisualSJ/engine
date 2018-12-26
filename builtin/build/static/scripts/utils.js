@@ -226,7 +226,8 @@ function getAssetUrl(path, type) {
     }
     // subAsset 类型的路径需要去掉扩展名
     if (type) {
-        rawPath = rawPath.replace(extname(rawPath), '');
+        let extName = extname(rawPath);
+        rawPath = rawPath.replace(extName, '');
     }
     if (inAssets) {
         rawPath = relative(commonInfo.RAWASSET_SPATH, rawPath).replace('resources\\', '');

@@ -26,8 +26,7 @@
         </ui-button>
     </header>
 
-    <div class="props flex-1">
-
+    <div class="props flex-1" v-if="meta.importer !== 'gltf-embeded-image'">
         <number
             name="Anisotropy"
             :meta="meta"
@@ -86,11 +85,11 @@
                 :index="index"
             >{{item}}</option>
         </enum>
-
     </div>
     
     <cc-image-preview
         v-if="meta"
         :meta="meta"
+        :imgSrc="imgSrc"
     ></cc-image-preview>
 </div>

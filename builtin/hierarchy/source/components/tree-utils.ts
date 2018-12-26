@@ -10,6 +10,14 @@ exports.canNotDeleteNode = (node: ItreeNode) => {
 };
 
 /**
+ * 不能执行 创建 操作的资源
+ * @param node
+ */
+exports.canNotCreateNode = (node: ItreeNode) => {
+    return exports.canNotDeleteNode(node);
+};
+
+/**
  * 不能执行 复制 操作的资源
  * @param node
  */
@@ -38,7 +46,7 @@ exports.canNotDragNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotPasteNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node);
+    return exports.canNotDeleteNode(node) || Object.keys(db.vm.copyNodesDumpdata).length === 0;
 };
 
 /**
@@ -285,16 +293,18 @@ export const twinkle = {
         }, time || 2000);
 
         // 避免一些无效的记录一直存在
-        db.vm.twinkles = [];
+        db.vm.twinkles = {};
     },
-    add(uuid: string) {
-        if (this.watch) {
-            db.vm.twinkles.push(uuid);
-
-            // 动画结束后删除
-            setTimeout(() => {
-                db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
-            }, 1000);
+    add(uuid: string, animation: string = 'shake') {
+        if (!this.watch) {
+            return;
         }
+
+        db.vm.$set(db.vm.twinkles, uuid, animation);
+
+        // 动画结束后删除
+        setTimeout(() => {
+             db.vm.twinkles[uuid] = undefined;
+        }, 1000);
     },
 };
