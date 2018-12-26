@@ -710,7 +710,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 export class GltfPrefabImporter extends GltfSubAssetImporter {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -744,8 +744,15 @@ export class GltfPrefabImporter extends GltfSubAssetImporter {
         const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
 
         // @ts-ignore
-        const prefab = gltfConverter.createScene(
+        const sceneNode = gltfConverter.createScene(
             gltfConverter.gltf.scenes![asset.userData.gltfIndex as number], assetTable);
+
+        if (sceneNode.name === 'RootScene' || sceneNode.name === 'RootNode') {
+            const baseName = (asset.parent as Asset).basename;
+            sceneNode.name = path.basename(baseName, '');
+        }
+
+        const prefab = generatePrefab(sceneNode);
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(prefab));
@@ -1229,7 +1236,7 @@ class GltfConverter {
     }
 
     // @ts-ignore
-    public createScene(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable): cc.Node[] {
+    public createScene(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable): cc.Node {
         const sceneNode = this._getSceneNode(gltfScene, gltfAssetsTable);
         if (this._gltf.animations !== undefined) {
             const animationComponent = sceneNode.addComponent('cc.AnimationComponent');
@@ -1240,7 +1247,7 @@ class GltfConverter {
                 }
             });
         }
-        return generatePrefab(sceneNode);
+        return sceneNode;
     }
 
     private _getSceneNode(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable) {
