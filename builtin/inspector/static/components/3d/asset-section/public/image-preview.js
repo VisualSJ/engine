@@ -7,7 +7,7 @@ const textureType = ['texture', 'texture-cube'];
 
 exports.template = readTemplate('3d', './asset-section/public/image-preview.html');
 
-exports.props = ['meta'];
+exports.props = ['meta', 'imgSrc'];
 
 exports.data = function() {
     return {
@@ -16,28 +16,30 @@ exports.data = function() {
 };
 
 exports.methods = {
-    async getImagePath() {
-        const {
-            meta: { userData = {}, uuid },
-        } = this;
+    // async getImagePath() {
+    //     const {
+    //         meta: { userData = {}, uuid },
+    //     } = this;
 
-        if (userData && userData.imageSource) {
-            return userData.imageSource;
-        }
-        const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', uuid);
-        return path;
-    },
+    //     if (userData && userData.imageSource) {
+    //         return userData.imageSource;
+    //     }
+    //     const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', uuid);
+    //     return path;
+    // },
 
     /**
      * 加载图片
      */
     async loadImage() {
-        const src = await this.getImagePath();
-        this._image = new Image();
-        this._image.onload = () => {
-            this._destroyed || this.updateImage();
-        };
-        this._image.src = src;
+        // const src = await this.getImagePath();
+        if (this.imgSrc) {
+            this._image = new Image();
+            this._image.onload = () => {
+                this._destroyed || this.updateImage();
+            };
+            this._image.src = this.imgSrc;
+        }
     },
 
     /**
@@ -178,6 +180,7 @@ exports.watch = {
         },
     },
     'meta.uuid': 'loadImage',
+    imgSrc: 'loadImage',
 };
 
 exports.destroyed = function() {

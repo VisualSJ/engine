@@ -416,7 +416,8 @@ function getLibrary(asset) {
     const rt = {};
 
     asset.meta.files.forEach((ext) => {
-        if (/\.\w+/.test(ext)) { // is extname
+        if (/\.\w+/.test(ext)) {
+            // is extname
             rt[ext] = asset.library + ext;
         } else {
             rt[ext] = resolve(asset.library, ext);
@@ -467,7 +468,8 @@ function searchSubAssets(parent, asset, db) {
  * @param {*} names
  */
 function queryDatabaseInfo(names) {
-    if (!names) { // 有可能传 null 进来
+    if (!names) {
+        // 有可能传 null 进来
         return {};
     }
 
