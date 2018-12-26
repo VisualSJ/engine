@@ -24,7 +24,7 @@ export function data() {
         state: '',
         nodes: [], // 当前树形在可视区域的节点数据
         selects: [], // 已选中项的 uuid
-        twinkles: [], // 需要闪烁的 uuid
+        twinkles: {}, // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         renameUuid: '', // 需要 rename 的节点的 url，只有一个
@@ -116,29 +116,32 @@ export const methods = {
     /**
      * 刷新树形
      */
-    async refresh() {
+    async refresh(intoView = false) {
         await db.refresh();
         if (!db.nodesTree) { // 容错处理，数据可能为空
             return;
         }
 
-        this.changeData();
+        // 准备重新定位
+        let viewUuid = '';
 
-        // @ts-ignore 准备重新定位
-        let intoView = this.intoView;
-        // @ts-ignore
-        this.intoView = '';
-        // @ts-ignore
-        const renameUuid = this.renameUuid;
-        if (renameUuid !== '') {
-            const node = utils.getNodeFromTree(renameUuid);
+        if (intoView) {
+            viewUuid = vm.intoView;
+            vm.intoView = '';
+        }
+        if (vm.renameUuid !== '') {
+            const node = utils.getNodeFromTree(vm.renameUuid);
             if (node) {
-                intoView = node.uuid;
+                viewUuid = node.uuid;
             }
         }
 
-        // @ts-ignore
-        this.intoView = intoView;
+        vm.$nextTick(() => {
+            vm.intoView = viewUuid;
+        });
+
+        this.changeData();
+
     },
 
     /**
@@ -728,7 +731,12 @@ export const methods = {
         // 重置数据
         vm.copiedUuids = copyData.uuids;
         vm.copyNodesDumpdata = copyData.dumps;
-    },
+
+        // 给复制的动作反馈成功
+        vm.copiedUuids.forEach((uuid: string) => {
+            utils.twinkle.add(uuid, 'light');
+        });
+},
 
     /**
      * 粘贴
@@ -810,10 +818,11 @@ export const methods = {
                 // 移动到节点的下方
                 const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, node.uuid);
                 let target = toArr.length;
+                let offset = toIndex - toArr.length + 1;
                 if (parentUuid) { // 有子集循环的，原索引位置不必因为新增 +1 故在此 -1
-                    target -= 1;
+                    target = toIndex;
+                    offset = 0;
                 }
-                const offset = toIndex - toArr.length + 1;
                 await db.moveNode(parent, target, offset);
 
                 // 循环其子集
@@ -1009,6 +1018,6 @@ export const methods = {
      */
     intoTwinkle(uuid: string) {
         utils.scrollIntoView(uuid);
-        utils.twinkle.add(uuid);
+        utils.twinkle.add(uuid, 'shake');
     },
 };

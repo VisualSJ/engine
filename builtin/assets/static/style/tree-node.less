@@ -7,7 +7,6 @@
     cursor: default;
     &[state] {
         &:hover {
-            color: var(--item-hover-c);
             background-color: var(--item-hover-bg);
         }
     }
@@ -76,11 +75,19 @@
         white-space: nowrap;
         padding-right: 20px;
         padding-left: 4px;
-        &[twinkle="true"] {
+        &[twinkle] {
             animation-duration: 1s;
             animation-fill-mode: both;
-            animation-name: tada;
             transform-origin: center;
+        }
+        &[twinkle="shake"] {
+            animation-name: shake;
+        }
+        &[twinkle="shrink"] {
+            animation-name: shrink;
+        }
+        &[twinkle="light"] {
+            animation-name: light;
         }
     }
     .loading {
@@ -145,7 +152,7 @@
     }
 }
 
-@keyframes tada {
+@keyframes shake {
     from {
         transform: scale3d(1, 1, 1);
     }
@@ -167,5 +174,24 @@
     }
     to {
         transform: scale3d(1, 1, 1);
+    }
+}
+
+@keyframes shrink {
+    from {
+        transform: scale3d(1, 1, 1);
+    }
+    50% {
+        transform: scale3d(.9, .9, .9);
+        color: var(--item-hover-c);
+    }
+    to {
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+@keyframes light {
+    50% {
+        color: var(--item-hover-c);
     }
 }

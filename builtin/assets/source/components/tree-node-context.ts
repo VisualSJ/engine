@@ -126,6 +126,13 @@ exports.menu = (self: any, asset: ItreeAsset) => {
             },
             { type: 'separator' },
             {
+                label: Editor.I18n.t('assets.menu.revealInExplorer'),
+                enabled: !utils.canNotShowInExplorer(asset),
+                click() {
+                    shell.showItemInFolder(asset.file);
+                },
+            },
+            {
                 label: Editor.I18n.t('assets.menu.revealInlibrary'),
                 enabled: !utils.canNotRevealInLibrary(asset),
                 click() {
@@ -138,13 +145,6 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     if (path) {
                         shell.showItemInFolder(path);
                     }
-                },
-            },
-            {
-                label: Editor.I18n.t('assets.menu.revealInExplorer'),
-                enabled: !utils.canNotShowInExplorer(asset),
-                click() {
-                    shell.showItemInFolder(asset.file);
                 },
             },
             {

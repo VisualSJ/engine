@@ -286,18 +286,18 @@ exports.twinkle = {
         }, time || 2000);
 
         // 避免一些无效的记录一直存在
-        db.vm.twinkles = [];
+        db.vm.twinkles = {};
     },
-    add(uuid: string) {
+    add(uuid: string, animation: string = 'shake') {
         if (!this.watch) {
             return;
         }
 
-        db.vm.twinkles.push(uuid);
+        db.vm.$set(db.vm.twinkles, uuid, animation);
 
         // 动画结束后删除
         setTimeout(() => {
-            db.vm.twinkles.splice(db.vm.twinkles.findIndex((one: string) => one === uuid), 1);
+             db.vm.twinkles[uuid] = undefined;
         }, 1000);
     },
 };

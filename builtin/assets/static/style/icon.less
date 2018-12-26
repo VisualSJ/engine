@@ -1,9 +1,10 @@
 @i-red: #ec7063;
 @i-orange: #f0ad4e;
-@i-yellow: #f4d03f;
+@i-yellow: #fbd461;
 @i-green: #6dd66d;
 @i-cyan: #00bcd4;
 @i-blue: #3498db;
+@i-blue-light: #68b8ff;
 @i-purple: #d78eef;
 @i-white: #f5f5f5;
 [class^="i-"],
@@ -21,6 +22,7 @@
     color: @i-red;
 }
 
+.i-level,
 .i-list,
 .i-json {
     color: @i-yellow;
@@ -30,17 +32,21 @@
     color: @i-red;
 }
 
-.i-image {
-    color: @i-cyan;
+.i-image,
+.i-texture {
+    color: @i-blue-light;
 }
 
-.i-mesh,
-.i-typescript {
+.i-color {
     color: @i-purple;
 }
 
 .i-material {
-    color: @i-white;
+    color: @i-cyan;
+}
+
+.i-typescript {
+    color: @i-purple;
 }
 
 .i-effect,
@@ -49,12 +55,13 @@
     color: @i-blue;
 }
 
-.i-model {
+.i-prefab {
     color: @i-green;
 
 }
-
 // 以上是 tree-node-icon 的颜色，不需要频繁变动
+
+
 .i-list:before { content: "\e60a"; }
 
 .i-animation:before { content: "\e623"; }
@@ -63,17 +70,25 @@
 
 .i-search:before { content: "\e726"; }
 
+.i-material:before { content: "\e605"; }
+
 .i-unlock:before { content: "\e72c"; }
 
-.i-file:before { content: "\e60c"; }
+.i-file:before { content: "\e608"; }
 
 .i-arrow-right:before { content: "\e6df"; }
+
+.i-image:before { content: "\e60b"; }
 
 .i-add:before { content: "\e64d"; }
 
 .i-folder:before { content: "\e616"; }
 
-.i-robot:before { content: "\e6f3"; }
+.i-effect:before { content: "\e624"; }
+
+.i-robot:before { content: "\e60c"; }
+
+.i-level:before { content: "\e752"; }
 
 .i-full-over:before { content: "\e600"; }
 
@@ -85,13 +100,11 @@
 
 .i-video:before { content: "\e76c"; }
 
-.i-model:before { content: "\e775"; }
+.i-color:before { content: "\e60d"; }
 
-.i-material:before { content: "\ef44"; }
+.i-prefab:before { content: "\e60e"; }
 
 .i-javascript:before { content: "\e601"; }
-
-.i-image:before { content: "\e603"; }
 
 .i-json:before { content: "\e604"; }
 
@@ -101,6 +114,5 @@
 
 .i-code:before { content: "\e609"; }
 
-.i-effect:before { content: "\e63c"; }
+.i-texture:before { content: "\e693"; }
 
-.i-mesh:before { content: "\e60b"; }

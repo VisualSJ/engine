@@ -193,7 +193,7 @@ function changeNode2D(newData: any) {
         return;
     }
     // 属性是值类型的修改
-    ['name'].forEach((key) => {
+    ['name', 'active'].forEach((key) => {
         // @ts-ignore
         if (node[key] !== newData[key].value) {
             // @ts-ignore
@@ -244,7 +244,7 @@ function changeNode3D(newData: any) {
         return;
     }
     // 属性是值类型的修改
-    ['name'].forEach((key) => {
+    ['name', 'active'].forEach((key) => {
         // @ts-ignore
         if (node[key] !== newData[key].value) {
             // @ts-ignore
@@ -305,6 +305,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.isParent = node.children && node.children.length > 0 ? true : false;
         node.parentUuid = nodes.uuid;
         node.isPrefab = !!node.prefab;
+        node.isVisible = nodes.isVisible === false ? nodes.isVisible : node.active;
 
         if (node.isExpand === undefined) {
             Object.defineProperty(node, 'isExpand', {

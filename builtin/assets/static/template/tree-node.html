@@ -30,7 +30,7 @@
     ></tree-node-icon>
 
     <label class="name"
-        :twinkle="twinkles.indexOf(asset.uuid) !== -1" 
+        :twinkle="twinkles[asset.uuid]" 
         v-if="state!=='input'"
         @dblclick="open($event, asset)"
     >{{asset.name}}</label>

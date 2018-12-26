@@ -26,7 +26,7 @@ export function data() {
         state: '',
         assets: [], // 当前树形在可视区域的资源节点
         selects: [], // 已选中项的 uuid
-        twinkles: [], // 需要闪烁的 uuid
+        twinkles: {}, // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         types: { file: 1, 'cc.Node': 2 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
@@ -125,7 +125,7 @@ export const methods = {
             return;
         }
 
-        const delay = intoView ? 0 : 300; // 类似刷新的操作不需要延迟
+        const delay = intoView ? 0 : 150; // 类似刷新的操作不需要延迟
 
         isRefreshing = true;
         setTimeout(() => { // 整体延迟
@@ -285,7 +285,7 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        utils.twinkle.add(uuid); // 手动新增的时候，由于 uuid 还不存在，不会生效。
+        utils.twinkle.add(uuid, 'shrink'); // 手动新增的时候，由于 uuid 还不存在，不会生效。
         vm.refresh();
     },
 
@@ -729,7 +729,7 @@ export const methods = {
 
         // 给复制的动作反馈成功
         vm.copiedUuids.forEach((uuid: string) => {
-            utils.twinkle.add(uuid);
+            utils.twinkle.add(uuid, 'light');
         });
     },
 
@@ -784,7 +784,7 @@ export const methods = {
             asset = utils.getAssetFromTree(finallyCanPaste[index]);
             index++;
             utils.twinkle.sleep();
-        } while (await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
+        } while (asset && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
     },
 
     /**
@@ -894,6 +894,6 @@ export const methods = {
      */
     intoTwinkle(uuid: string) {
         utils.scrollIntoView(uuid);
-        utils.twinkle.add(uuid);
+        utils.twinkle.add(uuid, 'shake');
     },
 };

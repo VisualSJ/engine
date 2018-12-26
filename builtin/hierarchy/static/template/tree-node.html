@@ -6,6 +6,7 @@
     :class="{'parent':node.isParent}"
     :expand="node.isExpand"
     :isPrefab="node.isPrefab"
+    :visible="node.isVisible.toString()"
     @mousedown="mouseDown($event, node)"
     @click="click($event, node)"
     @dblclick="dblclick($event, node)"
@@ -20,7 +21,7 @@
     ></i>
 
     <label class="name"
-        :twinkle="twinkles.indexOf(node.uuid) !== -1" 
+        :twinkle="twinkles[node.uuid]" 
         v-if="state!=='input'"
     >{{node.name}}</label>
 
