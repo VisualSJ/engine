@@ -242,6 +242,18 @@ class SceneManager extends EventEmitter {
         }
 
     }
+
+    /**
+     * 查询当前的组件列表
+     */
+    queryComponents() {
+        return cc._componentMenuItems.map((item) => {
+            return {
+                name: item.priority !== -1 ? `cc.${item.component.name}` : item.component.name,
+                path: item.menuPath,
+            };
+        });
+    }
 }
 
 module.exports = new SceneManager();

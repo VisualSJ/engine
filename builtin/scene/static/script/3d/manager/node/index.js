@@ -263,11 +263,6 @@ class NodeManager extends EventEmitter {
             return false;
         }
 
-        if (Reg_Uuid.test(component) || Reg_NormalizedUuid.test(component) || Reg_CompressedUuid.test(component)) {
-            const compressUuid = uuidUtils.compressUuid(component);
-            component = cc.js._getClassById(compressUuid);
-        }
-
         if (component) {
             // 发送节点修改消息
             this.emit('before-change', node);

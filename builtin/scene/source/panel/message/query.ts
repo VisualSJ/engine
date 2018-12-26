@@ -125,4 +125,8 @@ export function apply(messages: any) {
     messages['query-gizmo-tool-name'] = async () => {
         return await $scene.forceForwarding('Gizmo', 'queryToolName');
     };
+
+    messages['query-components'] = async () => {
+        return await $scene.forceForwarding('Scene', 'queryComponents');
+    };
 }
