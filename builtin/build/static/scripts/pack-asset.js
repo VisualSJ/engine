@@ -7,7 +7,7 @@ class AssetPacker {
     constructor() {
         this.inlineSpriteFrames = []; // 存储需要内联的 spriteFrame 的信息
         this.startScene = []; // 存储初始需要合并的 uuid 信息
-        this.uuidDepends = {};
+        this.uuidDepends = {}; // 存储内部过滤过的资源依赖映射关系
         this.groups = []; // 存储分组对象的内容信息
     }
 
@@ -20,10 +20,10 @@ class AssetPacker {
         this.options = buildResult.options;
         this.paths = buildResult.paths;
         this._computeGroup();
-        // 移除只包含一个资源的分组(代表没有依赖其他资源)
+        // 移除只包含一个资源的分组(代表没有依赖其他资源)---但是要排除 spritFrame 资源
         let newUuids = [];
         this.groups = this.groups.filter((x) => {
-            if (!x.uuids || x.uuids.length <= 1) {
+            if (!x.uuids || x.uuids.length <= 1 || x.type === 'spritFrame') {
                 newUuids.push(x.uuid);
                 return;
             }
@@ -35,23 +35,51 @@ class AssetPacker {
         this.groups.forEach((item, index) => {
             let fileName = packUuidArray[index];
             packedAssets[fileName] = item.uuids.map((x) => this.compressUuid(x));
-            if (item.name === 'texture') {
-                // todo 图片资源打包
+            if (item.type === 'texture') {
+                // texture 资源打包
+                this.packTexture(fileName, item.uuids);
             } else {
                 // json 资源打包
                 this.packJson(fileName, item.uuids);
             }
         });
+        // 打包独立资源
         this.packSingleJson(newUuids, _.concat(uuidssArray));
         return packedAssets;
     }
 
+    /**
+     * 压缩 uuid
+     * @param {*} uuid
+     * @returns
+     * @memberof AssetPacker
+     */
     compressUuid(uuid) {
         // 非调试模式下， uuid 需要压缩成短 uuid
         if (this.options && !this.options.debug) {
             uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
         }
         return uuid;
+    }
+
+    /**
+     * 合并 texture2D 的资源 json 数据
+     * @param {*} hasName
+     * @param {*} uuids
+     * @memberof AssetPacker
+     */
+    packTexture(hasName, uuids) {
+        uuids.sort();
+        let values = uuids.map(function(uuid) {
+            return buildResult.jsonCache[uuid];
+        });
+        values = values.join('|');
+        const packedData = {
+            type: cc.js._getClassId(cc.Texture2D),
+            data: values,
+        };
+        const data = JSON.stringify(packedData, null, this.options.debug ? 0 : 2);
+        outputFileSync(getDestPathNoExt(this.paths.res, hasName) + '.json', data);
     }
 
     /**
@@ -90,14 +118,13 @@ class AssetPacker {
 
     // 计算分组
     _computeGroup() {
-        // 先将依赖 uuid 里不能打包的部分剔除,并需要剔除合并初始场景资源的相关代码
-        for (let uuid of Object.keys(buildResult.assetCache)) {
+        // 遍历 uuid 计算依赖分组
+        for (let uuid of buildResult.rootUuids) {
             let uuids = this._queryPackableDepends(uuid);
             this.uuidDepends[uuid] = uuids;
             this.groups.push({
                 uuids,
                 uuid,
-                name: '',
             });
         }
         // 合并一些其他需求的 json 包
@@ -123,7 +150,7 @@ class AssetPacker {
     }
 
     /**
-     * 是否可以被打进其它包里面,非原始资源，不能被打包进其他包里
+     * 是否可以被打进其它包里面,原始资源不能被打包进其他包里
      */
     _queryPackableByUuid(uuid) {
         let type = buildResult.assetCache[uuid].type;
@@ -137,10 +164,8 @@ class AssetPacker {
      * 进一步合并小文件，减少 IO 请求数量，但一般会增大包体
      */
     _mergeSmallFiles() {
-        // 内联所有的 spriteFrame
-        if (this.options.inlineSpriteFrames) {
-            this._inlineSpriteFrames();
-        }
+        // 内联 spriteFrame
+        this._inlineSpriteFrames();
         // 打包图片部分
         this._packAllTextures();
         // 合并初始场景的所有 json 文件
@@ -150,11 +175,117 @@ class AssetPacker {
     }
 
     /**
-     * 找到所有的 texture 相关资源
+     * 找到所有的 texture2D 资源 uuid
+     * @returns {string[]}
      * @memberof AssetPacker
      */
     _packAllTextures() {
+        let textureUuids = this._queryUuidssByType('cc.Texture2D');
+        this.removeFromGroups(this.groups, textureUuids);
+        this.groups.push({
+            uuids: textureUuids,
+            type: 'texture',
+        });
+        return textureUuids;
+    }
 
+    // TODO 简化该逻辑流程，循环太多次了
+    /**
+     * 找到所有的内联的 SpriteFrame 并记录分组，默认只内联零散的 SpriteFrame
+     * @memberof AssetPacker
+     */
+    _inlineSpriteFrames() {
+        // 1 - 找出所有 SpriteFrame
+        let spriteFrameUuids = this._queryUuidssByType('cc.SpriteFrame');
+        if (!spriteFrameUuids || spriteFrameUuids.length < 1) {
+            return;
+        }
+        if (this.options.inlineSpriteFrames) {
+            // 2 - 从 group 里移除全部 SpriteFrame，后面会再内联所有回去。
+            this.removeFromGroups(this.groups, spriteFrameUuids);
+        } else {
+            // 2 - 或者，过滤掉已经在 group 并且合并数量大于 1 的 SpriteFrame，留下单独的 SpriteFrame
+            let groupedUuids = new Set();
+            for (let item of this.groups) {
+                if (item.uuids.length > 1) {
+                    for (let uuid of item.uuids) {
+                        groupedUuids.add(uuid);
+                    }
+                }
+            }
+            spriteFrameUuids = spriteFrameUuids.filter((x) => !groupedUuids.has(x));
+        }
+        // 3 - 如果这些 SpriteFrame 的被依赖的资源在 group 中，则添加到对应 group，否则新建 group
+        let inlinedUuids = this._inlineToDependsGroup(spriteFrameUuids);
+        // 4 - 如果 SpriteFrame 在 原始 uuids 中，则同时保留一份单独的 json，否则 loadRes 时会加大下载量
+        for (let inlineUuid of inlinedUuids) {
+            if (buildResult.rootUuids.indexOf(inlineUuid) !== -1) {
+                // 添加只有一个资源的分组
+                groups.push({
+                    uuids: [inlineUuid],
+                    type: 'spriteFrame',
+                });
+                console.log(`add dummy group to allow download ${inlineUuid} individually`);
+            }
+        }
+    }
+
+    /**
+     * 查找传入 uuids 数组在其他资源的依赖项中的部分
+     * @param {*} uuids
+     * @returns {string[]}
+     * @memberof AssetPacker
+     */
+    _inlineToDependsGroup(uuids) {
+        let inlinedUuids = []; // 收集依赖项容器
+        for (let uuid of uuids) {
+            let inlineCount = 0;
+            for (let depend of Object.keys(buildResult.uuidDepends)) {
+                let result = buildResult.uuidDepends[depend];
+                if (typeof result !== 'object') { // 排除 undined/null 等不合法数据类型
+                    continue;
+                }
+                let depends = result.depends;
+                // 1. 遍历传入 uuid 同时遍历原始依赖数组，查找是否包含对应 uuid
+                if (depends && depends.indexOf(uuid) !== -1) {
+                    // 2. 查到该资源有作为其他资源的依赖项后，再遍历 groups 找到对应的分组加入
+                    for (let group of this.groups) {
+                        let uuids = group.uuids;
+                        if (uuids.indexOf(depend) !== -1) {
+                            if (uuids.indexOf(uuid) === -1) {   // 有可能一个组里同时有多个被依赖资源，所以这里要防止重复添加
+                                uuids.push(uuid);
+                                ++inlineCount;
+                            }
+                            groups.push({
+                                name: '',
+                                uuids: [depend, uuid],
+                            });
+                            ++inlineCount;
+                        }
+                    }
+                }
+            }
+            if (inlineCount > 0) {
+                console.log(`inline SpriteFrame: ${uuid}, inline count: ${inlineCount}`);
+                inlinedUuids.push(uuid);
+            }
+        }
+        return inlinedUuids;
+    }
+
+    /**
+     * 查找指定类型的 uuid 数组
+     * @param {string} type
+     * @memberof AssetPacker
+     */
+    _queryUuidssByType(type) {
+        let uuids = [];
+        for (let asset of Object.values(buildResult.assetCache)) {
+            if (asset.type === type) {
+                uuids.push(asset.uuid);
+            }
+        }
+        return uuids;
     }
 
     /**
@@ -173,14 +304,6 @@ class AssetPacker {
     }
 
     /**
-     * 找到所有的内联的 SpriteFrame 并记录分组
-     * @memberof AssetPacker
-     */
-    _inlineSpriteFrames() {
-
-    }
-
-    /**
      * 将 uuid 数组从已知的分组里面移除
      * @param {*} groups
      * @param {*} uuidsToRemove
@@ -190,6 +313,9 @@ class AssetPacker {
         let fastRemove = cc.js.array.fastRemove;
         for (let i = 0; i < groups.length; i++) {
             let groupUuids = groups[i].uuids;
+            if (!groupUuids) {
+                return;
+            }
             for (let j = 0; j < uuidsToRemove.length; j++) {
                 fastRemove(groupUuids, uuidsToRemove[j]);
             }

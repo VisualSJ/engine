@@ -1,13 +1,15 @@
 const buildResult = require('./build-result');
-const { getDestPathNoExt, updateProgress, requestToPackage, getAssetUrl} = require('./utils');
+const { updateProgress, requestToPackage, getAssetUrl} = require('./utils');
 const platfomConfig = require('./platforms-config');
-const {outputFileSync, copySync, ensureDirSync, readJSONSync} = require('fs-extra');
+const {copySync, ensureDirSync, readJSONSync} = require('fs-extra');
 const {join, dirname, extname} = require('path');
 const lodash = require('lodash'); // 排序、去重
-
+const CompressTexture = require('./texture-compress');
+const {promisify} = require('util');
+const _ = require('lodash');
 class AssetBuilder {
     init(type) {
-        buildResult.assetCache = this.assetCache = {}; // 存储资源对应的打包情况
+        buildResult.assetCache = this.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
         this.result = {};
         this.hasBuild = {};
         this.shoudBuild = true;
@@ -16,6 +18,7 @@ class AssetBuilder {
             return;
         }
         // 构建时才需要的参数
+        this.compressImgTask = {};
         this.paths = buildResult.paths;
         this.options = buildResult.options;
         let platformInfo = platfomConfig[this.options.platform];
@@ -37,42 +40,36 @@ class AssetBuilder {
             }
             for (let item of scenes) {
                 this.assetCache[item.uuid] = item;
+                buildResult.rootUuids.push(item.uuid);
             }
             this.result.scenes = [];
             console.time('beginBuild');
             await this.beginBuild();
             console.timeEnd('beginBuild');
-            console.time('resolveAsset');
             await this.resolveAsset();
-            console.timeEnd('resolveAsset');
             // 判断是否需要打包资源
             if (!this.shoudBuild) {
                 resolve(this.result);
                 return this.result;
             }
-            // 对拷贝的任务队列去重，防止同时执行相同的拷贝任务
-            this.copyPaths = lodash.unionBy(this.copyPaths, 'src');
-            Promise.all(this.copyPaths.map(async (paths) => {
-                    await copySync(paths.src, paths.dest);
-            })).then(() => {
-                let endTime = new Date().getTime();
-                updateProgress(`build assets success in ${endTime - startTime} ms`, 30);
-                resolve(this.result);
-            }).catch((error) => {
-                reject(error);
-                console.log(`copy asset error: ${error}`);
-            });
+            Promise.all([this.copyFiles(), this.compressImgs()])
+                    .then(() => {
+                        let endTime = new Date().getTime();
+                        updateProgress(`build assets success in ${endTime - startTime} ms`, 30);
+                        resolve(this.result);
+                    }).catch((err) => console.error(err));
         });
     }
 
     // 整理依赖资源数据
     async resolveAsset() {
+        console.time('resolveAsset');
         let assets = {};
         let internal = {};
         for (let uuid of Object.keys(this.assetCache)) {
             let asset = this.assetCache[uuid];
             // 非调试模式下， uuid 需要压缩成短 uuid
-            if (this.options && !this.options.debug) {
+            if (this.options && !this.options.debug && this.shoudBuild) {
                 uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
             }
             if (asset.importer === 'scene') {
@@ -80,13 +77,28 @@ class AssetBuilder {
                 continue;
             }
             // ********************* 资源类型 ********************** //
-            // 没有 source, subAssets
-            if (!asset.source) {
-                asset.source = this.subAssetSource(asset.uuid);
-                if (asset.source.startsWith('db://assets')) {
-                    assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
-                } else if (asset.source.startsWith('db://internal')) {
-                    internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+            // subAssets 资源处理
+            if (!asset.source || Object.keys(asset.subAssets).length > 0) {
+                if (!asset.source) {
+                    asset.source = this.subAssetSource(asset.uuid);
+                    if (asset.source.startsWith('db://assets')) {
+                        assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                    } else if (asset.source.startsWith('db://internal')) {
+                        internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                    }
+                    buildResult.assetCache[asset.uuid] = asset;
+                }
+                if (Object.keys(asset.subAssets).length > 0) {
+                    for (let subAsset of Object.values(asset.subAssets)) {
+                        subAsset.fatherUuid = asset.uuid;
+                        buildResult.assetCache[subAsset.uuid] = subAsset;
+                        let uuid = subAsset.uuid;
+                        if (asset.source.startsWith('db://assets')) {
+                            assets[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                        } else if (asset.source.startsWith('db://internal')) {
+                            internal[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                        }
+                    }
                 }
                 continue;
             }
@@ -96,9 +108,39 @@ class AssetBuilder {
                 internal[uuid] = [getAssetUrl(asset.source), asset.type];
             }
         }
+        // 对 assets 资源进行排序，否则脚本动态加载贴图时，会贴图不正确
+        assets = this.sortObjectBy(assets, 0);
+        internal = this.sortObjectBy(internal, 0);
         Object.assign(this.result, {
             rawAssets: {assets, internal},
         });
+        console.timeEnd('resolveAsset');
+    }
+
+    /**
+     * 根据对象中的某一个值来排序
+     * @param {*} object
+     * @param {*} key
+     */
+    sortObjectBy(object, key) {
+        let tempArry = [];
+        let tempObject = {};
+        let uuids = Object.keys(object);
+        if (uuids.length < 1) {
+            return object;
+        }
+        for (let uuid of uuids) {
+            let item = object[uuid];
+            tempArry.push({
+                uuid,
+                source: item[key],
+            });
+        }
+        tempArry = _.sortBy(tempArry, 'source');
+        for (let item of tempArry) {
+            tempObject[item.uuid] = object[item.uuid];
+        }
+        return tempObject;
     }
 
     /**
@@ -130,6 +172,7 @@ class AssetBuilder {
                     continue;
                 }
                 this.assetCache[asset.uuid] = asset;
+                buildResult.rootUuids.push(asset.uuid);
             }
             console.time('buildAsset');
             // 并并执行依赖查找
@@ -204,8 +247,13 @@ class AssetBuilder {
         (this.isJSB || !asset.constructor.preventPreloadNativeObject ||
             asset instanceof ALWAYS_INCLUDE_RAW_FILES);
         // output
+        let inCompressTask;
         if (nativeAssetEnabled) {
-            await this._exportNativeAsset(asset);
+            inCompressTask = await this._exportNativeAsset(asset);
+        }
+        // 是需要压缩的资源，对应的 asset 需要做一些数据添加处理，由后续对应的压缩资源函数处理
+        if (inCompressTask) {
+            return;
         }
         // compress 设置
         let contentJson = Editor.serialize(asset, {
@@ -215,12 +263,6 @@ class AssetBuilder {
             dontStripDefault: this.exportSimpleFormat,
         });
         buildResult.jsonCache[asset._uuid] = contentJson;
-
-        // 不存在依赖文件时，直接打包出来
-        // if (!buildResult.uuidDepends[asset._uuid]) {
-        //     outputFileSync(getDestPathNoExt(this.paths.res, asset._uuid) + '.json', JSON.stringify(contentJson));
-        // } else {
-        // }
     }
 
     // 导出原始资源
@@ -249,29 +291,95 @@ class AssetBuilder {
         // var relativePath = relative(join(this.paths.project, 'asset'), asset.nativeUrl);
         var dest = join(this.paths.res, RAW_ASSET_DEST, asset.nativeUrl);
         ensureDirSync(dirname(dest));
-        if (asset instanceof cc.Texture2D) {
-            let meta = this.uuid2meta[asset._uuid];
-
-            let suffix = [];
-            try {
-                suffix = await promisify(CompressTexture)({
-                    src: src,
-                    dst: dest,
-                    platform: this.platform,
-                    compressOption: meta.platformSettings,
+        if (asset instanceof cc.ImageAsset) {
+            // 图片资源设置的压缩参数
+            let {platformSettings} = this.assetCache[asset._uuid];
+            // hack 临时测试压缩方法使用
+            // platformSettings = {
+            //     web: {
+            //         formats: [{
+            //             name: 'webp',
+            //             quality: 0.8,
+            //         }],
+            //     },
+            //     default: {
+            //         formats: [{
+            //             name: 'png',
+            //             quality: 0.8,
+            //         }],
+            //     },
+            // };
+            if (!platformSettings) {
+                // 未设置压缩参数，直接加入到拷贝任务中
+                this.copyPaths.push({
+                    src,
+                    dest,
                 });
-            } catch (err) {
-                console.error(err);
+                return;
             }
-
-            if (suffix.length > 0) {
-                asset._exportedExts = suffix;
-            }
+            this.compressImgTask[asset._uuid] = {
+                src: src,
+                dst: dest,
+                platform: this.options.platform,
+                compressOption: platformSettings || {},
+            };
             return;
         }
         this.copyPaths.push({
             src,
             dest,
+        });
+    }
+
+    /**
+     * 执行图片压缩格式转换任务
+     * @memberof AssetBuilder
+     */
+    compressImgs() {
+        updateProgress(`build assets : compress image asset ...`);
+        if (Object.keys(this.compressImgTask).length < 1) {
+            updateProgress(`build assets : copy files sucess !`);
+            return;
+        }
+        return new Promise((resolve) => {
+            Promise.all(Object.keys(this.compressImgTask).map(async (uuid) => {
+                let options = this.compressImgTask[uuid];
+                let suffix = await promisify(CompressTexture)(options);
+                let asset = this.assetCache[uuid];
+                if (suffix.length > 0) {
+                    asset._exportedExts = suffix;
+                }
+                // compress 设置
+                let contentJson = Editor.serialize(asset, {
+                    exporting: !this.options.debug, // 是否是作为正式打包导出的序列化操作
+                    nicify: !this.exportSimpleFormat,
+                    stringify: false, // 序列化出来的以 json 字符串形式还是 json 对象显示（ json 对象可以方便调试的时候查看）
+                    dontStripDefault: this.exportSimpleFormat,
+                });
+                buildResult.jsonCache[asset._uuid] = contentJson;
+            })).then(() => {
+                updateProgress(`build assets : compress image asset sucess !`);
+                resolve();
+            }).catch((err) => console.error(err));
+        });
+    }
+
+    // 并并执行文件拷贝工作
+    copyFiles() {
+        updateProgress(`build assets : copy files ...`);
+        if (this.copyPaths.length < 1) {
+            updateProgress(`build assets : copy files sucess !`);
+            return;
+        }
+        return new Promise((resolve) => {
+            // 对拷贝的任务队列去重，防止同时执行相同的拷贝任务
+            this.copyPaths = lodash.unionBy(this.copyPaths, 'src');
+            Promise.all(this.copyPaths.map(async (paths) => {
+                    await copySync(paths.src, paths.dest);
+            })).then(() => {
+                updateProgress(`build assets : copy files sucess !`);
+                resolve();
+            }).catch((err) => console.error(err));
         });
     }
 }

@@ -206,12 +206,12 @@ class ScriptBuilder {
             }
 
             let isNative = !!platfomConfig[options.platform].isNative;
-            // bundle = bundle.pipe(this.uglify('build', {
-            //     jsb: isNative,
-            //     wechatgame: options.platform === 'wechatgame',
-            //     qqplay: options.platform === 'qqplay',
-            //     debug: options.debug,
-            // }));
+            bundle = bundle.pipe(this.uglify('build', {
+                jsb: isNative,
+                wechatgame: options.platform === 'wechatgame',
+                qqplay: options.platform === 'qqplay',
+                debug: options.debug,
+            }));
 
             if (options.sourceMaps) {
                 bundle = bundle.pipe(refineSourceMap(rawPathToLibPath, paths.project))

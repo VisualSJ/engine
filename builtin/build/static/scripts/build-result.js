@@ -6,14 +6,15 @@ class BuildResults {
     constructor() {
         this._buildAssets = null;
         this._packedAssets = null;
-        this.settings = null;
-        this.paths = null;
-        this.options = null;
+        this.settings = null; // 构建生成的 setting 对象
+        this.paths = null; // 构建需要的路径整理
+        this.options = null; // 构建传入的配置信息
         this.scrips = null;
-        this.script2uuid = {};
+        this.script2uuid = {}; // 脚本 asset 与 uuid 的映射表
         this.assetCache = {}; // uuid 与查找到的 asset 信息的缓存映射表
         this.uuidDepends = {}; // 资源 uuid 有对应依赖资源 uuid 数组的映射表
         this.jsonCache = {}; // 资源压缩序列化 json 数字据
+        this.rootUuids = []; // 记录在最外层的资源（场景 uuid 与场景依赖第一层资源 uuid, resource 文件夹下的 uuid)
     }
 
     /**
@@ -25,7 +26,7 @@ class BuildResults {
     containsAsset(uuid, assertContains) {
         var res = uuid in this._buildAssets;
         if (!res && assertContains) {
-            Editor.error(`The bulid not contains an asset with the given uuid "${uuid}".`);
+            console.error(`The bulid not contains an asset with the given uuid "${uuid}".`);
         }
         return res;
     }
@@ -94,7 +95,7 @@ function getAssetType(uuid) {
         if (ctor) {
             return cc.js._getClassId(ctor, false);
         } else {
-            Editor.error('Can not get asset type of ' + uuid);
+            console.error('Can not get asset type of ' + uuid);
         }
     } else {
         // assets generated dynamically, only auto atlas until now
