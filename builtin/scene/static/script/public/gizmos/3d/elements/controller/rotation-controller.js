@@ -52,7 +52,7 @@ class RotationController extends ControllerBase {
         arcNode.active = false;
         arcNode.name = axisName + 'IndicatorCircle';
 
-        this.initAxis(topNode, axisName, color);
+        this.initAxis(topNode, axisName);
     }
 
     initShape() {

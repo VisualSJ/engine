@@ -30,7 +30,7 @@ class PositionController extends ControllerBase {
             baseArrowBodyHeight, color, axisName + 'Axis');
         axisNode.parent = this.shape;
         NodeUtils.setEulerAngles(axisNode, rotation);
-        this.initAxis(axisNode, axisName, color);
+        this.initAxis(axisNode, axisName);
     }
 
     createControlPlane(axisName, color, rotation) {
@@ -44,18 +44,19 @@ class PositionController extends ControllerBase {
             pos = pos.add(deltaPos);
         }
 
-        let borderPlane = ControllerUtils.borderPlane(planeWidth, planeWidth, color, axisName + 'Plane');
+        let opacity = 128;
+        let borderPlane = ControllerUtils.borderPlane(planeWidth, planeWidth, color, opacity, axisName + 'Plane');
         borderPlane.parent = this.shape;
         NodeUtils.setEulerAngles(borderPlane, rotation);
         borderPlane.setPosition(pos.x, pos.y, pos.z);
-        let panPlane = ControllerUtils.plane(100000, 100000);
+        let panPlane = ControllerUtils.quad(100000, 100000);
         panPlane.parent = this._rootNode;
         panPlane.name = axisName + 'PanPlane';
         panPlane.active = false;
         panPlane.layer = panPlaneLayer;
         NodeUtils.setEulerAngles(panPlane, rotation);
         setNodeOpacity(panPlane, 0);
-        this.initAxis(borderPlane, axisName, color);
+        this.initAxis(borderPlane, axisName);
 
         let axisData = this._axisDataMap[axisName];
         axisData.panPlane = panPlane;
@@ -76,13 +77,13 @@ class PositionController extends ControllerBase {
 
         // control plane
         // x-y plane
-        this.createControlPlane('xy', cc.Color.BLUE, cc.v3(90, 0, 90));
+        this.createControlPlane('xy', cc.Color.BLUE, cc.v3());
 
         // x-z plane
-        this.createControlPlane('xz', cc.Color.GREEN, cc.v3());
+        this.createControlPlane('xz', cc.Color.GREEN, cc.v3(90, 0, 0));
 
         // y-z plane
-        this.createControlPlane('yz', cc.Color.RED, cc.v3(-90, -90, 0));
+        this.createControlPlane('yz', cc.Color.RED, cc.v3(0, -90, 0));
 
         this.hide();
     }

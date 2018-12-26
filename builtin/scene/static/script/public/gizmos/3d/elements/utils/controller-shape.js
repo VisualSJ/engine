@@ -215,16 +215,17 @@ ControllerShape.cone = function(radius, height, opts) {
     return ControllerShape.cylinder(0, radius, height, opts);
 };
 
-ControllerShape.plane = function(width, height) {
+ControllerShape.quad = function(width, height) {
     let hw = width / 2;
     let hh = height / 2;
+
     return createMesh({
-        positions: [cc.v3(-hw, 0, hh), cc.v3(-hw, 0, -hh),
-        cc.v3(hw, 0, -hh), cc.v3(hw, 0, hh)],
-        normals: Array(4).fill(cc.v3(0, 1, 0)),
+        positions: [cc.v3(-hw, hh, 0), cc.v3(-hw, -hh, 0),
+        cc.v3(hw, -hh, 0), cc.v3(hw, hh, 0)],
+        normals: Array(4).fill(cc.v3(0, 0, 1)),
         indices: [0, 3, 1, 1, 3, 2],
-        minPos: cc.v3(-hw, -1, -hh),
-        maxPos: cc.v3(hw, 1, hh),
+        minPos: cc.v3(-hw, -hh, -1),
+        maxPos: cc.v3(hw, hh, 1),
         doubleSided: true,
     });
 };

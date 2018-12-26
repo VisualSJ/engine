@@ -27,21 +27,21 @@ class ScaleController extends ControllerBase {
         let xSliderNode = ControllerUtils.scaleSlider(baseCubeSize, axisLength, cc.Color.RED, 'xSlider');
         xSliderNode.parent = this.shape;
         NodeUtils.setEulerAngles(xSliderNode, cc.v3(-90, -90, 0));
-        this.initAxis(xSliderNode, 'x', cc.Color.RED);
+        this.initAxis(xSliderNode, 'x');
 
         let ySliderNode = ControllerUtils.scaleSlider(baseCubeSize, axisLength, cc.Color.GREEN, 'ySlider');
         ySliderNode.parent = this.shape;
-        this.initAxis(ySliderNode, 'y', cc.Color.GREEN);
+        this.initAxis(ySliderNode, 'y');
 
         let zSliderNode = ControllerUtils.scaleSlider(baseCubeSize, axisLength, cc.Color.BLUE, 'zSlider');
         zSliderNode.parent = this.shape;
         NodeUtils.setEulerAngles(zSliderNode, cc.v3(90, 0, 90));
-        this.initAxis(zSliderNode, 'z', cc.Color.BLUE);
+        this.initAxis(zSliderNode, 'z');
 
         let xyzNode = ControllerUtils.cube(baseCubeSize, baseCubeSize, baseCubeSize, cc.Color.GRAY, 'xyzScale');
         xyzNode.parent = this.shape;
         this._axisDir.xyz = cc.v3(1, 1, 1);    // only for scale
-        this.initAxis(xyzNode, 'xyz', cc.Color.GRAY);
+        this.initAxis(xyzNode, 'xyz');
 
         this.shape.active = false;
     }

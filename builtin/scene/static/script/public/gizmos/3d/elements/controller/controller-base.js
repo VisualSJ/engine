@@ -6,7 +6,8 @@ const NodeUtils = External.NodeUtils;
 const EditorCamera = External.EditorCamera;
 const ControllerUtils = require('../utils/controller-utils');
 const ControllerShapeCollider = require('../utils/controller-shape-collider');
-const { isCreator2x, create3DNode, setMeshColor, getModel } = require('../../../utils/engine');
+const { setNodeOpacity, create3DNode, setMeshColor, getModel, getMeshColor,
+    getNodeOpacity } = require('../../../utils/engine');
 let TransformToolData = require('../../../utils/transform-tool-data');
 const Utils = require('../../../utils');
 
@@ -59,11 +60,19 @@ class ControllerBase {
         this.adjustControllerSize();
     }
 
-    initAxis(node, axisName, oriColor = cc.Color.WHITE) {
+    initAxis(node, axisName) {
         let axisData = {};
         axisData.topNode = node;
         axisData.rendererNodes = this.getRendererNodes(node);
-        axisData.oriColor = oriColor;
+        let colors = [];
+        let opacitys = [];
+        axisData.rendererNodes.forEach((node) => {
+            let color = getMeshColor(node);
+            colors.push(new cc.Color(color.r, color.g, color.b));
+            opacitys.push(getNodeOpacity(node));
+        });
+        axisData.oriColors = colors;
+        axisData.oriOpacitys = opacitys;
         this._axisDataMap[axisName] = axisData;
 
         let rayDetectNodes = this.getRayDetectNodes(node);
@@ -76,11 +85,12 @@ class ControllerBase {
         }
     }
 
-    setAxisColor(axisName, color) {
+    setAxisColor(axisName, color, opacity = 255) {
         let rendererNodes = this._axisDataMap[axisName].rendererNodes;
         if (rendererNodes != null) {
             rendererNodes.forEach((node) => {
                 setMeshColor(node, color);
+                setNodeOpacity(node, opacity);
             });
         }
     }
@@ -88,7 +98,17 @@ class ControllerBase {
     resetAxisColor() {
         for (let key in this._axisDataMap) {
             if (key) {
-                this.setAxisColor(key, this._axisDataMap[key].oriColor);
+                let axisData = this._axisDataMap[key];
+                //this.setAxisColor(key, axisData.oriColor, axisData.oriOpacity);
+                let rendererNodes = axisData.rendererNodes;
+                let oriColors = axisData.oriColors;
+                let oriOpacitys = axisData.oriOpacitys;
+
+                for (let i = 0; i < rendererNodes.length; i++) {
+                    let node = rendererNodes[i];
+                    setMeshColor(node, oriColors[i]);
+                    setNodeOpacity(node, oriOpacitys[i]);
+                }
             }
 
         }
@@ -197,15 +217,21 @@ class ControllerBase {
         this.adjustControllerSize();
     }
 
+    getCameraDistScalar(pos) {
+        let cameraNode = EditorCamera._camera.node;
+        let dist = ControllerUtils.getCameraDistanceFactor(pos, cameraNode);
+        let scalar = dist / this._baseDist;
+
+        return scalar;
+    }
+
     getDistScalar() {
         let scalar = 1;
 
         if (this.is2D) {
             scalar = 1 / this.scale2D;
         } else {
-            let cameraNode = EditorCamera._camera.node;
-            let dist = ControllerUtils.getCameraDistanceFactor(this._position, cameraNode);
-            scalar = dist / this._baseDist;
+            scalar = this.getCameraDistScalar(this._position);
         }
 
         return scalar;

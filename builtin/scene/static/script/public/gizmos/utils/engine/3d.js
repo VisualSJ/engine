@@ -40,9 +40,13 @@ class Engine3D extends EngineInterface {
         model.mesh = mesh;
         let mtl = new cc.Material();
         mtl.effectName = '__editor-gizmo';
-        if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
-            mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
-            //node.modelColor.a = opts.alpha || 128; // blend in
+        if (opts.unlit) {
+            mtl.effect.LOD = 50;
+        } else {
+            if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
+                mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
+                //node.modelColor.a = opts.alpha || 128; // blend in
+            }
         }
         mtl.setProperty('color', node.modelColor);
         if (mtl.effect) {
@@ -58,8 +62,16 @@ class Engine3D extends EngineInterface {
         node.modelColor.b = c.b;
     }
 
+    getMeshColor(node) {
+        return node.modelColor;
+    }
+
     setNodeOpacity(node, opacity) {
         node.modelColor.a = opacity;
+    }
+
+    getNodeOpacity(node) {
+        return node.modelColor.a;
     }
 
     getRaycastResults(rootNode, x, y) {
@@ -146,6 +158,19 @@ class Engine3D extends EngineInterface {
         return cameraData;
     }
 
+    setCameraData(component, cameraData) {
+        if (component instanceof cc.CameraComponent) {
+            if (cameraData.fov) {
+                component.fov = cameraData.fov;
+            }
+            if (cameraData.far) {
+                component.far = cameraData.far;
+            }
+        } else {
+            console.error('target is not a cc.CameraComponent');
+        }
+    }
+
     getLightData(component) {
         let lightData = null;
 
@@ -159,6 +184,20 @@ class Engine3D extends EngineInterface {
         }
 
         return lightData;
+    }
+
+    setLightData(component, lightData) {
+        if (component instanceof cc.LightComponent) {
+            if (lightData.range) {
+                component.range = lightData.range;
+            }
+            if (lightData.spotAngle) {
+                component.spotAngle = lightData.spotAngle;
+            }
+
+        } else {
+            console.error('target is not a cc.LightComponent');
+        }
     }
 }
 

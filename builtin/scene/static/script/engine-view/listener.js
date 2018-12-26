@@ -59,11 +59,14 @@ module.exports = function(elem) {
     elem.addEventListener('mousemove', (event) => {
         const bcr = elem.getBoundingClientRect();
 
-        elem.ipc.forceSend('call-method', {
-            module: 'Operation',
-            handler: 'emit',
-            params: ['mousemove', utils.createMouseEvent(event, bcr)],
-        });
+        // 窗口失去焦点时，第一次点击窗口会发送一个没有偏移的mousemove事件，在这里剔除
+        if (event.movementX !== 0 || event.movementY !== 0) {
+            elem.ipc.forceSend('call-method', {
+                module: 'Operation',
+                handler: 'emit',
+                params: ['mousemove', utils.createMouseEvent(event, bcr)],
+            });
+        }
     });
 
     elem.addEventListener('wheel', (event) => {

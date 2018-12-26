@@ -1,6 +1,6 @@
 'use strict';
 
-let ControllerBase = require('./controller-base');
+let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
 const { gfx, setNodeOpacity, getModel, updateVBAttr, setMeshColor } = require('../../../utils/engine');
@@ -14,13 +14,18 @@ const vec3 = cc.vmath.vec3;
 const quat = cc.vmath.quat;
 let tempVec3 = cc.v3();
 
-class SphereController extends ControllerBase {
+class SphereController extends EditableController {
     constructor(rootNode) {
         super(rootNode);
 
         this._color = cc.Color.WHITE;
         this._center = cc.v3();
         this._radius = 100;
+
+        this._axisDir.neg_x = cc.v3(-1, 0, 0);
+        this._axisDir.neg_y = cc.v3(0, -1, 0);
+        this._axisDir.neg_z = cc.v3(0, 0, -1);
+        this._deltaRadius = 0;
 
         this.initShape();
     }
@@ -31,7 +36,6 @@ class SphereController extends ControllerBase {
     }
 
     setColor(color) {
-        this._color = color;
         Object.keys(this._circleDataMap).forEach((key) => {
             let curData = this._circleDataMap[key];
             setMeshColor(curData.frontArcMR.node, color);
@@ -39,6 +43,9 @@ class SphereController extends ControllerBase {
         });
 
         setMeshColor(this._borderCircle, color);
+        this.setEditCtrlColor(color);
+
+        this._color = color;
     }
 
     createCircleByAxis(axisName, fromAxisName, color) {
@@ -68,6 +75,16 @@ class SphereController extends ControllerBase {
         this._borderCircelMR = getModel(this._borderCircle);
     }
 
+    _updateEditController(axisName) {
+        let node = this._axisDataMap[axisName].topNode;
+        let dir = this._axisDir[axisName];
+
+        let offset = cc.v3();
+        vec3.scale(offset, dir, this._radius);
+        let pos = offset.add(this._center);
+        node.setPosition(pos.x, pos.y, pos.z);
+    }
+
     initShape() {
         this.createShapeNode('SphereController');
 
@@ -87,8 +104,11 @@ class SphereController extends ControllerBase {
         this._center = center;
         this._radius = radius;
 
-        this.updateShape();
+        if (this._edit) {
+            this.updateEditControllers();
+        }
 
+        this.updateShape();
     }
 
     // don't scale when camera move
@@ -159,6 +179,8 @@ class SphereController extends ControllerBase {
                 frontArcMR.node.active = false;
             }
         });
+
+        this.adjustEditControllerSize();
     }
 
     updateArcMesh(mesh, center, normal, from, radian, radius) {
@@ -171,6 +193,45 @@ class SphereController extends ControllerBase {
 
     onEditorCameraMoved() {
         this.updateShape();
+    }
+
+    // mouse events
+    onMouseDown(event) {
+        this._mouseDeltaPos = cc.v2(0, 0);
+        this._curDistScalar = super.getDistScalar();
+
+        if (this.onControllerMouseDown != null) {
+            this.onControllerMouseDown();
+        }
+    }
+
+    onMouseMove(event) {
+        this._mouseDeltaPos.x += event.moveDeltaX;
+        this._mouseDeltaPos.y += event.moveDeltaY;
+
+        let axisDir = this._axisDir[event.axisName];
+        this._deltaRadius = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir),
+            this._mouseDeltaPos) * this._curDistScalar;
+
+        if (this.onControllerMouseMove != null) {
+            this.onControllerMouseMove(event);
+        }
+    }
+
+    onMouseUp(event) {
+
+        if (this.onControllerMouseUp != null) {
+            this.onControllerMouseUp();
+        }
+    }
+
+    onMouseLeave() {
+        this.onMouseUp();
+    }
+    // mouse events end
+
+    getDeltaRadius() {
+        return this._deltaRadius;
     }
 }
 
