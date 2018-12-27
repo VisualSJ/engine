@@ -10,6 +10,8 @@ const profile = {
 let pkg: any = null;
 let compiler: any = null;
 
+let busy: boolean = false;
+
 export const messages = {
 
     /**
@@ -23,7 +25,23 @@ export const messages = {
      * 重新编译引擎
      */
     rebuild() {
-        compiler && compiler.build();
+        return new Promise((resolve, reject) => {
+            if (busy) {
+                return reject('Compile engine fails: The compilation is in progress...');
+            }
+            busy = true;
+            if (!compiler) {
+                busy = false;
+                return reject('Compile engine fails: The compiler does not exist.');
+            }
+            compiler.rebuild((error: Error) => {
+                busy = false;
+                if (error) {
+                    return reject(error);
+                }
+                resolve();
+            });
+        });
     },
 
     /**

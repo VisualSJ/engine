@@ -5,6 +5,10 @@
     "menu": {
         "Cocos3d/i18n:engine.title": {
             "message": "open"
+        },
+        "i18n:menu.develop/i18n:engine.compile": {
+            "message": "rebuild",
+            "accelerator": "CmdOrCtrl+f7"
         }
     },
 
