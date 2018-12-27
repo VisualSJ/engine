@@ -250,6 +250,7 @@ class SceneManager extends EventEmitter {
         return cc._componentMenuItems.map((item) => {
             return {
                 name: item.priority !== -1 ? `cc.${item.component.name}` : item.component.name,
+                priority: item.priority,
                 path: item.menuPath,
             };
         });

@@ -152,7 +152,7 @@ exports.methods = {
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'create-component', {
                             uuid,
-                            component: item.name,
+                            component: item.priority === -1 ? name : item.name,
                         });
                     },
                 };
