@@ -16,6 +16,7 @@ module.exports = {
     reset_all: 'Reset All',
     select_button: 'Select In Atlas',
     edit_button: 'Edit',
+    browse: 'Browse',
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
     block_input_events: {

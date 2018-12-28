@@ -378,6 +378,13 @@ module.exports = {
 
             return true;
         },
+
+        async 'query-url-by-path'(path: string) {
+            if (!assetWorker) {
+                return null;
+            }
+            return await assetWorker.send('asset-worker:query-url-by-path', path);
+        },
     },
 
     /**

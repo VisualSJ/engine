@@ -16,6 +16,7 @@ module.exports = {
     reset_all: 'Reset All',
     select_button: '选择',
     edit_button: '编辑',
+    browse: '浏览',
     resize_to_target: 'Resize To Target',
     difference: 'Difference',
     block_input_events: {

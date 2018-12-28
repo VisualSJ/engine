@@ -1,0 +1,70 @@
+<div class="asset-wrapper" :class="{[meta.__assetType__]: true}">
+
+    <!-- 头部工具栏 -->
+    <header
+        class="asset-header"
+    >
+        <!-- <img class="css-icon" :src="icon"></img> -->
+        <div
+            class="css-title"
+        >
+            {{meta ? meta.__name__ : ''}}
+        </div>
+        <span class="flex-1"></span>
+    
+        <ui-button class="tiny red transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="reset($event)"
+        >
+            <i class="iconfont icon-close-b"></i>
+        </ui-button>
+    
+        <ui-button class="tiny green transparent"
+            :disabled="!meta.__dirty__"
+            @confirm="apply($event)"
+        >
+            <i class="iconfont icon-check-b"></i>
+        </ui-button>
+    </header>
+
+    <div class="props flex-1">
+        <template 
+            v-for="(value, key) in meta.userData.imageLocations" 
+        >
+            <div class="vue-comp-ui flex-wrap">
+                <div class="name">
+                    <i
+                        :class="{
+                            iconfont: true,
+                            'icon-un-fold': true,
+                            'icon-fold': false,
+                            'is-visible': false
+                        }"
+                    ></i>
+                    <span>{{key}}</span>
+                </div>
+
+                <string
+                    :indent="1"
+                    class="flex-full"
+                    name="originalPath"
+                    :meta="meta.userData.imageLocations"
+                    :path="key + '.originalPath'"
+                    :readonly="true"></string>
+                <string
+                    :indent="1"
+                    class="flex-full"
+                    :name="target"
+                    :meta="imageLocations"
+                    :path="key"
+                    :readonly="true"
+                >
+                    <div slot="suffix" @click="openDirectory(key)">
+                        <ui-button class="blue tiny">{{T('browse')}}</ui-button>
+                    </div>
+                </string>
+            </div>
+        </template>
+    </div>
+
+</div>

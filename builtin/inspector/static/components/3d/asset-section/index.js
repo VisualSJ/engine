@@ -21,6 +21,7 @@ exports.components = {
     [`${prefix}folder`]: readComponent(__dirname, './assets/folder'),
     [`${prefix}image`]: readComponent(__dirname, './assets/image'),
     [`${prefix}effect`]: readComponent(__dirname, './assets/effect'),
+    [`${prefix}fbx`]: readComponent(__dirname, './assets/fbx'),
 };
 
 exports.data = function() {

@@ -3,7 +3,7 @@
 const { parse } = require('url');
 const { join, relative, isAbsolute, resolve } = require('path');
 const { ensureDirSync } = require('fs-extra');
-const { AssetDB, version } = require('@editor/asset-db');
+const { AssetDB, version, queryUrlFromPath } = require('@editor/asset-db');
 const minimatch = require('minimatch');
 const protocol = 'db://';
 let isReady = false;
@@ -212,6 +212,10 @@ Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
 
 Worker.Ipc.on('asset-worker:query-database-info', async (event, names) => {
     event.reply(null, queryDatabaseInfo(names));
+});
+
+Worker.Ipc.on('asset-worker:query-url-by-path', async (event, path) => {
+    event.reply(null, queryUrlFromPath(path));
 });
 
 // 查询所有资源的列表
