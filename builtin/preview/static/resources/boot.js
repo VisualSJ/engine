@@ -137,9 +137,9 @@
     }
 
     function initPreviewOptions() {
-        initSelect();
-        showLoading();
         inputSetFPS.value = '60';
+        showLoading();
+        initSelect();
     }
 
     // 全局入口

@@ -109,7 +109,7 @@
             <div :class="['info', state]">{{ message ? message : 'progress' }}</div>
         </div>
         <div class="btn-group">
-            <ui-button class="green" @confirm.stop="onBuild">构建</ui-button>
+            <ui-button class="green" @confirm.stop="onBuild" :disabled="state === 0 || state === 100">构建</ui-button>
             <i class="iconfont i-arrow-right"></i>
             <ui-button class="green" v-if="needCompile">编译</ui-button>
             <i class="iconfont i-arrow-right" v-if="needCompile"></i>

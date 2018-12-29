@@ -1,5 +1,5 @@
 const Spawn = require('child_process').spawn;
-const {ensureDirSync, copy, readFileSync, writeFile, writeFileSync} = require('fs-extra');
+const {ensureDirSync, copy, writeFile} = require('fs-extra');
 const Path = require('path');
 const Async = require('async');
 function spawnTool(tool, opts, cb) {
@@ -135,9 +135,9 @@ function compressNormal(src, dst, format, cb) {
  * @param {*} cb
  */
 function compressPVR(src, dst, format, cb) {
-    let pvrTool = join(__dirname, './../tools/texture-compress/PVRTexTool/OSX_x86/PVRTexToolCLI');
+    let pvrTool = Path.join(__dirname, './../tools/texture-compress/PVRTexTool/OSX_x86/PVRTexToolCLI');
     if (process.platform === 'win32') {
-        pvrTool = join(__dirname, './../tools/texture-compress/PVRTexTool/Windows_x86_64/PVRTexToolCLI.exe');
+        pvrTool = Path.join(__dirname, './../tools/texture-compress/PVRTexTool/Windows_x86_64/PVRTexToolCLI.exe');
     }
 
     // 根据 option.format 转换格式

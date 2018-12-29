@@ -86,13 +86,13 @@ export async function ready() {
             },
             // 需要动态获取的默认配置
             name: '', // 游戏名称
-            start_scene: '',
-            scenes: [],
+            start_scene: '', // 初始场景
+            scenes: [], // 当前项目内的所有场景列表
             checkSuccess: true,
             state: '',
-            message: '',
-            rate: 0,
-            data: {},
+            message: '', // 进度条显示的构建进度信息
+            rate: 0, // 当前构建进度数值 0~100
+            data: {}, // 传递给子组件的参数汇总
             isReady: false,
             nameTest: true,
             pathTest: true,

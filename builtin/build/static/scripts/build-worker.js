@@ -8,7 +8,7 @@ const BUILD_INFO = {
     type: '', // 项目类型(2d/3d)
     utils: '', // 引擎工具类路径
     project: '', // 项目路径
-    version: '',
+    version: '', // 引擎版本
     app: '', // 项目路径
 };
 
@@ -52,7 +52,7 @@ Worker.Ipc.on('build-worker:get-modules', async (event, path) => {
     event.reply(null, content);
 });
 
-// 构建脚本模块信息，添加头尾部
+// 查询当前场景信息
 Worker.Ipc.on('build-worker:get-current-scene', async (event, uuid) => {
     const content = await getCurrentScene(uuid);
     event.reply(null, content);
