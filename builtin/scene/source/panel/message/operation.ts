@@ -35,11 +35,13 @@ export function apply(messages: any) {
      */
     messages['open-scene'] = async (uuid: string) => {
         if (!$scene) {
-            return null;
+            return '';
         }
+        uuid = uuid || '';
         await $scene.forwarding('Scene', 'open', [uuid]);
         profile.set('current-scene', uuid);
         profile.save();
+        return uuid || '';
     };
 
     /**
@@ -50,7 +52,7 @@ export function apply(messages: any) {
      */
     messages['save-scene'] = async () => {
         if (!$scene) {
-            return null;
+            return '';
         }
         const text = await $scene.forwarding('Scene', 'serialize');
         let uuid = profile.get('current-scene') || '';
@@ -61,7 +63,7 @@ export function apply(messages: any) {
             // 同步一下缓存数据
             await $scene.forwarding('Scene', 'syncSceneData');
             console.log(`Save scene: ${asset.source}`);
-            return;
+            return '';
         }
 
         const url = 'db://assets/NewScene.fire';
@@ -80,6 +82,8 @@ export function apply(messages: any) {
         profile.set('current-scene', uuid);
         profile.save();
         console.log(`Save scene: ${source}`);
+
+        return uuid;
     };
 
     /**

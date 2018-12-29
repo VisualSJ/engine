@@ -1,0 +1,24 @@
+{
+    "name": "tester",
+    "version": "0.0.1",
+
+    "description": "Editor tester",
+
+    "menu": {
+        "i18n:menu.develop/Tester": {
+            "message": "open"
+        }
+    },
+
+    "main": "./browser/index.js",
+    "panel": {
+        "title": "Tester",
+        "main": "./panel/index.js",
+        "min-width": 200,
+        "min-height": 200,
+        "width": 400,
+        "height": 600
+    },
+
+    "author": "VisualSJ"
+}
