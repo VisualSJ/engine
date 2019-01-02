@@ -14,7 +14,13 @@ class EngineInterface {
     setMeshColor(node, c) {
     }
 
+    getMeshColor(node) {
+    }
+
     setNodeOpacity(node, opacity) {
+    }
+
+    getNodeOpacity(node) {
     }
 
     getRaycastResults(rootNode, x, y) {
@@ -42,7 +48,13 @@ class EngineInterface {
     getCameraData(component) {
     }
 
+    setCameraData(component, cameraData) {
+    }
+
     getLightData(component) {
+    }
+
+    setLightData(component, lightData) {
     }
 }
 

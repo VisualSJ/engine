@@ -334,7 +334,7 @@ class Camera extends EventEmitter {
             vec3.scale(v3b, this.up, dy * this.panningSpeed);
             vec3.add(this._curEye, this._curEye, v3a);
             vec3.add(this._curEye, this._curEye, v3b);
-            this.node.setPosition(this._curEye);
+            this.node.setWorldPosition(this._curEye);
 
             // update view center
             vec3.add(this._sceneViewCenter, this._sceneViewCenter, v3a);
@@ -368,7 +368,7 @@ class Camera extends EventEmitter {
         vec3.transformQuat(this.forward, this.id_forward, this._curRot);
         vec3.scale(v3a, this.forward, event.wheelDeltaY * this.wheelSpeed);
         vec3.add(this._curEye, this._curEye, v3a);
-        this.node.setPosition(this._curEye);
+        this.node.setWorldPosition(this._curEye);
 
         this.viewDist = vec3.distance(this._curEye, this._sceneViewCenter);
     }

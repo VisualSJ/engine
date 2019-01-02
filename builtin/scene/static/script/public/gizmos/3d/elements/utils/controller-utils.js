@@ -11,7 +11,6 @@ const vec3 = cc.vmath.vec3;
 
 let ControllerUtils = {};
 ControllerUtils.YELLOW = new cc.Color(255, 255, 0);
-ControllerUtils.LightGizmoColor = new cc.Color(255, 255, 50);
 
 ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name) {
     if (name == null) {
@@ -44,14 +43,14 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color, name
     return axisNode;
 };
 
-ControllerUtils.plane = function(width, height, color = cc.Color.RED, name = 'plane') {
-    let planeNode = create3DNode(name);
-    addMeshToNode(planeNode, ControllerShape.plane(width, height));
-    setMeshColor(planeNode, color);
-    return planeNode;
+ControllerUtils.quad = function(width, height, color = cc.Color.RED, name = 'plane', opts = {}) {
+    let quadNode = create3DNode(name);
+    addMeshToNode(quadNode, ControllerShape.quad(width, height), opts);
+    setMeshColor(quadNode, color);
+    return quadNode;
 };
 
-ControllerUtils.borderPlane = function(width, height, color, name) {
+ControllerUtils.borderPlane = function(width, height, color, opacity, name) {
     if (name == null) {
         name = 'borderPlane';
     }
@@ -62,9 +61,9 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     // plane
     let planeNode = create3DNode('Plane');
     addMeshToNode(planeNode,
-        ControllerShape.plane(width, height));
+        ControllerShape.quad(width, height));
     setMeshColor(planeNode, color);
-    setNodeOpacity(planeNode, 128);
+    setNodeOpacity(planeNode, opacity);
     planeNode.parent = borderPlane;
     let csc = planeNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = false;
@@ -79,8 +78,8 @@ ControllerUtils.borderPlane = function(width, height, color, name) {
     }
 
     // borders
-    createBorder(cc.v3(0, 0, height / 2), cc.v3(halfWidth, 0, height / 2), color);
-    createBorder(cc.v3(halfWidth, 0, halfHeight), cc.v3(halfWidth, 0, 0), color);
+    createBorder(cc.v3(0, height / 2, 0), cc.v3(halfWidth, height / 2, 0), color);
+    createBorder(cc.v3(halfWidth, halfHeight, 0), cc.v3(halfWidth, 0, 0), color);
 
     return borderPlane;
 };

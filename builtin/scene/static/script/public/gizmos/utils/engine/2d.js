@@ -47,8 +47,16 @@ class Engine2D extends EngineInterface {
         node.color = c;
     }
 
+    getMeshColor(node) {
+        return node.color;
+    }
+
     setNodeOpacity(node, opacity) {
         node.opacity = opacity;
+    }
+
+    getNodeOpacity(node) {
+        return node.opacity;
     }
 
     getRaycastResults(rootNode, x, y) {

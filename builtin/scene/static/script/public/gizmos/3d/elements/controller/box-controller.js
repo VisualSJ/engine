@@ -1,13 +1,13 @@
 'use strict';
 
-let ControllerBase = require('./controller-base');
+let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
 const { gfx, create3DNode, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
-class BoxController extends ControllerBase {
+class BoxController extends EditableController {
     constructor(rootNode) {
         super(rootNode);
 
@@ -15,23 +15,7 @@ class BoxController extends ControllerBase {
         this._center = cc.v3();
         this._size = cc.v3(1, 1, 1);
 
-        this._edit = false;
-        this._editControllerShape = null;
-
         this.initShape();
-    }
-
-    get edit() { return this._edit; }
-    set edit(value) {
-        this._edit = value;
-        if (this._edit === true) {
-            this.initEditController();
-            this._editControllerShape.active = true;
-        } else {
-            if (this._editControllerShape) {
-                this._editControllerShape.active = false;
-            }
-        }
     }
 
     setColor(color) {
@@ -52,7 +36,7 @@ class BoxController extends ControllerBase {
         cubeNode.parent = this._editControllerShape;
         let dir = this._faceDirMap[faceName];
         this.updateMidControllerTransform(cubeNode, dir);
-        this.initAxis(cubeNode, faceName, color);
+        this.initAxis(cubeNode, faceName);
     }
 
     updateMidControllerTransform(node, dir) {
