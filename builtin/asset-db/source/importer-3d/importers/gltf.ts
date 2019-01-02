@@ -52,7 +52,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.43';
+        return '1.0.44';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -317,7 +317,7 @@ function tryGetOriginalPath(image: Image, gltfConverter: GltfConverter): string 
         return null;
     }
 
-    const uriInfo =  gltfConverter.getImageUriInfo(image.uri);
+    const uriInfo =  gltfConverter.getImageUriInfo(image.uri, false);
     if (isFilesystemPath(uriInfo)) {
         return uriInfo.fullPath;
     }
@@ -1214,7 +1214,7 @@ class GltfConverter {
         return texture;
     }
 
-    public getImageUriInfo(uri: string): GltfImageUriInfo {
+    public getImageUriInfo(uri: string, resolve: boolean = true): GltfImageUriInfo {
         if (uri.startsWith('data:')) {
             const dataUri = parseDataUrl(uri);
             if (dataUri && dataUri.mediaType === 'image/ccmissing') {
@@ -1230,7 +1230,7 @@ class GltfConverter {
         } else {
             return {
                 isDataUri: false,
-                fullPath: path.resolve(path.dirname(this.path), uri),
+                fullPath: resolve ? path.resolve(path.dirname(this.path), uri) : uri,
             } as GltfImagePathInfo;
         }
     }

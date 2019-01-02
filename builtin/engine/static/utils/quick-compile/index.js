@@ -414,6 +414,8 @@ Object.assign(Compiler.prototype, {
             const dirname = Path.dirname(parent.filename);
             if (Fs.existsSync(Path.join(dirname, id) + '.ts')) {
                 id = id + '.ts';
+            } else if (Fs.existsSync(Path.join(dirname, id, 'index.ts'))) {
+                id = id + '/index.ts';
             }
             parent.paths = require.main.paths.concat(parent.paths);
             BrowserResolve(id, parent, (err, path) => {

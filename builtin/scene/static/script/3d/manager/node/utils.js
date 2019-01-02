@@ -29,12 +29,17 @@ exports.addComponentMap = {
     SkyboxComponent(comp, node) { },
 
     SphereColliderComponent(component, node) {
-        const boundingSize = getBoundingSize(node);
+        const boundingBox = getBoundingBox(node);
+        const boundingSize = getSize(boundingBox);
+
         component.radius = maxComponent(boundingSize);
+        component.center = getCenter(boundingBox);
     },
 
     BoxColliderComponent(component, node) {
-        const boundingSize = getBoundingSize(node);
+        const boundingBox = getBoundingBox(node);
+        const boundingSize = getSize(boundingBox);
+
         const zeroX = boundingSize.x === 0 ? 1 : 0;
         const zeroY = boundingSize.y === 0 ? 1 : 0;
         const zeroZ = boundingSize.z === 0 ? 1 : 0;
@@ -49,19 +54,34 @@ exports.addComponentMap = {
                 boundingSize.z = v;
             }
         }
+
         component.size = boundingSize;
+        component.center = getCenter(boundingBox);
     },
 };
 
-function getBoundingSize(node) {
+function getBoundingBox(node) {
     const modelComponent = node.getComponent('cc.ModelComponent');
     if (!modelComponent) {
         return new cc.Vec3(0, 0, 0);
     }
-    const { minPosition, maxPosition } = modelComponent.mesh;
+    return {
+        minPosition: modelComponent.mesh.minPosition,
+        maxPosition: modelComponent.mesh.maxPosition,
+    };
+}
+
+function getSize(boundingBox) {
     const size = new cc.Vec3();
-    cc.vmath.vec3.subtract(size, maxPosition, minPosition);
+    cc.vmath.vec3.subtract(size, boundingBox.maxPosition, boundingBox.minPosition);
     return size;
+}
+
+function getCenter(boundingBox) {
+    const size = getSize(boundingBox);
+    const center = new cc.Vec3();
+    cc.vmath.vec3.scaleAndAdd(center, boundingBox.minPosition, size, 0.5);
+    return center;
 }
 
 function maxComponent(v) {
