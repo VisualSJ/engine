@@ -315,10 +315,10 @@ function getDestPathNoExt(dest, uuid) {
  * @returns
  */
 function requestToPackage(...args) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         Worker.Ipc.send('build-worker:request-package', ...args).callback((err, data) => {
             if (err) {
-                reject(err);
+                console.error(`request-package with ${args.toString()}: ${err.message}`);
             }
             resolve(data);
         });

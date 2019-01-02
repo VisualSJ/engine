@@ -250,7 +250,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
             }
             let source = source2url(name, asset.source);
             // 存在路径筛选配置，并且当前路径不符合条件
-            if (options && options.partten && !minimatch(source, options.partten)) {
+            if (options && options.pattern && !minimatch(source, options.pattern)) {
                 continue;
             }
             const importer = db.name2importer[asset.meta.importer] || null;

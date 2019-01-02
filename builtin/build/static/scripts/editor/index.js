@@ -7,10 +7,10 @@ const Editor = {
     // 适配 Editor.require()
     require(url) {
         switch (url) {
-            // case 'app://editor/page/scene-utils/missing-class-reporter':
-            //     return require('./missing-reporter/missing-class-reporter');
-            // case 'app://editor/page/scene-utils/missing-object-reporter':
-            //     return require('./missing-reporter/missing-object-reporter');
+            case 'app://editor/page/scene-utils/missing-class-reporter':
+                return require('./missing-reporter/missing-class-reporter');
+            case 'app://editor/page/scene-utils/missing-object-reporter':
+                return require('./missing-reporter/missing-object-reporter');
             case 'app://editor/page/scene-utils/utils/node':
                 return {};
             case 'scene://edit-mode':

@@ -123,8 +123,14 @@ async function createWorker() {
 
     // worker 与其他插件的通信转发
     buildWorker.on('build-worker:request-package', async (event: any, ...args: any[]) => {
-         const data = await Editor.Ipc.requestToPackage(...args);
-         event.reply(null, data);
+        let data;
+        try {
+            data = await Editor.Ipc.requestToPackage(...args);
+         } catch (error) {
+             console.error(error);
+             event.reply(error, data);
+         }
+        event.reply(null, data);
     });
 
     // worker 与其他插件的通信转发

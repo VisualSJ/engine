@@ -9,6 +9,7 @@ class AssetPacker {
         this.startScene = []; // 存储初始需要合并的 uuid 信息
         this.uuidDepends = {}; // 存储内部过滤过的资源依赖映射关系
         this.groups = []; // 存储分组对象的内容信息
+        this.havaPacker = {};
     }
 
     /**
@@ -21,45 +22,26 @@ class AssetPacker {
         this.paths = buildResult.paths;
         this._computeGroup();
         // 移除只包含一个资源的分组(代表没有依赖其他资源)---但是要排除 spritFrame 资源
-        let newUuids = [];
         this.groups = this.groups.filter((x) => {
-            if (!x.uuids || x.uuids.length <= 1 || x.type === 'spritFrame') {
-                newUuids.push(x.uuid);
-                return;
-            }
-            return true;
+            return (x.uuids && x.uuids.length > 1 && x.type !== 'spritFrame');
         });
         var uuidssArray = this.groups.map((x) => x.uuids); // 整合分组内的依赖 uuid 数组资源
         // 使用 HashUuid 来生成每组 uuid 对应新的 id 值
         const packUuidArray = HashUuid.calculate(uuidssArray, HashUuid.BuiltinHashType.PackedAssets);
         this.groups.forEach((item, index) => {
             let fileName = packUuidArray[index];
-            packedAssets[fileName] = item.uuids.map((x) => this.compressUuid(x));
             if (item.type === 'texture') {
                 // texture 资源打包
                 this.packTexture(fileName, item.uuids);
             } else {
+                packedAssets[fileName] = item.uuids;
                 // json 资源打包
                 this.packJson(fileName, item.uuids);
             }
         });
         // 打包独立资源
-        this.packSingleJson(newUuids, _.concat(uuidssArray));
+        this.packSingleJson(_.concat(uuidssArray));
         return packedAssets;
-    }
-
-    /**
-     * 压缩 uuid
-     * @param {*} uuid
-     * @returns
-     * @memberof AssetPacker
-     */
-    compressUuid(uuid) {
-        // 非调试模式下， uuid 需要压缩成短 uuid
-        if (this.options && !this.options.debug) {
-            uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
-        }
-        return uuid;
     }
 
     /**
@@ -84,16 +66,16 @@ class AssetPacker {
 
     /**
      * 打包一些单独的没有作为依赖项的资源 json 文件
-     * @param {string[]} uuids
      * @param {string[]} groupUuids
      * @memberof AssetPacker
      */
-    packSingleJson(uuids, groupUuids) {
+    packSingleJson(groupUuids) {
+        let uuids = _.difference(Object.keys(buildResult.assetCache), groupUuids);
         if (!uuids || uuids.length < 0) {
             return;
         }
         for (let uuid of uuids) {
-            if (groupUuids.includes(uuid) || !buildResult.jsonCache[uuid]) {
+            if (!buildResult.jsonCache[uuid]) {
                 return;
             }
             const data = JSON.stringify(buildResult.jsonCache[uuid], null, this.options.debug ? 0 : 2);
@@ -119,8 +101,11 @@ class AssetPacker {
     // 计算分组
     _computeGroup() {
         // 遍历 uuid 计算依赖分组
-        for (let uuid of buildResult.rootUuids) {
+        for (let uuid of Object.keys(buildResult.assetCache)) {
             let uuids = this._queryPackableDepends(uuid);
+            if (!uuids) {
+                continue;
+            }
             this.uuidDepends[uuid] = uuids;
             this.groups.push({
                 uuids,

@@ -9,7 +9,7 @@ const {promisify} = require('util');
 const _ = require('lodash');
 class AssetBuilder {
     init(type) {
-        buildResult.assetCache = this.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
+        buildResult.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
         this.result = {};
         this.hasBuild = {};
         this.shoudBuild = true;
@@ -33,19 +33,16 @@ class AssetBuilder {
             updateProgress('build assets...');
             let startTime = new Date().getTime();
             this.init(type);
-            if (!scenes) {
-                scenes = await requestToPackage('asset-db', 'query-assets', {
-                    type: 'scene',
-                });
+            if (!Array.isArray(scenes) || !scenes) {
+                buildResult.assetCache[scenes.uuid] = scenes;
+            } else {
+                for (let item of scenes) {
+                    buildResult.assetCache[item.uuid] = item;
+                }
             }
-            for (let item of scenes) {
-                this.assetCache[item.uuid] = item;
-                buildResult.rootUuids.push(item.uuid);
-            }
+
             this.result.scenes = [];
-            console.time('beginBuild');
             await this.beginBuild();
-            console.timeEnd('beginBuild');
             await this.resolveAsset();
             // 判断是否需要打包资源
             if (!this.shoudBuild) {
@@ -64,57 +61,70 @@ class AssetBuilder {
     // 整理依赖资源数据
     async resolveAsset() {
         console.time('resolveAsset');
-        let assets = {};
-        let internal = {};
-        for (let uuid of Object.keys(this.assetCache)) {
-            let asset = this.assetCache[uuid];
-            // 非调试模式下， uuid 需要压缩成短 uuid
-            if (this.options && !this.options.debug && this.shoudBuild) {
-                uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
-            }
-            if (asset.importer === 'scene') {
-                this.result.scenes.push({ url: asset.source, uuid});
-                continue;
-            }
-            // ********************* 资源类型 ********************** //
-            // subAssets 资源处理
-            if (!asset.source || Object.keys(asset.subAssets).length > 0) {
-                if (!asset.source) {
-                    asset.source = this.subAssetSource(asset.uuid);
-                    if (asset.source.startsWith('db://assets')) {
-                        assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
-                    } else if (asset.source.startsWith('db://internal')) {
-                        internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
-                    }
-                    buildResult.assetCache[asset.uuid] = asset;
-                }
-                if (Object.keys(asset.subAssets).length > 0) {
-                    for (let subAsset of Object.values(asset.subAssets)) {
-                        subAsset.fatherUuid = asset.uuid;
-                        buildResult.assetCache[subAsset.uuid] = subAsset;
-                        let uuid = subAsset.uuid;
-                        if (asset.source.startsWith('db://assets')) {
-                            assets[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
-                        } else if (asset.source.startsWith('db://internal')) {
-                            internal[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
-                        }
-                    }
-                }
-                continue;
-            }
-            if (asset.source.startsWith('db://assets')) {
-                assets[uuid] = [getAssetUrl(asset.source), asset.type];
-            } else if (asset.source.startsWith('db://internal')) {
-                internal[uuid] = [getAssetUrl(asset.source), asset.type];
-            }
-        }
+        this.result = {
+            scenes: [],
+            rawAssets: {
+                assets: {},
+                internal: {},
+            },
+        };
+        // for (let uuid of Object.keys(buildResult.assetCache)) {
+        //     let asset = buildResult.assetCache[uuid];
+        //     // ********************* 资源类型 ********************** //
+        //     await this.computeAssetInfo(asset);
+        // }
+        await Promise.all(Object.values(buildResult.assetCache).map(async (asset) => {
+            await this.computeAssetInfo(asset);
+        })).catch((err) => console.error(err));
         // 对 assets 资源进行排序，否则脚本动态加载贴图时，会贴图不正确
-        assets = this.sortObjectBy(assets, 0);
-        internal = this.sortObjectBy(internal, 0);
-        Object.assign(this.result, {
-            rawAssets: {assets, internal},
-        });
+        this.result.rawAssets.assets = this.sortObjectBy(this.result.rawAssets.assets, 0);
+        this.result.rawAssets.internal = this.sortObjectBy(this.result.rawAssets.internal, 0);
         console.timeEnd('resolveAsset');
+    }
+
+    // 根据 asset 信息生成对应 setting 需要的信息
+    async computeAssetInfo(asset) {
+        let assets = this.result.rawAssets.assets;
+        let internal = this.result.rawAssets.internal;
+        let uuid = asset.uuid;
+        if (asset.importer === 'scene') {
+            this.result.scenes.push({ url: asset.source, uuid: asset.uuid});
+            return;
+        }
+        // subAssets 资源处理
+        if (!asset.source || Object.keys(asset.subAssets).length > 0) {
+            if (!asset.source) {
+                asset.source = await this.subAssetSource(uuid);
+                if (!asset.source) {
+                    console.error(`can not find asset ${uuid} source`);
+                }
+                if (asset.source.startsWith('db://assets')) {
+                    assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                } else if (asset.source.startsWith('db://internal')) {
+                    internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                }
+                buildResult.assetCache[uuid] = asset;
+            }
+            if (Object.keys(asset.subAssets).length > 0) {
+                for (let subAsset of Object.values(asset.subAssets)) {
+                    subAsset.fatherUuid = uuid;
+                    // 注意此时更改 uuid 的顺序问题
+                    uuid = subAsset.uuid;
+                    buildResult.assetCache[uuid] = subAsset;
+                    if (asset.source.startsWith('db://assets')) {
+                        assets[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                    } else if (asset.source.startsWith('db://internal')) {
+                        internal[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                    }
+                }
+            }
+            return;
+        }
+        if (asset.source.startsWith('db://assets')) {
+            assets[uuid] = [getAssetUrl(asset.source), asset.type];
+        } else if (asset.source.startsWith('db://internal')) {
+            internal[uuid] = [getAssetUrl(asset.source), asset.type];
+        }
     }
 
     /**
@@ -147,14 +157,29 @@ class AssetBuilder {
      * 获取 subAsset 资源的 source 路径
      * @param {*} uuid
      */
-    subAssetSource(uuid) {
+    async subAssetSource(uuid) {
         const regex = /(.*)@/;
         const result = uuid.match(regex);
         if (!result) {
             return '';
         }
         let fatherUuid = result[1];
-        let cache = this.assetCache[fatherUuid].source;
+        // 如果没有缓存对应的 asset 对象，重新查询并缓存
+        if (!buildResult.assetCache[fatherUuid]) {
+            let asset ;
+            try {
+                asset = await requestToPackage('asset-db', 'query-asset-info', fatherUuid);
+            } catch (error) {
+                console.error(error);
+            }
+            if (!asset) {
+                console.error(`asset ${fatherUuid} is not find!`);
+                return;
+            }
+            await this.computeAssetInfo(asset);
+            buildResult.assetCache[fatherUuid] = asset;
+        }
+        let cache = buildResult.assetCache[fatherUuid].source;
         if (!cache) {
             return this.subAssetSource(fatherUuid);
         }
@@ -163,6 +188,7 @@ class AssetBuilder {
 
     beginBuild() {
         return new Promise(async (resolve) => {
+            console.time('beginBuild');
             // 查询资源库内位于 resource 文件内的资源
             let assetsList = await requestToPackage('asset-db', 'query-assets', {
                 pattern: 'db://assets/resources/**/*',
@@ -171,16 +197,16 @@ class AssetBuilder {
                 if (asset.isDirectory || asset.importer === 'database') {
                     continue;
                 }
-                this.assetCache[asset.uuid] = asset;
-                buildResult.rootUuids.push(asset.uuid);
+                buildResult.assetCache[asset.uuid] = asset;
             }
-            console.time('buildAsset');
             // 并并执行依赖查找
-            Promise.all(Object.keys(this.assetCache).map(async (uuid) => {
-                await this.buildAsset(this.assetCache[uuid]);
+            Promise.all(Object.keys(buildResult.assetCache).map(async (uuid) => {
+                await this.buildAsset(buildResult.assetCache[uuid]);
             })).then(() => {
-                console.timeEnd('buildAsset');
+                console.timeEnd('beginBuild');
                 resolve();
+            }).catch((err) => {
+                console.error(err);
             });
         });
     }
@@ -198,9 +224,12 @@ class AssetBuilder {
         this.hasBuild[asset.uuid] = true;
         if (!asset.library) {
             asset = await requestToPackage('asset-db', 'query-asset-info', asset.uuid);
-            this.assetCache[asset.uuid] = asset;
+            if (!asset) {
+                return;
+            }
+            buildResult.assetCache[asset.uuid] = asset;
         }
-        let library = this.assetCache[asset.uuid].library ;
+        let library = buildResult.assetCache[asset.uuid].library ;
         // 不存在对应序列化 json 的资源，不需要去做反序列化操作，例如 fbx
         if (!library['.json']) {
             return;
@@ -209,27 +238,36 @@ class AssetBuilder {
         const deserializeDetails = new cc.deserialize.Details();
         // deatil 里面的数组分别一一对应，并且指向 asset 依赖资源的对象，不可随意更改/排序
         deserializeDetails.reset();
+        if (!this.MissingClass) {
+            this.MissingClass = Editor.require('app://editor/page/scene-utils/missing-class-reporter').MissingClass;
+        }
+        this.MissingClass.hasMissingClass = false;
         let deseriAsset = cc.deserialize(json, deserializeDetails, {
             createAssetRefs: true,
             ignoreEditorOnly: true,
+            classFinder: this.MissingClass.classFinder,
         });
+        if (this.MissingClass.hasMissingClass) {
+            this.MissingClass.reportMissingClass(asset);
+            console.error(`Resources in ${asset.uuid} are missing ,please check again!`);
+        }
         deseriAsset._uuid = asset.uuid;
         // 预览时只需找出依赖的资源，无需缓存 asset
+        // 检查以及查找对应资源，并返回给对应 asset 数据
+        deserializeDetails.assignAssetsBy((uuid) => {
+            var exists = buildResult.assetCache[uuid];
+            if (exists === undefined) {
+                exists = true;
+            }
+            if (exists) {
+                return Editor.serialize.asAsset(uuid);
+            } else {
+                // remove deleted asset reference
+                // if is RawAsset, it would also be ignored in serializer
+                return null;
+            }
+        });
         if (this.shoudBuild) {
-            // 检查以及查找对应资源，并返回给对应 asset 数据
-            deserializeDetails.assignAssetsBy((uuid) => {
-                var exists = this.assetCache[uuid];
-                if (exists === undefined) {
-                    exists = true;
-                }
-                if (exists) {
-                    return Editor.serialize.asAsset(uuid);
-                } else {
-                    // remove deleted asset reference
-                    // if is RawAsset, it would also be ignored in serializer
-                    return null;
-                }
-            });
             await this.compress(deseriAsset);
         }
         // 将资源对应的依赖资源加入构建队列，并递归查询依赖
@@ -275,14 +313,14 @@ class AssetBuilder {
         // todo 暂时写死访问不到 source 无法取后缀名，就使用 .json
         if (assetInfo.source) {
             extName = extname(assetInfo.source);
-        } else if (assetInfo.library && !(asset instanceof cc.Texture2D)) {
+        } else if (assetInfo.library && !(asset instanceof cc.ImageAsset)) {
             for (let extname of Object.keys(assetInfo.library)) {
                 if (extname === '.json') {
                     continue;
                 }
                 this.copyPaths.push({
                     src: assetInfo.library[extname],
-                    dest: join(this.paths.res, 'import', asset.nativeUrl),
+                    dest: join(this.paths.res, RAW_ASSET_DEST, asset.nativeUrl),
                 });
             }
             return;
@@ -293,7 +331,7 @@ class AssetBuilder {
         ensureDirSync(dirname(dest));
         if (asset instanceof cc.ImageAsset) {
             // 图片资源设置的压缩参数
-            let {platformSettings} = this.assetCache[asset._uuid];
+            let {platformSettings} = buildResult.assetCache[asset._uuid];
             // hack 临时测试压缩方法使用
             // platformSettings = {
             //     web: {
@@ -345,7 +383,7 @@ class AssetBuilder {
             Promise.all(Object.keys(this.compressImgTask).map(async (uuid) => {
                 let options = this.compressImgTask[uuid];
                 let suffix = await promisify(CompressTexture)(options);
-                let asset = this.assetCache[uuid];
+                let asset = buildResult.assetCache[uuid];
                 if (suffix.length > 0) {
                     asset._exportedExts = suffix;
                 }
@@ -383,4 +421,5 @@ class AssetBuilder {
         });
     }
 }
+
 module.exports = new AssetBuilder();

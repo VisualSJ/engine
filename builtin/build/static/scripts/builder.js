@@ -102,8 +102,9 @@ class Builder {
                 }
                 copyFileSync(src, dest);
             })
-        );
-        updateProgress('resolove static resource success', 5);
+        ).then(() => {
+            updateProgress('resolove static resource success', 5);
+        });
     }
 
     // 构建基础 index.html 模板部分的代码 5%
@@ -122,8 +123,13 @@ class Builder {
             data.webDebuggerSrc = './eruda.min.js';
             copySync(this._paths.webDebuggerSrc, join(this._paths.dest, data.webDebuggerSrc));
         }
+        // 先判断项目内是否有自定义模板
+        let destPath = join(this._paths.project, 'build-templates', options.platform, 'index.html');
+        if (!existsSync(destPath)) {
+            destPath = join(this._paths.tmplBase, options.platform, 'index.html');
+        }
         let content = ejs.render(
-            readFileSync(join(this._paths.tmplBase, options.platform, 'index.html'), 'utf8'),
+            readFileSync(destPath, 'utf8'),
             data
         );
         if (!options.debug) {
@@ -333,6 +339,7 @@ class Builder {
             let uuidCount = {};
 
             function addUuid(uuid) {
+                uuid = that.compressUuid(uuid);
                 var count = (uuidCount[uuid] || 0) + 1;
                 uuidCount[uuid] = count;
                 if (count >= 2 && !(uuid in uuidIndices)) {
@@ -375,7 +382,10 @@ class Builder {
 
             // sort by reference count
             uuids.sort((a, b) => uuidCount[b] - uuidCount[a]);
-            uuids.forEach((uuid, index) => (uuidIndices[uuid] = index));
+            uuids.forEach((uuid, index) => {
+                uuidIndices[uuid] = index;
+                // return that.compressUuid(uuid);
+            });
         }
         // 先计算收集超过使用超过 1 次的 uuid
         collectUuids();
@@ -389,6 +399,7 @@ class Builder {
             let newEntries = (newRawAssets[assetsType] = {});
             for (let uuid of Object.keys(originEntries)) {
                 const entry = originEntries[uuid];
+                uuid = that.compressUuid(uuid);
                 let index = uuidIndices[uuid];
                 if (index !== undefined) {
                     uuid = index;
@@ -406,6 +417,7 @@ class Builder {
         let scenes = settings.scenes;
         for (let i = 0; i < scenes.length; ++i) {
             let scene = scenes[i];
+            scene.uuid = that.compressUuid(scene.uuid);
             let uuidIndex = uuidIndices[scene.uuid];
             if (uuidIndex !== undefined) {
                 scene.uuid = uuidIndex;
@@ -416,6 +428,7 @@ class Builder {
         for (let key of Object.keys(packedAssets)) {
             let packedIds = packedAssets[key];
             for (let i = 0; i < packedIds.length; ++i) {
+                packedIds[i] = that.compressUuid(packedIds[i]);
                 let uuidIndex = uuidIndices[packedIds[i]];
                 if (uuidIndex !== undefined) {
                     packedIds[i] = uuidIndex;
@@ -427,6 +440,7 @@ class Builder {
             let md5AssetsMap = settings.md5AssetsMap;
             for (let md5Entries of md5AssetsMap) {
                 for (let i = 0; i < md5Entries.length; i += 2) {
+                    md5Entries[i] = that.compressUuid(md5Entries[i]);
                     let uuidIndex = uuidIndices[md5Entries[i]];
                     if (uuidIndex !== undefined) {
                         md5Entries[i] = uuidIndex;
@@ -467,6 +481,20 @@ class Builder {
         }
         this.saveSetting(settings, settingsInitFunction);
         return settings;
+    }
+
+    /**
+     * 压缩 uuid
+     * @param {string} uuid
+     * @returns
+     * @memberof Builder
+     */
+    compressUuid(uuid) {
+        // 非调试模式下， uuid 需要压缩成短 uuid
+        if (this._options && !this._options.debug) {
+            uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
+        }
+        return uuid;
     }
 
     /**
@@ -521,7 +549,7 @@ class Builder {
         let scripts = (await scriptBuilder.build(options.type)) || {};
         setting.packedAssets = {};
         setting.md5AssetsMap = {};
-        let assetBuilderResult = await assetBuilder.build(setting.scene, options.type);
+        let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, options.type);
         Object.assign(setting, assetBuilderResult, { scripts });
         buildResult.settings = setting;
         if (options.type === 'build-release') {
