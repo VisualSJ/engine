@@ -1,0 +1,73 @@
+
+<section class="tester">
+    <div class="toolbar">
+        <i
+            :title="t('auto_tooltip', language)"
+        >
+            <svg class="auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"
+                :active="auto"
+                @click="_onAutoClick($event)"
+            >
+                <path d="M152 416h-24.013l26.586-80.782H292.8L319.386 416H296c-8.837 0-16 7.163-16 16v32c0 8.837 7.163 16 16 16h136c8.837 0 16-7.163 16-16v-32c0-8.837-7.163-16-16-16h-26.739L275.495 42.746A16 16 0 0 0 260.382 32h-72.766a16 16 0 0 0-15.113 10.746L42.739 416H16c-8.837 0-16 7.163-16 16v32c0 8.837 7.163 16 16 16h136c8.837 0 16-7.163 16-16v-32c0-8.837-7.163-16-16-16zm64.353-271.778c4.348-15.216 6.61-28.156 7.586-34.644.839 6.521 2.939 19.476 7.727 34.706l41.335 124.006h-98.619l41.971-124.068z"></path>
+            </svg>
+        </i>
+        
+        <i
+            :title="t('play_tooltip', language)"
+        >
+            <svg class="play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"
+                :disabled="!package || !test || running"
+                @click="_onTestButtonClick($event)"
+            >
+                <path d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path>
+            </svg>
+        </i>
+
+        
+        <!-- <i
+            :title="t('pause_tooltip', language)"
+        >
+            <svg class="pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"
+                :disabled="!running"
+            >
+                <path d="M144 479H48c-26.5 0-48-21.5-48-48V79c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48zm304-48V79c0-26.5-21.5-48-48-48h-96c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h96c26.5 0 48-21.5 48-48z"></path>
+            </svg>
+        </i> -->
+    </div>
+
+    <div>
+        <span>Package: </span>
+        <ui-select
+            :value="package"
+            @confirm="_onPakcageConfirm($event)"
+        >
+            <option
+                v-for="item in packages"
+                :value="item.name"
+            >{{item.name}}</option>
+        </ui-select>
+    </div>
+
+    <div>
+        <span>Test: </span>
+        <ui-select
+            :disabled="auto"
+            :value="test"
+            @confirm="_onTestConfirm($event)"
+        >
+            <option
+                v-for="name in tests"
+                :value="name"
+            >{{name}}</option>
+        </ui-select>
+    </div>
+
+    <ul>
+        <li
+            v-for="item in logs"
+            :type="item.type"
+        >
+            <pre>{{item.message}}</pre>
+        </li>
+    </ul>
+</section>
