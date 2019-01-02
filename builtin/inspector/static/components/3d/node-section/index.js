@@ -33,7 +33,7 @@ exports.created = async function() {
         // this.userScripts = (userScripts || []).filter((item) => item.importer.includes('javascript'));
     } catch (err) {
         console.error(err);
-        this.userScripts = [];
+        this.components = [];
     }
 };
 
@@ -160,7 +160,8 @@ exports.methods = {
         }
 
         Editor.Menu.popup({
-            x, y,
+            x,
+            y,
             menu: translation(menu),
         });
     },
