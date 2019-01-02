@@ -10,7 +10,7 @@ let includeRE = /#include +<([\w-.]+)>/gm;
 let plainDefineRE = /#define\s+(\w+)\s+(.*)\n/g;
 let defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
 let whitespaces = /\s+/g;
-let ident = /^[_a-zA-Z]\w*$/;
+let ident = /[_a-zA-Z]\w*/;
 let extensionRE = /(?:GL_)?(\w+)/;
 let comparators = /^[<=>]+$/;
 let ifprocessor = /#(el)?if/;

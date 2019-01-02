@@ -51,7 +51,8 @@ void computeVertPos(inout vec4 pos, vec2 vertOffset
 vec2 computeUV(float frameIndex, vec2 vertIndex, vec2 frameTile) {
   vec2 aniUV = vec2(0, floor(frameIndex * frameTile.y));
   aniUV.x = floor(frameIndex * frameTile.x * frameTile.y - aniUV.y * frameTile.x);
-  aniUV.y = frameTile.y - aniUV.y - 1.0;
+  // aniUV.y = frameTile.y - aniUV.y - 1.0;
+  vertIndex.x = 1. - vertIndex.x;
   return (aniUV.xy + vertIndex) / vec2(frameTile.x, frameTile.y);
 }
 

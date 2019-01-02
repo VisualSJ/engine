@@ -9,7 +9,7 @@ attribute vec3 a_color0; // velocity.x, velocity.y, velocity.z, scale
 
 #include <cc-local>
 
-void lpvs_main() {
+vec4 lpvs_main() {
   vec4 pos = vec4(a_position, 1);
 #if USE_STRETCHED_BILLBOARD
   vec4 velocity = vec4(a_color0.xyz, 0);
@@ -52,5 +52,5 @@ void lpvs_main() {
 
   color = a_color;
 
-  gl_Position = pos;
+  return pos;
 }
