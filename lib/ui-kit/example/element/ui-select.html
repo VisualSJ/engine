@@ -24,13 +24,14 @@
         <option value="1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit, sint.</option>
         <option value="2">Sapiente ratione esse voluptatibus repudiandae illo numquam quas nulla id.</option>
         <option value="3">Quidem laudantium officiis eaque quas? Repudiandae iusto expedita ad totam.</option>
-        <option value="4">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
+        <option value="4"  id="selectTestOption">Praesentium adipisci, sapiente distinctio ex unde tenetur doloremque mollitia iusto!</option>
         <option value="5">Debitis temporibus animi reiciendis officiis eaque. Similique eius odit illum!</option>
     </ui-select>
     <br>
     <p>测试动态增加或移除option</p>
     <button id="addOption">添加option节点</button>
     <button id="deleteOption">删除最后一个option节点</button>
+    <button id="modifyOption">更改节点的文本</button>
 </section>
 <section class="section">
     <h1>disabled</h1>
@@ -55,12 +56,14 @@
 
 <script>    
     (function () {
-        let $selectTest = document.getElementById('selectTest');
-        let $testEvent = document.getElementById('testEvent');
-        let $selectValue = document.getElementById('selectValue');
-        let $addBtn = document.getElementById('addOption');
-        let $delBtn = document.getElementById('deleteOption');
-        let $showWrap = document.getElementById('showWrap');
+        let $selectTest = $ID('selectTest');
+        let $testEvent = $ID('testEvent');
+        let $selectValue = $ID('selectValue');
+        let $addBtn = $ID('addOption');
+        let $delBtn = $ID('deleteOption');
+        let $modifyBtn = $ID('modifyOption');
+        let $showWrap = $ID('showWrap');
+        let $selectTestOption = $ID('selectTestOption');
         $showWrap.innerHTML = $selectTest.value;
 
         let eventArr = ['confirm', 'change', 'cancel'];
@@ -77,6 +80,11 @@
             console.log($selectTest.lastElementChild);
             $selectTest.removeChild($selectTest.lastElementChild);
         })
-
+        $modifyBtn.addEventListener('click', () => {
+            $selectTestOption.innerHTML = 'textxtxttxtxtxtxtxxtxt'
+        })
+        $selectTestOption.addEventListener('DOMCharacterDataModified',() => {
+            console.log('option 发生修改')
+        })
     })();
 </script>

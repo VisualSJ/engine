@@ -99,6 +99,14 @@
         event.preventDefault();
     });
 
+    function $ID(id) {
+        return document.getElementById(id);
+    }
+
+    function $CLASS(name) {
+        return document.getElementsByClassName(name);
+    }
+
     // 基础事件的添加处理
     function addNormalEvent(eventArr, element, showEvent, showValue) {
         for (let i = 0, len = eventArr.length; i < len; i++) {
