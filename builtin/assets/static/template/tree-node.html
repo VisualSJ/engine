@@ -17,6 +17,7 @@
     <i class="arrow i-arrow-right"
         v-if="asset.isParent" 
         @click.stop="toggle($event, asset)"
+        @dblclick.stop
     ></i>
     
     <i class="folder"

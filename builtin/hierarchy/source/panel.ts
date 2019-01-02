@@ -215,6 +215,20 @@ export const messages = {
     intoTwinkle(uuid: string) {
         vm.intoTwinkle(uuid);
     },
+
+    /**
+     * 给编辑器顶层菜单 edit 的复制接口
+     */
+    copy() {
+        panel.copy();
+    },
+
+    /**
+     * 给编辑器顶层菜单 edit 的粘贴接口
+     */
+    paste() {
+        panel.paste();
+    },
 };
 
 export async function ready() {
