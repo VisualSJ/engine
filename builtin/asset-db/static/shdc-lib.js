@@ -7,6 +7,7 @@ const { sha3_224 } = require('js-sha3');
 const HJSON = require('hjson');
 
 let includeRE = /#include +<([\w-.]+)>/gm;
+let plainDefineRE = /#define\s+(\w+)\s+(.*)\n/g;
 let defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
 let whitespaces = /\s+/g;
 let ident = /^[_a-zA-Z]\w*$/;
@@ -17,32 +18,37 @@ let rangePragma = /range\(([\d.,\s]+)\)\s(\w+)/;
 let defaultPragma = /default\(([\d.,]+)\)/;
 let namePragma = /name\(([^)]+)\)/;
 let precision = /(low|medium|high)p/;
-let builtins = /^_\w+$/;
+let arithmetics = /^[\d\+\-*/%\s]+$/;
+let builtins = /^cc\w+$/i;
+
+let effectName = '', shaderName = '';
+function warn(msg, ln) { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
+function error(msg) { console.error(`${effectName} - ${shaderName}: ${msg}`); }
 
 function convertType(t) { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 
-function unwindIncludes(str, chunks) {
-  function replace(match, include) {
+function unwindIncludes(str, chunks, record = {}) {
+  function replace(_, include) {
+    if (record[include]) return '';
+    record[include] = true;
     let replace = chunks[include];
     if (replace === undefined) {
-      console.error(`can not resolve #include <${include}>`);
+      error(`can not resolve #include <${include}>`);
+      return '';
     }
-    return unwindIncludes(replace, chunks);
+    return unwindIncludes(replace, chunks, record);
   }
   return str.replace(includeRE, replace);
 }
 
+let commentExcludeMap = { "block-comment": true, "line-comment": true, "eof": true };
 function glslStripComment(code) {
   let tokens = tokenizer(code);
-
   let result = '';
   for (let i = 0; i < tokens.length; ++i) {
     let t = tokens[i];
-    if (t.type != 'block-comment' && t.type != 'line-comment' && t.type != 'eof') {
-      result += t.data;
-    }
+    if (!commentExcludeMap[t.type]) result += t.data;
   }
-
   return result;
 }
 
@@ -125,50 +131,95 @@ function extractDefines(tokens, defines, cache) {
   }
 }
 
-function extractParams(tokens, cache, uniforms, attributes, extensions) {
-  let getDefs = line => {
+let extractParams = (function() {
+  function getDefs(line, cache) {
     let idx = cache.lines.findIndex(i => i > line);
     return cache[cache.lines[idx - 1]] || [];
-  };
-  for (let i = 0; i < tokens.length; i++) {
-    let t = tokens[i], tp = t.type, str = t.data, dest;
-    if (tp === 'keyword' && str === 'uniform') dest = uniforms;
-    else if (tp === 'keyword' && str === 'attribute') dest = attributes;
-    else if (tp === 'preprocessor' && str.startsWith('#extension')) dest = extensions;
-    else continue;
-    let defines = getDefs(t.line), param = {};
-    if (dest === uniforms && builtins.test(tokens[i+4].data)) continue;
-    if (dest === extensions) {
-      if (defines.length !== 1) console.warn('extensions must be under controll of exactly 1 define');
-      param.name = extensionRE.exec(str.split(whitespaces)[1])[1];
-      param.define = defines[0];
-      dest.push(param);
-      continue;
-    } else { // uniforms and attributes
-      let offset = precision.exec(tokens[i+2].data) ? 4 : 2;
-      param.name = tokens[i+offset+2].data;
-      param.type = convertType(tokens[i+offset].data);
-      let tags = cache[t.line - 1];
-      if (tags && tags[0] && tags[0][0] === '#') { // tags
-        let mc = defaultPragma.exec(tags.join(''));
-        if (mc && mc[1].length > 0) {
-          mc = JSON.parse(`[${mc[1]}]`);
-          if (mc.length === 1) param.value = mc[0];
-          else param.value = mc;
+  }
+  // tags: [ '#color', '#property', '#default(0.2, 0.3, 0.4, 1.0)', '#name(Diffuse Color)' ]
+  // tokens (from ith): [ ..., ('highp', ' ',) 'vec4', ' ', 'color', ('[', '4', ']',) ... ]
+  function extractInfo(tokens, i, cache) {
+    let param = {};
+    let offset = precision.exec(tokens[i].data) ? 2 : 0;
+    param.name = tokens[i+offset+2].data;
+    param.type = convertType(tokens[i+offset].data);
+    // handle array type
+    if (tokens[offset = nextWord(tokens, i+offset+2)].data === '[') {
+      let expr = '', end = offset;
+      while (tokens[++end].data !== ']') expr += tokens[end].data;
+      try { if (arithmetics.test(expr)) param.length = eval(expr); else throw expr; }
+      catch (e) { param.length = 1; warn(`${param.name}: illegal array length: ${e}`, tokens[offset].line); }
+    }
+    let tags = cache[tokens[i].line - 1];
+    if (!tags || !tags[0] || tags[0][0] !== '#') return param;
+    let mc = defaultPragma.exec(tags.join(''));
+    if (mc && mc[1].length > 0) {
+      mc = JSON.parse(`[${mc[1]}]`);
+      if (mc.length === 1) param.value = mc[0];
+      else param.value = mc;
+    }
+    mc = namePragma.exec(tags.join(' '));
+    if (mc) param.displayName = mc[1];
+    for (let j = 0; j < tags.length; j++) {
+      let tag = tags[j];
+      if (tag === '#color') param.type = convertType(param.type);
+      else if (tag === '#property') param.property = true;
+    }
+    return param;
+  }
+  let exMap = { whitespace: true };
+  function nextWord(tokens, i) { while (exMap[tokens[++i].type]); return i; }
+  function nextSemicolon(tokens, i, check = () => {}) { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
+  return function(tokens, cache, uniforms, attributes, extensions) {
+    for (let i = 0; i < tokens.length; i++) {
+      let t = tokens[i], str = t.data, dest;
+      if (str === 'uniform') dest = uniforms;
+      else if (str === 'attribute') dest = attributes;
+      else if (str.startsWith('#extension')) dest = extensions;
+      else continue;
+      let defines = getDefs(t.line, cache), param = {};
+      if (dest === extensions) { // extensions
+        if (defines.length !== 1) warn('extensions must be under controll of exactly 1 define', t.line);
+        param.name = extensionRE.exec(str.split(whitespaces)[1])[1];
+        param.define = defines[0];
+        dest.push(param);
+        continue;
+      }
+      // uniforms and attributes
+      let idx = nextWord(tokens, i+2);
+      if (tokens[idx].data !== '{') { // plain types
+        if (dest === uniforms && !/sampler/.test(tokens[i+2].data))
+          warn('none-sampler uniforms must be declared in blocks.', t.line);
+        param = extractInfo(tokens, i+2, cache);
+      } else { // blocks
+        param.blockName = tokens[i+2].data;
+        param.members = [];
+        while (tokens[idx = nextWord(tokens, idx)].data !== '}') {
+          param.members.push(extractInfo(tokens, idx, cache));
+          idx = nextSemicolon(tokens, idx);
         }
-        mc = namePragma.exec(tags.join(' '));
-        if (mc) param.displayName = mc[1];
-        for (let j = 0; j < tags.length; j++) {
-          let tag = tags[j];
-          if (tag === '#color') param.type = convertType(param.type);
-          else if (tag === '#property') param.property = true;
+        // check for preprocessors inside blocks
+        let pre = cache.lines.find(l => l >= tokens[i].line && l < tokens[idx].line)
+        if (pre) warn(`${param.blockName}: no preprocessors allowed inside uniform blocks!`, pre);
+        // save necessary info for later glsl 1 conversion
+        cache.blocksInfo.push({ beg: tokens[i].position, end: tokens[nextWord(tokens, idx)].position, blockName: param.blockName });
+        // strip out blocks for parser to work
+        tokens.splice(i, idx - i + 2); i--;
+        // check for duplicates
+        let item = dest.find(i => i.blockName === param.blockName);
+        if (item) {
+          if (JSON.stringify(item.members) !== JSON.stringify(param.members))
+            warn('different UBO using the same name!', t.line);
+          param = null;
         }
       }
+      if (param) {
+        param.defines = defines;
+        dest.push(param);
+      }
     }
-    param.defines = defines;
-    dest.push(param);
   }
-}
+})();
 
 let expandStructMacro = (function() {
   function matchParenthesisPair(string, startIdx) {
@@ -260,11 +311,41 @@ let expandStructMacro = (function() {
   };
 })();
 
+let replacePlainDefines = function(code) {
+  let defMap = {};
+  let defCap = plainDefineRE.exec(code);
+  while (defCap != null) {
+    defMap[defCap[1]] = { beg: defCap.index, end: defCap.index + defCap[0].length, value: defCap[2] };
+    defCap = plainDefineRE.exec(code);
+  }
+  let regex = '';
+  for (let key in defMap) regex += `${key}|`;
+  if (regex.length) code = code.replace(new RegExp(regex.slice(0, -1), 'g') , (m, offset) => {
+    let info = defMap[m];
+    return (offset < info.beg || offset > info.end) ? info.value : m;
+  });
+  return code;
+};
+
+let glsl300to100 = function(code, uniforms, cache) {
+  let res = '', idx = 0;
+  cache.blocksInfo.forEach(i => {
+    res += code.slice(idx, i.beg);
+    uniforms.find(u => u.blockName === i.blockName).members.forEach(m => {
+      let type = mappings.invTypeParams[m.type];
+      res += `  uniform ${type} ${m.name}${m.length ? `[${m.length}]` : ''};\n`;
+    });
+    idx = i.end + (code[i.end] === ';');
+  });
+  res += code.slice(idx);
+  return res;
+}
+
 let getChunkByName = (function() {
   let entryRE = /([\w-]+)(?::(\w+))?/;
   return function(name, cache) {
     let entryCap = entryRE.exec(name), entry = entryCap[2] || 'main', content = cache[entryCap[1]];
-    if (!content) { console.error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
+    if (!content) { error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
     return [ content, entry ];
   };
 })();
@@ -273,43 +354,61 @@ let wrapEntry = (function() {
   let wrapperFactory = (vert, fn) => `\nvoid main() { ${vert ? 'gl_Position' : 'gl_FragColor'} = ${fn}(); }\n`;
   return function(content, name, entry, ast, isVert) {
     if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
-      console.error(`entry function ${name} not found`);
+      error(`entry function ${name} not found`);
     return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
   };
 })();
 
-let buildShader = function(vertName, fragName, cache) {
-  let [ vert, vEntry ] = getChunkByName(vertName, cache, true);
-  let [ frag, fEntry ] = getChunkByName(fragName, cache);
+let buildShader = (function() {
+  let createCache = () => { return { lines: [], blocksInfo: [] }; };
+  return function(vertName, fragName, chunks) {
+    let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
+    let [ frag, fEntry ] = getChunkByName(fragName, chunks);
 
-  let defines = [], defCache = { lines: [] }, tokens, ast;
-  let uniforms = [], attributes = [], extensions = [];
+    let defines = [], cache = createCache(), tokens, ast;
+    let uniforms = [], attributes = [], extensions = [];
 
-  vert = glslStripComment(vert);
-  vert = unwindIncludes(vert, cache);
-  vert = expandStructMacro(vert);
-  tokens = tokenizer(vert);
-  extractDefines(tokens, defines, defCache);
-  extractParams(tokens, defCache, uniforms, attributes, extensions);
-  try {
-    ast = parser(tokens);
-    vert = wrapEntry(vert, vertName, vEntry, ast, true);
-  } catch (e) { console.error(`parse ${vertName} failed: ${e}`); }
+    shaderName = vertName;
+    vert = glslStripComment(vert);
+    vert = unwindIncludes(vert, chunks);
+    vert = expandStructMacro(vert);
+    vert = replacePlainDefines(vert);
+    tokens = tokenizer(vert);
+    extractDefines(tokens, defines, cache);
+    extractParams(tokens, cache, uniforms, attributes, extensions);
+    try {
+      ast = parser(tokens);
+      vert = wrapEntry(vert, vertName, vEntry, ast, true);
+    } catch (e) { error(`parse ${vertName} failed: ${e}`); }
+    let vert1 = glsl300to100(vert, uniforms, cache);
 
-  defCache = { lines: [] };
-  frag = glslStripComment(frag);
-  frag = unwindIncludes(frag, cache);
-  frag = expandStructMacro(frag);
-  tokens = tokenizer(frag);
-  extractDefines(tokens, defines, defCache);
-  extractParams(tokens, defCache, uniforms, attributes, extensions);
-  try {
-    ast = parser(tokens);
-    frag = wrapEntry(frag, fragName, fEntry, ast);
-  } catch (e) { console.error(`parse ${fragName} failed: ${e}`); }
+    shaderName = fragName;
+    cache = createCache();
+    frag = glslStripComment(frag);
+    frag = unwindIncludes(frag, chunks);
+    frag = expandStructMacro(frag);
+    frag = replacePlainDefines(frag);
+    tokens = tokenizer(frag);
+    extractDefines(tokens, defines, cache);
+    extractParams(tokens, cache, uniforms, attributes, extensions);
+    try {
+      ast = parser(tokens);
+      frag = wrapEntry(frag, fragName, fEntry, ast);
+    } catch (e) { error(`parse ${fragName} failed: ${e}`); }
+    let frag1 = glsl300to100(frag, uniforms, cache);
 
-  return { vert, frag, defines, uniforms, attributes, extensions };
-};
+    // handle builtin uniforms and bindings
+    let cclocals = false;
+    uniforms = uniforms.filter(u => {
+      let bt = builtins.test(u.blockName || u.name);
+      if (bt && u.blockName === 'CCLocal') cclocals = true;
+      return !bt;
+    });
+    uniforms.forEach((u, i) => u.binding = i);
+
+    return { vert1, frag1, vert, frag, cclocals, defines, uniforms, attributes, extensions };
+  };
+})();
 
 // ==================
 // effects
@@ -407,7 +506,7 @@ let addChunksCache = function(chunksDir) {
 
 let buildEffect = function (name, content) {
   let { effect, templates } = parseEffect(content);
-  effect = buildEffectJSON(effect); effect.name = name;
+  effect = buildEffectJSON(effect); effectName = effect.name = name;
   Object.assign(templates, chunksCache);
   let shaders = effect.shaders = [];
   for (let j = 0; j < effect.techniques.length; ++j) {

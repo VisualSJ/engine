@@ -22,7 +22,25 @@ const typeParams = {
   SAMPLER2D: rendererEnums.PARAM_TEXTURE_2D,
   SAMPLERCUBE: rendererEnums.PARAM_TEXTURE_CUBE,
   [rendererEnums.PARAM_FLOAT3]: rendererEnums.PARAM_COLOR3,
-  [rendererEnums.PARAM_FLOAT4]: rendererEnums.PARAM_COLOR4
+  [rendererEnums.PARAM_FLOAT4]: rendererEnums.PARAM_COLOR4,
+};
+
+const invTypeParams = {
+  [rendererEnums.PARAM_INT]: 'int',
+  [rendererEnums.PARAM_INT2]: 'ivec2',
+  [rendererEnums.PARAM_INT3]: 'ivec3',
+  [rendererEnums.PARAM_INT4]: 'ivec4',
+  [rendererEnums.PARAM_FLOAT]: 'float',
+  [rendererEnums.PARAM_FLOAT2]: 'vec2',
+  [rendererEnums.PARAM_FLOAT3]: 'vec3',
+  [rendererEnums.PARAM_FLOAT4]: 'vec4',
+  [rendererEnums.PARAM_COLOR3]: 'vec3',
+  [rendererEnums.PARAM_COLOR4]: 'vec4',
+  [rendererEnums.PARAM_MAT2]: 'mat2',
+  [rendererEnums.PARAM_MAT3]: 'mat3',
+  [rendererEnums.PARAM_MAT4]: 'mat4',
+  [rendererEnums.PARAM_TEXTURE_2D]: 'sampler2D',
+  [rendererEnums.PARAM_TEXTURE_CUBE]: 'samplerCube'
 };
 
 const passParams = {
@@ -71,6 +89,7 @@ Object.assign(passParams, PassStage);
 
 let mappings = {
   typeParams,
+  invTypeParams,
   passParams,
   RenderQueue
 };

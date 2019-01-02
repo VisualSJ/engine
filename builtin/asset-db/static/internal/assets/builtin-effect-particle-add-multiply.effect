@@ -57,7 +57,9 @@
 
 %% particle-add-multiply-fs {
   uniform sampler2D mainTexture;
-  uniform vec4 tintColor;
+  uniform FragConstants {
+    vec4 tintColor;
+  };
 
   varying vec2 uv;
   varying vec4 color;
