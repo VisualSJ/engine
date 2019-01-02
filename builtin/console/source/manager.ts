@@ -56,7 +56,7 @@ exports.addItem = (item: any) => {
     newItem.type = item.type;
     newItem.stack = item.stack.filter((d: any) => d); // 清除 stack 里的空值假值
     newItem.rows = messageArr.length + newItem.stack.length;
-    newItem.title = messageArr[0];
+    newItem.title = messageArr[0] || '';
     newItem.content = messageArr.splice(1);
     newItem.fold = true;
     newItem.count = 1;

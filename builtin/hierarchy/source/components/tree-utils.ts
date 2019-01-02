@@ -46,7 +46,15 @@ exports.canNotDragNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotPasteNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node) || Object.keys(db.vm.copyNodesDumpdata).length === 0;
+    return exports.canNotDeleteNode(node) || exports.hasEmptyCopyNodes();
+};
+
+/**
+ * 是否有已复制的节点
+ * @param node
+ */
+exports.hasEmptyCopyNodes = () => {
+    return Object.keys(db.vm.copyNodesDumpdata).length === 0;
 };
 
 /**

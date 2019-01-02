@@ -2,6 +2,7 @@
 import { join } from 'path';
 const { shell } = require('electron');
 const db = require('./panel-db');
+const utils = require('./tree-utils');
 
 exports.popupNew = (event: Event) => {
     Editor.Menu.popup({
@@ -33,11 +34,17 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
                         click() {
-                            // @ts-ignore
                             db.vm.$refs.tree.ipcAdd({ type: 'node' });
                         },
                     },
                 ],
+            },
+            {
+                label: Editor.I18n.t('hierarchy.menu.paste'),
+                enabled: !utils.hasEmptyCopyNodes(),
+                click() {
+                    db.vm.$refs.tree.paste();
+                },
             },
         ],
     });

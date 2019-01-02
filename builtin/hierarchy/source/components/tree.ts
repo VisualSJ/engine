@@ -274,10 +274,15 @@ export const methods = {
      */
     async add(uuid: string) {
         await db.addNode(uuid);
-        vm.changeData();
-        vm.$nextTick(() => {
-            utils.scrollIntoView(uuid);
-        });
+
+        // 这个定时是为了减少批量新增（可能来自复制）带来的页面闪烁的问题
+        clearTimeout(vm.addTimer);
+        vm.addTimer = setTimeout(() => {
+            vm.changeData();
+            vm.$nextTick(() => {
+                utils.scrollIntoView(uuid);
+            });
+        }, 150);
     },
 
     /**
@@ -482,10 +487,6 @@ export const methods = {
      * 空白处点击，取消选中
      */
     click(event: Event) {
-        // @ts-ignore
-        if (this.state !== '') {
-            return;
-        }
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
     },
 
