@@ -25,13 +25,14 @@
 %% sky-vs {
   attribute vec3 a_position;
 
-  #include <cc-global>
+  uniform mat4 _view;
+  uniform mat4 _proj;
 
   varying vec3 viewDir;
 
   void main() {
-    mat4 rotView = mat4(mat3(cc_matView));
-    vec4 clipPos = cc_matProj * rotView * vec4(a_position, 1.0);
+    mat4 rotView = mat4(mat3(_view));
+    vec4 clipPos = _proj * rotView * vec4(a_position, 1.0);
 
     gl_Position = clipPos.xyww;
     viewDir = a_position;

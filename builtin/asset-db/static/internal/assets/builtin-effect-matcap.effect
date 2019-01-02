@@ -38,18 +38,17 @@
 %% matcap-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
-
-  #include <cc-local>
-  #include <cc-global>
-
-  varying vec2 matcapUV;
+  uniform   mat4 _model;
+  uniform   mat4 _viewProj;
+  uniform   mat3 _normalMatrix;
+  varying   vec2 matcapUV;
 
   #if USE_MAIN_TEX
     attribute vec2 a_uv0;
-    varying vec2 uv0;
+    varying   vec2 uv0;
   #endif
 
-  #if CC_USE_SKINNING
+  #if _USE_SKINNING
     #include <skinning>
   #endif
 
@@ -57,11 +56,11 @@
     vec4 pos = vec4(a_position, 1);
     vec4 normal = vec4(a_normal, 0);
 
-    #if CC_USE_SKINNING
+    #if _USE_SKINNING
       skinVertex(pos, normal);
     #endif
 
-    pos = cc_matViewProj * cc_matWorld * pos;
+    pos = _viewProj * _model * pos;
     normal = vec4(normalize(_normalMatrix * normal.xyz), 0);
     gl_Position = pos;
 
@@ -76,11 +75,8 @@
 
 %% matcap-fs {
   uniform sampler2D matcapTex;
-  uniform FragConstants {
-    float colorFactor;
-    vec4 color;
-  };
-
+  uniform float colorFactor;
+  uniform vec4 color;
   varying vec2 matcapUV;
 
   #if USE_MAIN_TEX

@@ -11,16 +11,93 @@
 #include <common>
 #include <gamma-correction>
 
+struct LightInfo {
+  vec3 lightDir;
+  vec3 radiance;
+};
 
-#include <cc-global>
-#include <lights>
+#if _NUM_DIR_LIGHTS > 0
+  #pragma for id in range(0, _NUM_DIR_LIGHTS)
+    uniform vec3 _dir_light{id}_direction;
+    uniform vec3 _dir_light{id}_color;
+  #pragma endFor
+#endif
+
+#if _NUM_POINT_LIGHTS > 0
+  #pragma for id in range(0, _NUM_POINT_LIGHTS)
+    uniform vec3 _point_light{id}_position;
+    uniform vec3 _point_light{id}_color;
+    uniform float _point_light{id}_range;
+  #pragma endFor
+#endif
+
+#if _NUM_SPOT_LIGHTS > 0
+  #pragma for id in range(0, _NUM_SPOT_LIGHTS)
+    uniform vec3 _spot_light{id}_position;
+    uniform vec3 _spot_light{id}_direction;
+    uniform vec3 _spot_light{id}_color;
+    uniform vec2 _spot_light{id}_spot;
+    uniform float _spot_light{id}_range;
+  #pragma endFor
+#endif
+
+// directional light
+LightInfo computeDirectionalLighting(
+  vec3 lightDirection,
+  vec3 lightColor
+) {
+  LightInfo ret;
+  ret.lightDir = -normalize(lightDirection);
+  ret.radiance = lightColor;
+
+  return ret;
+}
+
+// point light
+LightInfo computePointLighting(
+  vec3 lightPosition,
+  vec3 positionW,
+  vec3 lightColor,
+  float lightRange
+) {
+  LightInfo ret;
+  vec3 lightDir = lightPosition - positionW;
+  float attenuation = max(0.0, 1.0 - length(lightDir) / lightRange);
+  ret.lightDir = normalize(lightDir);
+  ret.radiance = lightColor * attenuation;
+
+  return ret;
+}
+
+// spot light
+LightInfo computeSpotLighting(
+  vec3 lightPosition,
+  vec3 positionW,
+  vec3 lightDirection,
+  vec3 lightColor,
+  vec2 lightSpot,
+  float lightRange
+) {
+  LightInfo ret;
+  vec3 lightDir = lightPosition - positionW;
+  float attenuation = max(0., 1.0 - length(lightDir) / lightRange);
+  float cosConeAngle = max(0., dot(lightDirection, -lightDir));
+  cosConeAngle = cosConeAngle < lightSpot.x ? 0.0 : cosConeAngle;
+  cosConeAngle = pow(cosConeAngle,lightSpot.y);
+  ret.lightDir = normalize(lightDir);
+  ret.radiance = lightColor * attenuation * cosConeAngle;
+
+  return ret;
+}
 
 #include <unpack>
 
-#if CC_USE_SHADOW_MAP
+#if _USE_SHADOW_MAP
   #include <packing>
   #include <shadow-mapping>
 #endif
+
+uniform vec3 _eye;
 
 varying vec3 pos_w;
 varying vec3 normal_w;
@@ -33,19 +110,13 @@ varying vec3 normal_w;
   uniform samplerCube diffuseEnvTexture;
   uniform samplerCube specularEnvTexture;
   uniform sampler2D brdfLUT;
+  #if USE_TEX_LOD
+    uniform float maxReflectionLod;
+  #endif
 #endif
 
-uniform Constants {
-  vec4 albedo;
-  float metallic;
-  float roughness;
-  float ao;
-  float maxReflectionLod;
-  vec3 emissive;
-  float alphaTestThreshold;
-};
-
 // material parameters
+uniform vec4 albedo;
 #if USE_ALBEDO_TEXTURE
   uniform sampler2D albedo_texture;
 #endif
@@ -54,20 +125,30 @@ uniform Constants {
   uniform sampler2D mra_texture;
 #endif
 
+uniform float metallic;
 #if USE_METALLIC_TEXTURE
   uniform sampler2D metallic_texture;
 #endif
 
+uniform float roughness;
 #if USE_ROUGHNESS_TEXTURE
   uniform sampler2D roughness_texture;
 #endif
 
+uniform float ao;
 #if USE_AO_TEXTURE
   uniform sampler2D ao_texture;
 #endif
 
-#if USE_EMISSIVE && USE_EMISSIVE_TEXTURE
-  uniform sampler2D emissive_texture;
+#if USE_EMISSIVE
+  uniform vec3 emissive;
+  #if USE_EMISSIVE_TEXTURE
+    uniform sampler2D emissive_texture;
+  #endif
+#endif
+
+#if USE_ALPHA_TEST
+  uniform float alphaTestThreshold;
 #endif
 
 #if USE_NORMAL_TEXTURE
@@ -88,7 +169,7 @@ uniform Constants {
   }
 #endif
 
-// Cook-Torrance BRDF cc_matWorld
+// Cook-Torrance BRDF _model
 // D() Normal distribution function (Trowbridge-Reitz GGX)
 // https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
 float distributionGGX(vec3 N, vec3 H, float roughness) {
@@ -193,7 +274,7 @@ vec4 frag() {
   #if USE_NORMAL_TEXTURE
     N = getNormalFromTexture();
   #endif
-  vec3 V = normalize(cc_cameraPos - pos_w);
+  vec3 V = normalize(_eye - pos_w);
 
   // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
   // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -203,18 +284,30 @@ vec4 frag() {
   // reflection
   vec3 Lo = vec3(0.0);
 
-  for (int i = 0; i < CC_NUM_DIR_LIGHTS; i++) {
-    LightInfo info = computeDirectionalLighting(cc_dirLightDirection[i], cc_dirLightColor[i]);
-    Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
-  }
-  for (int i = 0; i < CC_NUM_POINT_LIGHTS; i++) {
-    LightInfo info = computePointLighting(pos_w, cc_pointLightPositionAndRange[i], cc_pointLightColor[i]);
-    Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
-  }
-  for (int i = 0; i < CC_NUM_SPOT_LIGHTS; i++) {
-    LightInfo info = computeSpotLighting(pos_w, cc_spotLightPositionAndRange[i], cc_spotLightDirection[i], cc_spotLightColor[i]);
-    Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
-  }
+  // point light (a 'for' loop to accumulate all light sources)
+  #if _NUM_POINT_LIGHTS > 0
+    #pragma for id in range(0, _NUM_POINT_LIGHTS)
+      LightInfo pointLight{id};
+      pointLight{id} = computePointLighting(_point_light{id}_position, pos_w, _point_light{id}_color, _point_light{id}_range);
+      Lo += brdf(pointLight{id}, N, V, F0, albedo, metallic, roughness);
+    #pragma endFor
+  #endif
+
+  #if _NUM_DIR_LIGHTS > 0
+    #pragma for id in range(0, _NUM_DIR_LIGHTS)
+      LightInfo directionalLight{id};
+      directionalLight{id} = computeDirectionalLighting(_dir_light{id}_direction, _dir_light{id}_color);
+      Lo += brdf(directionalLight{id}, N, V, F0, albedo, metallic, roughness);
+    #pragma endFor
+  #endif
+
+  #if _NUM_SPOT_LIGHTS > 0
+    #pragma for id in range(0, _NUM_SPOT_LIGHTS)
+      LightInfo spotLight{id};
+      spotLight{id} = computeSpotLighting(_spot_light{id}_position, pos_w, _spot_light{id}_direction, _spot_light{id}_color, _spot_light{id}_spot, _spot_light{id}_range);
+      Lo += brdf(spotLight{id}, N, V, F0, albedo, metallic, roughness);
+    #pragma endFor
+  #endif
 
   #if USE_EMISSIVE
     vec3 emissiveColor = emissive;
@@ -260,7 +353,7 @@ vec4 frag() {
   #endif
 
   vec3 color = ambient + Lo;
-  #if CC_USE_SHADOW_MAP
+  #if _USE_SHADOW_MAP
     color *= computeShadow();
   #endif
 

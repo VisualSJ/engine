@@ -7,53 +7,171 @@
 #include <common>
 #include <gamma-correction>
 
-#include <cc-global>
-#include <lights>
-
-struct Lighting {
+struct LightInfo {
   vec3 diffuse;
   vec3 specular;
 };
 
-vec3 brdf(LightInfo info, vec3 N, vec3 V, float glossiness) {
-  Lighting res;
-  res.diffuse = info.radiance * max(0.0, dot(N, info.lightDir));
+LightInfo computeDirectionalLighting(
+  vec3 lightDirection,
+  vec3 lightColor,
+  vec3 normal,
+  vec3 viewDirection,
+  float glossiness
+) {
+  LightInfo lightingResult;
+  float ndl = 0.0;
   float ndh = 0.0;
-  if (res.diffuse > 0.0) {
-    vec3 H = normalize(V + info.lightDir);
-    float NdotH = max(0.0, dot(N, H));
-    NdotH = pow(NdotH, max(1.0, glossiness * 128.0));
-  }
-  res.specular = info.radiance * NdotH;
-  return res;
-};
+  vec3 lightDir = -normalize(lightDirection);
+  ndl = max(0.0, dot(normal, lightDir));
+  lightingResult.diffuse = lightColor * ndl;
 
-Lighting getPhongLighting(vec3 pos_w, vec3 N, vec3 V, float glossiness) {
-  Lighting result;
+  vec3 dirH = normalize(viewDirection + lightDir);
+  ndh = max(0.0, dot(normal, dirH));
+  ndh = (ndl == 0.0) ? 0.0: ndh;
+  ndh = pow(ndh, max(1.0, glossiness * 128.0));
+  lightingResult.specular = lightColor * ndh;
+
+  return lightingResult;
+}
+
+LightInfo computePointLighting(
+  vec3 lightPosition,
+  vec3 lightColor,
+  float lightRange,
+  vec3 normal,
+  vec3 positionW,
+  vec3 viewDirection,
+  float glossiness
+) {
+  LightInfo lightingResult;
+  float ndl = 0.0;
+  float ndh = 0.0;
+  vec3 lightDir = vec3(0, 0, 0);
+  float attenuation = 1.0;
+  lightDir = lightPosition - positionW;
+  attenuation = max(0., 1.0 - length(lightDir) / lightRange);
+  lightDir = normalize(lightDir);
+  ndl = max(0.0, dot(normal, lightDir));
+  lightingResult.diffuse = lightColor * ndl * attenuation;
+
+  vec3 dirH = normalize(viewDirection + lightDir);
+  ndh = max(0.0, dot(normal, dirH));
+  ndh = (ndl == 0.0) ? 0.0: ndh;
+  ndh = pow(ndh, max(1.0, glossiness * 128.0));
+  lightingResult.specular = lightColor * ndh * attenuation;
+
+  return lightingResult;
+}
+
+LightInfo computeSpotLighting(
+  vec3 lightPosition,
+  vec3 lightDirection,
+  vec3 lightColor,
+  float lightRange,
+  vec2 lightSpot,
+  vec3 normal,
+  vec3 positionW,
+  vec3 viewDirection,
+  float glossiness
+) {
+  LightInfo lightingResult;
+  float ndl = 0.0;
+  float ndh = 0.0;
+  vec3 lightDir = vec3(0, 0, 0);
+  float attenuation = 1.0;
+  float cosConeAngle = 1.0;
+
+  lightDir = lightPosition - positionW;
+  attenuation = max(0., 1.0 - length(lightDir) / lightRange);
+  lightDir = normalize(lightDir);
+  cosConeAngle = max(0., dot(lightDirection, -lightDir));
+  cosConeAngle = cosConeAngle < lightSpot.x ? 0.0 : cosConeAngle;
+  cosConeAngle = pow(cosConeAngle,lightSpot.y);
+  ndl = max(0.0, dot(normal, lightDir));
+  lightingResult.diffuse = lightColor * ndl * attenuation * cosConeAngle;
+
+  vec3 dirH = normalize(viewDirection + lightDir);
+  ndh = max(0.0, dot(normal, dirH));
+  ndh = (ndl == 0.0) ? 0.0: ndh;
+  ndh = pow(ndh, max(1.0, glossiness * 128.0));
+  lightingResult.specular = lightColor * ndh * attenuation * cosConeAngle;
+
+  return lightingResult;
+}
+
+#if _NUM_DIR_LIGHTS > 0
+  #pragma for id in range(0, _NUM_DIR_LIGHTS)
+    uniform vec3 _dir_light{id}_direction;
+    uniform vec3 _dir_light{id}_color;
+  #pragma endFor
+#endif
+
+#if _NUM_POINT_LIGHTS > 0
+  #pragma for id in range(0, _NUM_POINT_LIGHTS)
+    uniform vec3 _point_light{id}_position;
+    uniform vec3 _point_light{id}_color;
+    uniform float _point_light{id}_range;
+  #pragma endFor
+#endif
+
+#if _NUM_SPOT_LIGHTS > 0
+  #pragma for id in range(0, _NUM_SPOT_LIGHTS)
+    uniform vec3 _spot_light{id}_position;
+    uniform vec3 _spot_light{id}_direction;
+    uniform vec3 _spot_light{id}_color;
+    uniform float _spot_light{id}_range;
+    uniform vec2 _spot_light{id}_spot;
+  #pragma endFor
+#endif
+
+LightInfo getPhongLighting(
+  vec3 normal,
+  vec3 positionW,
+  vec3 viewDirection,
+  float glossiness
+) {
+  LightInfo result;
   result.diffuse = vec3(0, 0, 0);
   result.specular = vec3(0, 0, 0);
-  for (int i = 0; i < CC_NUM_DIR_LIGHTS; i++) {
-    Lighting info = brdf(computeDirectionalLighting(cc_dirLightDirection[i], cc_dirLightColor[i]), N, V, glossiness);
-    result.diffuse += info.diffuse;
-    result.specular += info.specular;
-  }
-  for (int i = 0; i < CC_NUM_POINT_LIGHTS; i++) {
-    Lighting info = brdf(computePointLighting(pos_w, cc_pointLightPositionAndRange[i], cc_pointLightColor[i]), N, V, glossiness);
-    result.diffuse += info.diffuse;
-    result.specular += info.specular;
-  }
-  for (int i = 0; i < CC_NUM_SPOT_LIGHTS; i++) {
-    Lighting info = brdf(computeSpotLighting(pos_w, cc_spotLightPositionAndRange[i], cc_spotLightDirection[i], cc_spotLightColor[i]), N, V, glossiness);
-    result.diffuse += info.diffuse;
-    result.specular += info.specular;
-  }
+  LightInfo dirLighting;
+  #if _NUM_DIR_LIGHTS > 0
+    #pragma for id in range(0, _NUM_DIR_LIGHTS)
+      dirLighting = computeDirectionalLighting(_dir_light{id}_direction,_dir_light{id}_color,normal, viewDirection, glossiness);
+      result.diffuse += dirLighting.diffuse;
+      result.specular += dirLighting.specular;
+    #pragma endFor
+  #endif
+
+  LightInfo pointLighting;
+  #if _NUM_POINT_LIGHTS > 0
+    #pragma for id in range(0, _NUM_POINT_LIGHTS)
+      pointLighting = computePointLighting(_point_light{id}_position, _point_light{id}_color, _point_light{id}_range,
+                                          normal, positionW, viewDirection, glossiness);
+      result.diffuse += pointLighting.diffuse;
+      result.specular += pointLighting.specular;
+    #pragma endFor
+  #endif
+
+  LightInfo spotLighting;
+  #if _NUM_SPOT_LIGHTS > 0
+    #pragma for id in range(0, _NUM_SPOT_LIGHTS)
+      spotLighting = computeSpotLighting(_spot_light{id}_position, _spot_light{id}_direction, _spot_light{id}_color,
+                      _spot_light{id}_range, _spot_light{id}_spot,normal, positionW, viewDirection, glossiness);
+      result.diffuse += spotLighting.diffuse;
+      result.specular += spotLighting.specular;
+    #pragma endFor
+  #endif
   return result;
 }
 
-#if CC_USE_SHADOW_MAP
+#if _USE_SHADOW_MAP
   #include <packing>
   #include <shadow-mapping>
 #endif
+
+uniform vec3 _eye;
+uniform vec3 _sceneAmbient;
 
 varying vec3 normal_w;
 varying vec3 pos_w;
@@ -71,28 +189,29 @@ struct phongMaterial
   float opacity;
 };
 
-uniform Constants {
-  vec4 diffuseColor;
-  vec3 emissiveColor;
-  vec3 specularColor;
-  float glossiness;
-  float alphaTestThreshold;
-};
-
+uniform vec4 diffuseColor;
 #if USE_DIFFUSE_TEXTURE
   uniform sampler2D diffuse_texture;
 #endif
 
-#if USE_EMISSIVE && USE_EMISSIVE_TEXTURE
-  uniform sampler2D emissive_texture;
+#if USE_EMISSIVE
+  uniform vec3 emissiveColor;
+  #if USE_EMISSIVE_TEXTURE
+    uniform sampler2D emissive_texture;
+  #endif
 #endif
 
-#if USE_SPECULAR && USE_SPECULAR_TEXTURE
-  uniform sampler2D specular_texture;
+#if USE_SPECULAR
+  uniform vec3 specularColor;
+  uniform float glossiness;
+  #if USE_SPECULAR_TEXTURE
+    uniform sampler2D specular_texture;
+  #endif
 #endif
 
 #if USE_NORMAL_TEXTURE
   uniform sampler2D normal_texture;
+  uniform float normalScale;  //this is not used yet
   vec3 getNormal(vec3 pos, vec3 normal) {
     vec3 q0 = vec3( dFdx( pos.x ), dFdx( pos.y ), dFdx( pos.z ) );
     vec3 q1 = vec3( dFdy( pos.x ), dFdy( pos.y ), dFdy( pos.z ) );
@@ -106,6 +225,10 @@ uniform Constants {
     mat3 tsn = mat3( S, T, N );
     return normalize( tsn * mapN );
   }
+#endif
+
+#if USE_ALPHA_TEST
+  uniform float alphaTestThreshold;
 #endif
 
 phongMaterial getPhongMaterial() {
@@ -139,7 +262,8 @@ phongMaterial getPhongMaterial() {
   return result;
 }
 
-vec4 composePhongShading(Lighting lighting, phongMaterial mtl, float shadow) {
+vec4 composePhongShading(LightInfo lighting, phongMaterial mtl, float shadow)
+{
   vec4 o = vec4(0.0, 0.0, 0.0, 1.0);
 
   //diffuse is always calculated
@@ -157,8 +281,8 @@ vec4 composePhongShading(Lighting lighting, phongMaterial mtl, float shadow) {
 }
 
 vec4 frag () {
-  Lighting phongLighting;
-  vec3 viewDirection = normalize(cc_cameraPos - pos_w);
+  LightInfo phongLighting;
+  vec3 viewDirection = normalize(_eye - pos_w);
 
   phongMaterial mtl = getPhongMaterial();
   #if USE_ALPHA_TEST
@@ -168,10 +292,10 @@ vec4 frag () {
   #if USE_NORMAL_TEXTURE
     normal = getNormal(pos_w, normal);
   #endif
-  phongLighting = getPhongLighting(pos_w, normal, viewDirection, mtl.glossiness);
-  phongLighting.diffuse += vec3(0.5); // scene ambient
+  phongLighting = getPhongLighting(normal, pos_w, viewDirection, mtl.glossiness);
+  phongLighting.diffuse += _sceneAmbient;
 
-  #if CC_USE_SHADOW_MAP
+  #if _USE_SHADOW_MAP
     vec4 finalColor = composePhongShading(phongLighting, mtl, computeShadow());
   #else
     vec4 finalColor = composePhongShading(phongLighting, mtl, 1.0);

@@ -57,9 +57,7 @@
 
 %% particle-alpha-blend-fs {
   uniform sampler2D mainTexture;
-  uniform FragConstants {
-    vec4 tintColor;
-  };
+  uniform vec4 tintColor;
 
   varying vec2 uv;
   varying vec4 color;

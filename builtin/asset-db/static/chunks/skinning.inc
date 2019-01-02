@@ -3,15 +3,12 @@
 attribute vec4 a_weights;
 attribute vec4 a_joints;
 
-uniform CCSkinning {
-  mat4 cc_matJoint[128];
-  vec4 cc_jointsTextureSize;
-};
+#if _USE_JOINTS_TEXTURE
+uniform sampler2D _u_jointsTexture;
+uniform float _u_jointsTextureSize;
 
-#if CC_USE_JOINTS_TEXTURE
-uniform sampler2D cc_jointsTexture;
 mat4 getBoneMatrix(const in float i) {
-  float size = cc_jointsTextureSize.x;
+  float size = _u_jointsTextureSize;
   float j = i * 4.0;
   float x = mod(j, size);
   float y = floor(j / size);
@@ -21,16 +18,18 @@ mat4 getBoneMatrix(const in float i) {
 
   y = dy * (y + 0.5);
 
-  vec4 v1 = texture2D(cc_jointsTexture, vec2(dx * (x + 0.5), y));
-  vec4 v2 = texture2D(cc_jointsTexture, vec2(dx * (x + 1.5), y));
-  vec4 v3 = texture2D(cc_jointsTexture, vec2(dx * (x + 2.5), y));
-  vec4 v4 = texture2D(cc_jointsTexture, vec2(dx * (x + 3.5), y));
+  vec4 v1 = texture2D(_u_jointsTexture, vec2(dx * (x + 0.5), y));
+  vec4 v2 = texture2D(_u_jointsTexture, vec2(dx * (x + 1.5), y));
+  vec4 v3 = texture2D(_u_jointsTexture, vec2(dx * (x + 2.5), y));
+  vec4 v4 = texture2D(_u_jointsTexture, vec2(dx * (x + 3.5), y));
 
   return mat4(v1, v2, v3, v4);
 }
 #else
+uniform mat4 _u_jointMatrices[128];
+
 mat4 getBoneMatrix(const in float i) {
-  return cc_matJoint[int(i)];
+  return _u_jointMatrices[int(i)];
 }
 #endif
 
@@ -39,7 +38,8 @@ mat4 skinMatrix() {
     getBoneMatrix(a_joints.x) * a_weights.x +
     getBoneMatrix(a_joints.y) * a_weights.y +
     getBoneMatrix(a_joints.z) * a_weights.z +
-    getBoneMatrix(a_joints.w) * a_weights.w;
+    getBoneMatrix(a_joints.w) * a_weights.w
+    ;
 }
 
 void skinVertex(inout vec4 a1) {

@@ -25,8 +25,8 @@
 %% sp-vs {
   attribute vec3 a_position;
 
-  #include <cc-local>
-  #include <cc-global>
+  uniform mat4 _model;
+  uniform mat4 _viewProj;
 
   #if USE_TEXTURE
     attribute vec2 a_uv0;
@@ -34,7 +34,7 @@
   #endif
 
   void main () {
-    vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
+    vec4 pos = _viewProj * _model * vec4(a_position, 1);
 
     #if USE_TEXTURE
       uv0 = a_uv0;
@@ -51,9 +51,7 @@
   #endif
 
   #if USE_COLOR
-    uniform Constants {
-      vec4 color;
-    };
+    uniform vec4 color;
   #endif
 
   void main () {

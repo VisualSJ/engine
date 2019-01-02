@@ -7,7 +7,6 @@ attribute vec4 a_color;
 attribute vec3 a_color0; // velocity.x, velocity.y, velocity.z, scale
 #endif
 
-#include <cc-local>
 
 vec4 lpvs_main() {
   vec4 pos = vec4(a_position, 1);
@@ -16,11 +15,11 @@ vec4 lpvs_main() {
 #endif
 
 #if !USE_WORLD_SPACE
-//   // simulate in world space. apply cc_matWorld matrix on CPU side.
+//   // simulate in world space. apply _model matrix on CPU side.
 // #else
-  pos = cc_matWorld * pos;
+  pos = _model * pos;
   #if USE_STRETCHED_BILLBOARD
-  velocity = cc_matWorld * velocity;
+  velocity = _model * velocity;
   #endif
 #endif
 
@@ -34,10 +33,10 @@ vec4 lpvs_main() {
 
   computeVertPos(pos, cornerOffset
   #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
-    , cc_matView
+    , _view
   #endif
   #if USE_STRETCHED_BILLBOARD
-    , cc_cameraPos
+    , _eye
     , velocity
     , velocityScale
     , lengthScale
@@ -46,7 +45,7 @@ vec4 lpvs_main() {
   #endif
   );
 
-  pos = cc_matViewProj * pos;
+  pos = _viewProj * pos;
 
   uv = computeUV(a_uv.z, a_uv.xy, frameTile) * mainTiling + mainOffset;
 

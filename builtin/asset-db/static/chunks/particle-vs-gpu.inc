@@ -29,45 +29,33 @@
 #define VELOCITY_OVERTIME_RAND_OFFSET 197866.
 
 #define DECL_CURVE_STRUCT(name) \
-  uniform CurveStruct_##name## { \
-    int u_##name##_curveMode; \
-    float u_##name##_minConstant; \
-    float u_##name##_maxConstant; \
-    float u_##name##_minKeyTime[MAX_KEY_NUM]; \
-    vec4 u_##name##_minKeyCoef[MAX_KEY_NUM]; \
-    vec4 u_##name##_maxKeyCoef[MAX_KEY_NUM]; \
-    float u_##name##_maxKeyTime[MAX_KEY_NUM]; \
-  };
+  uniform int u_##name##_curveMode; \
+  uniform float u_##name##_minConstant; \
+  uniform float u_##name##_maxConstant; \
+  uniform vec4 u_##name##_minKeyCoef[MAX_KEY_NUM]; \
+  uniform float u_##name##_minKeyTime[MAX_KEY_NUM]; \
+  uniform vec4 u_##name##_maxKeyCoef[MAX_KEY_NUM]; \
+  uniform float u_##name##_maxKeyTime[MAX_KEY_NUM];
 
 #define DECL_CURVE_STRUCT_INT(name) \
-  uniform CurveStructInt_##name## { \
-    int u_##name##_curveMode; \
-    float u_##name##_minConstant; \
-    float u_##name##_maxConstant; \
-    float u_##name##_minKeyTime[MAX_KEY_NUM]; \
-    vec4 u_##name##_minKeyCoef[MAX_KEY_NUM]; \
-    vec4 u_##name##_maxKeyCoef[MAX_KEY_NUM]; \
-    float u_##name##_maxKeyTime[MAX_KEY_NUM]; \
-    float u_##name##_minIntegral[MAX_KEY_NUM - 1]; \
-    float u_##name##_maxIntegral[MAX_KEY_NUM - 1]; \
-  };
+  DECL_CURVE_STRUCT(name) \
+  uniform float u_##name##_minIntegral[MAX_KEY_NUM - 1]; \
+  uniform float u_##name##_maxIntegral[MAX_KEY_NUM - 1];
 
 #define DECL_GRADIENT_STRUCT(name) \
-  uniform GradientStruct_##name## { \
-    int u_##name##_rangeMode; \
-    int u_##name##_minGradMode; \
-    int u_##name##_maxGradMode; \
-    vec4 u_##name##_minColor; \
-    vec4 u_##name##_maxColor; \
-    vec3 u_##name##_minColorKeyValue[MAX_KEY_NUM]; \
-    float u_##name##_minColorKeyTime[MAX_KEY_NUM]; \
-    float u_##name##_minAlphaKeyValue[MAX_KEY_NUM]; \
-    float u_##name##_minAlphaKeyTime[MAX_KEY_NUM]; \
-    vec3 u_##name##_maxColorKeyValue[MAX_KEY_NUM]; \
-    float u_##name##_maxColorKeyTime[MAX_KEY_NUM]; \
-    float u_##name##_maxAlphaKeyValue[MAX_KEY_NUM]; \
-    float u_##name##_maxAlphaKeyTime[MAX_KEY_NUM]; \
-  };
+  uniform int u_##name##_rangeMode; \
+  uniform vec4 u_##name##_minColor; \
+  uniform vec4 u_##name##_maxColor; \
+  uniform int u_##name##_minGradMode; \
+  uniform vec3 u_##name##_minColorKeyValue[MAX_KEY_NUM]; \
+  uniform float u_##name##_minColorKeyTime[MAX_KEY_NUM]; \
+  uniform float u_##name##_minAlphaKeyValue[MAX_KEY_NUM]; \
+  uniform float u_##name##_minAlphaKeyTime[MAX_KEY_NUM]; \
+  uniform int u_##name##_maxGradMode; \
+  uniform vec3 u_##name##_maxColorKeyValue[MAX_KEY_NUM]; \
+  uniform float u_##name##_maxColorKeyTime[MAX_KEY_NUM]; \
+  uniform float u_##name##_maxAlphaKeyValue[MAX_KEY_NUM]; \
+  uniform float u_##name##_maxAlphaKeyTime[MAX_KEY_NUM];
 
 #define EVAL_CURVE_RANGE(name, t, rnd) \
   evaluateCurveRange(u_##name##_curveMode, u_##name##_minConstant, u_##name##_maxConstant, u_##name##_minKeyTime, u_##name##_minKeyCoef, u_##name##_maxKeyTime, u_##name##_maxKeyCoef, t, rnd)
@@ -89,15 +77,12 @@ attribute vec4 a_color;
 attribute vec4 a_dir_life;  // xyz:particle start velocity,w:particle lifetime
 attribute float a_rndSeed;
 
-uniform Constants2 {
-  float u_psTime;
-  vec4 u_worldRot;
-  int u_velocity_space;
-  float u_speedModifier;
-  int u_force_space;
-};
+uniform float u_psTime;
+uniform vec4 u_worldRot;
 
 #if VELOCITY_OVERTIME_MODULE_ENABLE
+uniform int u_velocity_space;
+uniform float u_speedModifier;
 DECL_CURVE_STRUCT_INT(velocity_pos_x)
 DECL_CURVE_STRUCT_INT(velocity_pos_y)
 DECL_CURVE_STRUCT_INT(velocity_pos_z)
@@ -109,6 +94,7 @@ DECL_CURVE_STRUCT_INT(velocity_pos_z)
 #endif
 
 #if FORCE_OVERTIME_MODULE_ENABLE
+uniform int u_force_space;
 DECL_CURVE_STRUCT_INT(force_pos_x)
 DECL_CURVE_STRUCT_INT(force_pos_y)
 DECL_CURVE_STRUCT_INT(force_pos_z)
@@ -129,12 +115,10 @@ DECL_GRADIENT_STRUCT(color)
 
 #if TEXTURE_ANIMATION_ENABLE
 DECL_CURVE_STRUCT(frameOverTime)
-uniform Animation {
-  float u_cycles;
-  int u_animation_mode;
-  bool u_random_row;
-  int u_row_index;
-};
+uniform float u_cycles;
+uniform int u_animation_mode;
+uniform bool u_random_row;
+uniform int u_row_index;
 #endif
 
 #if ROTATE_OVERTIME_MODULE_ENABLE
@@ -291,7 +275,7 @@ void gpvs_main() {
   velocity *= speedModifier;
 #endif
 #if !USE_WORLD_SPACE
-  pos = cc_matWorld * pos;
+  pos = _model * pos;
   #if USE_STRETCHED_BILLBOARD
     velocity = rotateQuat(velocity, u_worldRot);
   #endif
@@ -347,10 +331,10 @@ void gpvs_main() {
 
   computeVertPos(pos, cornerOffset
   #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
-    , cc_matView
+    , _view
   #endif
   #if USE_STRETCHED_BILLBOARD
-    , cc_cameraPos
+    , _eye
     , velocity
     , velocityScale
     , lengthScale
@@ -359,7 +343,7 @@ void gpvs_main() {
   #endif
   );
 
-  pos = cc_matViewProj * pos;
+  pos = _viewProj * pos;
 
   float frameIndex = 0.;
 #if TEXTURE_ANIMATION_ENABLE
