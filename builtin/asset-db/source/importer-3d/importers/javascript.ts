@@ -7,6 +7,7 @@ const babel = require('@babel/core');
 const uuidUtils = require('../../../static/utils/uuid-utils');
 
 export default class JavascriptImporter extends Importer {
+
     // 版本号如果变更，则会强制重新导入
     get version() {
         return '1.0.2';
@@ -17,12 +18,9 @@ export default class JavascriptImporter extends Importer {
         return 'javascript';
     }
 
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
+    // 引擎内对应的类型
+    get assetType() {
+        return 'cc.Asset';
     }
 
     /**

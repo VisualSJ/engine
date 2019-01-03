@@ -21,6 +21,9 @@ export default class TextImporter extends Importer {
      * @param asset
      */
     public async validate(asset: Asset) {
+        if (await asset.isDirectory()) {
+            return false;
+        }
         if (asset.extname === '.ts') {
             // 只允许 .d 结尾的文件（xxx.d.ts）
             return extname(asset.basename) === '.d';

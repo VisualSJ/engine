@@ -44,7 +44,7 @@ export default class TextureCubeImporter extends Importer {
      * @param asset
      */
     public async validate(asset: Asset) {
-        return true;
+        return !asset.isDirectory();
     }
 
     /**
@@ -130,16 +130,9 @@ export class TextureCubeFaceImporter extends Importer {
         return 'texture-cube-face';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.ImageAsset';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
     }
 
     /**

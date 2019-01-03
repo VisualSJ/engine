@@ -14,16 +14,9 @@ export default class BufferImporter extends Importer {
         return 'buffer';
     }
 
+    // 对应的引擎内的类型
     get assetType() {
         return 'cc.BufferAsset';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
     }
 
     /**

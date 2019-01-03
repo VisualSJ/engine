@@ -14,16 +14,9 @@ export default class PrefabImporter extends Importer {
         return 'prefab';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.Prefab';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
     }
 
     /**

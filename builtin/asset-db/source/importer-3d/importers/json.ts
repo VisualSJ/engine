@@ -15,12 +15,9 @@ export default class JsonImporter extends Importer {
         return 'json';
     }
 
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
+    // 引擎内对应的类型
+    get assetType() {
+        return 'cc.JsonAsset';
     }
 
     /**

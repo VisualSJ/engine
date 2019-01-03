@@ -103,14 +103,6 @@ export default class GltfImporter extends Importer {
     }
 
     /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return true;
-    }
-
-    /**
      * 实际导入流程
      * 需要自己控制是否生成、拷贝文件
      *
@@ -398,16 +390,9 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         return 'gltf-mesh';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.Mesh';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     /**
@@ -456,16 +441,9 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
         return 'gltf-animation';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.AnimationClip';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     /**
@@ -509,16 +487,9 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
         return 'gltf-skeleton';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.Skeleton';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     /**
@@ -561,16 +532,9 @@ export class GltfImageImporter extends GltfSubAssetImporter {
         return 'gltf-embeded-image';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.ImageAsset';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     /**
@@ -657,16 +621,9 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         return 'gltf-material';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.Material';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     /**
@@ -718,16 +675,9 @@ export class GltfPrefabImporter extends GltfSubAssetImporter {
         return 'gltf-scene';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.Prefab';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: VirtualAsset) {
-        return true;
     }
 
     public async import(asset: VirtualAsset) {

@@ -18,6 +18,7 @@ export default class ImageImporter extends Importer {
         return 'image';
     }
 
+    // 引擎内对应的类型
     get assetType() {
         return 'cc.ImageAsset';
     }
@@ -27,7 +28,7 @@ export default class ImageImporter extends Importer {
      * @param asset
      */
     public async validate(asset: Asset) {
-        return true;
+        return !(await asset.isDirectory());
     }
 
     /**
