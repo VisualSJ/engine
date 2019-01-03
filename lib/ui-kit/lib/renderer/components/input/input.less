@@ -1,11 +1,15 @@
 @import '../base/base.less';
 // --focus-c 高亮颜色
+// --clear-btn-size 设置 clear 按钮的宽高
+// --clear-btn-c 设置 clear 按钮的颜色
+// --clear-btn-hover-c 设置 clear 按钮的高亮颜色
 input::-webkit-input-placeholder {
     font-style: italic;
 }
 :host {
     border: 1px solid var(--border-c, #333);
     padding: 0.2em 0.5em;
+    position: relative;
     & > input {
         display: block;
         color: inherit;
@@ -19,4 +23,25 @@ input::-webkit-input-placeholder {
         color: var(--focus-c, #fd942b);
     }
 }
-
+.clear {
+    display: none;
+    width: var(--clear-btn-size,1em);
+    height: var(--clear-btn-size,1em);
+    border-radius: 50%;
+    position: absolute;
+    top:0;
+    right: 5px;
+    bottom: 0;
+    margin: auto;
+    line-height: var(--clear-btn-size,1em);
+    text-align: center;
+    cursor: pointer;
+    .clear-icon {
+        fill: var(--clear-btn-c);
+    }
+}
+.clear:hover {
+    .clear-icon {
+        fill: var(--clear-btn-hover-c, white);
+    }
+}
