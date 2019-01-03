@@ -2,6 +2,7 @@ declare const Editor: Editor;
 
 interface Editor {
     App: App;
+    Task: Task;
     Project: Project;
     I18n: I18n;
     Menu: Menu;
@@ -20,6 +21,11 @@ interface App {
     home: string;
     path: string;
     project: string;
+}
+
+interface Task {
+    addSyncTask: Function;
+    removeSyncTask: Function;
 }
 
 interface Project {

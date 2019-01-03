@@ -30,6 +30,13 @@ module.exports = {
      * ${action}-${method}
      */
     messages: {
+        'asset-db:ready'() {
+            Editor.Task.removeSyncTask(Editor.I18n.t('asset-db.mask.loading'));
+        },
+        'asset-db:close'() {
+            Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
+        },
+
         async 'query-is-ready'() {
             return getReady();
         },
@@ -392,6 +399,7 @@ module.exports = {
      * 打开一个新的资源数据库
      */
     async load() {
+        Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
         await createWorker();
     },
 
