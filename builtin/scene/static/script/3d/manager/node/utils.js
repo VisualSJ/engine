@@ -63,7 +63,10 @@ exports.addComponentMap = {
 function getBoundingBox(node) {
     const modelComponent = node.getComponent('cc.ModelComponent');
     if (!modelComponent) {
-        return new cc.Vec3(0, 0, 0);
+        return {
+            minPosition: new cc.Vec3(0, 0, 0),
+            maxPosition: new cc.Vec3(0, 0, 0),
+        };
     }
     return {
         minPosition: modelComponent.mesh.minPosition,
