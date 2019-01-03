@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 const db = require('./tree-db');
@@ -300,18 +300,24 @@ export const methods = {
             return;
         }
 
-        let name = 'New Node';
-        switch (json.type) {
-            default: name = 'New Node'; break;
+        let dumpdata = '';
+        const filepath = join(__dirname, `../../static/nodecontent/${json.type}`);
+        if (existsSync(filepath)) {
+            dumpdata = JSON.parse(readFileSync(filepath, 'utf8'));
         }
 
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         // 发送创建节点
-        vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
-            parent: uuid,
-            name,
-        });
+        if (dumpdata) {
+            vm.renameUuid = await db.pasteNode(uuid, dumpdata);
+        } else {
+            vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+                parent: uuid,
+                name: 'New Node',
+            });
+        }
 
         parent.state = '';
     },

@@ -1,6 +1,7 @@
 'use strict';
 const { shell } = require('electron');
 const utils = require('./tree-utils');
+const {createMenu} = require('./panel-context');
 
 exports.menu = (event: Event, vm: any, node: ItreeNode) => {
     Editor.Menu.popup({
@@ -12,14 +13,9 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
             {
                 label: Editor.I18n.t('hierarchy.menu.newNode'),
                 enabled: !utils.canNotCreateNode(node),
-                submenu: [
-                    {
-                        label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
-                        click() {
-                            vm.$emit('ipcAdd', { type: 'node' }, node.uuid);
-                        },
-                    },
-                ],
+                submenu: createMenu((type: string) => {
+                    vm.$emit('ipcAdd', { type }, node.uuid);
+                }),
             },
             {
                 type: 'separator',
@@ -42,14 +38,6 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
                     vm.$emit('paste', node.uuid);
                 },
             },
-            { type: 'separator' },
-            {
-                label: Editor.I18n.t('hierarchy.menu.rename'),
-                enabled: !utils.canNotRenameNode(node),
-                click(event: Event) {
-                    vm.rename(node);
-                },
-            },
             {
                 label: Editor.I18n.t('hierarchy.menu.duplicate'),
                 enabled: !utils.canNotCopyNode(node),
@@ -59,6 +47,14 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
                     } else {
                         vm.$emit('duplicate', vm.selects);
                     }
+                },
+            },
+            { type: 'separator' },
+            {
+                label: Editor.I18n.t('hierarchy.menu.rename'),
+                enabled: !utils.canNotRenameNode(node),
+                click(event: Event) {
+                    vm.rename(node);
                 },
             },
             {

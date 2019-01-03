@@ -1,0 +1,602 @@
+{
+	"__comps__": [{
+		"editor": {
+			"_showTick": true,
+			"help": "",
+			"icon": false,
+			"inspector": false
+		},
+		"extends": ["cc.Component", "cc.Object"],
+		"name": "LightComponent",
+		"properties": {
+			"__scriptAsset": {
+				"displayName": "Script",
+				"readonly": true,
+				"tooltip": "i18n:INSPECTOR.component.script",
+				"type": "cc.Script",
+				"visible": false
+			},
+			"_color": {
+				"default": {
+					"_val": 4294967295
+				},
+				"type": "object",
+				"visible": false
+			},
+			"_enabled": {
+				"default": true,
+				"type": "boolean",
+				"visible": false
+			},
+			"_id": {
+				"type": "String",
+				"visible": false
+			},
+			"_intensity": {
+				"default": 1,
+				"type": "number",
+				"visible": false
+			},
+			"_name": {
+				"default": "",
+				"type": "string",
+				"visible": false
+			},
+			"_objFlags": {
+				"default": 0,
+				"type": "number",
+				"visible": false
+			},
+			"_range": {
+				"default": 1,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowBias": {
+				"default": 0.0005,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowDarkness": {
+				"default": 0.5,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowDepthScale": {
+				"default": 250,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowFrustumSize": {
+				"default": 50,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowMaxDepth": {
+				"default": 1000,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowMinDepth": {
+				"default": 1,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowResolution": {
+				"default": 1024,
+				"type": "number",
+				"visible": false
+			},
+			"_shadowType": {
+				"default": 0,
+				"type": "number",
+				"visible": false
+			},
+			"_spotAngle": {
+				"default": 60,
+				"type": "number",
+				"visible": false
+			},
+			"_spotExp": {
+				"default": 1,
+				"type": "number",
+				"visible": false
+			},
+			"_type": {
+				"default": 0,
+				"type": "number",
+				"visible": false
+			},
+			"color": {},
+			"enabled": {
+				"visible": false
+			},
+			"enabledInHierarchy": {
+				"readonly": true,
+				"visible": false
+			},
+			"intensity": {},
+			"name": {
+				"visible": false
+			},
+			"node": {
+				"default": null,
+				"visible": false
+			},
+			"range": {},
+			"shadowBias": {},
+			"shadowDarkness": {},
+			"shadowDepthScale": {},
+			"shadowFrustumSize": {},
+			"shadowMaxDepth": {},
+			"shadowMinDepth": {},
+			"shadowResolution": {},
+			"shadowType": {
+				"enumList": [{
+					"name": "None",
+					"value": 0
+				}, {
+					"name": "Soft",
+					"value": 1
+				}, {
+					"name": "Hard",
+					"value": 2
+				}],
+				"type": "Enum"
+			},
+			"spotAngle": {},
+			"spotExp": {},
+			"type": {
+				"enumList": [{
+					"name": "Directional",
+					"value": 0
+				}, {
+					"name": "Point",
+					"value": 1
+				}, {
+					"name": "Spot",
+					"value": 2
+				}],
+				"type": "Enum"
+			},
+			"uuid": {
+				"readonly": true,
+				"visible": false
+			}
+		},
+		"type": "cc.LightComponent",
+		"value": {
+			"__scriptAsset": {
+				"extends": ["cc.Asset", "cc.RawAsset", "cc.Object"],
+				"name": "Script",
+				"properties": {
+					"_name": {
+						"default": "",
+						"type": "string",
+						"visible": false
+					},
+					"_native": {
+						"default": "",
+						"type": "string",
+						"visible": false
+					},
+					"_nativeAsset": {
+						"visible": false
+					},
+					"_objFlags": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"nativeUrl": {
+						"readonly": true,
+						"visible": false
+					}
+				},
+				"type": "cc.Script",
+				"value": {
+					"uuid": ""
+				}
+			},
+			"_color": {
+				"extends": ["cc.ValueType"],
+				"name": "Color",
+				"properties": {
+					"a": {
+						"default": 255,
+						"type": "number",
+						"visible": false
+					},
+					"b": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"g": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"r": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					}
+				},
+				"type": "cc.Color",
+				"value": {
+					"a": 255,
+					"b": 255,
+					"g": 255,
+					"r": 255
+				}
+			},
+			"_enabled": {
+				"type": "boolean",
+				"value": true
+			},
+			"_intensity": {
+				"type": "number",
+				"value": 1
+			},
+			"_name": {
+				"type": "string",
+				"value": ""
+			},
+			"_objFlags": {
+				"type": "number",
+				"value": 63488
+			},
+			"_range": {
+				"type": "number",
+				"value": 10
+			},
+			"_shadowBias": {
+				"type": "number",
+				"value": 0.0005
+			},
+			"_shadowDarkness": {
+				"type": "number",
+				"value": 0.5
+			},
+			"_shadowDepthScale": {
+				"type": "number",
+				"value": 250
+			},
+			"_shadowFrustumSize": {
+				"type": "number",
+				"value": 50
+			},
+			"_shadowMaxDepth": {
+				"type": "number",
+				"value": 1000
+			},
+			"_shadowMinDepth": {
+				"type": "number",
+				"value": 1
+			},
+			"_shadowResolution": {
+				"type": "number",
+				"value": 1024
+			},
+			"_shadowType": {
+				"type": "number",
+				"value": 0
+			},
+			"_spotAngle": {
+				"type": "number",
+				"value": 60
+			},
+			"_spotExp": {
+				"type": "number",
+				"value": 1
+			},
+			"_type": {
+				"type": "number",
+				"value": 0
+			},
+			"color": {
+				"extends": ["cc.ValueType"],
+				"name": "Color",
+				"properties": {
+					"a": {
+						"default": 255,
+						"type": "number",
+						"visible": false
+					},
+					"b": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"g": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"r": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					}
+				},
+				"type": "cc.Color",
+				"value": {
+					"a": 255,
+					"b": 255,
+					"g": 255,
+					"r": 255
+				}
+			},
+			"enabled": {
+				"type": "boolean",
+				"value": true
+			},
+			"enabledInHierarchy": {
+				"type": "boolean",
+				"value": true
+			},
+			"intensity": {
+				"type": "number",
+				"value": 1
+			},
+			"name": {
+				"type": "string",
+				"value": "Point Light<LightComponent>"
+			},
+			"node": {
+				"extends": ["cc._BaseNode", "cc.Object"],
+				"name": "Node",
+				"properties": {
+					"_active": {
+						"default": true,
+						"type": "boolean",
+						"visible": false
+					},
+					"_children": {
+						"default": [],
+						"type": "object",
+						"visible": false
+					},
+					"_components": {
+						"default": [],
+						"type": "object",
+						"visible": false
+					},
+					"_euler": {
+						"default": {
+							"x": 0,
+							"y": 0,
+							"z": 0
+						},
+						"type": "object",
+						"visible": false
+					},
+					"_id": {
+						"type": "String",
+						"visible": false
+					},
+					"_layer": {
+						"default": 1,
+						"type": "number",
+						"visible": false
+					},
+					"_level": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"_lpos": {
+						"default": {
+							"x": 0,
+							"y": 0,
+							"z": 0
+						},
+						"type": "object",
+						"visible": false
+					},
+					"_lrot": {
+						"default": {
+							"w": 1,
+							"x": 0,
+							"y": 0,
+							"z": 0
+						},
+						"type": "object",
+						"visible": false
+					},
+					"_lscale": {
+						"default": {
+							"x": 1,
+							"y": 1,
+							"z": 1
+						},
+						"type": "object",
+						"visible": false
+					},
+					"_name": {
+						"default": "",
+						"type": "string",
+						"visible": false
+					},
+					"_objFlags": {
+						"default": 0,
+						"type": "number",
+						"visible": false
+					},
+					"_parent": {
+						"default": null,
+						"visible": false
+					},
+					"_persistNode": {
+						"visible": false
+					},
+					"_prefab": {
+						"default": null,
+						"visible": false
+					},
+					"active": {},
+					"activeInHierarchy": {
+						"readonly": true
+					},
+					"children": {
+						"readonly": true
+					},
+					"childrenCount": {
+						"readonly": true
+					},
+					"eulerAngles": {
+						"type": "cc.Vec3"
+					},
+					"name": {},
+					"uuid": {
+						"readonly": true
+					}
+				},
+				"type": "cc.Node",
+				"value": {
+					"name": "Point Light",
+					"uuid": ""
+				}
+			},
+			"range": {
+				"type": "number",
+				"value": 10
+			},
+			"shadowBias": {
+				"type": "number",
+				"value": 0.0005
+			},
+			"shadowDarkness": {
+				"type": "number",
+				"value": 0.5
+			},
+			"shadowDepthScale": {
+				"type": "number",
+				"value": 250
+			},
+			"shadowFrustumSize": {
+				"type": "number",
+				"value": 50
+			},
+			"shadowMaxDepth": {
+				"type": "number",
+				"value": 1000
+			},
+			"shadowMinDepth": {
+				"type": "number",
+				"value": 1
+			},
+			"shadowResolution": {
+				"type": "number",
+				"value": 1024
+			},
+			"shadowType": {
+				"type": "Enum",
+				"value": 0
+			},
+			"spotAngle": {
+				"type": "number",
+				"value": 60
+			},
+			"spotExp": {
+				"type": "number",
+				"value": 1
+			},
+			"type": {
+				"type": "Enum",
+				"value": 1
+			}
+		}
+	}],
+	"__type__": "cc.Node",
+	"active": {
+		"type": "Boolean",
+		"value": true
+	},
+	"name": {
+		"type": "String",
+		"value": "Point Light"
+	},
+	"position": {
+		"extends": ["cc.ValueType"],
+		"name": "Vec3",
+		"properties": {
+			"x": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"y": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"z": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			}
+		},
+		"type": "cc.Vec3",
+		"value": {
+			"x": 0,
+			"y": 0,
+			"z": 0
+		}
+	},
+	"rotation": {
+		"extends": ["cc.ValueType"],
+		"name": "Vec3",
+		"properties": {
+			"x": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"y": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"z": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			}
+		},
+		"type": "cc.Vec3",
+		"value": {
+			"x": 0,
+			"y": 0,
+			"z": 0
+		}
+	},
+	"scale": {
+		"extends": ["cc.ValueType"],
+		"name": "Vec3",
+		"properties": {
+			"x": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"y": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			},
+			"z": {
+				"default": 0,
+				"type": "Float",
+				"visible": false
+			}
+		},
+		"type": "cc.Vec3",
+		"value": {
+			"x": 1,
+			"y": 1,
+			"z": 1
+		}
+	}
+}

@@ -162,9 +162,6 @@ export const methods = {
      * @param node
      */
     renameSubmit(event: Event, node: ItreeNode) {
-        if (node.state !== 'input') {
-            return;
-        }
         // @ts-ignore
         const newName = this.$refs.input.value.trim();
 
