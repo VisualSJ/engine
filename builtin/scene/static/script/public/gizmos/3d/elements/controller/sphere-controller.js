@@ -210,7 +210,7 @@ class SphereController extends EditableController {
         this._mouseDeltaPos.y += event.moveDeltaY;
 
         let axisDir = this._axisDir[event.axisName];
-        this._deltaRadius = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir),
+        this._deltaRadius = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir),
             this._mouseDeltaPos) * this._curDistScalar;
 
         if (this.onControllerMouseMove != null) {

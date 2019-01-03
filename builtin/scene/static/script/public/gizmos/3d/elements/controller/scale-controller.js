@@ -79,7 +79,7 @@ class ScaleController extends ControllerBase {
 
     getAlignAxisDeltaScale(axisName, curMouseDeltaPos) {
         let axisDir = this._axisDir[axisName];
-        let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir), curMouseDeltaPos);
+        let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir), curMouseDeltaPos);
 
         let deltaScale = cc.v3();
         let deltaDist = alignAxisMoveDist / this._scaleFactor;

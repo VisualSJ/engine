@@ -3,10 +3,11 @@
 let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, create3DNode, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
+const { gfx, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
+const External = require('../../../utils/external');
+const EditorCamera = External.EditorCamera;
 
 const vec3 = cc.vmath.vec3;
-
 class BoxController extends EditableController {
     constructor(rootNode) {
         super(rootNode);
@@ -14,6 +15,11 @@ class BoxController extends EditableController {
         this._color = cc.Color.WHITE;
         this._center = cc.v3();
         this._size = cc.v3(1, 1, 1);
+
+        this._axisDir.neg_x = cc.v3(-1, 0, 0);
+        this._axisDir.neg_y = cc.v3(0, -1, 0);
+        this._axisDir.neg_z = cc.v3(0, 0, -1);
+        this._deltaSize = cc.v3();
 
         this.initShape();
     }
@@ -31,46 +37,17 @@ class BoxController extends EditableController {
         }
     }
 
-    createMidController(faceName, color) {
-        let cubeNode = ControllerUtils.cube(1, 1, 1, color, faceName);
-        cubeNode.parent = this._editControllerShape;
-        let dir = this._faceDirMap[faceName];
-        this.updateMidControllerTransform(cubeNode, dir);
-        this.initAxis(cubeNode, faceName);
-    }
+    _updateEditController(axisName) {
+        let node = this._axisDataMap[axisName].topNode;
+        let dir = this._axisDir[axisName];
 
-    updateMidControllerTransform(node, dir) {
         let offset = cc.v3();
         vec3.mul(offset, dir, this._size);
         vec3.scale(offset, offset, 0.5);
         let pos = offset.add(this._center);
-        node.setScale(1 / this._scale.x, 1 / this._scale.y, 1 / this._scale.z);
+        let baseScale = this._editCtrlScales[axisName];
+        node.setScale(baseScale / this._scale.x, baseScale / this._scale.y, baseScale / this._scale.z);
         node.setPosition(pos.x, pos.y, pos.z);
-    }
-
-    _updateMidController(faceName) {
-        let node = this._axisDataMap[faceName].topNode;
-        let dir = this._faceDirMap[faceName];
-        this.updateMidControllerTransform(node, dir);
-    }
-
-    initEditController() {
-        if (!this._editControllerShape) {
-            this._editControllerShape = create3DNode('EditControllerShape');
-            this._editControllerShape.parent = this.shape;
-
-            this._faceDirMap = {};
-            this._faceDirMap.up = cc.v3(0, 1, 0);
-            this._faceDirMap.down = cc.v3(0, -1, 0);
-            this._faceDirMap.left = cc.v3(-1, 0, 0);
-            this._faceDirMap.right = cc.v3(1, 0, 0);
-            this._faceDirMap.forward = cc.v3(0, 0, -1);
-            this._faceDirMap.backward = cc.v3(0, 0, 1);
-
-            Object.keys(this._faceDirMap).forEach((key) => {
-                this.createMidController(key, cc.Color.GREEN);
-            });
-        }
     }
 
     initShape() {
@@ -81,9 +58,7 @@ class BoxController extends EditableController {
         this._wireframeBoxMeshRenderer = getModel(this._wireframeBoxNode);
         this.hide();
 
-        if (this._edit) {
-            this.initEditController();
-        }
+        EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
     }
 
     updateSize(center, size) {
@@ -95,15 +70,10 @@ class BoxController extends EditableController {
         updateVBAttr(this._wireframeBoxMeshRenderer.mesh, gfx.ATTR_POSITION, positions);
 
         if (this._edit) {
-            this.updateMidControllers();
+            this.updateEditControllers();
         }
-    }
 
-    updateMidControllers() {
-
-        Object.keys(this._faceDirMap).forEach((key) => {
-            this._updateMidController(key);
-        });
+        this.adjustEditControllerSize();
     }
 
     // don't scale when camera move
@@ -112,12 +82,32 @@ class BoxController extends EditableController {
     }
 
     onMouseDown(event) {
+        this._mouseDeltaPos = cc.v2(0, 0);
+        this._curDistScalar = super.getDistScalar();
+        vec3.set(this._deltaSize, 0, 0, 0);
+
         if (this.onControllerMouseDown != null) {
             this.onControllerMouseDown();
         }
     }
 
     onMouseMove(event) {
+        this._mouseDeltaPos.x += event.moveDeltaX;
+        this._mouseDeltaPos.y += event.moveDeltaY;
+
+        let axisDir = this._axisDir[event.axisName];
+
+        let deltaDist = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir),
+        this._mouseDeltaPos) * this._curDistScalar;
+
+        if (event.axisName === 'x' || event.axisName === 'neg_x') {
+            this._deltaSize.x = deltaDist;
+        } else if (event.axisName === 'y' || event.axisName === 'neg_y') {
+            this._deltaSize.y = deltaDist;
+        } else if (event.axisName === 'z' || event.axisName === 'neg_z') {
+            this._deltaSize.z = deltaDist;
+        }
+
         if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);
         }
@@ -142,6 +132,9 @@ class BoxController extends EditableController {
         this.resetAxisColor();
     }
 
+    getDeltaSize() {
+        return this._deltaSize;
+    }
 }
 
 module.exports = BoxController;

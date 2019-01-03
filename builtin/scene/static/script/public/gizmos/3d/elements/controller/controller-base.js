@@ -11,6 +11,8 @@ const { setNodeOpacity, create3DNode, setMeshColor, getModel, getMeshColor,
 let TransformToolData = require('../../../utils/transform-tool-data');
 const Utils = require('../../../utils');
 
+let tempVec3 = cc.v3();
+
 class ControllerBase {
     constructor(rootNode) {
         this._position = cc.v3(0, 0, 0);
@@ -281,12 +283,22 @@ class ControllerBase {
 
     localToWorldPosition(localPos) {
         let worldMatrix = cc.mat4();
-        let worldPos = cc.v3(0, 0, 0);
+        let worldPos = cc.v3();
         this.shape.getWorldMatrix(worldMatrix);
 
         vec3.transformMat4(worldPos, localPos, worldMatrix);
 
         return worldPos;
+    }
+
+    localToWorldDir(localDir) {
+        let worldMatrix = cc.mat4();
+        let worldDir = cc.v3();
+        this.shape.getWorldMatrix(worldMatrix);
+
+        vec3.transformMat4Normal(worldDir, localDir, worldMatrix);
+        vec3.normalize(worldDir, worldDir);
+        return worldDir;
     }
 
     worldPosToScreenPos(worldPos) {
@@ -301,8 +313,9 @@ class ControllerBase {
         return this.worldPosToScreenPos(this.localToWorldPosition(localPos));
     }
 
-    getAlignAxisMoveDistance(axisWorldDirEndPos, deltaPos) {
-        let dirInScreen = this.worldPosToScreenPos(axisWorldDirEndPos);
+    getAlignAxisMoveDistance(axisWorldDir, deltaPos) {
+        let endPos = vec3.add(tempVec3, this._position, axisWorldDir);
+        let dirInScreen = this.worldPosToScreenPos(endPos);
         let oriPosInScreen = this.worldPosToScreenPos(this._position);
         vec2.sub(dirInScreen, dirInScreen, oriPosInScreen);
         vec2.normalize(dirInScreen, dirInScreen);

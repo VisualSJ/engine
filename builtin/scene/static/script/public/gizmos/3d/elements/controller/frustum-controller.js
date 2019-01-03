@@ -128,7 +128,7 @@ class FrustumController extends EditableController {
 
         let axisDir = this._axisDir[event.axisName];
 
-        let deltaDist = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir),
+        let deltaDist = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir),
         this._mouseDeltaPos) * this._curDistScalar;
         if (event.axisName === 'neg_z') {
             this._deltaDistance = deltaDist;

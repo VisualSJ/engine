@@ -118,7 +118,7 @@ class PositionController extends ControllerBase {
 
     getAlignAxisDeltaPosition(axisName, curMouseDeltaPos) {
         let axisDir = this._axisDir[axisName];
-        let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldPosition(axisDir), curMouseDeltaPos);
+        let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir), curMouseDeltaPos);
         let deltaPosition = cc.v3();
         vec3.scale(deltaPosition, axisDir, alignAxisMoveDist * this._curDistScalar);
 

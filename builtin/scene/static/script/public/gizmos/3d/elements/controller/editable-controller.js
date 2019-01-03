@@ -17,6 +17,7 @@ class EditableController extends ControllerBase {
         this._editControllerShape = null;
         this._defaultEditCtrlSize = 5;
         this._hoverColor = cc.Color.GREEN;
+        this._editCtrlScales = {};
 
         EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
     }
@@ -70,6 +71,7 @@ class EditableController extends ControllerBase {
         let ctrlSize = this._defaultEditCtrlSize;
         let editCtrlNode = ControllerUtils.quad(ctrlSize, ctrlSize, color, axisName, {unlit : true});
         editCtrlNode.parent = this._editControllerShape;
+        this._editCtrlScales[axisName] = cc.v3(1, 1, 1);
         this.initAxis(editCtrlNode, axisName);
         this._updateEditController(axisName);
     }
@@ -121,7 +123,8 @@ class EditableController extends ControllerBase {
                     let node = axisData.topNode;
                     node.getWorldPosition(tempVec3);
                     let scalar = this.getCameraDistScalar(tempVec3);
-                    node.setScale(cc.v3(scalar, scalar, scalar));
+                    this._editCtrlScales[this._axisDir] = scalar;
+                    node.setScale(cc.v3(scalar / this._scale.x, scalar / this._scale.y, scalar / this._scale.z));
 
                     // face edit ctrl to camera
                     EditorCamera._camera.node.getWorldPosition(tempVec3);
