@@ -23,7 +23,7 @@
         "@babel/plugin-proposal-decorators": "^7.1.6",
         "@babel/preset-env": "^7.1.6",
         "@babel/preset-typescript": "^7.1.0",
-        "@base/electron-base-ipc": "^1.0.1",
+        "@base/electron-base-ipc": "^1.0.2",
         "@base/electron-i18n": "^1.0.1",
         "@base/electron-logger": "^1.0.0",
         "@base/electron-menu": "^1.0.0",

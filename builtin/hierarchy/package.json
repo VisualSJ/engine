@@ -27,14 +27,8 @@
             "ctrl+f": "find",
             "command+f": "find",
 
-            "ctrl+c": "copy",
-            "command+c": "copy",
-
             "ctrl+d": "duplicate",
             "command+d": "duplicate",
-
-            "ctrl+v": "paste",
-            "command+v": "paste",
 
             "command+backspace": "delete",
             "ctrl+backspace": "delete",
