@@ -187,10 +187,15 @@ export const methods = {
         if (!vm.selects.includes(uuid)) {
             vm.selects.push(uuid);
             vm.current = utils.getAssetFromMap(uuid);
-            if (show) {
-                // @ts-ignore
-                this.intoView = uuid;
-            }
+
+            // 延迟定位，避免 shift 多选后的界面闪烁
+            clearTimeout(vm.selectTimer);
+            vm.selectTimer = setTimeout(() => {
+                if (show) {
+                    vm.intoView = uuid;
+                }
+            }, 100);
+
             return vm.current;
         }
         return;
@@ -348,6 +353,18 @@ export const methods = {
      * @param asset
      */
     async ipcDelete(uuid: string) {
+        const code = await Editor.Dialog.show({ // 删除前询问
+            type: 'question',
+            default: 0,
+            cancel: 1,
+            title: Editor.I18n.t('assets.menu.delete'),
+            message: Editor.I18n.t('assets.operate.sureDelete'),
+        });
+
+        if (code === 1) { // 取消
+            return false;
+        }
+
         if (uuid && !vm.selects.includes(uuid)) { // 如果该资源没有被选中，则只是删除此单个
             const asset = utils.getAssetFromTree(uuid);
             if (utils.canNotDeleteAsset(asset)) {

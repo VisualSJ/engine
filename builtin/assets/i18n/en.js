@@ -37,6 +37,7 @@ module.exports = {
     },
 
     operate: {
+        sureDelete: 'Sure delete these assets?',
         renameFail: 'Rename Fail: The new file name already exists.',
         copyFail: 'Asset cannot be copied',
         pasteFail_parent_into_child: 'subAsset cannot paste ancestry',

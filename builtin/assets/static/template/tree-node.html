@@ -41,7 +41,6 @@
         :value="asset.name"
         @blur="renameSubmit($event, asset)"
         @keydown.stop
-        @blur.stop
         @keydown.enter="renameSubmit($event, asset)"
         @keydown.esc="renameCancel($event, asset)"
     >
