@@ -2,7 +2,7 @@
 
 const selection = require('../../public/selection');
 const operationManager = require('./operation');
-const { EditorCamera } = require('./camera');
+const EditorCamera = require('./camera');
 
 selection.init = function() {
     operationManager.on('mouseup', (data) => {

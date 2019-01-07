@@ -1,6 +1,6 @@
 'use strict';
 
-import { shell } from 'electron';
+import { ipcMain, shell } from 'electron';
 import { getPort, setPreviewBuildPath, start, stop } from './express';
 import { emitReload } from './socket';
 const profile = Editor.Profile.load('profile://global/packages/preferences.json');
@@ -19,6 +19,10 @@ function getConfig(name: string) {
 }
 
 export const messages = {
+    open() {
+        Editor.Panel.open('preview');
+    },
+
     /**
      * 场景保存的时候发送的消息
      */
@@ -88,12 +92,20 @@ export const messages = {
     },
 };
 
+const func = (event: any) => {
+    event.sender.send('query-current-content-id:reply', event.sender.id);
+};
+
 export async function load() {
     // @ts-ignore
     pkg = this;
     await start();
+
+    ipcMain.on('query-current-content-id', func);
 }
 
 export function unload() {
     stop();
+
+    ipcMain.removeListener('query-current-content-id', func);
 }

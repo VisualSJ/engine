@@ -129,4 +129,12 @@ export function apply(messages: any) {
     messages['query-components'] = async () => {
         return await $scene.forceForwarding('Scene', 'queryComponents');
     };
+
+    messages['query-preview-info'] = async () => {
+        const cameras = await $scene.forwarding('Preview', 'queryCameraList');
+        return {
+            id: $scene.$scene.getWebContents().id,
+            cameras,
+        };
+    };
 }

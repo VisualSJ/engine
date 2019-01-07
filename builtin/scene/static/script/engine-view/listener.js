@@ -7,10 +7,17 @@
 const utils = {
     createMouseEvent(event, bcr) {
         return {
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
+
             x: event.pageX - bcr.x,
             y: event.pageY - bcr.y,
-            wheelDeltaX: event.deltaX || 0,
-            wheelDeltaY: event.deltaY || 0,
+            deltaX: event.deltaX || 0,
+            deltaY: event.deltaY || 0,
+            wheelDeltaX: event.wheelDeltaX || 0,
+            wheelDeltaY: event.wheelDeltaY || 0,
             moveDeltaX: event.movementX || 0,
             moveDeltaY: event.movementY || 0,
             leftButton: !!(event.buttons & 1) || event.button === 0,

@@ -11,6 +11,10 @@
             "message": "reload-terminal",
             "accelerator": "CmdOrCtrl+Shift+P",
             "icon": "./static/refresh.png"
+        },
+        "i18n:menu.develop/i18n:preview.title": {
+            "message": "open",
+            "group": "preview"
         }
     },
     "main": "./dist/browser.js",
@@ -24,5 +28,14 @@
             "position": "right",
             "file": "./static/toolbar/right.js"
         }
-    ]
+    ],
+
+    "panel": {
+        "title": "i18n:preview.title",
+        "main": "./dist/panel/index.js",
+        "min-width": 200,
+        "min-height": 200,
+        "width": 400,
+        "height": 600
+    }
 }

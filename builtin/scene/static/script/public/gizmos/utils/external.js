@@ -11,6 +11,6 @@ if (GizmoConfig.isCreator2x) {
 } else {
     exports.NodeUtils = require('../../../utils/node');
     exports.EditorMath = require('../../../utils/math');
-    exports.EditorCamera = require('../../../3d/manager/camera').EditorCamera;
+    exports.EditorCamera = require('../../../3d/manager/camera');
     exports.GeometryUtils.aabb = require('../../../utils/aabb');
 }

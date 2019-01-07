@@ -2,7 +2,8 @@
 
 const scene = require('./scene');
 const node = require('./node');
-const { CameraMoveMode, EditorCamera } = require('./camera');
+const EditorCamera = require('./camera');
+const CameraMoveMode = EditorCamera.CameraMoveMode;
 const gizmo = require('../../public/gizmos');
 
 scene.on('open', (error, scene) => {

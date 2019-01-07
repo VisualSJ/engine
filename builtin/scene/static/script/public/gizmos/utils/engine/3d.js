@@ -1,6 +1,6 @@
 'use strict';
 let EngineInterface = require('./engine-interface');
-const CameraTool = require('../../../../3d/manager/camera').EditorCamera;
+const CameraTool = require('../../../../3d/manager/camera');
 let External = require('../external');
 let aabb = External.GeometryUtils.aabb;
 

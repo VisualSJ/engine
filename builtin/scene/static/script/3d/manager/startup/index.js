@@ -74,7 +74,7 @@ async function manager(info) {
 
     // 给 Manager 挂上所有的管理器
     manager.Ipc = require('../ipc');
-    manager.Camera = require('../camera').EditorCamera;
+    manager.Camera = require('../camera');
     manager.Scene = require('../scene');
     manager.Node = require('../node');
     manager.Script = require('../scripts');

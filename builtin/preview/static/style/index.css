@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.toolbar {
+    padding: 6px 12px;
+}
+
+.preview {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    background: #555;
+    border: 1px solid #333;
+}
+
+.preview canvas {
+    flex: 1;
+    transform: scaleY(-1);
+}

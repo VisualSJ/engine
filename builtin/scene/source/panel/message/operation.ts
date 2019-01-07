@@ -252,7 +252,7 @@ export function apply(messages: any) {
             return null;
         }
         if (uuids) {
-            await $scene.forwarding('Camera', 'focusCameraToNodes', [uuids]);
+            await $scene.forwarding('Camera', 'focus', [uuids]);
         }
     };
 }

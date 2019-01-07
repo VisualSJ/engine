@@ -54,7 +54,7 @@ function bindEvent(operator) {
         }
         cc.view.setCanvasSize(bcr.width, bcr.height);
         cc.view.setDesignResolutionSize(bcr.width, bcr.height, policy || cc.ResolutionPolicy.SHOW_ALL);
-        // operator.emit('resize', { width: bcr.width, height: bcr.height });
+        operator.emit('resize', { width: bcr.width, height: bcr.height });
     });
 }
 
@@ -63,7 +63,6 @@ function bindEvent(operator) {
  */
 class Operation {
     constructor() {
-        // super();
         /**
          * 窗口变化
          * resize

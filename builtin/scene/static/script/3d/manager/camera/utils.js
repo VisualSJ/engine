@@ -1,6 +1,36 @@
 'use stirct';
 
-function grid (width, length, segw, segl) {
+const nodeManager = require('../node');
+
+// wasd 按键提示
+const $info = document.createElement('div');
+$info.hidden = true;
+$info.id = 'camera_info';
+$info.innerHTML = `
+<style>
+    #camera_info { position: absolute; top: 10px; left: 10px; font-size: 12px; text-align: center; color: #fff; }
+    #camera_info div { padding: 2px 0; }
+    #camera_info span { border: 1px solid #fff; border-radius: 2px; padding: 0 4px; }
+</style>
+<div>
+    <span>w</span>
+</div>
+<div>
+    <span>a</span>
+    <span>s</span>
+    <span>d</span>
+</div>
+`;
+document.body.appendChild($info);
+
+/**
+ * 绘制线条
+ * @param {*} width
+ * @param {*} length
+ * @param {*} segw
+ * @param {*} segl
+ */
+function grid(width, length, segw, segl) {
     let positions = [];
     let uvs = [];
     let indices = [];
@@ -27,18 +57,25 @@ function grid (width, length, segw, segl) {
         indices.push(idx, idx + 1, idx + 2, idx + 2, idx + 1, idx + 3);
     }
 
-    for (let x = -hw; x <= hw; x += dw)
+    for (let x = -hw; x <= hw; x += dw) {
         addLine(x, -hl, x, hl);
-    for (let z = -hl; z <= hl; z += dl)
+    }
+    for (let z = -hl; z <= hl; z += dl) {
         addLine(-hw, z, hw, z);
+    }
 
     return {
         positions,
         uvs,
-        indices
+        indices,
     };
 }
 
+/**
+ * 创建网格
+ * @param {*} w
+ * @param {*} l
+ */
 function createGrid(w, l) {
     let node = new cc.Node('Editor Grid');
     node.layer = cc.Layers.Editor | cc.Layers.IgnoreRaycast;
@@ -51,6 +88,10 @@ function createGrid(w, l) {
     return node;
 }
 
+/**
+ * 创建相机
+ * @param {*} color
+ */
 function createCamera(color) {
     let node = new cc.Node('Editor Camera');
     node.layer = cc.Layers.Editor | cc.Layers.IgnoreRaycast;
@@ -62,7 +103,60 @@ function createCamera(color) {
     return [ camera, light ];
 }
 
+/**
+ * 查询带有 light 的节点列表
+ * @param {*} excludes 排除的节点数组
+ */
+function queryLightNodes(excludes) {
+    const nodes = [];
+    nodeManager.queryUuids().forEach((uuid) => {
+        const node = nodeManager.query(uuid);
+        if (!node || excludes.includes(node)) {
+            return;
+        }
+        const comp = node.getComponent(cc.LightComponent);
+        if (!comp) {
+            return;
+        }
+        nodes.push(node);
+    });
+
+    return nodes;
+}
+
+/**
+ * 检查场景内是否有可以使用的光源
+ * @param {*} nodes
+ */
+function isSceneHasActiveLight(nodes) {
+    let hasActive = false;
+    let noLightNode = [];
+    nodes.forEach((node) => {
+            if (node.active) {
+                let lightComp = node.getComponent(cc.LightComponent);
+                if (lightComp) {
+                    if (lightComp.enabled === true) {
+                        hasActive = true;
+                    }
+                } else {
+                    // need to remove node from list
+                    noLightNode.push(node);
+                }
+            }
+        });
+
+    noLightNode.forEach((node) => {
+        let index = nodes.indexOf(node);
+        nodes.splice(index, 1);
+    });
+
+    return hasActive;
+}
+
 module.exports = {
+    $info,
     createCamera,
     createGrid,
+    queryLightNodes,
+    isSceneHasActiveLight,
 };
