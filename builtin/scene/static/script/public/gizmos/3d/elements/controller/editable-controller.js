@@ -127,8 +127,9 @@ class EditableController extends ControllerBase {
                     node.setScale(cc.v3(scalar / this._scale.x, scalar / this._scale.y, scalar / this._scale.z));
 
                     // face edit ctrl to camera
-                    EditorCamera._camera.node.getWorldPosition(tempVec3);
-                    node.lookAt(tempVec3);
+                    let cameraRot = cc.quat();
+                    EditorCamera._camera.node.getWorldRotation(cameraRot);
+                    node.setWorldRotation(cameraRot);
                 }
             });
         }

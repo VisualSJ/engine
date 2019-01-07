@@ -442,6 +442,8 @@ class GizmoManager {
 
                     this.hoverinNode = target;
                     customEvent = new cc.Event('hoverIn', true);
+                    customEvent.x = x;
+                    customEvent.y = y;
                     this.hoverinNode.emit(customEvent.type, customEvent);
                 }
             } else {

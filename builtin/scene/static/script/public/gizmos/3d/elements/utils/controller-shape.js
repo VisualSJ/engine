@@ -445,6 +445,12 @@ ControllerShape.calcCirclePoints = function(center, normal, radius, segments = 6
     return ControllerShape.calcArcPoints(center, normal, biNormal, MathUtil.TWO_PI, radius, segments);
 };
 
+ControllerShape.calcDiscPoints = function(center, normal, radius, segments = 60) {
+    let biNormal = ControllerShape.getBiNormalByNormal(normal);
+
+    return ControllerShape.calcSectorPoints(center, normal, biNormal, MathUtil.TWO_PI, radius, segments);
+};
+
 ControllerShape.calcSectorPoints = function(center, normal, fromDir, radian, radius, segments) {
     let sectorPoints = [];
     sectorPoints.push(center);
@@ -453,6 +459,15 @@ ControllerShape.calcSectorPoints = function(center, normal, fromDir, radian, rad
     return sectorPoints;
 };
 
+// 圆盘
+ControllerShape.disc = function(center, normal, radius) {
+
+    let biNormal = ControllerShape.getBiNormalByNormal(normal);
+
+    return ControllerShape.sector(center, normal, biNormal, MathUtil.TWO_PI, radius, 60);
+};
+
+// 扇形
 ControllerShape.sector = function(center, normal, fromDir, radian, radius, segments) {
     return createMesh({
         positions: ControllerShape.calcSectorPoints(center, normal, fromDir, radian, radius, segments),
@@ -462,6 +477,7 @@ ControllerShape.sector = function(center, normal, fromDir, radian, radius, segme
     });
 };
 
+// 弧形
 ControllerShape.arc = function(center, normal, fromDir, radian, radius, segments = 60) {
     return createMesh({
         positions: ControllerShape.calcArcPoints(center, normal, fromDir, radian, radius, segments),

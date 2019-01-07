@@ -4,11 +4,13 @@ const quat = cc.vmath.quat;
 let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 let ControllerShape = require('../utils/controller-shape');
-const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode } = require('../../../utils/engine');
+const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode, panPlaneLayer,
+    getRaycastResults } = require('../../../utils/engine');
 const Utils = require('../../../utils');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
-const EditorMath = External.EditorMath;
+const MathUtil = External.EditorMath;
+const EditorCamera = External.EditorCamera;
 
 class RotationController extends ControllerBase {
     constructor(rootNode) {
@@ -38,7 +40,7 @@ class RotationController extends ControllerBase {
         NodeUtils.setEulerAngles(torusNode, torusRot);
         let arrowNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
             baseArrowBodyHeight, color, axisName + 'Axis');
-        arrowNode.parent = topNode;
+        arrowNode.parent = this.shape;
         NodeUtils.setEulerAngles(arrowNode, arrowRot);
         let arcNode = ControllerUtils.arc(cc.v3(),
             this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color, { noDepthTestForLines: true });
@@ -65,17 +67,42 @@ class RotationController extends ControllerBase {
         // 目前碰撞检测用的是透明的Torus模型
         // x rotation
         this.createRotationShape('x', cc.v3(0, 0, 90), cc.v3(-90, -90, 0),
-            this._axisDir.z, -this._halfPI, cc.Color.RED);
+            this._axisDir.z, -this._twoPI, cc.Color.RED);
 
         // y rotation
-        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir.z, this._halfPI, cc.Color.GREEN);
+        this.createRotationShape('y', cc.v3(0, 0, 0), cc.v3(0, 0, 0), this._axisDir.z, this._twoPI, cc.Color.GREEN);
 
         // z rotation
-        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir.x, this._halfPI, cc.Color.BLUE);
+        this.createRotationShape('z', cc.v3(-90, 0, 0), cc.v3(90, 0, 90), this._axisDir.x, this._twoPI, cc.Color.BLUE);
 
         // for 2d z rotation, use w for hack
         this._axisDir.w = cc.v3(0, 0, 1);
         this.createRotationShape('w', cc.v3(-90, 0, 0), cc.v3(0, 0, -90), this._axisDir.x, this._twoPI, cc.Color.BLUE);
+
+        // circle border
+        let cameraNode = EditorCamera._camera.node;
+        let cameraRot = cameraNode.getWorldRotation();
+        let cameraNormal = cc.v3();
+        vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
+        let circleBorderNode = ControllerUtils.circle(cc.v3(), cameraNormal,
+            this._baseRadius, new cc.Color(20, 20, 20), 'circleBorder');
+        circleBorderNode.parent = this._rootNode;
+        setNodeOpacity(circleBorderNode, 200);
+
+        this._circleBorderNode = circleBorderNode;
+        this._circleBorderMR = getModel(circleBorderNode);
+        this._circleBorderNode.setWorldPosition(this._position);
+
+        // for cut off
+        // let cutoffNode = ControllerUtils.disc(cc.v3(), cameraNormal,
+        //     this._baseRadius, ControllerUtils.RED);
+        // 圆盘暂时无法碰撞检测，先用quad代替
+        let cutoffNode = ControllerUtils.quad(this._baseRadius * 2 , this._baseRadius * 2);
+        setNodeOpacity(cutoffNode, 0);
+        cutoffNode.parent = this._rootNode;
+        cutoffNode.layer = panPlaneLayer;
+        this._cutoffNode = cutoffNode;
+        this._cutoffMR = getModel(cutoffNode);
 
         // for rotation indicator sector
         let indicator = {};
@@ -94,7 +121,9 @@ class RotationController extends ControllerBase {
         let axisData = this._axisDataMap[axisName];
         axisData.normalTorusNode = node.getChildByName(axisName + 'RotationArc');
         axisData.indicatorCircle = node.getChildByName(axisName + 'IndicatorCircle');
-        axisData.arrowNode = node.getChildByName(axisName + 'Axis');
+        axisData.arrowNode = this.shape.getChildByName(axisName + 'Axis');
+        axisData.arrowNode.active = false;
+        axisData.normalTorusMR = getModel(axisData.normalTorusNode);
     }
 
     isHitOnAxisArrow(hitNode, axisName) {
@@ -110,7 +139,30 @@ class RotationController extends ControllerBase {
         return false;
     }
 
+    isInCutoffBack(axisName, x, y) {
+        let hitAxisNode = this._axisDataMap[axisName].normalTorusNode;
+        let results = getRaycastResults(this._cutoffNode, x, y);
+
+        if (results.length > 0) {
+            let cutOffDist = results[0].distance;
+
+            results = getRaycastResults(hitAxisNode, x, y);
+            if (results.length > 0) {
+                let axisDist = results[0].distance;
+                if (axisDist > cutOffDist) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     onMouseDown(event) {
+        if (this.isInCutoffBack(event.axisName, event.x, event.y)) {
+            return;
+        }
+
         this._mouseDownRot = quat.clone(this._rotation);
         this._mouseDeltaPos = cc.v2(0, 0);
 
@@ -142,16 +194,20 @@ class RotationController extends ControllerBase {
 
         this._rotateAlignDir = crossDir;
         this._transformAxisDir = axisDir;
-        vec3.add(this._rotateAlignDir, this._rotateAlignDir, this._position);
+        //vec3.add(this._rotateAlignDir, this._rotateAlignDir, this._position);
 
         // show indicator
         this.updateRotationIndicator(this._transformAxisDir, this._indicatorStartDir, 0);
         this._indicator.sectorNode.active = true;
         this._axisDataMap[event.axisName].indicatorCircle.active = true;
 
+        // hide border
+        this._circleBorderNode.active = false;
+
         Object.keys(this._axisDataMap).forEach((key) => {
             if (key === event.axisName) {
                 this._axisDataMap[key].normalTorusNode.active = false;
+                this._axisDataMap[key].arrowNode.active = true;
             } else {
                 this._axisDataMap[key].topNode.active = false;
             }
@@ -159,14 +215,6 @@ class RotationController extends ControllerBase {
 
         // 锁定鼠标
         Utils.requestPointerLock();
-
-        // debug
-        // let debugDir = cc.v3();
-        // vec3.scale(debugDir, hitDir, 1000);
-        // let worldPos = this.localToWorldPosition(cc.v3());
-        // vec3.add(debugDir, debugDir, worldPos);
-        // this._dirNode = ControllerUtils.lineTo(worldPos, debugDir);
-        // this._dirNode.parent = this._rootNode;
 
         if (this.onControllerMouseDown != null) {
             this.onControllerMouseDown();
@@ -176,8 +224,8 @@ class RotationController extends ControllerBase {
     onMouseMove(event) {
         // mousemovent sometimes has a big number when pointer was locked
         // https://stackoverflow.com/questions/47985847/javascript-mouseevent-movementx-and-movementy-large-spikes
-        let deltaX = EditorMath.clamp(event.moveDeltaX, -10, 10);
-        let deltaY = EditorMath.clamp(event.moveDeltaY, -10, 10);
+        let deltaX = MathUtil.clamp(event.moveDeltaX, -10, 10);
+        let deltaY = MathUtil.clamp(event.moveDeltaY, -10, 10);
 
         this._mouseDeltaPos.x += deltaX;
         this._mouseDeltaPos.y += deltaY;
@@ -203,12 +251,11 @@ class RotationController extends ControllerBase {
     }
 
     onMouseUp() {
-        // if (this._dirNode)
-        //     this._dirNode.destroy();
-
         Utils.exitPointerLock();
         this._indicator.sectorNode.active = false;
         this._deltaRotation = cc.quat(0, 0, 0, 1);
+        // show border
+        this._circleBorderNode.active = true;
 
         if (this.is2D) {
             this._axisDataMap.w.indicatorCircle.active = false;
@@ -220,6 +267,7 @@ class RotationController extends ControllerBase {
                     this._axisDataMap[key].normalTorusNode.active = true;
                     this._axisDataMap[key].topNode.active = true;
                     this._axisDataMap[key].indicatorCircle.active = false;
+                    this._axisDataMap[key].arrowNode.active = false;
                 }
             });
         }
@@ -234,6 +282,10 @@ class RotationController extends ControllerBase {
     }
 
     onHoverIn(event) {
+        if (this.isInCutoffBack(event.axisName, event.x, event.y)) {
+            return;
+        }
+
         this.setAxisColor(event.axisName, ControllerUtils.YELLOW);
 
         Object.keys(this._axisDataMap).forEach((key) => {
@@ -268,6 +320,8 @@ class RotationController extends ControllerBase {
             this._axisDataMap.z.topNode.active = false;
 
             this._axisDataMap.w.topNode.active = true;
+            this._circleBorderNode.active = false;
+            this._cutoffNode.active = false;
             this.updateController();
         } else {
             this._axisDataMap.x.topNode.active = true;
@@ -275,7 +329,14 @@ class RotationController extends ControllerBase {
             this._axisDataMap.z.topNode.active = true;
 
             this._axisDataMap.w.topNode.active = false;
+            this._circleBorderNode.active = true;
+            this._cutoffNode.active = true;
         }
+    }
+
+    onHide() {
+        this._circleBorderNode.active = false;
+        this._cutoffNode.active = false;
     }
 
     updateRotationIndicator(normal, fromDir, radian) {
@@ -284,6 +345,52 @@ class RotationController extends ControllerBase {
             this._baseRadius * this.getDistScalar(), 60);
 
         updateVBAttr(this._indicator.meshRenderer.mesh, gfx.ATTR_POSITION, positions);
+    }
+
+    adjustControllerSize() {
+        let scalar = this.getDistScalar();
+        let newScale = this._scale.mul(scalar);
+        this.shape.setScale(newScale);
+
+        // update circle border
+        this._circleBorderNode.setScale(newScale);
+        this._circleBorderNode.setWorldPosition(this._position);
+        let cameraNode = EditorCamera._camera.node;
+        let cameraRot = cameraNode.getWorldRotation();
+        let cameraNormal = cc.v3();
+        vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
+        let positions = ControllerShape.calcCirclePoints(cc.v3(), cameraNormal,
+            this._baseRadius);
+        updateVBAttr(this._circleBorderMR.mesh, gfx.ATTR_POSITION, positions);
+
+        // update cutoff
+        //positions = ControllerShape.calcDiscPoints(cc.v3(), cameraNormal, this._baseRadius);
+        //updateVBAttr(this._cutoffMR.mesh, gfx.ATTR_POSITION, positions);
+        this._cutoffNode.setScale(newScale);
+        this._cutoffNode.setWorldPosition(this._position);
+        this._cutoffNode.setWorldRotation(cameraRot);
+
+        let localCamNormal = cc.v3();
+        let worldToLocalMat = cc.mat4();
+        this.shape.getWorldMatrix(worldToLocalMat);
+        cc.vmath.mat4.invert(worldToLocalMat, worldToLocalMat);
+        vec3.transformMat4Normal(localCamNormal, cameraNormal, worldToLocalMat);
+
+        if (!this.is2D) {
+            Object.keys(this._axisDataMap).forEach((key) => {
+                if (key !== 'w') {
+                    let from = cc.v3();
+                    let axisDir = this._axisDir[key];
+                    vec3.cross(from, axisDir, localCamNormal);
+                    vec3.normalize(from, from);
+                    positions = ControllerShape.calcArcPoints(cc.v3(), axisDir, from, -Math.PI,
+            this._baseRadius);
+
+                    let axisData = this._axisDataMap[key];
+                    updateVBAttr(axisData.normalTorusMR.mesh, gfx.ATTR_POSITION, positions);
+                }
+            });
+        }
     }
 }
 

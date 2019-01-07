@@ -159,6 +159,15 @@ ControllerUtils.lineTo = function(startPos, endPos, color = cc.Color.RED, opts) 
     return lineNode;
 };
 
+ControllerUtils.disc = function(center, normal, radius, color = cc.Color.RED, name = 'disc') {
+    let discNode = create3DNode(name);
+    addMeshToNode(discNode,
+        ControllerShape.disc(center, normal, radius));
+    setMeshColor(discNode, color);
+
+    return discNode;
+};
+
 ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color = cc.Color.RED) {
     let sectorNode = create3DNode('sector');
     addMeshToNode(sectorNode,
