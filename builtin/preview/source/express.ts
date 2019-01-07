@@ -3,7 +3,7 @@
 import { createReadStream, existsSync } from 'fs-extra';
 import http from 'http';
 import { basename, join } from 'path';
-import { start as startSocket } from './socket';
+import { disconnect , start as startSocket } from './socket';
 const Mobiledetect = require('mobile-detect');
 const { DEVICES } = require('./../static/utils/util');
 const express = require('express');
@@ -41,7 +41,6 @@ export async function start() {
     app.set('views', join(__dirname, '../static/views'));
     app.set('view engine', 'jade');
 
-    // 获取配置文件
     app.get('/setting.js', async (req: any, res: any) => {
         const setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
@@ -71,15 +70,15 @@ export async function start() {
         res.sendFile(path);
     }),
 
-        // 获取项目对应类型的脚本文件
-        app.get('/preview-scripts/*', async (req: any, res: any) => {
-            // 设置（HACK）资源目录地址
-            res.writeHead(200, {
-                'Content-Type': 'text/javascript',
-            });
-            const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
-            res.end(str);
+    // 获取项目对应类型的脚本文件
+    app.get('/preview-scripts/*', async (req: any, res: any) => {
+        // 设置（HACK）资源目录地址
+        res.writeHead(200, {
+            'Content-Type': 'text/javascript',
         });
+        const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
+        res.end(str);
+    });
 
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene.json', async (req: any, res: any) => {
@@ -190,6 +189,7 @@ export function stop() {
         return;
     }
     server.close(() => {
+        disconnect();
         console.info('shutdown server for preview');
     });
 }

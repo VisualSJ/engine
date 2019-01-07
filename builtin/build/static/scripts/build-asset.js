@@ -68,11 +68,6 @@ class AssetBuilder {
                 internal: {},
             },
         };
-        // for (let uuid of Object.keys(buildResult.assetCache)) {
-        //     let asset = buildResult.assetCache[uuid];
-        //     // ********************* 资源类型 ********************** //
-        //     await this.computeAssetInfo(asset);
-        // }
         await Promise.all(Object.values(buildResult.assetCache).map(async (asset) => {
             await this.computeAssetInfo(asset);
         })).catch((err) => console.error(err));
@@ -104,21 +99,20 @@ class AssetBuilder {
                     internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
                 }
                 buildResult.assetCache[uuid] = asset;
+                return;
             }
             if (Object.keys(asset.subAssets).length > 0) {
                 for (let subAsset of Object.values(asset.subAssets)) {
                     subAsset.fatherUuid = uuid;
-                    // 注意此时更改 uuid 的顺序问题
-                    uuid = subAsset.uuid;
-                    buildResult.assetCache[uuid] = subAsset;
+                    // 注意此时更改 uuid 的顺序问题，并且此时函数全局 uuid 已被更改
+                    buildResult.assetCache[subAsset.uuid] = subAsset;
                     if (asset.source.startsWith('db://assets')) {
-                        assets[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                        assets[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
                     } else if (asset.source.startsWith('db://internal')) {
-                        internal[uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
+                        internal[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
                     }
                 }
             }
-            return;
         }
         if (asset.source.startsWith('db://assets')) {
             assets[uuid] = [getAssetUrl(asset.source), asset.type];

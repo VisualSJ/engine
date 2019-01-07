@@ -19,6 +19,33 @@
     let devices = {};
     let scene = null;
     let rotated = false;
+    // socket
+    // =======================
+    let socket = io();
+    // 开启 socket 监听的消息交互
+    function socketMonitor() {
+        socket.on('browser:reload', function() {
+            window.location.reload();
+        });
+
+        socket.on('browser:disconnect', function() {
+            window.location.reload();
+        });
+
+        /**
+         * 全局错误捕获
+         * @param {String}  msg    错误信息
+         * @param {String}  url    出错文件
+         * @param {Number}  row    行号
+         * @param {Number}  col    列号
+         * @param {Object}  error  错误详细信息
+         */
+        window.onerror = function(...args) {
+            socket.emit('preview error', ...args);
+            console.log({...args});
+            return true; // 注意，在返回 true 的时候，异常才不会继续向上抛出error;
+        };
+    }
 
     const isMobile = function() {
         var check = false;
@@ -150,6 +177,7 @@
             onload();
         }
     };
+
     // 检查是否为空场景
     function checkEmptyScene() {
         let scene = cc.director.getScene();
@@ -243,22 +271,6 @@
         if (isFullScreen()) {
             window.addEventListener('resize', updateResolution);
         }
-    }
-
-    // 监听用户的刷新行为
-    function monitorRefresh() {
-        // socket
-        // =======================
-        let socket = io();
-        socket.on('browser:reload', function() {
-            window.location.reload();
-        });
-        socket.on('browser:confirm-reload', function() {
-            let r = confirm('Reload?');
-            if (r) {
-                window.location.reload();
-            }
-        });
     }
 
     /**
@@ -391,13 +403,13 @@
 
     // 入口函数
     async function onload() {
+        // 监听刷新
+        socketMonitor();
         // 初始化 select 选项设置
         initPreviewOptions();
         // init operation event
         handles();
         // load scene file
         initScene();
-        // 监听刷新
-        monitorRefresh();
     }
 })();

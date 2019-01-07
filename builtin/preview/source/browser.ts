@@ -58,24 +58,31 @@ export const messages = {
     },
 
     /**
-     * 刷新浏览器预览页面
-     */
-    'device-change'(deviceNum: number) {
-        Editor.Ipc.sendToAll('preview:device-num-change', deviceNum);
-    },
-
-    /**
-     * 获取支持的设备信息
+     * 获取预览支持的设备信息
      */
     'get-device'() {
         return DEVICES;
     },
 
+    /**
+     * 获取当前端口号
+     */
     'get-port'() {
         const port = getPort();
         return port;
     },
 
+    /**
+     * 获取当前预览平台
+     */
+    'get-platform'() {
+        return previewPlatform;
+    },
+
+    /**
+     * 更改当前预览平台
+     * @param platform
+     */
     'change-platform'(platform: string) {
         previewPlatform = platform;
     },
