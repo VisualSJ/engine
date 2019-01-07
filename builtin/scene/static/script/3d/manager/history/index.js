@@ -13,8 +13,8 @@ let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
 
-nodeManager.on('changed', (node) => {
-    record(node.uuid);
+nodeManager.on('changed', (node, enable = true) => { // enable 是内部 undo redo 产生的变化，不参与记录
+    enable && record(node.uuid);
 });
 
 nodeManager.on('added', (node) => {
@@ -199,8 +199,12 @@ async function restore() {
         if (node) {
             // 还原节点
             await dumpUtils.restoreNode(node, stepData[uuid]);
+
             // 广播已变动的节点
             Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+
+            // 给场景内部通知
+            nodeManager.emit('changed', node, false); // false 是给 undo 记录用的，本次变动不参与历史记录操作
         }
     }
 
