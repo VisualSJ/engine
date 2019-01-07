@@ -20,10 +20,8 @@ exports.data = function() {
 
 exports.methods = {
     refresh() {
-        this.$refs.node && this.$refs.node.refresh();
-    }
+        this.$refs.node && this.$refs.node.refresh(false);
+    },
 };
 
-exports.mounted = function() {
-
-};
+exports.mounted = function() {};

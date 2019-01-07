@@ -46,9 +46,11 @@ exports.methods = {
         this.$parent.$emit('apply');
     },
 
-    dispatch() {
-        const evt = document.createEvent('HTMLEvents');
-        evt.initEvent('meta-changed', true, true);
+    dispatch(detail) {
+        const evt = new CustomEvent('change', {
+            bubbles: true,
+            detail,
+        });
         this.$el.dispatchEvent(evt);
     },
 
@@ -81,7 +83,10 @@ exports.methods = {
             if (filePath.includes(path)) {
                 const url = await this.transform(filePath);
                 imageLocations[key].targetDatabaseUrl = url;
-                this.dispatch();
+                this.dispatch({
+                    value: url,
+                    path: `userData.imageLocations.${key}.targetDatabaseUrl`,
+                });
             } else {
                 console.warn('can not use external image');
             }

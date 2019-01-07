@@ -15,19 +15,29 @@
         -->
     </div>
 
-    <cc-vec3 name="Position"
-        :dump="node.position"
+    <ui-prop 
+        name="Position"
+        :dump="node.position" 
+        compType="cc-vec3" 
+        :tooltip="T('instruction', 'node', 'position')"
         :step="1"
-    ></cc-vec3>
-
-    <cc-vec3 name="Rotation"
-        :dump="node.rotation"
+    >
+    </ui-prop>
+    
+    <ui-prop 
+        name="Rotation"
+        :dump="node.rotation" 
+        compType="cc-vec3" 
+        :tooltip="T('instruction', 'node', 'rotation')"
         :step="1"
-    ></cc-vec3>
-
-    <cc-vec3 name="Scale"
-        :dump="node.scale"
-        :step="1"
-    ></cc-vec3>
+    ></ui-prop>
+    
+    <ui-prop 
+        name="Scale"
+        :dump="node.scale" 
+        compType="cc-vec3" 
+        :tooltip="T('instruction', 'node', 'scale')"
+        :step="0.1"
+    ></ui-prop>
 
 </ui-section>

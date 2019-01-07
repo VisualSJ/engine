@@ -31,39 +31,34 @@
         <template 
             v-for="(value, key) in meta.userData.imageLocations" 
         >
-            <div class="vue-comp-ui flex-wrap">
-                <div class="name">
-                    <i
-                        :class="{
-                            iconfont: true,
-                            'icon-un-fold': true,
-                            'icon-fold': false,
-                            'is-visible': false
-                        }"
-                    ></i>
-                    <span>{{key}}</span>
-                </div>
+        
+            <ui-prop
+                :name="key"
+                :key="key"
+            >
+                <template slot="child">
+                    <ui-prop
+                        :indent="1"
+                        comp-type="string"
+                        name="originalPath"
+                        :value="meta.userData.imageLocations[key].originalPath"
+                        :path="key + '.originalPath'"
+                        :readonly="true"
+                    ></ui-prop>
+                    
+                    <ui-prop
+                        :indent="1"
+                        comp-type="string"
+                        name="target"
+                        :value="imageLocations[key]"
+                        :path="key"
+                        :readonly="true"
+                    >
+                        <ui-button class="blue tiny" @click="openDirectory(key)">{{T('browse')}}</ui-button>
+                    </ui-prop>
+                </template>
+            </ui-prop>
 
-                <string
-                    :indent="1"
-                    class="flex-full"
-                    name="originalPath"
-                    :meta="meta.userData.imageLocations"
-                    :path="key + '.originalPath'"
-                    :readonly="true"></string>
-                <string
-                    :indent="1"
-                    class="flex-full"
-                    :name="target"
-                    :meta="imageLocations"
-                    :path="key"
-                    :readonly="true"
-                >
-                    <div slot="suffix" @click="openDirectory(key)">
-                        <ui-button class="blue tiny">{{T('browse')}}</ui-button>
-                    </div>
-                </string>
-            </div>
         </template>
     </div>
 

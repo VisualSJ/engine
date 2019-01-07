@@ -16,7 +16,7 @@ exports.components = {
     [`${prefix}texture`]: readComponent(__dirname, './assets/texture'),
     [`${prefix}sprite-frame`]: readComponent(__dirname, './assets/sprite-frame'),
     [`${prefix}material`]: readComponent(__dirname, './assets/material'),
-    [`${prefix}gltf`]: readComponent(__dirname, './assets/gltf'),
+    // [`${prefix}gltf`]: readComponent(__dirname, './assets/gltf'),
     [`${prefix}javascript`]: readComponent(__dirname, './assets/javascript'),
     [`${prefix}folder`]: readComponent(__dirname, './assets/folder'),
     [`${prefix}image`]: readComponent(__dirname, './assets/image'),
@@ -84,8 +84,27 @@ exports.methods = {
      * 修改数据
      * @param {*} event
      */
-    onMetaChanged(event) {
-        this.meta.__dirty__ = true;
+    onMetaChange(event) {
+        try {
+            const { detail: { value, path } = {} } = event;
+            if (path !== undefined && value !== undefined) {
+                const paths = path.split('.');
+                const key = paths.pop();
+                const item = paths.reduce((acc, cur) => {
+                    if (acc && acc[cur] !== undefined) {
+                        return acc[cur];
+                    }
+                    return null;
+                }, this.meta);
+
+                if (item) {
+                    this.$set(item, key, value);
+                    this.meta.__dirty__ = true;
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
     },
 };
 
@@ -165,6 +184,9 @@ function getAssetType(info) {
     }
     if (['texture', 'texture-cube', 'gltf-embeded-image'].includes(info.importer)) {
         return 'texture';
+    }
+    if (['gltf', 'fbx'].includes(info.importer)) {
+        return 'fbx';
     }
     return info.importer;
 }

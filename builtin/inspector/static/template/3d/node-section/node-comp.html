@@ -1,6 +1,7 @@
 <ui-section expand>
-    <cc-structure :dump="comp.value" slot="header" class="header flex-1 layout horizontal center-center">
-        <ui-checkbox path="enabled"
+    <div slot="header" class="header flex-1 layout horizontal center-center">
+        <ui-checkbox 
+            :path="comp.value.enabled.path"
             :value="comp.value.enabled.value"
             @click.stop=""
         ></ui-checkbox>
@@ -20,11 +21,12 @@
         >
             <i class="iconfont icon-setting"></i>
         </ui-button>
-    </cc-structure>
+    </div>
 
     <component
         :is="getComponent(comp.type)"
         :target="comp.value"
+        :key="comp.value.uuid.value"
     ></component>
     
 </ui-section>

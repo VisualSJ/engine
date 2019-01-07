@@ -1,15 +1,19 @@
 <div class="node-section node layout vertical"
     v-if="node"
-    @property-changed="onPropertyChanged($event)"
+    @change="onChange"
+    @confirm="onChange"
+    @cancel="onChange"
 >
     
     <!-- 头部的 active 与节点名称等 -->
-    <cc-structure class="top-header" :dump="node">
-        <ui-checkbox class="rgap" path="active"
+    <div class="top-header">
+        <ui-checkbox class="rgap" 
+            :path="node.active.path"
             :value="node.active.value"
             @click.prevent.stop=""
         ></ui-checkbox>
-        <ui-input class="flex-1" path="name"
+        <ui-input class="flex-1" 
+            :path="node.name.path"
             :value="node.name.value"
         ></ui-input>
         <ui-button class="transparent tiny"
@@ -17,7 +21,7 @@
         >
             <i class="iconfont icon-add"></i>
         </ui-button>
-    </cc-structure>
+    </div>
 
     <!-- node 上挂载的可修改数据 -->
     <node-props

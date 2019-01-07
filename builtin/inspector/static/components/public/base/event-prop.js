@@ -1,56 +1,41 @@
 'use strict';
-
+// todo test
 exports.template = `
-    <div class="vue-comp-ui flex-wrap">
-        <div class="name pt10">
-            <i
-                :class="{
-                    iconfont: true,
-                    'icon-un-fold': !foldUp,
-                    'icon-fold': foldUp,
-                    'is-visible': (dump && dump.foldable) || foldable
-                }"
-                @click="foldUp = !foldUp"
-            ></i>
-            <span class="flex-1 label" :style="paddingStyle">{{dump.name}}</span>
-            <div class="lock"
-                v-if="(dump && dump.readonly) || readonly"
-            >
-                <i class="iconfont icon-lock"></i>
+    <ui-prop
+        :name="dump.name"
+        :indent="indent"
+        style="padding-top: 10px;"
+        auto-height
+    >
+        <div class="layout vertical flex-1">
+            <div class="layout horizontal">
+                <ui-drag-object class="flex-1"
+                    :path="dump.value.target.path"
+                    :value="dump.value.target.value.uuid"
+                    :dropable="dump.value.target.type"
+                    :readonly="dump.readonly || readonly"
+                    @confirm.stop="_onConfirm($event, true)"
+                ></ui-drag-object>
+                <ui-button class="tiny flex-1 ovh ui-left-gap event-prop-button"
+                    :disabled="!menu"
+                    @confirm.stop="selectComponentHandler">
+                    {{componentHandler}}
+                </ui-button>
+            </div>
+            <div class="layout horizontal" style="padding-top: 10px;">
+                <div class="label" style="white-space:nowrap;padding-right:10px;padding-top:2px;">
+                    CustomEventData
+                </div>
+                <ui-input
+                    class="flex-1"
+                    :path="dump.value.customEventData.path"
+                    :value="dump.value.customEventData.value"
+                    @confirm.stop="_onConfirm"
+                >
+                </ui-input>
             </div>
         </div>
-        <div class="value flex-wrap ovh">
-            <div class="flex-full flex ovh">
-                <div class="flex-1 flex ovh pt10">
-                    <ui-drag-object class="flex-1"
-                        :path="dump.value.target.path"
-                        :value="dump.value.target.value.uuid"
-                        :type="dump.value.target.type"
-                        :readonly="dump.readonly || readonly"
-                        @confirm.stop="_onConfirm($event, true)"
-                    ></ui-drag-object>
-                </div>
-                <div class="flex-1 flex ovh pt10">
-                    <ui-button class="tiny flex-1 ovh ui-left-gap event-prop-button"
-                        :disabled="!menu"
-                        @confirm.stop="selectComponentHandler">
-                        {{componentHandler}}
-                    </ui-button>
-                </div>
-            </div>
-            <div class="vue-comp-ui flex-full">
-                <div class="name"><span>CustomEventData</span></div>
-                <div class="value">
-                    <ui-input
-                        :path="dump.value.customEventData.path"
-                        :value="dump.value.customEventData.value"
-                        @confirm.stop="_onConfirm"
-                    >
-                    </ui-input>
-                </div>
-            </div>
-        </div>
-    </div>
+    </ui-prop>
 `;
 
 exports.props = {
@@ -63,10 +48,6 @@ exports.props = {
         default: 0,
     },
     readonly: {
-        type: Boolean,
-        default: false,
-    },
-    foldable: {
         type: Boolean,
         default: false,
     },
@@ -113,9 +94,7 @@ exports.methods = {
             return false;
         }
         path = String(path);
-        path = path.startsWith(this.dump.path)
-            ? path.replace(`${this.dump.path}.`, '')
-            : path;
+        path = path.startsWith(this.dump.path) ? path.replace(`${this.dump.path}.`, '') : path;
 
         if (path.includes('.')) {
             const paths = path.split('.');
@@ -132,18 +111,16 @@ exports.methods = {
             }
         }
 
-        return path && this.dump.value[path]
-            ? this.dump.value[path]
-            : false;
+        return path && this.dump.value[path] ? this.dump.value[path] : false;
     },
     /**
      * 向上传递修改事件
      */
     dispatch(dump) {
-        const customEvent = new CustomEvent('property-changed', {
+        const customEvent = new CustomEvent('change', {
             bubbles: true,
             detail: {
-                dump,
+                ...dump,
             },
         });
 
@@ -175,19 +152,12 @@ exports.methods = {
         } = this;
         // 根据 uuid 生成 menu
         if (uuid) {
-            this.menu = await Editor.Ipc.requestToPackage(
-                'scene',
-                'query-component-function-of-node',
-                uuid
-            );
+            this.menu = await Editor.Ipc.requestToPackage('scene', 'query-component-function-of-node', uuid);
         } else {
             this.menu = null;
         }
         // 变更 uuid 清空 component 和 handler
-        if (
-            oldVal !== newVal &&
-            this.dump.value.handler.value !== ''
-        ) {
+        if (oldVal !== newVal && this.dump.value.handler.value !== '') {
             this.updateComponentHandler('', '');
         }
     },
@@ -195,10 +165,7 @@ exports.methods = {
     selectComponentHandler(event) {
         if (this.menu) {
             const self = this;
-            const {
-                left,
-                bottom,
-            } = event.target.getBoundingClientRect();
+            const { left, bottom } = event.target.getBoundingClientRect();
             const x = Math.round(left + 5);
             const y = Math.round(bottom + 5);
             const keys = Object.keys(this.menu);
@@ -210,10 +177,7 @@ exports.methods = {
                     submenu: items.map((handler) => ({
                         label: handler,
                         click() {
-                            self.updateComponentHandler(
-                                component,
-                                handler
-                            );
+                            self.updateComponentHandler(component, handler);
                         },
                     })),
                 };

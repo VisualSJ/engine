@@ -1,26 +1,22 @@
 'use stirct';
 
-const { readFileSync, readdirSync } = require('fs');
+const { readFileSync, readdirSync } = require('fs-extra');
 const { join, basename, extname } = require('path');
+const diffPatcher = require('./diffPatcher');
 
 module.exports = {
+    diffPatcher,
     readTemplate,
     readComponent,
     T,
+    toHumanText,
     getComponentType,
     build2DProp,
     build3DProp,
     getFitSize,
 };
 
-const publicCompsPath = join(__dirname, '../components/public/');
-
-const publicComps = readdirSync(publicCompsPath).reduce((prev, next) => {
-    const key = basename(next, extname(next));
-    prev[key] = require(join(publicCompsPath, next));
-
-    return prev;
-}, {});
+const uiProp = require('../components/public/ui-prop');
 
 /**
  * 读取模版文件
@@ -39,10 +35,8 @@ function readTemplate(type, file) {
  */
 function readComponent(...paths) {
     const comp = require(join(...paths));
-    const keys = Object.keys(publicComps);
-
     comp.components = comp.components || {};
-    keys.map((item) => (comp.components[item] = publicComps[item]));
+    comp.components['ui-prop'] = uiProp;
 
     return comp;
 }
@@ -56,6 +50,17 @@ function T(...rest) {
     const prefix = 'inspector';
     rest.unshift(prefix);
     return Editor.I18n.t(rest.join('.'));
+}
+
+function toHumanText(str) {
+    const reg = /^((?:[A-Z]+?)_(?:[A-Z]+?))+$/i;
+    if (reg.test(str)) {
+        str = str.toLocaleLowerCase();
+    }
+    let s = str.replace(/[-_]([a-z])/g, (match) => match[1].toUpperCase());
+    s = s.replace(/([a-z][A-Z])/g, (match) => `${match[0]} ${match[1]}`);
+
+    return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /**
@@ -128,7 +133,7 @@ function getComponentType(target) {
     type = type.toLocaleLowerCase();
     type = type.replace(/\./, '-');
 
-    if (publicComps[type]) {
+    if (uiProp.renderTypes.includes(type)) {
         return type;
     }
 
@@ -256,6 +261,12 @@ function build3DProp(path, key, item, attrs, isArrayItem = false) {
     const { type, value } = item;
     let typeNull = false;
     let typeError = false;
+
+    if (!type) {
+        item.attrs.visible = false;
+    } else if ('visible' in item) {
+        item.attrs.visible = item.visible;
+    }
 
     if (item.type === 'Array') {
         item.compType = 'array-prop';

@@ -133,6 +133,12 @@ async function restoreProperty(node, path, dump) {
                 property[key] = node;
             }
             break;
+        case 'cc.Rect': {
+            Object.keys(dump.value).map((k) => {
+                k in property[key] && (property[key][k] = dump.value[k]);
+            });
+            break;
+        }
         case 'cc.Vec3': //TODO: 是否需要 cc. 开头
             if (key) {
                 const prop = property[key];
@@ -216,9 +222,11 @@ async function restoreProperty(node, path, dump) {
             });
             break;
         case 'Array': {
-            await Promise.all(dump.value.map(async (item, index) => {
-                return await restoreProperty(property[key], index, item);
-            }));
+            await Promise.all(
+                dump.value.map(async (item, index) => {
+                    return await restoreProperty(property[key], index, item);
+                })
+            );
 
             property[key].length = dump.value.length;
             break;
@@ -274,7 +282,8 @@ async function restoreNode(node, dumpdata) {
             for (let i = 0, ii = data.length; i < ii; i++) {
                 let component = node._components[i];
                 const compos = data[i];
-                if (!component) { // 尚未生成 component
+                if (!component) {
+                    // 尚未生成 component
                     component = node.addComponent(compos.type);
                 }
                 await restoreComponent(component, compos);

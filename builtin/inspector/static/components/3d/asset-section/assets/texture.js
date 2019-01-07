@@ -37,8 +37,7 @@ async function getImageLikeAssetSource(meta) {
                 return '';
             }
             if (!userData.isUuid) {
-                //imageUuid = queryUuidFromUrl(imageUuid);
-                throw new Error(``);
+                return await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', imageUuid);
             }
             if (!imageUuid) {
                 return '';

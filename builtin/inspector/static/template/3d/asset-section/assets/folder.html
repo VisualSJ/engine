@@ -35,18 +35,20 @@
             </ui-button>
         </div>
         
-        <boolean
-            :name="T('instruction', 'folder','is_subpackage')"
-            :meta="meta"
+        <ui-prop
+            comp-type="boolean"
+            :name="T('instruction', 'folder', 'is_subpackage')"
             path="isSubpackage"
-        ></boolean>
-        <string
-            v-if="meta.isSubpackage"
+            :value="meta.isSubpackage"
+        ></ui-prop>
+        
+        <ui-prop
+            comp-type="string"
             :name="T('instruction', 'folder', 'subpackage_name')"
-            :meta="meta"
-            :placeholder="subPackageName(info.source)"
             path="subpackageName"
-        ></string>
+            :placeholder="subPackageName(info.source)"
+            :value="meta.subpackageName"
+        ></ui-prop>
 
         <cc-markdown-preview
             v-if="isResources"

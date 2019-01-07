@@ -41,6 +41,7 @@ ui-button {
     &:last-child {
         margin-right: 0;
     }
+    cursor: default;
 }
 ui-drag-object {
     min-width: 10px;
@@ -115,67 +116,148 @@ ui-checkbox {
     padding-left: 13px;
 }
 
-.vue-comp-ui {
-    display: flex;
-    margin: 5px 0;
-    line-height: 22px;
-    & > .name {
-        flex: 1;
-        min-width: 100px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        margin-right: 5px;
-        display: flex;
-        & > .label {
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-        & > * {
-            margin-right: 3px;
-            &:last-child {
-                margin-right: 0;
-            }
-        }
-        & > [class^='icon'] {
-            visibility: hidden;
-        }
-        & > .is-visible {
-            visibility: visible;
-        }
-    }
-    & > .value {
-        display: flex;
-        flex: 3;
-        & > .label {
-            margin-right: 5px;
-        }
-        & > ui-input,
-        & > ui-num-input,
-        & > ui-select,
-        & > ui-checkbox,
-        & > ui-color,
-        & > ui-drag-object,
-        & > ui-button {
-            flex: 1;
-            align-self: center;
-        }
-        .vue-comp-ui {
-            .name {
-                flex: 0;
-            }
-            &:last-child {
-                margin-bottom: 0;
-            }
-        }
-    }
-    & > .vue-comp-ui:last-child {
-        margin-bottom: 0;
-    }
+ .ui-prop {
     .tiny {
         line-height: 0.9;
         vertical-align: bottom;
     }
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    contain: content;
+    outline: 0;
+    min-width: 240px;
+    .wrapper,.label, .remove {
+        box-sizing: border-box;
+    }
+    .label, .wrapper {
+        position: relative;
+    }
+    .wrapper, .wrapper-content {
+        flex-direction: row;
+        display: flex;
+    }
+    .wrapper {
+        flex-direction: row;
+        display: flex; 
+        width: 100%;
+        min-height: 20px;
+        max-height: 20px;
+        margin: 3px 0;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        color: #bdbdbd;
+    }
+    .wrapper-content {
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        flex: 1;
+        & > .ui-prop {
+            margin-right: 10px;
+            min-width: auto;
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+    .label {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: baseline;
+        justify-content: flex-start;
+        margin-right: 5px;
+        flex-shrink: 0;
+        font-size: 1em;
+        width: 25%;
+        min-width: 100px;
+        white-space: nowrap;
+        & > * {
+            margin-right: 3px;
+        }
+        &>::last-child {
+            margin-right: 0;
+        }
+    }
+    .fold {
+        visibility: hidden;
+    }
+    .fold, .remove {
+        cursor: pointer;
+    }
+    .lock,.move,.remove {
+        display: none;
+    }
+    .lock {
+        flex: 1;
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+    .text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    &.fixed-label {
+        .label {
+            width: auto;
+            min-width: auto;
+        }
+        .fold {
+            display: none;
+        }
+    }
+    &[slidable] .wrapper {
+        cursor: ew-resize;
+    }
+     .foldable {
+        visibility: visible;
+    }
+    .child.fold-up {
+        display: none;
+    }
+    &[disabled] .wrapper {
+        color: #636363;
+        cursor: default;
+    }
+    &[readonly] {
+        color: #aa0;
+    }
+    &[readonly]:not([nest]) .lock {
+        display: inline-flex;
+    }
+    &[auto-height] {
+        .wrapper {
+            align-items: flex-start;
+            max-height: none;
+        } 
+        .label {
+            margin-top: 3px;
+        } 
+    }
+    &.vecx
+    {
+        &>.wrapper>.wrapper-content {
+            flex-wrap: wrap;   
+            &:after {
+                content: '';
+                width: 100%;
+                order: 1;
+            } 
+        }
+            .ui-prop:nth-child(n + 3) {
+            order: 2;
+        }
+        .ui-prop:nth-child(2n) {
+            margin-right: 0;
+        } 
+    }
+    
     .object-value {
         margin-right: 5px;
         padding: 1px 6px;
@@ -200,7 +282,7 @@ ui-checkbox {
         padding: 1px 6px;
         margin-right: 5px;
     }
-}
+ }
 
 /* -------------- event prop start ----------------------------- */
 .event-prop-button {
@@ -387,6 +469,7 @@ ui-checkbox {
 /* ---------------------- end -------------------------------- */
 
 @import '../iconfont.less';
+@import './hint.less';
 @import './asset';
 @import './node';
 
@@ -395,15 +478,6 @@ ui-checkbox {
 
 @import './markdown.less';
 
-@import './public/cc-vec2.less';
-@import './public/cc-vec3.less';
-@import './public/cc-size.less';
-@import './public/cc-color.less';
-@import './public/number.less';
-@import './public/enum.less';
-@import './public/boolean.less';
-@import './public/cc-dragable.less';
-@import './public/string.less';
 
 // todo split out
 /* -----sprite editor -------------- */

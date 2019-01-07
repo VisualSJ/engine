@@ -1,4 +1,4 @@
-<div class="asset-wrapper" :class="{[meta.__assetType__]: true}" @property-changed="onPropertyChanged">
+<div class="asset-wrapper" :class="{[meta.__assetType__]: true}" @change.stop="onPropertyChanged">
     <!-- 头部工具栏 -->
    <header
         class="asset-header"
@@ -57,13 +57,14 @@
         </div>
 
         <!-- properties -->
-        <component
+        <ui-prop
             v-for="(item, index) in displayList"
             v-if="item.visible !== false"
-            :name="item.name || item.key"
-            :is="item.compType"
+            :name="toHumanText(item.name || item.key)"
+            :comp-type="item.compType"
             :dump="item"
             :key="item.key"
-        ></component>
+            :indent="item.indent"
+        ></ui-prop>
     </div>
 </div>

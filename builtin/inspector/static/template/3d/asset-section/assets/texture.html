@@ -27,15 +27,18 @@
     </header>
 
     <div class="props flex-1" v-if="meta.importer !== 'gltf-embeded-image'">
-        <number
-            name="Anisotropy"
-            :meta="meta"
+        
+        <ui-prop 
+            comp-type="number"
+            :value="meta.userData.anisotropy"
             path="userData.anisotropy"
-        ></number>
+            name="Anisotropy"
+        ></ui-prop>
 
-        <enum
+        <ui-prop
+            comp-type="enum"
             name="Mag Filter"
-            :meta="meta"
+            :value="meta.userData.magfilter"
             path="userData.magfilter"
         >
             <option 
@@ -43,10 +46,12 @@
                 :value="item"
                 :index="index"
             >{{item}}</option>
-        </enum>
-        <enum
+        </ui-prop>
+        
+        <ui-prop
+            comp-type="enum"
             name="Min Filter"
-            :meta="meta"
+            :value="meta.userData.minfilter"
             path="userData.minfilter"
         >
             <option 
@@ -54,17 +59,19 @@
                 :value="item"
                 :index="index"
             >{{item}}</option>
-        </enum>
+        </ui-prop>
         
-        <boolean
+        <ui-prop
+            comp-type="boolean"
             name="Premultiply Alpha"
-            :meta="meta"
+            :value="meta.userData.premultiplyAlpha"
             path="userData.premultiplyAlpha"
-        ></boolean>
+        ></ui-prop>
 
-        <enum
+        <ui-prop
+            comp-type="enum"
             name="Wrap Mode S"
-            :meta="meta"
+            :value="meta.userData.wrapModeS"
             path="userData.wrapModeS"
         >
             <option 
@@ -72,11 +79,12 @@
                 :value="item"
                 :index="index"
             >{{item}}</option>
-        </enum>
+        </ui-prop>
 
-        <enum
+        <ui-prop
+            comp-type="enum"
             name="Wrap Mode T"
-            :meta="meta"
+            :value="meta.userData.wrapModeT"
             path="userData.wrapModeT"
         >
             <option 
@@ -84,7 +92,8 @@
                 :value="item"
                 :index="index"
             >{{item}}</option>
-        </enum>
+        </ui-prop>
+
     </div>
     
     <cc-image-preview

@@ -1,6 +1,6 @@
 'use strict';
 const { readFile } = require('fs');
-const { readTemplate } = require('../../../../utils');
+const { readTemplate, toHumanText } = require('../../../../utils');
 const { eventBus } = require('../../../../utils/eventBus');
 
 exports.template = readTemplate('3d', './asset-section/assets/material.html');
@@ -76,15 +76,18 @@ exports.computed = {
         }
 
         // harvest from the tree
-        let traverse = (node, visible = true) => {
-            let list = (node.props || []).map((item) => ({ ...item, visible }));
+        let traverse = (node, visible = true, indent = 0) => {
+            let list = (node.props || []).map((item) => ({ ...item, visible, indent }));
             delete node.props;
             for (let def in node) {
-                const item = defs.find((d) => d.key === def);
-                if (item) {
-                    item.visible = visible;
-                    list.push(item);
-                    list = list.concat(traverse(node[def], visible && item.value));
+                if (true) {
+                    const item = defs.find((d) => d.key === def);
+                    if (item) {
+                        item.visible = visible;
+                        item.indent = indent;
+                        list.push(item);
+                        list = list.concat(traverse(node[def], visible && item.value, item.indent + 1));
+                    }
                 }
             }
             return list;
@@ -99,7 +102,7 @@ exports.computed = {
             const { _props = {} } = this.material || {};
             props.forEach((item) => {
                 const { key } = item;
-                if (key in _props && _props[key] !== null) {
+                if (key in _props && _props[key] !== undefined) {
                     item.value = _props[key];
                     if (item.value.__uuid__) {
                         item.value.uuid = item.value.__uuid__;
@@ -118,7 +121,7 @@ exports.computed = {
             const { _defines = {} } = this.material || {};
             defines.forEach((item) => {
                 const { key } = item;
-                if (key in _defines && _defines[key]) {
+                if (key in _defines) {
                     item.value = _defines[key];
                 }
             });
@@ -138,6 +141,8 @@ exports.watch = {
 };
 
 exports.methods = {
+    toHumanText,
+
     async onEffectChanged() {
         await this.refresh('effect');
     },
@@ -216,11 +221,9 @@ exports.methods = {
     },
 
     onPropertyChanged(event) {
-        const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
-        const { path, value } = dump || {};
-
-        if (path && path.includes('.')) {
-            try {
+        try {
+            const { detail: { value, path } = {} } = event;
+            if (path !== undefined && value !== undefined) {
                 const paths = path.split('.');
                 const key = paths.pop();
                 const item = paths.reduce((acc, cur) => {
@@ -231,12 +234,12 @@ exports.methods = {
                 }, this.material);
 
                 if (item) {
+                    this.$set(item, key, value);
                     this.dirty = true;
-                    item[key] = value;
                 }
-            } catch (err) {
-                console.error(err);
             }
+        } catch (err) {
+            console.log(err);
         }
     },
     reset() {

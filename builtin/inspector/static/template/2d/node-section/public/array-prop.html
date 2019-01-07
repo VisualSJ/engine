@@ -10,41 +10,33 @@
         <span>{{T('difference')}}</span>
     </template>
 </ui-prop> -->
-<div class="number vue-comp-ui flex-wrap">
-    <div class="name">
-        <i
-            :class="{
-                iconfont: true,
-                'icon-un-fold': !foldUp,
-                'icon-fold': foldUp,
-                'is-visible': true
-            }"
-            @click="foldUp = !foldUp"
-        ></i>
-        <span class="flex-1"
-            :style="paddingStyle"
-        >{{dump.name}}</span>
-        <div class="lock"
-            v-if="dump.readonly"
-        ><i class="iconfont icon-lock"></i></div>
-    </div>
+<ui-prop
+    :name="dump.name"
+    :indent="indent"
+    foldable
+>
     <template v-if="!dump.values || dump.values.length <= 1">
-        <div class="value">
-            <ui-num-input :readonly="dump.readonly" :value="dump.value.length" @confirm.stop="arraySizeChanged" min="0"></ui-num-input>
-        </div>
-        <div class="flex-full ovh" v-show="!foldUp">
-            <component
+        <ui-num-input
+            class="flex-1"
+            :readonly="dump.readonly" 
+            :value="dump.value.length" 
+            @confirm.stop="arraySizeChanged" 
+            min="0"
+            max="100"
+        ></ui-num-input>
+        <template slot="child">
+            <ui-prop
                 v-for="(prop, index) in dump.value"
                 :key="index"
-                :is="prop.compType"
+                :comp-type="prop.compType"
                 :name="prop.name"
                 :dump="prop"
                 :path="prop.path"
                 :indent="1"
-            ></component>
-        </div>
+            ></ui-prop>
+        </template>
     </template>
-    <div class="value" v-else>
+    <template v-else>
         <span>{{T('difference')}}</span>
-    </div>
-</div>
+    </template>
+</ui-prop>

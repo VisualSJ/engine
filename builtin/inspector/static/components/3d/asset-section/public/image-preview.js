@@ -46,9 +46,11 @@ exports.methods = {
      * 根据加载的图片资源进行更新
      */
     updateImage() {
-        const { width, height } = this.getSize();
-        this.info = `${width} x ${height}`;
-        this.resize();
+        if (this._image) {
+            const { width, height } = this.getSize();
+            this.info = `${width} x ${height}`;
+            this.resize();
+        }
     },
 
     /**
@@ -75,18 +77,20 @@ exports.methods = {
      * 根据容器缩放
      */
     resize() {
-        const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
-        const { width: imgWidth, height: imgHeight } = this.getSize();
-        const [width, height] = getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
-        if (this.meta.userData.rotated) {
-            this._scalingSize = {
-                width: Math.ceil(height),
-                height: Math.ceil(width),
-            };
+        if (this._image) {
+            const { height: boxHeight, width: boxWidth } = this.$refs.content.getBoundingClientRect();
+            const { width: imgWidth, height: imgHeight } = this.getSize();
+            const [width, height] = getFitSize(imgWidth, imgHeight, boxWidth, boxHeight);
+            if (this.meta.userData.rotated) {
+                this._scalingSize = {
+                    width: Math.ceil(height),
+                    height: Math.ceil(width),
+                };
+            }
+            this.$refs.canvas.width = Math.ceil(width);
+            this.$refs.canvas.height = Math.ceil(height);
+            this.repaint();
         }
-        this.$refs.canvas.width = Math.ceil(width);
-        this.$refs.canvas.height = Math.ceil(height);
-        this.repaint();
     },
 
     /**
@@ -179,7 +183,6 @@ exports.watch = {
             this.updateImage();
         },
     },
-    'meta.uuid': 'loadImage',
     imgSrc: 'loadImage',
 };
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const { basename, extname } = require('path');
-const { readTemplate, readComponent, T, build3DProp } = require('../../../utils');
+const { readTemplate, readComponent, T, build3DProp, diffPatcher } = require('../../../utils');
 
 exports.template = readTemplate('3d', './node-section/index.html');
 
@@ -15,7 +15,7 @@ exports.components = {
 exports.data = function() {
     return {
         node: null,
-        userScripts: null,
+        components: null,
     };
 };
 
@@ -43,12 +43,11 @@ exports.methods = {
     /**
      * 刷新节点
      */
-    async refresh() {
+    async refresh(force = true) {
         // todo diff
         try {
-            this.$root.showLoading(200);
+            force && this.$root.showLoading(200);
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', this.uuid);
-
             if (dump) {
                 Object.keys(dump).forEach((key) => {
                     if (key[0] === '_') {
@@ -77,13 +76,17 @@ exports.methods = {
                     });
                 });
             }
-
-            this.node = dump;
+            if (!force) {
+                const delta = diffPatcher.diff(this.node, dump);
+                delta && diffPatcher.patch(this.node, delta);
+            } else {
+                this.node = dump;
+            }
         } catch (err) {
             console.error(err);
             this.node = null;
         } finally {
-            this.$root.hideLoading();
+            force && this.$root.hideLoading();
         }
     },
 
@@ -92,20 +95,39 @@ exports.methods = {
      * @param {*} event
      * @param {*} dump
      */
-    onPropertyChanged(event) {
-        const dump = event.detail ? event.detail.dump : event.target.__vue__.dump;
+    onChange(event) {
+        try {
+            let { detail = {}, target } = event;
+            let path;
+            let value;
+            let type;
+            if (detail.hasOwnProperty('value') && detail.hasOwnProperty('path')) {
+                path = detail.path;
+                value = detail.value;
+                type = detail.type;
+            } else {
+                path = target.getAttribute('path');
+                value = target.value;
+                type = target.getAttribute('type');
+            }
+            if (value === undefined || !path) {
+                return;
+            }
 
-        // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+            // 保存历史记录
+            Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        Editor.Ipc.sendToPanel('scene', 'set-property', {
-            uuid: this.uuid,
-            path: dump.path,
-            dump: {
-                type: dump.type,
-                value: JSON.parse(JSON.stringify(dump.value)),
-            },
-        });
+            Editor.Ipc.sendToPanel('scene', 'set-property', {
+                uuid: this.uuid,
+                path,
+                dump: {
+                    type,
+                    value,
+                },
+            });
+        } catch (err) {
+            return;
+        }
     },
 
     /**

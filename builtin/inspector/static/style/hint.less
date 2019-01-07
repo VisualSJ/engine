@@ -1,0 +1,146 @@
+@color_1: #bdbdbd;
+@color_2: #ddd;
+@color_3: #fff;
+@border_color_1: #666;
+@border_color_2: #e77576;
+@border_color_3: #9dd083;
+@border_color_4: #74b3e8;
+
+.hint {
+	display: block;
+	z-index: 1;
+	color: @color_1;
+	white-space: normal;
+	font-size: inherit;
+	.box {
+		position: relative;
+		background: #333;
+		border: 1px solid #666;
+		border-radius: 3px;
+		padding: 5px 8px;
+	}
+	.arrow {
+		z-index: 2;
+		position: absolute;
+		display: none;
+		&:before {
+			position: absolute;
+			content: '';
+			transform: translateX(-50%) translateY(-50%) rotate(45deg);
+			background: #333;
+			border-color: @border_color_1;
+			border-style: solid;
+			width: 8px;
+			height: 8px;
+		}
+	}
+}
+.hint.shadow {
+	.box {
+		box-shadow: 0 0 15px 2px rgba(0, 0, 0, 0.8);
+	}
+}
+.hint.top {
+	margin-top: 10px;
+	.arrow {
+		display: block;
+		margin-top: -1px;
+		top: 0;
+		&:before {
+			border-width: 1px 0 0 1px;
+		}
+	}
+}
+.hint.bottom {
+	margin-bottom: 10px;
+	.arrow {
+		display: block;
+		margin-top: 1px;
+		top: 100%;
+		&:before {
+			border-width: 0 1px 1px 0;
+		}
+	}
+}
+.hint.left {
+	margin-left: 10px;
+	.arrow {
+		display: block;
+		margin-left: -1px;
+		left: 0;
+		&:before {
+			border-width: 0 0 1px 1px;
+		}
+	}
+}
+.hint.right {
+	margin-right: 10px;
+	.arrow {
+		display: block;
+		margin-left: 1px;
+		left: 100%;
+		&:before {
+			border-width: 1px 1px 0 0;
+		}
+	}
+}
+.hint.mini {
+	font-size: 0.66666667em;
+}
+.hint.tiny {
+	font-size: 0.83333333em;
+}
+.hint.small {
+	font-size: 0.91666667em;
+}
+.hint.large {
+	font-size: 1.16666667em;
+}
+.hint.big {
+	font-size: 1.33333333em;
+}
+.hint.huge {
+	font-size: 1.5em;
+}
+.hint.massive {
+	font-size: 1.83333333em;
+}
+.hint.red {
+	color: @color_2;
+	.box {
+		border-color: @border_color_2;
+		background: #b54344;
+	}
+	.arrow {
+		&:before {
+			background: #b54344;
+			border-color: @border_color_2;
+		}
+	}
+}
+.hint.green {
+	color: @color_3;
+	.box {
+		border-color: @border_color_3;
+		background: #6b9e51;
+	}
+	.arrow {
+		&:before {
+			background: #6b9e51;
+			border-color: @border_color_3;
+		}
+	}
+}
+.hint.blue {
+	color: @color_3;
+	.box {
+		border-color: @border_color_4;
+		background: #4281b6;
+	}
+	.arrow {
+		&:before {
+			background: #4281b6;
+			border-color: @border_color_4;
+		}
+	}
+}

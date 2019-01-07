@@ -2,7 +2,7 @@
 
 const { readdirSync } = require('fs');
 const { join, basename, extname } = require('path');
-const { readTemplate, T } = require('../../utils');
+const { readTemplate, T } = require('../../../utils');
 
 exports.template = readTemplate('2d', './node-section/public/array-prop.html');
 
@@ -29,12 +29,9 @@ exports.data = function() {
     };
 };
 
-exports.components = readdirSync(join(__dirname, '../public')).reduce((prev, next) => {
-    const key = basename(next, extname(next));
-    prev[key] = require(join(__dirname, '../public', next));
-
-    return prev;
-}, {});
+exports.components = {
+    'ui-prop': require('../ui-prop'),
+};
 
 exports.methods = {
     T,
@@ -51,19 +48,15 @@ exports.methods = {
             this.dump.value.length = value;
         }
 
-        const customEvent = new CustomEvent('property-changed', {
+        const customEvent = new CustomEvent('change', {
             bubbles: true,
             detail: {
-                dump: {
-                    type: 'Array',
-                    path: `${this.dump.path}.length`,
-                    value,
-                },
+                type: 'Array',
+                path: `${this.dump.path}.length`,
+                value,
             },
         });
 
         this.$el.dispatchEvent(customEvent);
-
     },
-
 };
