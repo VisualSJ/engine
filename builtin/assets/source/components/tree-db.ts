@@ -168,7 +168,7 @@ function sortTree(arr: ItreeAsset[]) {
         } else if (!a.isDirectory && b.isDirectory === true) {
             return 1;
         } else {
-            return a.name.localeCompare(b.name);
+            return a.name.localeCompare(b.name, 'en', { numeric: true });
         }
     });
 }
