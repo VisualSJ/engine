@@ -16,22 +16,29 @@ let panel: any = null;
 export const style = readFileSync(join(__dirname, '../dist/index.css'));
 
 export const template = readFileSync(join(__dirname, '../static', '/template/index.html'));
-
+let $vm: any;
 export const $ = {
     language: '.language',
     preferences: '.preferences',
 };
 
 export const methods = {};
-
-export const messages = {};
+export const messages = {
+    /**
+     * 设置设置面板的 tab 索引
+     * @param index
+     */
+    'update-tab'(tabIndex: number) {
+        $vm.tab = tabIndex;
+    },
+};
 
 export async function ready() {
 
     // @ts-ignore
     panel = this;
 
-    new Vue({
+    $vm = new Vue({
         el: panel.$.preferences,
 
         data: {
@@ -52,6 +59,11 @@ export async function ready() {
                 simulator_height: 480,
                 simulator_debugger:  false,
             },
+            data_editor: {
+                auto_compiler_scripts: true,
+                external_script_editor: 'internal',
+                external_picture_editor: '',
+            },
         },
 
         watch: {
@@ -69,11 +81,19 @@ export async function ready() {
                     this.dataChange('preview');
                 },
             },
+            data_editor: {
+                deep: true,
+                handler() {
+                    // @ts-ignore
+                    this.dataChange('data_editor');
+                },
+            },
         },
 
         components: {
             'content-general': require('../static/components/general'),
             'content-preview': require('../static/components/preview'),
+            'content-data-editor': require('../static/components/data-editor'),
         },
 
         methods: <any>{
@@ -141,6 +161,7 @@ export async function ready() {
             this.general.language = lan;
             this.getData('general');
             this.getData('preview');
+            this.getData('data_editor');
         },
     });
 }

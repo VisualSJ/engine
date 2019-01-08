@@ -1,11 +1,13 @@
 <div class="preferences">
     <div class="slider">
         <div :active="tab === 0" @click="tab = 0">{{t('nav.general')}}</div>
-        <div :active="tab === 1" @click="tab = 1">{{t('nav.preview')}}</div>
+        <div :active="tab === 1" @click="tab = 1">{{t('nav.data_editor')}}</div>
+        <div :active="tab === 2" @click="tab = 2">{{t('nav.preview')}}</div>
     </div>
     <section>
         <!-- <header >{{t('nav.general', general.language)}}</header> -->
         <content-general v-if="tab === 0" :general="general"></content-general>
-        <content-preview v-if="tab === 1" :preview="preview"></content-preview>
+        <content-data-editor v-if="tab === 1" :data_editor="data_editor"></content-data-editor>
+        <content-preview v-if="tab === 2" :preview="preview"></content-preview>
     </section>
 </div>

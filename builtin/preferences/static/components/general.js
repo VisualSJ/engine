@@ -44,6 +44,3 @@ exports.methods = {
         }
     },
 };
-
-exports.mounted = function() {
-};

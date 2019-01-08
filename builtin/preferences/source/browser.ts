@@ -29,6 +29,14 @@ export const messages = {
     'save-setting'() {
         profile.save();
     },
+
+    /**
+     * 设置设置面板的 tab 索引
+     * @param index
+     */
+    'update-tab'(index: number) {
+        Editor.Ipc.sendToPanel('preferences', 'update-tab', index);
+    },
 };
 
 export function load() {

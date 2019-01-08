@@ -27,6 +27,15 @@ describe('偏好设置消息接口测试', () => {
         });
     });
 
+    describe('update-tab： 设置面板的 tab 索引', () => {
+        // 先归 0
+        Editor.Ipc.sendToPackage('preferences', 'update-tab', 0);
+        it('tab 值设为2', () => {
+            Editor.Ipc.sendToPackage('preferences', 'update-tab', 0);
+            // todo E2E 测试
+        });
+    });
+
     after(() => {
         Editor.Ipc.sendToPackage('preferences', 'set-setting', 'general.language', lan);
     });
