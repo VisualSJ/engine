@@ -3,17 +3,17 @@
         <h1>Standard</h1>
         <ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button>
         <h5>事件/Event:{{eventName}}</h5>
-        <ui-color value="[22,244,55,0.3]"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-color>{{value}}
+        <ui-color value="[22,244,55,99]"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-color>{{value}}
         <div v-html="itemHtmls"></div>
     </section>
 
     <section>
         <h1>Readonly</h1>
-        <ui-color value="[222,44,55,0.5]" readonly></ui-color>
+        <ui-color value="[222,44,55,66]" readonly></ui-color>
     </section>
 
     <section>
         <h1>Disabled</h1>
-        <ui-color value="[222,244,55,0.7]" disabled></ui-color>
+        <ui-color value="[222,244,55,200]" disabled></ui-color>
     </section>
 </div>
