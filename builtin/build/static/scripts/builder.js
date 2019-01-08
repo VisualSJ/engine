@@ -1,5 +1,5 @@
-const { join, basename , extname} = require('path');
-const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage } = require('./utils');
+const { join, basename , extname, dirname} = require('path');
+const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage, computeArgs} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
 const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
 const ejs = require('ejs');
@@ -11,6 +11,7 @@ const WINDOW_HEADER = 'window._CCSettings';
 const assetBuilder = require('./build-asset');
 const assetPacker = require('./pack-asset');
 const scriptBuilder = require('./build-script');
+const { spawn } = require('child_process');
 const static_resource = [
     // 需要拷贝的静态资源整理
     'splash.png',
@@ -62,7 +63,7 @@ class Builder {
         updateProgress('build setting...', 20);
 
         // 并发任务
-        Promise.all([
+        await Promise.all([
             this._buildHtml(), // 构建拷贝模板 index.html 文件 5%
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
             this._resolveStatic(), // 其他静态资源拷贝 5%
@@ -79,17 +80,16 @@ class Builder {
                     start_scene: options.start_scene,
                 }
             ),
-        ]).then(async () => {
-            await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
-            let endTime = new Date().getTime();
-            updateProgress(`build sucess in ${endTime - startTime} ms`);
-            requestToPackage('preview', 'set-build-path', this._paths.dest);
-        });
+        ]);
+        await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
+        let endTime = new Date().getTime();
+        updateProgress(`build sucess in ${endTime - startTime} ms`);
+        requestToPackage('preview', 'set-build-path', this._paths.dest);
     }
 
     // 拷贝静态资源文件 5%
     _resolveStatic() {
-        updateProgress('resolove static resource...');
+        updateProgress('resolve static resource...');
         Promise.all(
             static_resource.map((file) => {
                 let src = join(__dirname, './../build-templates/common', file);
@@ -103,7 +103,7 @@ class Builder {
                 copyFileSync(src, dest);
             })
         ).then(() => {
-            updateProgress('resolove static resource success', 5);
+            updateProgress('resolve static resource success', 5);
         });
     }
 
@@ -174,19 +174,10 @@ class Builder {
     // 构建引擎模块
     async _buildEngine() {
         updateProgress('build engine...');
-        // hack 当前引擎尚未提供切割引擎的接口,直接拷贝对应文件目录下的文件
-        if (this._type === '3d') {
-            await copySync(
-                join(this._paths.engine, 'bin/cocos-3d.dev.js'),
-                join(this._paths.dest, this._options.cocosJsName)
-            );
-            updateProgress('build engine success', 15);
-            return;
-        }
-
-        let { isNativePlatform, sourceMaps, excludedModules, enginVersion, nativeRenderer } = this._options;
-        let { dest, src, jsCacheExcludes, engine, jsCache } = this._paths;
-        let buildDest = isNativePlatform ? src : dest;
+        let { sourceMaps, excludedModules, enginVersion, nativeRenderer } = this._options;
+        let { dest, jsCacheExcludes, engine, jsCache } = this._paths;
+        let buildDest = join(this._paths.jsCacheDir, this._options.platform, basename(jsCache));
+        ensureDirSync(dirname(buildDest));
         let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
         if (existsSync(jsCacheExcludes)) {
             let json = readJSONSync(jsCacheExcludes);
@@ -194,14 +185,13 @@ class Builder {
                 enginVersion === json.version &&
                 nativeRenderer === json.nativeRenderer &&
                 json.excludes.toString() === excludedModules.toString() &&
-                json.sourceMaps === opts.sourceMaps;
+                json.sourceMaps === sourceMaps;
         }
 
         // 与缓存内容一致无需再次编译
-        if (enginSameFlag && existsSync(paths.jsCache)) {
+        if (enginSameFlag && existsSync(jsCache)) {
             copySync(jsCache, join(dest, basename(jsCache)));
             updateProgress('build engine success', 15);
-            resolve();
             return;
         }
 
@@ -225,21 +215,21 @@ class Builder {
                             });
                         }
                         updateProgress('build engine success', 15);
-                        resolve();
                         return;
                     }
                 });
             });
         }
-
+        console.time('buildCocosJs');
         // 执行 gulp 任务，编译 cocos js
         await this._buildCocosJs(excludes, buildDest);
-
+        console.timeEnd('buildCocosJs');
         // 拷贝编译后的 js 文件
         copySync(jsCache, join(dest, basename(jsCache)));
+
         // 保存模块数据
         writeFileSync(
-            paths.jsCacheExcludes,
+            jsCacheExcludes,
             JSON.stringify({
                 excludes: excludedModules,
                 version: enginVersion,
@@ -255,45 +245,47 @@ class Builder {
     /**
      *  执行 gulp 任务，编译 cocos js
      * @param {*} excludes
+     * @param {*} outputPath
      * @returns
      * @memberof Builder
      */
-    _buildCocosJs(excludes, dest) {
+    _buildCocosJs(excludes, outputPath) {
         return new Promise((resolve) => {
             let { engine } = this._paths;
             let {
                 debug,
-                isNativePlatform,
                 isWeChatSubdomain,
-                sourceMaps,
                 nativeRenderer,
                 isWeChatGame,
                 isQQPlay,
             } = this._options;
-            const buildUtil = require(join(engine, 'gulp/tasks/engine'));
-            let func;
-            if (debug) {
-                func = isNativePlatform ? 'buildJsb' : 'buildCocosJs';
-            } else {
-                func = isNativePlatform ? 'buildJsbMin' : 'buildCocosJsMin';
-            }
 
             // 利用引擎内部的 gulp 任务来打包相应的引擎模块
-            let indexPath = join(engine, 'index.js');
-            buildUtil[func](
-                indexPath,
-                dest,
-                excludes,
-                {
-                    wechatgame: !!isWeChatGame,
-                    qqplay: !!isQQPlay,
-                    runtime: false,
-                    nativeRenderer: nativeRenderer,
-                    wechatgameSub: !!isWeChatSubdomain,
-                },
-                resolve,
-                sourceMaps
-            );
+            let args = computeArgs({
+                debug,
+                wechatgame: !!isWeChatGame,
+                qqplay: !!isQQPlay,
+                runtime: false,
+                nativeRenderer: nativeRenderer,
+                wechatgameSub: !!isWeChatSubdomain,
+            });
+            const child = spawn('node', [
+                join(engine, 'rollup', 'out', 'build-engine-cli.js'),
+                '--input',
+                './index.js',
+                '--destination',
+                outputPath,
+                '--platform',
+                'build',
+                ...args,
+            ], {
+                cwd: engine,
+                stdio: [0, 1, 2, 'ipc'],
+            });
+
+            child.on('exit', (code) => {
+                resolve();
+            });
         });
     }
 

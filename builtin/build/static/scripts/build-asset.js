@@ -28,34 +28,30 @@ class AssetBuilder {
         this.copyPaths = [];
     }
 
-    build(scenes, type) {
-        return new Promise(async (resolve, reject) => {
-            updateProgress('build assets...');
-            let startTime = new Date().getTime();
-            this.init(type);
-            if (!Array.isArray(scenes) || !scenes) {
-                buildResult.assetCache[scenes.uuid] = scenes;
-            } else {
-                for (let item of scenes) {
-                    buildResult.assetCache[item.uuid] = item;
-                }
+    async build(scenes, type) {
+        updateProgress('build assets...');
+        let startTime = new Date().getTime();
+        this.init(type);
+        if (!Array.isArray(scenes) || !scenes) {
+            buildResult.assetCache[scenes.uuid] = scenes;
+        } else {
+            for (let item of scenes) {
+                buildResult.assetCache[item.uuid] = item;
             }
+        }
 
-            this.result.scenes = [];
-            await this.beginBuild();
-            await this.resolveAsset();
-            // 判断是否需要打包资源
-            if (!this.shoudBuild) {
-                resolve(this.result);
-                return this.result;
-            }
-            Promise.all([this.copyFiles(), this.compressImgs()])
-                    .then(() => {
-                        let endTime = new Date().getTime();
-                        updateProgress(`build assets success in ${endTime - startTime} ms`, 30);
-                        resolve(this.result);
-                    }).catch((err) => console.error(err));
-        });
+        this.result.scenes = [];
+        await this.beginBuild();
+        await this.resolveAsset();
+        // 判断是否需要打包资源
+        if (!this.shoudBuild) {
+            return this.result;
+        }
+        await Promise.all([this.copyFiles(), this.compressImgs()])
+                .catch((err) => console.error(err));
+        let endTime = new Date().getTime();
+        updateProgress(`build assets success in ${endTime - startTime} ms`, 30);
+        return this.result;
     }
 
     // 整理依赖资源数据

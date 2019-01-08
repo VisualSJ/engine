@@ -10,6 +10,8 @@ const projectScripts = require('./project-scripts'); // 配置构建的脚本环
 const source = require('vinyl-source-stream');
 const viniBuffer = require('vinyl-buffer');
 const sourcemaps = require('gulp-sourcemaps');
+const uglify = require('gulp-uglify');
+const terser = require('terser');
 // browserify prelude
 const prelude = readFileSync(join(__dirname, './_prelude.js'), 'utf8');
 const CAN_NOT_FIND = 'Cannot find module ';
@@ -29,8 +31,6 @@ class ScriptBuilder {
         }
         this.paths = buildResult.paths;
         this.options = buildResult.options;
-        let util = join(this.paths.engine, 'gulp/util/utils');
-        this.uglify = require(util).uglify;
     }
 
     async build(type) {
@@ -205,14 +205,15 @@ class ScriptBuilder {
                 bundle = bundle.pipe(sourcemaps.init({loadMaps: true}));
             }
 
-            let isNative = !!platfomConfig[options.platform].isNative;
-            bundle = bundle.pipe(this.uglify('build', {
-                jsb: isNative,
-                wechatgame: options.platform === 'wechatgame',
-                qqplay: options.platform === 'qqplay',
-                debug: options.debug,
-            }));
-
+            // let isNative = !!platfomConfig[options.platform].isNative;
+            // bundle = bundle.pipe(uglify('build', {
+            //     jsb: isNative,
+            //     wechatgame: options.platform === 'wechatgame',
+            //     qqplay: options.platform === 'qqplay',
+            //     debug: options.debug,
+            // }));
+            bundle = bundle.pipe(uglify());
+            // bundle = bundle.pipe();
             if (options.sourceMaps) {
                 bundle = bundle.pipe(refineSourceMap(rawPathToLibPath, paths.project))
                                 .pipe(sourcemaps.write('./'));

@@ -28,6 +28,19 @@ function isScript(assetType) {
     return assetType === 'javascript' || assetType === 'coffeescript' || assetType === 'typescript';
 }
 
+/**
+ * 计算引擎构建参数数组
+ */
+function computeArgs(options) {
+    let arr = [];
+    for (let key of Object.keys(options)) {
+        let value = options[key];
+        if (value) {
+            arr.push('--flags', key);
+        }
+    }
+    return arr;
+}
 // 判断是否为 node 依赖模块
 function isNodeModulePath(path) {
     return path.replace(/\\/g, '/').indexOf('/node_modules/') !== -1;
@@ -343,6 +356,7 @@ module.exports = {
     getCustomConfig,
     getScriptsCache,
     initInfo,
+    computeArgs,
     requestToPackage,
     getDestPathNoExt,
     updateProgress,
