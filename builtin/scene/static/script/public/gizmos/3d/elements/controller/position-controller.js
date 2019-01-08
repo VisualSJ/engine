@@ -27,7 +27,8 @@ class PositionController extends ControllerBase {
         let baseArrowBodyHeight = 140;
 
         let axisNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
-            baseArrowBodyHeight, color, axisName + 'Axis');
+            baseArrowBodyHeight, color);
+        axisNode.name = axisName + 'Axis';
         axisNode.parent = this.shape;
         NodeUtils.setEulerAngles(axisNode, rotation);
         this.initAxis(axisNode, axisName);
@@ -45,7 +46,8 @@ class PositionController extends ControllerBase {
         }
 
         let opacity = 128;
-        let borderPlane = ControllerUtils.borderPlane(planeWidth, planeWidth, color, opacity, axisName + 'Plane');
+        let borderPlane = ControllerUtils.borderPlane(planeWidth, planeWidth, color, opacity);
+        borderPlane.name = axisName + 'Plane';
         borderPlane.parent = this.shape;
         NodeUtils.setEulerAngles(borderPlane, rotation);
         borderPlane.setPosition(pos.x, pos.y, pos.z);

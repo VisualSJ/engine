@@ -3,6 +3,10 @@ const UtilsInterface = require('./utils-interface');
 const operationManager = require('../../operation');
 
 class Utils3D extends UtilsInterface {
+    constructor() {
+        super();
+        this.baseDist = 600;
+    }
 
     requestPointerLock() {
         operationManager.requestPointerLock();

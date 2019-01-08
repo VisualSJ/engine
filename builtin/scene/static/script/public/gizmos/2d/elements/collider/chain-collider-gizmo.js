@@ -36,7 +36,7 @@ class ChainColliderGizmo extends ColliderGizmo {
                 else if (type === ToolType.Line) {
                     this.recordChanges();
 
-                    let p = this.node.convertToNodeSpace(cc.v2(x, y));
+                    let p = this.node.convertToNodeSpaceAR(cc.v2(x, y));
                     
                     let el = event.currentTarget.instance;
                     let start = el.startSvgPoint.point.origin;

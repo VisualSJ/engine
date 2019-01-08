@@ -4,6 +4,10 @@ const UtilsInterface = require('./utils-interface');
 const AnimUtils = Editor.require('scene://utils/animation');
 
 class Utils2D extends UtilsInterface {
+    constructor() {
+        super();
+        this.baseDist = 500;
+    }
     requestPointerLock() {
         cc.game.canvas.requestPointerLock();
     }
@@ -34,7 +38,7 @@ class Utils2D extends UtilsInterface {
     }
 
     getSqrMagnitude(inVec3) {
-        return cc.vmath.vec3.squaredLength(inVec3);
+        return cc.vmath.vec3.squaredMagnitude(inVec3);
     }
 }
 

@@ -3,35 +3,35 @@ const CameraComponentGizmo = require('../../../3d/elements/components/camera-com
 const TransformToolData = require('../../../utils/transform-tool-data');
 
 class CameraGizmo extends Editor.Gizmo {
-    init() {
+    init () {
         this._CameraCompGizmo = new CameraComponentGizmo(this.target);
         this._CameraCompGizmo.init();
     }
 
-    visible() {
+    visible () {
         // 3D编辑时才显示
         return !TransformToolData.is2D && (this.selecting || this.editing);
     }
 
-    onUpdate() {
+    onUpdate () {
         if (this._CameraCompGizmo) {
-            this._CameraCompGizmo.updateControllerTransform();
+            this._CameraCompGizmo.updateControllerData();
         }
     }
 
-    onTargetUpdate() {
+    onTargetUpdate () {
         if (this._CameraCompGizmo) {
             this._CameraCompGizmo.target = this.target;
         }
     }
 
-    onShow() {
+    onShow () {
         if (this._CameraCompGizmo) {
             this._CameraCompGizmo.onShow();
         }
     }
 
-    onHide() {
+    onHide () {
         if (this._CameraCompGizmo) {
             this._CameraCompGizmo.onHide();
         }

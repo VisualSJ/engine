@@ -41,7 +41,7 @@ class PolygonColliderGizmo extends ColliderGizmo {
                 else if (type === ToolType.Line) {
                     this.recordChanges();
 
-                    let p = this.node.convertToNodeSpace(cc.v2(x, y)).sub(this.target.offset);
+                    let p = this.node.convertToNodeSpaceAR(cc.v2(x, y)).sub(this.target.offset);
                     
                     let el = event.currentTarget.instance;
                     let start = el.startSvgPoint.point.origin;
@@ -53,7 +53,7 @@ class PolygonColliderGizmo extends ColliderGizmo {
                     // allign point to line
                     let dx = start.x - end.x;  
                     let dy = start.y - end.y;  
-                    let u = (p.x - start.x)*(start.x - end.x) + (p.y - start.y)*(start.y - end.y);  
+                    let u = (p.x - start.x)*(start.x - end.x) + (p.y - start.y)*(start.y - end.y);
                     u = u/((dx*dx)+(dy*dy));  
                   
                     p.x = start.x + u*dx;

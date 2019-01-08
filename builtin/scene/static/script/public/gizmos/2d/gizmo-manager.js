@@ -4,7 +4,7 @@ const { create3DNode, getRaycastResults } = require('../utils/engine');
 let hitPoint = cc.v3();
 
 module.exports = {
-    init() {
+    init () {
         this.gizmoRootNode = create3DNode('gizmoRoot');
         this.gizmoRootNode.parent = _Scene.view.foregroundNode;
         this.recordLastX = 0;
@@ -13,7 +13,7 @@ module.exports = {
         this.curSelectNode = null;
     },
 
-    onMouseDown(event) {
+    onMouseDown (event) {
         if (event.button) return;
 
         if (event.which === 1) {
@@ -40,11 +40,11 @@ module.exports = {
         }
     },
 
-    onMouseWheel(/*event*/) {
+    onMouseWheel (/*event*/) {
 
     },
 
-    onMouseMove(event) {
+    onMouseMove (event) {
         let x = event.offsetX;
         let y = cc.game.canvas.height - event.offsetY;
 
@@ -92,7 +92,7 @@ module.exports = {
         }
 
     },
-    onMouseUp(event) {
+    onMouseUp (event) {
         let x = event.offsetX;
         let y = cc.game.canvas.height - event.offsetY;
         let customEvent = new cc.Event('mouseUp', true);
@@ -100,6 +100,9 @@ module.exports = {
         if (this.curSelectNode != null) {
             this.curSelectNode.emit(customEvent.type, customEvent);
             this.curSelectNode = null;
+
+            //当前在操作gizmo的物体，事件不往下传递，防止选择其它物体
+            return true;
         }
         else {
             let results = getRaycastResults(this.gizmoRootNode, x, y);
@@ -110,7 +113,7 @@ module.exports = {
         }
 
     },
-    onMouseLeave(/*event*/) {
+    onMouseLeave (/*event*/) {
         let customEvent = new cc.Event('mouseLeave', true);
 
         if (this.curSelectNode != null) {
@@ -118,7 +121,7 @@ module.exports = {
             this.curSelectNode = null;
         }
     },
-    onKeyDown(event) {
+    onKeyDown (event) {
 
         // 兼容2D的svg临时作法，后面应该把\scene\gizmos\index.js里的东西都移到manager这里
         if (_Scene.gizmosView && _Scene.gizmosView.svg.transform) {
@@ -127,7 +130,7 @@ module.exports = {
             }
         }
     },
-    onKeyUp(event) {
+    onKeyUp (event) {
         if (_Scene.gizmosView && _Scene.gizmosView.svg.transform) {
             if (_Scene.gizmosView.svg.transform.onGizmoKeyUp) {
                 _Scene.gizmosView.svg.transform.onGizmoKeyUp(event);

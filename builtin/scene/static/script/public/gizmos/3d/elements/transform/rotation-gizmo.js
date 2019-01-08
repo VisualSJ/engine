@@ -9,6 +9,7 @@ const GizmoUtils = Utils.GizmoUtils;
 let TransformGizmo = require('./transform-gizmo');
 let RotationController = require('../controller/rotation-controller');
 const TransformToolData = require('../../../utils/transform-tool-data');
+const MathUtil = External.EditorMath;
 
 class RotationGizmo extends TransformGizmo {
     init() {
@@ -41,8 +42,14 @@ class RotationGizmo extends TransformGizmo {
         let topNodes = this.topNodes;
 
         for (let i = 0; i < topNodes.length; ++i) {
-            let rot = NodeUtils.getWorldRotation3D(topNodes[i]);
-            this._rotList.push(quat.clone(rot));
+
+            if (this._controller.is2D) {
+                this._rotList.push(topNodes[i].angle);
+            }
+            else {
+                let rot = NodeUtils.getWorldRotation3D(topNodes[i]);
+                this._rotList.push(quat.clone(rot));
+            }
         }
 
         if (TransformToolData.pivot === 'center') {
@@ -104,56 +111,18 @@ class RotationGizmo extends TransformGizmo {
 
         if (!this.keydownDelta) {
             this.keydownDelta = 0;
+            let topNodes = this.topNodes;
+            this._rotList = [];
+            for (let i = 0; i < topNodes.length; ++i) {
+                this._rotList.push(topNodes[i].angle);
+            }
         }
 
         this.keydownDelta += delta;
 
         this.recordChanges();
 
-        let topNodes = this.topNodes;
-        let curNodeRot = cc.quat(0, 0, 0, 1);
-        let deltaRotation = cc.quat(0, 0, 0, 1);
-        let rot = cc.quat(0, 0, 0, 1);
-        let curNodePos;
-        quat.fromAxisAngle(deltaRotation, cc.v3(0, 0, 1), delta * this._degreeToRadianFactor);
-
-        if (TransformToolData.pivot === 'center') {
-            let center = GizmoUtils.getCenterWorldPos3D(this.target);
-
-            for (let i = 0; i < topNodes.length; ++i) {
-                let node = topNodes[i];
-                node.getRotation(curNodeRot);
-
-                if (TransformToolData.coordinate === 'global') {
-                    quat.mul(rot, deltaRotation, curNodeRot);
-                } else {
-                    quat.mul(rot, curNodeRot, deltaRotation);
-                }
-
-                let offsetPos = NodeUtils.getWorldPosition3D(node).sub(center);
-                vec3.transformQuat(offsetPos, offsetPos, deltaRotation);
-                curNodePos = center.add(offsetPos);
-                NodeUtils.setWorldPosition3D(node, curNodePos);
-                NodeUtils.setWorldRotation3D(node, rot);
-                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
-            }
-
-            // rotate controller
-            quat.fromAxisAngle(rot, cc.v3(0, 0, 1), this.keydownDelta * this._degreeToRadianFactor);
-            this._controller.setRotation(rot);
-        } else {
-            for (let i = 0; i < topNodes.length; ++i) {
-                topNodes[i].getRotation(curNodeRot);
-                if (TransformToolData.coordinate === 'global') {
-                    quat.mul(rot, deltaRotation, curNodeRot);
-                } else {
-                    quat.mul(rot, curNodeRot, deltaRotation);
-                }
-
-                NodeUtils.setWorldRotation3D(topNodes[i], rot);
-                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
-            }
-        }
+        this.updateRotationByZDeltaAngle(this.keydownDelta);
         Utils.repaintEngine();
     }
 
@@ -184,6 +153,15 @@ class RotationGizmo extends TransformGizmo {
     }
 
     updateDataFromController() {
+        if (this._controller.is2D) {
+            this.updateDataFromController2D();
+        } 
+        else {
+            this.updateDataFromController3D();
+        }
+    }
+
+    updateDataFromController3D() {
         if (this._controller.updated) {
             this.recordChanges();
 
@@ -229,6 +207,51 @@ class RotationGizmo extends TransformGizmo {
         }
     }
 
+    updateDataFromController2D() {
+        if (this._controller.updated) {
+            this.recordChanges();
+
+            let zDeltaAngle = this._controller.getZDeltaAngle();
+            this.updateRotationByZDeltaAngle(zDeltaAngle);
+        }
+    }
+
+    updateRotationByZDeltaAngle(zDeltaAngle) {
+        let i;
+        zDeltaAngle = MathUtil.toPrecision(zDeltaAngle, 3);
+        let deltaRotation = cc.quat();
+        let topNodes = this.topNodes;
+
+        if (TransformToolData.pivot === 'center') {
+            for (i = 0; i < topNodes.length; ++i) {
+                let curNodeMouseDownRot = this._rotList[i];
+
+                if (curNodeMouseDownRot == null) {
+                    return;
+                }
+
+                let newAngle = curNodeMouseDownRot + zDeltaAngle;
+                topNodes[i].angle = newAngle;
+                quat.fromEuler(deltaRotation, 0, 0, zDeltaAngle);
+                let offsetPos = cc.v3();
+                vec3.transformQuat(offsetPos, this._offsetList[i], deltaRotation);
+                NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
+                //NodeUtils.setWorldRotation3D(topNodes[i], rot);
+                // 发送节点修改消息
+                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+            }
+        }
+        else {
+            for (i = 0; i < topNodes.length; ++i) {
+                let newAngle = this._rotList[i] + zDeltaAngle;
+                topNodes[i].angle = newAngle;
+
+                // 发送节点修改消息
+                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+            }
+        }
+    }
+
     updateControllerTransform() {
         let node = this.node;
         let worldPos;
@@ -243,11 +266,12 @@ class RotationGizmo extends TransformGizmo {
         } else {
             worldPos = NodeUtils.getWorldPosition3D(node);
 
-            if (TransformToolData.coordinate === 'global') {
-                worldRot = this._controller.getDeltaRotation();
-            } else {
-                worldRot = NodeUtils.getWorldRotation3D(node);
-            }
+        }
+
+        if (TransformToolData.coordinate === 'global') {
+            worldRot = this._controller.getDeltaRotation();
+        } else {
+            worldRot = NodeUtils.getWorldRotation3D(node);
         }
 
         this._controller.setPosition(worldPos);

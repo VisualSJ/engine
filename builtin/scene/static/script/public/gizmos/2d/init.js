@@ -37,4 +37,5 @@
   _Scene.gizmos.components['cc.MeshRenderer'] = require('./elements/components/mesh-renderer-gizmo');
   _Scene.gizmos.components['cc.SkinnedMeshRenderer'] = require('./elements/components/skinned-mesh-renderer-gizmo');
   _Scene.gizmos.components['cc.Camera'] = require('./elements/components/camera-gizmo');
+  _Scene.gizmos.components['cc.LightComponent'] = require('./elements/components/light-component-gizmo');
 })();

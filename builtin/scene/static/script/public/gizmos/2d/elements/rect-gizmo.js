@@ -87,10 +87,13 @@ class RectGizmo extends Editor.Gizmo {
                 _tempMatrix.m12 = 0;
                 _tempMatrix.m13 = 0;
                 vmath.vec2.transformMat4(d, d, _tempMatrix);
-            
-                d.x = d.x / size.width;
-                d.y = d.y / size.height;
-                anchor.add(d, _tempV2a);
+
+                if (size.width !== 0) {
+                    _tempV2a.x = anchor.x + d.x / size.width;
+                }
+                if (size.height !== 0) {
+                    _tempV2a.y = anchor.y + d.y / size.height;
+                }
                 node.setAnchorPoint(_tempV2a);
 
                 // NodeUtils.setWorldPosition(node, worldPosList[i].add(delta) );

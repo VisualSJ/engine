@@ -5,26 +5,40 @@ const ControllerShapeCollider = require('../../3d/elements/utils/controller-shap
 let External = require('../external');
 let aabb = External.GeometryUtils.aabb;
 
-let gfx = cc.renderer.renderEngine.gfx;
+let gfx = cc.gfx;
+
+function setMatColor(node, c) {
+    let renderer = node.getComponent(cc.MeshRenderer);
+    if (renderer) { 
+        let mtl = renderer.sharedMaterials[0];
+        if (mtl) {
+            mtl.setProperty('color', c);
+        }          
+    }
+} 
 class Engine2D extends EngineInterface {
     constructor() {
         super();
         this.gfx = gfx;
     }
 
-    create3DNode(name) {
+    create3DNode (name) {
         let node3d = new cc.Node(name);
         node3d.is3DNode = true;
+        node3d._objFlags |= (cc.Object.Flags.DontSave | cc.Object.Flags.HideInHierarchy);
         return node3d;
     }
 
-    createMesh(primitive) {
+    createMesh (primitive) {
         let mesh = new cc.Mesh();
         let vfmtPosColor = new gfx.VertexFormat([
             { name: gfx.ATTR_POSITION, type: gfx.ATTR_TYPE_FLOAT32, num: 3 },
+            { name: gfx.ATTR_NORMAL, type: gfx.ATTR_TYPE_FLOAT32, num: 3 },
         ]);
+
         mesh.init(vfmtPosColor, primitive.positions.length, true);
         mesh.setVertices(gfx.ATTR_POSITION, primitive.positions);
+        if (primitive.normals) { mesh.setVertices(gfx.ATTR_NORMAL, primitive.normals); }
         mesh.setIndices(primitive.indices);
         if (primitive.minPos) { mesh._minPos = primitive.minPos; }
         if (primitive.maxPos) { mesh._maxPos = primitive.maxPos; }
@@ -34,32 +48,68 @@ class Engine2D extends EngineInterface {
         return mesh;
     }
 
-    addMeshToNode(node, mesh, opts = {}) {
+    addMeshToNode (node, mesh, opts = {}) {
         let renderer = node.addComponent(cc.MeshRenderer);
         renderer.mesh = mesh;
-        let mat = renderer._material; // set depth
-        let pass = mat._mainTech._passes[0];
-        pass.setDepth(false, false);
-        if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
+        
+        let mtl = new cc.Material();
+        if (opts.unlit) {
+            mtl.effectName = '__builtin-editor-gizmo-unlit';
+            if (mtl.effect) { 
+                mtl.effect.getTechnique('transparent').passes[0].setDepth(false); 
+            }
+        }
+        else {
+            if (mesh.subMeshes[0]._primitiveType < gfx.PT_TRIANGLES) {
+                if (opts.noDepthTestForLines) {
+                    mtl.effectName = '__builtin-editor-gizmo-unlit';
+                    if (mtl.effect) { 
+                        mtl.effect.getTechnique('transparent').passes[0].setDepth(false); 
+                    }                
+                }
+                else {
+                    mtl.effectName = '__builtin-editor-gizmo-line';
+                }
+            } 
+            else { 
+                mtl.effectName = '__builtin-editor-gizmo';
+            }
+        }
+
+
+        mtl.setProperty('color', node._color);
+        
+        if (mtl.effect) {
+            let pass = mtl.effect.getTechnique('transparent').passes[0];
+            if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
+        }
+
+        renderer.setMaterial(0, mtl);
     }
 
-    setMeshColor(node, c) {
+    setMeshColor (node, c) {
         node.color = c;
+        let color = c.clone();
+        color.a = node.opacity;
+        setMatColor(node, color);
     }
 
-    getMeshColor(node) {
+    getMeshColor (node) {
         return node.color;
     }
 
-    setNodeOpacity(node, opacity) {
+    setNodeOpacity (node, opacity) {
         node.opacity = opacity;
+        let color = node.color;
+        color.a = opacity;
+        setMatColor(node, color);
     }
 
-    getNodeOpacity(node) {
+    getNodeOpacity (node) {
         return node.opacity;
     }
 
-    getRaycastResults(rootNode, x, y) {
+    getRaycastResults (rootNode, x, y) {
         let ray = CameraTool._camera.getRay(cc.v3(x, y, 1));
         let results = cc.geomUtils.intersect.raycast(rootNode, ray, (modelRay, node, distance) => {
             let csc = node.getComponent(ControllerShapeCollider);
@@ -72,7 +122,7 @@ class Engine2D extends EngineInterface {
                 }
             }
             return distance;
-        }, function(node) {
+        }, function (node) {
             let hasMesh = node.getComponent(cc.MeshRenderer);
             if (hasMesh == null || node.active === false) {
                 return false;
@@ -83,15 +133,15 @@ class Engine2D extends EngineInterface {
         return results;
     }
 
-    getModel(node) {
+    getModel (node) {
         return node.getComponent(cc.MeshRenderer);
     }
 
-    updateVBAttr(mesh, attr, data) {
+    updateVBAttr (mesh, attr, data) {
         mesh.setVertices(attr, data);
     }
 
-    getBoudingBox(component) {
+    getBoudingBox (component) {
         let boundingBox = null;
         if (component instanceof cc.MeshRenderer) {
             let mesh = component.mesh;
@@ -105,7 +155,7 @@ class Engine2D extends EngineInterface {
         return boundingBox;
     }
 
-    getRootBoneNode(component) {
+    getRootBoneNode (component) {
         let rootBoneNode = null;
         if (component instanceof cc.SkinnedMeshRenderer) {
             let joints = component._joints;
@@ -119,7 +169,7 @@ class Engine2D extends EngineInterface {
         return rootBoneNode;
     }
 
-    getRootBindPose(component) {
+    getRootBindPose (component) {
         let rootBindPose = null;
 
         if (component instanceof cc.SkinnedMeshRenderer) {
@@ -134,14 +184,15 @@ class Engine2D extends EngineInterface {
         return rootBindPose;
     }
 
-    getCameraData(component) {
+    getCameraData (component) {
         let cameraData = null;
 
         if (component instanceof cc.Camera) {
             cameraData = {};
             if (component.ortho) {
                 cameraData.projection = 0;
-            } else {
+            }
+            else {
                 cameraData.projection = 1;
             }
 
@@ -151,10 +202,52 @@ class Engine2D extends EngineInterface {
             cameraData.near = component.nearClip;
             cameraData.far = component.farClip;
         } else {
-            console.error('target is not a cc.CameraComponent');
+            console.error('target is not a cc.Camera');
         }
 
         return cameraData;
+    }
+
+    setCameraData (component, cameraData) {
+        if (component instanceof cc.Camera) {
+            if (cameraData.fov) {
+                component.fov = cameraData.fov;
+            }
+            if (cameraData.far) {
+                component.farClip = cameraData.far;
+            }
+        } else {
+            console.error('target is not a cc.Camera');
+        }
+    }
+
+    getLightData (component) {
+        let lightData = null;
+
+        if (component instanceof cc.LightComponent) {
+            lightData = {};
+            lightData.type = component.type;
+            lightData.range = component.range;
+            lightData.spotAngle = component.spotAngle;
+        } else {
+            console.error('target is not a cc.LightComponent');
+        }
+
+        return lightData;
+    }
+
+    setLightData (component, lightData) {
+        if (component instanceof cc.LightComponent) {
+            if (lightData.range) {
+                component.range = lightData.range;
+            }
+            if (lightData.spotAngle) {
+                component.spotAngle = lightData.spotAngle;
+            }
+
+        } else {
+            console.error('target is not a cc.LightComponent');
+        }
     }
 }
 

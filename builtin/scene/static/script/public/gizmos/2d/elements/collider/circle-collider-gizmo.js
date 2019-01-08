@@ -39,7 +39,7 @@ class CircleColliderGizmo extends ColliderGizmo {
                     this.adjustValue(this.target, 'offset');
                 }
                 else {
-                    let o = node.convertToNodeSpace(cc.v2(pressx + dx, pressy + dy));
+                    let o = node.convertToNodeSpaceAR(cc.v2(pressx + dx, pressy + dy));
                     let d = o.subSelf(startOffset).mag();
                     this.target.radius = d;
                     this.adjustValue(this.target, 'radius');

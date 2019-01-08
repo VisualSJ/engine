@@ -69,7 +69,8 @@ class EditableController extends ControllerBase {
 
     createEditController(axisName, color) {
         let ctrlSize = this._defaultEditCtrlSize;
-        let editCtrlNode = ControllerUtils.quad(ctrlSize, ctrlSize, color, axisName, {unlit : true});
+        let editCtrlNode = ControllerUtils.quad(ctrlSize, ctrlSize, color, {unlit : true});
+        editCtrlNode.name = axisName;
         editCtrlNode.parent = this._editControllerShape;
         this._editCtrlScales[axisName] = cc.v3(1, 1, 1);
         this.initAxis(editCtrlNode, axisName);

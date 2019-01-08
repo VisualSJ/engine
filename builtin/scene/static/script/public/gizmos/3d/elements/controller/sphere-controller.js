@@ -70,7 +70,8 @@ class SphereController extends EditableController {
 
     createBorderCircle() {
         this._borderCircle = ControllerUtils.circle(
-            this._center, cc.v3(0, 0, 1), this._radius, this._color, 'borderCircle');
+            this._center, cc.v3(0, 0, 1), this._radius, this._color);
+        this._borderCircle.name = 'borderCircle';
         this._borderCircle.parent = this.shape;
         this._borderCircelMR = getModel(this._borderCircle);
     }

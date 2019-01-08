@@ -4,6 +4,7 @@
 class UtilsInterface {
     constructor() {
         this.GizmoUtils = require('./utils');
+        this.baseDist = 600;    // 用于Gizmo保持大小的一个参数
     }
 
     /**

@@ -5,12 +5,14 @@ let ControllerBase = require('./controller-base');
 let ControllerUtils = require('../utils/controller-utils');
 let ControllerShape = require('../utils/controller-shape');
 const { gfx, setNodeOpacity, getModel, updateVBAttr, create3DNode, panPlaneLayer,
-    getRaycastResults } = require('../../../utils/engine');
+    getRaycastResults, setMeshColor } = require('../../../utils/engine');
 const Utils = require('../../../utils');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 const MathUtil = External.EditorMath;
 const EditorCamera = External.EditorCamera;
+
+let tempQuat = cc.quat();
 
 class RotationController extends ControllerBase {
     constructor(rootNode) {
@@ -18,6 +20,9 @@ class RotationController extends ControllerBase {
 
         this._deltaRotation = cc.quat(0, 0, 0, 1);
         this._rotFactor = 3;
+
+        // for 2d rotation
+        this._zDeltaAngle = 0;
 
         this.initShape();
     }
@@ -34,13 +39,15 @@ class RotationController extends ControllerBase {
         topNode.parent = this.shape;
 
         let torusNode = ControllerUtils.torus(baseRadius, tubeRadius,
-            { arc: Math.abs(arcRadian) }, color, axisName + 'RotationTorus');
+            { arc: Math.abs(arcRadian) }, color);
+        torusNode.name = axisName + 'RotationTorus';
         torusNode.parent = topNode;
         setNodeOpacity(torusNode, 0);
         NodeUtils.setEulerAngles(torusNode, torusRot);
         let arrowNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
-            baseArrowBodyHeight, color, axisName + 'Axis');
-        arrowNode.parent = this.shape;
+            baseArrowBodyHeight, color);
+        arrowNode.name = axisName + 'Axis';
+        arrowNode.parent = topNode;
         NodeUtils.setEulerAngles(arrowNode, arrowRot);
         let arcNode = ControllerUtils.arc(cc.v3(),
             this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color, { noDepthTestForLines: true });
@@ -81,11 +88,12 @@ class RotationController extends ControllerBase {
 
         // circle border
         let cameraNode = EditorCamera._camera.node;
-        let cameraRot = cameraNode.getWorldRotation();
+        let cameraRot = cameraNode.getWorldRotation(tempQuat);
         let cameraNormal = cc.v3();
         vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
         let circleBorderNode = ControllerUtils.circle(cc.v3(), cameraNormal,
-            this._baseRadius, new cc.Color(20, 20, 20), 'circleBorder');
+            this._baseRadius, new cc.Color(20, 20, 20));
+        circleBorderNode.name = 'circleBorder';
         circleBorderNode.parent = this._rootNode;
         setNodeOpacity(circleBorderNode, 200);
 
@@ -107,7 +115,7 @@ class RotationController extends ControllerBase {
         // for rotation indicator sector
         let indicator = {};
         indicator.sectorNode = ControllerUtils.sector(cc.v3(), cc.v3(0, 1, 0), cc.v3(1, 0, 0),
-            Math.PI, this._baseRadius, ControllerUtils.YELLOW);
+            Math.PI, this._baseRadius, ControllerUtils.YELLOW, {unlit:true});
         setNodeOpacity(indicator.sectorNode, 200);
         indicator.sectorNode.parent = this._rootNode;
         indicator.sectorNode.active = false;
@@ -121,7 +129,7 @@ class RotationController extends ControllerBase {
         let axisData = this._axisDataMap[axisName];
         axisData.normalTorusNode = node.getChildByName(axisName + 'RotationArc');
         axisData.indicatorCircle = node.getChildByName(axisName + 'IndicatorCircle');
-        axisData.arrowNode = this.shape.getChildByName(axisName + 'Axis');
+        axisData.arrowNode = node.getChildByName(axisName + 'Axis');
         axisData.arrowNode.active = false;
         axisData.normalTorusMR = getModel(axisData.normalTorusNode);
     }
@@ -159,7 +167,7 @@ class RotationController extends ControllerBase {
     }
 
     onMouseDown(event) {
-        if (this.isInCutoffBack(event.axisName, event.x, event.y)) {
+        if (!this.is2D && this.isInCutoffBack(event.axisName, event.x, event.y)) {
             return;
         }
 
@@ -182,6 +190,7 @@ class RotationController extends ControllerBase {
 
             // 2D情况下rotation扇形指示器从自身x轴为起始方向
             vec3.transformQuat(this._indicatorStartDir, cc.v3(1, 0, 0), this._rotation);
+            this._zDeltaAngle = 0;
         } else {
             vec3.sub(hitDir, hitPoint, this._position);
             this._indicatorStartDir = hitDir;
@@ -238,6 +247,10 @@ class RotationController extends ControllerBase {
 
             radian = -alignAxisMoveDist / this._rotFactor * this._degreeToRadianFactor;
             quat.fromAxisAngle(this._deltaRotation, this._axisDir[event.axisName], radian);
+
+            if (this.is2D) {
+                this._zDeltaAngle = -alignAxisMoveDist / this._rotFactor;
+            }
         }
 
         this.updateRotationIndicator(this._transformAxisDir, this._indicatorStartDir, radian);
@@ -282,7 +295,7 @@ class RotationController extends ControllerBase {
     }
 
     onHoverIn(event) {
-        if (this.isInCutoffBack(event.axisName, event.x, event.y)) {
+        if (!this.is2D && this.isInCutoffBack(event.axisName, event.x, event.y)) {
             return;
         }
 
@@ -313,6 +326,10 @@ class RotationController extends ControllerBase {
         return this._deltaRotation;
     }
 
+    getZDeltaAngle() {
+        return this._zDeltaAngle;
+    }
+
     onShow() {
         if (this.is2D) {
             this._axisDataMap.x.topNode.active = false;
@@ -320,6 +337,7 @@ class RotationController extends ControllerBase {
             this._axisDataMap.z.topNode.active = false;
 
             this._axisDataMap.w.topNode.active = true;
+            this._axisDataMap.w.arrowNode.active = true;
             this._circleBorderNode.active = false;
             this._cutoffNode.active = false;
             this.updateController();
@@ -329,6 +347,7 @@ class RotationController extends ControllerBase {
             this._axisDataMap.z.topNode.active = true;
 
             this._axisDataMap.w.topNode.active = false;
+            this._axisDataMap.w.arrowNode.active = false;
             this._circleBorderNode.active = true;
             this._cutoffNode.active = true;
         }
@@ -356,7 +375,7 @@ class RotationController extends ControllerBase {
         this._circleBorderNode.setScale(newScale);
         this._circleBorderNode.setWorldPosition(this._position);
         let cameraNode = EditorCamera._camera.node;
-        let cameraRot = cameraNode.getWorldRotation();
+        let cameraRot = cameraNode.getWorldRotation(tempQuat);
         let cameraNormal = cc.v3();
         vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
         let positions = ControllerShape.calcCirclePoints(cc.v3(), cameraNormal,
