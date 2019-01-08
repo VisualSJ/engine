@@ -80,3 +80,7 @@ input::-webkit-inner-spin-button {
 .down:hover svg {
   fill: var(--hover-c);
 }
+.up[pressed] svg,
+.down[pressed] svg {
+  fill: var(--focus-c, #fd942b);
+}
