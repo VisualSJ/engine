@@ -3,6 +3,7 @@
 const { get } = require('lodash');
 const nodeUtils = require('./node');
 const isChildClass = require('../is-child-class');
+const { getDefault } = require('./type');
 
 /**
  * 获取一个数据的默认值
@@ -74,6 +75,84 @@ function dumpNode(node) {
     }
 
     return nodeUtils.dump(node);
+}
+
+function resetProperty(node, path, type) {
+    path = path.replace('__comps__', '_components');
+
+    const keys = path.split('.');
+    const key = keys.pop();
+    let target = get(node, keys.join('.'));
+
+    if (!target) {
+        return;
+    }
+
+    if (Array.isArray(target)) {
+        let i = parseInt(key, 10);
+        const upKey = keys.pop();
+        const parent = get(node, keys.join('.'));
+        if (cc.Class._isCCClass(parent.constructor)) {
+            fillDefaultValue(cc.Class.attr(parent, upKey), target, i, i + 1);
+        } else {
+            console.error(`Can\'t reset property by path, the object should be CCClass`);
+        }
+    }
+
+    if (cc.Class._isCCClass(target.constructor)) {
+        const attrs = cc.Class.attr(target, key);
+        if (attrs && 'default' in attrs) {
+            let def = getDefault(attrs.default);
+            if (typeof def === 'object' && def) {
+                if (typeof def.clone === 'function') {
+                    def = def.clone();
+                } else if (Array.isArray(def)) {
+                    def = [];
+                } else {
+                    def = {};
+                }
+            }
+            target[key] = def;
+        } else {
+            console.error('Unknown default value to reset');
+        }
+    } else {
+        console.error("Can't reset property by path, the object should be CCClass");
+    }
+}
+
+async function createProperty(node, path, type) {
+    if (path.includes('__comps__')) {
+        const reg = /_components\.\d+\./;
+        let compPath;
+        let propPath;
+        path = path.replace('__comps__', '_components');
+        propPath = path.replace(reg, (match) => {
+            compPath = match.slice(0, -1);
+            return '';
+        });
+        const target = get(node, compPath);
+        if (target) {
+            const attrs = cc.Class.attr(target.constructor, propPath);
+            let obj;
+            if (attrs && Array.isArray(getDefault(attrs.default))) {
+                obj = [];
+            } else {
+                const ctor = cc.js._getClassById(type);
+                if (ctor) {
+                    try {
+                        obj = new ctor();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            }
+
+            if (obj) {
+                await restoreProperty(node, path, {value: obj, type});
+            }
+        }
+    }
 }
 
 /**
@@ -197,7 +276,7 @@ async function restoreProperty(node, path, dump) {
         case 'cc.Color':
             // 3d opacity、color 由 effect 控制，无需更改 opacity
             const { a, r, g, b } = dump.value;
-            property[key] = new cc.Color(r, g, b, a * 255);
+            property[key] = new cc.Color(r, g, b, a);
             // property.opacity = Math.floor(opacity * 255);
             break;
         case 'cc.Mesh':
@@ -374,4 +453,6 @@ module.exports = {
     dumpNode,
     restoreProperty,
     restoreNode,
+    createProperty,
+    resetProperty,
 };

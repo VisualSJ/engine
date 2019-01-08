@@ -1,28 +1,23 @@
 'use strict';
 
-exports.template = `
-    <ui-prop
-        class="null-prop"
-        :name="dump.name"
-        :indent="indent"
-    >
-        <div class="object-value">Null</div>
-        <div class="object-type">{{dump.attrs.typename}}</div>
-        <span class="flex-1"></span>
-        <ui-button
-            class="tiny blue"
-            @confirm="applyAction"
-        >{{action}}</ui-button>
-    </ui-prop>
-`;
+// exports.template = `
+//     <ui-prop
+//         class="null-prop"
+//         :name="dump.name"
+//     >
+//         <div class="object-value">Null</div>
+//         <div class="object-type">{{dump.attrs.typename}}</div>
+//         <span class="flex-1"></span>
+//         <ui-button
+//             class="tiny blue"
+//             @confirm="applyAction"
+//         >{{action}}</ui-button>
+//     </ui-prop>
+// `;
 exports.props = {
     dump: {
         required: true,
         type: Object,
-    },
-    indent: {
-        type: Number,
-        default: 0,
     },
 };
 
@@ -33,13 +28,6 @@ exports.components = {
 exports.data = function() {
     return {
         action: 'Create',
-        foldUp: false,
-        paddingStyle:
-            this.indent !== 0
-                ? {
-                      'padding-left': `${this.indent * 13}px`,
-                  }
-                : '',
     };
 };
 
@@ -78,4 +66,49 @@ exports.methods = {
             this.dispatch('reset-prop');
         }
     },
+};
+
+exports.render = function(h) {
+    return h(
+        'ui-prop',
+        {
+            staticClass: 'null-prop',
+            attrs: {
+                ...this.$attrs,
+            },
+            props: {
+                ...this.$props,
+            },
+            on: {
+                ...this.$listeners,
+            },
+        },
+        [
+            h(
+                'div',
+                {
+                    staticClass: 'object-value',
+                },
+                'Null'
+            ),
+            h(
+                'div',
+                {
+                    staticClass: 'object-type',
+                },
+                this.dump.attrs.typename
+            ),
+            h('span', { staticClass: 'flex-1' }),
+            h(
+                'ui-button',
+                {
+                    staticClass: 'tiny blue',
+                    on: {
+                        confirm: this.applyAction,
+                    },
+                },
+                this.action
+            ),
+        ]
+    );
 };

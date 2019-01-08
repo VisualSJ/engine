@@ -6,16 +6,15 @@ exports.mixins = [mixin];
 
 exports.props = [
     'dump', // dump 数据
-    'indent', // 是否需要缩进
 ];
 
 exports.data = function() {
     return {
         foldUp: false,
         paddingStyle:
-            this.indent !== undefined
+            this.$attrs.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`,
+                      'padding-left': `${this.$attrs.indent * 13}px`,
                   }
                 : '',
     };
@@ -31,6 +30,7 @@ exports.methods = {
         const event = new CustomEvent(type, {
             bubbles: true,
             detail: {
+                type: this.dump.type,
                 path: this.dump.path,
                 value: this.dump.value,
             },
@@ -40,7 +40,7 @@ exports.methods = {
     },
 
     t(color) {
-        return JSON.stringify([color.r, color.g, color.b, color.a / 255]);
+        return JSON.stringify([color.r, color.g, color.b, color.a]);
     },
 
     /**
@@ -49,7 +49,7 @@ exports.methods = {
     _onChange(event) {
         const { value } = event.target;
         ['r', 'g', 'b', 'a'].map((item, index) => {
-            this.dump.value[item] = event.target.value[index];
+            this.dump.value[item] = value[index];
         });
         this.dispatch('change');
     },
@@ -60,7 +60,7 @@ exports.methods = {
     _onConfirm(event) {
         const { value } = event.target;
         ['r', 'g', 'b', 'a'].map((item, index) => {
-            this.dump.value[item] = event.target.value[index];
+            this.dump.value[item] = value[index];
         });
         this.dispatch('confirm');
     },
@@ -71,7 +71,7 @@ exports.methods = {
     _onCancel(event) {
         const { value } = event.target;
         ['r', 'g', 'b', 'a'].map((item, index) => {
-            this.dump.value[item] = event.target.value[index];
+            this.dump.value[item] = value[index];
         });
         this.dispatch('cancel');
     },
@@ -98,6 +98,7 @@ exports.render = function(h) {
                             'div',
                             {
                                 staticClass: 'label',
+                                style: this.paddingStyle,
                             },
                             [
                                 h('i', {
@@ -119,11 +120,10 @@ exports.render = function(h) {
                                     'span',
                                     {
                                         staticClass: 'text',
-                                        style: this.paddingStyle,
                                     },
                                     [this.dump.name]
                                 ),
-                                this.$attrs.readonly &&
+                                this.$attrs.readonly !== undefined &&
                                     h(
                                         'div',
                                         {

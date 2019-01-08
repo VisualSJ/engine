@@ -5,6 +5,16 @@ interface SetPropertyOptions {
     // key: string; // 属性的 key
     dump: PropertyDump; // 属性 dump 出来的数据
 }
+interface CreatePropertyOptions {
+    uuid: string; // 创建属性的对象的 uuid
+    path: string; // 属性挂载对象的搜索路径
+    type: string; // 属性的类型
+}
+interface ResetPropertyOptions {
+    uuid: string; // 重置属性的对象的 uuid
+    path: string; // 属性挂载对象的搜索路径
+    type: string; // 属性的类型
+}
 
 // insert-array-element 消息的 options 定义
 interface InsertArrayOptions {

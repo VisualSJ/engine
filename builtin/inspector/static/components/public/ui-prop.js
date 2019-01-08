@@ -63,6 +63,25 @@ exports.computed = {
             };
         }
     },
+
+    attrlist() {
+        if (this.compType !== undefined && this.dump && this.dump.attrs) {
+            const {compType, dump} = this;
+            const defaultKeys = ['disabled', 'readonly'];
+            if (['number', 'cc-vec2', 'cc-vec3', 'cc-rect', 'cc-size'].includes(compType)) {
+                defaultKeys.push('min', 'max', 'step');
+            } else if (['string'].includes(compType)) {
+                defaultKeys.push('palceholder');
+            }
+            return defaultKeys.reduce((acc, cur) => {
+                if (dump.attrs[cur] !== undefined) {
+                    acc[cur] = dump.attrs[cur];
+                }
+                return acc;
+            }, {});
+        }
+        return {};
+    },
 };
 
 exports.data = function() {
@@ -71,7 +90,7 @@ exports.data = function() {
         paddingStyle:
             this.$attrs.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`,
+                      'padding-left': `${this.$attrs.indent * 13}px`,
                   }
                 : '',
     };
@@ -107,6 +126,7 @@ exports.methods = {
                     {
                         attrs: {
                             'auto-height': compType === 'cc-rect',
+                            ...this.attrlist,
                             ...this.$attrs,
                             dump: { ...comp, name: label },
                         },
@@ -121,6 +141,7 @@ exports.methods = {
             case 'cc-color': {
                 return createElement('cc-color', {
                     attrs: {
+                        ...this.attrlist,
                         ...this.$attrs,
                         dump: { ...comp, name: label },
                     },
@@ -134,6 +155,7 @@ exports.methods = {
             case 'cc-dragable': {
                 return createElement('cc-dragable', {
                     attrs: {
+                        ...this.attrlist,
                         ...this.$attrs,
                         dump: { ...comp, name: label },
                     },
@@ -147,6 +169,7 @@ exports.methods = {
             case 'boolean': {
                 return createElement('cc-boolean', {
                     attrs: {
+                        ...this.attrlist,
                         ...this.$attrs,
                         dump: { ...comp, name: label },
                     },
@@ -162,6 +185,7 @@ exports.methods = {
                     'cc-enum',
                     {
                         attrs: {
+                            ...this.attrlist,
                             ...this.$attrs,
                             dump: { ...comp, name: label },
                         },
@@ -179,6 +203,7 @@ exports.methods = {
                     'cc-number',
                     {
                         attrs: {
+                            ...this.attrlist,
                             ...this.$attrs,
                             dump: { ...comp, name: label },
                         },
@@ -194,6 +219,7 @@ exports.methods = {
                     'cc-string',
                     {
                         attrs: {
+                            ...this.attrlist,
                             ...this.$attrs,
                             dump: { ...comp, name: label },
                         },
@@ -248,6 +274,7 @@ exports.render = function(h) {
                             'div',
                             {
                                 staticClass: 'label',
+                                style: this.paddingStyle,
                             },
                             [
                                 h('i', {
@@ -270,11 +297,10 @@ exports.render = function(h) {
                                     'span',
                                     {
                                         staticClass: 'text',
-                                        style: this.paddingStyle,
                                     },
                                     [this.label]
                                 ),
-                                this.$attrs.readonly &&
+                                this.$attrs.readonly !== undefined &&
                                     h(
                                         'div',
                                         {

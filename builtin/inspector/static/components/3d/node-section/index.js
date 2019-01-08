@@ -130,6 +130,30 @@ exports.methods = {
         }
     },
 
+    onNewProp(event) {
+        const {
+            detail: { path, type },
+        } = event;
+        const { uuid } = this;
+        Editor.Ipc.requestToPackage('scene', 'create-property', {
+            path,
+            uuid,
+            type,
+        });
+    },
+
+    onResetProp(event) {
+        const {
+            detail: { path, type },
+        } = event;
+        const { uuid } = this;
+        Editor.Ipc.requestToPackage('scene', 'reset-property', {
+            path,
+            uuid,
+            type,
+        });
+    },
+
     /**
      * 弹出添加组件菜单
      * @param {*} event

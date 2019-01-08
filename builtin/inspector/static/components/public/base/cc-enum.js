@@ -6,16 +6,15 @@ exports.mixins = [mixin];
 
 exports.props = [
     'dump', // dump 数据
-    'indent', // 是否需要缩进
 ];
 
 exports.data = function() {
     return {
         foldUp: false,
         paddingStyle:
-            this.indent !== undefined
+            this.$attrs.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`,
+                      'padding-left': `${this.$attrs.indent * 13}px`,
                   }
                 : '',
     };
@@ -29,6 +28,7 @@ exports.methods = {
         const event = new CustomEvent(type, {
             bubbles: true,
             detail: {
+                type: this.dump.type,
                 path: this.dump.path,
                 value: this.dump.value,
             },
@@ -86,6 +86,7 @@ exports.render = function(h) {
                             'div',
                             {
                                 staticClass: 'label',
+                                style: this.paddingStyle,
                             },
                             [
                                 h('i', {
@@ -108,11 +109,10 @@ exports.render = function(h) {
                                     'span',
                                     {
                                         staticClass: 'text',
-                                        style: this.paddingStyle,
                                     },
                                     [this.dump.name]
                                 ),
-                                this.$attrs.readonly &&
+                                this.$attrs.readonly !== undefined &&
                                     h(
                                         'div',
                                         {

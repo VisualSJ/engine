@@ -22,11 +22,12 @@ exports.template = `
     </ui-prop>
 `;
 
-exports.props = [
-    'dump', // dump 数据
-    'indent', // 是否需要缩进
-];
-
-exports.data = function() {
-    return {};
+exports.props = {
+    dump: {
+        type: Object,
+    },
+    indent: {
+        type: Number,
+        default: 0,
+    },
 };

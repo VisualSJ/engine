@@ -330,9 +330,10 @@ class NodeManager extends EventEmitter {
             node.name = name;
         }
 
-       // 一般情况下是 dumpdata
+        // 一般情况下是 dumpdata
         if (dump) {
-            if (typeof dump === 'string') { // dump 为 uuid 的情况
+            if (typeof dump === 'string') {
+                // dump 为 uuid 的情况
                 dump = this.queryDump(dump);
             }
             // 这几个属性不需要赋给一个新节点
@@ -444,6 +445,50 @@ class NodeManager extends EventEmitter {
             return {};
         }
         return getComponentFunctionOfNode(node);
+    }
+
+    /**
+     * 创建一个节点的属性
+     * @param {*} uuid
+     * @param {*} path
+     * @param {*} type
+     */
+    async createProperty(uuid, path, type) {
+        const node = this.query(uuid);
+        if (!node) {
+            return;
+        }
+        // 触发修改前的事件
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
+        await dumpUtils.createProperty(node, path, type);
+
+        // 触发修改后的事件
+        this.emit('changed', node);
+        Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    }
+
+    /**
+     * 重置一个节点的属性
+     * @param {*} uuid
+     * @param {*} path
+     * @param {*} type
+     */
+    resetProperty(uuid, path, type) {
+        const node = this.query(uuid);
+        if (!node) {
+            return;
+        }
+        // 触发修改前的事件
+        this.emit('before-change', node);
+        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
+
+        dumpUtils.resetProperty(node, path, type);
+
+        // 触发修改后的事件
+        this.emit('changed', node);
+        Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
     }
 }
 

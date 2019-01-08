@@ -1,10 +1,6 @@
 'use strict';
 
-const { readdirSync } = require('fs');
-const { join, basename, extname } = require('path');
-const { readTemplate, T } = require('../../../utils');
-
-exports.template = readTemplate('2d', './node-section/public/array-prop.html');
+const { T } = require('../../../utils');
 
 exports.props = {
     dump: {
@@ -17,25 +13,11 @@ exports.props = {
     },
 };
 
-exports.data = function() {
-    return {
-        foldUp: false,
-        paddingStyle:
-            this.indent !== 0
-                ? {
-                      'padding-left': `${this.indent * 13}px`,
-                  }
-                : '',
-    };
-};
-
 exports.components = {
     'ui-prop': require('../ui-prop'),
 };
 
 exports.methods = {
-    T,
-
     arraySizeChanged(event) {
         const { value } = event.target;
         if (value < this.dump.value.length) {
@@ -59,4 +41,45 @@ exports.methods = {
 
         this.$el.dispatchEvent(customEvent);
     },
+};
+
+exports.render = function(h) {
+    const {dump} = this;
+    return h('ui-prop', {
+        attrs: {
+            foldable: '',
+            name: dump.name,
+            indent: this.indent,
+        },
+        on: {
+            ...this.$listeners,
+        },
+    }, !dump.values || dump.values.length <= 1 ? [h('ui-num-input', {
+            staticClass: 'flex-1',
+            attrs: {
+                readonly: dump.attrs && dump.attrs.readonly,
+                ...this.$attrs,
+                min: 0,
+                max: 100,
+                value: dump.value.length,
+            },
+            on: {
+                confirm: ($event) => {
+                    $event.stopPropagation();
+                    this.arraySizeChanged($event);
+                },
+            },
+        }), h('template', {
+            slot: 'child',
+        }, [
+            dump.value.map((prop, index) => h('ui-prop', {
+                key: index,
+                attrs: {
+                    'comp-type': prop.compType,
+                    dump: prop,
+                    indent: +this.indent + 1,
+                },
+            })),
+        ])] : h('span', 'difference')
+    );
 };

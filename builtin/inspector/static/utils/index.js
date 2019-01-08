@@ -1,7 +1,7 @@
 'use stirct';
 
-const { readFileSync, readdirSync } = require('fs-extra');
-const { join, basename, extname } = require('path');
+const { readFileSync } = require('fs-extra');
+const { join } = require('path');
 const diffPatcher = require('./diffPatcher');
 
 module.exports = {
@@ -261,6 +261,15 @@ function build3DProp(path, key, item, attrs, isArrayItem = false) {
     const { type, value } = item;
     let typeNull = false;
     let typeError = false;
+    let isNode = false;
+    let isComponent = false;
+    let isAsset = false;
+
+    if (item.extends) {
+        isAsset = [...item.extends, type].includes('cc.RawAsset');
+        isNode = item.extends.includes('cc.Object');
+        isComponent = item.extends.includes('cc.Component');
+    }
 
     if (!type) {
         item.attrs.visible = false;
@@ -274,12 +283,16 @@ function build3DProp(path, key, item, attrs, isArrayItem = false) {
             const attrs = item.properties || {};
             build3DProp(`${path}.${i}`, `[${i}]`, value[i], attrs, true);
         }
-    }
-
-    if (!item.compType && type) {
-        if (type === 'Object' && (value === null || value === undefined)) {
+    } else {
+        if (isComponent) {
+            item.compType = 'cc-dragable';
+        } else if (!item.compType) {
+            item.type = 'Object';
+        }
+        if (item.type === 'Object' && (value === null || value === undefined)) {
             typeNull = true;
         }
+
         if (!typeNull && attrs.type && attrs.type !== type) {
             // type 类型不一致
             if (item.extends) {
@@ -293,10 +306,23 @@ function build3DProp(path, key, item, attrs, isArrayItem = false) {
         }
 
         if (typeNull) {
-            item.attrs.typename = item.attrs.type;
+            item.attrs.typename = attrs.type;
             item.compType = 'null-prop';
         } else if (typeError) {
             item.compType = 'type-error-prop';
+        } else {
+            if (item.type === 'Object') {
+                item.compType = 'object-prop';
+                for (const name in item.value) {
+                    if (true) {
+                        const itemProp = item.value[name];
+                        const itemAttrs = item.properties && item.properties[name];
+                        if (itemProp && itemAttrs) {
+                            build3DProp(`${path}.${name}`, name, itemProp, itemAttrs || {});
+                        }
+                    }
+                }
+            }
         }
     }
 }

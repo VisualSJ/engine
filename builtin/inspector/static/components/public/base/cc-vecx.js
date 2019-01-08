@@ -13,19 +13,15 @@ exports.props = {
         type: Object,
         require: true,
     },
-    indent: {
-        type: Number,
-        default: 0,
-    },
 };
 
 exports.data = function() {
     return {
         foldUp: false,
         paddingStyle:
-            this.indent !== undefined
+            this.$attrs.indent !== undefined
                 ? {
-                      'padding-left': `${this.indent * 13}px`,
+                      'padding-left': `${this.$attrs.indent * 13}px`,
                   }
                 : '',
     };
@@ -91,6 +87,7 @@ exports.render = function(h) {
                             'div',
                             {
                                 staticClass: 'label',
+                                style: this.paddingStyle,
                             },
                             [
                                 h('i', {
@@ -113,11 +110,10 @@ exports.render = function(h) {
                                     'span',
                                     {
                                         staticClass: 'text',
-                                        style: this.paddingStyle,
                                     },
                                     [this.dump.name]
                                 ),
-                                this.$attrs.readonly &&
+                                this.$attrs.readonly !== undefined &&
                                     h(
                                         'div',
                                         {
