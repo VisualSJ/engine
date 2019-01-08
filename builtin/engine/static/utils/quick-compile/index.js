@@ -9,6 +9,7 @@ const Del = require('del');
 const xtend = require('xtend');
 const builtins = require('browserify/lib/builtins.js');
 const Lodash = require('lodash');
+const exec = require('child_process').exec;
 
 // const babelPlugin    = require('./plugins/babel');
 // const modulePlugin   = require('./plugins/module');
@@ -154,7 +155,9 @@ Object.assign(Compiler.prototype, {
 
     rebuild(cb) {
         this.updateState('compiling');
-
+        if (Editor.Project.type === '3d') {
+            this.tscRollup();
+        }
         if (this.watching) {
             console.time('QuickCompiler watching rebuild finished');
             if (this._watchedScripts.length === 0) {
@@ -188,6 +191,22 @@ Object.assign(Compiler.prototype, {
                 this._compileFinished(cb);
             });
         }
+    },
+
+    /**
+     * 3d 引擎需要编译切割引擎代码的部分
+     */
+    async tscRollup() {
+        const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+        const path = Path.join(info.path, 'rollup');
+        exec(process.platform === 'win32' ? 'tsc.cmd' : 'tsc', {
+            cwd: path,
+            stdio: 'inherit',
+        }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec rollup error: ${error}`);
+            }
+        });
     },
 
     getRelativePath(path) {
@@ -436,7 +455,7 @@ Object.assign(Compiler.prototype, {
             fallback,   // async fallback handler to be called if the cache doesn't hold the given file
             cb) => {
 
-            process.nextTick(function () {
+            process.nextTick(function() {
                 if (!deep && file !== path) {
                     fallback('module.exports = {};', cb);
                 } else {
