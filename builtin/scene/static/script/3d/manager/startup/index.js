@@ -5,9 +5,7 @@ const ipc = require('../ipc');
 const polyfills = require('./polyfills');
 const engine = require('./engine');
 const overwrite = require('./overwrite');
-
-const scene = require('../scene');
-// const manager = require('../index');
+const log = require('./log');
 
 /**
  * 启动引擎
@@ -34,19 +32,7 @@ async function init(info) {
  * 启动各个管理器
  */
 async function manager(info) {
-    const backup = {
-        warn: console.warn.bind(console),
-        error: console.error.bind(console),
-    };
-
-    console.warn = function(...args) {
-        backup.warn(...args);
-        ipc.send('console', 'warn', ...args);
-    };
-    console.error = function(...args) {
-        backup.error(...args);
-        ipc.send('console', 'error', ...args);
-    };
+    log.init();
 
     window.Manager.Utils = require(info.utils);
     const manager = window.Manager;

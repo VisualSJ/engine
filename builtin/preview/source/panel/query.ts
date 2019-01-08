@@ -6,7 +6,7 @@ let callback: any = null;
 let currentID: any = null;
 let contentID: any = null;
 
-ipcRenderer.on('query-preview-data', (event: any, buffer: string) => {
+ipcRenderer.on('query-preview-data', (event: any, buffer: Buffer) => {
     callback(buffer);
 });
 

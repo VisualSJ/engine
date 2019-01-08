@@ -27,7 +27,7 @@ export default class TextureCubeImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.3';
+        return '1.0.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -37,14 +37,6 @@ export default class TextureCubeImporter extends Importer {
 
     get assetType() {
         return 'cc.TextureCube';
-    }
-
-    /**
-     * 判断是否允许使用当前的 importer 进行导入
-     * @param asset
-     */
-    public async validate(asset: Asset) {
-        return !asset.isDirectory();
     }
 
     /**
@@ -191,6 +183,6 @@ export class TextureCubeFaceImporter extends Importer {
             });
         });
         const arrayBuffer = await new Response(blob).arrayBuffer();
-        return new Buffer(arrayBuffer);
+        return Buffer.from(arrayBuffer);
     }
 }

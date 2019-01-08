@@ -19,7 +19,7 @@ class Preview {
         this.height = 0;
         this.rt = new cc.RenderTexture();
         this.rt.initWithSize(this.width, this.height, cc.gfx.RB_FMT_D24S8);
-        this.data = new Buffer(this.width * this.height * 4);
+        this.data = Buffer.alloc(this.width * this.height * 4);
 
         this.scene = new cc.renderer.Scene();
         NodeManager.on('changed', this.extractActualScene.bind(this));
@@ -70,7 +70,7 @@ class Preview {
         this.width = width;
         this.height = height;
         this.rt.updateSize(this.width, this.height);
-        this.data = new Buffer(this.width * this.height * 4);
+        this.data = Buffer.alloc(this.width * this.height * 4);
     }
 
     getImageData(cameraIndex, width, height) {

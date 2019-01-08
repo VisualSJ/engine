@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.438",
+  "ver": "1.0.448",
   "importer": "fbx",
   "uuid": "1263d74c-8167-4928-91a6-4e2672411f47",
   "files": [
@@ -123,7 +123,7 @@
       }
     },
     "primitives.prefab": {
-      "ver": "1.0.1",
+      "ver": "1.0.3",
       "importer": "gltf-scene",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
       "files": [

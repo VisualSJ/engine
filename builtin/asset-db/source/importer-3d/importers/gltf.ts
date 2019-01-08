@@ -81,7 +81,7 @@ export default class GltfImporter extends Importer {
         if (gltf.buffers) {
             buffers = gltf.buffers.map((gltfBuffer) => {
                 if (!gltfBuffer.uri) {
-                    return new Buffer(0);
+                    return Buffer.alloc(0);
                 }
                 return this._getBufferData(gltfFilePath, gltfBuffer.uri);
             });
@@ -98,7 +98,7 @@ export default class GltfImporter extends Importer {
             if (!dataUrl) {
                 throw new Error(`Bad data uri.${uri}`);
             }
-            return new Buffer(dataUrl.toBuffer().buffer);
+            return Buffer.from(dataUrl.toBuffer().buffer);
         }
     }
 
@@ -423,7 +423,7 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         // Save the mesh asset into library
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(mesh.mesh));
-        await asset.saveToLibrary('.bin', new Buffer(mesh.buffer));
+        await asset.saveToLibrary('.bin', Buffer.from(mesh.buffer));
 
         return true;
     }

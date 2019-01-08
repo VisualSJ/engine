@@ -1,5 +1,7 @@
 'use strict';
 
+const vStacks = require('v-stacks');
+
 /**
  * engine-view 监听的 ipc 消息
  */
@@ -157,8 +159,9 @@ const messages = {
      * @param {*} type
      * @param  {...any} args
      */
-    console(type, ...args) {
-        console[type](...args);
+    console(type, error) {
+        error.stacks = ['at <process:scene>'];
+        console[type](vStacks.decode(error, type));
     },
 
     /**

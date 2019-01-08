@@ -56,9 +56,10 @@ export const methods = {
         }
         panel.updateLock = true;
         console.time('draw');
-        const buffer = await queryPreviewData(panel.$.cameras.value, panel.width, panel.height);
-        // @ts-ignore
-        Buffer.from(buffer).copy(panel.image.data);
+        const buffer: any = await queryPreviewData(panel.$.cameras.value, panel.width, panel.height);
+        if (buffer) {
+            buffer.copy(panel.image.data);
+        }
         const ctx = panel.$.image.getContext('2d');
         ctx.putImageData(panel.image, 0, 0);
 
