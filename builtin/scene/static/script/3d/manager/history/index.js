@@ -79,19 +79,11 @@ function snapshot() {
     // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
 
     // 存入新步骤
-    if (deprecated.length > 0) {
+    if (deprecated.length > 0 || index === 0) {
         const current = steps[index];
-        const prev = steps[index - 1];
 
-        /**
-         * 由于有新的 undo 带来的 changed, snapshot,
-         * 导致 steps[index + 1].undo 与 steps[index].undo 一样
-         * 需要干掉一个步骤使之连贯
-         */
+        // undo 后有新的操作 undo 后的 current 其 redo 需要指向新步骤的 undo
         current.redo = step.undo;
-        if (prev) {
-            current.undo = prev.redo;
-        }
 
         // 持续操作并反复 redo undo 恰好在一个记录点上，会导致该点为了连贯性而做的数据调整使其成为多余步骤，需要将其删除
         if (JSON.stringify(current.undo) === JSON.stringify(current.redo)) {
@@ -132,7 +124,6 @@ function undo() {
         }
         method = 'undo';
     }
-
     const state = restore();
 
     // 运行中，定时下次运行
@@ -162,7 +153,6 @@ function redo() {
     } else {
         method = 'redo';
     }
-
     const state = restore();
 
     // 运行中，定时下次运行
@@ -189,11 +179,9 @@ async function restore() {
     isRunning = true;
 
     // 数据 stepData 是 {} , key 为 uuid ，有多个，value 为改 uuid 节点的引擎属性值
-    for (const uuid in stepData) {
+    const uuids = Object.keys(stepData);
 
-        if (!(uuid in stepData)) {
-            continue;
-        }
+    for (const uuid of uuids) {
 
         const node = nodeManager.query(uuid);
         if (node) {
@@ -207,6 +195,8 @@ async function restore() {
             nodeManager.emit('changed', node, false); // false 是给 undo 记录用的，本次变动不参与历史记录操作
         }
     }
+
+    cache.refresh(uuids);
 
     isRunning = false;
     stepData = {};
