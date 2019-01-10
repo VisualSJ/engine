@@ -19,18 +19,23 @@ module.exports = function() {
                 sourceFileName: `enginesource:///${relativePath}`,
                 compact: false,
                 filename: script.src, // search path for babelrc
-                presets: ['@babel/preset-env', '@babel/preset-typescript'],
+                presets: [
+                    require('@babel/preset-env'),
+                    require('@babel/preset-typescript'),
+                ],
                 plugins: [
                     // make sure that transform-decorators-legacy comes before transform-class-properties.
                     [
-                        '@babel/plugin-proposal-decorators',
+                        require('@babel/plugin-proposal-decorators'),
                         { legacy: true },
                     ],
                     [
-                        '@babel/plugin-proposal-class-properties',
+                        require('@babel/plugin-proposal-class-properties'),
                         { loose: true },
                     ],
-                    'add-module-exports',
+                    [
+                        require('babel-plugin-add-module-exports'),
+                    ],
                 ],
             });
 

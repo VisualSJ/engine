@@ -77,16 +77,18 @@ export default class JavascriptImporter extends Importer {
             filename: asset.source,
             highlightCode: false,
             inputSourceMap: sourceMap,
-            presets: ['@babel/preset-env'],
+            presets: [
+                require('@babel/preset-env'),
+            ],
             plugins: [
                 [
-                    '@babel/plugin-proposal-decorators',
-                    { legacy: true }
+                    require('@babel/plugin-proposal-decorators'),
+                    { legacy: true },
                 ],
-                '@babel/plugin-proposal-class-properties',
-                'add-module-exports'
+                require('@babel/plugin-proposal-class-properties'),
+                require('babel-plugin-add-module-exports'),
             ],
-            sourceMaps: true
+            sourceMaps: true,
         });
         return { code, map };
     }

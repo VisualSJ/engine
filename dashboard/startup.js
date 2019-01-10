@@ -3,6 +3,7 @@
 const ps = require('path'); // path system
 const { app, Tray, Menu, BrowserWindow } = require('electron');
 const ipc = require('@base/electron-base-ipc');
+const setting = require('@editor/setting');
 const proManager = require('./../lib/project');
 
 let window = null;
@@ -31,7 +32,7 @@ exports.window = function() {
         frame: false,
         autoHideMenuBar: true,
         titleBarStyle: 'hiddenInset',
-        'max-width': 1500
+        'max-width': 1500,
     });
     window.loadFile(html);
     window.once('ready-to-show', () => {
@@ -60,21 +61,35 @@ exports.tray = async function() {
         });
     }
     tray = new Tray(ps.join(__dirname, './tray.png'));
-    const context = Menu.buildFromTemplate([
-        {
-            label: 'Dashboard',
-            click() {
-                window && window.show();
-                app.dock && app.dock.show();
-            },
+
+    const menus = [];
+
+    if (setting.dev) {
+        menus.push({
+            label: 'DEV MODE',
+            enabled: false,
+        });
+        menus.push({
+            type: 'separator',
+        });
+    }
+
+    menus.push({
+        label: 'Dashboard',
+        click() {
+            window && window.show();
+            app.dock && app.dock.show();
         },
-        {
-            label: 'Quit',
-            click() {
-                app.exit(0);
-            }
-        }
-    ]);
+    });
+
+    menus.push({
+        label: 'Quit',
+        click() {
+            app.exit(0);
+        },
+    });
+
+    const context = Menu.buildFromTemplate(menus);
     tray.setContextMenu(context);
 };
 

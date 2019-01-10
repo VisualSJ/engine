@@ -77,17 +77,19 @@ export default class TypescriptImporter extends Importer {
             filename: asset.source,
             highlightCode: false,
             inputSourceMap: sourceMap,
-            presets: ['@babel/preset-env'],
+            presets: [
+                require('@babel/preset-env'),
+            ],
             plugins: [
                 [
-                    '@babel/plugin-proposal-decorators',
+                    require('@babel/plugin-proposal-decorators'),
                     { legacy: true },
                 ],
                 [
-                    '@babel/plugin-proposal-class-properties',
+                    require('@babel/plugin-proposal-class-properties'),
                     { loose: true },
                 ],
-                'add-module-exports',
+                require('babel-plugin-add-module-exports'),
             ],
             sourceMaps: true,
         });

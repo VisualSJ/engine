@@ -11,7 +11,7 @@ const source = require('vinyl-source-stream');
 const viniBuffer = require('vinyl-buffer');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
-const terser = require('terser');
+
 // browserify prelude
 const prelude = readFileSync(join(__dirname, './_prelude.js'), 'utf8');
 const CAN_NOT_FIND = 'Cannot find module ';

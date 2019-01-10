@@ -1,8 +1,9 @@
 import { Asset, Importer } from '@editor/asset-db';
 import { readFileSync } from 'fs-extra';
-import { basename, extname } from 'path';
+import { basename, extname, join } from 'path';
+
 const shdcLib = require('../../../static/shdc-lib');
-shdcLib.addChunksCache('builtin/asset-db/static/chunks');
+shdcLib.addChunksCache(join(__dirname, '../../..//static/chunks'));
 
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
