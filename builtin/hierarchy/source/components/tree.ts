@@ -1023,7 +1023,7 @@ export const methods = {
      * 定位资源并闪烁
      * @param uuid
      */
-    intoTwinkle(uuid: string) {
+    twinkle(uuid: string) {
         utils.scrollIntoView(uuid);
         utils.twinkle.add(uuid, 'shake');
     },
