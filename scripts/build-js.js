@@ -1,7 +1,14 @@
 'use strict';
 
 const ps = require('path'); // path system
-let exec = require('child_process').exec;
+const fse = require('fs-extra');
+
+const vWorkflow = require('./workflow');
+
+const workflow = new vWorkflow({
+    name: 'build-js',
+    tmpdir: ps.join(__dirname, '../.workflow'),
+});
 
 /////////////////////////
 // 编译 typescript
@@ -23,23 +30,32 @@ let tsDirnames = [
     './builtin/build',
 ];
 
-Promise.all(tsDirnames.map((dir) => {
-    dir = ps.join(__dirname, '..', dir);
+tsDirnames.forEach((path) => {
+    const searchPaths = path.split('/');
+    const name = searchPaths.pop();
+    workflow.task(name, async function() {
+        const dir = ps.join(__dirname, '..', path);
 
-    return new Promise((resolve, reject) => {
-        exec(process.platform === 'win32' ? 'tsc.cmd' : 'tsc', {
-            cwd: dir,
-            stdio: 'inherit',
-        }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                console.error(`  ${dir}`);
-                return reject(error);
+        const sourceDir = ps.join(dir, './source');
+        const cache = this.get(name) || {};
+        let changed = false;
+        workflow.recursive(sourceDir, (file) => {
+            const mtime = fse.statSync(file).mtime.getTime();
+            if (cache[file] !== mtime) {
+                changed = true;
+                cache[file] = mtime;
             }
-
-            resolve();
         });
+
+        if (!changed) {
+            return false;
+        }
+        const cmd = process.platform === 'win32' ? 'tsc.cmd' : 'tsc';
+        await this.bash(cmd, {
+            root: dir,
+        });
+        this.set(name, cache);
     });
-})).catch((error) => {
-    console.log(`exec error: ${error}`);
 });
+
+workflow.run();

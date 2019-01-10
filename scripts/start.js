@@ -3,7 +3,8 @@
 let spawn = require('child_process').spawn;
 let args = process.argv.slice(2);
 
-let command, options;
+let command;
+let options;
 
 if (process.platform === 'darwin') {
     command = './node_modules/.bin/electron';
@@ -16,5 +17,5 @@ if (process.platform === 'darwin') {
 options = ['./', '--dev'].concat(args);
 
 spawn(command, options, {
-  stdio: 'inherit'
+  stdio: 'inherit',
 });

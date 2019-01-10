@@ -9,7 +9,7 @@
     "types": [
       "../../node_modules/@types/node",
       "../../@types/editor",
-      "../../@types/hierarchy",
+      "../../@types/hierarchy"
     ],
     "esModuleInterop": true
   }

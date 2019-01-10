@@ -1,5 +1,4 @@
 const Path = require('fire-path');
-const Async = require('async');
 const Lodash = require('lodash');
 const Fs = require('fire-fs');
 
@@ -11,7 +10,7 @@ const _buildTempDir = Path.join(Editor.remote.Project.path, 'temp/TexturePacker/
 const RAW_ASSET_DEST = 'raw-assets';
 
 class TexturePacker {
-    async init (opts) {
+    async init(opts) {
         this.writer = opts.writer;
         this.platform = opts.platform;
 
@@ -25,7 +24,7 @@ class TexturePacker {
         this.texture2pac = result.texture2pac;
     }
 
-    needPack (uuid) {
+    needPack(uuid) {
         if (this.textureUuids.indexOf(uuid) !== -1) {
             return true;
         }
@@ -45,7 +44,7 @@ class TexturePacker {
         return false;
     }
 
-    async pack () {
+    async pack() {
         let unpackedTextures = [];
 
         // uuid of packed spriteFrames to packed texture
@@ -59,12 +58,12 @@ class TexturePacker {
             dest: dest,
             pacInfos: this.pacInfos,
             needPackSpriteFrames: this.needPackSpriteFrames,
-            needCompress: true
+            needCompress: true,
         };
 
         let results = await Utils.pack(opts);
 
-        await Promise.all(results.map(async result => {
+        await Promise.all(results.map(async (result) => {
             unpackedTextures = unpackedTextures.concat(result.unpackedTextures);
 
             let pacInfo = result.pacInfo;
@@ -73,27 +72,27 @@ class TexturePacker {
             let spriteAtlas = new cc.SpriteAtlas();
             spriteAtlas._uuid = pacInfo.info.uuid;
 
-            await Promise.all(result.atlases.map(async atlas => {
+            await Promise.all(result.atlases.map(async (atlas) => {
                 let HashUuid = require('../hash-uuid');
 
                 // 一个 AutoAtlas 可能会生成多张大图
                 // 这里使用大图里的碎图 uuid 来计算大图的 uuid
-                let uuids = atlas.files.map(file => file.uuid);
+                let uuids = atlas.files.map((file) => file.uuid);
                 let textureUuid = HashUuid.calculate([uuids], HashUuid.BuiltinHashType.AutoAtlasTexture)[0];
 
                 if (!atlas.compressd) {
-                    throw(`Cann't find atlas.compressed.`);
+                    throw new Error((`Cann't find atlas.compressed.`));
                 }
 
                 let suffix = atlas.compressd.suffix;
                 let destTexturePathNoExt = Path.join(this.writer.dest, '..', RAW_ASSET_DEST, textureUuid.slice(0, 2), textureUuid);
 
-                await Promise.all(suffix.map(async ext => {
+                await Promise.all(suffix.map(async (ext) => {
                     await new Promise((resolve, reject) => {
                         let src = atlas.compressd.imagePathNoExt + ext;
                         let dst = destTexturePathNoExt + ext;
                         Fs.copy(src, dst, (err) => {
-                            if (err) return reject(err);
+                            if (err) { return reject(err); }
                             resolve();
                         });
                     });
@@ -109,11 +108,11 @@ class TexturePacker {
 
                 await this.write(texture);
 
-                let texturePath = destTexturePathNoExt + '.png'
+                let texturePath = destTexturePathNoExt + '.png';
                 packedTextures[textureUuid] = texturePath;
 
                 // write spriteframes
-                await Promise.all(atlas.files.map(async item => {
+                await Promise.all(atlas.files.map(async (item) => {
                     // only pack needed sprite frames
                     if (this.needPackSpriteFrames.indexOf(item.spriteFrame) === -1) {
                         return;
@@ -130,12 +129,12 @@ class TexturePacker {
             }));
 
             await this.write(spriteAtlas);
-        }))
+        }));
 
         return { unpackedTextures, packedSpriteFrames, packedTextures };
     }
 
-    generateSpriteFrame (item, atlasUuid, textureUuid) {
+    generateSpriteFrame(item, atlasUuid, textureUuid) {
         let spriteFrame = new cc.SpriteFrame();
 
         let oldSpriteFrame = item.spriteFrame;
@@ -162,24 +161,23 @@ class TexturePacker {
         return spriteFrame;
     }
 
-    async write (asset, cb) {
+    async write(asset, cb) {
         let contentJson = Editor.serialize(asset, {
             exporting: true,
             nicify: true,
             stringify: false,
-            dontStripDefault: false
+            dontStripDefault: false,
         });
         await new Promise((resolve, reject) => {
-            this.writer.writeJsonByUuid(asset._uuid, contentJson, err => {
-                if (err) return reject(err);
+            this.writer.writeJsonByUuid(asset._uuid, contentJson, (err) => {
+                if (err) { return reject(err); }
                 resolve();
             });
-        })
+        });
     }
 }
 
-
-TexturePacker.generatePreviewFiles = async function (uuid) {
+TexturePacker.generatePreviewFiles = async function(uuid) {
     let info = Editor.remote.assetdb.assetInfoByUuid(uuid);
     let dest = _previewTempDir;
 
@@ -190,7 +188,7 @@ TexturePacker.generatePreviewFiles = async function (uuid) {
     await Utils.pack({ pacInfos: queryResult.pacInfos, dest });
 };
 
-TexturePacker.queryPreviewInfo = function (uuid, cb) {
+TexturePacker.queryPreviewInfo = function(uuid, cb) {
     let assetsPath = Editor.url('db://assets');
 
     let info = Editor.remote.assetdb.assetInfoByUuid(uuid);
@@ -206,13 +204,13 @@ TexturePacker.queryPreviewInfo = function (uuid, cb) {
         return cb(null);
     }
 
-    let packedTextures = packInfo.result.atlases.map(atlas => ({
+    let packedTextures = packInfo.result.atlases.map((atlas) => ({
         path: atlas.imagePath,
         name: Path.basename(atlas.imagePath),
         size: atlas.width + 'x' + atlas.height,
     }));
 
-    let unpackedTextures = packInfo.result.unpackedTextures.map(data => {
+    let unpackedTextures = packInfo.result.unpackedTextures.map((data) => {
         let libPath = data.originalPath || data.path;
         let rawPath = Editor.assetdb.remote.uuidToFspath(data.textureUuid);
         return {

@@ -10,7 +10,7 @@
       "../../node_modules/@types/node",
       "../../node_modules/@types/fs-extra",
       "../../@types/editor",
-      "../../@types/assets",
+      "../../@types/assets"
     ],
     "esModuleInterop": true
   }

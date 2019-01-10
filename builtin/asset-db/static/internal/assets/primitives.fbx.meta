@@ -10,6 +10,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -23,6 +24,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -36,6 +38,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -49,6 +52,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -62,6 +66,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -75,6 +80,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -88,6 +94,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -101,6 +108,7 @@
       "ver": "1.0.0",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@box.mesh",
+      "imported": true,
       "files": [
         ".json",
         ".bin"
@@ -114,6 +122,7 @@
       "ver": "1.0.4",
       "importer": "gltf-material",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material",
+      "imported": true,
       "files": [
         ".json"
       ],
@@ -126,6 +135,7 @@
       "ver": "1.0.3",
       "importer": "gltf-scene",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
+      "imported": true,
       "files": [
         ".json"
       ],
@@ -152,5 +162,6 @@
       ]
     },
     "imageLocations": {}
-  }
+  },
+  "imported": true
 }

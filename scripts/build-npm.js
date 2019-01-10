@@ -8,7 +8,7 @@ const moduleDirnames = [];
 let pkg = fse.readJSONSync('./node_modules/electron/package.json');
 
 (async () => {
-    for (let i=0; i<moduleDirnames.length; i++) {
+    for (let i = 0; i < moduleDirnames.length; i++) {
         let moduleDirname = moduleDirnames[i];
 
         console.log();
