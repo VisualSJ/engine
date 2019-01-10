@@ -83,6 +83,7 @@ class ScaleController extends ControllerBase {
 
     getAlignAxisDeltaScale(axisName, curMouseDeltaPos) {
         let axisDir = this._axisDir[axisName];
+
         let alignAxisMoveDist = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir), curMouseDeltaPos);
 
         let deltaScale = cc.v3();
@@ -94,9 +95,38 @@ class ScaleController extends ControllerBase {
         return deltaScale;
     }
 
+    getAllAxisDeltaScale(axisName, moveDelta) {
+
+        let moveDist = 0;
+        let useYSign = false;
+        let absX = Math.abs(moveDelta.x);
+        let absY = Math.abs(moveDelta.y);
+        let diff = Math.abs(absX - absY) / Math.max(absX, absY);
+        if (diff > 0.1) {
+            if (absX < absY) {
+                useYSign = true;
+            }
+        }
+
+        let dist = moveDelta.mag();
+        if (useYSign) {
+            moveDist = Math.sign(moveDelta.y) * dist;
+        } else {
+            moveDist = Math.sign(moveDelta.x) * dist;
+        }
+
+        this._cubeDragValue += moveDist;
+        let scale = this._cubeDragValue / this._scaleFactor;
+        let deltaScale = cc.v3(scale, scale, scale);
+        this.onAxisSliderMove(axisName, this._cubeDragValue);
+
+        return deltaScale;
+    }
+
     onMouseDown(event) {
         this._deltaScale = cc.v3(0, 0, 0);
         this._mouseDeltaPos = cc.v2(0, 0);
+        this._cubeDragValue = 0;
         cc.game.canvas.style.cursor = 'pointer';
         this._moveAxisName = event.axisName;
 
@@ -113,7 +143,11 @@ class ScaleController extends ControllerBase {
 
         vec3.set(this._deltaScale, 0, 0, 0);
 
-        this._deltaScale = this.getAlignAxisDeltaScale(event.axisName, this._mouseDeltaPos);
+        if (event.axisName === 'xyz') {
+            this._deltaScale = this.getAllAxisDeltaScale(event.axisName, cc.v2(event.moveDeltaX, event.moveDeltaY));
+        } else {
+            this._deltaScale = this.getAlignAxisDeltaScale(event.axisName, this._mouseDeltaPos);
+        }
 
         if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);
