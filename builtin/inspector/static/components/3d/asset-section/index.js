@@ -85,22 +85,31 @@ exports.methods = {
      * @param {*} event
      */
     onMetaChange(event) {
-        try {
-            const { detail: { value, path } = {} } = event;
-            if (path !== undefined && value !== undefined) {
-                const paths = path.split('.');
-                const key = paths.pop();
-                const item = paths.reduce((acc, cur) => {
-                    if (acc && acc[cur] !== undefined) {
-                        return acc[cur];
-                    }
-                    return null;
-                }, this.meta);
+        const { detail: { value, path } = {} } = event;
+        if (path !== undefined && value !== undefined) {
+            this.updateMeta(path, value);
+        }
+    },
 
-                if (item) {
-                    this.$set(item, key, value);
-                    this.meta.__dirty__ = true;
+    /**
+     * 根据对象属性路径，给 meta 更新赋值
+     * @param {*} path
+     * @param {*} value 更新值
+     */
+    updateMeta(path, value) {
+        try {
+            const paths = path.split('.');
+            const key = paths.pop();
+            const item = paths.reduce((acc, cur) => {
+                if (acc && acc[cur] !== undefined) {
+                    return acc[cur];
                 }
+                return null;
+            }, this.meta);
+
+            if (item) {
+                this.$set(item, key, value);
+                this.meta.__dirty__ = true;
             }
         } catch (err) {
             console.log(err);
@@ -139,6 +148,10 @@ exports.mounted = async function() {
         } finally {
             this.$root.hideLoading();
         }
+    });
+
+    this.$on('updateMeta', (key, value) => {
+        this.updateMeta(key, value);
     });
 };
 
