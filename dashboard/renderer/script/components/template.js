@@ -52,9 +52,11 @@ exports.methods = {
      */
     createProject() {
         let template = this.list[this.activeIndex];
-        if (!fs.existsSync(this.directoryPath)) {
-            fse.ensureDirSync(this.directoryPath);
-        } else if (!this.isEmptyDir(this.directoryPath)) {
+        // 规范化路径
+        let path = ps.normalize(this.directoryPath);
+        if (!fs.existsSync(path)) {
+            fse.ensureDirSync(path);
+        } else if (!this.isEmptyDir(path)) {
             dialog.show({
                 type: 'warning',
                 title: '警告',
@@ -62,14 +64,14 @@ exports.methods = {
                 buttons: ['直接覆盖同名文件', '重新选择路径'],
             }).then((array) => {
                 if (array[0] === 0) {
-                    project.create(this.directoryPath, template.path);
-                    project.open(this.directoryPath);
+                    project.create(path, template.path);
+                    project.open(path);
                 }
             });
             return;
         }
-        project.create(this.directoryPath, template.path);
-        project.open(this.directoryPath);
+        project.create(path, template.path);
+        project.open(path);
     },
 
     // 打开文件夹弹框
@@ -78,7 +80,7 @@ exports.methods = {
         dialog.openDirectory({ title: '选择项目路径'})
         .then((array) => {
             if (array && array[0]) {
-                let path = array[0] + '\\NewProject';
+                let path = ps.join(array[0] , 'NewProject');
                 that.directoryPath = getName(path);
                 dashProfile.set('recentProPath', array[0]);
                 dashProfile.save();
@@ -106,6 +108,6 @@ exports.mounted = function() {
         dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
         dashProfile.save();
     }
-    let path = getName(ps.join(dashProfile.get('recentProPath'), '/NewProject'));
+    let path = getName(ps.join(dashProfile.get('recentProPath'), 'NewProject'));
     this.directoryPath = path;
 };
