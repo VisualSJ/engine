@@ -68,7 +68,7 @@
         "estraverse": "^4.2.0",
         "event-stream": "^4.0.1",
         "express": "^4.16.3",
-        "fbx2gltf": "github:cocos-creator/FBX2glTF#npm",
+        "fbx2gltf": "github:cocos-creator/FBX2glTF#812b3b0",
         "fs-extra": "^6.0.1",
         "fs-jetpack": "^2.2.0",
         "globby": "^8.0.1",
