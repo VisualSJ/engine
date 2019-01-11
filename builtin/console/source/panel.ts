@@ -1,8 +1,9 @@
 'use strict';
 
-import { readFileSync } from 'fs';
+import { shell } from 'electron';
+import { existsSync , readFileSync } from 'fs';
+import { outputFileSync } from 'fs-extra';
 import { join } from 'path';
-
 const manager = require('./manager');
 const Vue = require('vue/dist/vue.js');
 const menu = require('@base/electron-menu');
@@ -95,36 +96,25 @@ export async function ready() {
 
             // 设置字体大小
             setFontSize(event: any) {
-                manager.setFontSize(event.target.value);
-                this.dataChange('fontSize', parseInt(event.target.value, 10));
+                const fontSize = parseInt(event.target.value, 10);
+                manager.setFontSize(fontSize);
+                this.dataChange('fontSize', fontSize);
             },
 
             // 设置行间距
             setLineHeight(event: any) {
-                manager.setLineHeight(event.target.value);
-                this.dataChange('lineHeight', parseInt(event.target.value, 10));
+                const lineHeight = parseInt(event.target.value, 10);
+                manager.setLineHeight(lineHeight);
+                this.dataChange('lineHeight', lineHeight);
             },
 
-            // 点击生成右键菜单
-            onOpenMenu(event: any) {
-                menu.popup({
-                    x: event.pageX,
-                    y: event.pageY,
-                    menu: [
-                        {
-                            label: 'editor log',
-                            click() {
-                                // todo 打开文件对应处理
-                            },
-                        },
-                        {
-                            label: 'cocos console log',
-                            click() {
-                                // todo 打开文件对应处理
-                            },
-                        },
-                    ],
-                });
+            // 点击打开 log 日志文件
+            onOpenLog(event: any) {
+                const path = join(Editor.Project.path, 'local', 'logs', 'project.log');
+                if (!existsSync(path)) {
+                    outputFileSync(path, '', 'utf-8');
+                }
+                shell.openItem(path);
             },
             /**
              * 根据 type 筛选日志

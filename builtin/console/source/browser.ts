@@ -1,8 +1,9 @@
 'use strict';
-
+import { existsSync, outputFileSync } from 'fs-extra';
+import { join } from 'path';
 let pkg: any = null;
 const profile = Editor.Profile.load('profile://global/packages/consol.json');
-
+const logFiles = join(Editor.Project.path, 'local', 'logs', 'project.log');
 export const messages = {
     open() {
         Editor.Panel.open('console');
@@ -28,11 +29,24 @@ export const messages = {
     'save-setting'() {
         profile.save();
     },
+
+    // 查询 log 日志保存路径
+    'get-log-files'() {
+        return logFiles;
+    },
 };
 
 export function load() {
     // @ts-ignore
     pkg = this;
+    initLogInfo();
 }
 
 export function unload() { }
+
+/**
+ * 初始化/清空 log 信息存储
+ */
+function initLogInfo() {
+    outputFileSync(logFiles, '', 'utf-8');
+}

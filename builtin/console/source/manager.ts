@@ -1,5 +1,10 @@
+import { execFileSync } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
+import { outputFileSync } from 'fs-extra';
+import { join } from 'path';
+import { messages } from './panel';
 const list: any[] = (exports.list = []);
-let outputList: IMessageItem[] = (exports.outputList = []);
+const outputList: IMessageItem[] = (exports.outputList = []);
 let updateFn: any;
 let lineHeight: number;
 let fontSize: number;
@@ -7,6 +12,7 @@ let collapse: boolean = true;
 let filterType: string = '';
 let filterText: string = '';
 let filterRegex: boolean = false;
+const logPath = join(Editor.Project.path, 'local', 'logs', 'project.log');
 
 /**
  * 设置更新函数
@@ -61,6 +67,7 @@ exports.addItem = (item: any) => {
     newItem.fold = true;
     newItem.count = 1;
     list.push(newItem);
+    saveLog(item);
     exports.update();
 };
 
@@ -165,3 +172,32 @@ exports.update = () => {
             updateLocker = false;
         });
 };
+
+/**
+ * 保存 log 信息到本地
+ * @param item 日志信息
+ */
+function saveLog(item: any) {
+    if (!item) {
+        return;
+    }
+    let content = '';
+    const date = timetrans(item.time);
+    content += `${date}-${item.type}: ${item.message}\r\n`;
+    outputFileSync(logPath, content, 'utf-8');
+}
+
+/**
+ * 时间戳转日期
+ * @param time 时间戳
+ */
+function timetrans(time: any) {
+    const date = new Date(time); // 如果date为13位不需要乘1000
+    const Y = date.getFullYear() + '-';
+    const M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+    const D = (date.getDate() < 10 ? '0' + (date.getDate()) : date.getDate()) + ' ';
+    const h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+    const m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+    const s = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+    return Y + M + D + h + m + s;
+}
