@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
         "start": "node ./scripts/start.js",
-        "postinstall": "node ./scripts/build-css.js && node ./scripts/build-js.js && node ./scripts/build-engine.js",
-        "build": "node ./scripts/build-css.js && node ./scripts/build-js.js",
+        "postinstall": "node ./scripts/build-css.js && node ./scripts/build-js.js && node ./scripts/build-engine.js && node ./scripts/build-npm.js",
+        "build": "node ./scripts/build-css.js && node ./scripts/build-js.js && node ./scripts/build-npm.js",
         "build:css": "node ./scripts/build-css.js",
         "build:effect": "node ./scripts/build-effect.js",
         "build:engine": "node ./scripts/build-engine.js",

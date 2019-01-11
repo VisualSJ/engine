@@ -1,32 +1,35 @@
 'use strict';
 
+const ps = require('path');
 const fse = require('fs-extra');
-const spawn = require('child_process').spawn;
 
-const moduleDirnames = [];
+const vWorkflow = require('./workflow');
 
-let pkg = fse.readJSONSync('./node_modules/electron/package.json');
+const workflow = new vWorkflow({
+    name: 'build-npm',
+    tmpdir: ps.join(__dirname, '../.workflow'),
+});
 
-(async () => {
-    for (let i = 0; i < moduleDirnames.length; i++) {
-        let moduleDirname = moduleDirnames[i];
+const moduleDirnames = [
+    'robotjs',
+];
 
-        console.log();
-        await new Promise((resolve) => {
-            const cmd = process.platform === 'win32' ? 'electron-rebuild.cmd' : 'electron-rebuild';
-            const options = [
-                '--version', pkg.version,
-                '--module-dir', moduleDirname,
-                '--arch', 'x64',
-                '--force',
-                '--sequential',
-            ];
+const pkg = fse.readJSONSync('./node_modules/electron/package.json');
+const cmd = process.platform === 'win32' ? 'node-gyp.cmd' : 'node-gyp';
 
-            const child = spawn(cmd, options, {
-                stdio: 'inherit',
-            });
-
-            child.on('exit', resolve);
+moduleDirnames.forEach((name) => {
+    workflow.task(name, async function() {
+        await this.bash(cmd, {
+            params: [
+                'rebuild',
+                '--runtime=electron',
+                `--target=${pkg.version}`,
+                '--disturl=https://atom.io/download/atom-shell',
+                '--abi=64',
+            ],
+            root: ps.join(__dirname, '../node_modules', name),
         });
-    }
-})();
+    });
+});
+
+workflow.run();

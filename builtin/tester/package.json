@@ -6,7 +6,8 @@
 
     "menu": {
         "i18n:menu.develop/Tester": {
-            "message": "open"
+            "message": "open",
+            "group": "test"
         }
     },
 

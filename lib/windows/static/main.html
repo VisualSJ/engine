@@ -5,29 +5,17 @@
     <meta charset="utf-8">
     <title>Editor 3D</title>
     <link href="./style/base.css" rel="stylesheet" />
-    <link href="./style/iconfont.css" rel="stylesheet" />
     <link href="./style/main.css" rel="stylesheet" />
 </head>
 
 <body>
     <!-- 应用 Theme 的遮罩 -->
-    <div class="theme-mask">
-        <span>Apply Theme</span>
-        <div></div>
-    </div>
+    <div class="theme-mask"></div>
 
-    <!-- 进度条 -->
-    <div class="loading-mask" :hidden="hidden">
-        <div class="message"
-            :startup="startup"
-        >
-            {{message}}
-        </div>
-        <div class="progress">
-            <span
-                :style="`width: ${process * 100}%;`"
-            ></span>
-        </div>
+    <!-- 同步任务的遮罩 -->
+    <div class="task-sync-mask">
+        <div class="background"></div>
+        <div class="info">Wait a moment...</div>
     </div>
 
     <!-- 顶部工具条 -->
