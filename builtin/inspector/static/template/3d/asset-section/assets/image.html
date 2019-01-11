@@ -53,10 +53,12 @@
                     <option v-for="name in defaultOption" :value="name">{{formatsInfo[name]}}</option>
                     <option v-if="tab !== 'default' && tab !== 'android'" v-for="extname in extOption" :value="extname">{{formatsInfo[extname]}}</option>
                 </ui-select>
-                <div class="setting-item flex" v-for="(item,key) in meta.platformSettings[tab]" v-if="item">
-                    <div class="left">{{key}} | Quality</div>
-                    <ui-num-input class="right flex-1" :value="item.quality" :path="'platformSettings.'+tab+'.'+key+'.quality'" max="1" min="0" step="0.1" preci="2"></ui-num-input>
-                    <ui-button class="iconfont icon-del transparent red" @confirm="delFormats(key)"></ui-button>
+                <div class="formats" v-if="meta.userData && meta.userData.platformSettings">
+                    <div class="setting-item flex" v-for="(item,key) in meta.userData.platformSettings[tab]" v-if="item">
+                        <div class="left">{{key}} | Quality</div>
+                        <ui-num-input class="right flex-1" :value="item.quality" @confirm="changeQuality($event, key)" max="1" min="0" step="0.1" preci="2"></ui-num-input>
+                        <ui-button class="iconfont icon-del transparent red" @confirm="delFormats(key)"></ui-button>
+                    </div>
                 </div>
             </div>
         </div>

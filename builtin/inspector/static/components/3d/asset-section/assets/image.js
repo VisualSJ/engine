@@ -55,14 +55,23 @@ exports.methods = {
         if (type === 'none') {
             return;
         }
-        let formatSetting = this.meta.platformSettings;
+        if (!this.meta.userData) {
+            this.$parent.$emit('updateMeta', `userData`, {});
+            this.meta.userData = {};
+        }
+        let formatSetting = this.meta.userData.platformSettings;
+        // 已经添加过当前平台的设置
         if (formatSetting && formatSetting[this.tab] && formatSetting[this.tab][type]) {
             return;
         }
-        if (!formatSetting[this.tab]) {
-            this.$parent.$emit('updateMeta', `platformSettings.${this.tab}`, {});
+        if (!formatSetting) {
+            this.$parent.$emit('updateMeta', `userData.platformSettings`, {});
+            formatSetting = {};
         }
-        this.$parent.$emit('updateMeta', `platformSettings.${this.tab}.${type}`, {
+        if (!formatSetting[this.tab]) {
+            this.$parent.$emit('updateMeta', `userData.platformSettings.${this.tab}`, {});
+        }
+        this.$parent.$emit('updateMeta', `userData.platformSettings.${this.tab}.${type}`, {
             quality: 0.8,
         });
     },
@@ -72,8 +81,19 @@ exports.methods = {
      * @param {string} type 图片格式 png/jpg...
      */
     delFormats(type) {
-        delete this.meta.platformSettings[this.tab][type];
-        let value = JSON.parse(JSON.stringify(this.meta.platformSettings[this.tab]));
-        this.$parent.$emit('updateMeta', `platformSettings.${this.tab}`, value);
+        delete this.meta.userData.platformSettings[this.tab][type];
+        let value = JSON.parse(JSON.stringify(this.meta.userData.platformSettings[this.tab]));
+        this.$parent.$emit('updateMeta', `userData.platformSettings.${this.tab}`, value);
+    },
+
+    /**
+     * 更改平台图片格式设置
+     * @param {*} type
+     */
+    changeQuality(event, type) {
+        let value = event.target.value;
+        this.$parent.$emit('updateMeta', `userData.platformSettings.${this.tab}.${type}`, {
+            quality: value,
+        });
     },
 };
