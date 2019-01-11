@@ -12,6 +12,7 @@
     },
 
     "main": "./browser/index.js",
+    "windows": "./windows/index.js",
     "panel": {
         "title": "Tester",
         "main": "./panel/index.js",

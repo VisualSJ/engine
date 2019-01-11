@@ -1,6 +1,10 @@
 'use strict';
 
 const Vue = require('vue/dist/vue');
+
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
 const tester = require('./tester');
 
 const { join } = require('path');
