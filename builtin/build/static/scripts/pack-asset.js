@@ -210,7 +210,7 @@ class AssetPacker {
                     uuids: [inlineUuid],
                     type: 'spriteFrame',
                 });
-                console.log(`add dummy group to allow download ${inlineUuid} individually`);
+                console.info(`add dummy group to allow download ${inlineUuid} individually`);
             }
         }
     }
@@ -251,7 +251,7 @@ class AssetPacker {
                 }
             }
             if (inlineCount > 0) {
-                console.log(`inline SpriteFrame: ${uuid}, inline count: ${inlineCount}`);
+                console.info(`inline SpriteFrame: ${uuid}, inline count: ${inlineCount}`);
                 inlinedUuids.push(uuid);
             }
         }

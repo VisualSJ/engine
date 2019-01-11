@@ -189,7 +189,7 @@ class AssetBuilder {
                 }
                 buildResult.assetCache[asset.uuid] = asset;
             }
-            // 并并执行依赖查找
+            // 并并执行资源构建以及依赖查找
             Promise.all(Object.keys(buildResult.assetCache).map(async (uuid) => {
                 await this.buildAsset(buildResult.assetCache[uuid]);
             })).then(() => {
@@ -269,7 +269,7 @@ class AssetBuilder {
         }
     }
 
-    // 压缩构建
+    // 压缩生成新的资源 json 数据，并缓存
     async compress(asset) {
         var nativeAssetEnabled = asset._native &&
         (this.isJSB || !asset.constructor.preventPreloadNativeObject ||
@@ -322,23 +322,11 @@ class AssetBuilder {
         if (asset instanceof cc.ImageAsset) {
             // 图片资源设置的压缩参数
             let {platformSettings} = buildResult.assetCache[asset._uuid];
-            // hack 临时测试压缩方法使用
-            // platformSettings = {
-            //     web: {
-            //         formats: [{
-            //             name: 'webp',
-            //             quality: 0.8,
-            //         }],
-            //     },
-            //     default: {
-            //         formats: [{
-            //             name: 'png',
-            //             quality: 0.8,
-            //         }],
-            //     },
-            // };
-            if (!platformSettings) {
-                // 未设置压缩参数，直接加入到拷贝任务中
+            let platform = this.options.platform;
+            // 未设置压缩参数，或者当前构建平台下未设置且没有设置默认转出格式则直接拷贝
+            if (!platformSettings || (!platformSettings[platform] && !platformSettings.default)
+            || (Object.keys(platformSettings.default).length < 1
+            && Object.keys(platformSettings[platform]).length < 1)) {
                 this.copyPaths.push({
                     src,
                     dest,
@@ -348,7 +336,7 @@ class AssetBuilder {
             this.compressImgTask[asset._uuid] = {
                 src: src,
                 dst: dest,
-                platform: this.options.platform,
+                platform,
                 compressOption: platformSettings || {},
             };
             return;

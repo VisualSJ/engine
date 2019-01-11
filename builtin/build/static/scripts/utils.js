@@ -345,7 +345,7 @@ function requestToPackage(...args) {
  */
 function updateProgress(msg, rate) {
     Worker.Ipc.send('build-worker:update-progress', msg, rate);
-    console.log(`build:${msg} ${rate}`);
+    console.info(`build:${msg} ${rate}`);
 }
 
 module.exports = {

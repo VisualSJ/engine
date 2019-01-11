@@ -6,10 +6,10 @@ function spawnTool(tool, opts, cb) {
     let child = Spawn(tool, opts);
 
     child.stdout.on('data', function(data) {
-        console.log(data.toString());
+        console.info(data.toString());
     });
     child.stderr.on('data', function(data) {
-        console.log(data.toString());
+        console.info(data.toString());
     });
     child.on('close', function() {
         if (cb) {
@@ -49,33 +49,33 @@ function compress(option, cb) {
     let formats = [];
 
     let platformOption = compressOption[platform];
-    if (platformOption && platformOption.formats.length > 0) {
-        formats = platformOption.formats;
+    if (platformOption && Object.keys(platformOption).length > 0) {
+        formats = platformOption;
     } else if (compressOption.default) {
-        formats = compressOption.default.formats;
+        formats = compressOption.default;
     }
 
     ensureDirSync(Path.dirname(dst));
 
     function getSuffix() {
-        return formats.map((format) => {
-            if (format.name.indexOf('pvrtc_') === 0) {
+        return Object.keys(formats).map((type) => {
+            if (type.indexOf('pvrtc_') === 0) {
                 let formatID = 8; //cc.Texture2D.RGBA_PVRTC_4BPPV1;
-                if (format.name === 'pvrtc_4bits') {
+                if (type === 'pvrtc_4bits') {
                     formatID = 8;
-                } else if (format.name === 'pvrtc_2bits') {
+                } else if (type === 'pvrtc_2bits') {
                     formatID = 6; //cc.Texture2D.RGBA_PVRTC_2BPPV1;
-                } else if (format.name === 'pvrtc_4bits_rgb') {
+                } else if (type === 'pvrtc_4bits_rgb') {
                     formatID = 7; //cc.Texture2D.RGB_PVRTC_4BPPV1;
-                } else if (format.name === 'pvrtc_2bits_rgb') {
+                } else if (type === 'pvrtc_2bits_rgb') {
                     formatID = 5; //cc.Texture2D.RGB_PVRTC_2BPPV1;
                 }
 
                 return `.pvr@${formatID}`;
-            } else if (format.name.indexOf('etc') === 0) {
+            } else if (type.indexOf('etc') === 0) {
                 return '.etc';
             }
-            return '.' + format.name;
+            return '.' + type;
         });
     }
 
@@ -83,7 +83,7 @@ function compress(option, cb) {
         cb(err, getSuffix());
     }
 
-    if (formats.length === 0) {
+    if (Object.keys(formats).length === 0) {
         copy(src, dst, (err) => {
             if (err) {
                 console.error('Failed to copy native asset file %s to %s', src, dst);
@@ -93,12 +93,17 @@ function compress(option, cb) {
         return;
     }
 
-    Async.each(formats, (format, done) => {
-        if (format.name.indexOf('pvrtc_') !== -1) {
-            return compressPVR(src, dst, format, done);
+    Async.each(Object.keys(formats), (type, done) => {
+        if (type.indexOf('pvrtc_') !== -1) {
+            return compressPVR(src, dst, {
+                name: type,
+                quality: formats.quality,
+            }, done);
         }
-
-        compressNormal(src, dst, format, done);
+        compressNormal(src, dst,  {
+            name: type,
+            quality: formats.quality,
+        }, done);
     }, (err) => {
         callback(err);
     });
@@ -108,7 +113,7 @@ function compress(option, cb) {
  * 压缩图片、转换图片格式
  * @param {*} src
  * @param {*} dst
- * @param {*} format
+ * @param {object} format 图片格式类型以及对应质量
  * @param {*} cb
  */
 function compressNormal(src, dst, format, cb) {
@@ -173,7 +178,7 @@ function compressPVR(src, dst, format, cb) {
         '-f', `${compressFormat},UBN,lRGB`,
     ];
 
-    console.log(`pvrtc compress command :  ${pvrTool} ${pvrOpts.join(' ')}`);
+    console.info(`pvrtc compress command :  ${pvrTool} ${pvrOpts.join(' ')}`);
 
     spawnTool(pvrTool, pvrOpts, cb);
 }
