@@ -10,9 +10,7 @@ const workflow = new vWorkflow({
     tmpdir: ps.join(__dirname, '../.workflow'),
 });
 
-const moduleDirnames = [
-    'robotjs',
-];
+const moduleDirnames = [];
 
 const pkg = fse.readJSONSync('./node_modules/electron/package.json');
 const cmd = process.platform === 'win32' ? 'node-gyp.cmd' : 'node-gyp';
