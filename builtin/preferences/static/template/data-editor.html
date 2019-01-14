@@ -22,13 +22,15 @@
 	<div class="line">
 		<div class="name">{{ t('external_picture_editor') }}</div>
 		<div class="value">
-			<ui-input
-				class="cocos"
-				:value="external_picture_editor"
-				:placeholder="t('picture_editor_placeholder')"
-				path="external_picture_editor"
-			></ui-input>
+			<ui-select :value="data_editor.external_picture_editor" path="external_picture_editor">
+				<option value="internal">{{ t('internal') }}</option>
+				<option 
+				v-if="picture_editor_name"
+				:value="data_editor.external_picture_editor">
+				{{picture_editor_name}}</option>
+			</ui-select>
 			<ui-button @click="openWin('external_picture_editor')">{{ t('browse') }}</ui-button>
+			<ui-button v-if="data_editor.external_picture_editor !== 'internal'" @click="data_editor.external_picture_editor = 'internal'">{{ t('remove') }}</ui-button>
 		</div>
 	</div>
 </div>

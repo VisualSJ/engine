@@ -18,9 +18,9 @@
                 :value="general.node_tree"
                 @confirm="_onGeneralChanged($event, 'node_tree')"
             >
-                <option value="expand_all">{{t('expand_all')}}</option>
-                <option value="collapse_all">{{t('collapse_all')}}</option>
-                <option value="memory_last_state">{{t('memory_last_state')}}</option>
+                <option value="expand_all" :key="t('expand_all')">{{t('expand_all')}}</option>
+                <option value="collapse_all" :key="t('collapse_all')">{{t('collapse_all')}}</option>
+                <option value="memory_last_state" key="memory_last_state">{{t('memory_last_state')}}</option>
             </ui-select>
         </div>
     </div>

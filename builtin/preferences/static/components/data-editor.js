@@ -17,12 +17,12 @@ exports.computed = {
         }
         return basename(path, extname(path));
     },
-    external_picture_editor() {
+    picture_editor_name() {
         let path = this.data_editor.external_picture_editor;
         if (!path || !existsSync(path)) {
             return '';
         }
-        return relative(__dirname, path);
+        return basename(path, extname(path));
     },
 };
 exports.methods = {

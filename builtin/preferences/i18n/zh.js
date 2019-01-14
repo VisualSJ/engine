@@ -13,7 +13,7 @@ module.exports = {
         step: '数值默认步长',
         theme: '皮肤主题',
         themeColor: '配色主题',
-        node_tree: '默认层级管理器节点折叠状态',
+        node_tree: '管理器节点折叠状态',
         expand_all: '全部展开',
         collapse_all: '全部折叠',
         memory_last_state: '记住上一次状态',
@@ -33,6 +33,8 @@ module.exports = {
             width: '宽度',
             height: '高度',
         },
+        browse: '浏览',
+        remove: '移除',
     },
     data_editor: {
         auto_compiler_scripts: '自动编译脚本',

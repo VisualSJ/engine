@@ -62,7 +62,7 @@ export async function ready() {
             data_editor: {
                 auto_compiler_scripts: true,
                 external_script_editor: 'internal',
-                external_picture_editor: '',
+                external_picture_editor: 'internal',
             },
         },
 

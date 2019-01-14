@@ -15,9 +15,9 @@
         "title": "i18n:preferences.title",
         "icon": "./static/icon.png",
         "main": "./dist/panel.js",
-        "min-width": 400,
-        "min-height": 200,
-        "width": 700,
-        "height": 500
+        "min-width": 500,
+        "min-height": 560,
+        "width": 550,
+        "height": 600
     }
 }

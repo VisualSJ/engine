@@ -11,11 +11,11 @@
             <ui-select :value="preview.preview_browser" @confirm="_onpreviewChanged($event, 'preview_browser')">
                 <option value="default">{{t('options.default')}}</option>
             </ui-select>
-            <ui-button>浏览</ui-button>
-            <ui-button>移除</ui-button>
+            <ui-button>{{t('browse')}}</ui-button>
+            <ui-button>{{t('remove')}}</ui-button>
         </div>
     </div>
-    <div class="line">
+    <!-- <div class="line">
         <div class="name">{{t('simulator_path')}}</div>
         <div class="value">
             <ui-input class="cocos" :value="getSimulatorPath(preview.simulator_path)" @confirm="_onpreviewChanged($event, 'simulator_path')"></ui-input>
@@ -51,5 +51,5 @@
         <div class="value">
             <ui-checkbox :value="preview.simulator_debugger" @confirm="_onpreviewChanged($event, 'simulator_debugger')"></ui-checkbox>
         </div>
-    </div>
+    </div> -->
 </div>

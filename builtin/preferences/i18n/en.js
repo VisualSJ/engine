@@ -13,7 +13,7 @@ module.exports = {
         step: 'Number step',
         theme: 'theme',
         themeColor: 'Theme Color ',
-        node_tree: 'Default Node Tree State',
+        node_tree: 'Node Tree State',
         expand_all: 'Expand All',
         collapse_all: 'Collapse All',
         memory_last_state: 'Memory Last State',
@@ -33,6 +33,8 @@ module.exports = {
             width: 'Width',
             height: 'Height',
         },
+        browse: 'Drowse',
+        remove: 'Remove',
     },
     data_editor: {
         auto_compiler_scripts: 'Auto Compiler Scripts',
