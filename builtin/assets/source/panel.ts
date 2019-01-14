@@ -200,8 +200,8 @@ export const messages = {
      * 并让其闪烁
      * @param uuid 选中物体的 uuid
      */
-    intoTwinkle(uuid: string) {
-        vm.intoTwinkle(uuid);
+    twinkle(uuid: string) {
+        vm.twinkle(uuid);
     },
 
     /**
@@ -381,8 +381,8 @@ export async function ready() {
              * 主动定位到资源
              * 并让其闪烁
              */
-            intoTwinkle(uuid: string) {
-                vm.$refs.tree.intoTwinkle(uuid);
+            twinkle(uuid: string) {
+                vm.$refs.tree.twinkle(uuid);
             },
         },
     });
