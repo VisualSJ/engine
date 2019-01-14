@@ -5,9 +5,13 @@ const { app, Tray, Menu, BrowserWindow } = require('electron');
 const ipc = require('@base/electron-base-ipc');
 const setting = require('@editor/setting');
 const proManager = require('./../lib/project');
+const i18n = require('@base/electron-i18n');
 
 let window = null;
-
+const languages = {
+    zh: require('./i18n/zh'),
+    en: require('./i18n/en'),
+};
 /**
  * 等待 app 初始化完毕
  */
@@ -23,6 +27,9 @@ exports.app = async function() {
  * 启动 Dashboard 窗口
  */
 exports.window = function() {
+    // 注册编辑器默认使用的本地化语言
+    i18n.register(languages.en, 'en');
+    i18n.register(languages.zh, 'zh');
     // 打开页面
     const html = ps.join(__dirname, './renderer/template/index.html');
     window = new BrowserWindow({

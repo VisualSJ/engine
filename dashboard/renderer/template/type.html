@@ -3,5 +3,5 @@
         v-for="(item, index) in types"
         :active="type === item.type"
         @click="_onTabClick($event, item)"
-    >{{item.text}}</div>
+    >{{t(item.value)}}</div>
 </div>

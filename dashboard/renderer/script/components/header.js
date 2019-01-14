@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const ps = require('path');
+const {t} = require('./../util');
 
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/header.html'), 'utf-8');
 
@@ -15,6 +16,7 @@ exports.data = function() {
 };
 
 exports.methods = {
+    t,
     /**
      * tab 切换
      * @param {*} event

@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const ps = require('path');
-
+const {t} = require('./../util');
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/type.html'), 'utf-8');
 
 exports.props = [
@@ -15,6 +15,7 @@ exports.data = function() {
 };
 
 exports.methods = {
+    t,
 
     /**
      * 切换类型

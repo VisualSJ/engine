@@ -17,13 +17,13 @@
     <div class="project-detail"
         v-if="activeIndex !== -1 && list[activeIndex]"
     >
-        <div class="detail-line">这是一个空白项目模板</div>
+        <div class="detail-line">{{t('template.blank')}}</div>
     </div>
     <div class="create-content">
         <div class="choose-path">
-            <input placeholder="请选择一个项目路径作为工作区" type="text" v-model="directoryPath">
-            <label @click="chooseProSrc">选择...</label>
+            <input placeholder="t('project_path_palceholder')" type="text" v-model="directoryPath">
+            <label @click="chooseProSrc">{{t('select')}}...</label>
         </div>
-        <span class="btn btn-blue" @click="createProject">新建项目</span>
+        <span class="btn btn-blue" @click="createProject">{{t('new_project')}}</span>
     </div>
 </div>

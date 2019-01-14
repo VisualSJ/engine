@@ -8,7 +8,7 @@ const project = require('./../../../../lib/project');
 const dialog = require('./../../../../lib/dialog');
 const profile = require('./../../../../lib/profile');
 const setting = require('@editor/setting');
-const {getName} = require('./../util');
+const {getName, t} = require('./../util');
 // 存放 dashboard 数据的 json 路径
 const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
 
@@ -46,6 +46,7 @@ exports.watch = {
 };
 
 exports.methods = {
+    t,
 
     /**
      * 从一个模版新建项目
@@ -59,11 +60,11 @@ exports.methods = {
         } else if (!this.isEmptyDir(path)) {
             dialog.show({
                 type: 'warning',
-                title: '警告',
-                message: '该文件夹内已存在文件',
+                title: t('warn'),
+                message: t('message.duplicate_project'),
                 buttons: ['直接覆盖同名文件', '重新选择路径'],
-            }).then((array) => {
-                if (array[0] === 0) {
+            }).then((index) => {
+                if (index === 0) {
                     project.create(path, template.path);
                     project.open(path);
                 }
@@ -96,6 +97,18 @@ exports.methods = {
         let files = fs.readdirSync(path);
         return !files || !files.length;
     },
+
+    /**
+     * 更新最近选择路径
+     */
+    updatedRecProPath() {
+        if (!dashProfile.get('recentProPath') || !fse.existsSync(filePath)) {
+            dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
+            dashProfile.save();
+        }
+        let path = getName(ps.join(dashProfile.get('recentProPath'), 'NewProject'));
+        this.directoryPath = path;
+    },
 };
 
 exports.mounted = function() {
@@ -104,10 +117,9 @@ exports.mounted = function() {
         .callback((error, templates) => {
             this.list = templates;
         });
-    if (!dashProfile.get('recentProPath') || !fse.existsSync(filePath)) {
-        dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
-        dashProfile.save();
-    }
-    let path = getName(ps.join(dashProfile.get('recentProPath'), 'NewProject'));
-    this.directoryPath = path;
+    this.updatedRecProPath();
+    // 监听项目内容更新，刷新列表
+    project.on('update', () => {
+        this.updatedRecProPath();
+    });
 };

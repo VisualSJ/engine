@@ -6,6 +6,7 @@ const ps = require('path');
 
 const project = require('./../../../../lib/project');
 const dialog = require('./../../../../lib/dialog');
+const {t} = require('./../util');
 
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/project.html'), 'utf-8');
 
@@ -32,13 +33,32 @@ exports.watch = {
 };
 
 exports.methods = {
+    t,
     /**
      * 从列表内删除一个项目
      * @param {*} event
      * @param {*} path 项目路径
      */
-    removeProject(path) {
-        project.remove(path);
+    async removeProject(path) {
+        const isDelete = await dialog.show({
+            type: 'info',
+            title: t('delete_project'),
+            message: t('message.delete_project'),
+            buttons: ['no', 'yes'],
+        });
+        // 删除项目文件
+        if (isDelete === 1) {
+            const result = await dialog.show({
+                type: 'warn',
+                title: t('delete_project'),
+                message: t('confirm_deletion'),
+                buttons: [t('cancel'), t('confirm')],
+            });
+            if (result === 1) {
+                fse.removeSync(path);
+            }
+            project.remove(path);
+        }
     },
 
     /**
@@ -46,19 +66,26 @@ exports.methods = {
      * @param {*} event
      * @param {*} path 项目路径，如果打开新项目，则传入空值
      */
-    openProject(event, path) {
+    async openProject(event, path) {
         if (path) {
             // 判断路径是否存在,不存在则提示并从项目管理器中删除
             if (!fs.existsSync(path)) {
-                alert(`${path} is not exists`);
-                this.removeProject(path);
+                const result = await dialog.show({
+                    type: 'warn',
+                    title: t('project_missing'),
+                    message: t('message.project_missing'),
+                    buttons: [t('cancel'), t('remove')],
+                });
+                if (result === 1) {
+                    project.remove(path);
+                }
                 return;
             }
             project.open(path);
             return;
         }
         const that = this;
-        dialog.openDirectory({title: '打开项目'}).then((array) => {
+        dialog.openDirectory({title: t('open_project')}).then((array) => {
             if (!array || !array[0]) {
                 return;
             }
@@ -69,7 +96,7 @@ exports.methods = {
                 const projectJson = fse.readJSONSync(ps.join(path, 'project.json'));
                 fse.outputJSONSync(pkgJsonFile, {
                     type: projectJson.engine.includes('3d') ? '3d' : '2d',
-                }, { spaces: 2, });
+                }, { spaces: 2 });
             }
             const pkgJson = fse.readJSONSync(pkgJsonFile);
 
@@ -119,7 +146,7 @@ exports.methods = {
         this.list = project.getList({
             type: this.type,
         });
-    }
+    },
 };
 
 exports.mounted = function() {

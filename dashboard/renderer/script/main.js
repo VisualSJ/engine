@@ -2,6 +2,7 @@
 
 const ipc = require('@base/electron-base-ipc');
 const Vue = require('vue/dist/vue.js');
+const {t} = require('./util');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -9,7 +10,7 @@ Vue.config.devtools = false;
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
-new Vue({
+const $vm = new Vue({
 
     el: '#dashboard',
 
@@ -20,15 +21,15 @@ new Vue({
 
         // 侧边菜单项的文本内容
         types: [
-            { type: '2d', text: '2D项目', },
-            { type: '3d', text: '3D项目', },
+            { type: '2d', value: 'project_2d' },
+            { type: '3d', value: 'project_3d' },
         ],
 
         // 当前选中的菜单
         tab: 0,
 
         // 顶部菜单项
-        tabs: ['最近', '模板', '帮助'],
+        tabs: ['open_project', 'new_project', 'help.title'],
 
     },
 
@@ -47,13 +48,17 @@ new Vue({
         this.$on('change-tab', (tab) => {
             this.tab = tab;
         });
-
-        // 打开页面时可以指定的相关配置
-        ipc.on('dashboard:set-options', (event, options) => {
-            options.tab && (this.tab = options.tab);
-            options.type && (this.type = options.type);
-        });
     },
+
+    methods: {
+        t,
+    },
+});
+
+// 打开页面时可以指定的相关配置
+ipc.on('dashboard:set-options', (event, options) => {
+    options.tab && ($vm.tab = options.tab);
+    options.type && ($vm.type = options.type);
 });
 
 const $windowContron = document.getElementById('windowContron');

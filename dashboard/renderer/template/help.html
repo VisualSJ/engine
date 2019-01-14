@@ -2,7 +2,8 @@
     <div class="logo-wrap">
         <div class="logo">
             <img src="./../img/logo_white.png" alt="cocos">
-            <div>Cocos Creator</div>
+            <div>Cocos Editor 3D</div>
+            <div class="version">Ver: {{ver}}</div>
         </div>
     </div>
     <div class="help-con-wrap">
@@ -12,36 +13,36 @@
             v-if="type === '2d'"
         >
             <div class="help-item">
-                <div class="title">欢迎使用 Cocos Creator，你可以采取下列行动来开始游戏开发工作：</div>
+                <div class="title">{{t('help_2d.intro')}}</div>
                 <p class="help-line"
                     @click="_onJumpClick($event, 0);"
-                >打开最近编辑过的项目或者新项目</p>
+                >{{t('help.link_recent')}}</p>
                 <p class="help-line"
                     @click="_onJumpClick($event, 1);"
-                >使用项目模板创建新项目</p>
+                >{{t('help.link_new')}}</p>
             </div>
             <div class="help-item">
-                <div class="title">要学习使用 Cocos Creator，可以使用下面的学习资源：</div>
+                <div class="title">{{t('help_2d.resource')}}</div>
                 <p class="help-line">
-                    <a href="http://docs.cocos.com/creator/manual/zh/getting-started/quick-start.html">教程：制作第一个游戏</a>
+                    <a href="http://docs.cocos.com/creator/manual/zh/getting-started/quick-start.html">{{t('help.link_tutorial')}}</a>
                 </p>
                 <p class="help-line">
-                    <a href="http://docs.cocos.com/creator/manual/zh/">查看用户手册</a>
+                    <a href="http://docs.cocos.com/creator/manual/zh/">{{t('help.link_manual')}}</a>
                 </p>
                 <p class="help-line">
-                    <a href="http://docs.cocos.com/creator/api/zh/">查看 API 文档</a>
+                    <a href="http://docs.cocos.com/creator/api/zh/">{{t('help.link_api')}}</a>
                 </p>
             </div>
             <div class="help-item">
-                <div class="title">教程和范例项目：</div>
+                <div class="title">{{t('help.demo')}}</div>
                 <p class="help-line">
-                    <a href="https://github.com/cocos-creator/example-cases">范例集合</a>
+                    <a href="https://github.com/cocos-creator/example-cases">{{t('help.demo_example')}}</a>
                 </p>
                 <p class="help-line">
-                    <a href="https://github.com/cocos-creator/tutorial-first-game">简单的动作游戏 Star Catcher</a>
+                    <a href="https://github.com/cocos-creator/tutorial-first-game">{{t('help_2d.demo_first_game')}}</a>
                 </p>
                 <p class="help-line">
-                    <a href="https://github.com/cocos-creator/tutorial-blackjack">有完整菜单和复杂数据表现逻辑的21点游戏</a>
+                    <a href="https://github.com/cocos-creator/tutorial-blackjack">{{t('help_2d.demo_blackjack')}}</a>
                 </p>
             </div>
         </div>
@@ -49,13 +50,13 @@
         <!-- 3D -->
         <div class="help-con" v-else>
             <div class="help-item">
-                <div class="title">欢迎使用 Cocos Editor 3D，你可以采取下列行动来开始游戏开发工作：</div>
+                <div class="title">{{t('help_3d.intro')}}</div>
                 <p class="help-line"
                     @click="_onJumpClick($event, 0);"
-                >打开最近编辑过的项目或者新项目</p>
+                >{{t('help.link_recent')}}</p>
                 <p class="help-line"
                     @click="_onJumpClick($event, 1);"
-                >使用项目模板创建新项目</p>
+                >{{t('help.link_new')}}</p>
             </div>
         </div>
     </div>
