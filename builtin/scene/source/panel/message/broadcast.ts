@@ -40,7 +40,7 @@ export function apply(messages: any) {
      * 安装依赖
      */
     messages['asset-db:ready'] = (...args: any[]) => {
-        $scene.installDependence('asset-db');
+        $scene.depend.finish('asset-db-ready');
     };
 
     /**
@@ -48,7 +48,7 @@ export function apply(messages: any) {
      * 卸载依赖
      */
     messages['asset-db:close'] = () => {
-        $scene.uninstallDependence('asset-db');
+        $scene.depend.reset('asset-db-ready');
         // $scene.forwarding('Scene', 'close');
     };
 

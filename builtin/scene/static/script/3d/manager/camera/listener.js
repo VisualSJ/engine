@@ -77,7 +77,7 @@ function bind(camera) {
             clearTimeout(exitPanModeTimer);
             exitPanModeTimer = setTimeout(() => {
                 camera.exitPanMode();
-            }, 400);
+            }, 100);
         }
     });
 

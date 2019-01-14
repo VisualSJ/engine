@@ -1,7 +1,8 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { serializeError, deserializeError, Storage } = require('./utils');
+const { Storage } = require('./utils');
+const { encode, decode } = require('v-stacks');
 
 class HostIpc extends EventEmitter {
     constructor(webview) {
@@ -36,7 +37,7 @@ class HostIpc extends EventEmitter {
                     result = handler(...params);
                 } catch (error) {
                     console.error(error);
-                    this.$webview.send('webview-ipc:send-reply', id, serializeError(error));
+                    this.$webview.send('webview-ipc:send-reply', id, encode(error));
                     return;
                 }
 
@@ -44,7 +45,7 @@ class HostIpc extends EventEmitter {
                     result.then((result) => {
                         this.$webview.send('webview-ipc:send-reply', id, null, result);
                     }).catch((error) => {
-                        this.$webview.send('webview-ipc:send-reply', id, serializeError(error));
+                        this.$webview.send('webview-ipc:send-reply', id, encode(error));
                     });
                     return;
                 }
@@ -61,33 +62,48 @@ class HostIpc extends EventEmitter {
                     this.$webview.send('webview-ipc:force-send-reply', id, null, result);
                 } catch (error) {
                     console.error(error);
-                    this.$webview.send('webview-ipc:force-send-reply', id, serializeError(error));
+                    this.$webview.send('webview-ipc:force-send-reply', id, encode(error));
                     return;
                 }
             }
 
             // host 发送给 webview 的消息的反馈
             if (event.channel === 'webview-ipc:send-reply') {
-                const [id, error, data] = event.args;
+                let [id, error, data] = event.args;
                 const item = this._storage.get(id);
-                item && item.callback && item.callback(deserializeError(error), data);
-                this._storage.remove(id);
-                this.isLock = false;
-                this.step();
+
+                if (item && item.callback) {
+                    if (error) {
+                        error.stacks = item.stacks;
+                        error = decode(error, 'error');
+                    }
+                    item.callback(error, data);
+                }
+
+                // 如果发送中 isReady 变化，需要在 ready 之后重发
+                if (this.isReady) {
+                    this._storage.remove(id);
+                    this.isLock = false;
+                    this.step();
+                } else {
+                    this._sendQueue.splice(0, 0, id);
+                }
             }
 
             // host 强制发送给 webview 的消息反馈
             if (event.channel === 'webview-ipc:force-send-reply') {
-                const [id, error, data] = event.args;
+                let [id, error, data] = event.args;
                 const item = this._storage.get(id);
-                item && item.callback && item.callback(deserializeError(error), data);
-                this._storage.remove(id);
-            }
 
-            // webview ipc 准备就绪的消息
-            if (event.channel === 'webview-ipc:ready') {
-                this.isReady = true;
-                this.step();
+                if (item && item.callback) {
+                    if (error) {
+                        error.stacks = item.stacks;
+                        error = decode(error, 'error');
+                    }
+                    item.callback(error, data);
+                }
+
+                this._storage.remove(id);
             }
         });
 
@@ -104,6 +120,7 @@ class HostIpc extends EventEmitter {
      * @param  {...any} args
      */
     send(message, ...args) {
+        const tmp = encode('message', 2);
         return new Promise((resolve, reject) => {
             const callback = function(error, data) {
                 if (error) {
@@ -117,10 +134,35 @@ class HostIpc extends EventEmitter {
                 message,
                 arguments: args,
                 callback,
+                stacks: tmp.stacks,
             });
             this._sendQueue.push(id);
 
             this.step();
+        });
+    }
+
+    /**
+     * 强制发送，不管任何数据
+     * @param {*} message
+     * @param  {...any} args
+     */
+    forceSend(message, ...args) {
+        const tmp = encode('message', 2);
+        return new Promise((resolve, reject) => {
+            const callback = function(error, data) {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(data);
+            };
+
+            const id = this._storage.add({
+                callback,
+                stacks: tmp.stacks,
+            });
+
+            this.$webview.send('webview-ipc:force-send', id, message, args);
         });
     }
 
@@ -139,35 +181,17 @@ class HostIpc extends EventEmitter {
         if (!this.isReady || this.isLock) {
             return;
         }
+
+        // 取出第一个消息 id
         const id = this._sendQueue.shift();
         if (id === undefined) {
             return;
         }
+
+        // 开始发送，加锁
         this.isLock = true;
         const data = this._storage.get(id);
         this.$webview.send('webview-ipc:send', id, data.message, data.arguments);
-    }
-
-    /**
-     * 强制发送，不管任何数据
-     * @param {*} message
-     * @param  {...any} args
-     */
-    forceSend(message, ...args) {
-        return new Promise((resolve, reject) => {
-            const callback = function(error, data) {
-                if (error) {
-                    return reject(error);
-                }
-                return resolve(data);
-            };
-
-            const id = this._storage.add({
-                callback,
-            });
-
-            this.$webview.send('webview-ipc:force-send', id, message, args);
-        });
     }
 }
 

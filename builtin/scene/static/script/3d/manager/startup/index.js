@@ -10,7 +10,7 @@ const log = require('./log');
 /**
  * 启动引擎
  */
-async function init(info) {
+async function initEngine(info) {
     await polyfills.editor();
 
     await engine.requireEngine(info.path);
@@ -22,16 +22,12 @@ async function init(info) {
     await engine.configureStartup();
     await engine.openEngine();
     await engine.configureEngine();
-
-    window.Manager = { Startup: module.exports };
-
-    ipc.send('engine:ready');
 }
 
 /**
  * 启动各个管理器
  */
-async function manager(info) {
+async function initManager(info) {
     log.init();
 
     window.Manager.Utils = require(info.utils);
@@ -81,11 +77,7 @@ async function manager(info) {
 
     // 创建 gizmo
     manager.Selection.init();
-
-    // 标记准备就绪，开始接收主窗口发送过来的 ipc 消息
-    ipc.ready();
-    ipc.send('manager:ready');
 }
 
-exports.init = init;
-exports.manager = manager;
+exports.engine = initEngine;
+exports.manager = initManager;

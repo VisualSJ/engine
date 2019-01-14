@@ -9,44 +9,13 @@ const vStacks = require('v-stacks');
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 const messages = {
-    ///////////
-    // 通知消息
-    async 'engine:ready'() {
-        this.installDependence('engine');
+
+    ready() {
+        this.depend.finish('webview-ready');
     },
 
-    async 'engine:close'() {
-        this.uninstallDependence('engine');
-    },
-
-    ///////////
-    // 通知消息
-    async 'scene-panel:ready'() {
-        this.installDependence('scene-panel');
-    },
-
-    async 'scene-panel:close'() {
-        this.uninstallDependence('scene-panel');
-    },
-
-    ///////////
-    // 通知消息
-    async 'manager:ready'() {
-        this.installDependence('manager');
-    },
-
-    async 'manager:close'() {
-        this.uninstallDependence('manager');
-    },
-
-    ///////////
-    // 所有依赖 ready
-    async 'manager-deps:ready'() {
-        await this.ipc.forceSend('call-method', {
-            module: 'Startup',
-            handler: 'manager',
-            params: [this.info],
-        });
+    close() {
+        this.depend.reset('webview-ready');
     },
 
     //////////////////////

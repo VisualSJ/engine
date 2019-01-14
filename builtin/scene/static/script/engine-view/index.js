@@ -1,43 +1,39 @@
 'use strict';
 
 const { join } = require('path');
+const vDependence = require('v-dependence');
 const HostIpc = require('../public/ipc/host');
-const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 const initIPC = require('./ipc');
 const initListener = require('./listener');
+const tasks = require('./tasks');
 
 class View extends window.HTMLElement {
     constructor() {
         super();
+        this.dirty = false;
+        tasks.$scene = this;
 
         this.setAttribute('tabindex', '-1');
 
-        // 默认依赖项
-        this.dependence = [
-            {
-                name: 'manager',
-                depends: ['asset-db', 'engine'],
-                install: false,
-                message: 'manager-deps:ready',
-            },
-            {
-                name: 'asset-db',
-                install: false,
-            },
-            {
-                name: 'engine',
-                depends: ['asset-db'],
-                install: false,
-            },
-        ];
-
-        this.dirty = false;
-
         this.$scene = document.createElement('webview');
+        this.depend = vDependence.create();
+
+        // 如果 webview 被注销了，需要通知
+        this.$scene.addEventListener('destroyed', () => {
+            this.depend.reset(tasks.webviewReady[0]);
+        });
 
         // 封装的 webview 通讯模块
         this.ipc = new HostIpc(this.$scene);
+
+        this.depend.add(...tasks.assetDbReady);
+        this.depend.add(...tasks.queryEngineInfo);
+        this.depend.add(...tasks.webviewReady);
+        this.depend.add(...tasks.webviewEngineInit);
+        this.depend.add(...tasks.webviewManagerInit);
+        this.depend.add(...tasks.webviewIpcReady);
+        this.depend.add(...tasks.autoOpenScene);
 
         // 当前打开的引擎版本
         this.version = null;
@@ -57,14 +53,14 @@ class View extends window.HTMLElement {
         this.appendChild(this.$scene);
 
         // 查询 asset-db 是否ready
-        const dbReady = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-        if (dbReady) {
-            this.installDependence('asset-db');
+        if (this.depend.execute(tasks.assetDbReady[0])) {
+            this.depend.finish(tasks.assetDbReady[0]);
         }
 
         // 查询引擎数据, 并指定 webview 加载
-        this.info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
+        this.info = await this.depend.execute(tasks.queryEngineInfo[0]);
         this.version = this.info.version;
+        this.depend.finish(tasks.queryEngineInfo[0]);
 
         // 初始化 ipc 监听
         initIPC(this);
@@ -120,59 +116,6 @@ class View extends window.HTMLElement {
             handler: 'excuteComponentMethod',
             params: [options.uuid, options.index, ...options.methodNames],
         });
-    }
-
-    /**
-     * 依赖加载完成
-     * @param {*} item
-     * @memberof View
-     */
-    async installDependence(name) {
-        const item = this.dependence.find((item) => item.name === name);
-        if (item && !item.install) {
-            const installItemNames = this.dependence.filter((item) => item.install).map((item) => item.name);
-            // 未完成且有自身依赖需要发消息的依赖项
-            const hasDependItems = this.dependence.filter(
-                (item) => item.depends && !item.install && item.message && item.name !== name
-            );
-
-            // 添加当前完成的依赖名称
-            installItemNames.push(name);
-
-            hasDependItems.map((item) => {
-                const isDependReady = item.depends.every((item) => installItemNames.includes(item));
-                if (isDependReady) {
-                    // 依赖项完成消息通知
-                    this.ipc.emit(item.message);
-                }
-            });
-
-            item.install = true;
-
-            const isAllInstall = this.dependence.every((item) => item.install);
-            if (isAllInstall) {
-                const uuid = profile.get('current-scene');
-                this.forwarding('Scene', 'open', [uuid]);
-            }
-        }
-    }
-
-    /**
-     * 依赖被卸载
-     * @param {*} item
-     * @memberof View
-     */
-    uninstallDependence(name) {
-        const item = this.dependence.find((item) => item.name === name);
-        const isAllInstall = this.dependence.every((item) => item.install);
-
-        if (item.install) {
-            item.install = false;
-            if (isAllInstall) {
-                // 有依赖未完成关闭场景
-                this.forwarding('Scene', 'close');
-            }
-        }
     }
 }
 

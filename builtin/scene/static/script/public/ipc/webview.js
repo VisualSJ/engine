@@ -2,7 +2,8 @@
 
 const { EventEmitter } = require('events');
 const { ipcRenderer } = require('electron');
-const { serializeError, deserializeError, Storage } = require('./utils');
+const { Storage } = require('./utils');
+const { encode, decode } = require('v-stacks');
 
 class WebviewIpc extends EventEmitter {
     constructor() {
@@ -22,6 +23,7 @@ class WebviewIpc extends EventEmitter {
      * @param  {...any} args
      */
     send(message, ...args) {
+        const tmp = encode(message, 2);
         return new Promise((resolve, reject) => {
             const callback = function(error, data) {
                 if (error) {
@@ -35,6 +37,7 @@ class WebviewIpc extends EventEmitter {
                 message,
                 arguments: args,
                 callback,
+                stacks: tmp.stacks,
             });
             this._sendQueue.push(id);
 
@@ -48,6 +51,7 @@ class WebviewIpc extends EventEmitter {
      * @param  {...any} args
      */
     forceSend(message, ...args) {
+        const tmp = encode(message, 2);
         return new Promise((resolve, reject) => {
             const callback = function(error, data) {
                 if (error) {
@@ -58,9 +62,10 @@ class WebviewIpc extends EventEmitter {
 
             const id = this._storage.add({
                 callback,
+                stacks: tmp.stacks,
             });
 
-            this.$webview.send('webview-ipc:force-send', id.message, args);
+            ipcRenderer.sendToHost('webview-ipc:force-send', id, message, args);
         });
     }
 
@@ -88,13 +93,6 @@ class WebviewIpc extends EventEmitter {
         const data = this._storage.get(id);
         ipcRenderer.sendToHost('webview-ipc:send', id, data.message, data.arguments);
     }
-
-    /**
-     * 准备就绪的时候调用这个接口
-     */
-    ready() {
-        ipcRenderer.sendToHost('webview-ipc:ready');
-    }
 }
 
 const ipc = (module.exports = new WebviewIpc());
@@ -108,7 +106,7 @@ ipcRenderer.on('webview-ipc:send', async (event, id, message, params) => {
         data = handler(...params);
     } catch (error) {
         console.error(error);
-        ipcRenderer.sendToHost('webview-ipc:send-reply', id, serializeError(error));
+        ipcRenderer.sendToHost('webview-ipc:send-reply', id, encode(error));
         return;
     }
 
@@ -116,19 +114,11 @@ ipcRenderer.on('webview-ipc:send', async (event, id, message, params) => {
         data.then((data) => {
             ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
         }).catch((error) => {
-            ipcRenderer.sendToHost('webview-ipc:send-reply', id, serializeError(error));
+            ipcRenderer.sendToHost('webview-ipc:send-reply', id, encode(error));
         });
         return;
     }
     ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
-});
-
-// 当前页面发给 host 的返回消息
-ipcRenderer.on('webview-ipc:send-reply', (event, id, error, args) => {
-    const item = ipc._storage.get(id);
-    item && item.callback && item.callback(deserializeError(error), args);
-    ipc.isLock = false;
-    ipc.step();
 });
 
 // host 发送过来的消息
@@ -139,8 +129,22 @@ ipcRenderer.on('webview-ipc:force-send', async (event, id, message, params) => {
         const data = await handler(...params);
         ipcRenderer.sendToHost('webview-ipc:force-send-reply', id, null, data);
     } catch (error) {
-        ipcRenderer.sendToHost('webview-ipc:force-send-reply', id, serializeError(error), null);
         console.error(error);
+        ipcRenderer.sendToHost('webview-ipc:force-send-reply', id, encode(error), null);
         return;
     }
+});
+
+// 当前页面发给 host 的返回消息
+ipcRenderer.on('webview-ipc:send-reply', (event, id, error, args) => {
+    const item = ipc._storage.get(id);
+    if (item && item.callback) {
+        if (error) {
+            error.stacks = item.stacks;
+            error = decode(error, 'error');
+        }
+        item.callback(error, args);
+    }
+    ipc.isLock = false;
+    ipc.step();
 });
