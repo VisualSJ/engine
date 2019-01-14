@@ -6,21 +6,21 @@
         "Cocos3d/i18n:engine.title": {
             "message": "open"
         },
-        "i18n:menu.develop/i18n:engine.compile": {
+        "i18n:menu.develop/i18n:engine.compile_engine": {
             "message": "rebuild",
             "accelerator": "CmdOrCtrl+f7",
             "group": "engine"
         }
     },
 
-    "main": "./dist/browser.js",
+    "main": "./dist/browser/index.js",
     "description": "engine manager",
     "panel": {
         "title": "i18n:engine.title",
         "main": "./dist/panel.js",
-        "min-width": 400,
-        "min-height": 300,
-        "width": 400,
-        "height": 600
+        "min-width": 540,
+        "min-height": 540,
+        "width": 540,
+        "height": 540
     }
 }

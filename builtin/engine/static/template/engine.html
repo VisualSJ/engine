@@ -1,56 +1,43 @@
-<ul>
-    <!-- 内置引擎 -->
-    <li>
-        <div class="name">Builtin</div>
-        <div class="button">
-            <i class="icon check"
-                :use="current[type] === 'builtin'"
-                @click="_onClickUseEngine($event, {version: 'builtin'})"
-            ></i>
+<section class="engine">
+    <div class="location">
+        <span
+            :active="position === 'global'"
+            @click="_onSwitchPositionClick($event, 'global')"
+        >Global</span>
+        <span
+            :active="position === 'local'"
+            @click="_onSwitchPositionClick($event, 'local')"
+        >Local</span>
+    </div>
+    
+    <div class="settings">
+        <header>{{t('javascript_engine', language)}}</header>
+        <div>
+            <span>{{t('use_builtin_engine', language)}}</span>
+            <div>
+                <ui-checkbox
+                    :value="javascript.builtin"
+                    @confirm="_onUseBuiltinEngineConfirm($event, 'javascript')"
+                ></ui-checkbox>
+            </div>
         </div>
-    </li>
-
-    <!-- 自定义引擎 -->
-    <li>
-        <div class="name">
-            <span>
-                Custom: 
-            </span>
-            <ui-input disabled
-                :value="custom[type]"
-                :title="custom[type]"
-                @click="_onSelectCustom($event)"
-            ></ui-input>
+        <div>
+            <span>{{t('custom_engine_path', language)}}</span>
+            <div>
+                <ui-input
+                    :disabled="javascript.builtin"
+                    :value="javascript.custom"
+                ></ui-input>
+                <ui-button
+                    :disabled="javascript.builtin"
+                    @confirm="_onBrowserButtonClick($event, 'javascript')"
+                >{{t('browse', language)}}</ui-button>
+                <ui-button
+                    :disabled="javascript.builtin"
+                    @confirm="_onOpenEngineDirectory($event, 'javascript')"
+                >{{t('open', language)}}</ui-button>
+            </div>
         </div>
-
-        <div class="button">
-            <i class="icon check"
-                :use="current[type] === 'custom'"
-                @click="_onClickUseEngine($event, { version: 'custom', })"
-            ></i>
-        </div>
-    </li>
-
-    <!-- 引擎列表 -->
-    <li
-        v-for="item in list[type]"
-    >
-        <div class="name">{{item.version}}</div>
-        <div class="button">
-            <i class="icon cloud-download"
-                v-if="!item.exists && !item.download"
-                @click="_onClickDownload($event, item)"
-            ></i>
-
-            <ui-loading
-                v-if="item.download"
-            ></ui-loading>
-
-            <i class="icon check"
-                v-if="item.exists"
-                :use="current[type] === item.version"
-                @click="_onClickUseEngine($event, item)"
-            ></i>
-        </div>
-    </li>
-</ul>
+    </div>
+    
+</section>
