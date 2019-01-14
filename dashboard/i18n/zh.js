@@ -14,10 +14,12 @@ module.exports = {
     warn: '警告',
     cancel: '取消',
     confirm: '确定',
+    keep: '保留',
     remove: '移除',
     reselect: '重新选择',
 
     delete_project: '删除项目',
+    delete_project_source: '删除文件',
     project_path_palceholder: '请选择一个项目路径作为工作区',
     cover_project: '直接覆盖同名文件',
     stay_tuned: '敬请期待!',
@@ -25,7 +27,8 @@ module.exports = {
     message: {
         duplicate_project: '该文件夹内已存在文件',
         project_missing: '项目不存在！是否移除该记录？',
-        delete_project: '是否一并删除硬盘上的文件？',
+        delete_project: '是否移除项目？',
+        delete_project_source: '是否删除硬盘上的文件？',
         confirm_deletion: '您正在删除硬盘上的项目文件，是否确认删除?',
     },
     template: {

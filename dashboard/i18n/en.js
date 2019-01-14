@@ -16,19 +16,22 @@ module.exports = {
     warn: 'warning',
     cancel: 'cancel',
     confirm: 'confirm',
+    keep: 'keep',
     remove: 'remove',
     reselect: 'Reselect',
 
     delete_project: 'Delete Project',
+    delete_project_source: 'Delete the file',
     project_path_palceholder: 'Please select a path as a project workspace',
     project_missing: 'Project does not exist',
     cover_project: 'Directly overwrite the file with the same name',
-
     stay_tuned: 'Stay tuned!',
+
     message: {
-        duplicate_project: 'file already exists in this folder',
-        project_missing: 'There is no project path!Do you want to remove the record?',
-        delete_project: 'Do you want to delete the files on your hard drive?',
+        duplicate_project: 'Files already exist in this folder.',
+        project_missing: 'There is no project path! Do you want to remove the record?',
+        delete_project: 'Do you want to remove project?',
+        delete_project_source: 'Do you want to delete files from your hard drive?',
         confirm_deletion: 'You are deleting the project file on the hard disk. Are you sure to delete it?',
     },
     template: {

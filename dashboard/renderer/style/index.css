@@ -58,9 +58,12 @@ body {
   --main-color: #3d85c6;
   --mian-bg-color: #262626;
   background: var(--mian-bg-color, #262626);
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard {
+  flex: 1;
   overflow: hidden;
 }
 
@@ -192,6 +195,8 @@ input::-webkit-inner-spin-button {
   width: 85%;
   text-align: left;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .project-wrap {
@@ -304,6 +309,12 @@ input::-webkit-inner-spin-button {
   right: 0;
   bottom: 0;
   left: 0;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .template .img-wrap img {
@@ -419,9 +430,9 @@ input::-webkit-inner-spin-button {
 }
 
 .title-item {
-  padding: 8px 10px;
+  padding: 4px 10px;
   font-size: 14px;
-  margin: 1 10px;
+  margin: 1px 5px;
 }
 
 .title-item:hover {
@@ -492,9 +503,8 @@ input::-webkit-inner-spin-button {
 
 /* help模块 */
 .help {
-  display: flex;
-  padding-top: 20px;
   height: 450px;
+  flex-direction: row;
 }
 
 .help .help-line {

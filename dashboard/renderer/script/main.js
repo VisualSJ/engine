@@ -21,8 +21,8 @@ const $vm = new Vue({
 
         // 侧边菜单项的文本内容
         types: [
-            { type: '2d', value: 'project_2d' },
             { type: '3d', value: 'project_3d' },
+            { type: '2d', value: 'project_2d' },
         ],
 
         // 当前选中的菜单

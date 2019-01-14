@@ -6,7 +6,7 @@ const ps = require('path');
 
 const project = require('./../../../../lib/project');
 const dialog = require('./../../../../lib/dialog');
-const {t} = require('./../util');
+const { t } = require('./../util');
 
 exports.template = fs.readFileSync(ps.join(__dirname, '../../template/project.html'), 'utf-8');
 
@@ -44,21 +44,41 @@ exports.methods = {
             type: 'info',
             title: t('delete_project'),
             message: t('message.delete_project'),
-            buttons: ['no', 'yes'],
+            detail: path,
+            buttons: [t('cancel'), t('remove')],
         });
-        // 删除项目文件
-        if (isDelete === 1) {
-            const result = await dialog.show({
-                type: 'warn',
-                title: t('delete_project'),
-                message: t('confirm_deletion'),
-                buttons: [t('cancel'), t('confirm')],
-            });
-            if (result === 1) {
-                fse.removeSync(path);
-            }
-            project.remove(path);
+
+        if (isDelete !== 1) {
+            return;
         }
+
+        const deleteFile = await dialog.show({
+            type: 'warn',
+            title: t('delete_project_source'),
+            message: t('message.delete_project_source'),
+            detail: path,
+            buttons: [t('keep'), t('remove')],
+        });
+
+        project.remove(path);
+
+        if (deleteFile !== 1) {
+            return;
+        }
+
+        const confirmDelete = await dialog.show({
+            type: 'warn',
+            title: t('delete_project_source'),
+            message: t('message.confirm_deletion'),
+            detail: path,
+            buttons: [t('cancel'), t('confirm')],
+        });
+
+        if (confirmDelete !== 1) {
+            return;
+        }
+
+        fse.removeSync(path);
     },
 
     /**

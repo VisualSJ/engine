@@ -35,6 +35,8 @@ exports.window = function() {
     window = new BrowserWindow({
         width: 1000,
         height: 650,
+        minWidth: 900,
+        minHeight: 600,
         show: false,
         frame: false,
         autoHideMenuBar: true,
