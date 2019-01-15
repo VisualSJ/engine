@@ -48,7 +48,7 @@ exports.messages = {
         }
         const win = BrowserWindow.fromId(id);
         return new Promise((resolve, reject) => {
-            ipc.sendToWin(win, 'package-tester:message', ...args).callback((error, data) => {
+            ipc.sendToWin(win, 'package-tester:message', panel, ...args).callback((error, data) => {
                 if (error) {
                     return reject(error);
                 }

@@ -4,35 +4,35 @@ const ipc = require('@base/electron-base-ipc');
 const query = require('./element-query');
 const { mouse, keyboard } = require('./event-simulate');
 
+const sleep = (time) => new Promise((r) => setTimeout(r, time));
+
 /**
  * 消息监听器
  * 负责 tester 消息的转发
  * @param {event} event
- * @param  {...any} actions array 操作步骤，需要拆分
+ * @param  {...any} operation array 操作步骤，需要拆分
  */
-async function messageListener(event, ...actions) {
-    const rt = {};
+async function messageListener(event, panel, operation) {
+    const rt = [];
 
-    // const {panel, selector, action};
-    // 测试 获取节点及属性的 API
-    // const panel = query.panel('assets');
-    // const searchBtn = panel.element('.search-type');
-    // const attrs = panel.attributes(searchBtn);
-    // const position = panel.position(searchBtn);
+    panel = query.panel(panel);
 
-    // console.log(panel);
-    // console.log(searchBtn);
-    // console.log(attrs);
-    // console.log(position);
+    for (const step of operation) {
+        const data = await operating(panel, step);
+        rt.push(data);
+    }
 
-    // mouse.moveTo(position.cx, position.cy);
-
-    // setTimeout(() => { // 可能是初始化有遮罩层
-    //     mouse.click();
-    // }, 2000);
-
-    // 操作完成后，通知完成
     event.reply(null, rt);
+}
+
+async function operating(panel, step) {
+    const element = panel.element(step.element);
+    // TODO 需要补充用户操作事件，含 await
+
+    const attrs = panel.attributes(element);
+    const position = panel.position(element);
+
+    return {attrs, position};
 }
 
 exports.load = function() {

@@ -14,8 +14,11 @@ describe('Assets 对外暴露的 IPC 接口', () => {
 
             await sleep(500);
 
-            // TODO ipc 检查结果
+            const result = await Editor.Ipc.requestToPackage('tester', 'forwarding-to-window', 'assets', [
+                {element: 'ui-drag-area > ui-drag-item > .name'},
+            ]);
 
+            expect(result[0].attrs.twinkle).to.equal('shake');
         });
     });
 
