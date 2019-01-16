@@ -31,6 +31,7 @@ declare interface ItreeAsset {
     visible: boolean; // 是否显示
     readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
     subAssets: any;
+    redirect: any; // json 格式， 链接资源 { type, uuid }
 
     // 以下是扩展的数据
     name: string; // 文件名，包含后缀

@@ -195,7 +195,7 @@ export const methods = {
             type: asset.type,
          }));
         // @ts-ignore 给其他面板使用
-        event.dataTransfer.setData('value', uuid);
+        event.dataTransfer.setData('value', asset.redirect ? asset.redirect.uuid : uuid);
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';

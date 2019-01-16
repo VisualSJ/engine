@@ -153,6 +153,12 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
     asset.isSubAsset = asset.source ? false : true;
     asset.state = '';
+
+    // 处理有 redirect 资源的情况
+    if (asset.redirect) {
+        asset.type = asset.redirect.type;
+        // asset.redirect.uuid 不可替换 asset.uuid ，因为 uuid 是唯一值
+    }
 }
 
 /**

@@ -657,6 +657,9 @@ export const methods = {
             data = JSON.parse(dragData);
         }
 
+        // @ts-ignore 跨面板的取值
+        data.uuid = event.dataTransfer.getData('value');
+
         data.to = db.nodesTree.uuid; // cc.Scene 根节点
         data.insert = 'inside';
         // @ts-ignore
@@ -679,7 +682,7 @@ export const methods = {
 
             await Editor.Ipc.requestToPanel('scene', 'create-node', {
                 parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
-                assetUuid: json.from,
+                assetUuid: json.uuid,
             });
 
             if (json.insert === 'inside') {

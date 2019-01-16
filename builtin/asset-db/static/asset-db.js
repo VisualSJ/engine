@@ -254,6 +254,10 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 continue;
             }
             const importer = db.name2importer[asset.meta.importer] || null;
+
+            // 需要 redirect 数据的情况
+            const redirect = getRedirectAssetInfo(asset.meta.userData.redirect);
+
             const info = {
                 source,
                 file: asset.source, // 实际磁盘路径
@@ -269,6 +273,7 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
                 subAssets: {},
                 visible: dbInfos[name].visible,
                 readOnly: dbInfos[name].readOnly,
+                redirect,
             };
 
             searchSubAssets(info, asset, db);
@@ -349,6 +354,9 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
     const db = AssetWorker[assetInfo.db];
     const importer = db ? db.name2importer[asset.meta.importer] : null;
 
+    // 需要 redirect 数据的情况
+    const redirect = getRedirectAssetInfo(asset.meta.userData.redirect);
+
     const info = {
         uuid: asset.uuid,
         importer: asset.meta.importer,
@@ -361,6 +369,7 @@ Worker.Ipc.on('asset-worker:query-asset-info', async (event, uuid) => {
         visible: dbInfo.visible,
         readOnly: dbInfo.readOnly,
         subAssets: {},
+        redirect,
     };
 
     searchSubAssets(info, asset, db);
@@ -443,6 +452,10 @@ function searchSubAssets(parent, asset, db) {
     for (const name of names) {
         const subAsset = asset.subAssets[name];
         const importer = db.name2importer[subAsset.meta.importer] || null;
+
+         // 需要 redirect 数据的情况
+        const redirect = getRedirectAssetInfo(subAsset.meta.userData.redirect);
+
         parent.subAssets[name] = {
             uuid: subAsset.uuid,
             importer: subAsset.meta.importer,
@@ -454,6 +467,7 @@ function searchSubAssets(parent, asset, db) {
             visible: parent.visible,
             readOnly: parent.readOnly,
             subAssets: {},
+            redirect,
         };
         searchSubAssets(parent.subAssets[name], subAsset, db);
     }
@@ -507,4 +521,29 @@ function queryDatabaseInfo(names) {
     }
 
     return dbInfos;
+}
+
+/**
+ * 获取资源的链接资源相关信息
+ * @param {*} redirect
+ */
+function getRedirectAssetInfo(redirect) {
+    if (!redirect) {
+        return;
+    }
+
+    const assetInfo = queryAsset(redirect);
+    if (!assetInfo || !assetInfo.asset) {
+        return new Error('Redirect File does not exist.');
+    }
+
+    const asset = assetInfo.asset;
+
+    const db = AssetWorker[assetInfo.db];
+    const importer = db ? db.name2importer[asset.meta.importer] : null;
+
+    return {
+        type: importer ? importer.assetType || 'cc.Asset' : 'cc.Asset',
+        uuid: asset.uuid,
+    };
 }

@@ -7,6 +7,7 @@ declare interface IdragNode {
      */
     type: string; 
     from?: string; // 被拖动的节点 uuid
+    uuid?: string; // 跨面板传递的有效 uuid
     to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
     copy: boolean; // 是否是拖动复制

@@ -285,6 +285,9 @@ export const methods = {
             data = JSON.parse(dragData);
         }
 
+        // @ts-ignore 跨面板的取值
+        data.uuid = event.dataTransfer.getData('value');
+
         data.to = node.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据
         // @ts-ignore

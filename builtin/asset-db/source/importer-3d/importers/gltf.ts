@@ -52,7 +52,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.44';
+        return '1.0.45';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -171,7 +171,8 @@ export default class GltfImporter extends Importer {
             gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[],
             extension: string,
             importer: string,
-            preferedName?: string
+            preferedName?: string,
+            parentUserData?: any
         ): Promise<Array<string | null>> => {
             const result = new Array<string | null>(gltfSubAssets.length).fill(null);
             for (let index = 0; index < gltfSubAssets.length; ++index) {
@@ -182,6 +183,9 @@ export default class GltfImporter extends Importer {
                     _uniqueIndex(index, gltfSubAssets.length),
                     extension, preferedName);
                 const subAsset = await asset.createSubAsset(name, importer);
+                if (parentUserData) {
+                    parentUserData.redirect = subAsset.uuid;
+                }
                 subAsset.userData.gltfIndex = index;
                 result[index] = subAsset.uuid;
             }
@@ -299,7 +303,9 @@ export default class GltfImporter extends Importer {
                 gltfConverter.gltf.scenes,
                 '.prefab',
                 'gltf-scene',
-                gltfConverter.gltf.scenes.length === 1 ? asset.basename : undefined);
+                gltfConverter.gltf.scenes.length === 1 ? asset.basename : undefined,
+                asset.userData
+            );
         }
     }
 }
