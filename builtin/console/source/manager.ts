@@ -1,5 +1,5 @@
 import { execFileSync } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { outputFileSync } from 'fs-extra';
 import { join } from 'path';
 import { messages } from './panel';
@@ -181,10 +181,9 @@ function saveLog(item: any) {
     if (!item) {
         return;
     }
-    let content = '';
     const date = timetrans(item.time);
-    content += `${date}-${item.type}: ${item.message}\r\n`;
-    outputFileSync(logPath, content, 'utf-8');
+    const content = `${date}-${item.type}: ${item.message}\r\n`;
+    appendFileSync(logPath, content);
 }
 
 /**
