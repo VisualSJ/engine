@@ -8,7 +8,7 @@
             :type="searchType"
             @click="popupSearchType"
         ></i>
-        <ui-input tabindex="-1" ref="search" 
+        <ui-input tabindex="-1" ref="search" show-clear
             @keydown.stop
             :placeholder="t(searchPlaceholder, language)"
             @change="searchChange"

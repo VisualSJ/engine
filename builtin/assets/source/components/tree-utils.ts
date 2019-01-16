@@ -182,8 +182,8 @@ exports.scrollIntoView = (uuid: string) => {
     const one = exports.getAssetFromMap(uuid);
     if (one) { // 如果 A ：存在，
         // 情况 B ：判断是否在可视范围，
-        const min = db.vm.scrollTop - db.assetHeight;
-        const max = db.vm.scrollTop + db.vm.viewHeight - db.assetHeight;
+        const min = db.vm.scrollTop;
+        const max = db.vm.scrollTop + db.vm.viewHeight - db.assetHeight * 1.5;
 
         // 优化滚动
         const offsetWidth = db.vm.$parent.$refs.viewBox.offsetWidth;

@@ -172,101 +172,23 @@ export const methods = {
      * 全部选中
      */
     allSelect() {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        const uuids = [];
         for (const [top, asset] of db.assetsMap) {
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', asset.uuid);
+            uuids.push(asset.uuid);
         }
+        vm.ipcSelect(uuids);
     },
 
     /**
      * 添加选中项
      * @param uuid
-     * @param show 是否定位显示
      */
-    select(uuid: string, show = false) {
+    select(uuid: string) {
         if (!vm.selects.includes(uuid)) {
             vm.selects.push(uuid);
-            vm.current = utils.getAssetFromMap(uuid);
-
-            // 延迟定位，避免 shift 多选后的界面闪烁
-            clearTimeout(vm.selectTimer);
-            vm.selectTimer = setTimeout(() => {
-                if (show) {
-                    vm.intoView = uuid;
-                }
-            }, 100);
-
-            return vm.current;
         }
-        return;
-    },
-
-    /**
-     * 选中单节点
-     * @param uuid
-     */
-    ipcSingleSelect(uuid: string) {
-        this.ipcResetSelect(uuid);
-    },
-
-    /**
-     * 多选
-     * 按下 ctrl 或 shift
-     * ctrl 支持取消已选中项
-     */
-    async ipcMultipleSelect(shiftKey: boolean, uuid: string) {
-        // @ts-ignore
-        if (shiftKey) {
-            // 如果之前没有选中节点，则只要选中当前点击的节点
-            // @ts-ignore
-            if (this.selects.length === 0) {
-                this.ipcSingleSelect(uuid);
-                return;
-            } else {
-                if (Array.isArray(uuid)) {
-                    this.ipcResetSelect(uuid);
-                    return;
-                }
-                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-                if (uuids.length === 0) {
-                    return;
-                }
-                const one = utils.getAssetFromMap(uuid); // 当前给定的元素
-                const first = utils.getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
-                if (one !== undefined && first !== undefined) {
-                    const selects: string[] = [];
-                    const min = one.top < first.top ? one.top : first.top;
-                    const max = min === one.top ? first.top : one.top;
-                    for (const [top, json] of db.assetsMap) {
-                        if (min <= top && top <= max) {
-                            selects.push(json.uuid);
-                        }
-                    }
-                    selects.splice(selects.findIndex((id) => id === first.uuid), 1);
-                    selects.unshift(first.uuid);
-                    selects.splice(selects.findIndex((id) => id === one.uuid), 1);
-                    selects.push(one.uuid);
-
-                    this.ipcResetSelect(selects);
-                }
-            }
-        } else { // event.ctrlKey || event.metaKey
-            // @ts-ignore
-            if (this.selects.includes(uuid)) {
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-            } else {
-                Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-            }
-        }
-    },
-
-    /**
-     * 重新选中节点
-     * @param uuid
-     */
-    ipcResetSelect(uuid: string | string[]) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+        vm.current = utils.getAssetFromMap(uuid);
+        return vm.current;
     },
 
     /**
@@ -278,9 +200,89 @@ export const methods = {
 
         if (index !== -1) {
             vm.selects.splice(index, 1);
+        }
+
+        if (vm.current.uuid === uuid) {
+            vm.current = utils.getAssetFromMap(vm.selects[vm.selects.length - 1]);
+        }
+
+        return vm.current;
+    },
+
+    /**
+     * shift + click 多选
+     */
+    ipcShiftClick(uuid: string) {
+        if (vm.selects.length === 0) {
+            vm.ipcSelect(uuid);
             return;
         }
-        return vm.current;
+
+        // shift + click 需要考虑选中中间跨越的节点
+        vm.intoView = uuid;
+
+        const first = utils.getAssetFromMap(vm.selects[0]); // 已选列表中的第一个元素
+        const last = utils.getAssetFromMap(uuid); // 当前给定的元素
+        if (!last || !first) {
+            return;
+        }
+
+        const selects: string[] = [];
+        const min = last.top < first.top ? last.top : first.top;
+        const max = min === last.top ? first.top : last.top;
+        for (const [top, json] of db.assetsMap) {
+            if (min <= top && top <= max) {
+                selects.push(json.uuid);
+            }
+        }
+
+        selects.splice(selects.findIndex((id) => id === first.uuid), 1);
+        selects.unshift(first.uuid);
+        selects.splice(selects.findIndex((id) => id === last.uuid), 1);
+        selects.push(last.uuid);
+
+        vm.selects = selects;
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
+    },
+
+    /**
+     * shift + keyboard 上下选择
+     * @param uuid
+     * @param select
+     */
+    ipcShiftUpDown(uuid: string, select = true) {
+        if (select === false) {
+            if (vm.selects.length >= 2) {
+                vm.intoView = vm.selects[vm.selects.length - 2];
+            }
+
+            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+        } else {
+            vm.intoView = uuid;
+            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+        }
+    },
+
+    /**
+     * ctrl + click 选中或取消选中项
+     * 来自事件 event.ctrlKey || event.metaKey
+     */
+    ipcCtrlClick(uuid: string) {
+        if (vm.selects.includes(uuid)) {
+            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+        } else {
+            vm.intoView = uuid;
+            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+        }
+    },
+
+    /**
+     * 选中节点
+     * @param uuid
+     */
+    ipcSelect(uuid: string | string[]) {
+        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
     },
 
     /**
@@ -429,26 +431,21 @@ export const methods = {
      * @param shiftKey
      */
     upDownLeftRight(direction: string) {
-        const uuid = this.getFirstSelect();
+        const first = this.getFirstSelect();
         if (direction === 'right') {
-            this.toggle(uuid, true);
+            this.toggle(first, true);
         } else if (direction === 'left') {
-            this.toggle(uuid, false);
+            this.toggle(first, false);
         } else {
-            const siblings = utils.getSiblingsFromMap(uuid);
-            let current;
+            const [current, prev, next] = utils.getSiblingsFromMap(first);
+            let asset;
             switch (direction) {
-                case 'up':
-                    current = siblings[1];
-                    break;
-                case 'down':
-                    current = siblings[2];
-                    break;
+                case 'up': asset = prev; break;
+                case 'down': asset = next; break;
             }
 
-            if (current) {
-                Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-                Editor.Ipc.sendToPackage('selection', 'select', 'asset', current.uuid);
+            if (asset) {
+                vm.ipcSelect(asset.uuid);
             }
         }
     },
@@ -457,60 +454,35 @@ export const methods = {
      * 按住 shift 键，同时上下选择
      */
     async shiftUpDown(direction: string) {
-        // 同时按住了 shift 键
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-        if (uuids && uuids.length === 0) {
-            return;
-        }
-        const length = uuids.length;
-        const last = uuids[length - 1];
+        const length = vm.selects.length;
 
-        const siblings = utils.getSiblingsFromMap(last);
-        let current;
-        switch (direction) {
-            case 'up':
-                current = siblings[1];
-                break;
-            case 'down':
-                current = siblings[2];
-                break;
+        if (length === 0) {
+            return;
         }
-        if (current) {
-            this.multipleSelect(current.uuid);
-        }
-    },
 
-    /**
-     * 节点多选
-     */
-    async multipleSelect(uuid: string | string[]) {
-        if (Array.isArray(uuid)) {
-            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
-            return;
-        }
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-        if (uuids.length === 0) {
-            return;
-        }
-        const one = utils.getAssetFromMap(uuid); // 当前给定的元素
-        const first = utils.getAssetFromMap(uuids[0]); // 已选列表中的第一个元素
-        if (one !== undefined && first !== undefined) {
-            const selects: string[] = [];
-            const min = one.top < first.top ? one.top : first.top;
-            const max = min === one.top ? first.top : one.top;
-            for (const [top, json] of db.assetsMap) {
-                if (min <= top && top <= max) {
-                    selects.push(json.uuid);
+        const [first, firstPrev, firstNext] = utils.getSiblingsFromMap(vm.selects[0]);
+        const [last, lastPrev, lastNext] = utils.getSiblingsFromMap(vm.selects[length - 1]);
+        const hasFirstPrev = vm.selects.includes(firstPrev.uuid);
+        const hasFirstNext = vm.selects.includes(firstNext.uuid);
+
+        if (direction === 'up') {
+            if ((first.top <= lastPrev.top && hasFirstNext) || hasFirstNext) {
+                if (last.uuid !== first.uuid) {
+                    this.ipcShiftUpDown(last.uuid, false);
                 }
+            } else {
+                this.ipcShiftUpDown(lastPrev.uuid, true);
             }
-            selects.splice(selects.findIndex((id) => id === first.uuid), 1);
-            selects.unshift(first.uuid);
-            selects.splice(selects.findIndex((id) => id === one.uuid), 1);
-            selects.push(one.uuid);
+        }
 
-            Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
+        if (direction === 'down') {
+            if ((first.top >= lastNext.top && hasFirstPrev) || hasFirstPrev) {
+                if (last.uuid !== first.uuid) {
+                    this.ipcShiftUpDown(last.uuid, false);
+                }
+            } else {
+                this.ipcShiftUpDown(lastNext.uuid, true);
+            }
         }
     },
 
@@ -859,8 +831,8 @@ export const methods = {
 
         this.render(); // 重新渲染出树形
 
-        // 容器的整体高度，重新定位滚动条, +1 是为了增加离底距离
-        vm.$parent.treeHeight = (db.assetsMap.size + 1) * db.assetHeight;
+        // 容器的整体高度，重新定位滚动条, +0.5 是为了增加离底距离
+        vm.$parent.treeHeight = (db.assetsMap.size + 0.5) * db.assetHeight;
     },
 
     /**

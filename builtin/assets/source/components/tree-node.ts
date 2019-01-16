@@ -116,12 +116,16 @@ export const methods = {
      */
     click(event: Event, asset: ItreeAsset) {
         // @ts-ignore
-        if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
+        if (event.shiftKey) { // 多选
             // @ts-ignore
-            this.$emit('ipcMultipleSelect', event.shiftKey, asset.uuid);
+            this.$emit('ipcShiftClick', asset.uuid);
+            // @ts-ignore
+        } else if (event.ctrlKey || event.metaKey) {
+            // @ts-ignore
+            this.$emit('ipcCtrlClick', asset.uuid);
         } else { // 单选
             // @ts-ignore
-            this.$emit('ipcSingleSelect', asset.uuid);
+            this.$emit('ipcSelect', asset.uuid);
         }
     },
     /**
@@ -193,7 +197,7 @@ export const methods = {
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: uuid,
             type: asset.type,
-         }));
+        }));
         // @ts-ignore 给其他面板使用
         event.dataTransfer.setData('value', asset.redirect ? asset.redirect.uuid : uuid);
 

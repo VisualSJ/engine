@@ -331,7 +331,7 @@ export async function ready() {
              * ipc 消息后：选中节点，并返回的该选中项
              */
             select(uuid: string) {
-                vm.current = vm.$refs.tree.select(uuid, true);
+                vm.current = vm.$refs.tree.select(uuid);
             },
             /**
              * ipc 消息后：取消选中项
