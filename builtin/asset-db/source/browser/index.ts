@@ -66,12 +66,12 @@ module.exports = {
          * 查询数据库 DB 的信息
          * @param nameOrUrl 可以是 name，也可以是 url
          */
-        async 'query-database-info'(nameOrUrl: string) {
+        async 'query-db-info'(nameOrUrl: string) {
             if (!assetWorker) {
                 return null;
             }
 
-            return await assetWorker.send('asset-worker:query-database-info', nameOrUrl);
+            return await assetWorker.send('asset-worker:query-db-info', nameOrUrl);
         },
 
         // ------ 资源查询
@@ -158,7 +158,7 @@ module.exports = {
                 uuidOrUrl = asset.source;
             }
 
-            const dbInfo = await assetWorker.send('asset-worker:query-database-info', uuidOrUrl);
+            const dbInfo = await assetWorker.send('asset-worker:query-db-info', uuidOrUrl);
 
             return join(dbInfo.target, uuidOrUrl.substr(dbInfo.protocol.length));
         },
@@ -192,7 +192,7 @@ module.exports = {
                 throw new Error('Must be prefixed with db://');
             }
 
-            const dbInfo = await assetWorker.send('asset-worker:query-database-info', url);
+            const dbInfo = await assetWorker.send('asset-worker:query-db-info', url);
 
             // 文件目录路径
             let file = join(dbInfo.target, url.substr(dbInfo.protocol.length));
@@ -222,7 +222,7 @@ module.exports = {
             }
             try {
                 const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
-                const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
+                const dbInfo = await assetWorker.send('asset-worker:query-db-info', info.source);
                 const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));
                 await outputFile(file, data);
                 return true;
@@ -266,8 +266,8 @@ module.exports = {
                 throw new Error('Must be prefixed with db://');
             }
 
-            const dbInfo = await assetWorker.send('asset-worker:query-database-info', url);
-            const dbInfoTo = await assetWorker.send('asset-worker:query-database-info', to);
+            const dbInfo = await assetWorker.send('asset-worker:query-db-info', url);
+            const dbInfoTo = await assetWorker.send('asset-worker:query-db-info', to);
 
             let dest = join(dbInfoTo.target, to.substr(dbInfoTo.protocol.length));
 
@@ -351,7 +351,7 @@ module.exports = {
                 return;
             }
             const info = await assetWorker.send('asset-worker:query-asset-info', uuid);
-            const dbInfo = await assetWorker.send('asset-worker:query-database-info', info.source);
+            const dbInfo = await assetWorker.send('asset-worker:query-db-info', info.source);
 
             // 文件目录路径
             const file = join(dbInfo.target, info.source.substr(dbInfo.protocol.length));

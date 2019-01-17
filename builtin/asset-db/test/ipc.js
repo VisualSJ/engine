@@ -12,7 +12,7 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
  * DB
  * refresh-database √
  * query-is-ready √
- * query-database-info √
+ * query-db-info √
  *
  * 资源查询
  * query-assets √
@@ -70,9 +70,9 @@ describe('Asset-db 对外暴露的 IPC 接口', () => {
         });
     });
 
-    describe('由 DB name 查 DB 信息 query-database-info', () => {
-        it('asset-db:query-database-info', async () => {
-            const dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-database-info', 'assets');
+    describe('由 DB name 查 DB 信息 query-db-info', () => {
+        it('asset-db:query-db-info', async () => {
+            const dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', 'assets');
 
             expect(dbInfo.target).to.equal(join(Editor.Project.path, 'assets'));
         });
@@ -88,9 +88,9 @@ describe('Asset-db 对外暴露的 IPC 接口', () => {
         });
     });
 
-    describe('由资源 url 查 DB 信息 query-database-info', () => {
-        it('asset-db:query-database-info', async () => {
-            const dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-database-info', fileUrl);
+    describe('由资源 url 查 DB 信息 query-db-info', () => {
+        it('asset-db:query-db-info', async () => {
+            const dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', fileUrl);
 
             expect(dbInfo.target).to.equal(join(Editor.Project.path, 'assets'));
         });

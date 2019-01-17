@@ -210,7 +210,7 @@ Worker.Ipc.on('asset-worker:translate-url', async (event, url) => {
     event.reply(null, join(db.options.target, unescape(uri.path || '')));
 });
 
-Worker.Ipc.on('asset-worker:query-database-info', async (event, names) => {
+Worker.Ipc.on('asset-worker:query-db-info', async (event, names) => {
     event.reply(null, queryDatabaseInfo(names));
 });
 

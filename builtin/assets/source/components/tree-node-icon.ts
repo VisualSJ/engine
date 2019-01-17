@@ -92,7 +92,7 @@ const dbInfos: any = {};
 async function getDataURL(asset: ItreeAsset) {
     let dbInfo = dbInfos[asset.topSource];
     if (!dbInfo) {
-        dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-database-info', asset.topSource);
+        dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', asset.topSource);
         dbInfos[asset.topSource] = dbInfo;
     }
     const cachePath = join(dbInfo.temp, asset.uuid);
