@@ -22,6 +22,8 @@
   padding: 0 4px;
   background: var(--main-dark-bg, #333);
   top: -0.8em;
+  line-height: 0.8em;
+  padding-bottom: 1px;
   max-width: 80%;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -69,16 +71,17 @@
 :host([focused]) .area {
   border-color: #fd942b;
 }
-:host([effective]) .area > ui-drag-area {
+:host([value]) .area > ui-drag-area {
   background-color: #6691b9;
+  line-height: initial;
 }
-:host([effective]) .area > ui-drag-area > .value {
+:host([value]) .area > ui-drag-area > .value {
   display: inline;
 }
-:host([effective]) .area > ui-drag-area > .placeholder {
+:host([value]) .area > ui-drag-area > .placeholder {
   display: none;
 }
-:host([effective]) .area > svg {
+:host([value]) .area > svg {
   display: inline;
 }
 :host(:hover) ui-drag-area {

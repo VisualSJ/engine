@@ -1,0 +1,61 @@
+<div class="node">
+    <template
+        v-if="dump"
+    >
+
+        <div class="header">
+            <div>
+                <ui-checkbox
+                    :value="dump.active.value"
+                    @click.stop
+                ></ui-checkbox>
+            </div>
+            <ui-input
+                :value="dump.name.value"
+            ></ui-input>
+        </div>
+
+        <ui-section expand>
+            <div class="header" slot="header">
+                <div class="checkbox">
+                    <!-- <ui-checkbox
+                        :value="value.enabled"
+                        @click.stop
+                    ></ui-checkbox> -->
+                </div>
+                <div class="name">
+                    <span>Node</span>
+                </div>
+                <div class="setting">
+                    <!-- <i class="iconfont icon-setting"></i> -->
+                </div>
+            </div>
+            <ui-prop auto
+                :value="dump.position"
+            ></ui-prop>
+            <ui-prop auto
+                :value="dump.rotation"
+            ></ui-prop>
+            <ui-prop auto
+                :value="dump.scale"
+            ></ui-prop>
+        </ui-section>
+
+        <template
+            v-for="(item,index) in dump.comps"
+        >
+            <comp
+                :uuid="uuid"
+                :index="index"
+                :total="dump.comps.length"
+                :value="item"
+            ></comp>
+        </template>
+
+        <div class="footer">
+            <ui-button
+                @click="_onAddComponentMenu($event)"
+            >添加组件</ui-button>
+        </div>
+    </template>
+</div>

@@ -1,25 +1,28 @@
 <div class="content">
     <section class="loading"
-        v-show="loading || (!sready && element === 'node') || (!aready && element === 'asset')"
+        v-if="loading"
     >
         <ui-loading></ui-loading>
     </section>
 
     <section
-        v-show="!loading"
+        v-else
     >
+        <!-- 3D 项目的 inspector 模版 -->
+        <template
+            v-if="type === '3d'"
+        >
 
-        <inspector-2d ref="inspector2d"
-            v-if="type === '2d' && uuid"
-            :type="element"
-            :uuid="uuid"
-        ></inspector-2d>
+            <asset-3d ref="asset"
+                v-if="item.type === 'asset'"
+                :uuid="item.uuid"
+            ></asset-3d>
 
-        <inspector-3d ref="inspector3d"
-            v-if="type === '3d' && uuid"
-            :type="element"
-            :uuid="uuid"
-        ></inspector-3d>
+            <node-3d ref="node"
+                v-if="item.type === 'node'"
+                :uuid="item.uuid"
+            ></node-3d>
+        </template>
 
     </section>
 </div>

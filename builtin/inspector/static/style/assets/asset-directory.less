@@ -1,0 +1,33 @@
+.asset-directory {
+
+    & > .path {
+        display: flex;
+
+        & > .name {
+            flex: 1;
+            overflow: hidden;
+            padding: 0 6px;
+            line-height: 20px;
+
+            & > span {
+                word-break: break-word;
+            }
+        }
+
+        & > .button {
+            margin-right: 6px;
+
+            & > ui-button {
+                padding: 0 10px;
+            }
+        }
+    }
+
+    & > .content {
+        padding: 10px;
+
+        & > ui-prop {
+            margin-bottom: 4px;
+        }
+    }
+}

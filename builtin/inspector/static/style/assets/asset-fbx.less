@@ -1,0 +1,36 @@
+.asset-fbx {
+    flex: 1;
+    overflow: auto;
+
+    & > .item {
+        padding: 6px 6px 10px 6px;
+        border-bottom: 1px solid #666;
+
+        & > div {
+            display: flex;
+            line-height: 22px;
+            text-indent: 10px;
+
+            &:first-child {
+                text-indent: 0;
+                margin-bottom: 6px;
+            }
+
+            & > span {
+                display: inline-block;
+                width: 30%;
+            }
+
+            & > ui-input {
+                flex: 1;
+            }
+
+            & > .button {
+
+                & > ui-button {
+                    line-height: 10px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+.asset-material {
+    padding: 4px 10px;
+    display: flex;
+    flex-direction: column;
+
+    & > .header {
+        padding-bottom: 2px;
+        margin-bottom: 4px;
+        border-bottom: 1px #666 dashed;
+
+        & > ui-prop {
+
+            & > ui-select {
+                flex: 1;
+            }
+        }
+    }
+
+    & > .content {
+        overflow: auto;
+    }
+}

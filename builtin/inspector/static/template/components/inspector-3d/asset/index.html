@@ -1,0 +1,18 @@
+<div class="asset"
+    @confirm.stop="_onConfirm($event)"
+>
+    <asset-header
+        :dirty="dirty"
+        :info="info"
+        :meta="meta"
+
+        @reset="_onReset"
+        @apply="_onApply"
+    ></asset-header>
+
+    <component ref="component"
+        :is="getComponentName(info)"
+        :info="info"
+        :meta="meta"
+    ></component>
+</div>

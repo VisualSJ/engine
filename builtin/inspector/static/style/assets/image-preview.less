@@ -1,0 +1,36 @@
+.image-preview {
+    height: 200px;
+    background: #333;
+    border: 1px solid #222;
+    display: flex;
+    padding: 10px;
+    position: relative;
+
+    & > .content {
+        flex: 1;
+
+        & > canvas {
+            max-width: 100%;
+            margin: auto;
+            display: block;
+            background-image: url(packages://inspector/static/checkerboard-32x32.png);
+            background-size: 32px 32px;
+            background-position: center center;
+        }
+    }
+
+    & > .label {
+        position: absolute;
+        width: 100%;
+        left: 0;
+        bottom: 4px;
+        text-align: center;
+
+        & > span {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: #4281b6;
+            border-radius: 4px;
+        }
+    }
+}

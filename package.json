@@ -103,7 +103,7 @@
         "socket.io": "^2.1.1",
         "tmp": "0.0.33",
         "tree-kill": "^1.2.1",
-        "v-dependence": "^0.1.4",
+        "v-dependence": "^0.1.5",
         "v-message": "^0.1.1",
         "v-stacks": "0.0.2",
         "vinyl-buffer": "^1.0.1",

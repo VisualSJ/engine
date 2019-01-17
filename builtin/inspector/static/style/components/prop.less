@@ -1,0 +1,28 @@
+.ui-prop {
+    margin: 4px;
+    line-height: 22px;
+    display: flex;
+    flex-flow: wrap;
+
+    & > .name {
+        width: 30%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 4px;
+        box-sizing: border-box;
+    }
+
+    & > .content {
+        width: 70%;
+        flex: none;
+        display: flex;
+    }
+
+    &[type='cc.Node'] {
+        padding-top: 10px;
+    }
+
+    &[type='cc.Asset'] {
+        padding-top: 10px;
+    }
+}

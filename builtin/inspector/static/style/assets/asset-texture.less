@@ -1,0 +1,22 @@
+.asset-texture {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    
+    & > .content {
+        padding: 4px 10px;
+        flex: 1;
+        overflow: auto;
+
+        & > ui-prop {
+            
+            & > ui-num-input {
+                flex: 1;
+            }
+            
+            & > ui-select {
+                flex: 1;
+            }
+        }
+    }
+}

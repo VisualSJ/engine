@@ -1,0 +1,29 @@
+<div class="comp">
+
+    <ui-section expand>
+        <div class="header" slot="header">
+            <div class="checkbox">
+                <ui-checkbox
+                    :value="value.enabled"
+                    @click.stop
+                ></ui-checkbox>
+            </div>
+            <div class="name">
+                <span>{{value.name}}</span>
+            </div>
+            <div class="setting">
+                <i class="iconfont icon-setting"
+                    @click.stop="_onClickComponentMenu($event)"
+                ></i>
+            </div>
+        </div>
+
+        <template
+            v-for="item in value.dump"
+        >
+            <ui-prop auto
+                :value="item"
+            ></ui-prop>
+        </template>
+    </ui-section>
+</div>

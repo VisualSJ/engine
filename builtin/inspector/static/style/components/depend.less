@@ -1,0 +1,24 @@
+.ui-depend {
+    flex: 1;
+    display: flex;
+    flex-flow: wrap;
+
+    & > .name {
+        width: 30%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 4px;
+        box-sizing: border-box;
+    }
+
+    & > .content {
+        width: 70%;
+    }
+
+    & > .object {
+        flex: 1;
+        margin: 4px 0 6px 10px;
+        padding: 2px;
+        border: 1px #888 dashed;
+    }
+}

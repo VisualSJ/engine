@@ -1,0 +1,179 @@
+<div class="ui-prop"
+    :type="value ? value.type : false"
+    @confirm="_onConfirm($event)"
+>
+
+    <template
+        v-if="auto"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <slot></slot>
+        </div>
+    </template>
+
+
+    <!-- Null -->
+    <template
+        v-else-if="value.value === null"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-null></ui-null>
+        </div>
+    </template>
+
+    <!-- Array -->
+    <template
+        v-else-if="value.isArray"
+    >
+        <ui-array
+            :name="value.name"
+            v-model="value.value"
+        ></ui-array>
+    </template>
+
+    <!-- Number -->
+    <template
+        v-else-if="value.type === 'number'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-number
+                v-model="value.value"
+            ></ui-number>
+        </div>
+    </template>
+
+    <!-- Boolean -->
+    <template
+        v-else-if="value.type === 'boolean'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-bool
+                v-model="value.value"
+            ></ui-bool>
+        </div>
+    </template>
+
+    <!-- Enum -->
+    <template
+        v-else-if="value.type === 'Enum'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-enum
+                :list="value.enumList"
+                v-model="value.value"
+            ></ui-enum>
+        </div>
+    </template>
+
+    <!-- Size -->
+    <template
+        v-else-if="value.type === 'cc.Size'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-size
+                v-model="value.value"
+            ></ui-size>
+        </div>
+    </template>
+
+    <!-- Vec2 -->
+    <template
+        v-else-if="value.type === 'cc.Vec2'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-vec2
+                v-model="value.value"
+            ></ui-vec2>
+        </div>
+    </template>
+
+    <!-- Vec3 -->
+    <template
+        v-else-if="value.type === 'cc.Vec3'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-vec3
+                v-model="value.value"
+            ></ui-vec3>
+        </div>
+    </template>
+
+    <!-- Color -->
+    <template
+        v-else-if="value.type === 'cc.Color'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-color
+                v-model="value.value"
+            ></ui-color>
+        </div>
+    </template>
+
+    <!-- Rect -->
+    <template
+        v-else-if="value.type === 'cc.Rect'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-rect
+                :value="value.value"
+            ></ui-rect>
+        </div>
+    </template>
+
+    <!-- Node -->
+    <template
+        v-else-if="value.type === 'cc.Node'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-node
+                :type="value.nodeType"
+                :value="value.value"
+            ></ui-node>
+        </div>
+    </template>
+
+    <!-- Asset -->
+    <template
+        v-else-if="value.type === 'cc.Asset'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-asset
+                :type="value.assetType"
+                :value="value.value"
+            ></ui-asset>
+        </div>
+    </template>
+
+    <!-- Depend -->
+    <template
+        v-else-if="value.type === 'ui.Depend'"
+    >
+        <ui-depend
+            :name="value.name"
+            v-model="value.value"
+            :children="value.children"
+        ></ui-depend>
+    </template>
+
+    <!-- Object -->
+    <template
+        v-else
+    >
+        <ui-object
+            :name="value.name"
+            :value="value.value"
+        ></ui-object>
+    </template>
+</div>
