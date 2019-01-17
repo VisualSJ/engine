@@ -14,11 +14,29 @@ export function init(elem: HTMLElement, type: string, uuid: string) {
                 type: type || '', // 选中物体的类型
                 uuid: uuid || '', // 选中物体的 uuid
             },
+
+            width: 0,
+            height: 0,
+        },
+
+        methods: {
+            resize() {
+                // @ts-ignore
+                const rect = this.$el.getBoundingClientRect();
+                // @ts-ignore
+                this.width = rect.width;
+                // @ts-ignore
+                this.height = rect.height;
+            },
         },
 
         components: {
             'asset-3d': require('./components/inspector-3d/asset/index'),
             'node-3d': require('./components/inspector-3d/node/index'),
+        },
+
+        mounted() {
+            this.resize();
         },
     });
 

@@ -5,6 +5,9 @@ import { readTemplate } from '../../utils';
 export const template = readTemplate('./public/prop.html');
 
 export const props = [
+    'width',
+    'height',
+
     'auto', // 是否自动渲染
     'value',
 ];
@@ -22,8 +25,11 @@ export const components = {
     'ui-rect': require('./ui-rect'),
     'ui-node': require('./ui-node'),
     'ui-asset': require('./ui-asset'),
+    'ui-component': require('./ui-component'),
     'ui-object': require('./ui-object'),
     'ui-depend': require('./ui-depend'),
+    'ui-curve': require('./ui-curve'),
+    'ui-gradient': require('./ui-gradient'),
 };
 
 export const methods = {

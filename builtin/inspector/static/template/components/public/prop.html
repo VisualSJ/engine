@@ -156,6 +156,48 @@
         </div>
     </template>
 
+    <!-- Asset -->
+    <template
+        v-else-if="value.type === 'cc.Component'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-component
+                :type="value.componentType"
+                :value="value.value"
+            ></ui-component>
+        </div>
+    </template>
+
+    <!-- CurveRange -->
+    <template
+        v-else-if="value.type === 'cc.CurveRange'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-curve
+                :name="value.name"
+                v-model="value.value"
+
+                :width="width"
+                :height="height"
+            ></ui-curve>
+        </div>
+    </template>
+
+    <!-- GradientRange -->
+    <template
+        v-else-if="value.type === 'cc.GradientRange'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-gradient
+                :name="value.name"
+                v-model="value.value"
+            ></ui-gradient>
+        </div>
+    </template>
+
     <!-- Depend -->
     <template
         v-else-if="value.type === 'ui.Depend'"
@@ -164,6 +206,9 @@
             :name="value.name"
             v-model="value.value"
             :children="value.children"
+
+            :width="width"
+            :height="height"
         ></ui-depend>
     </template>
 
@@ -174,6 +219,9 @@
         <ui-object
             :name="value.name"
             :value="value.value"
+
+            :width="width"
+            :height="height"
         ></ui-object>
     </template>
 </div>

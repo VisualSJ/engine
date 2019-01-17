@@ -93,7 +93,11 @@ export const messages = {
     },
 };
 
-export const listeners = {};
+export const listeners = {
+    resize() {
+        vm && vm.resize();
+    },
+};
 
 export async function ready() {
     // @ts-ignore

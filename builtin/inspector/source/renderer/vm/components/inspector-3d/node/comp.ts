@@ -5,6 +5,9 @@ import { readTemplate, translationDump } from '../../../utils';
 export const template = readTemplate('inspector-3d/node/comp.html');
 
 export const props = [
+    'width',
+    'height',
+
     'index',
     'total',
     'uuid',

@@ -21,6 +21,9 @@ export const template = `
         >
             <ui-prop
                 :value="item"
+
+                :width="width"
+                :height="height"
             ></ui-prop>
         </template>
     </div>
@@ -28,6 +31,9 @@ export const template = `
 `;
 
 export const props = [
+    'width',
+    'height',
+
     'name',
     'value',
     'children',

@@ -15,6 +15,7 @@ const knownTypes = [
     'cc.Rect',
     'cc.Node',
     'cc.Asset',
+    'cc.Component',
 ];
 
 function checkType(data: any) {
@@ -45,6 +46,16 @@ function isAsset(dump: any) {
         return false;
     }
     return dump.extends.indexOf('cc.Asset') !== -1;
+}
+
+function isComponent(dump: any) {
+    if (!dump) {
+        return false;
+    }
+    if (!dump.extends) {
+        return false;
+    }
+    return dump.extends.indexOf('cc.Component') !== -1;
 }
 
 export function translationDump(dump: any) {
@@ -98,6 +109,11 @@ export function translationDump(dump: any) {
             data.type = 'cc.Asset';
         }
 
+        if (isComponent(dump.value)) {
+            data.componentType = data.type;
+            data.type = 'cc.Component';
+        }
+
         if (data.type === 'Enum') {
             data.enumList = dump.properties.enumList;
         }
@@ -134,6 +150,11 @@ export function translationDump(dump: any) {
         if (isAsset(value)) {
             data.assetType = data.type;
             data.type = 'cc.Asset';
+        }
+
+        if (isComponent(value)) {
+            data.componentType = data.type;
+            data.type = 'cc.Component';
         }
 
         if (data.type === 'Enum') {
