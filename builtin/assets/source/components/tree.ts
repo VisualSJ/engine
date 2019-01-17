@@ -281,6 +281,8 @@ export const methods = {
      * @param uuid
      */
     ipcSelect(uuid: string | string[]) {
+        vm.intoView = Array.isArray(uuid) ? uuid[0] : uuid;
+
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
         Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
     },
