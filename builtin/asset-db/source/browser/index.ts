@@ -37,20 +37,6 @@ module.exports = {
             Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
         },
 
-        async 'query-is-ready'() {
-            return getReady();
-        },
-
-        /**
-         * 重启刷新数据库
-         */
-        'refresh-database'() {
-            if (!assetWorker) {
-                throw new Error('Asset DB does not exist.');
-            }
-            assetWorker.win.reload();
-        },
-
         /**
          * 切换调试模式
          */
@@ -58,8 +44,37 @@ module.exports = {
             assetWorker.debug(true);
         },
 
-        /////////////
-        // 查询
+        // ------ 数据库
+
+        /**
+         * 刷新 DB
+         */
+        'refresh-database'() {
+            if (!assetWorker) {
+                throw new Error('Asset DB does not exist.');
+            }
+            assetWorker.win.reload();
+        },
+        /**
+         * DB 是否启动完毕
+         */
+        async 'query-is-ready'() {
+            return getReady();
+        },
+
+        /**
+         * 查询数据库 DB 的信息
+         * @param nameOrUrl 可以是 name，也可以是 url
+         */
+        async 'query-database-info'(nameOrUrl: string) {
+            if (!assetWorker) {
+                return null;
+            }
+
+            return await assetWorker.send('asset-worker:query-database-info', nameOrUrl);
+        },
+
+        // ------ 资源查询
 
         /**
          * 查询资源树
@@ -75,13 +90,13 @@ module.exports = {
         },
 
         /**
-         * 传入资源的路径，返回 uuid
+         * 传入资源的 url，返回 uuid
          */
-        async 'query-asset-uuid'(source: string) {
+        async 'query-asset-uuid'(url: string) {
             if (!assetWorker) {
                 return null;
             }
-            return await assetWorker.send('asset-worker:query-asset-uuid', source);
+            return await assetWorker.send('asset-worker:query-asset-uuid', url);
         },
 
         /**
@@ -93,6 +108,17 @@ module.exports = {
                 return null;
             }
             return await assetWorker.send('asset-worker:query-asset-url', uuid);
+        },
+
+        /**
+         * 查询资源的 url 路径
+         * @param path 磁盘路径
+         */
+        async 'query-url-by-path'(path: string) {
+            if (!assetWorker) {
+                return null;
+            }
+            return await assetWorker.send('asset-worker:query-url-by-path', path);
         },
 
         /**
@@ -139,51 +165,19 @@ module.exports = {
 
         /**
          * 查询资源对应在 library 的资源配置
+         * 返回值 比如 { '.json': 'xxxx.json' }
          * @param uuid
          */
-        async 'query-asset-library'(uuidOrUrl: string) {
+        async 'query-asset-library'(uuid: string) {
             if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
-            const asset = await assetWorker.send('asset-worker:query-asset-info', uuidOrUrl);
+            const asset = await assetWorker.send('asset-worker:query-asset-info', uuid);
 
             return asset.library;
         },
 
-        /**
-         * 查询数据库 db 的信息
-         * @param name 可以是名称，也可以是URL
-         */
-        async 'query-database-info'(name: string) {
-            if (!assetWorker) {
-                return null;
-            }
-
-            return await assetWorker.send('asset-worker:query-database-info', name);
-        },
-
-        ///////////////
-        // 操作
-
-        /**
-         * 保存资源的 meta 信息
-         * @param {string} uuid
-         * @param {*} data
-         * @returns
-         */
-        async 'save-asset-meta'(uuid: string, meta: string) {
-            if (!assetWorker) {
-                return false;
-            }
-            try {
-                const isSaved = await assetWorker.send('asset-worker:save-asset-meta', uuid, meta);
-                console.info('asset meta saved');
-                return isSaved;
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-        },
+        // ----- 资源增删改
 
         /**
          * 创建一个新的资源
@@ -239,8 +233,28 @@ module.exports = {
         },
 
         /**
+         * 保存资源的 meta 信息
+         * @param {string} uuid
+         * @param {*} data
+         * @returns
+         */
+        async 'save-asset-meta'(uuid: string, meta: string) {
+            if (!assetWorker) {
+                return false;
+            }
+            try {
+                const isSaved = await assetWorker.send('asset-worker:save-asset-meta', uuid, meta);
+                console.info('asset meta saved');
+                return isSaved;
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+        },
+
+        /**
          * 复制一个资源到指定位置
-         * @param url db://assets/abc.json 或者 系统路径 如 C:\Users\**
+         * @param url db://assets/abc.json 或者 系统路径 如 C:\Users
          * @param to db://assets/abc
          */
         async 'copy-asset'(url: string, to: string) {
@@ -330,7 +344,7 @@ module.exports = {
         /**
          * 资源重名命 rename
          * @param uuid
-         * @param target
+         * @param name
          */
         async 'rename-asset'(uuid: string, name: string) {
             if (!assetWorker) {
@@ -386,12 +400,6 @@ module.exports = {
             return true;
         },
 
-        async 'query-url-by-path'(path: string) {
-            if (!assetWorker) {
-                return null;
-            }
-            return await assetWorker.send('asset-worker:query-url-by-path', path);
-        },
     },
 
     /**

@@ -302,17 +302,17 @@ Worker.Ipc.on('asset-worker:query-assets', async (event, options) => {
 });
 
 // 传入一个 db:// 地址，返回对应的 uuid 数据
-Worker.Ipc.on('asset-worker:query-asset-uuid', async (event, source) => {
-    const uri = parse(source);
-    if (uri.protocol !== 'db:') {
+Worker.Ipc.on('asset-worker:query-asset-uuid', async (event, url) => {
+    if (!url.startsWith('db://')) {
         return event.reply(null, null);
     }
+    const uri = parse(url);
     const db = AssetWorker[uri.host];
     if (!db) {
         return event.reply(null, null);
     }
     const root = db.options.target;
-    const path = join(root, uri.path);
+    const path = unescape(join(root, uri.path));
     const asset = db.path2asset[path];
     if (!asset) {
         return event.reply(null, null);
