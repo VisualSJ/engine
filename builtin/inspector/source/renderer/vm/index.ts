@@ -2,6 +2,9 @@
 
 const Vue = require('vue/dist/vue');
 
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
+
 export function init(elem: HTMLElement, type: string, uuid: string) {
     const vm = new Vue({
         el: elem,
