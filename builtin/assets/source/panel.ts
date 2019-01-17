@@ -389,7 +389,7 @@ export async function ready() {
              * 调整可视区域高度
              */
             resizePanel() {
-                vm.viewWidth = vm.$refs.viewBox.clientWidth;
+                vm.viewWidth = panel.clientWidth;
                 vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
             },
             /**
