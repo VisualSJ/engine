@@ -236,6 +236,7 @@ export async function ready() {
             current: null, // 选中项
             info: '', // 面板底部显示的信息
             viewHeight: 0, // 当前树形的可视区域高度
+            viewWidth: 0, // 当前树形的可视区域宽度
             treeHeight: 0, // 完整树形的全部高度
             selectBox: false, // 随组件 tree 中属性 selectBox 值
             searchPlaceholder: 'menu.searchPlaceholder_name', // 指定搜索的类型
@@ -347,6 +348,19 @@ export async function ready() {
                 vm.$refs.tree.search = vm.$refs.search.value;
             },
             /**
+             * 搜索时键盘事件
+             * 下箭头 切换 选中第一个搜索结果
+             */
+            searchKeydown(event: Event) {
+                // @ts-ignore
+                const { keyCode } = event;
+                if (keyCode === 40) { // 下箭头
+                    // @ts-ignore
+                    event.target.blur();
+                    vm.$refs.tree.$el.firstChild.click();
+                }
+            },
+            /**
              * 创建按钮的弹出菜单
              */
             popupNew(event: Event) {
@@ -375,6 +389,7 @@ export async function ready() {
              * 调整可视区域高度
              */
             resizePanel() {
+                vm.viewWidth = vm.$refs.viewBox.clientWidth;
                 vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
             },
             /**

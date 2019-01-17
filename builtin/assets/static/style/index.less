@@ -115,16 +115,15 @@
 }
 
 .footer {
-    position: relative;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 2px;
+    height: 20px;
+    line-height: 20px;
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    padding: 0 4px;
     font-size: 11px;
     background-color: var(--panel-header-bg);
-    min-height: 20px;
-    word-break: break-all;
 }
 
 @import './tree';

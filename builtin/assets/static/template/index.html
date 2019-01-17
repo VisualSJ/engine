@@ -9,7 +9,7 @@
             @click="popupSearchType"
         ></i>
         <ui-input tabindex="-1" ref="search" show-clear
-            @keydown.stop
+            @keydown.stop="searchKeydown($event)"
             :placeholder="t(searchPlaceholder, language)"
             @change="searchChange"
         ></ui-input>
@@ -44,5 +44,7 @@
         ></div>
     </section>
 
-    <footer class="footer">{{info}}</footer>
+    <footer class="footer"
+        :style="{ width: viewWidth + 'px'}"
+    >{{info}}</footer>
 </div>

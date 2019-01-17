@@ -4,9 +4,10 @@
             :title="t('menu.createMenu', language)"
             @click="popupNew($event)"
         ></i>
-        <ui-input tabindex="-1" ref="search" 
-            @keydown.stop
+        <ui-input tabindex="-1" ref="search" show-clear
+            @keydown.stop="searchKeydown($event)"
             :placeholder="t('menu.searchPlaceholder', language)"
+            @change="searchChange"
         ></ui-input>
         <i class="expand"
             :class="{'i-full':!allExpand, 'i-full-over':allExpand}"

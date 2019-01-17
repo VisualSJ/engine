@@ -258,14 +258,6 @@ export async function ready() {
             },
         },
         mounted() {
-            // 初始化搜索框
-            this.$refs.search.placeholder = Editor.I18n.t('hierarchy.menu.searchPlaceholder');
-            this.$refs.search.addEventListener('change', (event: Event) => {
-                // @ts-ignore
-                const value = event.target.value.trim();
-                vm.$refs.tree.search = value;
-            });
-
             // 初始化监听 scroll 事件
             this.$refs.viewBox.addEventListener('scroll', () => {
                 vm.$refs.tree.scroll(vm.$refs.viewBox.scrollTop);
@@ -341,6 +333,25 @@ export async function ready() {
              */
             unselect(uuid: string) {
                 vm.current = vm.$refs.tree.unselect(uuid);
+            },
+            /**
+             * 搜索 input 变动
+             */
+            searchChange() {
+                vm.$refs.tree.search = vm.$refs.search.value;
+            },
+            /**
+             * 搜索时键盘事件
+             * 下箭头 切换 选中第一个搜索结果
+             */
+            searchKeydown(event: Event) {
+                // @ts-ignore
+                const { keyCode } = event;
+                if (keyCode === 40) { // 下箭头
+                    // @ts-ignore
+                    event.target.blur();
+                    vm.$refs.tree.$el.firstChild.click();
+                }
             },
             /**
              * 创建按钮的弹出菜单
