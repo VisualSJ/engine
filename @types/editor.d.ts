@@ -15,6 +15,7 @@ interface Editor {
     Profile: Profile;
     Theme: Theme;
     Dialog: Dialog;
+    Utils: Utils;
 }
 
 interface App {
@@ -106,6 +107,26 @@ interface Dialog {
     openFile: Function,
     openDirectory: Function,
     saveFile: Function
+}
+interface Utils {
+    getName: Function,
+    uuidUtils: uuidUtils,
+    mathUtils: mathUtils,
+}
+interface uuidUtils {
+    compressUuid: Function,
+    compressHex: Function,
+    decompressUuid: Function,
+    isUuid: Function,
+    getUuidFromLibPath: Function,
+    uuid: Function,
+}
+interface mathUtils {
+    clamp: Function,
+    add: Function,
+    sub: Function,
+    mul: Function,
+    div: Function,
 }
 
 declare const IPCEvent: IPCEvent;
