@@ -45,6 +45,15 @@ export function encodeNode(node: any): INode {
         __type__: getTypeName(ctor),
         __comps__: node._components.map(encodeComponent),
     };
+
+    if (node._prefab && node._prefab.asset) {
+        data.__prefab__ = {
+            uuid: node._prefab.asset._uuid,
+            rootUuid: node._prefab.root && node._prefab.root.uuid,
+            sync: node._prefab.root && node._prefab.root._prefab.sync,
+        };
+    }
+
     return data;
 }
 
@@ -62,6 +71,7 @@ export function encodeComponent(component: any): IProperty {
         visible: true,
     };
 
+    // 遍历组件内所有属性
     ctor.__props__.map((key: string) => {
         if (!data.value) {
             return;
@@ -69,6 +79,26 @@ export function encodeComponent(component: any): IProperty {
         const attrs = cc.Class.attr(ctor, key);
         data.value[key] = encodeObject(component[key], attrs);
     });
+
+    // editor 附加数据
+    data.editor = {
+        inspector: ctor._inspector || '',
+        icon: ctor._icon || '',
+        help: ctor._help || '',
+        _showTick:
+            typeof component.start === 'function' ||
+            typeof component.update === 'function' ||
+            typeof component.lateUpdate === 'function' ||
+            typeof component.onEnable === 'function' ||
+            typeof component.onDisable === 'function',
+    };
+
+    // __scriptUuid
+    if (data.value) {
+        const scriptType: any = data.value.__scriptAsset;
+        scriptType.visible = !!component.__scriptUuid;
+        scriptType.value = { uuid: component.__scriptUuid };
+    }
 
     return data;
 }

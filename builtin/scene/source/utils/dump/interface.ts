@@ -42,4 +42,5 @@ export interface INode {
 
     __comps__: IProperty[];
     __type__: string;
+    __prefab__?: any;
 }

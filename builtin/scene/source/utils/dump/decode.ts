@@ -71,6 +71,16 @@ export async function decodeNode(dump: INode, node?: any) {
         }
     }
 
+    if (node.__prefab__) {
+        const prefab = node.__prefab__;
+        const root = Manager.Node.query(prefab.rootUuid);
+        const info = new cc._PrefabInfo();
+        info.asset = Manager.Utils.serialize.asAsset(prefab.uuid);
+        info.root = root ? root : node;
+        info.fileId = node.uuid;
+        node._prefab = info;
+    }
+
     return node;
 }
 

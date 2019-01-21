@@ -68,6 +68,35 @@ export const methods = {
             value: dump.value,
         });
     },
+
+    /**
+     * 是否是某种类型的数据
+     * @param type
+     */
+    isType(type: string) {
+        const vm: any = this;
+        if (!vm.value) {
+            return false;
+        }
+        if (vm.value.type === type) {
+            return true;
+        }
+        if (!vm.value.extends || vm.value.extends.length === 0) {
+            return false;
+        }
+        return vm.value.extends.includes(type);
+    },
+
+    /**
+     * 根据 dump 数据，获取名字
+     */
+    getName(name: string) {
+        name = name.toLocaleLowerCase();
+        name = name.replace(/^\S/, (str: string) => str.toUpperCase());
+        name = name.replace(/_/g, (str: string) => ' ');
+        name = name.replace(/ \S/g, (str: string) => ` ${str.toUpperCase()}`);
+        return name;
+    },
 };
 
 export const watch = {};

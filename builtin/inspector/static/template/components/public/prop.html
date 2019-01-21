@@ -1,9 +1,9 @@
 <div class="ui-prop"
     :type="value ? value.type : false"
     :array="value && value.isArray"
-    :node="value && value.extends && value.extends.includes('cc.Node')"
-    :asset="value && value.extends && value.extends.includes('cc.Asset')"
-    :component="value && value.extends && value.extends.includes('cc.Component')"
+    :node="value && isType('cc.Node')"
+    :asset="value && isType('cc.Asset')"
+    :component="value && isType('cc.Component')"
 
     @confirm.stop="_onConfirm($event)"
 >
@@ -17,7 +17,7 @@
     <template
         v-else-if="!auto"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <slot></slot>
         </div>
@@ -27,7 +27,7 @@
     <template
         v-else-if="value.value === null"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-null></ui-null>
         </div>
@@ -37,7 +37,7 @@
     <template
         v-else-if="value.type === 'Unknown'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-unknown
                 v-model="value.value"
@@ -50,7 +50,7 @@
         v-else-if="value.isArray"
     >
         <ui-array
-            :name="value.name"
+            :name="getName(value.name)"
             v-model="value.value"
         ></ui-array>
     </template>
@@ -59,7 +59,7 @@
     <template
         v-else-if="value.type === 'Number'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-number
                 v-model="value.value"
@@ -71,7 +71,7 @@
     <template
         v-else-if="value.type === 'Boolean'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-bool
                 v-model="value.value"
@@ -83,7 +83,7 @@
     <template
         v-else-if="value.type === 'String'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-string
                 v-model="value.value"
@@ -95,7 +95,7 @@
     <template
         v-else-if="value.type === 'Enum'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-enum
                 :list="value.enumList"
@@ -108,7 +108,7 @@
     <template
         v-else-if="value.type === 'cc.Size'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-size
                 v-model="value.value"
@@ -120,7 +120,7 @@
     <template
         v-else-if="value.type === 'cc.Vec2'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-vec2
                 v-model="value.value"
@@ -132,7 +132,7 @@
     <template
         v-else-if="value.type === 'cc.Vec3'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-vec3
                 v-model="value.value"
@@ -144,7 +144,7 @@
     <template
         v-else-if="value.type === 'cc.Color'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-color
                 v-model="value.value"
@@ -156,7 +156,7 @@
     <template
         v-else-if="value.type === 'cc.Rect'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-rect
                 :value="value.value"
@@ -166,9 +166,9 @@
 
     <!-- Node -->
     <template
-        v-else-if="value.extends && value.extends.includes('cc.Node')"
+        v-else-if="isType('cc.Node')"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-node
                 :type="value.type"
@@ -179,9 +179,9 @@
 
     <!-- Asset -->
     <template
-        v-else-if="value.extends && value.extends.includes('cc.Asset')"
+        v-else-if="isType('cc.Asset')"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-asset
                 :type="value.type"
@@ -192,9 +192,9 @@
 
     <!-- Component -->
     <template
-        v-else-if="value.extends && value.extends.includes('cc.Component')"
+        v-else-if="isType('cc.Component')"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-component
                 :type="value.type"
@@ -207,10 +207,9 @@
     <template
         v-else-if="value.type === 'cc.CurveRange'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-curve
-                :name="value.name"
                 v-model="value.value"
 
                 :width="width"
@@ -223,10 +222,9 @@
     <template
         v-else-if="value.type === 'cc.GradientRange'"
     >
-        <div class="name">{{value.name}}</div>
+        <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-gradient
-                :name="value.name"
                 v-model="value.value"
             ></ui-gradient>
         </div>
@@ -237,7 +235,7 @@
         v-else-if="value.type === 'ui.Depend'"
     >
         <ui-depend
-            :name="value.name"
+            :name="getName(value.name)"
             v-model="value.value"
             :children="value.children"
 
@@ -251,7 +249,7 @@
         v-else
     >
         <ui-object
-            :name="value.name"
+            :name="getName(value.name)"
             :value="value.value"
 
             :width="width"
