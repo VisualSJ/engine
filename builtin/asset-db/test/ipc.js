@@ -10,7 +10,7 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
  * 测试以下 ipc 接口
  *
  * DB
- * refresh-database √
+ * refresh √
  * query-ready √
  * query-db-info √
  *
@@ -56,9 +56,9 @@ describe('Asset-db 对外暴露的 IPC 接口', () => {
     let assetUuid;
     let assetLibrary;
 
-    describe('刷新 refresh-database', () => {
-        it('asset-db:refresh-database', async () => {
-            Editor.Ipc.sendToPackage('asset-db', 'refresh-database');
+    describe('刷新 refresh', () => {
+        it('asset-db:refresh', async () => {
+            Editor.Ipc.sendToPackage('asset-db', 'refresh');
 
             const stop = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
             expect(stop).to.equal(false);

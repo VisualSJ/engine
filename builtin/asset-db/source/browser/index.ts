@@ -49,7 +49,7 @@ module.exports = {
         /**
          * 刷新 DB
          */
-        'refresh-database'() {
+        refresh() {
             if (!assetWorker) {
                 throw new Error('Asset DB does not exist.');
             }
