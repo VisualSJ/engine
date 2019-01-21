@@ -16,8 +16,9 @@ function dumpNode(node) {
 
 /**
  * 恢复一个 dump 数据到 property
- * @param dump
- * @param property
+ * @param node
+ * @param path
+ * @param data
  */
 async function restoreProperty(node, path, data) {
     return dump.patch(path, data, node);
@@ -28,8 +29,8 @@ async function restoreProperty(node, path, data) {
  * @param {*} node
  * @param {*} dump
  */
-async function restoreNode(node, dump) {
-    return dump.set(dump, node);
+async function restoreNode(node, data) {
+    return dump.set(data, node);
 }
 
 async function restorePrefab(node, prefab) {

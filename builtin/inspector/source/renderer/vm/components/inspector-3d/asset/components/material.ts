@@ -32,7 +32,7 @@ export const template = `
         <template
             v-for="item in props"
         >
-            <asset-prop
+            <asset-prop auto="true"
                 :value="item"
             ></asset-prop>
         </template>

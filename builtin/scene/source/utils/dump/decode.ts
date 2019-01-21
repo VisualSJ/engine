@@ -31,13 +31,13 @@ export async function decodeNode(dump: INode, node?: any) {
     node.setRotationFromEuler(dump.rotation.value);
     node.setScale(dump.scale.value);
 
-    if (dump.parent.value && dump.parent.value.uuid) {
+    if (dump.parent && dump.parent.value && dump.parent.value.uuid) {
         node.parent = Manager.Node.query(dump.parent.value.uuid);
     } else {
         node.parent = null;
     }
 
-    if (dump.children.length) {
+    if (dump.children && dump.children.length) {
         dump.children.forEach((childDump: any) => {
             const uuid = childDump.value.uuid;
             const child = Manager.Node.query(uuid);
@@ -57,8 +57,11 @@ export async function decodeNode(dump: INode, node?: any) {
     }
     for (let i = 0; i < dump.__comps__.length; i++) {
         const componentDump = dump.__comps__[i];
-        const component = node._components[i];
-        // todo 检查类型是否匹配以及组件是否存在
+        let component = node._components[i];
+
+        if (!component) {
+            component = node.addComponent(componentDump.type);
+        }
 
         for (const key in componentDump.value) {
             if (!(key in componentDump.value)) {
@@ -81,6 +84,14 @@ export async function decodePatch(path: string, dump: any, node: any) {
     // 将 dump path 转成实际的 node search path
     const info = parsingPath(path);
     const parentInfo = parsingPath(info.search);
+
+    if (
+        info.key === 'enabledInHierarchy' ||
+        info.key === '__scriptAsset' ||
+        info.key === 'uuid'
+    ) {
+        return;
+    }
 
     // 获取需要修改的数据
     const data = info.search ? get(node, info.search) : node;
@@ -162,6 +173,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
             return await decodePatch(data, item, `${path}.${index}`);
         }));
     } else {
+        console.log(info.key);
         data[info.key] = dump.value;
     }
 

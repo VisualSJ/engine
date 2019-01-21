@@ -160,11 +160,14 @@ export function encodeObject(object: any, attributes: any): IProperty {
         });
     } else if (
         cc.js.isChildClassOf(ctor, cc.Node) ||
-        cc.js.isChildClassOf(ctor, cc.Asset) ||
         cc.js.isChildClassOf(ctor, cc.Component)
     ) { // 如果是节点、资源、组件，则生成链接到对象的 uuid
         data.value = {
             uuid: object ? (object.uuid || '') : '',
+        };
+    } else if (cc.js.isChildClassOf(ctor, cc.Asset)) {
+        data.value = {
+            uuid: object ? (object._uuid || '') : '',
         };
     } else if (ctor && ctor.__props__) { // 如果构造器存在，且带有 __props__，则开始递归序列化内部属性
         if (object) { // 构造器存在，属性也存在

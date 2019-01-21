@@ -1,9 +1,7 @@
 'use strict';
 
 export const template = `
-<div class="ui-depend"
-    @change="$emit('input', $event.target.value)"
->
+<div class="ui-depend">
 
     <div class="name">{{name}}</div>
     <div class="content">
@@ -19,7 +17,7 @@ export const template = `
         <template
             v-for="item in children"
         >
-            <ui-prop
+            <ui-prop auto="true"
                 :value="item"
 
                 :width="width"

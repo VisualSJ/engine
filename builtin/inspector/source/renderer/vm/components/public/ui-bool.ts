@@ -2,7 +2,7 @@
 
 export const template = `
 <div class="ui-bool"
-    @change="$emit('input', $event.target.value)"
+    @change.stop="$emit('input', $event.target.value)"
 >
     <ui-checkbox
         :value="value"

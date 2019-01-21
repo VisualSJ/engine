@@ -4,8 +4,8 @@
     :node="value && value.extends && value.extends.includes('cc.Node')"
     :asset="value && value.extends && value.extends.includes('cc.Asset')"
     :component="value && value.extends && value.extends.includes('cc.Component')"
-    @change="_onChange($event)"
-    @confirm="_onChange($event)"
+
+    @confirm.stop="_onConfirm($event)"
 >
 
     <template
@@ -33,7 +33,7 @@
         </div>
     </template>
 
-    <!-- Null -->
+    <!-- Unknown -->
     <template
         v-else-if="value.type === 'Unknown'"
     >
@@ -172,7 +172,7 @@
         <div class="content">
             <ui-node
                 :type="value.type"
-                :value="value.value"
+                v-model="value.value"
             ></ui-node>
         </div>
     </template>
@@ -185,12 +185,12 @@
         <div class="content">
             <ui-asset
                 :type="value.type"
-                :value="value.value"
+                v-model="value.value"
             ></ui-asset>
         </div>
     </template>
 
-    <!-- Asset -->
+    <!-- Component -->
     <template
         v-else-if="value.extends && value.extends.includes('cc.Component')"
     >
@@ -198,7 +198,7 @@
         <div class="content">
             <ui-component
                 :type="value.type"
-                :value="value.value"
+                v-model="value.value"
             ></ui-component>
         </div>
     </template>

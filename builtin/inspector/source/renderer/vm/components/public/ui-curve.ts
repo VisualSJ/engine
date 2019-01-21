@@ -28,6 +28,9 @@ export const props = [
 export const components = {};
 
 export const methods = {
+    /**
+     * 刷新显示数据
+     */
     refresh() {
         // @ts-ignore
         const vm: any = this;

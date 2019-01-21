@@ -17,6 +17,9 @@ export const components = {};
 
 export const methods = {
 
+    /**
+     * 点击创建对应的数据
+     */
     _onClick() {
         const event = document.createEvent('HTMLEvents');
         event.initEvent('confirm', true, true);

@@ -40,7 +40,7 @@ export const methods = {
      * 绑定数据有提交
      * @param event
      */
-    _onChange(event: CustomEvent) {
+    _onConfirm(event: CustomEvent) {
         const vm: any = this;
         const dump = vm.value;
 
@@ -49,7 +49,7 @@ export const methods = {
         }
         event.stopPropagation();
 
-        // @ts-ignore
+        // @ts-ignore 数组的 langth
         const childPath = event.target.path;
         if (childPath) {
             // @ts-ignore

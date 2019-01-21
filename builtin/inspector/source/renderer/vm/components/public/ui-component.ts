@@ -1,11 +1,12 @@
 'use strict';
 
 export const template = `
-<div class="ui-component">
+<div class="ui-component"
+    @change.stop="$emit('input', translate($event.target.value))"
+>
     <ui-drag-object
         :dropable="type"
         :value="value ? value.uuid : null"
-        @change.stop="_onChange"
     ></ui-drag-object>
 </div>
 `;
@@ -18,10 +19,14 @@ export const props = [
 export const components = {};
 
 export const methods = {
-    _onChange(event: any) {
-        const vm: any = this;
-        vm.value.uuid = event.target.value;
-        vm.$emit('input', vm.value);
+    /**
+     * 将 ui-drag-objet 返回的 value 翻译成 dump 数据
+     * @param color
+     */
+    translate(uuid: string) {
+        return {
+            uuid,
+        };
     },
 };
 
