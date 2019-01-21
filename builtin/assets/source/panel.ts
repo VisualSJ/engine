@@ -406,7 +406,7 @@ export async function ready() {
     await panel.unstaging();
 
     // db 就绪状态才需要查询数据
-    vm.ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+    vm.ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
     if (vm.ready) {
         vm.refresh();
     }

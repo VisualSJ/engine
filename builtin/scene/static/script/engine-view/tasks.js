@@ -9,7 +9,7 @@ exports.assetDbReady = [
     {
         depends: [],
         async handle() {
-            return await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+            return await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
         },
     },
 ];

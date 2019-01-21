@@ -58,7 +58,7 @@ module.exports = {
         /**
          * DB 是否启动完毕
          */
-        async 'query-is-ready'() {
+        async 'query-ready'() {
             return getReady();
         },
 

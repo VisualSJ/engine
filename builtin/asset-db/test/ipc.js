@@ -11,7 +11,7 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
  *
  * DB
  * refresh-database √
- * query-is-ready √
+ * query-ready √
  * query-db-info √
  *
  * 资源查询
@@ -60,13 +60,18 @@ describe('Asset-db 对外暴露的 IPC 接口', () => {
         it('asset-db:refresh-database', async () => {
             Editor.Ipc.sendToPackage('asset-db', 'refresh-database');
 
-            const stop = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
+            const stop = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
             expect(stop).to.equal(false);
 
             await sleep(10000); // TODO 这个时间得根据资源的多少决定，资源越多重启等待越久
 
-            const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-is-ready');
-            expect(ready).to.equal(true);
+        });
+
+        describe('查询 query-ready', () => {
+            it('asset-db:query-ready', async () => {
+                const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
+                expect(ready).to.equal(true);
+            });
         });
     });
 
