@@ -7,32 +7,32 @@
         {
           vert: sky-vs
           frag: sky-fs
-          stage: default
-          cullMode: none
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: false
+            depthWrite: false
+          }
+          properties: {
+            cubeMap: { type: 'samplerCube', value: 'greyCube' }
+          }
         }
       ]
     }
   ]
-
-  properties: {
-    cubeMap: {
-      type: samplerCube
-      value: null
-    }
-  }
 %}
 
 %% sky-vs {
   attribute vec3 a_position;
 
-  uniform mat4 _view;
-  uniform mat4 _proj;
+  #include <cc-global>
 
   varying vec3 viewDir;
 
   void main() {
-    mat4 rotView = mat4(mat3(_view));
-    vec4 clipPos = _proj * rotView * vec4(a_position, 1.0);
+    mat4 matViewRotOnly = mat4(mat3(cc_matView));
+    vec4 clipPos = cc_matProj * matViewRotOnly * vec4(a_position, 1.0);
 
     gl_Position = clipPos.xyww;
     viewDir = a_position;

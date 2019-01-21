@@ -7,57 +7,44 @@
         {
           vert: particle-vs-legacy:lpvs_main
           frag: particle-alpha-blend-fs
-          stage: default
-          cullMode: none
-          depthTest: true
-          depthWrite: false
-          blend: true
-          blendEq: add
-          blendSrc: srcAlpha
-          blendDst: oneMinusSrcAlpha
-          blendAlphaEq: add
-          blendSrcAlpha: srcAlpha
-          blendDstAlpha: oneMinusSrcAlpha
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: true
+            depthWrite: false
+          }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one_minus_src_color
+                blendSrcAlpha: src_alpha
+                blendDstAlpha: one_minus_src_color
+              }
+            ]
+          }
+          properties: {
+            mainTexture:   { type: 'sampler2D', value: 'grey'               }
+            mainTiling:    { type: 'vec2',      value: [1, 1]               }
+            mainOffset:    { type: 'vec2'       value: [0, 0]               }
+            frameTile:     { type: 'vec2'       value: [1,1]                }
+            velocityScale: { type: 'float'      value: 0                    }
+            lengthScale:   { type: 'float'      value: 0                    }
+            tintColor:     { type: 'color4'     value: [0.5, 0.5, 0.5, 0.5] }
+          }
         }
       ]
     }
   ]
-
-  properties: {
-    mainTexture: {
-      type: sampler2D
-      value: null
-    }
-    mainTiling: {
-      type: vec2
-      value: [1, 1]
-    }
-    mainOffset: {
-      type: vec2
-      value: [0, 0]
-    }
-    tintColor: {
-      type: color4
-      value: [0.5, 0.5, 0.5, 0.5]
-    }
-    frameTile: {
-      type: vec2
-      value: [1, 1]
-    }
-    velocityScale: {
-      type: float
-      value: 0
-    }
-    lengthScale: {
-      type: float
-      value: 0
-    }
-  }
 %}
 
 %% particle-alpha-blend-fs {
   uniform sampler2D mainTexture;
-  uniform vec4 tintColor;
+  uniform FragConstants {
+    vec4 tintColor;
+  };
 
   varying vec2 uv;
   varying vec4 color;

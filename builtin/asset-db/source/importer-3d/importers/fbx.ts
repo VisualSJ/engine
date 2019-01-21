@@ -3,7 +3,6 @@ import convert from 'fbx2gltf';
 import * as fs from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { basename, join, relative } from 'path';
-import * as tmp from 'tmp';
 import GltfImporter from './gltf';
 
 export default class FbxImporter extends GltfImporter {

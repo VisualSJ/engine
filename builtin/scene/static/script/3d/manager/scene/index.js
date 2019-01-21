@@ -70,7 +70,7 @@ class SceneManager extends EventEmitter {
             canvas.parent = scene;
             light.parent = scene;
             camera.parent = scene;
-            canvas.addComponent(cc.Canvas);
+            // canvas.addComponent(cc.Canvas);
             light.addComponent(cc.LightComponent);
             camera.addComponent(cc.CameraComponent);
             await utils.loadSceneByNode(scene);

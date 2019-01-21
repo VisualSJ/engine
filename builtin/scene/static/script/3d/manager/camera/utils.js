@@ -40,6 +40,9 @@ function grid(width, length, segw, segl) {
     let dw = width / segw;
     let dl = length / segl;
 
+    let minPos = cc.v3(-hw, -0.1, -hl);
+    let maxPos = cc.v3( hw,  0.1,  hl);
+
     // here we store directional info of the grid layout inside uvs, not actual uvs
     function addLine(x1, z1, x2, z2) {
         let idx = positions.length / 3;
@@ -68,6 +71,8 @@ function grid(width, length, segw, segl) {
         positions,
         uvs,
         indices,
+        minPos,
+        maxPos
     };
 }
 
@@ -81,7 +86,7 @@ function createGrid(w, l) {
     node.layer = cc.Layers.Editor | cc.Layers.IgnoreRaycast;
     node.parent = Manager.backgroundNode;
     let model = node.addComponent(cc.ModelComponent);
-    model.mesh = cc.utils.createMesh(cc.game._renderContext, grid(w, l, w, l));
+    model.mesh = cc.utils.createMesh(grid(w, l, w, l));
     let mtl = new cc.Material();
     mtl.effectName = '__editor-grid';
     model.material = mtl;
@@ -98,7 +103,7 @@ function createCamera(color) {
     node.parent = Manager.backgroundNode;
     let camera = node.addComponent(cc.CameraComponent);
     camera.far = 10000; camera.color = color;
-    camera._camera.setNode(node);
+    camera.targetDisplay = -1;
     let light = node.addComponent(cc.LightComponent);
     return [ camera, light ];
 }

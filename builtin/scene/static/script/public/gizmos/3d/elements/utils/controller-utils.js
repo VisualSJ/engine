@@ -3,7 +3,7 @@ let ControllerShape = require('./controller-shape');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 const ControllerShapeCollider = require('./controller-shape-collider');
-const { gfx, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
+const { CullMode, create3DNode, addMeshToNode, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
 const Utils = require('../../../utils');
 const MathUtil = External.EditorMath;
 
@@ -30,7 +30,7 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color) {
     let coneNode = create3DNode('ArrowHead');
     coneNode.parent = axisNode;
     addMeshToNode(coneNode,
-        ControllerShape.cone(headRadius, headHeight), { cullMode: gfx.CULL_BACK });
+        ControllerShape.cone(headRadius, headHeight), { cullMode: CullMode.BACK });
     setMeshColor(coneNode, color);
     coneNode.setPosition(cc.v3(0, bodyHeight + headHeight / 2, 0));
     csc = coneNode.addComponent(ControllerShapeCollider);
@@ -88,7 +88,7 @@ ControllerUtils.circle = function(center, normal, radius, color) {
 ControllerUtils.torus = function(radius, tube, opts, color) {
     let torusNode = create3DNode('torus');
     addMeshToNode(torusNode,
-        ControllerShape.torus(radius, tube, opts), { cullMode: gfx.CULL_BACK });
+        ControllerShape.torus(radius, tube, opts), { cullMode: CullMode.BACK });
     setMeshColor(torusNode, color);
     let csc = torusNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = true;
@@ -100,7 +100,7 @@ ControllerUtils.torus = function(radius, tube, opts, color) {
 ControllerUtils.cube = function(width, height, depth, color) {
     let cubeNode = create3DNode('cube');
     addMeshToNode(cubeNode,
-        ControllerShape.cube(width, height, depth), { cullMode: gfx.CULL_BACK });
+        ControllerShape.cube(width, height, depth), { cullMode: CullMode.BACK });
     setMeshColor(cubeNode, color);
     let csc = cubeNode.addComponent(ControllerShapeCollider);
     csc.isDetectMesh = false;

@@ -18,16 +18,23 @@ class Preview {
         this.width = 0;
         this.height = 0;
         this.rt = new cc.RenderTexture();
-        this.rt.initWithSize(this.width, this.height, cc.gfx.RB_FMT_D24S8);
+        this.rt.initWithSize(this.width, this.height, 'D24S8');
         this.data = Buffer.alloc(this.width * this.height * 4);
 
-        this.scene = new cc.renderer.Scene();
-        NodeManager.on('changed', this.extractActualScene.bind(this));
-        Scene.on('open', this.extractActualScene.bind(this));
+        cc.director.root.createWindow({
+            title: 'Editor Game',
+            width: 1,
+            height: 1,
+            colorFmt: cc.GFXFormat.RGBA32F,
+            depthStencilFmt: cc.GFXFormat.D24S8,
+        });
+        // this.scene = new cc.renderer.Scene();
+        // NodeManager.on('changed', this.extractActualScene.bind(this));
+        // Scene.on('open', this.extractActualScene.bind(this));
     }
 
-    extractActualScene() {
-        const internal = cc.director._renderSystem._scene;
+    extractActualScene(err, scene) {
+        const internal = scene._renderScene;
         const preview = this.scene;
 
         // sync with current scene
@@ -53,15 +60,15 @@ class Preview {
 
     queryCameraList() {
         const array = [];
-        const length = this.scene.getCameraCount();
-        for (let i = 0; i < length; i++) {
-            const camera = this.scene.getCamera(i);
-            array.push({
-                index: i,
-                name: camera._node.name,
-                uuid: camera._node.uuid,
-            });
-        }
+        // const length = this.scene.getCameraCount();
+        // for (let i = 0; i < length; i++) {
+        //     const camera = this.scene.getCamera(i);
+        //     array.push({
+        //         index: i,
+        //         name: camera._node.name,
+        //         uuid: camera._node.uuid,
+        //     });
+        // }
         return array;
     }
 
@@ -74,12 +81,12 @@ class Preview {
     }
 
     getImageData(cameraIndex, width, height) {
-        const camera = this.scene.getCamera(cameraIndex);
-        if (camera && this.scene.getDebugCamera() !== camera) {
-            this.scene.setDebugCamera(camera);
-        }
-        this.resize(width, height);
-        cc.game._renderer.render(this.scene);
+        // const camera = this.scene.getCamera(cameraIndex);
+        // if (camera && this.scene.getDebugCamera() !== camera) {
+        //     this.scene.setDebugCamera(camera);
+        // }
+        // this.resize(width, height);
+        // cc.game._renderer.render(this.scene);
         this.rt.readPixels(this.data);
         return this.data;
     }

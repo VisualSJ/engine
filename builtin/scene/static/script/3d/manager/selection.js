@@ -10,8 +10,8 @@ selection.init = function() {
             return;
         }
         const bcr = document.body.getBoundingClientRect();
-        EditorCamera.instance.screenPointToRay(data.x, bcr.height - data.y, bcr.width, bcr.height, selection.ray);
-        let res = cc.director._renderSystem._scene.raycast(selection.ray);
+        EditorCamera._camera._camera.screenPointToRay(selection.ray, data.x, bcr.height - data.y);
+        let res = cc.director._scene._renderScene.raycast(selection.ray);
         let minDist = Number.MAX_VALUE;
         let resultNode = null;
 

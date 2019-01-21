@@ -303,7 +303,7 @@ class ControllerBase {
 
     worldPosToScreenPos(worldPos) {
         let camera = EditorCamera._camera._camera;
-        let screenPos = cc.v2();
+        let screenPos = cc.v3();
         camera.worldToScreen(screenPos, worldPos, cc.visibleRect.width, cc.visibleRect.height);
 
         return screenPos;

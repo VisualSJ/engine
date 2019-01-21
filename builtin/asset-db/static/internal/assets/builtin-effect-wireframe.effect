@@ -7,26 +7,25 @@
         {
           vert: wire-vs
           frag: wire-fs
-          stage: default
-          depthTest: true
+          depthStencilState: {
+            depthTest: true
+            depthWrite: false
+          }
+          properties: {
+            color: { type: 'color4', value: [1, 1, 1, 1] }
+          }
         }
       ]
     }
   ]
-  properties: {
-    color: {
-      type: color3
-      value: [1, 1, 1]
-    }
-  }
 %}
 
 %% wire-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
 
-  uniform mat4 _model, _viewProj;
-  uniform mat3 _normalMatrix;
+  #include <cc-local>
+  #include <cc-global>
 
   varying vec3 position_w;
   varying vec3 normal_w;
@@ -34,8 +33,8 @@
   void main () {
     vec4 pos = vec4(a_position, 1);
 
-    position_w = (_model * pos).xyz;
-    pos = _viewProj * _model * pos;
+    position_w = (cc_matWorld * pos).xyz;
+    pos = cc_matViewProj * cc_matWorld * pos;
     normal_w = _normalMatrix * a_normal.xyz;
 
     gl_Position = pos;
@@ -43,16 +42,19 @@
 }
 
 %% wire-fs {
-  uniform vec3 _eye;
-  uniform vec3 color;
+  #include <cc-global>
+
+  uniform Constants {
+    vec4 color;
+  };
 
   varying vec3 position_w;
   varying vec3 normal_w;
 
   void main () {
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = color;
 
-    vec3 V = normalize(_eye - position_w);
+    vec3 V = normalize(cc_cameraPos - position_w);
     if (dot (normal_w, V) <= 0.0) {
       gl_FragColor.rgb *= 0.6;
     }

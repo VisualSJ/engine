@@ -4,19 +4,37 @@ const CameraTool = require('../../../../3d/manager/camera');
 let External = require('../external');
 let aabb = External.GeometryUtils.aabb;
 
-let gfx = cc.gfx;
 let flat = function(arr, fn) {
     return arr.map(fn).reduce((acc, val) => acc.concat(val), []);
 };
 
 const cmp = (a, b) => { return a.distance - b.distance; };
 const ray = cc.geometry.ray.create();
+const triangles = cc.GFXPrimitiveMode.TRIANGLE_LIST;
 
 class Engine3D extends EngineInterface {
     constructor() {
         super();
-        this.gfx = gfx;
         this.panPlaneLayer = cc.Layers.Editor;
+        this.CullMode = {
+            NONE: cc.GFXCullMode.NONE,
+            BACK: cc.GFXCullMode.BACK,
+            FRONT: cc.GFXCullMode.FRONT,
+        };
+        this.AttributeName = {
+            POSITION: cc.GFXAttributeName.ATTR_POSITION,
+            NORMAL: cc.GFXAttributeName.ATTR_NORMAL,
+            UV: cc.GFXAttributeName.ATTR_TEX_COORD,
+        };
+        this.PrimitiveMode = {
+            TRIANGLE_LIST: cc.GFXPrimitiveMode.TRIANGLE_LIST,
+            POINT_LIST: cc.GFXPrimitiveMode.POINT_LIST,
+            LINE_LIST: cc.GFXPrimitiveMode.LINE_LIST,
+            LINE_STRIP: cc.GFXPrimitiveMode.LINE_STRIP,
+            LINE_LOOP: cc.GFXPrimitiveMode.LINE_LOOP,
+            TRIANGLE_STRIP: cc.GFXPrimitiveMode.TRIANGLE_STRIP,
+            TRIANGLE_FAN: cc.GFXPrimitiveMode.TRIANGLE_FAN,
+        };
     }
 
     create3DNode(name) {
@@ -27,39 +45,42 @@ class Engine3D extends EngineInterface {
     }
 
     createMesh(primitive) {
+        primitive.primitiveMode = primitive.primitiveType;
         primitive.positions = flat(primitive.positions, (v) => [v.x, v.y, v.z]);
         if (primitive.normals) { primitive.normals = flat(primitive.normals, (v) => [v.x, v.y, v.z]); }
         if (primitive.uvs) { primitive.uvs = flat(primitive.uvs, (v) => [v.x, v.y]); }
-        let mesh = cc.utils.createMesh(cc.game._renderContext, primitive);
-        mesh.getSubMesh(0).doubleSided = primitive.doubleSided;
+        let mesh = cc.utils.createMesh(primitive);
+        const info = mesh.renderingMesh.getSubmesh(0).geometricInfo;
+        if (info) info.doubleSided = primitive.doubleSided;
         return mesh;
     }
 
     addMeshToNode(node, mesh, opts = {}) {
         let model = node.addComponent(cc.ModelComponent);
         model.mesh = mesh;
-        let mtl = new cc.Material();
-        mtl.effectName = '__editor-gizmo';
+        let technique = 0;
+        let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
         if (opts.unlit) {
-            mtl.effect.LOD = 50;
+            technique = 1;
         } else {
-            if (mesh.getSubMesh(0)._primitiveType < gfx.PT_TRIANGLES) {
-                mtl.effect.LOD = opts.noDepthTestForLines ? 50 : 0; // unlit
-                //node.modelColor.a = opts.alpha || 128; // blend in
+            if (pm < triangles) {
+                technique = opts.noDepthTestForLines ? 1 : 2; // unlit
             }
         }
+        model.material = new cc.Material({ effectName: '__editor-gizmo', technique });
+        const mtl = model.material;
+        let overrides = {};
+        if (opts.cullMode) { overrides.rs = { cullMode: opts.cullMode }; }
+        if (pm !== triangles) { overrides.primitive = pm; }
+        if (Object.keys(overrides).length) mtl.overridePipelineStates(overrides);
+        if (opts.alpha !== undefined) node.modelColor.a = opts.alpha;
         mtl.setProperty('color', node.modelColor);
-        if (mtl.effect) {
-            let pass = mtl.effect.getActiveTechnique().passes[0];
-            if (opts.cullMode) { pass.setCullMode(opts.cullMode); }
-        }
-        model.material = mtl;
+        node.mtl = model.material;
     }
 
     setMeshColor(node, c) {
-        node.modelColor.r = c.r;
-        node.modelColor.g = c.g;
-        node.modelColor.b = c.b;
+        node.modelColor = c;
+        node.mtl.setProperty('color', node.modelColor);
     }
 
     getMeshColor(node) {
@@ -68,6 +89,7 @@ class Engine3D extends EngineInterface {
 
     setNodeOpacity(node, opacity) {
         node.modelColor.a = opacity;
+        node.mtl.setProperty('color', node.modelColor);
     }
 
     getNodeOpacity(node) {
@@ -75,9 +97,9 @@ class Engine3D extends EngineInterface {
     }
 
     getRaycastResults(rootNode, x, y) {
-        let scene = cc.director._renderSystem._scene;
+        let scene = cc.director._scene._renderScene;
         let camera = CameraTool._camera._camera;
-        camera.screenPointToRay(x, y, cc.winSize.width, cc.winSize.height, ray);
+        camera.screenPointToRay(ray, x, y);
         let results = scene.raycast(ray, rootNode._layer).sort(cmp);
         results.ray = ray; return results;
     }
@@ -87,12 +109,8 @@ class Engine3D extends EngineInterface {
     }
 
     updateVBAttr(mesh, attr, data) {
-        let vb = mesh.getSubMesh(0)._vertexBuffer;
-        let cache = vb[attr];
-        data.forEach((v, i) => {
-            cache[i * 3] = v.x; cache[i * 3 + 1] = v.y; cache[i * 3 + 2] = v.z;
-        });
-        vb.updateAttr(attr);
+        const ia = mesh.renderingMesh.getSubmesh(0).inputAssembler;
+        if (ia) ia.updateVertexAttr(attr, flat(data, (v) => [v.x, v.y, v.z]));
     }
 
     getBoudingBox(component) {

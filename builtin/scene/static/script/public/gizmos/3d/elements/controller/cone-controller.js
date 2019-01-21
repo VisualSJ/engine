@@ -3,7 +3,7 @@
 let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, setMeshColor, getModel, updateVBAttr } = require('../../../utils/engine');
+const { AttributeName, setMeshColor, getModel, updateVBAttr } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 let tempVec3 = cc.v3();
@@ -115,14 +115,14 @@ class ConeController extends EditableController {
 
         // update cone line
         let lineData = this.getConeLineData();
-        updateVBAttr(this._coneLineMR.mesh, gfx.ATTR_POSITION, lineData.vertices);
+        updateVBAttr(this._coneLineMR.mesh, AttributeName.POSITION, lineData.vertices);
 
         // update circle
         let circlePoints = ControllerShape.calcArcPoints(
             this._center, this._oriDir,
             this._circleFromDir, this._twoPI, this._radius
         );
-        updateVBAttr(this._circleMR.mesh, gfx.ATTR_POSITION, circlePoints);
+        updateVBAttr(this._circleMR.mesh, AttributeName.POSITION, circlePoints);
         let pos = cc.v3();
         vec3.scale(pos, this._oriDir, this._height);
         this._circleNode.setPosition(pos.x, pos.y, pos.z);

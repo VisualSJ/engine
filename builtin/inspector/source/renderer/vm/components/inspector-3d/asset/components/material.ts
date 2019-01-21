@@ -2,16 +2,6 @@
 
 import { readJSONSync } from 'fs-extra';
 
-const typeMap: any = {
-    number: 'number',
-    boolean: 'boolean',
-    'cc-vec2': 'cc.Vec2',
-    'cc-vec3': 'cc.Vec3',
-    'cc-color': 'cc.Color',
-    'cc-mat4': 'cc.Mat4',
-    'cc-dragable': 'cc.Asset',
-};
-
 export const template = `
 <section class="asset-material">
     <div class="header">
@@ -154,7 +144,7 @@ export const watch = {
 
                 array.push({
                     name: item.key,
-                    type: typeMap[item.compType] || '',
+                    type: item.compType || '',
                     assetType: item.type,
                     default: item.value,
                     value,
@@ -212,7 +202,6 @@ function buildEffect(props: any[], defs: any[]) {
 
     // sort props by define dependencies
     for (const prop of props) {
-        // let prop = props[name];
         let cur: any = tree;
         prop.defines.forEach((d: any) => {
             if (!cur[d]) {
@@ -228,8 +217,7 @@ function buildEffect(props: any[], defs: any[]) {
     }
     // add dangling defines
     for (const def of defs) {
-        // let def = defs[name];
-        if (curDefs[def.key] || def.key[0] === '_') {
+        if (curDefs[def.key] || def.key.startsWith('CC_')) {
             continue;
         }
         def.defines.concat(def.key).reduce((node: any, d: any) => node[d] || (node[d] = {}), tree);

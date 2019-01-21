@@ -3,7 +3,6 @@ import { readFileSync } from 'fs-extra';
 import { basename, extname, join } from 'path';
 
 const shdcLib = require('../../../static/shdc-lib');
-shdcLib.addChunksCache(join(__dirname, '../../..//static/chunks'));
 
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
@@ -30,15 +29,11 @@ export default class EffectImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
+        shdcLib.addChunksCache(join(__dirname, '../../../static/chunks'));
         let updated = false;
         try {
             const ext = extname(asset.source);
             const filename = basename(asset.source, ext);
-
-            if (!(await asset.existsInLibrary(ext))) {
-                await asset.copyToLibrary(ext, asset.source);
-                updated = true;
-            }
 
             if (!(await asset.existsInLibrary('.json'))) {
                 updated = false;

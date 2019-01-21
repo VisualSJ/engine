@@ -3,7 +3,7 @@
 let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { gfx, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
+const { AttributeName, getModel, updateVBAttr, setMeshColor, setNodeOpacity } = require('../../../utils/engine');
 const External = require('../../../utils/external');
 const EditorCamera = External.EditorCamera;
 
@@ -67,7 +67,7 @@ class BoxController extends EditableController {
 
         let positions = ControllerShape.calcBoxPoints(this._center, this._size);
 
-        updateVBAttr(this._wireframeBoxMeshRenderer.mesh, gfx.ATTR_POSITION, positions);
+        updateVBAttr(this._wireframeBoxMeshRenderer.mesh, AttributeName.POSITION, positions);
 
         if (this._edit) {
             this.updateEditControllers();

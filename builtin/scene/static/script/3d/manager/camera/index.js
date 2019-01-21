@@ -79,13 +79,10 @@ class Camera extends EventEmitter {
         this._grid = utils.createGrid(50, 50);
         [ this._camera, this._light ] = utils.createCamera(cc.color(51, 51, 51, 255));
         this.node = this._camera.node;
-        this.instance = this._camera._camera;
         this.camera_move_mode = this.CameraMoveMode.NONE;
         this.reset();
 
         listener.bind(this);
-
-        this.focus();
     }
 
     /**
@@ -300,7 +297,7 @@ cc.director.on(cc.Director.EVENT_AFTER_UPDATE, () => {
 // 场景打开后需要更新 camera
 sceneManager.on('open', (error, scene) => {
     // 设置 debug 摄像机
-    cc.director._renderSystem._scene.setDebugCamera(camera.instance);
+    // scene._renderScene.setDebugCamera(camera.instance);
 
     // 更新光源
     camera._lightNodes = utils.queryLightNodes([camera._light.node]);

@@ -6,7 +6,9 @@
 #endif
 
 #if USE_COLOR
-  uniform vec4 color;
+  uniform Constant {
+    vec4 color;
+  };
 #endif
 
 vec4 frag () {

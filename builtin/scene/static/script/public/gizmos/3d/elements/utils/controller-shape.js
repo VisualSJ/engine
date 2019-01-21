@@ -2,7 +2,7 @@
 var ControllerShape = {};
 module.exports = ControllerShape;
 
-const { gfx, createMesh } = require('../../../utils/engine');
+const { PrimitiveMode, createMesh } = require('../../../utils/engine');
 const { vec3, quat } = cc.vmath;
 const External = require('../../../utils/external');
 const MathUtil = External.EditorMath;
@@ -236,7 +236,7 @@ ControllerShape.line = function(startPos, endPos) {
         cc.v3(endPos.x, endPos.y, endPos.z)],
         normals: Array(2).fill(cc.v3(0, 1, 0)),
         indices: [0, 1],
-        primitiveType: gfx.PT_LINES,
+        primitiveType: PrimitiveMode.LINE_LIST,
     });
 };
 
@@ -247,7 +247,7 @@ ControllerShape.lineWithBoundingBox = function(length, size = 3) {
         indices: [0, 1],
         minPos: cc.v3(0, -size, -size),
         maxPos: cc.v3(length, size, size),
-        primitiveType: gfx.PT_LINES,
+        primitiveType: PrimitiveMode.LINE_LIST,
     });
 };
 
@@ -473,7 +473,7 @@ ControllerShape.sector = function(center, normal, fromDir, radian, radius, segme
         positions: ControllerShape.calcSectorPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments + 1).fill(cc.v3(normal)),
         indices: [...Array(segments + 1).keys()],
-        primitiveType: gfx.PT_TRIANGLE_FAN,
+        primitiveType: PrimitiveMode.TRIANGLE_FAN,
     });
 };
 
@@ -483,7 +483,7 @@ ControllerShape.arc = function(center, normal, fromDir, radian, radius, segments
         positions: ControllerShape.calcArcPoints(center, normal, fromDir, radian, radius, segments),
         normals: Array(segments).fill(cc.v3(normal)),
         indices: [...Array(segments).keys()],
-        primitiveType: gfx.PT_LINE_STRIP,
+        primitiveType: PrimitiveMode.LINE_STRIP,
     });
 };
 
@@ -514,7 +514,7 @@ ControllerShape.arcDirectionLine = function(center, normal, fromDir, radian, rad
         positions: vertices,
         normals: Array(vertices.length).fill(cc.v3(0, 1, 1)),
         indices: indices,
-        primitiveType: gfx.PT_LINES,
+        primitiveType: PrimitiveMode.LINE_LIST,
     });
 };
 
@@ -523,7 +523,7 @@ ControllerShape.lines = function(vertices, indices) {
         positions: vertices,
         normals: Array(vertices.length).fill(cc.v3(0, 1, 0)),
         indices: indices,
-        primitiveType: gfx.PT_LINES,
+        primitiveType: PrimitiveMode.LINE_LIST,
     });
 };
 
@@ -567,7 +567,7 @@ ControllerShape.wireframeBox = function(center, size) {
         positions: points,
         normals: Array(points.length).fill(cc.v3(0, 1, 0)),
         indices: indices,
-        primitiveType: gfx.PT_LINES,
+        primitiveType: PrimitiveMode.LINE_LIST,
     });
 };
 
@@ -624,6 +624,6 @@ ControllerShape.frustum = function(fov, aspect, near, far) {
             positions: frustumData.vertices,
             normals: Array(frustumData.vertices.length).fill(cc.v3(0, 1, 0)),
             indices: frustumData.indices,
-            primitiveType: gfx.PT_LINES,
+            primitiveType: PrimitiveMode.LINE_LIST,
         });
 };

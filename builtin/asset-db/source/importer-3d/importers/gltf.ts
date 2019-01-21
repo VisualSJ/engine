@@ -5,7 +5,10 @@ import { readJson } from 'fs-extra';
 import * as imageDataUri from 'image-data-uri';
 import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
-import { Accessor, Animation, GlTf, Image, Material, Mesh, Node, Scene, Skin } from '../../../../../@types/asset-db/glTF';
+import { Accessor, Animation, GlTf, Image,
+    Material, Mesh, Node, Scene, Skin } from '../../../../../@types/asset-db/glTF';
+import { AttributeBaseType, AttributeType, IMeshStruct,
+    IndexUnit, IPrimitive, IVertexAttribute, IVertexBundle } from './mesh';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 
 // All sub-assets share the same gltf converter.
@@ -388,7 +391,7 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -424,12 +427,12 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
 
         // Create the mesh asset
         const mesh = gltfConverter.createMesh(gltfConverter.gltf.meshes![asset.userData.gltfIndex as number]);
-        mesh.mesh._setRawAsset('.bin');
+        mesh._setRawAsset('.bin');
 
         // Save the mesh asset into library
         // @ts-ignore
-        await asset.saveToLibrary('.json', Manager.serialize(mesh.mesh));
-        await asset.saveToLibrary('.bin', Buffer.from(mesh.buffer));
+        await asset.saveToLibrary('.json', Manager.serialize(mesh));
+        await asset.saveToLibrary('.bin', Buffer.from(mesh.data));
 
         return true;
     }
@@ -883,14 +886,13 @@ class GltfConverter {
         // @ts-ignore
         const maxPosition = new cc.Vec3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
 
-        // @ts-ignore
-        const vertexBundles = new Array<cc.VertexBundle>();
-        const primitives = gltfMesh.primitives.map((gltfPrimitive, primitiveIndex) => {
+        const vertexBundles = new Array<IVertexBundle>();
+        const primitives = gltfMesh.primitives.map((gltfPrimitive, primitiveIndex): IPrimitive => {
             const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
 
             let vertexBufferStride = 0;
             let verticesCount = 0;
-            const formats: Array<{ name: any, type: number, num: number }> = [];
+            const formats: IVertexAttribute[] = [];
 
             const attributeByteLengths = attributeNames.map((attributeName) => {
                 const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
@@ -903,68 +905,92 @@ class GltfConverter {
             const vertexBuffer = new ArrayBuffer(vertexBufferStride * verticesCount);
 
             let currentByteOffset = 0;
+            let posBuffer = new ArrayBuffer(0);
             attributeNames.forEach((attributeName, iAttribute) => {
                 const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
-                this._readAccessor(attributeAccessor, new DataView(vertexBuffer, currentByteOffset), vertexBufferStride);
+                this._readAccessor(attributeAccessor,
+                    new DataView(vertexBuffer, currentByteOffset), vertexBufferStride);
                 currentByteOffset += attributeByteLengths[iAttribute];
 
                 if (attributeName === 'POSITION') {
                     if (attributeAccessor.min) {
                         // @ts-ignore
-                        cc.vmath.vec3.min(minPosition, minPosition, new cc.vmath.vec3(attributeAccessor.min[0], attributeAccessor.min[1], attributeAccessor.min[2]));
+                        cc.vmath.vec3.min(minPosition, minPosition, new cc.vmath.vec3(
+                            attributeAccessor.min[0], attributeAccessor.min[1], attributeAccessor.min[2]));
                     }
                     if (attributeAccessor.max) {
                         // @ts-ignore
-                        cc.vmath.vec3.max(maxPosition, maxPosition, new cc.vmath.vec3(attributeAccessor.max[0], attributeAccessor.max[1], attributeAccessor.max[2]));
+                        cc.vmath.vec3.max(maxPosition, maxPosition, new cc.vmath.vec3(
+                            attributeAccessor.max[0], attributeAccessor.max[1], attributeAccessor.max[2]));
                     }
+                    const comps = this._getComponentsPerAttribute(attributeAccessor.type);
+                    const bytes = this._getBytesPerComponent(attributeAccessor.componentType);
+                    posBuffer = new ArrayBuffer(comps * bytes * attributeAccessor.count);
+                    this._readAccessor(attributeAccessor, new DataView(posBuffer));
                 }
 
                 formats.push({
                     name: this._getGfxAttributeName(attributeName),
-                    type: this._getGfxComponentType(attributeAccessor.componentType),
-                    num: this._getComponentsPerAttribute(attributeAccessor.type),
+                    baseType: this._getAttributeBaseType(attributeAccessor.componentType),
+                    type: this._getAttributeType(attributeAccessor.type),
+                    normalize: false,
                 });
             });
 
-            // @ts-ignore
-            const vertexBundleRange = new cc.BufferRange(bufferBlob.addBuffer(vertexBuffer), vertexBuffer.byteLength);
+            vertexBundles.push({
+                data: {
+                    offset: bufferBlob.getLength(),
+                    length: vertexBuffer.byteLength,
+                },
+                verticesCount,
+                attributes: formats,
+            });
+            bufferBlob.addBuffer(vertexBuffer);
 
-            // @ts-ignore
-            const vertexBundle = new cc.VertexBundle();
-            vertexBundle._data = vertexBundleRange;
-            vertexBundle._verticesCount = verticesCount;
-            vertexBundle._formats = formats;
-            vertexBundles.push(vertexBundle);
+            const primitive: IPrimitive = {
+                primitiveMode: this._getPrimitiveMode(gltfPrimitive.mode === undefined ? 4 : gltfPrimitive.mode),
+                vertexBundelIndices: [primitiveIndex],
+            };
 
-            let indices = null;
-            let indexUnit = null;
+            // geometric info for raycast purposes
+            // @ts-ignore
+            if (primitive.primitiveMode >= cc.GFXPrimitiveMode.TRIANGLE_LIST) {
+                primitive.geometricInfo = {
+                    range: { offset: bufferBlob.getLength(), length: posBuffer.byteLength },
+                };
+                bufferBlob.addBuffer(posBuffer);
+            }
+
             if (gltfPrimitive.indices !== undefined) {
                 const indicesAccessor = this._gltf.accessors![gltfPrimitive.indices];
                 const indexStride = this._getBytesPerAttribute(indicesAccessor);
                 const indicesData = new ArrayBuffer(indexStride * indicesAccessor.count);
                 this._readAccessor(indicesAccessor, new DataView(indicesData));
-                // @ts-ignore
-                indices = new cc.BufferRange(bufferBlob.addBuffer(indicesData), indicesData.byteLength);
-                indexUnit = this._getGfxIndexUnitType(indicesAccessor.componentType);
+                primitive.indices = {
+                    indexUnit: this._getIndexUnit(indicesAccessor.componentType),
+                    range: {
+                        offset: bufferBlob.getLength(),
+                        length: indicesData.byteLength,
+                    },
+                };
+                bufferBlob.addBuffer(indicesData);
             }
 
-            // @ts-ignore
-            const primitive = new cc.Primitive();
-            primitive._vertexBundelIndices = [primitiveIndex];
-            primitive._topology = this._getTopology(gltfPrimitive.mode === undefined ? 4 : gltfPrimitive.mode);
-            primitive._indices = indices;
-            primitive._indexUnit = indexUnit;
             return primitive;
         });
+
+        const meshStruct: IMeshStruct = {
+            primitives,
+            vertexBundles,
+            minPosition,
+            maxPosition,
+        };
 
         // @ts-ignore
         const mesh = new cc.Mesh();
         mesh.name = gltfMesh.name;
-        mesh._minPosition = minPosition;
-        mesh._maxPosition = maxPosition;
-        mesh._primitives = primitives;
-        mesh._vertexBundles = vertexBundles;
-        return { mesh, buffer: bufferBlob.getCombined() };
+        mesh.assign(meshStruct, bufferBlob.getCombined());
+        return mesh;
     }
 
     public createSkeleton(gltfSkin: Skin) {
@@ -983,7 +1009,7 @@ class GltfConverter {
             }
         } else {
             const inverseBindMatricesAccessor = this._gltf.accessors![gltfSkin.inverseBindMatrices];
-            if (inverseBindMatricesAccessor.componentType !== 5126 ||
+            if (inverseBindMatricesAccessor.componentType !== WebGLRenderingContext.FLOAT ||
                 inverseBindMatricesAccessor.type !== 'MAT4') {
                 throw new Error(`The inverse bind matrix should be floating-point 4x4 matrix.`);
             }
@@ -1030,7 +1056,7 @@ class GltfConverter {
 
             // if not found, create one
             if (!frame) {
-                if (inputAccessor.componentType !== 5126 ||
+                if (inputAccessor.componentType !== WebGLRenderingContext.FLOAT ||
                     inputAccessor.type !== 'SCALAR') {
                     throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
                 }
@@ -1065,10 +1091,11 @@ class GltfConverter {
             }
 
             const outputAccessor = this._gltf.accessors![gltfSampler.output];
-            if (outputAccessor.componentType !== 5126) {
+            if (outputAccessor.componentType !== WebGLRenderingContext.FLOAT) {
                 throw new Error(`Output of an animation channel must be floating point values.`);
             }
-            const outputData = new Float32Array(this._getComponentsPerAttribute(outputAccessor.type) * outputAccessor.count);
+            const outputData = new Float32Array(
+                this._getComponentsPerAttribute(outputAccessor.type) * outputAccessor.count);
             this._readAccessor(outputAccessor, new DataView(outputData.buffer));
             if (gltfChannel.target.path === 'translation') {
                 if (outputAccessor.type !== 'VEC3') {
@@ -1077,7 +1104,8 @@ class GltfConverter {
                 channel.positionCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
-                    channel.positionCurve[i] = new cc.Vec3(outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
+                    channel.positionCurve[i] = new cc.Vec3(
+                        outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
                 }
             } else if (gltfChannel.target.path === 'rotation') {
                 if (outputAccessor.type !== 'VEC4') {
@@ -1086,7 +1114,8 @@ class GltfConverter {
                 channel.rotationCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
-                    channel.rotationCurve[i] = new cc.Quat(outputData[4 * i + 0], outputData[4 * i + 1], outputData[4 * i + 2], outputData[4 * i + 3]);
+                    channel.rotationCurve[i] = new cc.Quat(
+                        outputData[4 * i + 0], outputData[4 * i + 1], outputData[4 * i + 2], outputData[4 * i + 3]);
                 }
             } else if (gltfChannel.target.path === 'scale') {
                 if (outputAccessor.type !== 'VEC3') {
@@ -1095,7 +1124,8 @@ class GltfConverter {
                 channel.scaleCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
-                    channel.scaleCurve[i] = new cc.Vec3(outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
+                    channel.scaleCurve[i] = new cc.Vec3(
+                        outputData[3 * i + 0], outputData[3 * i + 1], outputData[3 * i + 2]);
                 }
             } else {
                 console.error(`Unsupported channel target path ${gltfChannel.target.path}.`);
@@ -1120,11 +1150,11 @@ class GltfConverter {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
+        material.setDefines({ USE_DIFFUSE_TEXTURE: true });
         material._effectAsset = effectGetter('db://internal/builtin-effect-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                material.define('USE_DIFFUSE_TEXTURE', true);
                 material.setProperty('diffuse_texture', textures[pbrMetallicRoughness.baseColorTexture.index]);
             } else {
                 let color = null;
@@ -1380,28 +1410,54 @@ class GltfConverter {
         }
     }
 
-    private _getTopology(mode: number) {
+    private _getPrimitiveMode(mode: number) {
         // @ts-ignore
-        const gfx = cc.gfx;
+        const GFXPrimitiveMode = cc.GFXPrimitiveMode;
         switch (mode) {
-            case 0: return gfx.PT_POINTS;
-            case 1: return gfx.PT_LINES;
-            case 2: return gfx.PT_LINE_LOOP;
-            case 3: return gfx.PT_LINE_STRIP;
-            case 4: return gfx.PT_TRIANGLES;
-            case 5: return gfx.PT_TRIANGLE_STRIP;
-            case 6: return gfx.PT_TRIANGLE_FAN;
+            case 0: return GFXPrimitiveMode.POINT_LIST;
+            case 1: return GFXPrimitiveMode.LINE_LIST;
+            case 2: return GFXPrimitiveMode.LINE_LOOP;
+            case 3: return GFXPrimitiveMode.LINE_STRIP;
+            case 4: return GFXPrimitiveMode.TRIANGLE_LIST;
+            case 5: return GFXPrimitiveMode.TRIANGLE_STRIP;
+            case 6: return GFXPrimitiveMode.TRIANGLE_FAN;
             default:
                 throw new Error(`Unrecognized primitive mode: ${mode}.`);
         }
     }
 
-    private _getGfxIndexUnitType(componentType: number) {
-        return componentType;
+    private _getAttributeType(type: string) {
+        switch (type) {
+            case 'SCALAR': return AttributeType.SCALAR;
+            case 'VEC2': return AttributeType.VEC2;
+            case 'VEC3': return AttributeType.VEC3;
+            case 'VEC4': return AttributeType.VEC4;
+            default:
+                throw new Error(`Unrecognized attribute type: ${type}.`);
+        }
     }
 
-    private _getGfxComponentType(componentType: number) {
-        return componentType;
+    private _getAttributeBaseType(componentType: number) {
+        switch (componentType) {
+            case WebGLRenderingContext.BYTE: return AttributeBaseType.INT8;
+            case WebGLRenderingContext.UNSIGNED_BYTE: return AttributeBaseType.UINT8;
+            case WebGLRenderingContext.SHORT: return AttributeBaseType.INT16;
+            case WebGLRenderingContext.UNSIGNED_SHORT: return AttributeBaseType.UINT16;
+            case WebGLRenderingContext.UNSIGNED_INT: return AttributeBaseType.UINT32;
+            case WebGLRenderingContext.FLOAT: return AttributeBaseType.FLOAT32;
+            default:
+                throw new Error(`Unrecognized component type: ${componentType}`);
+        }
+    }
+
+    private _getIndexUnit(componentType: number) {
+        switch (componentType) {
+            case WebGLRenderingContext.UNSIGNED_BYTE: return IndexUnit.UINT8;
+            case WebGLRenderingContext.UNSIGNED_SHORT: return IndexUnit.UINT16;
+            case WebGLRenderingContext.UNSIGNED_INT: return IndexUnit.UINT32;
+            default:
+                throw new Error(`Unrecognized index type: ${componentType}`);
+        }
     }
 
     private _getBytesPerAttribute(gltfAccessor: Accessor) {
@@ -1424,9 +1480,9 @@ class GltfConverter {
 
     private _getBytesPerComponent(componentType: number) {
         switch (componentType) {
-            case 5120: case 5121: return 1;
-            case 5122: case 5123: return 2;
-            case 5125: case 5126: return 4;
+            case WebGLRenderingContext.BYTE: case WebGLRenderingContext.UNSIGNED_BYTE: return 1;
+            case WebGLRenderingContext.SHORT: case WebGLRenderingContext.UNSIGNED_SHORT: return 2;
+            case WebGLRenderingContext.UNSIGNED_INT: case WebGLRenderingContext.FLOAT: return 4;
             default:
                 throw new Error(`Unrecognized component type: ${componentType}`);
         }
@@ -1434,18 +1490,18 @@ class GltfConverter {
 
     private _getGfxAttributeName(name: string) {
         // @ts-ignore
-        const gfx = cc.gfx;
+        const GFXAttributeName = cc.GFXAttributeName;
         switch (name) {
-            case 'POSITION': return gfx.ATTR_POSITION;
-            case 'NORMAL': return gfx.ATTR_NORMAL;
-            case 'TANGENT': return gfx.ATTR_TANGENT;
-            case 'COLOR_0': return gfx.ATTR_COLOR0;
-            case 'TEXCOORD_0': return gfx.ATTR_UV0;
-            case 'TEXCOORD_1': return gfx.ATTR_UV1;
-            case 'TEXCOORD_2': return gfx.ATTR_UV2;
-            case 'TEXCOORD_3': return gfx.ATTR_UV3;
-            case 'JOINTS_0': return gfx.ATTR_JOINTS;
-            case 'WEIGHTS_0': return gfx.ATTR_WEIGHTS;
+            case 'POSITION': return GFXAttributeName.ATTR_POSITION;
+            case 'NORMAL': return GFXAttributeName.ATTR_NORMAL;
+            case 'TANGENT': return GFXAttributeName.ATTR_TANGENT;
+            case 'COLOR_0': return GFXAttributeName.ATTR_COLOR;
+            case 'TEXCOORD_0': return GFXAttributeName.ATTR_TEX_COORD;
+            case 'TEXCOORD_1': return GFXAttributeName.ATTR_TEX_COORD1;
+            case 'TEXCOORD_2': return GFXAttributeName.ATTR_TEX_COORD2;
+            case 'TEXCOORD_3': return GFXAttributeName.ATTR_TEX_COORD3;
+            case 'JOINTS_0': return GFXAttributeName.ATTR_JOINTS;
+            case 'WEIGHTS_0': return GFXAttributeName.ATTR_WEIGHTS;
             default:
                 throw new Error(`Unrecognized attribute type: ${name}`);
         }
@@ -1453,29 +1509,31 @@ class GltfConverter {
 
     private _getComponentReader(componentType: number): (buffer: DataView, offset: number) => number {
         switch (componentType) {
-            case 5120: return (buffer, offset) => buffer.getInt8(offset);
-            case 5121: return (buffer, offset) => buffer.getUint8(offset);
-            case 5122: return (buffer, offset) => buffer.getInt16(offset, true);
-            case 5123: return (buffer, offset) => buffer.getUint16(offset, true);
-            case 5125: return (buffer, offset) => buffer.getUint32(offset, true);
-            case 5126: return (buffer, offset) => buffer.getFloat32(offset, true);
+            case WebGLRenderingContext.BYTE: return (buffer, offset) => buffer.getInt8(offset);
+            case WebGLRenderingContext.UNSIGNED_BYTE: return (buffer, offset) => buffer.getUint8(offset);
+            case WebGLRenderingContext.SHORT: return (buffer, offset) => buffer.getInt16(offset, true);
+            case WebGLRenderingContext.UNSIGNED_SHORT: return (buffer, offset) => buffer.getUint16(offset, true);
+            case WebGLRenderingContext.UNSIGNED_INT: return (buffer, offset) => buffer.getUint32(offset, true);
+            case WebGLRenderingContext.FLOAT: return (buffer, offset) => buffer.getFloat32(offset, true);
             default:
                 throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
 
+    // tslint:disable: max-line-length
     private _getComponentWriter(componentType: number): (buffer: DataView, offset: number, value: number) => void {
         switch (componentType) {
-            case 5120: return (buffer, offset, value) => buffer.setInt8(offset, value);
-            case 5121: return (buffer, offset, value) => buffer.setUint8(offset, value);
-            case 5122: return (buffer, offset, value) => buffer.setInt16(offset, value, true);
-            case 5123: return (buffer, offset, value) => buffer.setUint16(offset, value, true);
-            case 5125: return (buffer, offset, value) => buffer.setUint32(offset, value, true);
-            case 5126: return (buffer, offset, value) => buffer.setFloat32(offset, value, true);
+            case WebGLRenderingContext.BYTE: return (buffer, offset, value) => buffer.setInt8(offset, value);
+            case WebGLRenderingContext.UNSIGNED_BYTE: return (buffer, offset, value) => buffer.setUint8(offset, value);
+            case WebGLRenderingContext.SHORT: return (buffer, offset, value) => buffer.setInt16(offset, value, true);
+            case WebGLRenderingContext.UNSIGNED_SHORT: return (buffer, offset, value) => buffer.setUint16(offset, value, true);
+            case WebGLRenderingContext.UNSIGNED_INT: return (buffer, offset, value) => buffer.setUint32(offset, value, true);
+            case WebGLRenderingContext.FLOAT: return (buffer, offset, value) => buffer.setFloat32(offset, value, true);
             default:
                 throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
+    // tslint:enable: max-line-length
 
     private _getFilter(filter: number) {
         switch (filter) {

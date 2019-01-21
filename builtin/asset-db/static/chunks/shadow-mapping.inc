@@ -1,24 +1,15 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#if _NUM_SHADOW_LIGHTS > 0
-  #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
-    uniform sampler2D _shadowMap_{id};
-    uniform float _darkness_{id};
-    uniform float _depthScale_{id};
-    uniform float _frustumEdgeFalloff_{id};
-    uniform float _bias_{id};
-    uniform vec2 _texelSize_{id};
-    varying vec4 pos_lightspace_{id};
-    varying float vDepth_{id};
-  #pragma endFor
-#endif
+varying vec4 posLightspace;
+varying float vDepth;
+uniform sampler2D cc_shadowMap;
 
-float computeShadow(sampler2D shadowMap, vec4 pos_lightspace, float _bias) {
-  vec3 projCoords = pos_lightspace.xyz / pos_lightspace.w;
+float computeShadow(sampler2D shadowMap, vec4 posLightspace, float bias) {
+  vec3 projCoords = posLightspace.xyz / posLightspace.w;
   projCoords = projCoords * 0.5 + 0.5;
   float closestDepth = unpackRGBAToDepth(texture2D(shadowMap, projCoords.xy));
   float currentDepth = projCoords.z;
-  float shadow = (currentDepth - _bias > closestDepth) ? 0.0 : 1.0;
+  float shadow = (currentDepth - bias > closestDepth) ? 0.0 : 1.0;
   return shadow;
 }
 
@@ -29,7 +20,7 @@ float computeFallOff(float esm, vec2 coords, float frustumEdgeFalloff) {
 
 // unused for float precision issue.
 // float computeShadowESM_Unused() {
-//   vec2 projCoords = pos_lightspace.xy / pos_lightspace.w;
+//   vec2 projCoords = posLightspace.xy / posLightspace.w;
 //   vec2 shadowUV = projCoords * 0.5 + vec2(0.5);
 //   if (shadowUV.x < 0.0 || shadowUV.x > 1.0 || shadowUV.y < 0.0 || shadowUV.y > 1.0) {
 //     return 1.0;
@@ -40,8 +31,8 @@ float computeFallOff(float esm, vec2 coords, float frustumEdgeFalloff) {
 //   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
 // }
 
-float computeShadowESM(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, float depthScale, float darkness, float frustumEdgeFalloff) {
-  vec2 projCoords = pos_lightspace.xy / pos_lightspace.w;
+float computeShadowESM(sampler2D shadowMap, vec4 posLightspace, float vDepth, float depthScale, float darkness, float frustumEdgeFalloff) {
+  vec2 projCoords = posLightspace.xy / posLightspace.w;
   vec2 shadowUV = projCoords * 0.5 + vec2(0.5);
   if (shadowUV.x < 0.0 || shadowUV.x > 1.0 || shadowUV.y < 0.0 || shadowUV.y > 1.0) {
     return 1.0;
@@ -53,8 +44,8 @@ float computeShadowESM(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, f
   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
 }
 
-float computeShadowPCF(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, float darkness, vec2 texelSize, float frustumEdgeFalloff) {
-  vec2 projCoords = pos_lightspace.xy / pos_lightspace.w;
+float computeShadowPCF(sampler2D shadowMap, vec4 posLightspace, float vDepth, float darkness, vec2 texelSize, float frustumEdgeFalloff) {
+  vec2 projCoords = posLightspace.xy / posLightspace.w;
   vec2 shadowUV = projCoords * 0.5 + vec2(0.5);
   if (shadowUV.x < 0.0 || shadowUV.x > 1.0 || shadowUV.y < 0.0 || shadowUV.y > 1.0) {
     return 1.0;
@@ -75,11 +66,5 @@ float computeShadowPCF(sampler2D shadowMap, vec4 pos_lightspace, float vDepth, f
 }
 
 float computeShadow() {
-  float shadow = 1.0;
-  #if _NUM_SHADOW_LIGHTS > 0
-    #pragma for id in range(0, _NUM_SHADOW_LIGHTS)
-      shadow *= computeShadowESM(_shadowMap_{id}, pos_lightspace_{id}, vDepth_{id}, _depthScale_{id}, _darkness_{id}, _frustumEdgeFalloff_{id});
-    #pragma endFor
-  #endif
-  return shadow;
+  return computeShadowESM(cc_shadowMap, posLightspace, vDepth, cc_shadowParam1.w, cc_shadowParam2.x, cc_shadowParam2.y);
 }

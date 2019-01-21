@@ -7,13 +7,26 @@
         {
           vert: gizmo-vs
           frag: gizmo-fs
-          stage: default
-          cullMode: none
-          depthTest: false
-          depthWrite: false
-          blend: true
-          blendSrc: srcAlpha
-          blendDst: oneMinusSrcAlpha
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: false
+            depthWrite: false
+          }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one_minus_src_alpha
+                blendDstAlpha: one_minus_src_alpha
+              }
+            ]
+          }
+          properties: {
+            color: { type: 'color4', value: [1, 1, 1, 1] }
+          }
         }
       ]
     }
@@ -24,11 +37,26 @@
         {
           vert: line-vs
           frag: line-fs:front
-          stage: default
-          cullMode: none
-          blend: true
-          blendSrc: srcAlpha
-          blendDst: oneMinusSrcAlpha
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: false
+            depthWrite: false
+          }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one_minus_src_alpha
+                blendDstAlpha: one_minus_src_alpha
+              }
+            ]
+          }
+          properties: {
+            color: { type: 'color4', value: [1, 1, 1, 1] }
+          }
         }
       ]
     }
@@ -39,44 +67,64 @@
         {
           vert: line-vs
           frag: line-fs:front
-          stage: default
-          cullMode: none
-          depthTest: true
-          blend: true
-          blendSrc: srcAlpha
-          blendDst: one
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: true
+            depthWrite: false
+          }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one
+                blendDstAlpha: one_minus_src_alpha
+              }
+            ]
+          }
+          properties: {
+            color: { type: 'color4', value: [1, 1, 1, 1] }
+          }
         }
         {
           vert: line-vs
           frag: line-fs:back
-          stage: default
-          cullMode: none
-          depthTest: true
-          depthFunc: greater
-          blend: true
-          blendSrc: srcAlpha
-          blendDst: one
+          rasterizerState: {
+            cullMode: none
+          }
+          depthStencilState: {
+            depthTest: true
+            depthWrite: false
+            depthFunc: greater
+          }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one
+                blendDstAlpha: one_minus_src_alpha
+              }
+            ]
+          }
+          properties: {
+            color: { type: 'color4', value: [1, 1, 1, 1] }
+          }
         }
       ]
     }
   ]
 
-  properties: {
-    color: {
-      type: color4
-      value: [1, 1, 1, 1]
-    }
-  }
 %}
 
 %% gizmo-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
 
-  uniform mat4 _model;
-  uniform mat4 _view;
-  uniform mat4 _viewProj;
-  uniform mat3 _normalMatrix;
+  #include <cc-local>
+  #include <cc-global>
 
   varying vec3 normal_w;
   varying vec3 pos_w;
@@ -87,15 +135,16 @@
 
   void main () {
     vec4 pos = vec4(a_position, 1);
+    vec4 normal = vec4(a_normal, 0);
 
     pos_l = a_position;
-    pos_w = (_model * pos).xyz;
-    normal_w = _normalMatrix * a_normal;
-    right = vec3(_view[0][0], _view[1][0], _view[2][0]);
-    up = vec3(_view[0][1], _view[1][1], _view[2][1]);
-    forward = vec3(_view[0][2], _view[1][2], _view[2][2]);
+    pos_w = (cc_matWorld * pos).xyz;
+    normal_w = (cc_matWorldIT * normal).xyz;
+    right = vec3(cc_matView[0][0], cc_matView[1][0], cc_matView[2][0]);
+    up = vec3(cc_matView[0][1], cc_matView[1][1], cc_matView[2][1]);
+    forward = vec3(cc_matView[0][2], cc_matView[1][2], cc_matView[2][2]);
 
-    gl_Position = _viewProj * _model * pos;
+    gl_Position = cc_matViewProj * cc_matWorld * pos;
   }
 }
 
@@ -103,8 +152,11 @@
   #include <gamma-correction>
   #include <rect-area-light>
 
-  uniform vec3 _eye;
-  uniform vec4 color;
+  #include <cc-global>
+
+  uniform Constant {
+    vec4 color;
+  };
 
   varying vec3 normal_w;
   varying vec3 pos_w;
@@ -115,12 +167,12 @@
 
   void main () {
     vec3 N = normalize(normal_w);
-    vec3 V = normalize(_eye - pos_w);
+    vec3 V = normalize(cc_cameraPos.xyz - pos_w);
 
     // vec3 L = normalize(cross(forward, vec3(0, 1, 0)));
     // vec3 diffuse = color.rgb * (0.2 + max(0.0, dot(N, L)) * 0.8);
 
-    vec3 points[4];
+    vec3 points [4];
     vec3 up = vec3(0, 1, 0);
     points[0] = (forward * 3.0 + right + up) * 40.0;
     points[1] = (forward * 3.0 - right + up) * 40.0;
@@ -133,20 +185,24 @@
 }
 
 %% line-vs {
-  attribute vec3 a_position;
+  attribute highp vec3 a_position;
 
-  uniform mat4 _model;
-  uniform mat4 _viewProj;
+  #include <cc-local>
+  #include <cc-global>
 
   void main () {
-    gl_Position = _viewProj * _model * vec4(a_position, 1);
+    gl_Position = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
     gl_Position.z -= 0.0001;
   }
 }
 
 %% line-fs {
   #include <gamma-correction>
-  uniform vec4 color;
+
+  uniform Constant {
+    vec4 color;
+  };
+
   vec4 front() {
     return linearToGammaSpaceRGBA(color);
   }

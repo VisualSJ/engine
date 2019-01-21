@@ -24,106 +24,118 @@ function queryEffectDataForInspector(effectName) {
     if (!effect) {
         return {};
     }
-    const data = cc.Effect.parseForInspector(effect);
-    return buildEffectData(data);
+    return buildEffectData(effect);
 }
 
-let buildEffectData = (function() {
-    const { Vec2, Vec3, Vec4, Color, Mat4 } = cc;
-    const { Texture2D, TextureCube } = cc.gfx;
-    const typeMap = {
-        [Number]: 'number',
-        [Boolean]: 'boolean',
-        [Vec2]: 'cc-vec2',
-        [Vec3]: 'cc-vec3',
-        [Vec4]: 'cc-vec4',
-        [Color]: 'cc-color',
-        [Mat4]: 'cc-mat4',
-        [Texture2D]: 'cc-dragable',
-        [TextureCube]: 'cc-dragable',
+const { Vec2, Vec3, Vec4, Mat4, Color } = cc;
+const _ctorMap = {
+    ['boolean']: (v) => v || false,
+    ['number']: (v) => v || 0,
+    ['cc.Vec2']: (v) => Array.isArray(v) ? new Vec2(v[0], v[1]) : new Vec2(),
+    ['cc.Vec3']: (v) => Array.isArray(v) ? new Vec3(v[0], v[1], v[2]) : new Vec3(),
+    ['cc.Vec4']: (v) => Array.isArray(v) ? new Vec4(v[0], v[1], v[2], v[3]) : new Vec4(),
+    ['cc.Color']: (v) => Array.isArray(v) ? new Color(v[0] * 255, v[1] * 255, v[2] * 255,
+        (v[3] || 1) * 255) : new Color(),
+    ['cc.Mat4']: (v) => Array.isArray(v) ? new Mat4(
+            v[0],  v[1],  v[2],  v[3],
+            v[4],  v[5],  v[6],  v[7],
+            v[8],  v[9],  v[10], v[11],
+            v[12], v[13], v[14], v[15],
+        ) : new Mat4(),
+    ['cc.Asset']: (v) => { uuid: v || null },
+};
+const getValue = (type, value) => _ctorMap[type](value);
+
+const buildEffectData = (function() {
+    const _typeMap = {
+        [cc.GFXType.SAMPLER2D]: 'cc.Texture2D',
+        [cc.GFXType.SAMPLER_CUBE]: 'cc.TextureCube',
     };
-    const assetMap = {
-        [Texture2D]: 'cc.Texture2D',
-        [TextureCube]: 'cc.TextureCube',
+    const _compTypeMap = {
+        [cc.GFXType.INT]: 'number',
+        [cc.GFXType.INT2]: 'cc.Vec2',
+        [cc.GFXType.INT3]: 'cc.Vec3',
+        [cc.GFXType.INT4]: 'cc.Vec4',
+        [cc.GFXType.FLOAT]: 'number',
+        [cc.GFXType.FLOAT2]: 'cc.Vec2',
+        [cc.GFXType.FLOAT3]: 'cc.Vec3',
+        [cc.GFXType.FLOAT4]: 'cc.Vec4',
+        [cc.GFXType.COLOR4]: 'cc.Color',
+        [cc.GFXType.MAT4]: 'cc.Mat4',
+        [cc.GFXType.SAMPLER2D]: 'cc.Asset',
+        [cc.GFXType.SAMPLER_CUBE]: 'cc.Asset',
     };
-    return function(data = {}) {
-        return Object.keys(data).reduce((acc, cur) => {
-            const item = data[cur];
-            acc[cur] = Object.keys(item).map((key) => {
-                const info = item[key];
-                const typeName = info.instanceType;
-                const compType = typeMap[typeName];
-                const type = assetMap[typeName];
-                let { displayName, value, defines } = info;
-
-                if (compType === 'cc-dragable' && value === null) {
-                    value = { uuid: null };
+    const getCompType = (type) => _compTypeMap[type];
+    const getType = (type) => _typeMap[type];
+    const getValueFromGFXType = (type, value) => getValue(_compTypeMap[type], value);
+    const getDefines = (name, prog) => {
+        const block = prog.blocks.find((b) => b.members.find((u) => u.name === name) !== undefined);
+        if (block) { return block.defines; }
+        const s = prog.samplers.find((u) => u.name === name);
+        if (s) { return s.defines; }
+    };
+    return function(effect) {
+        const techs = [];
+        for (const tech of effect.techniques) {
+            const passes = [];
+            techs.push(passes);
+            for (const pass of tech.passes) {
+                const props = [], defines = [];
+                passes.push({ props, defines });
+                const prog = effect.shaders.find((s) => s.name === pass.program);
+                prog.defines.forEach((define) => {
+                    defines.push({
+                        value: getValueFromGFXType(define.type),
+                        key: define.name,
+                        compType: getCompType(define.type),
+                        type: getType(define.type),
+                        defines: define.defines,
+                        path: `_defines.${define.name}`,
+                    });
+                });
+                if (!pass.properties) { continue; }
+                for (const p of Object.keys(pass.properties)) {
+                    const prop = pass.properties[p];
+                    const defs = getDefines(p, prog);
+                    props.push({
+                        value: getValueFromGFXType(prop.type, prop.value),
+                        key: p,
+                        compType: getCompType(prop.type),
+                        type: getType(prop.type),
+                        defines: defs,
+                        name: prop.displayName,
+                        path: `_props.${define.name}`,
+                    });
                 }
-
-                if (compType === 'cc-color') {
-                    value = {
-                        r: value.r,
-                        g: value.g,
-                        b: value.b,
-                        a: value.a,
-                    };
-                }
-
-                return { value, key, compType, type, defines, name: displayName, path: `_${cur}.${key}` };
-            });
-
-            return acc;
-        }, {});
+            }
+        }
+        return techs;
     };
 })();
 
 /**
- * 返回创建的 material 系列化数据
+ * 返回创建的 material 序列化数据
  * @param {{effectName: string, _props: {}, _defines: {}}} options
  * @returns {string}
  */
-let querySerializedMaterial = (function() {
+const querySerializedMaterial = (function() {
     let find = (effectMap, type, name) => effectMap[type].find((e) => e.key === name);
-    let typeMap = {
-        number: (v) => v.value || 0,
-        boolean: (v) => v.value || false,
-        'cc-vec2': (v) => cc.v2(v.value),
-        'cc-vec3': (v) => cc.v3(v.value),
-        'cc-vec4': (v) => cc.v4(v.value),
-        'cc-color': (v) => cc.color(v.value),
-        'cc-mat4': (v) => cc.mat4(v.value),
-        'cc-dragable': (v) => {
-            let res = null;
-            switch (v.type) {
-                case 'cc.Texture2D':
-                    res = new cc.Texture2D();
-                case 'cc.TextureCube':
-                    res = new cc.TextureCube();
-            }
-            res._uuid = v.value && v.value.uuid;
-            return res;
-        },
-    };
     return function(options) {
         const { effectName, _props, _defines, effectMap } = options;
         let props = {};
         let defines = {};
-        for (let name in _props) {
-            if (true) {
-                let info = find(effectMap, 'props', name);
-                props[name] = typeMap[info.compType](info);
-                if (props[name] === null) {
-                    delete props[name];
-                }
+        for (const name of Object.keys(_props)) {
+            let info = find(effectMap, 'props', name);
+            props[name] = getValue(info.compType, info.value);
+            if (props[name] === null) {
+                delete props[name];
             }
         }
-        for (let name in _defines) {
-            if (true) {
-                let info = find(effectMap, 'defines', name);
-                defines[name] = typeMap[info.compType](info);
-                if (defines[name] === false) {
-                    delete defines[name];
-                }
+        for (const name of Object.keys(_defines)) {
+            let info = find(effectMap, 'defines', name);
+            defines[name] = getValue(info.compType, info);
+            if (defines[name] === false) {
+                delete defines[name];
             }
         }
 

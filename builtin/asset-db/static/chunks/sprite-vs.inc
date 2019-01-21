@@ -1,20 +1,21 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 attribute vec3 a_position;
-uniform mat4 _model;
-uniform mat4 _viewProj;
-
-attribute vec2 a_uv0;
+attribute vec2 a_texCoord;
 attribute vec4 a_color;
+
+#include <cc-global>
+#include <cc-local>
+
 varying vec2 uv0;
 varying vec4 color;
 
 vec4 vert () {
   vec4 pos = vec4(a_position, 1);
 
-  pos = _viewProj * _model * pos;
+  pos = cc_matViewProj * cc_matWorld * pos;
 
-  uv0 = a_uv0;
+  uv0 = a_texCoord;
 
   color = a_color;
 

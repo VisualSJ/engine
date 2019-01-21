@@ -7,7 +7,7 @@
   ],
   "subMetas": {
     "capsule.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
       "imported": true,
@@ -21,7 +21,7 @@
       }
     },
     "plane.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
       "imported": true,
@@ -35,7 +35,7 @@
       }
     },
     "cone.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
       "imported": true,
@@ -49,7 +49,7 @@
       }
     },
     "torus.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
       "imported": true,
@@ -63,7 +63,7 @@
       }
     },
     "sphere.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
       "imported": true,
@@ -77,7 +77,7 @@
       }
     },
     "quad.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
       "imported": true,
@@ -91,7 +91,7 @@
       }
     },
     "cylinder.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
       "imported": true,
@@ -105,7 +105,7 @@
       }
     },
     "box.mesh": {
-      "ver": "1.0.0",
+      "ver": "1.0.1",
       "importer": "gltf-mesh",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@box.mesh",
       "imported": true,
