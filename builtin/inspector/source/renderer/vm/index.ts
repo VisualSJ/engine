@@ -5,7 +5,7 @@ const Vue = require('vue/dist/vue');
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
-export function init(elem: HTMLElement, type: string, uuid: string) {
+export function init(elem: HTMLElement) {
     const vm = new Vue({
         el: elem,
 
@@ -13,9 +13,14 @@ export function init(elem: HTMLElement, type: string, uuid: string) {
             loading: false, // 是否显示菊花标记
             type: Editor.Project.type, // 当前项目的类型
 
+            state: {
+                db: 'close',
+                scene: 'close',
+            },
+
             item: {
-                type: type || '', // 选中物体的类型
-                uuid: uuid || '', // 选中物体的 uuid
+                type: '', // 选中物体的类型
+                uuid: '', // 选中物体的 uuid
             },
 
             width: 0,

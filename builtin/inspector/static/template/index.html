@@ -14,12 +14,12 @@
         >
 
             <asset-3d ref="asset"
-                v-if="item.type === 'asset'"
+                v-if="state.db === 'ready' && item.type === 'asset' && item.uuid"
                 :uuid="item.uuid"
             ></asset-3d>
 
             <node-3d ref="node"
-                v-if="item.type === 'node'"
+                v-if="state.scene === 'ready' && item.type === 'node' && item.uuid"
                 :uuid="item.uuid"
 
                 :width="width"

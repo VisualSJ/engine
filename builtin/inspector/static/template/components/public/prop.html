@@ -5,7 +5,7 @@
     :asset="value && isType('cc.Asset')"
     :component="value && isType('cc.Component')"
 
-    @confirm.stop="_onConfirm($event)"
+    @confirm="_onConfirm($event)"
 >
 
     <template

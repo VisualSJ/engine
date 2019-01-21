@@ -31,28 +31,40 @@ export const messages = {
      * 场景已准备
      */
     'scene:ready'() {
-
+        if (!vm) {
+            return;
+        }
+        vm.state.scene = 'ready';
     },
 
     /**
      * 场景已关闭
      */
     'scene:close'() {
-
+        if (!vm) {
+            return;
+        }
+        vm.state.scene = 'close';
     },
 
     /**
      * asset-db 已准备
      */
     'asset-db:ready'() {
-
+        if (!vm) {
+            return;
+        }
+        vm.state.db = 'ready';
     },
 
     /**
      * asset-db 已关闭
      */
     'asset-db:close'() {
-
+        if (!vm) {
+            return;
+        }
+        vm.state.db = 'close';
     },
 
     /**
@@ -61,6 +73,9 @@ export const messages = {
      * @param uuid 选中物体的 uuid
      */
     'selection:select'(type: string, uuid: string) {
+        if (!vm) {
+            return;
+        }
         vm.item.type = type;
         vm.item.uuid = uuid;
     },
@@ -103,9 +118,20 @@ export async function ready() {
     // @ts-ignore
     panel = this;
 
+    vm = init(panel.$.content);
+
     const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
     const uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
-    vm = init(panel.$.content, type, uuid);
+
+    vm.item.type = type;
+    vm.item.uuid = uuid;
+
+    if (await Editor.Ipc.requestToPackage('asset-db', 'query-ready')) {
+        vm.state.db = 'ready';
+    }
+    if (await Editor.Ipc.requestToPackage('scene', 'query-is-ready')) {
+        vm.state.scene = 'ready';
+    }
 }
 
 export async function beforeClose() {}
