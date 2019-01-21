@@ -9,14 +9,17 @@ export const props = [
     'height',
 
     'auto', // 是否自动渲染
+    'empty',
     'value',
 ];
 
 export const components = {
+    'ui-unknown': require('./ui-unknown'),
     'ui-array': require('./ui-array'),
     'ui-null': require('./ui-null'),
     'ui-number': require('./ui-number'),
     'ui-bool': require('./ui-bool'),
+    'ui-string': require('./ui-string'),
     'ui-size': require('./ui-size'),
     'ui-vec2': require('./ui-vec2'),
     'ui-vec3': require('./ui-vec3'),
@@ -37,7 +40,7 @@ export const methods = {
      * 绑定数据有提交
      * @param event
      */
-    _onConfirm(event: CustomEvent) {
+    _onChange(event: CustomEvent) {
         const vm: any = this;
         const dump = vm.value;
 

@@ -1,5 +1,5 @@
 .ui-prop {
-    margin: 4px;
+    margin: 4px 0;
     line-height: 22px;
     display: flex;
     flex-flow: wrap;
@@ -18,15 +18,19 @@
         display: flex;
     }
 
-    &[type="cc.Node"] {
+    &[asset] {
         padding-top: 10px;
     }
 
-    &[type="cc.Asset"] {
+    &[node] {
         padding-top: 10px;
     }
 
-    &[type="cc.Component"] {
+    &[component] {
         padding-top: 10px;
+    }
+
+    &[array] {
+        padding-top: 0;
     }
 }

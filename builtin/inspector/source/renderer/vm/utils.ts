@@ -60,143 +60,47 @@ function isComponent(dump: any) {
 
 export function translationDump(dump: any) {
 
-    // {
-    //     name: 'Position',
-    //     type: 'vec2',
-    //     path: 'position',
-    //     value: { x: 0, y: 0, z: 0 },
-    // }
+    dump.active.name = 'Active';
+    dump.name.name = 'Name';
+    dump.position.name = 'Position';
+    dump.rotation.name = 'Rotation';
+    dump.scale.name = 'Scale';
 
-    function translate(key: string, path: string, dump: any) {
-        return {
-            name: key,
-            type: dump.type || dump.value,
-            path,
-            value: dump.value,
-        };
-    }
+    dump.active.path = 'active';
+    dump.name.path = 'name';
+    dump.position.path = 'position';
+    dump.rotation.path = 'rotation';
+    dump.scale.path = 'scale';
 
-    const data: any = {};
-
-    data.active = translate('Active', 'active', dump.active);
-    data.name = translate('Name', 'name', dump.name);
-    data.position = translate('Position', 'position', dump.position);
-    data.rotation = translate('Rotation', 'rotation', dump.rotation);
-    data.scale = translate('Scale', 'scale', dump.scale);
-
-    function translateObject(key: string, dump: any, path: string) {
-        const data: any = translate(key, path, dump);
-
-        if (data.type === 'Array' || Array.isArray(dump.value)) {
-            data.isArray = true;
-            if (dump.properties) {
-                data.type = dump.properties.type;
+    function translate(dump: any, path: string) {
+        const type = typeof dump;
+        if (!dump || type !== 'object') {
+            return;
+        }
+        if (Array.isArray(dump)) {
+            dump.forEach((item, index) => {
+                item.name = `[${index}]`;
+                item.path = `${path}.${index}`;
+                translate(item.value, item.path);
+            });
+        }
+        Object.keys(dump).forEach((name: string) => {
+            const item = dump[name];
+            if (item && typeof item === 'object') {
+                item.name = name;
+                item.path = `${path}.${name}`;
+                translate(item.value, item.path);
             }
-
-            const array = data.value;
-            data.value = array.map((ccclass: any, index: string) => {
-                return translateCCClass(index, ccclass.properties, ccclass, `${path}.${key}`);
-            });
-        }
-
-        if (isNode(dump.value)) {
-            data.nodeType = data.type;
-            data.type = 'cc.Node';
-        }
-
-        if (isAsset(dump.value)) {
-            data.assetType = data.type;
-            data.type = 'cc.Asset';
-        }
-
-        if (isComponent(dump.value)) {
-            data.componentType = data.type;
-            data.type = 'cc.Component';
-        }
-
-        if (data.type === 'Enum') {
-            data.enumList = dump.properties.enumList;
-        }
-
-        // 检查是否是未知类型，如果是的话，需要递归处理内部的所有属性
-        if (!checkType(data)) {
-            Object.keys(data.value).forEach((key: string) => {
-                const dump = data.value[key];
-                data.value[key] = translateObject(key, dump, `${path}.${key}`);
-            });
-        }
-
-        return data;
-    }
-
-    function translateCCClass(key: string, properties: any, value: any, path: string) {
-        const data: any = translate(properties ? properties.displayName || key : key, `${path}.${key}`, value);
-
-        if (data.type === 'Array') {
-            data.isArray = true;
-            data.type = properties.type;
-
-            const array = data.value;
-            data.value = array.map((ccclass: any, index: string) => {
-                return translateCCClass(index, ccclass.properties, ccclass, `${path}.${key}`);
-            });
-        }
-
-        if (isNode(value)) {
-            data.nodeType = data.type;
-            data.type = 'cc.Node';
-        }
-
-        if (isAsset(value)) {
-            data.assetType = data.type;
-            data.type = 'cc.Asset';
-        }
-
-        if (isComponent(value)) {
-            data.componentType = data.type;
-            data.type = 'cc.Component';
-        }
-
-        if (data.type === 'Enum') {
-            data.enumList = properties.enumList;
-        }
-
-        // 检查是否是未知类型，如果是的话，需要递归处理内部的所有属性
-        if (!checkType(data)) {
-            Object.keys(data.value).forEach((key: string) => {
-                const dump = data.value[key];
-                data.value[key] = translateObject(key, dump, `${data.path}.${key}`);
-            });
-        }
-
-        return data;
-    }
-
-    function translateComponent(ccclass: any, path: string) {
-        const data: any = {
-            enabled: ccclass.value && ccclass.value.enabled && ccclass.value.enabled.value,
-            name: ccclass.name,
-            dump: {},
-        };
-
-        Object.keys(ccclass.value).forEach((key: string) => {
-            const properties: any = ccclass.properties[key] || {};
-
-            if (properties.visible === false) {
-                return;
-            }
-            data.dump[key] = translateCCClass(key, properties, ccclass.value[key], path);
         });
-        return data;
     }
 
-    data.comps = dump.__comps__.map((component: any, index: number) => {
-        return translateComponent(component, `__comps__.${index}`);
+    dump.__comps__.forEach((component: any, index: number) => {
+        component.name = component.type;
+        component.path = `__comps__.${index}`;
+        translate(component.value, component.path);
     });
 
-    // debugger;
-
-    return data;
+    return dump;
 }
 
 export function readTemplate(path: string) {

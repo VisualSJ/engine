@@ -108,20 +108,6 @@ export function apply(messages: any) {
         return await $scene.forwarding('Node', 'setProperty', [options.uuid, options.path, options.dump]);
     };
 
-    messages['create-property'] = async (options: CreatePropertyOptions) => {
-        if (!$scene) {
-            return null;
-        }
-        return await $scene.forwarding('Node', 'createProperty', [options.uuid, options.path, options.type]);
-    };
-
-    messages['reset-property'] = async (options: ResetPropertyOptions) => {
-        if (!$scene) {
-            return null;
-        }
-        return await $scene.forwarding('Node', 'resetProperty', [options.uuid, options.path, options.type]);
-    };
-
     /**
      * 插入一个 item 到某个数组类型的 property 内
      */

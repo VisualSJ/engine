@@ -4,15 +4,22 @@
     >
 
         <div class="header">
-            <div>
+            <ui-prop empty="true"
+                :value="dump.active"
+            >
                 <ui-checkbox
                     :value="dump.active.value"
-                    @click.stop
+                    @confirm="dump.active.value = $event.target.value"
                 ></ui-checkbox>
-            </div>
-            <ui-input
-                :value="dump.name.value"
-            ></ui-input>
+            </ui-prop>
+            <ui-prop empty="true"
+                :value="dump.name"
+            >
+                <ui-input
+                    :value="dump.name.value"
+                    @confirm="dump.name.value = $event.target.value"
+                ></ui-input>
+            </ui-prop>
         </div>
 
         <ui-section expand>
@@ -30,24 +37,24 @@
                     <!-- <i class="iconfont icon-setting"></i> -->
                 </div>
             </div>
-            <ui-prop auto
+            <ui-prop auto="true"
                 :value="dump.position"
             ></ui-prop>
-            <ui-prop auto
+            <ui-prop auto="true"
                 :value="dump.rotation"
             ></ui-prop>
-            <ui-prop auto
+            <ui-prop auto="true"
                 :value="dump.scale"
             ></ui-prop>
         </ui-section>
 
         <template
-            v-for="(item,index) in dump.comps"
+            v-for="(item, index) in dump.__comps__"
         >
             <comp
                 :uuid="uuid"
                 :index="index"
-                :total="dump.comps.length"
+                :total="dump.__comps__.length"
                 :value="item"
 
                 :width="width"

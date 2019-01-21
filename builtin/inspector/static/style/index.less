@@ -29,31 +29,49 @@
             }
     
             & > .node {
-                flex-direction: column;
+                flex: 1;
     
                 & > .header {
                     line-height: 26px;
                     display: flex;
 
-                    & > div {
+                    & > .ui-prop {
+                        display: block;
+                        margin: 0;
 
-                        &:first-child {
-                            line-height: 22px;
+                        &:last-child {
+                            flex: 1;
+                            display: flex;
+
+                            & > ui-input {
+                                flex: 1;
+                            }
                         }
                     }
+                }
 
-                    & > ui-input {
-                        flex: 1;
-                    }
+                & > ui-section {
+                    display: block;
                 }
     
                 & > .comp {
                     display: flex;
                     flex-direction: column;
+
+                    & > ui-section {
+
+                        & > .header {
+
+                            ui-checkbox {
+                                position: relative;
+                                top: 2px;
+                            }
+                        }
+                    }
                 }
 
                 & > .footer {
-                    margin-top: 10px;
+                    margin: 10px 0;
                     text-align: center;
 
                     & > ui-button {
@@ -93,12 +111,14 @@ ui-section {
 @import './imports/hljs.paraiso.dark.less';
 @import './imports/markdown.less';
 
+@import './components/unknown.less';
 @import './components/array.less';
 @import './components/null.less';
 @import './components/object.less';
 @import './components/depend.less';
 @import './components/prop.less';
 @import './components/number.less';
+@import './components/string.less';
 @import './components/vec3.less';
 @import './components/vec2.less';
 @import './components/size.less';

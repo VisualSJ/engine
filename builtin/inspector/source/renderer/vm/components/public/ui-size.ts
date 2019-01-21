@@ -1,9 +1,7 @@
 'use strict';
 
 export const template = `
-<div class="ui-size"
-    @change.stop
->
+<div class="ui-size">
     <ui-number name="W"
         v-model="value.width"
     ></ui-number>

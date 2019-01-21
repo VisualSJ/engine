@@ -1,9 +1,7 @@
 'use strict';
 
 export const template = `
-<div class="ui-vec3"
-    @change.stop
->
+<div class="ui-vec3">
     <ui-number name="X"
         v-model="value.x"
     ></ui-number>

@@ -446,50 +446,6 @@ class NodeManager extends EventEmitter {
         }
         return getComponentFunctionOfNode(node);
     }
-
-    /**
-     * 创建一个节点的属性
-     * @param {*} uuid
-     * @param {*} path
-     * @param {*} type
-     */
-    async createProperty(uuid, path, type) {
-        const node = this.query(uuid);
-        if (!node) {
-            return;
-        }
-        // 触发修改前的事件
-        this.emit('before-change', node);
-        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
-
-        await dumpUtils.createProperty(node, path, type);
-
-        // 触发修改后的事件
-        this.emit('changed', node);
-        Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-    }
-
-    /**
-     * 重置一个节点的属性
-     * @param {*} uuid
-     * @param {*} path
-     * @param {*} type
-     */
-    resetProperty(uuid, path, type) {
-        const node = this.query(uuid);
-        if (!node) {
-            return;
-        }
-        // 触发修改前的事件
-        this.emit('before-change', node);
-        Manager.Ipc.send('broadcast', 'scene:before-node-change', uuid);
-
-        dumpUtils.resetProperty(node, path, type);
-
-        // 触发修改后的事件
-        this.emit('changed', node);
-        Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
-    }
 }
 
 module.exports = new NodeManager();

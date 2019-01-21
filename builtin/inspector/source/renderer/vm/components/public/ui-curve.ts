@@ -1,9 +1,7 @@
 'use strict';
 
 export const template = `
-<div class="ui-curve"
-    @change.stop="$emit('input', $event.target.value)"
->
+<div class="ui-curve">
     <div class="graphics" ref="graphics">
         <svg
             :width="svgw"

@@ -12,7 +12,7 @@ export const template = `
         <template
             v-for="item in value"
         >
-            <ui-prop auto
+            <ui-prop auto="true"
                 :value="item"
             ></ui-prop>
         </template>

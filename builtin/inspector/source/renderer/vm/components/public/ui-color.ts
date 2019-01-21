@@ -2,7 +2,7 @@
 
 export const template = `
 <div class="ui-color"
-    @change.stop="$emit('input', translate($event.target.value))"
+    @change="$emit('input', translate($event.target.value))"
 >
     <ui-color
         :value="color"

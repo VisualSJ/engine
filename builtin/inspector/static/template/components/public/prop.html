@@ -1,17 +1,27 @@
 <div class="ui-prop"
     :type="value ? value.type : false"
-    @confirm="_onConfirm($event)"
+    :array="value && value.isArray"
+    :node="value && value.extends && value.extends.includes('cc.Node')"
+    :asset="value && value.extends && value.extends.includes('cc.Asset')"
+    :component="value && value.extends && value.extends.includes('cc.Component')"
+    @change="_onChange($event)"
+    @confirm="_onChange($event)"
 >
 
     <template
-        v-if="auto"
+        v-if="empty"
+    >
+        <slot></slot>
+    </template>
+
+    <template
+        v-else-if="!auto"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
             <slot></slot>
         </div>
     </template>
-
 
     <!-- Null -->
     <template
@@ -20,6 +30,18 @@
         <div class="name">{{value.name}}</div>
         <div class="content">
             <ui-null></ui-null>
+        </div>
+    </template>
+
+    <!-- Null -->
+    <template
+        v-else-if="value.type === 'Unknown'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-unknown
+                v-model="value.value"
+            ></ui-unknown>
         </div>
     </template>
 
@@ -35,7 +57,7 @@
 
     <!-- Number -->
     <template
-        v-else-if="value.type === 'number'"
+        v-else-if="value.type === 'Number'"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
@@ -47,13 +69,25 @@
 
     <!-- Boolean -->
     <template
-        v-else-if="value.type === 'boolean'"
+        v-else-if="value.type === 'Boolean'"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
             <ui-bool
                 v-model="value.value"
             ></ui-bool>
+        </div>
+    </template>
+
+    <!-- String -->
+    <template
+        v-else-if="value.type === 'String'"
+    >
+        <div class="name">{{value.name}}</div>
+        <div class="content">
+            <ui-string
+                v-model="value.value"
+            ></ui-string>
         </div>
     </template>
 
@@ -132,12 +166,12 @@
 
     <!-- Node -->
     <template
-        v-else-if="value.type === 'cc.Node'"
+        v-else-if="value.extends && value.extends.includes('cc.Node')"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
             <ui-node
-                :type="value.nodeType"
+                :type="value.type"
                 :value="value.value"
             ></ui-node>
         </div>
@@ -145,12 +179,12 @@
 
     <!-- Asset -->
     <template
-        v-else-if="value.type === 'cc.Asset'"
+        v-else-if="value.extends && value.extends.includes('cc.Asset')"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
             <ui-asset
-                :type="value.assetType"
+                :type="value.type"
                 :value="value.value"
             ></ui-asset>
         </div>
@@ -158,12 +192,12 @@
 
     <!-- Asset -->
     <template
-        v-else-if="value.type === 'cc.Component'"
+        v-else-if="value.extends && value.extends.includes('cc.Component')"
     >
         <div class="name">{{value.name}}</div>
         <div class="content">
             <ui-component
-                :type="value.componentType"
+                :type="value.type"
                 :value="value.value"
             ></ui-component>
         </div>

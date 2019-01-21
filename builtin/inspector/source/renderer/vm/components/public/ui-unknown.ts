@@ -1,16 +1,15 @@
 'use strict';
 
 export const template = `
-<div class="ui-null">
-    <span class="info">Null</span>
-    <span class="create"
+<div class="ui-unknown">
+    <span>Unknown Type</span>
+    <span class="reset"
         @click="_onClick"
-    >Create</span>
+    >Reset</span>
 </div>
 `;
 
 export const props = [
-    'type',
     'value',
 ];
 

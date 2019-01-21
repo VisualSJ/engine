@@ -2,12 +2,15 @@
 
     <ui-section expand>
         <div class="header" slot="header">
-            <div class="checkbox">
+            <ui-prop class="checkbox" empty="true"
+                :value="value.value.enabled"
+            >
                 <ui-checkbox
-                    :value="value.enabled"
+                    :value="value.value.enabled.value"
+                    @confirm="value.value.enabled.value = $event.target.value"
                     @click.stop
                 ></ui-checkbox>
-            </div>
+            </ui-prop>
             <div class="name">
                 <span>{{value.name}}</span>
             </div>
@@ -19,9 +22,10 @@
         </div>
 
         <template
-            v-for="item in value.dump"
+            v-for="item in value.value"
+            v-if="item.visible"
         >
-            <ui-prop auto
+            <ui-prop auto="true"
                 :value="item"
 
                 :width="width"

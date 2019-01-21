@@ -1,20 +1,15 @@
 'use strict';
 
 export const template = `
-<div class="ui-number"
-    @change="$emit('input', $event.target.value)"
->
-    <span
-        v-if="name"
-    >{{name}}</span>
-    <ui-num-input
+<div class="ui-string">
+    <ui-input
         :value="value"
-    ></ui-num-input>
+        @change="$emit('input', $event.target.value)"
+    ></ui-input>
 </div>
 `;
 
 export const props = [
-    'name',
     'value',
 ];
 

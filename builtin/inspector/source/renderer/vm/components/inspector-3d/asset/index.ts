@@ -44,8 +44,6 @@ export const methods = {
         if (importers.includes(info.importer)) {
             return 'asset-' + info.importer;
         }
-
-        console.log(info.importer);
     },
 
     /**

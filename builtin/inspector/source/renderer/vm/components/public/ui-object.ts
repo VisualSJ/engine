@@ -19,7 +19,7 @@ export const template = `
         <template
             v-for="item in value"
         >
-            <ui-prop
+            <ui-prop auto="true"
                 :value="item"
 
                 :width="width"

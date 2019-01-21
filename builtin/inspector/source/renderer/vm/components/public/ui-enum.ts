@@ -2,7 +2,7 @@
 
 export const template = `
 <div class="ui-enum"
-    @change.stop="$emit('input', $event.target.value)"
+    @change="$emit('input', $event.target.value)"
 >
     <ui-select
         :value="value"

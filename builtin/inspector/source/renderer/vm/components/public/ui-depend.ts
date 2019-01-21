@@ -2,7 +2,7 @@
 
 export const template = `
 <div class="ui-depend"
-    @change.stop="$emit('input', $event.target.value)"
+    @change="$emit('input', $event.target.value)"
 >
 
     <div class="name">{{name}}</div>
