@@ -92,7 +92,7 @@ export const methods = {
             return;
         }
 
-        const url = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', filePath);
+        const url = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-url-by-path', filePath);
         item.target = url;
         vm.meta.userData.imageLocations[item.name].targetDatabaseUrl = url;
     },

@@ -114,11 +114,11 @@ module.exports = {
          * 查询资源的 url 路径
          * @param path 磁盘路径
          */
-        async 'query-url-by-path'(path: string) {
+        async 'query-asset-url-by-path'(path: string) {
             if (!assetWorker) {
                 return null;
             }
-            return await assetWorker.send('asset-worker:query-url-by-path', path);
+            return await assetWorker.send('asset-worker:query-asset-url-by-path', path);
         },
 
         /**

@@ -214,7 +214,7 @@ Worker.Ipc.on('asset-worker:query-db-info', async (event, names) => {
     event.reply(null, queryDatabaseInfo(names));
 });
 
-Worker.Ipc.on('asset-worker:query-url-by-path', async (event, path) => {
+Worker.Ipc.on('asset-worker:query-asset-url-by-path', async (event, path) => {
     event.reply(null, queryUrlFromPath(path));
 });
 

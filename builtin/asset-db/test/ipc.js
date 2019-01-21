@@ -21,7 +21,7 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
  * query-asset-path √
  * query-asset-library √
  * query-asset-url √
- * query-url-by-path √
+ * query-asset-url-by-path √
  *
  * 资源增删改
  * create-asset √
@@ -146,9 +146,9 @@ describe('Asset-db 对外暴露的 IPC 接口', () => {
         });
     });
 
-    describe('由 path 查资源 url query-url-by-path', () => {
-        it('asset-db:query-url-by-path', async () => {
-             const url = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', assetSource);
+    describe('由 path 查资源 url query-asset-url-by-path', () => {
+        it('asset-db:query-asset-url-by-path', async () => {
+             const url = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-url-by-path', assetSource);
 
              expect(url).to.equal(assetUrl);
         });
