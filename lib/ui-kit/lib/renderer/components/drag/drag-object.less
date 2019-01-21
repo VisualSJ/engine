@@ -40,20 +40,21 @@
             display: flex;
             padding: 0 6px;
             border-radius: 0 0 0 2px;
+            background-color: #6691b9;
+            line-height: 1.4;
 
             & > .value {
+                display: inline;
                 flex: 1;
-                display: none;
+                width: 1px; // 激活 text-overflow: ellipsis;
             }
 
             & > .placeholder {
-                flex: 1;
-                color: #666;
+                display: none;
             }
         }
 
         & > svg {
-            display: none;
             padding: 2px 4px;
             width: 1em;
             height: 1em;
@@ -75,23 +76,23 @@
     }
 }
 
-:host([value]) {
+:host([empty]) {
     .area {
         & > ui-drag-area {
-            background-color: #6691b9;
-            line-height: initial;
+            background: none;
 
             & > .value {
-                display: inline;
-                
+                display: none;
             }
             & > .placeholder {
-                display: none;
+                display: inline-block;
+                flex: 1;
+                color: #666;
             }
         }
 
         & > svg {
-            display: inline;
+            display: none;
         }
     }
 }
@@ -100,7 +101,13 @@
     ui-drag-area {
         cursor: pointer;
         color: white;
-        background-color: var(--hover-c);
+    }
+    .type {
+        border-color: var(--hover-c);
+    }
+
+    .area {
+        border-color: var(--hover-c);
     }
 }
 
