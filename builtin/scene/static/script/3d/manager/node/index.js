@@ -341,6 +341,14 @@ class NodeManager extends EventEmitter {
             delete dump.parent;
             delete dump.children;
 
+            // 删除 components 里面多余的属性
+            if (dump.__comps__.length > 0) {
+                for (let i = 0; i < dump.__comps__.length; i++) {
+                    delete dump.__comps__[i].value.uuid;
+                    delete dump.__comps__[i].value.node;
+                }
+            }
+
             // 有 __prefab__ 数据的情况
             if (dump.__prefab__) {
                 const root = parent._prefab ? parent._prefab.root : node;
