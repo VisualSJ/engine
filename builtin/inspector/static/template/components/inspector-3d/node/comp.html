@@ -22,10 +22,16 @@
         </div>
 
         <template
-            v-if="hasCustom(value.type)"
+            v-if="getCustomComponent(value.type)"
         >
 
-            custom
+            <component
+                :is="getCustomComponent(value.type)"
+                :value="value"
+
+                :width="width"
+                :height="height"
+            ></component>
         </template>
 
         <template

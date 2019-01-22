@@ -14,8 +14,17 @@ export const props = [
     'value',
 ];
 
+const componentMap: any = {
+    'cc.ButtonComponent': 'cc-button-component',
+    'cc.ToggleComponent': 'cc-toggle-component',
+    'cc.SliderComponent': 'cc-slider-component',
+};
+
 export const components: any = {
     'ui-prop': require('../../public/ui-prop'),
+    'cc-button-component': require('./components/button'),
+    'cc-toggle-component': require('./components/toggle'),
+    'cc-slider-component': require('./components/slider'),
 };
 
 export const methods = {
@@ -78,11 +87,11 @@ export const methods = {
     },
 
     /**
-     * 是否有自定义页面
+     * 获取自定义组件名字
      * @param type
      */
-    hasCustom(type: string) {
-        return !!components[type];
+    getCustomComponent(type: string) {
+        return componentMap[type];
     },
 };
 
