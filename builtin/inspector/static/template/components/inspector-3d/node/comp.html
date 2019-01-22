@@ -22,15 +22,26 @@
         </div>
 
         <template
-            v-for="item in value.value"
-            v-if="item.visible"
+            v-if="hasCustom(value.type)"
         >
-            <ui-prop auto="true"
-                :value="item"
 
-                :width="width"
-                :height="height"
-            ></ui-prop>
+            custom
+        </template>
+
+        <template
+            v-else
+        >
+            <div class="content"
+                v-for="item in value.value"
+                v-if="item.visible"
+            >
+                <ui-prop auto="true"
+                    :value="item"
+    
+                    :width="width"
+                    :height="height"
+                ></ui-prop>
+            </div>
         </template>
     </ui-section>
 </div>
