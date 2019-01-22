@@ -164,6 +164,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 data[info.key] = node;
             }
         }
+    } else if (dump.isArray) {
+        const array: IProperty[] = (dump.value || []);
+        await Promise.all(array.map(async (item: IProperty, index: number) => {
+            return await decodePatch(`${path}.${index}`, item, data);
+        }));
     } else if (ccExtends.includes(assetType) || assetType === dump.type) {
         if (!dump.value || !dump.value.uuid) {
             data[info.key] = null;
@@ -186,11 +191,6 @@ export async function decodePatch(path: string, dump: any, node: any) {
         const parentData = get(node, parentInfo.search);
         const attr = cc.Class.attr(parentData, parentInfo.key);
         fillDefaultValue(attr, data, data.length, dump.value);
-    } else if (dump.isArray) {
-        const array: IProperty[] = (dump.value || []);
-        await Promise.all(array.map(async (item: IProperty, index: number) => {
-            return await decodePatch(`${path}.${index}`, item, data);
-        }));
     } else {
         data[info.key] = dump.value;
     }

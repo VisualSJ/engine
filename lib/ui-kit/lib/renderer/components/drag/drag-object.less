@@ -40,17 +40,20 @@
             display: flex;
             padding: 0 6px;
             border-radius: 0 0 0 2px;
-            background-color: #6691b9;
+            background: none;
             line-height: 1.4;
 
             & > .value {
-                display: inline;
+                
+                display: none;
                 flex: 1;
                 width: 1px; // 激活 text-overflow: ellipsis;
             }
 
             & > .placeholder {
-                display: none;
+                display: inline-block;
+                flex: 1;
+                color: #666;
             }
         }
 
@@ -62,6 +65,7 @@
             top: 1px;
             cursor: pointer;
             fill: var(--red-c, #b54344);
+            display: none;
         }
     }
 }
@@ -76,23 +80,21 @@
     }
 }
 
-:host([empty]) {
+:host([effective]){
     .area {
         & > ui-drag-area {
-            background: none;
+            background-color: #6691b9;
 
             & > .value {
-                display: none;
+                display: inline;
             }
             & > .placeholder {
-                display: inline-block;
-                flex: 1;
-                color: #666;
+                display: none;
             }
         }
 
         & > svg {
-            display: none;
+            display: inline;
         }
     }
 }
