@@ -218,9 +218,9 @@
         </div>
     </template>
 
-    <!-- GradientRange -->
+    <!-- Gradient -->
     <template
-        v-else-if="value.type === 'cc.GradientRange'"
+        v-else-if="value.type === 'cc.Gradient'"
     >
         <div class="name">{{getName(value.name)}}</div>
         <div class="content">
@@ -228,6 +228,16 @@
                 v-model="value.value"
             ></ui-gradient>
         </div>
+    </template>
+
+    <!-- GradientRange -->
+    <template
+        v-else-if="value.type === 'cc.GradientRange'"
+    >
+        <ui-gradient-range
+            :name="getName(value.name)"
+            v-model="value.value"
+        ></ui-gradient-range>
     </template>
 
     <!-- Depend -->

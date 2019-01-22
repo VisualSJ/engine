@@ -22,5 +22,13 @@
             "undo": "scene",
             "redo": "scene"
         }
+    },
+    "panel.gradient-editor": {
+        "title": "i18n:inspector.GRADIENT_EDITOR.title",
+        "main": "./dist/gradient-editor/panel.js",
+        "min-width": 325,
+        "min-height": 325,
+        "width": 400,
+        "height": 600
     }
 }

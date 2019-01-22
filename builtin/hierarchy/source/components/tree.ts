@@ -774,7 +774,7 @@ export const methods = {
                 const dumpdata = vm.copyNodesDumpdata[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
                 // 循环其子集
-                const children = dumpdata.children.value.map((child: any) => child.value.uuid);
+                const children = dumpdata.children.map((child: any) => child.value.uuid);
                 if (children.length > 0) {
                     await _forEach(children, newUuid);
                 }
@@ -836,7 +836,7 @@ export const methods = {
                 await db.moveNode(parent, target, offset);
 
                 // 循环其子集
-                const children = dumpdata.children.value.map((child: any) => child.value.uuid);
+                const children = dumpdata.children.map((child: any) => child.value.uuid);
                 if (children.length > 0) {
                     await _forEach(children, newUuid);
                 }

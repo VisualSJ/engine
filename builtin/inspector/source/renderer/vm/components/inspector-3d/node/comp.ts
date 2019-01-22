@@ -1,6 +1,6 @@
 'use strict';
 
-import { readTemplate, translationDump } from '../../../utils';
+import { readTemplate } from '../../../utils';
 
 export const template = readTemplate('inspector-3d/node/comp.html');
 
@@ -14,13 +14,13 @@ export const props = [
     'value',
 ];
 
-export const components = {
+export const components: any = {
     'ui-prop': require('../../public/ui-prop'),
 };
 
 export const methods = {
     /**
-     *
+     * 点击右侧设置按钮
      * @param event
      */
     _onClickComponentMenu(event: any) {
@@ -75,6 +75,14 @@ export const methods = {
                 },
             ],
         });
+    },
+
+    /**
+     * 是否有自定义页面
+     * @param type
+     */
+    hasCustom(type: string) {
+        return !!components[type];
     },
 };
 
