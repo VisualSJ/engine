@@ -49,6 +49,9 @@ export const methods = {
         }
         event.stopPropagation();
 
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
+
         // @ts-ignore 数组的 langth
         const childPath = event.target.path;
         if (childPath) {

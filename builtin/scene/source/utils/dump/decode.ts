@@ -24,11 +24,17 @@ import { get } from 'lodash';
  * @param node
  */
 export async function decodeNode(dump: INode, node?: any) {
+    if (!dump) {
+        return;
+    }
+
     node = node || cc.Node();
 
+    node.name = dump.name.value;
     node.active = dump.active.value;
     node.setPosition(dump.position.value);
-    node.setRotationFromEuler(dump.rotation.value);
+    // @ts-ignore
+    node.setRotationFromEuler(dump.rotation.value.x, dump.rotation.value.y, dump.rotation.value.z);
     node.setScale(dump.scale.value);
 
     if (dump.parent && dump.parent.value && dump.parent.value.uuid) {
@@ -142,9 +148,12 @@ export async function decodePatch(path: string, dump: any, node: any) {
     // 获取数据的类型
     const ccType = cc.js.getClassByName(dump.type);
     const ccExtends = ccType ? getTypeInheritanceChain(ccType) : [];
+    const nodeType = 'cc.Node';
+    const assetType = 'cc.Asset';
+    const valueType = 'cc.ValueType';
 
     // 实际修改数据
-    if (ccExtends.includes('cc.Node')) {
+    if (ccExtends.includes(nodeType) || nodeType === dump.type) {
         if (!dump.value || !dump.value.uuid) {
             data[info.key] = null;
         } else {
@@ -155,7 +164,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 data[info.key] = node;
             }
         }
-    } else if (ccExtends.includes('cc.Asset')) {
+    } else if (ccExtends.includes(assetType) || assetType === dump.type) {
         if (!dump.value || !dump.value.uuid) {
             data[info.key] = null;
         } else {
@@ -166,7 +175,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 });
             });
         }
-    } else if (ccExtends.includes('cc.ValueType')) {
+    } else if (ccExtends.includes(valueType) || valueType === dump.type) {
         Object.keys(dump.value).forEach((key: string) => {
             data[info.key][key] = dump.value[key];
         });
@@ -183,7 +192,6 @@ export async function decodePatch(path: string, dump: any, node: any) {
             return await decodePatch(data, item, `${path}.${index}`);
         }));
     } else {
-        console.log(info.key);
         data[info.key] = dump.value;
     }
 

@@ -268,8 +268,8 @@ export async function getCopyData(uuids: string[]) {
             rt.dumps[uuid] = dumpdata;
 
             // 循环子节点
-            if (Array.isArray(dumpdata.children.value)) {
-                for (const child of dumpdata.children.value) {
+            if (Array.isArray(dumpdata.children)) {
+                for (const child of dumpdata.children) {
                     await getDump(child.value.uuid);
                 }
             }
