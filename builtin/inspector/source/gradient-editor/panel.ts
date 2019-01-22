@@ -12,6 +12,7 @@ Vue.config.devtools = false;
 
 let panel: any = null;
 let vm: any = null;
+let cache: any;
 
 export const style = readFileSync(join(__dirname, '../index.css'));
 
@@ -34,7 +35,12 @@ export const $ = { content: '.gradient-editor' };
 export const messages = {
     data(data: any) {
         if (data) {
-            vm.init(data);
+            cache = data;
+            vm.init({
+                colorKeys: data.colorKeys,
+                alphaKeys: data.alphaKeys,
+                mode: data.mode,
+            });
         }
     },
 };
@@ -64,7 +70,11 @@ function mergeStops(colors: any[], alphas: any[], mode: number) {
         return acc;
     }, []);
 
-    console.log('stops', stops, colors, alphas, times);
+    // console.log('stops', stops, colors, alphas, times);
+    cache.colorKeys = colors;
+    cache.alphaKeys = alphas;
+    cache.mode = mode;
+    Editor.Ipc.sendToPanel('inspector', 'gradient:change', cache);
 
     for (const [index, stop] of stops.entries()) {
         const { time, color, alpha } = stop;
@@ -130,6 +140,15 @@ function getValByType(index: number, time: number, stops: any[], type: string, m
     if (mode === 1) {
         return next[type];
     }
+
+    if (!prev) {
+        prev = {color: [255, 255, 255], time: 0};
+    }
+
+    if (!next) {
+        next = {color: [255, 255, 255], time: 1};
+    }
+
     let val = prev[type];
     if (prev !== next) {
         val = interpolateStopProperty(prev, next, time, type);
@@ -211,10 +230,10 @@ export async function ready() {
         },
 
         async mounted() {
-            const data = await Editor.Ipc.requestToPackage('inspector', 'get-gradient-data');
-            if (data) {
-                this.init(data);
-            }
+            // const data = await Editor.Ipc.requestToPackage('inspector', 'get-gradient-data');
+            // if (data) {
+            //     this.init(data);
+            // }
         },
         methods: {
 
@@ -630,14 +649,12 @@ export async function ready() {
             },
         },
     });
+
+    Editor.Ipc.sendToPanel('inspector', 'gradient:state', true);
 }
 
 export async function beforeClose() { }
 
 export async function close() {
-    Editor.Ipc.sendToPackage(
-        'inspector',
-        'close-gradient-editor',
-        true
-    );
+    Editor.Ipc.sendToPackage('inspector', 'gradient:state', false);
 }

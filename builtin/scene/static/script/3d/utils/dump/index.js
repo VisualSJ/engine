@@ -1,6 +1,6 @@
 'use strict';
 
-const dump = require('../../../../../dist/utils/dump');
+const dump = require('../../../../../dist/utils/dump/index');
 
 /**
  * 生成一个 node 的 dump 数据

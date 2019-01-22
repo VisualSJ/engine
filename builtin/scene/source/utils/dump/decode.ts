@@ -189,7 +189,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
     } else if (dump.isArray) {
         const array: IProperty[] = (dump.value || []);
         await Promise.all(array.map(async (item: IProperty, index: number) => {
-            return await decodePatch(data, item, `${path}.${index}`);
+            return await decodePatch(`${path}.${index}`, item, data);
         }));
     } else {
         data[info.key] = dump.value;

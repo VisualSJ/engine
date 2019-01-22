@@ -5,6 +5,8 @@ import { join } from 'path';
 
 import { init } from './vm';
 
+import { changeGradintState, changeGrandintData, } from '../gradient-editor/manager';
+
 let panel: any = null;
 let vm: any = null;
 
@@ -105,6 +107,14 @@ export const messages = {
      */
     async 'scene:effect-update'(uuid: string) {
 
+    },
+
+    'gradient:state'(bool: boolean) {
+        changeGradintState(bool);
+    },
+
+    'gradient:change'(dump: any) {
+        changeGrandintData(dump);
     },
 };
 
