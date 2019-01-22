@@ -53,7 +53,7 @@ class View extends window.HTMLElement {
         this.appendChild(this.$scene);
 
         // 查询 asset-db 是否ready
-        if (this.depend.execute(tasks.assetDbReady[0])) {
+        if (await this.depend.execute(tasks.assetDbReady[0])) {
             this.depend.finish(tasks.assetDbReady[0]);
         }
 
