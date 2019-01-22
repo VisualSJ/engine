@@ -230,6 +230,16 @@
         </div>
     </template>
 
+    <!-- GradientRange -->
+    <template
+        v-else-if="value.type === 'cc.GradientRange'"
+    >
+        <ui-gradient-range
+            :name="getName(value.name)"
+            v-model="value.value"
+        ></ui-gradient-range>
+    </template>
+
     <!-- Depend -->
     <template
         v-else-if="value.type === 'ui.Depend'"

@@ -33,6 +33,7 @@ export const components = {
     'ui-depend': require('./ui-depend'),
     'ui-curve': require('./ui-curve'),
     'ui-gradient': require('./ui-gradient'),
+    'ui-gradient-range': require('./ui-gradient-range'),
 };
 
 export const methods = {
