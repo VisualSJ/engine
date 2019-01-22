@@ -115,14 +115,14 @@ class ConeController extends EditableController {
 
         // update cone line
         let lineData = this.getConeLineData();
-        updateVBAttr(this._coneLineMR.mesh, AttributeName.POSITION, lineData.vertices);
+        updateVBAttr(this._coneLineMR, AttributeName.POSITION, lineData.vertices);
 
         // update circle
         let circlePoints = ControllerShape.calcArcPoints(
             this._center, this._oriDir,
             this._circleFromDir, this._twoPI, this._radius
         );
-        updateVBAttr(this._circleMR.mesh, AttributeName.POSITION, circlePoints);
+        updateVBAttr(this._circleMR, AttributeName.POSITION, circlePoints);
         let pos = cc.v3();
         vec3.scale(pos, this._oriDir, this._height);
         this._circleNode.setPosition(pos.x, pos.y, pos.z);

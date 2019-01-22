@@ -363,7 +363,7 @@ class RotationController extends ControllerBase {
             this._position, normal, fromDir, radian,
             this._baseRadius * this.getDistScalar(), 60);
 
-        updateVBAttr(this._indicator.meshRenderer.mesh, AttributeName.POSITION, positions);
+        updateVBAttr(this._indicator.meshRenderer, AttributeName.POSITION, positions);
     }
 
     adjustControllerSize() {
@@ -380,11 +380,11 @@ class RotationController extends ControllerBase {
         vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
         let positions = ControllerShape.calcCirclePoints(cc.v3(), cameraNormal,
             this._baseRadius);
-        updateVBAttr(this._circleBorderMR.mesh, AttributeName.POSITION, positions);
+        updateVBAttr(this._circleBorderMR, AttributeName.POSITION, positions);
 
         // update cutoff
         //positions = ControllerShape.calcDiscPoints(cc.v3(), cameraNormal, this._baseRadius);
-        //updateVBAttr(this._cutoffMR.mesh, AttributeName.POSITION, positions);
+        //updateVBAttr(this._cutoffMR, AttributeName.POSITION, positions);
         this._cutoffNode.setScale(newScale);
         this._cutoffNode.setWorldPosition(this._position);
         this._cutoffNode.setWorldRotation(cameraRot);
@@ -406,7 +406,7 @@ class RotationController extends ControllerBase {
             this._baseRadius);
 
                     let axisData = this._axisDataMap[key];
-                    updateVBAttr(axisData.normalTorusMR.mesh, AttributeName.POSITION, positions);
+                    updateVBAttr(axisData.normalTorusMR, AttributeName.POSITION, positions);
                 }
             });
         }

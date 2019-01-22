@@ -67,7 +67,7 @@ class BoxController extends EditableController {
 
         let positions = ControllerShape.calcBoxPoints(this._center, this._size);
 
-        updateVBAttr(this._wireframeBoxMeshRenderer.mesh, AttributeName.POSITION, positions);
+        updateVBAttr(this._wireframeBoxMeshRenderer, AttributeName.POSITION, positions);
 
         if (this._edit) {
             this.updateEditControllers();

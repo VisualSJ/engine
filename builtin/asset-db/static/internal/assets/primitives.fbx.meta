@@ -132,13 +132,11 @@
       }
     },
     "primitives.prefab": {
-      "ver": "1.0.3",
+      "ver": "0.0.1",
       "importer": "gltf-scene",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
+      "imported": false,
+      "files": [],
       "subMetas": {},
       "userData": {
         "gltfIndex": 0

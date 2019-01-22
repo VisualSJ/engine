@@ -142,7 +142,7 @@ class SphereController extends EditableController {
             let borderCicleCenter = vec3.sub(tempVec3, this._center, offsetVec);
             let circlePoints = ControllerShape.calcCirclePoints(
                 borderCicleCenter, cameraToCenterDir, borderCicleRadius);
-            updateVBAttr(this._borderCircelMR.mesh, AttributeName.POSITION, circlePoints);
+            updateVBAttr(this._borderCircelMR, AttributeName.POSITION, circlePoints);
         } else {
             this._borderCircle.active = false;
         }
@@ -163,19 +163,19 @@ class SphereController extends EditableController {
                     let rot = cc.quat(0, 0, 0, 1);
                     quat.fromAxisAngle(rot, normalDir, e);
                     vec3.transformQuat(from, from, rot);
-                    this.updateArcMesh(frontArcMR.mesh, this._center,
+                    this.updateArcMesh(frontArcMR, this._center,
                         normalDir, from, (MathUtil.HALF_PI - e) * 2, this._radius);
 
                     frontArcMR.node.active = true;
-                    this.updateArcMesh(backArcMR.mesh, this._center,
+                    this.updateArcMesh(backArcMR, this._center,
                         normalDir, from, (MathUtil.HALF_PI - e) * 2 - MathUtil.TWO_PI, this._radius);
                 } else {
-                    this.updateArcMesh(backArcMR.mesh, this._center,
+                    this.updateArcMesh(backArcMR, this._center,
                         normalDir, this._circleDataMap[key].fromDir, MathUtil.TWO_PI, this._radius);
                     frontArcMR.node.active = false;
                 }
             } else {
-                this.updateArcMesh(backArcMR.mesh, this._center,
+                this.updateArcMesh(backArcMR, this._center,
                     normalDir, this._circleDataMap[key].fromDir, MathUtil.TWO_PI, this._radius);
                 frontArcMR.node.active = false;
             }
@@ -184,12 +184,12 @@ class SphereController extends EditableController {
         this.adjustEditControllerSize();
     }
 
-    updateArcMesh(mesh, center, normal, from, radian, radius) {
+    updateArcMesh(model, center, normal, from, radian, radius) {
         let arcPositions = ControllerShape.calcArcPoints(
             center, normal, from, radian, radius
         );
 
-        updateVBAttr(mesh, AttributeName.POSITION, arcPositions);
+        updateVBAttr(model, AttributeName.POSITION, arcPositions);
     }
 
     onEditorCameraMoved() {

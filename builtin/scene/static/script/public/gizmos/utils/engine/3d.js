@@ -70,7 +70,7 @@ class Engine3D extends EngineInterface {
         model.material = new cc.Material({ effectName: '__editor-gizmo', technique });
         const mtl = model.material;
         let overrides = {};
-        if (opts.cullMode) { overrides.rs = { cullMode: opts.cullMode }; }
+        if (opts.cullMode) { overrides.rasterizerState = { cullMode: opts.cullMode }; }
         if (pm !== triangles) { overrides.primitive = pm; }
         if (Object.keys(overrides).length) mtl.overridePipelineStates(overrides);
         if (opts.alpha !== undefined) node.modelColor.a = opts.alpha;
@@ -108,8 +108,8 @@ class Engine3D extends EngineInterface {
         return node.getComponent(cc.ModelComponent);
     }
 
-    updateVBAttr(mesh, attr, data) {
-        const ia = mesh.renderingMesh.getSubmesh(0).inputAssembler;
+    updateVBAttr(comp, attr, data) {
+        const ia = comp.model.getSubModel(0).inputAssembler;
         if (ia) ia.updateVertexAttr(attr, flat(data, (v) => [v.x, v.y, v.z]));
     }
 

@@ -95,7 +95,7 @@ class FrustumController extends EditableController {
 
         let positions = ControllerShape.calcFrustum(this._cameraProjection === 0, this._orthoHeight,
             this._fov, this._aspect, this._near, this._far).vertices;
-        updateVBAttr(this._frustumMeshRenderer.mesh, AttributeName.POSITION, positions);
+        updateVBAttr(this._frustumMeshRenderer, AttributeName.POSITION, positions);
 
         if (this._edit) {
             this.updateEditControllers();
