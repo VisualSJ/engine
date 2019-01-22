@@ -10,10 +10,10 @@
 
 资源数据库状态变更，会发送 busy 或者 free 字符串
 
-### asset-db:database-ready
+### asset-db:db-ready
 
 插件内某个 db 启动完成
 
-### asset-db:database-close
+### asset-db:db-close
 
 插件内某个 db 被关闭

@@ -114,6 +114,7 @@ ipcRenderer.on('webview-ipc:send', async (event, id, message, params) => {
         data.then((data) => {
             ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
         }).catch((error) => {
+            console.error(error);
             ipcRenderer.sendToHost('webview-ipc:send-reply', id, encode(error));
         });
         return;

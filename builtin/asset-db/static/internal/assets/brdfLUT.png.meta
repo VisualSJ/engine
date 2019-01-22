@@ -6,28 +6,7 @@
     ".png",
     ".json"
   ],
-  "subMetas": {
-    "brdfLUT": {
-      "ver": "1.0.11",
-      "importer": "texture",
-      "uuid": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be@brdfLUT",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {},
-      "userData": {
-        "wrapModeS": "clamp-to-edge",
-        "wrapModeT": "clamp-to-edge",
-        "minfilter": "linear",
-        "magfilter": "linear",
-        "premultiplyAlpha": false,
-        "anisotropy": 1,
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "1e843e8e-5f6c-49e2-9f78-47d0dac7e0be"
-      }
-    }
-  },
+  "subMetas": {},
   "userData": {
     "type": "texture"
   },

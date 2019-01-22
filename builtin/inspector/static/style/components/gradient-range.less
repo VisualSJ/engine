@@ -1,0 +1,32 @@
+.ui-gradient-range {
+    flex: 1;
+    display: flex;
+    flex-flow: wrap;
+
+    & > .name {
+        width: 30%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 4px;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    & > .content {
+        width: 70%;
+        flex: none;
+        display: flex;
+
+        & > .ui-prop {
+            margin: 0;
+            line-height: 12px;
+        }
+    }
+
+    & > .object {
+        flex: 1;
+        margin: 2px 0 4px 6px;
+        padding: 0 8px;
+        border: 1px #888 dashed;
+    }
+}

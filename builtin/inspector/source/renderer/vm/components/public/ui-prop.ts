@@ -33,6 +33,7 @@ export const components = {
     'ui-depend': require('./ui-depend'),
     'ui-curve': require('./ui-curve'),
     'ui-gradient': require('./ui-gradient'),
+    'ui-gradient-range': require('./ui-gradient-range'),
 };
 
 export const methods = {
@@ -48,6 +49,9 @@ export const methods = {
             return;
         }
         event.stopPropagation();
+
+        // 保存历史记录
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
 
         // @ts-ignore 数组的 langth
         const childPath = event.target.path;

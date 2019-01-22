@@ -75,6 +75,7 @@ class HostIpc extends EventEmitter {
                 if (item && item.callback) {
                     if (error) {
                         error.stacks = item.stacks;
+                        error.stacks.splice(0, 0, 'at <process:scene>');
                         error = decode(error, 'error');
                     }
                     item.callback(error, data);
@@ -98,6 +99,7 @@ class HostIpc extends EventEmitter {
                 if (item && item.callback) {
                     if (error) {
                         error.stacks = item.stacks;
+                        error.stacks.splice(0, 0, 'at <process:scene>');
                         error = decode(error, 'error');
                     }
                     item.callback(error, data);

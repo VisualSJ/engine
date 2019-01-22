@@ -484,13 +484,13 @@ async function createWorker() {
 
     // 更新主进程标记以及广播消息
     assetWorker.on('asset-worker:ready', async (event: any, name: string) => {
-        Editor.Ipc.sendToAll('asset-db:database-ready', name);
+        Editor.Ipc.sendToAll('asset-db:db-ready', name);
         ready(name);
     });
 
     // 一个 db 被关闭了
     assetWorker.on('asset-worker:close', async (event: any, name: string) => {
-        Editor.Ipc.sendToAll('asset-db:database-close', name);
+        Editor.Ipc.sendToAll('asset-db:db-close', name);
         close(name);
     });
 

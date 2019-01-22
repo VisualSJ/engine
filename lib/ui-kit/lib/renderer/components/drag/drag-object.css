@@ -46,25 +46,28 @@
   display: flex;
   padding: 0 6px;
   border-radius: 0 0 0 2px;
-  background-color: #6691b9;
+  background: none;
   line-height: 1.4;
 }
 :host .area > ui-drag-area > .value {
-  display: inline;
+  display: none;
   flex: 1;
   width: 1px;
 }
 :host .area > ui-drag-area > .placeholder {
-  display: none;
+  display: inline-block;
+  flex: 1;
+  color: #666;
 }
 :host .area > svg {
-  padding: 2px 4px;
+  padding: 1px 4px;
   width: 1em;
   height: 1em;
   position: relative;
   top: 1px;
   cursor: pointer;
   fill: var(--red-c, #b54344);
+  display: none;
 }
 :host([focused]) .type {
   border-color: #fd942b;
@@ -72,19 +75,17 @@
 :host([focused]) .area {
   border-color: #fd942b;
 }
-:host([empty]) .area > ui-drag-area {
-  background: none;
+:host([effective]) .area > ui-drag-area {
+  background-color: #6691b9;
 }
-:host([empty]) .area > ui-drag-area > .value {
+:host([effective]) .area > ui-drag-area > .value {
+  display: inline;
+}
+:host([effective]) .area > ui-drag-area > .placeholder {
   display: none;
 }
-:host([empty]) .area > ui-drag-area > .placeholder {
-  display: inline-block;
-  flex: 1;
-  color: #666;
-}
-:host([empty]) .area > svg {
-  display: none;
+:host([effective]) .area > svg {
+  display: inline;
 }
 :host(:hover) ui-drag-area {
   cursor: pointer;
