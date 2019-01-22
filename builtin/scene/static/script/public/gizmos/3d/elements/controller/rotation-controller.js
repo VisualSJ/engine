@@ -39,24 +39,24 @@ class RotationController extends ControllerBase {
         topNode.parent = this.shape;
 
         let torusNode = ControllerUtils.torus(baseRadius, tubeRadius,
-            { arc: Math.abs(arcRadian) }, color);
+            { arc: Math.abs(arcRadian) }, color.clone());
         torusNode.name = axisName + 'RotationTorus';
         torusNode.parent = topNode;
         setNodeOpacity(torusNode, 0);
         NodeUtils.setEulerAngles(torusNode, torusRot);
         let arrowNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
-            baseArrowBodyHeight, color);
+            baseArrowBodyHeight, color.clone());
         arrowNode.name = axisName + 'Axis';
         arrowNode.parent = topNode;
         NodeUtils.setEulerAngles(arrowNode, arrowRot);
         let arcNode = ControllerUtils.arc(cc.v3(),
-            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color, { noDepthTestForLines: true });
+            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color.clone(), { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.name = axisName + 'RotationArc';
 
         // indicator circle
         arcNode = ControllerUtils.arc(cc.v3(), this._axisDir[axisName], arcFromDir,
-            this._twoPI, baseRadius, color, { noDepthTestForLines: true });
+            this._twoPI, baseRadius, color.clone(), { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.active = false;
         arcNode.name = axisName + 'IndicatorCircle';
@@ -92,7 +92,7 @@ class RotationController extends ControllerBase {
         let cameraNormal = cc.v3();
         vec3.transformQuat(cameraNormal, cc.v3(0, 0, 1), cameraRot);
         let circleBorderNode = ControllerUtils.circle(cc.v3(), cameraNormal,
-            this._baseRadius, new cc.Color(20, 20, 20));
+            this._baseRadius, cc.Color.GRAY);
         circleBorderNode.name = 'circleBorder';
         circleBorderNode.parent = this._rootNode;
         setNodeOpacity(circleBorderNode, 200);
