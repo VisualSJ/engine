@@ -139,3 +139,32 @@ ui-section {
 @import './assets/asset-javascript.less';
 @import './assets/asset-texture.less';
 @import './assets/asset-material.less';
+
+/* ---------------------- gradient editor start ---------------------------- */
+.gradient-editor {
+    padding: 10px;
+    .gradient {
+        position: relative;
+        box-sizing: border-box;
+        padding: 15px 5px;
+        height: 75px;
+        width: 100%;
+        margin: 10px 0;
+        background-image: url('packages://inspector/static/checkerboard-32x32.png');
+        background-repeat: repeat;
+        background-clip: content-box;
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+    .anchor{
+        &.active {
+            stroke: #0091ff;
+        }
+        &.hide {
+            display: none;
+        }
+    }
+}

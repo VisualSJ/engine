@@ -86,6 +86,16 @@ export const methods = {
             menu: translation(menu),
         });
     },
+
+    editGradient() {
+        const data = {
+            alphaKeys: [{ time: 0.5, alpha: 0.5 }, { time: 1, alpha: 1 }],
+            colorKeys: [{ time: 0, color: [0, 255, 255] }, { time: 1, color: [255, 255, 255] }],
+            mode: Math.floor(Math.random() * 2),
+        };
+
+        Editor.Ipc.sendToPackage('inspector', 'open-gradient-editor', data);
+    },
 };
 
 export const watch = {
