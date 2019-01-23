@@ -2,8 +2,12 @@
 
 export const template = `
 <div class="ui-depend">
-
-    <div class="name">{{name}}</div>
+    <div class="name">
+        <span>{{name}}</span>
+        <i class="iconfont icon-lock"
+            v-if="value.readonly"
+        ></i>
+    </div>
     <div class="content">
         <ui-checkbox
             :value="unfold"
@@ -29,6 +33,7 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
     'width',
     'height',
 

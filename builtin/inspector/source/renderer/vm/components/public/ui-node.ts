@@ -5,6 +5,7 @@ export const template = `
     @change.stop="$emit('input', translate($event.target.value))"
 >
     <ui-drag-object
+        :disabled="readonly"
         :dropable="type"
         :value="value ? value.uuid : null"
     ></ui-drag-object>
@@ -12,6 +13,8 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
+
     'type',
     'value',
 ];

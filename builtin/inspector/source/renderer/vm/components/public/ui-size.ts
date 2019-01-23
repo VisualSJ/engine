@@ -3,15 +3,19 @@
 export const template = `
 <div class="ui-size">
     <ui-number name="W"
+        :readobly="readonly"
         v-model="value.width"
     ></ui-number>
     <ui-number name="H"
+        :readobly="readonly"
         v-model="value.height"
     ></ui-number>
 </div>
 `;
 
 export const props = [
+    'readonly',
+
     'value',
 ];
 

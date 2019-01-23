@@ -51,7 +51,16 @@ export const methods = {
 
         const menu = {};
         components.forEach((item: any) => {
-            const paths = item.path.split('/');
+            let paths = item.path.split('/');
+
+            // 翻译
+            paths = paths.map((str: string) => {
+                if (!str.startsWith('i18n:')) {
+                    return str;
+                }
+                return Editor.I18n.t('ENGINE.' + str.substr(5)) || str;
+            });
+
             const button = paths.pop();
             let data: any = menu;
             paths.forEach((path: any) => {

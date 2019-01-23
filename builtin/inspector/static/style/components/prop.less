@@ -7,9 +7,15 @@
     & > .name {
         width: 30%;
         overflow: hidden;
-        text-overflow: ellipsis;
         padding-right: 4px;
         box-sizing: border-box;
+        display: flex;
+
+        & > span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
     & > .content {

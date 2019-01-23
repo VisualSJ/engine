@@ -5,9 +5,18 @@
 
     & > span {
         padding: 0 5px 0 8px;
+        cursor: ew-resize;
+
+        &[disabled] {
+            cursor: default;
+        }
     }
 
     & > ui-num-input {
+        flex: 1;
+    }
+
+    & > ui-slider {
         flex: 1;
     }
 }

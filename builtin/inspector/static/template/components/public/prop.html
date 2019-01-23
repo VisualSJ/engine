@@ -17,7 +17,12 @@
     <template
         v-else-if="!auto"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <slot></slot>
         </div>
@@ -37,7 +42,12 @@
     <template
         v-else-if="value.type === 'Unknown'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-unknown
                 v-model="value.value"
@@ -59,9 +69,19 @@
     <template
         v-else-if="value.type === 'Number'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-number
+                :readonly="value.readonly"
+                :min="value.min"
+                :max="value.max"
+                :step="value.step"
+                :slide="value.slide"
                 v-model="value.value"
             ></ui-number>
         </div>
@@ -74,6 +94,7 @@
         <div class="name">{{getName(value.name)}}</div>
         <div class="content">
             <ui-bool
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-bool>
         </div>
@@ -83,9 +104,15 @@
     <template
         v-else-if="value.type === 'String'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-string
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-string>
         </div>
@@ -95,9 +122,15 @@
     <template
         v-else-if="value.type === 'Enum'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-enum
+                :readonly="value.readonly"
                 :list="value.enumList"
                 v-model="value.value"
             ></ui-enum>
@@ -108,9 +141,15 @@
     <template
         v-else-if="value.type === 'cc.Size'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-size
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-size>
         </div>
@@ -120,9 +159,15 @@
     <template
         v-else-if="value.type === 'cc.Vec2'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-vec2
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-vec2>
         </div>
@@ -132,9 +177,15 @@
     <template
         v-else-if="value.type === 'cc.Vec3'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-vec3
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-vec3>
         </div>
@@ -144,9 +195,15 @@
     <template
         v-else-if="value.type === 'cc.Color'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-color
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-color>
         </div>
@@ -156,9 +213,15 @@
     <template
         v-else-if="value.type === 'cc.Rect'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-rect
+                :readonly="value.readonly"
                 :value="value.value"
             ></ui-rect>
         </div>
@@ -168,9 +231,15 @@
     <template
         v-else-if="isType('cc.Node')"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-node
+                :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
             ></ui-node>
@@ -181,9 +250,15 @@
     <template
         v-else-if="isType('cc.Asset')"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-asset
+                :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
             ></ui-asset>
@@ -194,9 +269,15 @@
     <template
         v-else-if="isType('cc.Component')"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-component
+                :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
             ></ui-component>
@@ -207,9 +288,15 @@
     <template
         v-else-if="value.type === 'cc.CurveRange'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-curve
+                :readonly="value.readonly"
                 v-model="value.value"
 
                 :width="width"
@@ -222,9 +309,15 @@
     <template
         v-else-if="value.type === 'cc.Gradient'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name">
+            <span>{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
         <div class="content">
             <ui-gradient
+                :readonly="value.readonly"
                 v-model="value.value"
             ></ui-gradient>
         </div>
@@ -235,6 +328,7 @@
         v-else-if="value.type === 'cc.GradientRange'"
     >
         <ui-gradient-range
+            :readonly="value.readonly"
             :name="getName(value.name)"
             v-model="value.value"
         ></ui-gradient-range>
@@ -245,6 +339,7 @@
         v-else-if="value.type === 'ui.Depend'"
     >
         <ui-depend
+            :readonly="value.readonly"
             :name="getName(value.name)"
             v-model="value.value"
             :children="value.children"
@@ -259,6 +354,7 @@
         v-else
     >
         <ui-object
+            :readonly="value.readonly"
             :name="getName(value.name)"
             :value="value.value"
 

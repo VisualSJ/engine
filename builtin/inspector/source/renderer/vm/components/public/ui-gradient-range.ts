@@ -2,7 +2,12 @@
 
 export const template = `
 <div class="ui-gradient-range">
-    <div class="name">{{name}}</div>
+    <div class="name">
+        <span>{{name}}</span>
+        <i class="iconfont icon-lock"
+            v-if="value.readonly"
+        ></i>
+    </div>
     <div class="content">
 
         <ui-prop empty="true"
@@ -62,6 +67,7 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
     'name',
     'value',
 ];

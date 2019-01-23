@@ -5,12 +5,15 @@ export const template = `
     @change.stop="$emit('input', $event.target.value)"
 >
     <ui-checkbox
+        :disabled="readonly"
         :value="value"
     ></ui-checkbox>
 </div>
 `;
 
 export const props = [
+    'readonly',
+
     'value',
 ];
 

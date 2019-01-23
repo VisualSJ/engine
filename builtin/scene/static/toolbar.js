@@ -85,6 +85,18 @@ exports.ready = async function() {
     });
 
     document.body.addEventListener('keydown', async (event) => {
+        function getShadowRootActiveElement(element) {
+            if (element && element.shadowRoot) {
+                return getShadowRootActiveElement(element.shadowRoot.activeElement);
+            }
+            return element;
+        }
+        const element = getShadowRootActiveElement(document.activeElement);
+
+        if (element && element.tagName === 'INPUT') {
+            return;
+        }
+
         switch (event.key) {
             case 'w':
             case 'W':
