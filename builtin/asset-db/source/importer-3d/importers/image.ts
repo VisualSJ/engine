@@ -2,6 +2,7 @@ import { Asset, Importer, queryUrlFromPath } from '@editor/asset-db';
 import { AssertionError } from 'assert';
 import { extname } from 'path';
 import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
+import { makeDefaultSpriteFrameAssetUserDataFromImageUuid } from './sprite-frame';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
@@ -82,6 +83,12 @@ export default class ImageImporter extends Importer {
                     (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
                     break;
                 case 'sprite-frame':
+                    // const sprite2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
+                    // Object.assign(sprite2DSubAsset.userData,
+                    //     makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
+                    const textureSpriteFrameSubAsset = await asset.createSubAsset(asset.basename, 'sprite-frame');
+                    Object.assign(textureSpriteFrameSubAsset.userData,
+                        makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid));
                     break;
             }
 

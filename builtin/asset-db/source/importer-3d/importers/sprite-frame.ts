@@ -1,12 +1,30 @@
 'use strict';
 
-import { Asset, Importer, VirtualAsset } from '@editor/asset-db';
-import { existsSync } from 'fs';
+import { Asset, VirtualAsset } from '@editor/asset-db';
 import { clamp, getTrimRect } from '../utils';
+import { getImageData } from '../utils';
+import TextureImporter from './texture';
+import {
+    makeDefaultSpriteFrameBaseAssetUserData,
+    SpriteFrameBaseAssetUserData
+} from './texture-base';
+export interface SpriteFrameAssetUserData extends SpriteFrameBaseAssetUserData {
+    isUuid?: boolean;
+    imageUuidOrDatabaseUri: string;
+}
 
-const imageUtils = require('../../../static/utils/image');
+export function makeDefaultSpriteFrameAssetUserData(): SpriteFrameBaseAssetUserData {
+    return makeDefaultSpriteFrameBaseAssetUserData();
+}
 
-export default class SpriteImporter extends Importer {
+export function makeDefaultSpriteFrameAssetUserDataFromImageUuid(uuid: string): SpriteFrameAssetUserData {
+    return Object.assign(makeDefaultSpriteFrameBaseAssetUserData(), {
+        isUuid: true,
+        imageUuidOrDatabaseUri: uuid,
+    });
+}
+
+export default class SpriteFrameImporter extends TextureImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
@@ -16,6 +34,10 @@ export default class SpriteImporter extends Importer {
     // importer 的名字，用于指定 importer as 等
     get name() {
         return 'sprite-frame';
+    }
+
+    get assetType() {
+        return 'cc.SpriteFrame';
     }
 
     /**
@@ -28,43 +50,38 @@ export default class SpriteImporter extends Importer {
      */
     public async import(asset: Asset) {
         let updated = false;
+
         // 如果没有生成 json 文件，则重新生成
-        if ((await asset.existsInLibrary('.json')) || !asset.parent) {
-            return updated;
-        }
-
-        // 如果是 texture 导入的，则自动识别一些配置参数
-        if (asset.parent.meta.importer === 'texture') {
-            // @ts-ignore
-            const file = asset.parent.library + (asset.parent.extname || '');
-
-            if (!file || !existsSync(file)) {
-                throw new Error(
-                    `Spriteframe import failed: The picture file [${
-                    asset.userData.textureUuid
-                    }] does not exist`
-                );
+        if (!(await asset.existsInLibrary('.json'))) {
+            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+                Object.assign(asset.userData, makeDefaultSpriteFrameBaseAssetUserData());
             }
 
-            const userData = asset.userData;
-            const imageData = await imageUtils.getImageData(file);
+            const userData = asset.userData as SpriteFrameBaseAssetUserData;
+
+            // @ts-ignore
+            const file = asset.parent && asset.parent.source;
+
+            const imageData = await getImageData(file);
 
             userData.trimThreshold = 1;
             userData.rotated = false;
 
-            userData.rawWidth = imageData.width;
-            userData.rawHeight = imageData.height;
+            if (imageData) {
+                userData.rawWidth = imageData.width;
+                userData.rawHeight = imageData.height;
 
-            const rect = getTrimRect(
-                imageData.data,
-                userData.rawWidth,
-                userData.rawHeight,
-                userData.trimThreshold
-            );
-            userData.trimX = rect[0];
-            userData.trimY = rect[1];
-            userData.width = rect[2];
-            userData.height = rect[3];
+                const rect = getTrimRect(
+                    new Buffer(imageData.data),
+                    userData.rawWidth,
+                    userData.rawHeight,
+                    userData.trimThreshold
+                );
+                userData.trimX = rect[0];
+                userData.trimY = rect[1];
+                userData.width = rect[2];
+                userData.height = rect[3];
+            }
 
             userData.offsetX =
                 userData.trimX + userData.width / 2 - userData.rawWidth / 2;
@@ -95,29 +112,26 @@ export default class SpriteImporter extends Importer {
                 userData.width - (userData.borderLeft || 0)
             );
 
-            userData.vertices = undefined;
+            // userData.vertices = undefined;
+
+            const spriteFrame = this.createSpriteFrame(userData);
+            const imageAsset = this._getImageAsset(asset, spriteFrame);
+            if (imageAsset) {
+                spriteFrame._mipmaps = [imageAsset];
+            }
+
+            // @ts-ignore
+            await asset.saveToLibrary('.json', Manager.serialize(spriteFrame));
+
+            updated = true;
+
         }
-
-        const sprite = this.createSpriteFrame(asset);
-        asset.saveToLibrary(
-            '.json',
-            JSON.stringify(
-                {
-                    __type__: 'cc.SpriteFrame',
-                    content: this.serialize(sprite, asset),
-                },
-                null,
-                2
-            )
-        );
-
-        updated = true;
 
         return updated;
     }
 
-    private createSpriteFrame(asset: Asset) {
-        const userData = asset.userData;
+    private createSpriteFrame(userData: SpriteFrameBaseAssetUserData) {
+        // const userData = asset.userData;
 
         // @ts-ignore
         const sprite = new cc.SpriteFrame();
@@ -126,8 +140,8 @@ export default class SpriteImporter extends Importer {
         // @ts-ignore
         sprite.setOriginalSize(cc.size(userData.rawWidth, userData.rawHeight));
         // @ts-ignore
-        sprite.setRect(cc.rect(0, 0, userData.width, userData.height));
-        sprite._textureFilename = userData.textureFile;
+        // sprite.setRect(cc.rect(0, 0, userData.width, userData.height));
+        // sprite._textureFilename = userData.textureFile;
         // @ts-ignore
         sprite.setRect(
             // @ts-ignore
@@ -145,7 +159,7 @@ export default class SpriteImporter extends Importer {
         sprite.insetLeft = userData.borderLeft;
         sprite.insetRight = userData.borderRight;
 
-        sprite.vertices = userData.vertices;
+        // sprite.vertices = userData.vertices;
 
         // @ts-ignore
         sprite.setOffset(cc.v2(userData.offsetX, userData.offsetY));
@@ -153,52 +167,52 @@ export default class SpriteImporter extends Importer {
         return sprite;
     }
 
-    private serialize(sprite: any, asset: VirtualAsset | Asset) {
-        const rect = sprite._rect;
-        const offset = sprite._offset;
-        const size = sprite._originalSize;
-        const uuid = asset.userData.textureUuid;
+    // private serialize(sprite: any, asset: VirtualAsset | Asset) {
+    //     const rect = sprite._rect;
+    //     const offset = sprite._offset;
+    //     const size = sprite._originalSize;
+    //     const uuid = asset.userData.textureUuid;
 
-        // if (uuid && exporting) {
-        //     uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
-        // }
+    //     // if (uuid && exporting) {
+    //     //     uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
+    //     // }
 
-        let capInsets;
-        if (
-            sprite.insetLeft ||
-            sprite.insetTop ||
-            sprite.insetRight ||
-            sprite.insetBottom
-        ) {
-            capInsets = [
-                sprite.insetLeft,
-                sprite.insetTop,
-                sprite.insetRight,
-                sprite.insetBottom,
-            ];
-        }
+    //     let capInsets;
+    //     if (
+    //         sprite.insetLeft ||
+    //         sprite.insetTop ||
+    //         sprite.insetRight ||
+    //         sprite.insetBottom
+    //     ) {
+    //         capInsets = [
+    //             sprite.insetLeft,
+    //             sprite.insetTop,
+    //             sprite.insetRight,
+    //             sprite.insetBottom,
+    //         ];
+    //     }
 
-        let vertices;
-        if (sprite.vertices) {
-            vertices = {
-                triangles: sprite.vertices.triangles,
-                x: sprite.vertices.x,
-                y: sprite.vertices.y,
-                u: sprite.vertices.u,
-                v: sprite.vertices.v,
-            };
-        }
+    //     let vertices;
+    //     if (sprite.vertices) {
+    //         vertices = {
+    //             triangles: sprite.vertices.triangles,
+    //             x: sprite.vertices.x,
+    //             y: sprite.vertices.y,
+    //             u: sprite.vertices.u,
+    //             v: sprite.vertices.v,
+    //         };
+    //     }
 
-        return {
-            name: sprite._name,
-            texture: uuid || undefined,
-            atlas: sprite._atlasUuid || '', // strip from json if exporting
-            rect: rect ? [rect.x, rect.y, rect.width, rect.height] : undefined,
-            offset: offset ? [offset.x, offset.y] : undefined,
-            originalSize: size ? [size.width, size.height] : undefined,
-            rotated: sprite._rotated ? 1 : undefined,
-            capInsets,
-            vertices,
-        };
-    }
+    //     return {
+    //         name: sprite._name,
+    //         texture: uuid || undefined,
+    //         atlas: sprite._atlasUuid || '', // strip from json if exporting
+    //         rect: rect ? [rect.x, rect.y, rect.width, rect.height] : undefined,
+    //         offset: offset ? [offset.x, offset.y] : undefined,
+    //         originalSize: size ? [size.width, size.height] : undefined,
+    //         rotated: sprite._rotated ? 1 : undefined,
+    //         capInsets,
+    //         vertices,
+    //     };
+    // }
 }

@@ -18,9 +18,11 @@ import JsonImporter from './importers/json';
 import MaterialImporter from './importers/material';
 import PrefabImporter from './importers/prefab';
 import SceneImporter from './importers/scene';
+import SpriteFrameImporter from './importers/sprite-frame';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
 import TextureCubeImporter, { TextureCubeFaceImporter } from './importers/texture-cube';
+import TTFFontImporter from './importers/ttf-font';
 import UnknownImporter from './importers/unknown';
 
 export function register(database: AssetDB) {
@@ -55,7 +57,7 @@ export function register(database: AssetDB) {
     database.register(new SceneImporter(), ['.scene', '.fire']);
 
     // 虚拟的 sprite-frame 导入
-    // database.register(new SpriteFrameImporter());
+    database.register(new SpriteFrameImporter());
 
     // .js | .coffee | .ts | .prefab | spine .json
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
@@ -81,4 +83,5 @@ export function register(database: AssetDB) {
     database.register(new MaterialImporter(), '.mtl');
     database.register(new PrefabImporter(), '.prefab');
     database.register(new EffectImporter(), '.effect');
+    database.register(new TTFFontImporter(), '.ttf');
 }

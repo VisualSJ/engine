@@ -90,3 +90,29 @@ export function getTrimRect(buffer: Buffer, w: number, h: number, trimThreshold:
 
     return [tx, ty, tw, th];
 }
+
+/**
+ * 创建一个 canvas 节点，并等待图片加载完成绘制到其上
+ * @param {*} file
+ */
+export async function getImageData(file: string) {
+    const $img = document.createElement('img');
+    $img.src = file;
+
+    await new Promise((resolve) => {
+        $img.addEventListener('load', () => {
+            resolve($img);
+        });
+        $img.addEventListener('error', () => {
+            // reject();
+        });
+    });
+
+    const $canvas = document.createElement('canvas');
+    $canvas.width = $img.width;
+    $canvas.height = $img.height;
+
+    let $context: CanvasRenderingContext2D | null = $canvas.getContext('2d');
+    $context && $context.drawImage($img, 0, 0);
+    return $context && $context.getImageData(0, 0, $img.width, $img.height);
+};

@@ -4,6 +4,7 @@ import {
     makeDefaultTextureBaseAssetUserData,
     TextureBaseAssetUserData
 } from './texture-base';
+// import { getImageData } from '.';
 
 export interface Texture2DAssetUserData extends TextureBaseAssetUserData {
     isUuid?: boolean;
@@ -60,34 +61,49 @@ export default class TextureImporter extends Importer {
             if (Object.getOwnPropertyNames(asset.userData).length === 0) {
                 Object.assign(asset.userData, makeDefaultTexture2DAssetUserData());
             }
+
             const userData = asset.userData as Texture2DAssetUserData;
 
             // @ts-ignore
-            const texture = new cc.Texture2D();
-            applyTextureBaseAssetUserData(userData, texture);
+            let texture = new cc.Texture2D();
 
-            // Get image.
-            const imageUuidOrDatabaseUri = userData.imageUuidOrDatabaseUri;
-            if (imageUuidOrDatabaseUri) {
-                let imageUuid: string | null = null;
-                if (userData.isUuid) {
-                    imageUuid = imageUuidOrDatabaseUri;
-                } else {
-                    imageUuid = queryUuidFromUrl(imageUuidOrDatabaseUri);
-                }
-                if (imageUuid !== null) {
-                    // @ts-ignore
-                    const image = Manager.serialize.asAsset(imageUuid);
-                    texture._mipmaps = [image];
-                }
+            const imageAsset = this._getImageAsset(asset, texture);
+            if (imageAsset) {
+                texture._mipmaps = [imageAsset];
             }
 
             // @ts-ignore
             await asset.saveToLibrary('.json', Manager.serialize(texture));
 
+            // 关联到 sprite frame 那里
+
             updated = true;
         }
 
         return updated;
+    }
+
+    // @ts-ignore
+    protected _getImageAsset(asset: VirtualAsset, texture: cc.Texture2D) {
+        const userData = asset.userData as Texture2DAssetUserData;
+        applyTextureBaseAssetUserData(userData, texture);
+        // Get image.
+        const imageUuidOrDatabaseUri = userData.imageUuidOrDatabaseUri;
+        if (!imageUuidOrDatabaseUri) {
+            return null;
+        } else {
+            let imageUuid: string | null = null;
+            if (userData.isUuid) {
+                imageUuid = imageUuidOrDatabaseUri;
+            } else {
+                imageUuid = queryUuidFromUrl(imageUuidOrDatabaseUri);
+            }
+            if (imageUuid !== null) {
+                // @ts-ignore
+                const image = Manager.serialize.asAsset(imageUuid);
+                return image;
+            }
+        }
+        return null;
     }
 }

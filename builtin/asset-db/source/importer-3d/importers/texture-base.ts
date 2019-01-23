@@ -13,6 +13,24 @@ export interface TextureBaseAssetUserData {
     anisotropy: number;
 }
 
+export interface SpriteFrameBaseAssetUserData extends TextureBaseAssetUserData {
+    trimType: string;
+    trimThreshold: number;
+    rotated: boolean;
+    offsetX: number;
+    offsetY: number;
+    trimX: number;
+    trimY: number;
+    width: number;
+    height: number;
+    rawWidth: number;
+    rawHeight: number;
+    borderTop: number;
+    borderBottom: number;
+    borderLeft: number;
+    borderRight: number;
+}
+
 export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData {
     return {
         wrapModeS: 'clamp-to-edge',
@@ -48,4 +66,30 @@ export function applyTextureBaseAssetUserData(userData: TextureBaseAssetUserData
     texture.setFilters(getFilter(userData.minfilter), getFilter(userData.magfilter));
     texture.setPremultiplyAlpha(userData.premultiplyAlpha);
     texture.setAnisotropy(userData.anisotropy);
+}
+
+export function makeDefaultSpriteFrameBaseAssetUserData(): SpriteFrameBaseAssetUserData {
+    return {
+        wrapModeS: 'clamp-to-edge',
+        wrapModeT: 'clamp-to-edge',
+        minfilter: 'linear',
+        magfilter: 'linear',
+        premultiplyAlpha: false,
+        anisotropy: 1,
+        trimType: "auto",
+        trimThreshold: 1,
+        rotated: false,
+        offsetX: 0,
+        offsetY: 0,
+        trimX: 0,
+        trimY: 0,
+        width: 80,
+        height: 80,
+        rawWidth: 80,
+        rawHeight: 80,
+        borderTop: 0,
+        borderBottom: 0,
+        borderLeft: 0,
+        borderRight: 0,
+    }
 }
