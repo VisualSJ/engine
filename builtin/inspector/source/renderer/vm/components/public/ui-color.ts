@@ -5,6 +5,7 @@ export const template = `
     @change.stop="$emit('input', translate($event.target.value))"
 >
     <ui-color
+        :disabled="readonly"
         :value="color"
         @change="_onChange($event)"
     ></ui-color>
@@ -12,6 +13,8 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
+
     'value',
 ];
 

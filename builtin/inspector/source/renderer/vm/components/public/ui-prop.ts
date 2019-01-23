@@ -32,6 +32,7 @@ export const components = {
     'ui-object': require('./ui-object'),
     'ui-depend': require('./ui-depend'),
     'ui-curve': require('./ui-curve'),
+    'ui-curve-range': require('./ui-curve-range'),
     'ui-gradient': require('./ui-gradient'),
     'ui-gradient-range': require('./ui-gradient-range'),
 };

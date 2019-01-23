@@ -2,8 +2,12 @@
 
 export const template = `
 <div class="ui-object">
-
-    <div class="name">{{name}}</div>
+    <div class="name">
+        <span>{{name}}</span>
+        <i class="iconfont icon-lock"
+            v-if="readonly"
+        ></i>
+    </div>
     <div class="content">
         <template
             v-if="value.enable && value.enable.type === 'Boolean'"
@@ -49,6 +53,7 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
     'width',
     'height',
 

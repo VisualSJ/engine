@@ -22,7 +22,9 @@ import {
 export function encodeNode(node: any): INode {
     const ctor = node.constructor;
 
-    const emptyAttribute = {};
+    const emptyAttribute = {
+        default: null,
+    };
 
     const data: INode = {
         active: encodeObject(node.active, emptyAttribute),
@@ -119,6 +121,10 @@ export function encodeObject(object: any, attributes: any): IProperty {
         visible: ('visible' in attributes) ? attributes.visible : true,
     };
 
+    if (!attributes.ctor && attributes.type) {
+        data.type = attributes.type;
+    }
+
     if (defValue) {
         if (Array.isArray(defValue)) {
             data.isArray = true;
@@ -171,7 +177,8 @@ export function encodeObject(object: any, attributes: any): IProperty {
 
     if (
         cc.js.isChildClassOf(ctor, cc.ValueType) ||
-        data.type === 'cc.Gradient'
+        data.type === 'cc.Gradient' ||
+        data.type === 'cc.AnimationCurve'
     ) { // 如果是 valueType，则直接使用引擎序列化
         const dump = Manager.Utils.serialize(object, { stringify: false });
         delete dump.__type__;
@@ -179,10 +186,8 @@ export function encodeObject(object: any, attributes: any): IProperty {
     } else if (data.isArray) {
         data.value = (object || []).map((item: any) => {
             // todo 需要确认数组类型的 attrs
-            const childAttritube: any = {};
-            if (attributes.ctor) {
-                childAttritube.ctor = attributes.ctor;
-            }
+            const childAttritube: any = Object.assign({}, attributes);
+            childAttritube.default = null;
             const result = encodeObject(item, childAttritube);
             if (data.type && data.type !== 'Array' && data.type !== result.type) {
                 data.type = 'Unknown';

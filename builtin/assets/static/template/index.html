@@ -1,7 +1,7 @@
 <div class="assets">
     <header class="header">
         <i class="i-add"
-            :title="t('menu.createMenu', language)"
+            :title="t('menu.createMenu')"
             @click="popupNew($event)"
         ></i>
         <i class="search-type i-search"
@@ -10,16 +10,16 @@
         ></i>
         <ui-input tabindex="-1" ref="search" show-clear
             @keydown.stop="searchKeydown($event)"
-            :placeholder="t(searchPlaceholder, language)"
+            :placeholder="t(searchPlaceholder)"
             @change="searchChange"
         ></ui-input>
         <i class="expand"
             :class="{'i-full':!allExpand, 'i-full-over':allExpand}"
-            :title="t('menu.'+(!allExpand?'allExpand':'allCollapse'), language)"
+            :title="t('menu.'+(!allExpand?'allExpand':'allCollapse'))"
             @click="allToggle"
         ></i>
         <i class="i-refresh"
-            :title="t('menu.refresh', language)"
+            :title="t('menu.refresh')"
             @click="refresh"
         ></i>
     </header>
