@@ -12,18 +12,22 @@ export interface IProperty {
     invalid?: boolean;
     default?: any; // 默认值
     extends?: string[]; // 继承链
-    enumList?: any[]; // enum 类型的 list 选项数组
     displayName?: string; // 显示到界面上的名字
+    tooltip?: string; // 提示文本
+    editor?: any; // 组件上定义的编辑器数据
+    animatable?: boolean; // 是否可以在动画中编辑
+
+    // Enum
+    enumList?: any[]; // enum 类型的 list 选项数组
+
+    // Number
     min?: number; // 数值类型的最小值
     max?: number; // 数值类型的最大值
     step?: number; // 数值类型的步进值
-    tooltip?: string; // 提示文本
-    animatable?: boolean; // 是否可以在动画中编辑
+    slide?: boolean; // 数组是否显示为滑块
 
-    slide?: boolean; // checkbox 类型是否显示为滑块
+    // Label
     multiline?: boolean; // 字符串是否允许换行
-
-    editor?: any; // 组件上定义的编辑器数据
 
     // multiline?: boolean; 字符串是否允许换行
     // nullable?: boolean; 属性是否允许为空

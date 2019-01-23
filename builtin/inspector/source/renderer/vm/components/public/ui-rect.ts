@@ -3,16 +3,20 @@
 export const template = `
 <div class="ui-rect">
     <ui-vec2
+        :readobly="readonly"
         v-model="value"
     ></ui-vec2>
 
     <ui-size
+        :readobly="readonly"
         v-model="value"
     ></ui-size>
 </div>
 `;
 
 export const props = [
+    'readonly',
+
     'value',
 ];
 

@@ -61,6 +61,7 @@ export async function decodeNode(dump: INode, node?: any) {
             node.children[0].parent = null;
         }
     }
+
     for (let i = 0; i < dump.__comps__.length; i++) {
         const componentDump = dump.__comps__[i];
         let component = node._components[i];

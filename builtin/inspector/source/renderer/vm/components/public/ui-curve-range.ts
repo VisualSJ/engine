@@ -1,7 +1,7 @@
 'use strict';
 
 export const template = `
-<div class="ui-gradient-range">
+<div class="ui-curve-range">
     <div class="name">
         <span>{{name}}</span>
         <i class="iconfont icon-lock"
@@ -20,7 +20,7 @@ export const template = `
             v-if="value.mode.value == 0"
         >
             <ui-prop auto="true"
-                :value="value.color"
+                :value="value.constant"
             ></ui-prop>
         </template>
 
@@ -28,10 +28,10 @@ export const template = `
             v-else-if="value.mode.value == 2"
         >
             <ui-prop auto="true"
-                :value="value.colorMin"
+                :value="value.curveMin"
             ></ui-prop>
             <ui-prop auto="true"
-                :value="value.colorMax"
+                :value="value.curveMax"
             ></ui-prop>
         </template>
 
@@ -39,10 +39,10 @@ export const template = `
             v-else-if="value.mode.value == 3"
         >
             <ui-prop auto="true"
-                :value="value.gradientMin"
+                :value="value.constantMin"
             ></ui-prop>
             <ui-prop auto="true"
-                :value="value.gradientMax"
+                :value="value.constantMax"
             ></ui-prop>
         </template>
 
@@ -50,7 +50,7 @@ export const template = `
             v-else
         >
             <ui-prop auto="true"
-                :value="value.gradient"
+                :value="value.curve"
             ></ui-prop>
         </template>
     </div>

@@ -24,11 +24,12 @@
         }
     },
     "panel.gradient-editor": {
-        "title": "i18n:inspector.GRADIENT_EDITOR.title",
+        "type": "simple",
+        "title": "i18n:inspector.gradient.title",
         "main": "./dist/gradient-editor/panel.js",
-        "min-width": 325,
-        "min-height": 325,
+        "min-width": 400,
+        "min-height": 310,
         "width": 400,
-        "height": 600
+        "height": 310
     }
 }

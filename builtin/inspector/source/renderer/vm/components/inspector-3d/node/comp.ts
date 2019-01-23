@@ -48,7 +48,7 @@ export const methods = {
             y,
             menu: [
                 {
-                    label: 'Remove',
+                    label: Editor.I18n.t('inspector.menu.remove_component'),
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'remove-array-element', {
                             uuid,
@@ -59,7 +59,7 @@ export const methods = {
                 },
                 { type: 'separator' },
                 {
-                    label: 'Move Up',
+                    label: Editor.I18n.t('inspector.menu.move_up_component'),
                     enabled: index !== 0,
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'move-array-element', {
@@ -71,7 +71,7 @@ export const methods = {
                     },
                 },
                 {
-                    label: 'Move Down',
+                    label: Editor.I18n.t('inspector.menu.move_down_component'),
                     enabled: index !== total - 1,
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'move-array-element', {

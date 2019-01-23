@@ -5,6 +5,7 @@ export const template = `
     @change.stop="$emit('input', $event.target.value)"
 >
     <ui-select
+        :disabled="readonly"
         :value="value"
     >
         <option
@@ -16,6 +17,7 @@ export const template = `
 `;
 
 export const props = [
+    'readonly',
     'list',
     'value',
 ];

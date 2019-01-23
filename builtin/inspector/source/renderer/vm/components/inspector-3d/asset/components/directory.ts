@@ -15,12 +15,12 @@ export const template = `
 
     <div class="content">
         <ui-prop
-            label="配置为子包"
+            :label="t('is_subpackage')"
             type="boolean"
             value="false"
         ></ui-prop>
         <ui-prop
-            label="子包名"
+            :label="t('subpackage_name')"
             type="string"
             value=""
         ></ui-prop>
@@ -35,7 +35,15 @@ export const props = [
 
 export const components = {};
 
-export const methods = {};
+export const methods = {
+    /**
+     * 翻译文本
+     * @param key
+     */
+    t(key: string) {
+        return Editor.I18n.t(`inspector.asset.directory.${key}`);
+    },
+};
 
 export const watch = {};
 

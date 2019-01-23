@@ -12,6 +12,7 @@ export const template = `
 `;
 
 export const props = [
+    'readyonly',
     'value',
 ];
 

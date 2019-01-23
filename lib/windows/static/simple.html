@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Packages</title>
+        <link href="./style/base.css" rel="stylesheet" />
+        <link href="./style/main.css" rel="stylesheet" />
+    </head>
+    
+    <body>
+        <!-- 应用 Theme 的遮罩 -->
+        <div class="theme-mask"></div>
+
+        <!-- 同步任务的遮罩 -->
+        <div class="task-sync-mask">
+            <div class="background"></div>
+            <div class="info">Wait a moment...</div>
+        </div>
+
+        <!-- 实际的插件布局 -->
+        <panel-frame id="panel"></panel-frame>
+
+        <!-- 加载 js 运行逻辑 -->
+        <script>
+            // 禁止 electron 显示安全提示
+            window.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
+            require('./script/simple');
+        </script>
+    </body>
+</html>

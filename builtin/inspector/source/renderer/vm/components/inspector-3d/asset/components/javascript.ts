@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 export const template = `
 <section class="asset-javascript">
     <ui-prop type="boolean"
-        label="导入为插件"
+        :label="t('plugin')"
         :value="meta && meta.userData.isPlugin"
         @confirm="_onPluginStateChanged($event)"
     ></ui-prop>
@@ -21,6 +21,14 @@ export const props = [
 export const components = {};
 
 export const methods = {
+    /**
+     * 翻译文本
+     * @param key
+     */
+    t(key: string) {
+        return Editor.I18n.t(`inspector.asset.javascript.${key}`);
+    },
+
     /**
      * 更改是否导入成插件的设置
      * @param event
