@@ -177,7 +177,8 @@ export function encodeObject(object: any, attributes: any): IProperty {
 
     if (
         cc.js.isChildClassOf(ctor, cc.ValueType) ||
-        data.type === 'cc.Gradient'
+        data.type === 'cc.Gradient' ||
+        data.type === 'cc.AnimationCurve'
     ) { // 如果是 valueType，则直接使用引擎序列化
         const dump = Manager.Utils.serialize(object, { stringify: false });
         delete dump.__type__;
