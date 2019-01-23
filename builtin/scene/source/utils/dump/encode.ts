@@ -221,7 +221,7 @@ export function encodeObject(object: any, attributes: any): IProperty {
         } else { // 构造器存在，但是属性不存在，无法继续递归序列化内部属性
             data.value = null;
         }
-    } else { // 上述判断都无法适用的情况下，直接将 object 赋值给 value
+    } else if (data.type !== 'Unknown') { // 上述判断都无法适用的情况下，直接将 object 赋值给 value
         data.value = object;
     }
 
