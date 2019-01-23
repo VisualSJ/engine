@@ -1,8 +1,6 @@
 %{
   techniques: [
     {
-      queue: opaque
-      lod: 100
       passes: [
         {
           vert: unlit-vs:vert

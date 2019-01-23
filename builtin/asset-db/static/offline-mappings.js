@@ -4,7 +4,7 @@ const src = path_.join(Manager.AssetInfo.engine, 'bin/.cache/dev/cocos/');
 
 const gfx = require(path_.join(src, 'gfx/define'));
 const { RenderQueue } = require(path_.join(src, 'renderer/core/constants'));
-const { RenderPassStage } = require(path_.join(src, 'pipeline/define'));
+const { RenderPassStage, RenderPriority } = require(path_.join(src, 'pipeline/define'));
 
 const typeParams = {
   BOOL: gfx.GFXType.BOOL,
@@ -159,6 +159,15 @@ const passParams = {
   QUAD_PATCH_LIST: gfx.GFXPrimitiveMode.QUAD_PATCH_LIST,
   ISO_LINE_LIST: gfx.GFXPrimitiveMode.ISO_LINE_LIST,
 
+  // POINT: gfx.GFXFilter.POINT, // duplicate, safely removed because enum value is(and always will be) the same
+  LINEAR: gfx.GFXFilter.LINEAR,
+  ANISOTROPIC: gfx.GFXFilter.ANISOTROPIC,
+
+  WRAP: gfx.GFXAddress.WRAP,
+  MIRROR: gfx.GFXAddress.MIRROR,
+  CLAMP: gfx.GFXAddress.CLAMP,
+  BORDER: gfx.GFXAddress.BORDER,
+
   TRUE: true,
   FALSE: false
 };
@@ -170,7 +179,8 @@ let mappings = {
   sizeMap,
   formatMap,
   passParams,
-  RenderQueue
+  RenderQueue,
+  RenderPriority,
 };
 
 module.exports = mappings;

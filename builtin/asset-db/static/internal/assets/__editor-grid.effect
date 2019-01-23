@@ -1,12 +1,11 @@
 %{
   techniques: [
     {
-      queue: transparent-1000
-      lod: 100
       passes: [
         {
           vert: grid-vs
           frag: grid-fs
+          priority: min + 10
           rasterizerState: {
             cullMode: none
           }

@@ -434,7 +434,7 @@ const addChunksCache = function(chunksDir) {
 };
 
 const mapPassParam = (function() {
-  let findUniformType = (name, shader) => {
+  const findUniformType = (name, shader) => {
     let res = -1, cb = (u) => {
       if (u.name !== name) return false;
       res = u.type; return true;
@@ -442,7 +442,7 @@ const mapPassParam = (function() {
     if (!shader.blocks.some((b) => b.members.some(cb))) shader.samplers.some(cb);
     return res;
   };
-  let typeCheck = (value, type, givenType, shaderType) => {
+  const typeCheck = (value, type, givenType, shaderType) => {
     if (typeof type === 'string') return `unsupported type ${type}`;
     if (type !== shaderType && type !== mappings.typeParams[shaderType]) return 'incompatible with shader decl';
     if (givenType === 'string') {
@@ -450,20 +450,7 @@ const mapPassParam = (function() {
     } else if (!Array.isArray(value)) return 'non-array for buffer members';
     else if (value.length !== mappings.sizeMap[type] / 4) return 'wrong array length';
   };
-  let mapProperties = (props, shader) => {
-    for (const p of Object.keys(props)) {
-      const info = props[p], shaderType = findUniformType(p, shader);
-      if (info.type === undefined) info.type = shaderType;
-      else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
-      if (info.value === undefined) continue;
-      const givenType = typeof info.value;
-      if (givenType === 'number') info.value = [info.value]; // convert number to array first
-      // type check the given value
-      const msg = typeCheck(info.value, info.type, givenType, shaderType);
-      if (msg) warn(`illegal property declaration ${p}: ${msg}`);
-    }
-  };
-  return (obj, shader) => {
+  const generalMap = (obj) => {
     for (let key in obj) {
       let prop = obj[key];
       if (typeof prop === 'string') { // string literal
@@ -472,15 +459,61 @@ const mapPassParam = (function() {
         if (num !== undefined) obj[key] = num;
       } else if (Array.isArray(prop)) { // arrays:
         if (!prop.length) continue; // empty
-        if (typeof prop[0] === 'object') prop.forEach(mapPassParam); // nested props
+        if (typeof prop[0] === 'object') prop.forEach(generalMap); // nested props
         else if (typeof prop[0] === 'number') obj[key] = // color array
           ((prop[0] * 255) << 24 | (prop[1] * 255) << 16 |
             (prop[2] * 255) << 8 | (prop[3] || 255) * 255) >>> 0;
       } else if (typeof prop === 'object') {
-        if (key === 'properties') mapProperties(prop, shader); // properties (special treatment)
-        else mapPassParam(prop); // nested props
+        generalMap(prop); // nested props
       }
     }
+  };
+  const mapProperties = (props, shader) => {
+    for (const p of Object.keys(props)) {
+      const info = props[p], shaderType = findUniformType(p, shader);
+      // type translation or extraction
+      if (info.type === undefined) info.type = shaderType;
+      else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
+      // sampler specification
+      if (info.sampler) mapPassParam(info.sampler);
+      // default values
+      if (info.value === undefined) continue;
+      const givenType = typeof info.value;
+      if (givenType === 'number') info.value = [info.value]; // convert number to array first
+      // type check the given value
+      const msg = typeCheck(info.value, info.type, givenType, shaderType);
+      if (msg) warn(`illegal property declaration ${p}: ${msg}`);
+    }
+    return props;
+  };
+  const mapPriority = (() => {
+    const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;
+    const dfault = mappings.RenderPriority.DEFAULT;
+    const min = mappings.RenderPriority.MIN;
+    const max = mappings.RenderPriority.MAX;
+    return (str) => {
+      let res = -1;
+      const cap = priorityRE.exec(str);
+      res = cap ? mappings.RenderPriority[cap[1].toUpperCase()] + parseInt(cap[3])
+        * (cap[2] === '+' ? 1 : -1) : parseInt(str);
+      if (isNaN(res) || res < min || res > max) {
+        warn(`illegal pass priority: ${str}`); return dfault;
+      }
+      return res;
+    };
+  })();
+  return (obj, shader) => {
+    const tmp = {};
+    // special treatments
+    if (obj.properties) {
+      tmp.properties = mapProperties(obj.properties, shader);
+      delete obj.properties;
+    }
+    if (obj.priority) {
+      tmp.priority = mapPriority(obj.priority);
+      delete obj.priority;
+    }
+    generalMap(obj); Object.assign(obj, tmp);
   };
 })();
 

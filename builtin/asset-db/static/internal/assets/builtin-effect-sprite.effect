@@ -1,7 +1,6 @@
 %{
   techniques: [
     {
-      queue: overlay
       passes: [
         {
           vert: sprite-vs:vert
@@ -21,7 +20,7 @@
             ]
           }
           properties: {
-            mainTexture: { type: 'sampler2D', value: 'grey' }
+            mainTexture: { type: 'sampler2D', value: 'default' }
           }
         }
       ]

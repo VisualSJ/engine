@@ -1,12 +1,11 @@
 %{
   techniques: [
     {
-      queue: opaque-1000
-      lod: 200
       passes: [
         {
           vert: sky-vs
           frag: sky-fs
+          priority: max - 10
           rasterizerState: {
             cullMode: none
           }
@@ -15,7 +14,7 @@
             depthWrite: false
           }
           properties: {
-            cubeMap: { type: 'samplerCube', value: 'greyCube' }
+            cubeMap: { type: 'samplerCube', value: 'white-cube' }
           }
         }
       ]

@@ -1,8 +1,6 @@
 %{
   techniques: [
     {
-      queue: transparent
-      lod: 200
       passes: [
         {
           vert: particle-vs-legacy:lpvs_main
@@ -38,7 +36,6 @@
       ]
     }
   ]
-
 %}
 
 %% particle-add-fs {

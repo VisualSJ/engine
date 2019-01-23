@@ -1,12 +1,11 @@
 %{
   techniques: [
     {
-      queue: transparent+1000
-      lod: 100
       passes: [
         {
           vert: gizmo-vs
           frag: gizmo-fs
+          priority: max - 10
           rasterizerState: {
             cullMode: none
           }
@@ -31,12 +30,11 @@
       ]
     }
     {
-      queue: transparent+1000
-      lod: 50
       passes: [
         {
           vert: line-vs
           frag: line-fs:front
+          priority: max - 10
           rasterizerState: {
             cullMode: none
           }
@@ -48,7 +46,6 @@
             targets: [
               {
                 blend: true
-                blendSrc: src_alpha
                 blendDst: one_minus_src_alpha
                 blendDstAlpha: one_minus_src_alpha
               }
@@ -61,12 +58,11 @@
       ]
     }
     {
-      queue: transparent+1000
-      lod: 0
       passes: [
         {
           vert: line-vs
           frag: line-fs:front
+          priority: max - 10
           rasterizerState: {
             cullMode: none
           }
@@ -79,7 +75,6 @@
               {
                 blend: true
                 blendSrc: src_alpha
-                blendDst: one
                 blendDstAlpha: one_minus_src_alpha
               }
             ]
@@ -91,6 +86,7 @@
         {
           vert: line-vs
           frag: line-fs:back
+          priority: max - 10
           rasterizerState: {
             cullMode: none
           }
@@ -104,7 +100,6 @@
               {
                 blend: true
                 blendSrc: src_alpha
-                blendDst: one
                 blendDstAlpha: one_minus_src_alpha
               }
             ]
