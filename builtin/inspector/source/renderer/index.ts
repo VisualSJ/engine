@@ -46,6 +46,10 @@ export const messages = {
         if (!vm) {
             return;
         }
+
+        // 避免 scene 刷新时 inspector 还是旧数据
+        vm.item.uuid = '';
+
         vm.state.scene = 'close';
     },
 
