@@ -1,10 +1,10 @@
 #include <particle-common>
 attribute vec3 a_position; // center position
-attribute vec3 a_uv;  // xy:vertex index,z:frame index
-attribute vec2 a_uv0; // size, angle
+attribute vec3 a_texCoord;  // xy:vertex index,z:frame index
+attribute vec2 a_texCoord1; // size, angle
 attribute vec4 a_color;
 #if USE_STRETCHED_BILLBOARD
-attribute vec3 a_color0; // velocity.x, velocity.y, velocity.z, scale
+attribute vec3 a_color1; // velocity.x, velocity.y, velocity.z, scale
 #endif
 
 #include <cc-local>
@@ -12,7 +12,7 @@ attribute vec3 a_color0; // velocity.x, velocity.y, velocity.z, scale
 vec4 lpvs_main() {
   vec4 pos = vec4(a_position, 1);
 #if USE_STRETCHED_BILLBOARD
-  vec4 velocity = vec4(a_color0.xyz, 0);
+  vec4 velocity = vec4(a_color1.xyz, 0);
 #endif
 
 #if !USE_WORLD_SPACE
@@ -24,12 +24,12 @@ vec4 lpvs_main() {
   #endif
 #endif
 
-  vec2 cornerOffset = vec2((a_uv.xy - 0.5) * a_uv0.x);
+  vec2 cornerOffset = vec2((a_texCoord.xy - 0.5) * a_texCoord1.x);
 #if !USE_STRETCHED_BILLBOARD
 //   // rotation will not be applied in stretchedBillboard mode(Unity).
 // #else
   // rotation
-  rotateCorner(cornerOffset, a_uv0.y);
+  rotateCorner(cornerOffset, a_texCoord1.y);
 #endif
 
   computeVertPos(pos, cornerOffset
@@ -41,14 +41,14 @@ vec4 lpvs_main() {
     , velocity
     , velocityScale
     , lengthScale
-    , a_uv0.x
-    , a_uv.x
+    , a_texCoord1.x
+    , a_texCoord.x
   #endif
   );
 
   pos = cc_matViewProj * pos;
 
-  uv = computeUV(a_uv.z, a_uv.xy, frameTile) * mainTiling + mainOffset;
+  uv = computeUV(a_texCoord.z, a_texCoord.xy, frameTile) * mainTiling + mainOffset;
 
   color = a_color;
 

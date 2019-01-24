@@ -71,6 +71,7 @@ const essentialList = {
   'builtin-effect-phong': true,
   'builtin-effect-skybox': true,
   'builtin-effect-sprite': true,
+  'builtin-effect-particle-add': true,
 };
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 
