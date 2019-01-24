@@ -15,5 +15,7 @@ module.exports = {
     javascript_engine: 'Javascript Engine',
     use_builtin_engine: 'Built-in engine',
     custom_engine_path: 'Customize path',
-
+    QUICK_COMPILER: {
+        engine_modified_info: 'JavaScript Engine changes detected and the build cache was deleted.',
+    },
 };

@@ -19,7 +19,7 @@ module.exports = function(enginePath) {
                 if (files.length === 0) { return done(); }
 
                 if (isInEditor) {
-                    Editor.log(Editor.I18n.t('QUICK_COMPILER.engine_modified_info'));
+                    console.log(Editor.I18n.t('QUICK_COMPILER.engine_modified_info'));
                 } else {
                     console.log('JavaScript Engine changes detected and the build cache was deleted.');
                 }
@@ -38,6 +38,6 @@ module.exports = function(enginePath) {
             }
 
             done();
-        }
+        },
     };
 };

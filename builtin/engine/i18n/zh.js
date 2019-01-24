@@ -15,5 +15,7 @@ module.exports = {
     javascript_engine: 'Javascript 引擎',
     use_builtin_engine: '使用内置引擎',
     custom_engine_path: '自定义引擎路径',
-
+    QUICK_COMPILER: {
+        engine_modified_info: '检测到 JavaScript 引擎发生改动，已清空构建缓存。',
+    },
 };
