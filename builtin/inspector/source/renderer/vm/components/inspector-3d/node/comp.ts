@@ -18,6 +18,7 @@ const componentMap: any = {
     'cc.ButtonComponent': 'cc-button-component',
     'cc.ToggleComponent': 'cc-toggle-component',
     'cc.SliderComponent': 'cc-slider-component',
+    'cc.WidgetComponent': 'cc-widget-component',
 };
 
 export const components: any = {
@@ -25,6 +26,7 @@ export const components: any = {
     'cc-button-component': require('./components/button'),
     'cc-toggle-component': require('./components/toggle'),
     'cc-slider-component': require('./components/slider'),
+    'cc-widget-component': require('./components/widget'),
 };
 
 export const methods = {

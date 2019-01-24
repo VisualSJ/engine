@@ -67,6 +67,10 @@ export const template = `
     ></ui-prop>
 
     <ui-prop auto="true"
+        :value="value.value.checkMark"
+    ></ui-prop>
+
+    <ui-prop auto="true"
         :value="value.value.toggleGroup"
     ></ui-prop>
 

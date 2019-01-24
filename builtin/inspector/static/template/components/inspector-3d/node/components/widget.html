@@ -1,0 +1,178 @@
+
+<div class="widget-component">
+    <div class="layout">
+
+        <div class="header">
+            <ui-prop empty="true"
+                :value="value.value.isAlignTop"
+            >
+                <ui-checkbox
+                    :value="value.value.isAlignTop.value"
+                    @confirm="value.value.isAlignTop.value = $event.target.value"
+                ></ui-checkbox>
+            </ui-prop>
+            <ui-prop empty="true"
+                v-if="value.value.isAlignTop.value"
+                :value="value.value.top"
+            >
+                <ui-num-input
+                    :unit="getUnit('top')"
+                    :value="value.value.top.value"
+                    @confirm="value.value.top.value = $event.target.value"
+                    @dblclick="changeUnit('top')"
+                ></ui-num-input>
+            </ui-prop>
+        </div>
+        <div class="section">
+            <div class="left">
+                <ui-prop empty="true"
+                    :value="value.value.isAlignLeft"
+                >
+                    <ui-checkbox
+                        :value="value.value.isAlignLeft.value"
+                        @confirm="value.value.isAlignLeft.value = $event.target.value"
+                    ></ui-checkbox>
+                </ui-prop>
+                <ui-prop empty="true"
+                    v-if="value.value.isAlignLeft.value"
+                    :value="value.value.left"
+                >
+                    <ui-num-input
+                        :unit="getUnit('left')"
+                        :value="value.value.left.value"
+                        @confirm="value.value.left.value = $event.target.value"
+                        @dblclick="changeUnit('left')"
+                    ></ui-num-input>
+                </ui-prop>
+            </div>
+
+            <div class="rect">
+                <div class="center"
+                    :top="value.value.isAlignTop.value"
+                    :bottom="value.value.isAlignBottom.value"
+                    :left="value.value.isAlignLeft.value"
+                    :right="value.value.isAlignRight.value"
+                ></div>
+
+                <div class="top"
+                    v-if="value.value.isAlignTop.value"
+                >
+                    <span class="iconfont icon-arrowsv"></span>
+                </div>
+                <div class="bottom"
+                    v-if="value.value.isAlignBottom.value"
+                >
+                    <span class="iconfont icon-arrowsv"></span>
+                </div>
+                <div class="left"
+                    v-if="value.value.isAlignLeft.value"
+                >
+                    <span class="iconfont icon-arrowsv"></span></div>
+                <div class="right"
+                    v-if="value.value.isAlignRight.value"
+                >
+                    <span class="iconfont icon-arrowsv"></span>
+                </div>
+            </div>
+
+            <div class="right">
+                <ui-prop empty="true"
+                    :value="value.value.isAlignRight"
+                >
+                    <ui-checkbox
+                        :value="value.value.isAlignRight.value"
+                        @confirm="value.value.isAlignRight.value = $event.target.value"
+                    ></ui-checkbox>
+                </ui-prop>
+                <ui-prop empty="true"
+                    v-if="value.value.isAlignRight.value"
+                    :value="value.value.right"
+                >
+                    <ui-num-input
+                        :unit="getUnit('right')"
+                        :value="value.value.right.value"
+                        @confirm="value.value.right.value = $event.target.value"
+                        @dblclick="changeUnit('right')"
+                    ></ui-num-input>
+                </ui-prop>
+            </div>
+        </div>
+
+        <div class="footer">
+            <ui-prop empty="true"
+                :value="value.value.isAlignBottom"
+            >
+                <ui-checkbox
+                    :value="value.value.isAlignBottom.value"
+                    @confirm="value.value.isAlignBottom.value = $event.target.value"
+                ></ui-checkbox>
+            </ui-prop>
+            <ui-prop empty="true"
+                v-if="value.value.isAlignBottom.value"
+                :value="value.value.bottom"
+            >
+                <ui-num-input
+                    :unit="getUnit('bottom')"
+                    :value="value.value.bottom.value"
+                    @confirm="value.value.bottom.value = $event.target.value"
+                    @dblclick="changeUnit('bottom')"
+                ></ui-num-input>
+            </ui-prop>
+        </div>
+    </div>
+
+    <div class="alignment">
+
+        <div>
+            <ui-prop empty="true"
+                :value="value.value.isAlignHorizontalCenter"
+            >
+                <ui-checkbox
+                    :value="value.value.isAlignHorizontalCenter.value"
+                    @confirm="value.value.isAlignHorizontalCenter.value = $event.target.value"
+                >Horizontal Center</ui-checkbox>
+            </ui-prop>
+            <ui-prop empty="true"
+                :value="value.value.horizontalCenter"
+            >
+                <ui-num-input
+                    :unit="getUnit('horizontal')"
+                    :disabled="!value.value.isAlignHorizontalCenter.value"
+                    :value="value.value.horizontalCenter.value"
+                    @confirm="value.value.horizontalCenter.value = $event.target.value"
+                    @dblclick="changeUnit('horizontal')"
+                ></ui-num-input>
+            </ui-prop>
+        </div>
+
+        <div>
+            <ui-prop empty="true"
+                :value="value.value.isAlignVerticalCenter"
+            >
+                <ui-checkbox
+                    :value="value.value.isAlignVerticalCenter.value"
+                    @confirm="value.value.isAlignVerticalCenter.value = $event.target.value"
+                >Vertical Center</ui-checkbox>
+            </ui-prop>
+            <ui-prop empty="true"
+                :value="value.value.alignVerticalCenter"
+            >
+                <ui-num-input
+                    :unit="getUnit('vertical')"
+                    :disabled="!value.value.isAlignVerticalCenter.value"
+                    :value="value.value.verticalCenter.value"
+                    @confirm="value.value.verticalCenter.value = $event.target.value"
+                    @dblclick="changeUnit('vertical')"
+                ></ui-num-input>
+            </ui-prop>
+        </div>
+
+    </div>
+
+    <ui-prop auto="true"
+        :value="value.value.target"
+    ></ui-prop>
+    <ui-prop auto="true"
+        :value="value.value.alignMode"
+    ></ui-prop>
+</div>
