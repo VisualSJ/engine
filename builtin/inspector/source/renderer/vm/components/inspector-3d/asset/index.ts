@@ -55,6 +55,8 @@ export const methods = {
 
         vm.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.uuid);
         vm.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.uuid);
+        vm.componentName = vm.getComponentName(vm.info);
+
         vm.$watch('meta', () => {
             vm.dirty = true;
         }, {
@@ -117,13 +119,19 @@ export const methods = {
     },
 };
 
-export const watch = {};
+export const watch = {
+    uuid() {
+        // @ts-ignore
+        this.refresh();
+    },
+};
 
 export function data() {
     return {
         dirty: false,
         info: null,
         meta: null,
+        componentName: null,
     };
 }
 

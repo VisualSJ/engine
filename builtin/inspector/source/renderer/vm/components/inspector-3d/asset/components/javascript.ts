@@ -2,6 +2,8 @@
 
 import { readFileSync } from 'fs';
 
+const Hljs = require('highlight.js');
+
 export const template = `
 <section class="asset-javascript">
     <ui-prop type="boolean"
@@ -38,9 +40,27 @@ export const methods = {
         const vm: any = this;
         vm.$set(vm.meta.userData, 'isPlugin', event.target.value);
     },
+    refresh() {
+        // @ts-ignore
+        const vm: any = this;
+
+        if (!vm.info || vm.info.importer !== 'javascript') {
+            return;
+        }
+
+        // TODO 需要限制行数
+        const text: string = readFileSync(vm.info.file, 'utf8');
+        const result = Hljs.highlight('javascript', text);
+        vm.$refs.pre.innerHTML = result.value;
+    },
 };
 
-export const watch = {};
+export const watch = {
+    info() {
+        // @ts-ignore
+        this.refresh();
+    },
+};
 
 export function data() {
     return {};
@@ -48,11 +68,5 @@ export function data() {
 
 export function mounted() {
     // @ts-ignore
-    const vm: any = this;
-
-    // todo 需要限制行数
-    const text: string = readFileSync(vm.info.file, 'utf8');
-    const Hljs = require('highlight.js');
-    const result = Hljs.highlight('javascript', text);
-    vm.$refs.pre.innerHTML = result.value;
+    this.refresh();
 }
