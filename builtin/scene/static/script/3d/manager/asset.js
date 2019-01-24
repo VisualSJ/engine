@@ -40,9 +40,9 @@ const _ctorMap = {
             v[0],  v[1],  v[2],  v[3],
             v[4],  v[5],  v[6],  v[7],
             v[8],  v[9],  v[10], v[11],
-            v[12], v[13], v[14], v[15],
+            v[12], v[13], v[14], v[15]
         ) : new Mat4(),
-    ['cc.Asset']: (v) => { uuid: v || null },
+    ['cc.Asset']: (v) => { uuid: v || null; },
 };
 const getValue = (type, value) => _ctorMap[type](value);
 
@@ -67,7 +67,7 @@ const buildEffectData = (function() {
     };
     const getCompType = (type) => _compTypeMap[type];
     const getType = (type) => _typeMap[type];
-    const getValueFromGFXType = (type, value) => getValue(_compTypeMap[type], value);
+    const getValueFromGFXType = (type, value) => getValue(_compTypeMap[type] || type, value);
     const getDefines = (name, prog) => {
         const block = prog.blocks.find((b) => b.members.find((u) => u.name === name) !== undefined);
         if (block) { return block.defines; }
@@ -104,7 +104,7 @@ const buildEffectData = (function() {
                         type: getType(prop.type),
                         defines: defs,
                         name: prop.displayName,
-                        path: `_props.${define.name}`,
+                        path: `_props.${p}`,
                     });
                 }
             }
@@ -115,34 +115,51 @@ const buildEffectData = (function() {
 
 /**
  * 返回创建的 material 序列化数据
+ *
+ * todo 需要容错处理
  * @param {{effectName: string, _props: {}, _defines: {}}} options
  * @returns {string}
  */
 const querySerializedMaterial = (function() {
-    let find = (effectMap, type, name) => effectMap[type].find((e) => e.key === name);
+    const find = (map, type, name) => {
+        return map[type].find((e) => e.key === name);
+    };
     return function(options) {
-        const { effectName, _props, _defines, effectMap } = options;
-        let props = {};
-        let defines = {};
-        for (const name of Object.keys(_props)) {
-            let info = find(effectMap, 'props', name);
-            props[name] = getValue(info.compType, info.value);
-            if (props[name] === null) {
-                delete props[name];
+        const { effectName, _props, _defines, effectMap, _techIdx } = options;
+
+        const props = _props.map((prop, index) => {
+            const map = effectMap[_techIdx][index];
+            const data = {};
+
+            for (const name of Object.keys(prop)) {
+                const info = find(map, 'props', name);
+                data[name] = getValue(info.compType, info.value);
+                if (data[name] === null) {
+                    delete data[name];
+                }
             }
-        }
-        for (const name of Object.keys(_defines)) {
-            let info = find(effectMap, 'defines', name);
-            defines[name] = getValue(info.compType, info);
-            if (defines[name] === false) {
-                delete defines[name];
+            return data;
+        });
+
+        const defines = _defines.map((define, index) => {
+            const map = effectMap[_techIdx][index];
+            const data = {};
+
+            for (const name of Object.keys(define)) {
+                const info = find(map, 'defines', name);
+                data[name] = getValue(info.compType, info);
+                if (data[name] === false) {
+                    delete data[name];
+                }
             }
-        }
+            return data;
+        });
 
         const material = new cc.Material();
         material._effectAsset = cc.EffectAsset.get(effectName);
         material._props = props;
         material._defines = defines;
+        material._techIdx = _techIdx;
 
         return Manager.Utils.serialize(material);
     };

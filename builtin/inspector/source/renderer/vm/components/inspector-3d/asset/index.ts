@@ -26,7 +26,7 @@ export const components = {
     'asset-image': require('./components/image'),
     'asset-javascript': require('./components/javascript'),
     'asset-texture': require('./components/texture'),
-    'asset-material': require('./components/material'),
+    'asset-material': require('./components/material/index'),
 };
 
 export const methods = {
