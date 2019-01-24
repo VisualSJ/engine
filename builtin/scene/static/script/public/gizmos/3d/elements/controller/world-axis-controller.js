@@ -52,6 +52,7 @@ class WorldAxisController extends ControllerBase {
         let camera = EditorCamera._camera._camera;
         let screenPos = cc.v3(30, 30, 0.1);
         let worldPos = cc.v3();
+        camera.update();
         camera.screenToWorld(worldPos, screenPos, cc.winSize.width, cc.winSize.height);
 
         this.setPosition(worldPos);

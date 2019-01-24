@@ -79,7 +79,7 @@ class Engine3D extends EngineInterface {
     }
 
     setMeshColor(node, c) {
-        node.modelColor = c;
+        node.modelColor = c.clone();
         node.mtl.setProperty('color', node.modelColor);
     }
 

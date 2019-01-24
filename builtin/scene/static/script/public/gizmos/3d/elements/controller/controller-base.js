@@ -91,7 +91,7 @@ class ControllerBase {
         let rendererNodes = this._axisDataMap[axisName].rendererNodes;
         if (rendererNodes != null) {
             rendererNodes.forEach((node) => {
-                setMeshColor(node, color.clone());
+                setMeshColor(node, color);
                 setNodeOpacity(node, opacity);
             });
         }

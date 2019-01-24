@@ -3,7 +3,7 @@
 // 适配两个引擎的接口
 class UtilsInterface {
     constructor() {
-        this.GizmoUtils = require('./utils');
+        this.GizmoUtils = require('./misc');
         this.baseDist = 600;    // 用于Gizmo保持大小的一个参数
     }
 

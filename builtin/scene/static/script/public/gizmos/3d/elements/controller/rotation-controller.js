@@ -39,24 +39,24 @@ class RotationController extends ControllerBase {
         topNode.parent = this.shape;
 
         let torusNode = ControllerUtils.torus(baseRadius, tubeRadius,
-            { arc: Math.abs(arcRadian) }, color.clone());
+            { arc: Math.abs(arcRadian) }, color);
         torusNode.name = axisName + 'RotationTorus';
         torusNode.parent = topNode;
         setNodeOpacity(torusNode, 0);
         NodeUtils.setEulerAngles(torusNode, torusRot);
         let arrowNode = ControllerUtils.arrow(baseArrowHeadHeight, baseArrowHeadRadius,
-            baseArrowBodyHeight, color.clone());
+            baseArrowBodyHeight, color);
         arrowNode.name = axisName + 'Axis';
         arrowNode.parent = topNode;
         NodeUtils.setEulerAngles(arrowNode, arrowRot);
         let arcNode = ControllerUtils.arc(cc.v3(),
-            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color.clone(), { noDepthTestForLines: true });
+            this._axisDir[axisName], arcFromDir, arcRadian, baseRadius, color, { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.name = axisName + 'RotationArc';
 
         // indicator circle
         arcNode = ControllerUtils.arc(cc.v3(), this._axisDir[axisName], arcFromDir,
-            this._twoPI, baseRadius, color.clone(), { noDepthTestForLines: true });
+            this._twoPI, baseRadius, color, { noDepthTestForLines: true });
         arcNode.parent = topNode;
         arcNode.active = false;
         arcNode.name = axisName + 'IndicatorCircle';

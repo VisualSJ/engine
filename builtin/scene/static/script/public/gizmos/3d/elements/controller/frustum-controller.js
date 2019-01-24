@@ -112,7 +112,9 @@ class FrustumController extends EditableController {
     // mouse events
     onMouseDown(event) {
         this._mouseDeltaPos = cc.v2(0, 0);
-        this._curDistScalar = super.getDistScalar();
+        let hitNodePos = cc.v3();
+        event.node.getWorldPosition(hitNodePos);
+        this._curDistScalar = this.getCameraDistScalar(hitNodePos);
         this._deltaWidth = 0;
         this._deltaHeight = 0;
         this._deltaDistance = 0;
