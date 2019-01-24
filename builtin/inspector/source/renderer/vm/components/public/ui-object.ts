@@ -9,29 +9,12 @@ export const template = `
         ></i>
     </div>
     <div class="content">
-        <template
-            v-if="value.enable && value.enable.type === 'Boolean'"
+        <span
+            :unfold="unfold"
+            @click="unfold = !unfold"
         >
-            <ui-prop empty="true"
-                :value="value.enable"
-            >
-                <ui-checkbox
-                    :value="value.enable.value"
-                    @change="unfold = $event.target.value"
-                    @confirm="value.enable.value = $event.target.value"
-                ></ui-checkbox>
-            </ui-prop>
-        </template>
-        <template
-            v-else
-        >
-            <span
-                :unfold="unfold"
-                @click="unfold = !unfold"
-            >
-                <i class="iconfont fold icon-un-fold foldable"></i>
-            </span>
-        </template>
+            <i class="iconfont fold icon-un-fold foldable"></i>
+        </span>
     </div>
 
     <div class="object"
@@ -39,9 +22,9 @@ export const template = `
     >
         <template
             v-for="item in value"
-            v-if="item.name !== 'enable' || item.type !== 'Boolean'"
         >
             <ui-prop auto="true"
+                v-if="item.visible"
                 :value="item"
 
                 :width="width"

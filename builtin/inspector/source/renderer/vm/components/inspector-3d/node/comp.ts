@@ -15,6 +15,7 @@ export const props = [
 ];
 
 const componentMap: any = {
+    'cc.ParticleSystemComponent': 'cc-particle-system-component',
     'cc.ButtonComponent': 'cc-button-component',
     'cc.ToggleComponent': 'cc-toggle-component',
     'cc.SliderComponent': 'cc-slider-component',
@@ -23,6 +24,7 @@ const componentMap: any = {
 
 export const components: any = {
     'ui-prop': require('../../public/ui-prop'),
+    'cc-particle-system-component': require('./components/particle-system'),
     'cc-button-component': require('./components/button'),
     'cc-toggle-component': require('./components/toggle'),
     'cc-slider-component': require('./components/slider'),
