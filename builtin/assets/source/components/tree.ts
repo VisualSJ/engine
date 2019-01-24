@@ -317,7 +317,8 @@ export const methods = {
         if (!json.name) {
             switch (json.ext) {
                 case 'folder': json.name = 'New Folder'; break;
-                default: json.name = 'New File.' + json.ext; break;
+                case 'fire': json.name = `New Scene.${json.ext}`; break;
+                default: json.name = `New File.${json.ext}`; break;
             }
         }
 

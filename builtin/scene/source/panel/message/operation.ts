@@ -66,7 +66,7 @@ export function apply(messages: any) {
             return '';
         }
 
-        const url = 'db://assets/NewScene.fire';
+        const url = 'db://assets/New Scene.fire';
         const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
 
         // todo: HACK
