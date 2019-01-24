@@ -209,6 +209,7 @@ export default class CurveControl extends EventEmitter {
             this.isShowPoint = false;
             this.canvas.style.cursor = 'default';
             if (this.changeType) {
+                this.emitChange();
                 this.emitConfirm();
                 this.changeType = '';
             }
@@ -283,6 +284,7 @@ export default class CurveControl extends EventEmitter {
             console.warn('添加点无效', x);
             return;
         }
+        this.emitChange();
         this.emitConfirm();
         const info = this.ctrlKey[index];
         this.initContrl();
@@ -439,10 +441,16 @@ export default class CurveControl extends EventEmitter {
     }
 
     private emitConfirm() {
-        this.emit('confirm', this.hermite.keyFrames);
+        this.emit('confirm', {
+            keyFrames: Array.from(this.hermite.keyFrames),
+            multiplier: 1,
+        });
     }
 
     private emitChange() {
-        this.emit('change', this.hermite.keyFrames);
+        this.emit('change', {
+            keyFrames: Array.from(this.hermite.keyFrames),
+            multiplier: 1,
+        });
     }
 }

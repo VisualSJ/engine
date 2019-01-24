@@ -1,21 +1,9 @@
 'use strict';
-import { close as closeCurve, open as openCurve } from '../../../../curve-editor/manager';
+import { close as closeCurve, drawCurve , open as openCurve } from '../../../../curve-editor/manager';
 
 export const template = `
 <div class="ui-curve">
-    <div @click="showEditor" class="graphics" ref="graphics" >
-        <svg
-            :width="svgw"
-            :height="svgh"
-        >
-            <path
-                :d="bezier"
-                stroke-width="1"
-                stroke="#279DFF"
-                fill="none"
-            ></path>
-        </svg>
-    </div>
+    <canvas @click="showEditor" ref="thumb"></canvas>
 </div>
 `;
 
@@ -39,6 +27,10 @@ export const methods = {
         const event = document.createEvent('HTMLEvents');
         event.initEvent('confirm', true, true);
         vm.$el.dispatchEvent(event);
+        // 消息通知有延迟
+        process.nextTick(() => {
+            vm.refresh();
+        });
     },
 
     /**
@@ -47,12 +39,11 @@ export const methods = {
     refresh() {
         // @ts-ignore
         const vm: any = this;
-
-        const rect = vm.$refs.graphics.getBoundingClientRect();
-        vm.svgw = rect.width;
-        vm.svgh = 18;
-
-        vm.bezier = `M 0 ${vm.svgh} L ${vm.svgw} 0`;
+        const ctx = vm.$refs.thumb.getContext('2d');
+        ctx.canvas.width = ctx.canvas.offsetWidth;
+        ctx.canvas.height = ctx.canvas.offsetHeight;
+        ctx.strokeStyle = 'red';
+        drawCurve(vm.value.keyFrames, ctx);
     },
 
     /**
@@ -70,6 +61,11 @@ export const watch = {
         vm.refresh();
     },
     height() {
+        // @ts-ignore
+        const vm: any = this;
+        vm.refresh();
+    },
+    value() {
         // @ts-ignore
         const vm: any = this;
         vm.refresh();

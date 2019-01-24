@@ -3,6 +3,8 @@
 let vm: any = null;
 let cache: any;
 let isOpend = false;
+const {drawHermite} = require('./utils');
+
 /**
  * 改变原始数据
  * @param dump
@@ -20,6 +22,10 @@ export function changeCurveState(bool: boolean) {
     if (bool) {
         Editor.Ipc.sendToPanel('inspector.curve-editor', 'current-keys', cache);
     }
+}
+
+export function drawCurve(keyframes: any, ctx: any) {
+    drawHermite(keyframes, ctx);
 }
 
 /**

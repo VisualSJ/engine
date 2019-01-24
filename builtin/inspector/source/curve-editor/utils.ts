@@ -1,4 +1,88 @@
-import { join } from 'path';
+
+const DEFAULT_KEYFRAMES = [ [{
+                                time: 0,
+                                value: 1,
+                                outTangent: 0,
+                                inTangent: 0,
+                            }, {
+                                time: 1,
+                                value: 1,
+                                outTangent: 0,
+                                inTangent: 0,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 0,
+                                outTangent: 1,
+                                inTangent: 1,
+                            }, {
+                                time: 1,
+                                value: 1,
+                                outTangent: 1,
+                                inTangent: 1,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 1,
+                                outTangent: -1,
+                                inTangent: -1,
+                            }, {
+                                time: 1,
+                                value: 0,
+                                outTangent: -1,
+                                inTangent: -1,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 0,
+                                outTangent: 0,
+                                inTangent: 0,
+                            }, {
+                                time: 1,
+                                value: 1,
+                                outTangent: 2,
+                                inTangent: 2,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 1,
+                                outTangent: -2,
+                                inTangent: -2,
+                            }, {
+                                time: 1,
+                                value: 0,
+                                outTangent: 0,
+                                inTangent: 0,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 0,
+                                outTangent: 2,
+                                inTangent: 2,
+                            }, {
+                                time: 1,
+                                value: 1,
+                                outTangent: 0,
+                                inTangent: 0,
+                            },
+                            ], [
+                            {
+                                time: 0,
+                                value: 1,
+                                outTangent: 0,
+                                inTangent: 0,
+                            }, {
+                                time: 1,
+                                value: 0,
+                                outTangent: 0,
+                                inTangent: 0,
+                            },
+                            ]];
 
 class Point {
     public x: number;
@@ -94,8 +178,12 @@ function calcHermite(point1: any, k1: number,  point2: any, k2: number) {
  * @param ctx 绘图上下文
  */
 function drawHermite(keyframes: any, ctx: any) {
+    if (!keyframes) {
+        keyframes = DEFAULT_KEYFRAMES[0];
+    }
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
+    ctx.clearRect(0, 0, w, h);
     // 注意不能更改到原数据
     const data = keyframes.map((item: any) => {
         const point = {x: item.time * w, y: item.value * h};
@@ -139,4 +227,5 @@ export = {
     calcHermite,
     drawHermite,
     calcFunc,
+    DEFAULT_KEYFRAMES,
 };

@@ -656,5 +656,5 @@ export async function ready() {
 export async function beforeClose() { }
 
 export async function close() {
-    Editor.Ipc.sendToPackage('inspector', 'gradient:state', false);
+    Editor.Ipc.sendToPanel('inspector', 'gradient:state', false);
 }

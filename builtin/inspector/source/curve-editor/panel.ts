@@ -5,7 +5,7 @@ import { join } from 'path';
 import CurveControl from './curve-control';
 import Grid from './grid';
 const Vue = require('vue/dist/vue.js');
-const {drawHermite} = require('./utils');
+const {drawHermite, DEFAULT_KEYFRAMES} = require('./utils');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -14,90 +14,6 @@ let panel: any = null;
 let vm: any = null;
 const AXIS_MARGIN = 30; // 坐标轴距离画布的距离
 
-const DEFAULT_KEYFRAMES = [ [{
-                                time: 0,
-                                value: 1,
-                                outTangent: 0,
-                                inTangent: 0,
-                            }, {
-                                time: 1,
-                                value: 1,
-                                outTangent: 0,
-                                inTangent: 0,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 0,
-                                outTangent: 1,
-                                inTangent: 1,
-                            }, {
-                                time: 1,
-                                value: 1,
-                                outTangent: 1,
-                                inTangent: 1,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 1,
-                                outTangent: -1,
-                                inTangent: -1,
-                            }, {
-                                time: 1,
-                                value: 0,
-                                outTangent: -1,
-                                inTangent: -1,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 0,
-                                outTangent: 0,
-                                inTangent: 0,
-                            }, {
-                                time: 1,
-                                value: 1,
-                                outTangent: 2,
-                                inTangent: 2,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 1,
-                                outTangent: -2,
-                                inTangent: -2,
-                            }, {
-                                time: 1,
-                                value: 0,
-                                outTangent: 0,
-                                inTangent: 0,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 0,
-                                outTangent: 2,
-                                inTangent: 2,
-                            }, {
-                                time: 1,
-                                value: 1,
-                                outTangent: 0,
-                                inTangent: 0,
-                            },
-                        ], [
-                            {
-                                time: 0,
-                                value: 1,
-                                outTangent: 0,
-                                inTangent: 0,
-                            }, {
-                                time: 1,
-                                value: 0,
-                                outTangent: 0,
-                                inTangent: 0,
-                            },
-                        ]];
 export const style = readFileSync(join(__dirname, '../index.css'));
 
 export const template = readFileSync(
@@ -145,7 +61,7 @@ export async function ready() {
             ctrlCxt: null, // 画笔
             dump: {
                 keyFrames: DEFAULT_KEYFRAMES[0],
-                multiplier: 0,
+                multiplier: 1,
             },
             // 坐标设置相关信息
             axis: {
@@ -221,14 +137,14 @@ export async function ready() {
              * 检查与初始化数据
              * @param dump
              */
-            checkAndUpdate(dump: any) {
-                if (!dump || !Array.isArray(dump.keyFrames) || dump.keyFrames.length < 1) {
+            checkAndUpdate(this: any, dump: any) {
+                if (!Array.isArray(dump.keyFrames) || dump.keyFrames.length < 1) {
                     // @ts-ignore
-                    this.dump.keyFrames = DEFAULT_KEYFRAMES[0];
-                    return;
+                    dump.keyFrames = DEFAULT_KEYFRAMES[0];
                 }
+                this.dump = dump;
                 // @ts-ignore
-                this.curveControl.update(dump.keyFrames);
+                this.curveControl.update(this.dump.keyFrames);
                 if (typeof(dump.multiplier) !== 'number') {
                     // @ts-ignore
                     this.dump.multiplier = 0;
@@ -289,6 +205,7 @@ export async function ready() {
                 });
                 this.curveControl.draw(this.dump.keyFrames);
                 this.curveControl.on('change', (data: any) => {
+                    this.dump = data;
                     Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
                 });
             },

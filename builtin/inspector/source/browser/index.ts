@@ -25,6 +25,20 @@ export const messages = {
         );
     },
 
+    /**
+     * 绘制缩略图
+     * @param ctx 绘图上下文
+     * @param data 绘图数据
+     */
+    'draw-curve'(ctx: any, data: any) {
+        Editor.Ipc.sendToPanel(
+            'inspector.curve-editor',
+            'draw-curve',
+            ctx,
+            data
+        );
+    },
+
     async 'open-gradient-editor'(data: any) {
         clearTimeout(pkg._closeGradientEditorTimer);
         if (!gradientEditorOpened) {

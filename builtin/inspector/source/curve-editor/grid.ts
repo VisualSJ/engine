@@ -66,9 +66,9 @@ export default class Grid {
      * @param point
      */
     public axisToOri(point: Point) {
-        const {w, h, x} = this.location;
-        const resultX = ((point.x - x) / w).toFixed(POINT_LENGTH);
-        const resultY = (point.y / h).toFixed(POINT_LENGTH);
+        const {w, h} = this.location;
+        const resultX = Number((point.x / w).toFixed(POINT_LENGTH));
+        const resultY = Number((point.y / h).toFixed(POINT_LENGTH));
         return {time: resultX, value: resultY};
     }
 

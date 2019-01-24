@@ -1,6 +1,6 @@
 const {clamp} = Editor.Utils.mathUtils;
 const {drawLine, calcHermite, calcFunc, Point} = require('./utils');
-
+const POINT_LENGTH = 2; // 设置内部数据使用的小数点位数
 export default class Hermite {
     /**
      * 获取当前最新的原始关键帧数据
@@ -11,8 +11,8 @@ export default class Hermite {
             const {w, h} = this.grid.location;
             return {
                 ...keys,
-                inTangent: item.inTangent * w / h,
-                outTangent: item.outTangent * w / h,
+                inTangent: Number((item.inTangent * w / h).toFixed(POINT_LENGTH)),
+                outTangent: Number((item.outTangent * w / h).toFixed(POINT_LENGTH)),
             };
         });
         return result;
