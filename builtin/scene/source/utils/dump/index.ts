@@ -17,8 +17,8 @@ export function get(node: any) {
     return encodeNode(node);
 }
 
-export function set(dump: INode, node?: any) {
-    return decodeNode(dump, node);
+export async function set(dump: INode, node?: any) {
+    return await decodeNode(dump, node);
 }
 
 export function patch(path: string, dump: IProperty, node: any) {

@@ -31,5 +31,13 @@
         "min-height": 310,
         "width": 400,
         "height": 310
+    },
+    "panel.curve-editor": {
+        "title": "i18n:inspector.curve_editor.title",
+        "main": "./dist/curve-editor/panel.js",
+        "min-width": 325,
+        "min-height": 225,
+        "width": 600,
+        "height": 350
     }
 }

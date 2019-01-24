@@ -43,23 +43,34 @@ export async function decodeNode(dump: INode, node?: any) {
         node.parent = null;
     }
 
-    if (dump.children && dump.children.length) {
-        dump.children.forEach((childDump: any) => {
-            const uuid = childDump.value.uuid;
-            const child = Manager.Node.query(uuid);
+    if (dump.children) {
+        const dumpChildrenUuids: string[] = dump.children.map((child: any) => child.value.uuid);
+        const nodeChildrenUuids: string[] = node.children.map((child: INode) => child.uuid);
 
-            // 重要：过滤隐藏节点
-            if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
-                return;
+        /**
+         * 为了不影响两个数组共有的 uuids
+         * 移除在 node 且不在 dump 的 uuid
+         * 添加在 dump 且不在 node 的 uuid
+         */
+        nodeChildrenUuids.forEach((uuid: string) => {
+            // @ts-ignore
+            if (!dumpChildrenUuids.includes(uuid)) {
+                const child = Manager.Node.query(uuid);
+                // 重要：过滤隐藏节点
+                if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
+                    return;
+                }
+                child.parent = null;
             }
-
-            child.parent = null;
-            child.parent = node;
         });
-    } else {
-        while (node.children.length) {
-            node.children[0].parent = null;
-        }
+
+        dumpChildrenUuids.forEach((uuid: string) => {
+            // @ts-ignore
+            if (!nodeChildrenUuids.includes(uuid)) {
+                const child = Manager.Node.query(uuid);
+                child.parent = node;
+            }
+        });
     }
 
     for (let i = 0; i < dump.__comps__.length; i++) {

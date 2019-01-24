@@ -30,7 +30,7 @@ async function restoreProperty(node, path, data) {
  * @param {*} dump
  */
 async function restoreNode(node, data) {
-    return dump.set(data, node);
+    return await dump.set(data, node);
 }
 
 async function restorePrefab(node, prefab) {
