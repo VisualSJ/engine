@@ -7,10 +7,20 @@ const engine = require('./engine');
 const overwrite = require('./overwrite');
 const log = require('./log');
 
+const LOCK = {
+    engine: false,
+    manager: false,
+};
+
 /**
  * 启动引擎
  */
 async function initEngine(info) {
+    if (LOCK.engine) {
+        return;
+    }
+    LOCK.engine = true;
+
     await polyfills.editor();
 
     await engine.requireEngine(info.path);
@@ -28,6 +38,11 @@ async function initEngine(info) {
  * 启动各个管理器
  */
 async function initManager(info) {
+    if (LOCK.manager) {
+        return;
+    }
+    LOCK.manager = true;
+
     log.init();
 
     window.Manager.Utils = require(info.utils);
