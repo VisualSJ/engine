@@ -22,7 +22,7 @@ LightInfo computeDirectionalLighting(
 LightInfo computePointLighting(
   vec3 worldPosition,
   vec4 lightPositionAndRange,
-  vec4 lightColor,
+  vec4 lightColor
 ) {
   LightInfo ret;
   vec3 lightDir = lightPositionAndRange.xyz - worldPosition;

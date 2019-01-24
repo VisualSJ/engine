@@ -142,19 +142,20 @@ const expandStructMacro = (function() {
   };
 })();
 
+// for constants often used inside array subscripts
 const replacePlainDefines = (code) => {
-  let defMap = {};
+  const defMap = {};
   let defCap = plainDefineRE.exec(code);
   while (defCap != null) {
     defMap[defCap[1]] = { beg: defCap.index, end: defCap.index + defCap[0].length, value: defCap[2] };
     defCap = plainDefineRE.exec(code);
   }
-  let regex = '';
-  for (let key in defMap) regex += `${key}|`;
-  if (regex.length) code = code.replace(new RegExp(regex.slice(0, -1), 'g') , (m, offset) => {
-    let info = defMap[m];
-    return (offset < info.beg || offset > info.end) ? info.value : m;
-  });
+  for (const key of Object.keys(defMap)) {
+    code = code.replace(new RegExp(`(?<![a-zA-Z0-9_])(?:${key})(?![a-zA-Z0-9_])`, 'g') , (m, offset) => {
+      const info = defMap[m];
+      return (offset < info.beg || offset > info.end) ? info.value : m;
+    });
+  }
   return code;
 };
 

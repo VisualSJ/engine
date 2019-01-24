@@ -1,6 +1,10 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 uniform CCGlobal {
+  // constants
+  vec4 cc_time; // x
+  vec4 cc_screenSize; // xy zw
+  vec4 cc_screenScale; //
   // transforms
   mat4 cc_matProj;
   mat4 cc_matProjInv;
@@ -8,11 +12,6 @@ uniform CCGlobal {
   mat4 cc_matViewInv;
   mat4 cc_matViewProj;
   mat4 cc_matViewProjInv;
-  // constants
-  vec4 cc_time; // x
-  vec4 cc_screenSize; // xy
-  vec4 cc_screenScale; // xy
-  vec4 cc_cameraSize; // xy
   vec4 cc_cameraPos; // xyz
   // directional lights
   vec4 cc_dirLightDirection[4]; // xyz
@@ -23,7 +22,7 @@ uniform CCGlobal {
   // spot lights
   vec4 cc_spotLightPositionAndRange[4]; // xyz w
   vec4 cc_spotLightDirection[4]; // xyz w
-  vec4 cc_spotLightColor[4]; // xyz w
+  vec4 cc_spotLightColor[4]; // xyz
   // shadows
   mat4 cc_matViewProjLight;
   vec4 cc_shadowParam1; // vec4(minDepth, maxDepth, bias, depthScale)
