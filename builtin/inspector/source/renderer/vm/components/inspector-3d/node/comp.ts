@@ -88,6 +88,12 @@ export const methods = {
         });
     },
 
+    _onDragStart(event: DragEvent) {
+        // @ts-ignore
+        const data: any = this.value.value;
+        event.dataTransfer && event.dataTransfer.setData('value', data.uuid.value);
+    },
+
     /**
      * 获取自定义组件名字
      * @param type

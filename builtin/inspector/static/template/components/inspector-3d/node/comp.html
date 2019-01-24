@@ -12,7 +12,10 @@
                 ></ui-checkbox>
             </ui-prop>
             <div class="name">
-                <span>{{value.name}}</span>
+                <ui-drag-item
+                    :type="value.type"
+                    @dragstart="_onDragStart($event)"
+                >{{value.name}}</ui-drag-item>
             </div>
             <div class="setting">
                 <i class="iconfont icon-setting"

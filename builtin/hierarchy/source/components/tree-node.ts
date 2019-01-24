@@ -211,8 +211,18 @@ export const methods = {
      * @param event
      * @param uuid
      */
-    dragOver(event: Event, node: ItreeNode) {
+    dragOver(event: any, node: ItreeNode) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
+
+        if (
+            !event.dataTransfer ||
+            (event.dataTransfer.types.length === 1 && event.dataTransfer.types[0] === 'value')
+        ) {
+            // @ts-ignore
+            this.$emit('ipcSingleSelect', node.uuid);
+            return;
+        }
+
         // @ts-ignore
         const target: any = event.currentTarget;
 
