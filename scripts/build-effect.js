@@ -1,40 +1,38 @@
 'use strict';
 
 const ps = require('path');
+const fs = require('fs');
+const fsJetpack = require('fs-jetpack');
 
 global.Manager = {};
 Manager.AssetInfo = {};
-Manager.AssetInfo.engine = ps.join(__dirname, '../resources/3d/engine');
+Manager.AssetInfo.engine = ps.join(__dirname, '../resources/3d/engine'); // change here if using custom engines
 
 const shdcLib = require('../builtin/asset-db/static/shdc-lib');
 shdcLib.addChunksCache('builtin/asset-db/static/chunks');
 
-const fs = require('fs');
-const fsJetpack = require('fs-jetpack');
+const indent = (str, num) => str.replace(/\n/g, '\n'+' '.repeat(num));
 
-let indent = (str, num) => str.replace(/\n/g, '\n'+' '.repeat(num));
-let stringify = function(o) { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
-
-let stringifyUniforms = function(uniforms) {
-  let code = '';
-  if (!uniforms.length) return '[]';
-  for (let i = 0; i < uniforms.length; ++i) {
-    let u = uniforms[i];
-    if (u.members) {
-      code += `  {"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": [`;
-      code += u.members.map(u => '\n    ' + stringify(u));
-      code += '\n  ]},\n';
-    } else {
-      code += `  ${stringify(u)},\n`;
+const stringifyEffect = (() => {
+  const newlines = /\n+/g;
+  const toOneLiner = o => '\n      ' + stringify(o);
+  const stringify = (o) => { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
+  const stringifyUniforms = (uniforms) => {
+    let code = '';
+    if (!uniforms.length) return '[]';
+    for (let i = 0; i < uniforms.length; ++i) {
+      let u = uniforms[i];
+      if (u.members) {
+        code += `  {"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": [`;
+        code += u.members.map(u => '\n    ' + stringify(u));
+        code += '\n  ]},\n';
+      } else {
+        code += `  ${stringify(u)},\n`;
+      }
     }
-  }
-  return `[\n${code.slice(0, -2)}\n]`;
-};
-
-let stringifyShaders = (function() {
-  let newlines = /\n+/g;
-  let toOneLiner = o => '\n      ' + stringify(o);
-  return function (shaders) {
+    return `[\n${code.slice(0, -2)}\n]`;
+  };
+  const stringifyShaders = (shaders) => {
     let code = '';
     for (let i = 0; i < shaders.length; ++i) {
       let { name, vert, frag, defines, blocks, samplers, dependencies } = shaders[i];
@@ -54,21 +52,36 @@ let stringifyShaders = (function() {
     }
     return `[\n${code.slice(0, -2)}\n]`;
   };
+  return (effect) => {
+    let code = '';
+    code += '\n{\n';
+    code += `  "name": "${effect.name}",\n`;
+    code += `  "techniques": ${stringify(effect.techniques)},\n`;
+    code += `  "shaders": ${indent(stringifyShaders(effect.shaders), 2)}\n`;
+    code += '},';
+    return code;
+  };
 })();
 
-let path = 'builtin/asset-db/static/internal/assets';
-let files = fsJetpack.find(path, { matching: ['**/*.effect'] });
-let code = ``;
+const path = 'builtin/asset-db/static/internal/assets';
+const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
 
+const essentialList = {
+  'builtin-effect-unlit': true,
+  'builtin-effect-skybox': true,
+  'builtin-effect-sprite': true,
+};
+const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
+
+let all = ``, essential = '';
 for (let i = 0; i < files.length; ++i) {
-  let name = ps.basename(files[i], '.effect');
-  let content = fs.readFileSync(files[i], { encoding: 'utf8' });
-  let effect = shdcLib.buildEffect(name, content);
-  code += '  {\n';
-  code += `    "name": "${effect.name}",\n`;
-  code += `    "techniques": ${stringify(effect.techniques)},\n`;
-  code += `    "shaders": ${indent(stringifyShaders(effect.shaders), 4)}\n`;
-  code += '  },\n';
+  const name = ps.basename(files[i], '.effect');
+  const content = fs.readFileSync(files[i], { encoding: 'utf8' });
+  const effect = shdcLib.buildEffect(name, content);
+  const str = indent(stringifyEffect(effect), 2);
+  all += str;
+  if (essentialList[name]) essential += str;
 }
 
-fs.writeFileSync('effects.js', `export default [\n${code.slice(0, -2)}\n];\n`, { encoding: 'utf8' });
+fs.writeFileSync('effects.js', `export default [${all.slice(0, -1)}\n];\n`, { encoding: 'utf8' });
+fs.writeFileSync(essentialDir, `// absolute essential effects\nexport default [${essential.slice(0, -1)}\n];\n`, { encoding: 'utf8' });

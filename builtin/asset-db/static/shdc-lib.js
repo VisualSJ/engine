@@ -313,7 +313,7 @@ const glsl300to100 = function(code, blocks, cache) {
     res += code.slice(idx, i.beg);
     blocks.find(u => u.name === i.name).members.forEach(m => {
       let type = mappings.invTypeParams[m.type];
-      res += `  uniform ${type} ${m.name}${m.length > 1 ? `[${m.length}]` : ''};\n`;
+      res += `  uniform ${type} ${m.name}${m.count > 1 ? `[${m.count}]` : ''};\n`;
     });
     idx = i.end + (code[i.end] === ';');
   });
