@@ -31,4 +31,8 @@ module.exports = {
     gradient: {
         title: '渐变编辑器',
     },
+
+    curve_editor: {
+        title: 'Curve 编辑器',
+    },
 };

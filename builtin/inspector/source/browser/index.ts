@@ -12,6 +12,19 @@ export const messages = {
         Editor.Panel.open('inspector');
     },
 
+    /**
+     * 打开 curve-editor
+     * @param {any} keyFrames
+     */
+    'open-curve-editor'(data: any) {
+        Editor.Panel.open('inspector.curve-editor');
+        Editor.Ipc.sendToPanel(
+            'inspector.curve-editor',
+            'current-keys',
+            data
+        );
+    },
+
     async 'open-gradient-editor'(data: any) {
         clearTimeout(pkg._closeGradientEditorTimer);
         if (!gradientEditorOpened) {
