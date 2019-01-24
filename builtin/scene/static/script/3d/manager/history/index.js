@@ -68,9 +68,16 @@ function stopRecordToArchive() {
 }
 
 function snapshot() {
+    const current = steps[index];
+
     const step = stopRecordToArchive();
 
     if (step === false) {
+        return;
+    }
+
+    // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
+    if (current && JSON.stringify(current.undo) === JSON.stringify(step.undo)) {
         return;
     }
 
@@ -79,15 +86,16 @@ function snapshot() {
     // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
 
     // 存入新步骤
-    if (deprecated.length > 0 || index === 0) {
-        const current = steps[index];
-
-        // undo 后有新的操作 undo 后的 current 其 redo 需要指向新步骤的 undo
-        current.redo = step.undo;
-
-        // 持续操作并反复 redo undo 恰好在一个记录点上，会导致该点为了连贯性而做的数据调整使其成为多余步骤，需要将其删除
-        if (JSON.stringify(current.undo) === JSON.stringify(current.redo)) {
-            steps.splice(index, 1);
+    if (deprecated.length > 0) {
+        /**
+         * 当前 current 是旧数据，step 是新数据
+         * 需要保留 current 数据, 但 redo 指向已变更
+         * 所以 current.redo 和 step.undo 如果有相同的 uuid 记录，此 uuid 记录应该以 step 的为准
+         */
+        for (const uuid in current.redo) {
+            if (step.undo[uuid]) {
+                current.redo[uuid] = JSON.parse(JSON.stringify(step.undo[uuid]));
+            }
         }
     }
 
