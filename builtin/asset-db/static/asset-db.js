@@ -547,3 +547,7 @@ function getRedirectAssetInfo(redirect) {
         uuid: asset.uuid,
     };
 }
+
+process.on('uncaughtException', function(err) {
+    console.error(err);
+});

@@ -9,6 +9,9 @@ const backup = {
 };
 
 function init() {
+    process.on('uncaughtException', function(err) {
+        console.error(err);
+    });
 
     console.warn = function(error, ...args) {
         if (!(error instanceof Error)) {
