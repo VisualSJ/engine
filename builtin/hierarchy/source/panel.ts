@@ -138,7 +138,6 @@ export const messages = {
      * 场景准备就绪
      */
     async 'scene:ready'() {
-        await panel.unstaging();
         vm.refresh();
     },
 
@@ -147,7 +146,6 @@ export const messages = {
      * 打开 loading 状态
      */
     'scene:close'() {
-        panel.staging();
         vm.clear();
     },
 

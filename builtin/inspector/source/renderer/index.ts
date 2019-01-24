@@ -5,6 +5,7 @@ import { join } from 'path';
 
 import { init } from './vm';
 
+import { changeCurveData, changeCurveState } from '../curve-editor/manager';
 import { changeGradintState, changeGrandintData, } from '../gradient-editor/manager';
 
 let panel: any = null;
@@ -46,6 +47,10 @@ export const messages = {
         if (!vm) {
             return;
         }
+
+        // 避免 scene 刷新时 inspector 还是旧数据
+        vm.item.uuid = '';
+
         vm.state.scene = 'close';
     },
 
@@ -115,6 +120,14 @@ export const messages = {
 
     'gradient:change'(dump: any) {
         changeGrandintData(dump);
+    },
+
+    'curve:state'(bool: boolean) {
+        changeCurveState(bool);
+    },
+
+    'curve:change'(dump: any) {
+        changeCurveData(dump);
     },
 };
 

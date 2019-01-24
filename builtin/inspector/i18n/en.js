@@ -31,4 +31,8 @@ module.exports = {
     gradient: {
         title: 'Gradient Editor',
     },
+
+    curve_editor: {
+        title: 'Curve Editor',
+    },
 };
