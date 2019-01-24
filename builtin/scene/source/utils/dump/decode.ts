@@ -204,6 +204,18 @@ export async function decodePatch(path: string, dump: any, node: any) {
         const attr = cc.Class.attr(parentData, parentInfo.key);
         fillDefaultValue(attr, data, data.length, dump.value);
     } else {
+        // 转换数据，防止因为 js 弱类型导致数据类型被更改
+        if (
+            dump.type === 'Number' ||
+            dump.type === 'Enum'
+        ) {
+            dump.value -= 0;
+        } else if (
+            dump.type === 'String'
+        ) {
+            dump.value += '';
+        }
+
         data[info.key] = dump.value;
     }
 
