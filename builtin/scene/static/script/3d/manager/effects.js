@@ -30,7 +30,7 @@ function registerEffect(uuid) {
                 return reject(err);
             }
             uuidSet.add(uuid);
-            ipc.send('broadcast', 'scene:effect-update', uuid);
+            ipc.forceSend('broadcast', 'scene:effect-update', uuid);
             resolve();
         });
     });
@@ -46,7 +46,7 @@ function removeEffect(uuid) {
     if (cc.EffectAsset && cc.EffectAsset.remove) {
         uuidSet.delete(uuid);
         cc.EffectAsset.remove(uuid);
-        ipc.send('broadcast', 'scene:effect-update', uuid);
+        ipc.forceSend('broadcast', 'scene:effect-update', uuid);
         return true;
     }
     console.warn(`cannot call method cc.EffectAsset.remove`);

@@ -197,7 +197,7 @@ async function restore() {
             await dumpUtils.restoreNode(node, stepData[uuid]);
 
             // 广播已变动的节点
-            Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+            Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
 
             // 给场景内部通知
             nodeManager.emit('changed', node, false); // false 是给 undo 记录用的，本次变动不参与历史记录操作

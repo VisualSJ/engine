@@ -33,7 +33,7 @@ class SceneManager extends EventEmitter {
             return;
         }
         currentSceneUuid = uuid;
-        Manager.Ipc.send('broadcast', 'scene:close');
+        Manager.Ipc.forceSend('broadcast', 'scene:close');
         this.emit('close');
 
         // cc.view.resizeWithBrowserSize(true);
@@ -80,8 +80,8 @@ class SceneManager extends EventEmitter {
 
         if (currentSceneData) {
             // 发送节点修改消息
-            Manager.Ipc.send('broadcast', 'scene:ready', currentSceneUuid);
             Manager.Ipc.send('set-scene', uuid);
+            Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
         }
     }
 
@@ -94,7 +94,7 @@ class SceneManager extends EventEmitter {
                 currentSceneUuid = '';
                 currentSceneData = null;
                 // 发送节点修改消息
-                Manager.Ipc.send('broadcast', 'scene:close');
+                Manager.Ipc.forceSend('broadcast', 'scene:close');
                 !this.ignore && this.emit('close');
                 resolve();
             }, 300);
@@ -121,7 +121,7 @@ class SceneManager extends EventEmitter {
         const json = Manager.Utils.serialize(cc.director.getScene());
 
         // 发送节点修改消息
-        Manager.Ipc.send('broadcast', 'scene:close');
+        Manager.Ipc.forceSend('broadcast', 'scene:close');
 
         try {
             await utils.loadSceneByJson(json);
@@ -136,7 +136,7 @@ class SceneManager extends EventEmitter {
 
         if (currentSceneData) {
             // 发送节点修改消息
-            Manager.Ipc.send('broadcast', 'scene:ready', currentSceneUuid);
+            Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
         }
     }
 
@@ -210,7 +210,7 @@ class SceneManager extends EventEmitter {
         }
         let names = [node.name];
         node = node.parent;
-        while (node) {
+        while (node && !(node instanceof cc.Scene)) {
             if (!node) {
                 break;
             }
