@@ -193,7 +193,7 @@ vec4 frag() {
   #if USE_NORMAL_TEXTURE
     N = getNormalFromTexture();
   #endif
-  vec3 V = normalize(cc_cameraPos - pos_w);
+  vec3 V = normalize(cc_cameraPos.xyz - pos_w);
 
   // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
   // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -203,15 +203,18 @@ vec4 frag() {
   // reflection
   vec3 Lo = vec3(0.0);
 
-  for (int i = 0; i < CC_NUM_DIR_LIGHTS; i++) {
+  for (int i = 0; i < MAX_DIR_LIGHTS; i++) {
+    if (dot(cc_dirLightColor[i], cc_dirLightColor[i]) <= 0.0) break;
     LightInfo info = computeDirectionalLighting(cc_dirLightDirection[i], cc_dirLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
-  for (int i = 0; i < CC_NUM_POINT_LIGHTS; i++) {
+  for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+    if (dot(cc_pointLightColor[i], cc_pointLightColor[i]) <= 0.0) break;
     LightInfo info = computePointLighting(pos_w, cc_pointLightPositionAndRange[i], cc_pointLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
-  for (int i = 0; i < CC_NUM_SPOT_LIGHTS; i++) {
+  for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+    if (dot(cc_spotLightColor[i], cc_spotLightColor[i]) <= 0.0) break;
     LightInfo info = computeSpotLighting(pos_w, cc_spotLightPositionAndRange[i], cc_spotLightDirection[i], cc_spotLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }

@@ -142,7 +142,7 @@ const expandStructMacro = (function() {
   };
 })();
 
-// for constants often used inside array subscripts
+// replace the obvious constants, which are often used inside array subscripts
 const replacePlainDefines = (code) => {
   const defMap = {};
   let defCap = plainDefineRE.exec(code);
@@ -151,6 +151,8 @@ const replacePlainDefines = (code) => {
     defCap = plainDefineRE.exec(code);
   }
   for (const key of Object.keys(defMap)) {
+    // here node.js(10.14.2) seems to behave differently than chrome on those regexes,
+    // after working around the '\w', everything looks good
     code = code.replace(new RegExp(`(?<![a-zA-Z0-9_])(?:${key})(?![a-zA-Z0-9_])`, 'g') , (m, offset) => {
       const info = defMap[m];
       return (offset < info.beg || offset > info.end) ? info.value : m;
@@ -176,7 +178,10 @@ const replacePlainDefines = (code) => {
  * the output would be:
  * ```
  * // the complete define list
- * defines = [ { name: 'USE_LIGHTING', type: 'boolean' }, { name: 'NUM_LIGHTS', type: 'number' } ]
+ * defines = [
+ *   { name: 'USE_LIGHTING', type: 'boolean', defines: [] },
+ *   { name: 'NUM_LIGHTS', type: 'number', defines: [ 'USE_LIGHTING' ] }
+ * ]
  * // bookkeeping: define dependency throughout the code
  * cache = {
  *   lines: [12, 34, 56, 78],

@@ -68,7 +68,6 @@ const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
 
 const essentialList = {
   'builtin-effect-unlit': true,
-  'builtin-effect-phong': true,
   'builtin-effect-skybox': true,
   'builtin-effect-sprite': true,
   'builtin-effect-particle-add': true,

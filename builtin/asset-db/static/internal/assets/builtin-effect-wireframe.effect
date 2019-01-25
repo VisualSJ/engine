@@ -54,7 +54,7 @@
   void main () {
     gl_FragColor = color;
 
-    vec3 V = normalize(cc_cameraPos - position_w);
+    vec3 V = normalize(cc_cameraPos.xyz - position_w);
     if (dot (normal_w, V) <= 0.0) {
       gl_FragColor.rgb *= 0.6;
     }

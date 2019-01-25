@@ -12,10 +12,10 @@ const MathUtil = External.EditorMath;
 
 class LightComponentGizmo extends Gizmo {
     init() {
-        this.Direction = 0;
-        this.Point = 1;
-        this.Spot = 2;
-        this._curLightType = 0; // 0:direction, 1:point, 2:spot
+        this.Direction = cc.LightComponent.Type.DIRECTIONAL;
+        this.Point = cc.LightComponent.Type.POINT;
+        this.Spot = cc.LightComponent.Type.SPOT;
+        this._curLightType = this.Direction; // 0:direction, 1:point, 2:spot
 
         this._pointLightRange = 0;
         this._spotAngle = 0;
@@ -66,7 +66,7 @@ class LightComponentGizmo extends Gizmo {
         spotLightCtrl.editable = true;
         spotLightCtrl.hoverColor = this._lightCtrlHoverColor;
 
-        this._activeController = this._lightController[2];
+        this._activeController = this._lightController[this._curLightType];
     }
 
     onControllerMouseDown() {

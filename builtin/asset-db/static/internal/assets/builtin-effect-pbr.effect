@@ -2,13 +2,10 @@
 %{
   techniques: [
     {
-      queue: opaque
-      lod: 500
       passes: [
         {
           vert: pbr-vs:vert
           frag: pbr-fs:frag
-          stage: forward
           properties: {
             albedo:              { type: 'color4',      value: [1, 1, 1, 1] }
             mainTiling:          { type: 'vec2',        value: [1, 1]       }
@@ -24,8 +21,8 @@
             emissive:            { type: 'color4',      value: [0, 0, 0, 0] }
             emissive_texture:    { type: 'sampler2D',   value: 'grey'       }
             normal_texture:      { type: 'sampler2D',   value: 'normal'     }
-            diffuseEnvTexture:   { type: 'samplerCube', value: 'grey-cube'  }
-            specularEnvTexture:  { type: 'samplerCube', value: 'grey-cube'  }
+            diffuseEnvTexture:   { type: 'samplerCube', value: 'white-cube' }
+            specularEnvTexture:  { type: 'samplerCube', value: 'white-cube' }
             brdfLUT:             { type: 'sampler2D',   value: 'grey'       }
             maxReflectionLod:    { type: 'float',       value: 9            }
             alphaTestThreshold:  { type: 'float',       value: 0            }
@@ -34,7 +31,6 @@
         {
           vert: shadow-depth-vs:vert
           frag: shadow-depth-fs:frag
-          stage: shadowcast
         }
       ]
     }
