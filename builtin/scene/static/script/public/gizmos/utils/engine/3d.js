@@ -115,7 +115,9 @@ class Engine3D extends EngineInterface {
     }
 
     updateVBAttr(comp, attr, data) {
-        const ia = comp.model.getSubModel(0).inputAssembler;
+        const model = comp.model.getSubModel(0);
+        if (!model) return;
+        const ia = model.inputAssembler;
         if (ia) ia.updateVertexAttr(attr, flat(data, (v) => [v.x, v.y, v.z]));
     }
 

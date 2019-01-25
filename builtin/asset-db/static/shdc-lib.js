@@ -467,10 +467,10 @@ const mapPassParam = (function() {
       // default values
       if (info.value === undefined) continue;
       const givenType = typeof info.value;
-      // convert number and boolean to array before type check
-      const tcValue = (givenType === 'number' || givenType == 'boolean' ? [info.value] : info.value);
+      // convert numbers to array
+      if (givenType === 'number') info.value = [info.value];
       // type check the given value
-      const msg = typeCheck(tcValue, info.type, givenType, shaderType);
+      const msg = typeCheck(info.value, info.type, givenType, shaderType);
       if (msg) warn(`illegal property declaration ${p}: ${msg}`);
     }
     return props;

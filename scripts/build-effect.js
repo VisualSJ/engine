@@ -54,11 +54,11 @@ const stringifyEffect = (() => {
   };
   return (effect) => {
     let code = '';
-    code += '\n{\n';
+    code += '{\n';
     code += `  "name": "${effect.name}",\n`;
     code += `  "techniques": ${stringify(effect.techniques)},\n`;
     code += `  "shaders": ${indent(stringifyShaders(effect.shaders), 2)}\n`;
-    code += '},';
+    code += '},\n';
     return code;
   };
 })();
@@ -80,9 +80,9 @@ for (let i = 0; i < files.length; ++i) {
   const content = fs.readFileSync(files[i], { encoding: 'utf8' });
   const effect = shdcLib.buildEffect(name, content);
   const str = indent(stringifyEffect(effect), 2);
-  all += str;
   if (essentialList[name]) essential += str;
+  all += str;
 }
 
-fs.writeFileSync('effects.js', `export default [${all.slice(0, -1)}\n];\n`, { encoding: 'utf8' });
-fs.writeFileSync(essentialDir, `// absolute essential effects\nexport default [${essential.slice(0, -1)}\n];\n`, { encoding: 'utf8' });
+fs.writeFileSync('effects.js', `export default [\n  ${all.slice(0, -4)}\n];\n`, { encoding: 'utf8' });
+fs.writeFileSync(essentialDir, `// absolute essential effects\nexport default [\n  ${essential.slice(0, -4)}\n];\n`, { encoding: 'utf8' });
