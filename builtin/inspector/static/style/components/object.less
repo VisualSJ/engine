@@ -18,20 +18,14 @@
         display: flex;
 
         & > span {
-            transform: rotate(90deg);
-            transition: transform 0.2s;
-
-            &[unfold] {
-                transform: rotate(0deg);
-            }
-
             & > i {
-                padding: 4px;
-                border-radius: 4px;
                 cursor: pointer;
-                font-size: 10px;
+                font-size: 1.2em;
                 position: relative;
                 top: -2px;
+            }
+            & > i:hover {
+                color: white;
             }
         }
     }
@@ -40,6 +34,6 @@
         flex: 1;
         margin: 2px 0 4px 6px;
         padding: 0 8px;
-        border: 1px #888 dashed;
+        border: 1px rgba(136, 136, 136, 0.35) dashed;
     }
 }

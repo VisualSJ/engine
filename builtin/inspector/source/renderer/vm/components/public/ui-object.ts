@@ -13,7 +13,7 @@ export const template = `
             :unfold="unfold"
             @click="unfold = !unfold"
         >
-            <i class="iconfont fold icon-un-fold foldable"></i>
+            <i :class="['iconfont', 'fold', 'foldable', unfold ? 'icon-collapse' : 'icon-expand']"></i>
         </span>
     </div>
 
