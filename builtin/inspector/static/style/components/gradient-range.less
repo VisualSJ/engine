@@ -17,25 +17,33 @@
         flex: none;
         display: flex;
 
-        & > .ui-prop {
-            margin: 0;
-            line-height: 12px;
+        & > .content {
             flex: 1;
 
-            & > .name {
-                display: none;
-            }
+            & > .ui-prop {
+                margin: 0;
+                line-height: 12px;
+                flex: 1;
+                height: 20px;
+    
+                & > .name {
+                    display: none;
+                }
+    
+                & > .content {
+                    width: 100%;
+                }
 
-            & > .content {
-                width: 100%;
+                &:last-child {
+                    margin-top: 2px;
+                }
             }
         }
-    }
 
-    & > .object {
-        flex: 1;
-        margin: 2px 0 4px 6px;
-        padding: 0 8px;
-        border: 1px #888 dashed;
+        & > .button {
+            padding-left: 6px;
+            display: flex;
+            font-size: 10px;
+        }
     }
 }

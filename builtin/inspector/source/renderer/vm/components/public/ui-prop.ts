@@ -96,7 +96,6 @@ export const methods = {
      * 根据 dump 数据，获取名字
      */
     getName(name: string) {
-        name = name.toLocaleLowerCase();
         name = name.replace(/^\S/, (str: string) => str.toUpperCase());
         name = name.replace(/_/g, (str: string) => ' ');
         name = name.replace(/ \S/g, (str: string) => ` ${str.toUpperCase()}`);

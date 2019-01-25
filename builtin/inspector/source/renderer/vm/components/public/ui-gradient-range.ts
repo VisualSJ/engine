@@ -9,50 +9,52 @@ export const template = `
         ></i>
     </div>
     <div class="content">
-        <ui-prop auto="true"
-            :value="value.mode"
-        ></ui-prop>
-    </div>
 
-    <div class="object">
+        <div class="content">
+            <template
+                v-if="value.mode.value == 0"
+            >
+                <ui-prop auto="true"
+                    :value="value.color"
+                ></ui-prop>
+            </template>
 
-        <template
-            v-if="value.mode.value == 0"
-        >
-            <ui-prop auto="true"
-                :value="value.color"
-            ></ui-prop>
-        </template>
+            <template
+                v-else-if="value.mode.value == 2"
+            >
+                <ui-prop auto="true"
+                    :value="value.colorMin"
+                ></ui-prop>
+                <ui-prop auto="true"
+                    :value="value.colorMax"
+                ></ui-prop>
+            </template>
 
-        <template
-            v-else-if="value.mode.value == 2"
-        >
-            <ui-prop auto="true"
-                :value="value.colorMin"
-            ></ui-prop>
-            <ui-prop auto="true"
-                :value="value.colorMax"
-            ></ui-prop>
-        </template>
+            <template
+                v-else-if="value.mode.value == 3"
+            >
+                <ui-prop auto="true"
+                    :value="value.gradientMin"
+                ></ui-prop>
+                <ui-prop auto="true"
+                    :value="value.gradientMax"
+                ></ui-prop>
+            </template>
 
-        <template
-            v-else-if="value.mode.value == 3"
-        >
-            <ui-prop auto="true"
-                :value="value.gradientMin"
-            ></ui-prop>
-            <ui-prop auto="true"
-                :value="value.gradientMax"
-            ></ui-prop>
-        </template>
+            <template
+                v-else
+            >
+                <ui-prop auto="true"
+                    :value="value.gradient"
+                ></ui-prop>
+            </template>
+        </div>
 
-        <template
-            v-else
-        >
-            <ui-prop auto="true"
-                :value="value.gradient"
-            ></ui-prop>
-        </template>
+        <div class="button">
+            <i class="iconfont fold icon-un-fold foldable"
+                @click="_onChangeMode($event)"
+            ></i>
+        </div>
     </div>
 </div>
 `;
@@ -69,10 +71,33 @@ export const components = {
 };
 
 export const methods = {
-    _changeMode(mode: number) {
+
+    /**
+     * 修改 mode
+     * @param event
+     */
+    _onChangeMode(event: any) {
         // @ts-ignore
         const vm: any = this;
-        vm.value.mode.value = mode;
+
+        const { left, bottom } = event.target.getBoundingClientRect();
+        const x = Math.round(left + 5);
+        const y = Math.round(bottom + 5);
+
+        Editor.Menu.popup({
+            x, y,
+            menu: vm.value.mode.enumList.map((item: any) => {
+                return {
+                    label: item.name,
+                    type: 'radio',
+                    checked: item.value === vm.value.mode.value,
+                    click() {
+                        vm.value.mode.value = item.value;
+                        vm.$root.$emit('set-property', vm.value.mode);
+                    },
+                };
+            }),
+        });
     },
 };
 
