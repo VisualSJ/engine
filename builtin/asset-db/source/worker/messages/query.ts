@@ -1,6 +1,6 @@
 'use strict';
 
-import { isAbsolute, join } from 'path';
+import { extname, isAbsolute, join } from 'path';
 import { parse } from 'url';
 
 import { queryUrlFromPath } from '@editor/asset-db';
@@ -9,6 +9,11 @@ import { ipcAddListener } from '../ipc';
 import { encodeAsset, queryAsset } from '../utils';
 
 const minimatch = require('minimatch');
+// 对资源进来分类，方便筛选
+const TYPES: any = {
+    scripts: ['.js', '.ts'],
+    scene: ['.scene', '.fire'],
+};
 
 /**
  * 将一个 url 转换成文件系统的实际路径
@@ -63,7 +68,7 @@ ipcAddListener('asset-worker:query-asset-url-by-path', async (event: any, path: 
 ipcAddListener('asset-worker:query-assets', async (event: any, options: any) => {
     options = options || {};
 
-    const assets: IAssetInfo[] = [];
+    let assets: IAssetInfo[] = [];
 
     // 循环每一个已经启动的 database
     for (const name in Manager.AssetWorker) {
@@ -98,16 +103,15 @@ ipcAddListener('asset-worker:query-assets', async (event: any, options: any) => 
     }
 
     if (options.pattern && typeof options.pattern === 'string') {
-        // TODO 这里只过滤了实体资源，虚拟资源无法查询
-        assets.filter((info: IAssetInfo) => {
-            return minimatch(info.name, options.pattern);
+        // TODO
+        assets = assets.filter((info: IAssetInfo) => {
+            return minimatch(info.source, options.pattern);
         });
     }
-
-    if (options.type && typeof options.type === 'string') {
+    if (options.type && TYPES[options.type]) {
         // TODO 这里只过滤了实体资源，虚拟资源无法查询
-        assets.filter((info: IAssetInfo) => {
-            return info.importer.includes(options.type);
+        assets = assets.filter((info: IAssetInfo) => {
+            return TYPES[options.type].includes(extname(info.source));
         });
     }
 
