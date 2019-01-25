@@ -8,7 +8,8 @@
     "strict": true,
     "types": [
       "../../node_modules/@types/node",
-      "../../@types/editor"
+      "../../@types/editor",
+      "../../@types/engine"
     ],
     "esModuleInterop": true
   }

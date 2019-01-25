@@ -32,7 +32,7 @@
         "@base/electron-menu": "^1.0.0",
         "@base/electron-profile": "^1.0.2",
         "@base/electron-windows": "^1.0.0",
-        "@base/electron-worker": "^1.0.2",
+        "@base/electron-worker": "^1.0.3",
         "@editor/asset-db": "^1.0.5",
         "@editor/dock": "^1.0.1",
         "@editor/package": "^1.0.0",

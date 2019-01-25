@@ -28,9 +28,10 @@ export const messages = {
     /**
      * 查询引擎信息
      */
-    'query-info'(type: string) {
+    'query-info'(type: string): IEngineInfo {
         let directory;
         let version;
+
         // 是否使用内置引擎
         if (profile.local.get(`${type}.javascript.builtin`)) {
             version = `builtin`;
