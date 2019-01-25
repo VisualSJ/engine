@@ -41,7 +41,10 @@ class AssetBuilder {
         }
 
         this.result.scenes = [];
-        await this.beginBuild();
+        // TODO 引擎反序列化不可用 hack
+        if (this.shoudBuild) {
+            await this.beginBuild();
+        }
         await this.resolveAsset();
         // 判断是否需要打包资源
         if (!this.shoudBuild) {
@@ -64,7 +67,12 @@ class AssetBuilder {
                 internal: {},
             },
         };
-        await Promise.all(Object.values(buildResult.assetCache).map(async (asset) => {
+        let assetCache = buildResult.assetCache;
+        // TODO 引擎反序列化不可用 hack
+        if (!this.shoudBuild) {
+            assetCache = await requestToPackage('asset-db', 'query-assets');
+        }
+        await Promise.all(Object.values(assetCache).map(async (asset) => {
             await this.computeAssetInfo(asset);
         })).catch((err) => console.error(err));
         // 对 assets 资源进行排序，否则脚本动态加载贴图时，会贴图不正确
