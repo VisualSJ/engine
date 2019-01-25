@@ -15,6 +15,7 @@ export const template = readTemplate('inspector-3d/asset/index.html');
 
 export const props = [
     'uuid',
+    'language',
 ];
 
 export const components = {
@@ -137,6 +138,5 @@ export function data() {
 
 export async function mounted() {
     // @ts-ignore
-    const vm: any = this;
-    vm.refresh();
+    this.refresh();
 }

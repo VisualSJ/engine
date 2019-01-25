@@ -138,6 +138,7 @@ export const messages = {
      * 场景准备就绪
      */
     async 'scene:ready'() {
+        vm.ready = true;
         vm.refresh();
     },
 
@@ -146,6 +147,7 @@ export const messages = {
      * 打开 loading 状态
      */
     'scene:close'() {
+        vm.ready = false;
         vm.clear();
     },
 
@@ -241,6 +243,7 @@ export async function ready() {
         data: {
             ready: false,
             state: '',
+            language: 'default',
             allExpand: true,
             current: null, // 选中项
             viewHeight: 0, // 当前树形的可视区域高度
@@ -270,8 +273,9 @@ export async function ready() {
              * 翻译
              * @param {*} key
              */
-            t(key: string) {
-                return Editor.I18n.t(`hierarchy.${key}`);
+            t(key: string): string {
+                // @ts-ignore
+                return Editor.I18n.t(`hierarchy.${key}`, this.language);
             },
             /**
              * 刷新数据
@@ -279,15 +283,14 @@ export async function ready() {
             async refresh() {
                 // 清空原数据
                 vm.clear();
+
                 await vm.$refs.tree.refresh(true);
-                vm.ready = true;
             },
             /**
              * 清空
              */
             clear() {
                 vm.$refs.tree.clear();
-                vm.ready = false;
             },
             /**
              * 全部节点是否展开
@@ -388,11 +391,17 @@ export async function ready() {
     await panel.unstaging();
 
     // 场景就绪状态才需要查询数据
-    const isReady = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
+    vm.ready = await Editor.Ipc.requestToPackage('scene', 'query-is-ready');
 
-    if (isReady) {
+    if (vm.ready) {
         vm.refresh();
     }
+
+    // 订阅 i18n 变动
+    panel.switchLanguage = (language: string) => {
+        vm.language = language;
+    };
+    Editor.I18n.on('switch', panel.switchLanguage);
 }
 
 export async function beforeClose() { }
@@ -400,7 +409,7 @@ export async function beforeClose() { }
 export async function close() {
     panel.staging();
     Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-
+    Editor.I18n.removeListener('switch', panel.switchLanguage);
 }
 
 export const listeners = {

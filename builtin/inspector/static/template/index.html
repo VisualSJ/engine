@@ -12,10 +12,10 @@
         <template
             v-if="type === '3d'"
         >
-
             <asset-3d ref="asset"
                 v-if="state.db === 'ready' && item.type === 'asset' && item.uuid"
                 :uuid="item.uuid"
+                :language="language"
             ></asset-3d>
 
             <node-3d ref="node"
@@ -24,8 +24,8 @@
 
                 :width="width"
                 :height="height"
+                :language="language"
             ></node-3d>
         </template>
-
     </section>
 </div>

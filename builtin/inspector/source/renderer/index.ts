@@ -155,8 +155,16 @@ export async function ready() {
     if (await Editor.Ipc.requestToPackage('scene', 'query-is-ready')) {
         vm.state.scene = 'ready';
     }
+
+    // 订阅 i18n 变动
+    panel.switchLanguage = (language: string) => {
+        vm.language = language;
+    };
+    Editor.I18n.on('switch', panel.switchLanguage);
 }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
-export async function close() {}
+export async function close() {
+    Editor.I18n.removeListener('switch', panel.switchLanguage);
+}

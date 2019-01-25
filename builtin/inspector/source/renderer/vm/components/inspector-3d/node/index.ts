@@ -9,6 +9,7 @@ export const props = [
     'height',
 
     'uuid',
+    'language',
 ];
 
 export const components = {
@@ -21,8 +22,9 @@ export const methods = {
      * 翻译
      * @param {*} key
      */
-    t(key: string) {
-        return Editor.I18n.t(`inspector.${key}`);
+    t(key: string): string {
+        // @ts-ignore
+        return Editor.I18n.t(`inspector.${key}`, this.language);
     },
     /**
      * 刷新当前选中的节点

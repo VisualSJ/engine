@@ -25,6 +25,7 @@ export function init(elem: HTMLElement) {
 
             width: 0,
             height: 0,
+            language: 'default',
         },
 
         methods: {

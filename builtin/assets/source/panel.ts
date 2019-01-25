@@ -231,6 +231,7 @@ export async function ready() {
         data: {
             ready: false,
             state: '',
+            language: 'default',
             allExpand: false,
             current: null, // 选中项
             info: '', // 面板底部显示的信息
@@ -280,8 +281,9 @@ export async function ready() {
              * 翻译
              * @param {*} key
              */
-            t(key: string) {
-                return Editor.I18n.t(`assets.${key}`);
+            t(key: string): string {
+                // @ts-ignore
+                return Editor.I18n.t(`assets.${key}`, this.language);
             },
             /**
              * 刷新数据
@@ -408,6 +410,12 @@ export async function ready() {
     if (vm.ready) {
         vm.refresh();
     }
+
+    // 订阅 i18n 变动
+    panel.switchLanguage = (language: string) => {
+        vm.language = language;
+    };
+    Editor.I18n.on('switch', panel.switchLanguage);
 }
 
 export async function beforeClose() { }
@@ -415,6 +423,7 @@ export async function beforeClose() { }
 export async function close() {
     panel.staging();
     Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+    Editor.I18n.removeListener('switch', panel.switchLanguage);
 }
 
 export const listeners = {
