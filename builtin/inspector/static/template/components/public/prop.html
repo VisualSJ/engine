@@ -40,7 +40,7 @@
 
     <!-- Unknown -->
     <template
-        v-else-if="value.type === 'Unknown'"
+        v-else-if="value.type === 'Unknown' || value.type === 'unknown'"
     >
         <div class="name">
             <span>{{getName(value.name)}}</span>
@@ -67,7 +67,7 @@
 
     <!-- Number -->
     <template
-        v-else-if="value.type === 'Number'"
+        v-else-if="value.type === 'Number' || value.type === 'number'"
     >
         <div class="name">
             <span>{{getName(value.name)}}</span>
@@ -89,7 +89,7 @@
 
     <!-- Boolean -->
     <template
-        v-else-if="value.type === 'Boolean'"
+        v-else-if="value.type === 'Boolean' || value.type === 'boolean'"
     >
         <div class="name">{{getName(value.name)}}</div>
         <div class="content">
@@ -102,7 +102,7 @@
 
     <!-- String -->
     <template
-        v-else-if="value.type === 'String'"
+        v-else-if="value.type === 'String' || value.type === 'string'"
     >
         <div class="name">
             <span>{{getName(value.name)}}</span>
@@ -120,7 +120,7 @@
 
     <!-- Enum -->
     <template
-        v-else-if="value.type === 'Enum'"
+        v-else-if="value.type === 'Enum' || value.type === 'enum'"
     >
         <div class="name">
             <span>{{getName(value.name)}}</span>

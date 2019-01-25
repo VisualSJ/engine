@@ -3,61 +3,6 @@
 import { readFileSync } from 'fs-extra';
 import { join } from 'path';
 
-const knownTypes = [
-    'number',
-    'blloean',
-    'string',
-    'Enum',
-    'cc.Size',
-    'cc.Vec2',
-    'cc.Vec3',
-    'cc.Color',
-    'cc.Rect',
-    'cc.Node',
-    'cc.Asset',
-    'cc.Component',
-];
-
-function checkType(data: any) {
-    if (!data || !data.value) {
-        return true;
-    }
-    if (data.isArray) {
-        return true;
-    }
-    return knownTypes.includes(data.type);
-}
-
-function isNode(dump: any) {
-    if (!dump) {
-        return false;
-    }
-    if (!dump.extends) {
-        return false;
-    }
-    return dump.extends.indexOf('cc.Node') !== -1;
-}
-
-function isAsset(dump: any) {
-    if (!dump) {
-        return false;
-    }
-    if (!dump.extends) {
-        return false;
-    }
-    return dump.extends.indexOf('cc.Asset') !== -1;
-}
-
-function isComponent(dump: any) {
-    if (!dump) {
-        return false;
-    }
-    if (!dump.extends) {
-        return false;
-    }
-    return dump.extends.indexOf('cc.Component') !== -1;
-}
-
 export function translationDump(dump: any) {
 
     dump.active.name = 'Active';
