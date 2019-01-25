@@ -82,6 +82,8 @@ class ConeController extends EditableController {
         circleNode.setPosition(pos.x, pos.y, pos.z);
         this._circleNode = circleNode;
         this._circleMR = getModel(circleNode);
+
+        this.hide();
     }
 
     getConeLineData() {

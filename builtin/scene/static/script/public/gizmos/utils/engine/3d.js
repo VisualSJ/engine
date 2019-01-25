@@ -35,6 +35,12 @@ class Engine3D extends EngineInterface {
             TRIANGLE_STRIP: cc.GFXPrimitiveMode.TRIANGLE_STRIP,
             TRIANGLE_FAN: cc.GFXPrimitiveMode.TRIANGLE_FAN,
         };
+
+        this.LightType = {
+            DIRECTIONAL: cc.LightComponent.Type.DIRECTIONAL,
+            POINT: cc.LightComponent.Type.POINT,
+            SPOT: cc.LightComponent.Type.SPOT,
+        };
     }
 
     create3DNode(name) {

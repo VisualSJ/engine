@@ -20,6 +20,32 @@ class Engine2D extends EngineInterface {
     constructor() {
         super();
         this.gfx = gfx;
+
+        this.CullMode = {
+            NONE: gfx.CULL_NONE,
+            BACK: gfx.CULL_BACK,
+            FRONT: gfx.CULL_FRONT,
+        };
+        this.AttributeName = {
+            POSITION: gfx.ATTR_POSITION,
+            NORMAL: gfx.ATTR_NORMAL,
+            UV: gfx.ATTR_UV,
+        };
+        this.PrimitiveMode = {
+            TRIANGLE_LIST: gfx.PT_TRIANGLES,
+            POINT_LIST: gfx.PT_POINTS,
+            LINE_LIST: gfx.PT_LINES,
+            LINE_STRIP: gfx.PT_LINE_STRIP,
+            LINE_LOOP: gfx.PT_LINE_LOOP,
+            TRIANGLE_STRIP: gfx.PT_TRIANGLE_STRIP,
+            TRIANGLE_FAN: gfx.PT_TRIANGLE_FAN,
+        };
+
+        this.LightType = {
+            DIRECTIONAL: cc.LightComponent.Type.DIRECTIONAL,
+            POINT: cc.LightComponent.Type.POINT,
+            SPOT: cc.LightComponent.Type.SPOT,
+        };
     }
 
     create3DNode (name) {

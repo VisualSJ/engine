@@ -7,14 +7,14 @@ let PointLightController = require('../controller/sphere-controller');
 let SpotLightController = require('../controller/cone-controller');
 let Gizmo = require('../gizmo-base');
 let ControllerUtils = require('../utils/controller-utils');
-const { create3DNode, getLightData, setLightData} = require('../../../utils/engine');
+const { create3DNode, getLightData, setLightData, LightType} = require('../../../utils/engine');
 const MathUtil = External.EditorMath;
 
 class LightComponentGizmo extends Gizmo {
     init() {
-        this.Direction = cc.LightComponent.Type.DIRECTIONAL;
-        this.Point = cc.LightComponent.Type.POINT;
-        this.Spot = cc.LightComponent.Type.SPOT;
+        this.Direction = LightType.DIRECTIONAL;
+        this.Point = LightType.POINT;
+        this.Spot = LightType.SPOT;
         this._curLightType = this.Direction; // 0:direction, 1:point, 2:spot
 
         this._pointLightRange = 0;
