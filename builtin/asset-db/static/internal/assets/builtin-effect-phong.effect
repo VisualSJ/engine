@@ -19,10 +19,10 @@
             alphaTestThreshold: { type: 'float',     value: 0                  }
           }
         }
-        {
-          vert: shadow-depth-vs:vert
-          frag: shadow-depth-fs:frag
-        }
+        // {
+        //   vert: shadow-depth-vs:vert
+        //   frag: shadow-depth-fs:frag
+        // }
       ]
     }
   ]

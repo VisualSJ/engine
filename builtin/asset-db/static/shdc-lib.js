@@ -456,6 +456,25 @@ const mapPassParam = (function() {
     } else if (!Array.isArray(value)) return 'non-array for buffer members';
     else if (value.length !== mappings.sizeMap[type] / 4) return 'wrong array length';
   };
+  const mapProperties = (props, shader) => {
+    for (const p of Object.keys(props)) {
+      const info = props[p], shaderType = findUniformType(p, shader);
+      // type translation or extraction
+      if (info.type === undefined) info.type = shaderType;
+      else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
+      // sampler specification
+      if (info.sampler) mapPassParam(info.sampler);
+      // default values
+      if (info.value === undefined) continue;
+      const givenType = typeof info.value;
+      // convert number and boolean to array before type check
+      const tcValue = (givenType === 'number' || givenType == 'boolean' ? [info.value] : info.value);
+      // type check the given value
+      const msg = typeCheck(tcValue, info.type, givenType, shaderType);
+      if (msg) warn(`illegal property declaration ${p}: ${msg}`);
+    }
+    return props;
+  };
   const generalMap = (obj) => {
     for (let key in obj) {
       let prop = obj[key];
@@ -473,24 +492,6 @@ const mapPassParam = (function() {
         generalMap(prop); // nested props
       }
     }
-  };
-  const mapProperties = (props, shader) => {
-    for (const p of Object.keys(props)) {
-      const info = props[p], shaderType = findUniformType(p, shader);
-      // type translation or extraction
-      if (info.type === undefined) info.type = shaderType;
-      else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
-      // sampler specification
-      if (info.sampler) mapPassParam(info.sampler);
-      // default values
-      if (info.value === undefined) continue;
-      const givenType = typeof info.value;
-      if (givenType === 'number') info.value = [info.value]; // convert number to array first
-      // type check the given value
-      const msg = typeCheck(info.value, info.type, givenType, shaderType);
-      if (msg) warn(`illegal property declaration ${p}: ${msg}`);
-    }
-    return props;
   };
   const mapPriority = (() => {
     const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;

@@ -5,7 +5,146 @@
   "files": [
     ".fbx"
   ],
-  "subMetas": {},
+  "subMetas": {
+    "capsule.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 0
+      }
+    },
+    "plane.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 1
+      }
+    },
+    "cone.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 2
+      }
+    },
+    "torus.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 3
+      }
+    },
+    "sphere.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 4
+      }
+    },
+    "quad.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 5
+      }
+    },
+    "cylinder.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 6
+      }
+    },
+    "box.mesh": {
+      "ver": "1.0.1",
+      "importer": "gltf-mesh",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@box.mesh",
+      "imported": true,
+      "files": [
+        ".json",
+        ".bin"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 7
+      }
+    },
+    "DefaultMaterial.material": {
+      "ver": "1.0.4",
+      "importer": "gltf-material",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 0
+      }
+    },
+    "primitives.prefab": {
+      "ver": "1.0.3",
+      "importer": "gltf-scene",
+      "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "gltfIndex": 0
+      }
+    }
+  },
   "userData": {
     "assetTable": {
       "meshes": [
