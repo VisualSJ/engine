@@ -40,7 +40,7 @@ export const computed = {
         }
 
         // @ts-ignore
-        if (this.renameSource === asset.source) {
+        if (asset.source && this.renameSource === asset.source) {
             // @ts-ignore 选中该节点
             return 'input';
         }
