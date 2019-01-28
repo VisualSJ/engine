@@ -41,10 +41,7 @@ class AssetBuilder {
         }
 
         this.result.scenes = [];
-        // TODO 引擎反序列化不可用 hack
-        if (this.shoudBuild) {
-            await this.beginBuild();
-        }
+        await this.beginBuild();
         await this.resolveAsset();
         // 判断是否需要打包资源
         if (!this.shoudBuild) {
@@ -68,10 +65,6 @@ class AssetBuilder {
             },
         };
         let assetCache = buildResult.assetCache;
-        // TODO 引擎反序列化不可用 hack
-        if (!this.shoudBuild) {
-            assetCache = await requestToPackage('asset-db', 'query-assets');
-        }
         await Promise.all(Object.values(assetCache).map(async (asset) => {
             await this.computeAssetInfo(asset);
         })).catch((err) => console.error(err));
