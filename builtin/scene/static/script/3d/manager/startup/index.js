@@ -21,14 +21,23 @@ async function initEngine(info) {
     }
     LOCK.engine = true;
 
+    // HACK 之前引擎代码里的 Editor
     await polyfills.editor();
 
+    // 实际加载引擎
     await engine.requireEngine(info.path);
 
+    // 初始化引擎的 utils，因为引擎启动过程中需要使用，所以需要提前
+    window.Manager.Utils = require(info.utils);
+
+    // HACk 其余代码
     await polyfills.engine();
+
+    // 重写部分引擎代码
     await overwrite.assetLibrary();
     await overwrite.loader();
 
+    // 配置引擎以及实际启动引擎
     await engine.configureStartup();
     await engine.openEngine();
     await engine.configureEngine();
@@ -45,7 +54,6 @@ async function initManager(info) {
 
     log.init();
 
-    window.Manager.Utils = require(info.utils);
     const manager = window.Manager;
 
     // 用于编辑器绘制的背景和前景节点
