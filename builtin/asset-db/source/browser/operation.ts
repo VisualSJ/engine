@@ -1,7 +1,7 @@
 'use strict';
 
-import { copy, ensureDir, exists, existsSync, move, outputFile, remove, rename, statSync } from 'fs-extra';
-import { basename, dirname, extname, join } from 'path';
+import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
+import { dirname, extname } from 'path';
 
 import { getName } from './utils';
 import { awaitAsset, forwarding } from './worker';

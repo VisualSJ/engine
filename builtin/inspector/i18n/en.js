@@ -20,7 +20,7 @@ module.exports = {
             subpackage_name: 'Subpackage Name',
         },
 
-        jsavescript: {
+        javascript: {
             plugin: 'Import As Plugin',
             loadPluginInWeb: 'Load In Web',
             loadPluginInEditor: 'Load In Editor',

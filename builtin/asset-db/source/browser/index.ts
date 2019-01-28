@@ -36,13 +36,6 @@ module.exports = {
             Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
         },
 
-        /**
-         * 打开调试模式
-         */
-        'open-devtools'() {
-            debug();
-        },
-
         // ------ 数据库
 
         /**
@@ -50,6 +43,13 @@ module.exports = {
          */
         refresh() {
             reload();
+        },
+
+        /**
+         * 打开调试模式
+         */
+        'open-devtools'() {
+            debug();
         },
 
         /**
@@ -69,10 +69,20 @@ module.exports = {
 
         // ------- 地址转换
 
+        /**
+         * 将一个 url 地址转成实际的 path 地址
+         * 资源并不需要存在
+         * @param url
+         */
         async 'query-path-by-url'(url: string): Promise<string | null> {
             return await forwarding('asset-worker:query-path-from-url', url) || null;
         },
 
+        /**
+         * 将一个实际的 path 地址转成 url 地址
+         * 资源并不需要存在
+         * @param path
+         */
         async 'query-url-by-path'(path: string): Promise<string | null> {
             return await forwarding('asset-worker:query-url-from-path', path) || null;
         },
@@ -81,6 +91,8 @@ module.exports = {
 
         /**
          * 传入资源的 url，返回 uuid
+         * 资源必须存在，才会有 uuid
+         * @param url
          */
         async 'query-asset-uuid'(url: string) {
             return await forwarding('asset-worker:query-asset-uuid', url);
@@ -142,26 +154,26 @@ module.exports = {
 
         /**
          * 复制一个资源到指定位置
-         * @param url db://assets/abc.json 或者 系统路径 如 C:\Users
-         * @param to db://assets/abc
+         * @param source db://assets/abc.json 或者 系统路径 如 C:\Users
+         * @param target db://assets/abc
          */
-        async 'copy-asset'(url: string, to: string) {
-            return await copyAsset(url, to);
+        async 'copy-asset'(source: string, target: string) {
+            return await copyAsset(source, target);
         },
 
         /**
          * 将一个资源移动到某个地方
-         * @param url 需要移动的源资源
-         * @param to 移动到某个路境内
+         * @param source 需要移动的源资源
+         * @param target 移动到某个路境内
          */
-        async 'move-asset'(url: string, to: string) {
-            return await moveAsset(url, to);
+        async 'move-asset'(source: string, target: string) {
+            return await moveAsset(source, target);
         },
 
         /**
          * 保存资源
-         * @param {string} uuid
-         * @param {(Buffer | string)} data
+         * @param uuid
+         * @param data
          */
         async 'save-asset'(uuid: string, data: Buffer | string) {
             return await saveAsset(uuid, data);
@@ -169,8 +181,8 @@ module.exports = {
 
         /**
          * 保存资源的 meta 信息
-         * @param {string} uuid
-         * @param {*} data
+         * @param uuid
+         * @param data
          * @returns
          */
         async 'save-asset-meta'(uuid: string, meta: string) {

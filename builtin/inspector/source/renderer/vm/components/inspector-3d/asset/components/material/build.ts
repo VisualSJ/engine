@@ -40,12 +40,12 @@ export function buildEffect(props: any[], defs: any[]) {
  * @param tree
  * @param material
  */
-export function translateEffect(tree: any, material: any) {
+export function translateEffect(tree: any, props: any, defines: any) {
     const array: any[] = [];
     tree.props && tree.props.forEach((item: any) => {
         let value = item.value;
-        if (item.key in material._props) {
-            value = material._props[item.key];
+        if (item.key in props) {
+            value = props[item.key];
         }
 
         if (value && value.__uuid__) {
@@ -69,15 +69,15 @@ export function translateEffect(tree: any, material: any) {
             return;
         }
         let value = false;
-        if (name in material._defines) {
-            value = material._defines[name];
+        if (name in defines) {
+            value = defines[name];
         }
         array.push({
             name,
             type: 'ui.Depend',
             value,
             default: false,
-            children: translateEffect(tree[name], material),
+            children: translateEffect(tree[name], props, defines),
         });
     });
     return array;

@@ -31,9 +31,9 @@ const { Vec2, Vec3, Vec4, Mat4, Color } = cc;
 const _ctorMap = {
     ['boolean']: (v) => v || false,
     ['number']: (v) => v || 0,
-    ['cc.Vec2']: (v) => Array.isArray(v) ? new Vec2(v[0], v[1]) : new Vec2(),
-    ['cc.Vec3']: (v) => Array.isArray(v) ? new Vec3(v[0], v[1], v[2]) : new Vec3(),
-    ['cc.Vec4']: (v) => Array.isArray(v) ? new Vec4(v[0], v[1], v[2], v[3]) : new Vec4(),
+    ['cc.Vec2']: (v) => typeof v === 'object' ? new Vec2(v.x, v.y) : new cc.Vec2(),
+    ['cc.Vec3']: (v) => typeof v === 'object' ? new Vec3(v.x, v.y, v.z) : new cc.Vec3(),
+    ['cc.Vec4']: (v) => typeof v === 'object' ? new Vec2(v.x, v.y, v.z, v.w) : new cc.Vec4(),
     ['cc.Color']: (v) => Array.isArray(v) ? new Color(v[0] * 255, v[1] * 255, v[2] * 255,
         (v[3] || 1) * 255) : new Color(),
     ['cc.Mat4']: (v) => Array.isArray(v) ? new Mat4(

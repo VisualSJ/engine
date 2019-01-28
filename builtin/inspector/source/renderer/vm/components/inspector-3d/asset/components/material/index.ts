@@ -34,19 +34,25 @@ export const template = `
     <div class="content">
         <template
             v-for="(passes,index) in techniques"
-            v-if="index == technique"
         >
-            <div class="pass"
-                v-for="(pass,index) in passes"
+            <template
+                v-if="index == technique"
             >
-                <span>Pass {{index}}</span>
-                <div>
-                    <asset-prop auto="true"
-                        v-for="item in pass"
-                        :value="item"
-                    ></asset-prop>
+                <div class="pass"
+                    v-for="(pass,index) in passes"
+                >
+                    <span>Pass {{index}}</span>
+                    <div>
+                        <template
+                            v-for="item in pass"
+                        >
+                            <asset-prop auto="true"
+                                :value="item"
+                            ></asset-prop>
+                        </template>
+                    </div>
                 </div>
-            </div>
+            </template>
         </template>
     </div>
 </section>
@@ -74,9 +80,7 @@ export const methods = {
             return;
         }
 
-        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.meta.uuid);
-        const path = info.file;
-        vm.material = readJSONSync(path);
+        vm.material = readJSONSync(vm.info.file);
     },
 
     /**
@@ -129,11 +133,11 @@ export const watch = {
         }
         const array = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', name);
 
-        vm.techniques = array.map((technique: any[]) => {
+        vm.techniques = array.map((technique: any[], index: number) => {
             return technique.map((data: any) => {
                 // 合并 data.defines 和 data.props
                 const tree = buildEffect(data.props, data.defines);
-                return translateEffect(tree, vm.material);
+                return translateEffect(tree, vm.material._props[index] || {}, vm.material._defines[index] || {});
             });
         });
 
@@ -148,8 +152,14 @@ export const watch = {
     async meta() {
         // @ts-ignore
         const vm: any = this;
-        await vm.loadMaterial();
-        await vm.loadAllEffect();
+
+        vm.effect = '';
+        vm.technique = 0;
+        vm.techniques = [];
+        requestAnimationFrame(async () => {
+            await vm.loadMaterial();
+            await vm.loadAllEffect();
+        });
     },
 };
 

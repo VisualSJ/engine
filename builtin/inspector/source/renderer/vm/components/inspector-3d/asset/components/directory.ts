@@ -1,5 +1,7 @@
 'use strict';
 
+import { shell } from 'electron';
+
 export const template = `
 <section class="asset-directory">
     <div class="path">
@@ -7,22 +9,27 @@ export const template = `
             <span>{{info.source}}</span>
         </div>
         <div class="button">
-            <ui-button class="blue explore-btn" tabindex="0">
+            <ui-button class="blue explore-btn" tabindex="0"
+                @confirm="_onOpenDirectory($event)"
+            >
                 <i class="iconfont icon-folderopen"></i>
             </ui-button>
         </div>
     </div>
 
-    <div class="content">
-        <ui-prop
+    <div class="content"
+        v-if="meta"
+    >
+        <ui-prop type="boolean"
             :label="t('is_subpackage')"
-            type="boolean"
-            value="false"
+            :value="meta.userData.isSubpackage"
+            @confirm="_onPropertyChanged($event, 'isSubpackage')"
         ></ui-prop>
-        <ui-prop
+        <ui-prop type="string"
+            v-if="meta.userData.isSubpackage"
             :label="t('subpackage_name')"
-            type="string"
-            value=""
+            :value="meta.userData.subpackageName"
+            @confirm="_onPropertyChanged($event, 'subpackageName')"
         ></ui-prop>
     </div>
 </section>
@@ -42,6 +49,27 @@ export const methods = {
      */
     t(key: string) {
         return Editor.I18n.t(`inspector.asset.directory.${key}`);
+    },
+
+    /**
+     * 打开文件夹
+     * @param event
+     */
+    _onOpenDirectory(event: any) {
+        // @ts-ignore
+        const vm: any = this;
+        shell.openItem(vm.info.file);
+    },
+
+    /**
+     * 修改配置
+     * @param event
+     * @param key
+     */
+    _onPropertyChanged(event: any, key: string) {
+        // @ts-ignore
+        const vm: any = this;
+        vm.$set(vm.meta.userData, key, event.target.value);
     },
 };
 

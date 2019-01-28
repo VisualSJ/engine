@@ -20,7 +20,7 @@ module.exports = {
             subpackage_name: '子包名',
         },
 
-        jsavescript: {
+        javascript: {
             plugin: '导入为插件',
             loadPluginInWeb: '允许 Web 平台加载',
             loadPluginInEditor: '允许编辑器加载',

@@ -28,28 +28,6 @@ ipcAddListener('asset-worker:query-uuid-from-url', (event: any, url: string) => 
 });
 
 /**
- * 将一个 url 转换成文件系统的实际路径
- */
-ipcAddListener('asset-worker:translate-url', (event: any, url: string) => {
-    if (isAbsolute(url)) {
-        return event.reply(null, url);
-    }
-
-    const uri = parse(url);
-
-    if (uri.protocol !== 'db:') {
-        return event.reply(null, '');
-    }
-
-    const database = Manager.AssetWorker[uri.host || ''];
-    if (!database) {
-        return event.reply(null, '');
-    }
-
-    event.reply(null, join(database.options.target, unescape(uri.path || '')));
-});
-
-/**
  * 查询一个数据库的具体数据
  */
 ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) => {
