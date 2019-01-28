@@ -26,6 +26,10 @@ module.exports = {
             loadPluginInEditor: '允许编辑器加载',
             loadPluginInNative: '允许 Native 平台加载',
         },
+
+        fbx: {
+            browse: '浏览',
+        },
     },
 
     gradient: {

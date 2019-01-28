@@ -14,7 +14,7 @@ export const template = `
                 <div class="button">
                     <ui-button class="blue tiny" tabindex="0"
                         @click="_onBrowseClick($event, item)"
-                    >浏览</ui-button>
+                    >{{t('browse')}}</ui-button>
                 </div>
             </div>
             <div>
@@ -44,6 +44,13 @@ export const props = [
 export const components = {};
 
 export const methods = {
+    /**
+     * 翻译文本
+     * @param key
+     */
+    t(key: string) {
+        return Editor.I18n.t(`inspector.asset.fbx.${key}`);
+    },
 
     /**
      * 刷新页面显示数据

@@ -26,6 +26,10 @@ module.exports = {
             loadPluginInEditor: 'Load In Editor',
             loadPluginInNative: 'Load In Native',
         },
+
+        fbx: {
+            browse: 'browse',
+        },
     },
 
     gradient: {
