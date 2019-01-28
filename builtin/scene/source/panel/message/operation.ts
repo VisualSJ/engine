@@ -244,6 +244,20 @@ export function apply(messages: any) {
         await $scene.forwarding('Gizmo', 'setTransformToolName', [name]);
     };
 
+    messages['change-gizmo-pivot'] = async (name: string) => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('Gizmo', 'setPivot', [name]);
+    };
+
+    messages['change-gizmo-coordinate'] = async (type: string) => {
+        if (!$scene || (type !== 'local' && type !== 'global')) {
+            return null;
+        }
+        await $scene.forwarding('Gizmo', 'setCoordinate', [type]);
+    };
+
     messages['focus-camera'] = async (uuids: string[] | null) => {
         if (!$scene) {
             return null;

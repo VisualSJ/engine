@@ -126,6 +126,20 @@ export function apply(messages: any) {
         return await $scene.forceForwarding('Gizmo', 'queryToolName');
     };
 
+    /**
+     * 查询 gizmo 中心点类型
+     */
+    messages['query-gizmo-pivot'] = async () => {
+        return await $scene.forceForwarding('Gizmo', 'queryPivot');
+    };
+
+    /**
+     * 查询 gizmo 坐标类型
+     */
+    messages['query-gizmo-coordinate'] = async () => {
+        return await $scene.forceForwarding('Gizmo', 'queryCoordinate');
+    };
+
     messages['query-components'] = async () => {
         return await $scene.forceForwarding('Scene', 'queryComponents');
     };

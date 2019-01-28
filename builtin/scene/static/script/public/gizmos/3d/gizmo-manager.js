@@ -21,6 +21,26 @@ class GizmoManager {
         }
     }
 
+    queryCoordinate() {
+        return this.coordinate;
+    }
+
+    setCoordinate(name) {
+        if (['local', 'global'].includes(name)) {
+            this.coordinate = name;
+        }
+    }
+
+    queryPivot() {
+        return this.pivot;
+    }
+
+    setPivot(name) {
+        if (['pivot', 'center'].includes(name)) {
+            this.pivot = name;
+        }
+    }
+
     init() {
         this.gizmoRootNode = create3DNode('gizmoRoot');
         this.gizmoRootNode.parent = Manager.foregroundNode;
@@ -547,6 +567,14 @@ class GizmoManager {
 
 TransformToolData.on('tool-name-changed', (name) => {
     Manager.Ipc.send('broadcast', 'scene:gizmo-tool-changed', name);
+});
+
+TransformToolData.on('coordinate-changed', (name) => {
+    Manager.Ipc.send('broadcast', 'scene:gizmo-coordinate-changed', name);
+});
+
+TransformToolData.on('pivot-changed', (name) => {
+    Manager.Ipc.send('broadcast', 'scene:gizmo-pivot-changed', name);
 });
 
 module.exports = new GizmoManager();
