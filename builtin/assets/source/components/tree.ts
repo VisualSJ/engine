@@ -1,7 +1,7 @@
 'use strict';
 
 import { existsSync, readFileSync } from 'fs';
-import { extname, join } from 'path';
+import { basename, extname, join } from 'path';
 
 const db = require('./tree-db');
 const utils = require('./tree-utils');
@@ -347,7 +347,10 @@ export const methods = {
             }
         }
         utils.twinkle.sleep();
-        vm.renameSource = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, filedata);
+
+        const renameSource = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
+        await Editor.Ipc.requestToPackage('asset-db', 'create-asset', renameSource, filedata);
+        vm.renameSource = renameSource;
 
         parent.state = '';
     },
@@ -537,7 +540,8 @@ export const methods = {
         utils.twinkle.sleep();
 
         // 重名命资源
-        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'rename-asset', asset.uuid, name);
+        name = asset.source.replace(basename(asset.source), name);
+        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', asset.source, name);
 
         if (!isSuccess) {
             Editor.Dialog.show({
@@ -672,6 +676,7 @@ export const methods = {
 
             let index = 0;
             let file: any;
+            let dest: any;
             toAsset.state = 'loading'; // 显示 loading 效果
             if (toAsset.isExpand === false) {
                 this.toggle(toAsset.uuid, true); // 重新展开父级节点
@@ -679,9 +684,12 @@ export const methods = {
 
             do {
                 file = json.files[index];
+                const ext = extname(file);
+                const name = basename(file, ext);
+                dest = toAsset.source + '/' + name + '_copy' + ext;
                 index++;
                 utils.twinkle.sleep();
-            } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, toAsset.source));
+            } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, dest));
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
@@ -773,6 +781,7 @@ export const methods = {
 
         let index = 0;
         let asset;
+        let dest: any;
         parent.state = 'loading'; // 显示 loading 效果
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
@@ -780,9 +789,12 @@ export const methods = {
 
         do {
             asset = utils.getAssetFromTree(finallyCanPaste[index]);
+            const ext = extname(asset.source);
+            const name = basename(asset.source, ext);
+            dest = parent.source + '/' + name + '_copy' + ext;
             index++;
             utils.twinkle.sleep();
-        } while (asset && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, parent.source));
+        } while (asset && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, dest));
     },
 
     /**
@@ -825,8 +837,9 @@ export const methods = {
 
             utils.twinkle.sleep();
 
-            // @ts-ignore 移动资源
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, toAsset.source);
+            // 移动资源
+            const target = toAsset.source + '/' + basename(fromAsset.source);
+            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, target);
         });
     },
 

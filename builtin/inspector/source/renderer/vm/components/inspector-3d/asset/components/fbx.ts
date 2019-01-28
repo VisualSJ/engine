@@ -73,7 +73,8 @@ export const methods = {
     async _onBrowseClick(event: any, item: any) {
         // @ts-ignore
         const vm: any = this;
-        const assetPath = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', vm.info.uuid);
+        const assetInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.info.uuid);
+        const assetPath = assetInfo.file;
 
         // 弹出选择框，让用户选择文件
         const path = dirname(assetPath);
@@ -92,7 +93,7 @@ export const methods = {
             return;
         }
 
-        const url = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-url-by-path', filePath);
+        const url = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', filePath);
         item.target = url;
         vm.meta.userData.imageLocations[item.name].targetDatabaseUrl = url;
     },

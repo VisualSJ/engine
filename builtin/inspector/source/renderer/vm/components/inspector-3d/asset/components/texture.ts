@@ -143,7 +143,8 @@ async function getImageLikeAssetSource(meta: any) {
                 return '';
             }
             if (!userData.isUuid) {
-                return await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', imageUuid);
+                const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', imageUuid);
+                return info.path;
             }
             if (!imageUuid) {
                 return '';

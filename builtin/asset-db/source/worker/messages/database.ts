@@ -47,17 +47,17 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
 
     // 绑定文件添加事件
     db.on('added', (uuid) => {
-        ipcSend('asset-worker:asset-add', uuid);
+        ipcSend('asset-worker:asset-add', uuid, db.uuidToPath(uuid));
     });
 
     // 绑定文件修改事件
     db.on('changed', (uuid) => {
-        ipcSend('asset-worker:asset-change', uuid);
+        ipcSend('asset-worker:asset-change', uuid, db.uuidToPath(uuid));
     });
 
     // 绑定文件删除事件
-    db.on('deleted', (uuid) => {
-        ipcSend('asset-worker:asset-delete', uuid);
+    db.on('delete', (uuid) => {
+        ipcSend('asset-worker:asset-delete', uuid, db.uuidToPath(uuid));
     });
 
     // 启动数据库

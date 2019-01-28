@@ -55,7 +55,7 @@ export function apply(messages: any) {
             return '';
         }
         const text = await $scene.forwarding('Scene', 'serialize');
-        let uuid = profile.get('current-scene') || '';
+        const uuid = profile.get('current-scene') || '';
 
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         if (asset) {
@@ -66,22 +66,19 @@ export function apply(messages: any) {
             return '';
         }
 
-        const url = 'db://assets/New Scene.fire';
-        const source = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
-
-        // todo: HACK
-        await new Promise((resolve) => {
-            setTimeout(resolve, 500);
-        });
-
-        uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', source);
+        const url = await Editor.Ipc.requestToPackage(
+            'asset-db',
+            'generate-available-url',
+            'db://assets/New Scene.fire'
+        );
+        const newUUID = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
 
         // 同步一下缓存数据
         await $scene.forwarding('Scene', 'syncSceneData');
 
-        profile.set('current-scene', uuid);
+        profile.set('current-scene', newUUID);
         profile.save();
-        console.log(`Save scene: ${source}`);
+        console.log(`Save scene: ${url}`);
 
         return uuid;
     };

@@ -74,7 +74,8 @@ export const methods = {
             return;
         }
 
-        const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', vm.meta.uuid);
+        const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.meta.uuid);
+        const path = info.file;
         vm.material = readJSONSync(path);
     },
 

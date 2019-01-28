@@ -1,5 +1,6 @@
 declare const Manager: IManager;
 
+// window 全局 Manager 变量
 interface IManager {
     AssetInfo: IAssetWorkerInfo,
     AssetWorker: { [key: string]: any }
@@ -11,6 +12,15 @@ declare interface IruntimeResource {
     path?: string; // 用户可配置
 
     target: string; // db 文件夹绝对路径，用户不需要配置此字段
+}
+
+declare interface IAssetDBConfig {
+    name: string;
+    target: string;
+    library: string;
+    temp: string;
+    visible: boolean;
+    readOnly: boolean;
 }
 
 declare interface IAssetWorkerInfo {

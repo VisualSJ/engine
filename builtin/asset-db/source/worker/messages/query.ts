@@ -3,7 +3,7 @@
 import { extname, isAbsolute, join } from 'path';
 import { parse } from 'url';
 
-import { queryUrlFromPath } from '@editor/asset-db';
+import { queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl } from '@editor/asset-db';
 
 import { ipcAddListener } from '../ipc';
 import { encodeAsset, queryAsset } from '../utils';
@@ -14,6 +14,18 @@ const TYPES: any = {
     scripts: ['.js', '.ts'],
     scene: ['.scene', '.fire'],
 };
+
+ipcAddListener('asset-worker:query-path-from-url', (event: any, url: string) => {
+    event.reply(null, queryPathFromUrl(url));
+});
+
+ipcAddListener('asset-worker:query-url-from-path', (event: any, url: string) => {
+    event.reply(null, queryUrlFromPath(url));
+});
+
+ipcAddListener('asset-worker:query-uuid-from-url', (event: any, url: string) => {
+    event.reply(null, queryUuidFromUrl(url));
+});
 
 /**
  * 将一个 url 转换成文件系统的实际路径
@@ -41,6 +53,10 @@ ipcAddListener('asset-worker:translate-url', (event: any, url: string) => {
  * 查询一个数据库的具体数据
  */
 ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) => {
+    if (!name) {
+        return event.reply(null, null);
+    }
+
     // 如果传入的是一个 url，则取 url 指示的 db 名字
     if (name.startsWith('db://')) {
         const splits = name.split('/').filter(Boolean);
@@ -52,14 +68,7 @@ ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) =>
         event.reply(null, database.options);
         return;
     }
-    event.reply(new Error(`The database doesn't exist: ${name}`));
-});
-
-/**
- * 通过一个文件系统路径，查询数据库内对应的 url 地址
- */
-ipcAddListener('asset-worker:query-asset-url-by-path', async (event: any, path: string) => {
-    event.reply(null, queryUrlFromPath(path));
+    event.reply(null, null);
 });
 
 /**
@@ -140,20 +149,6 @@ ipcAddListener('asset-worker:query-asset-uuid', (event: any, url: string) => {
 });
 
 /**
- * 查询指定资源的 url 地址
- * todo asset.source 应该是绝对地址，不是 url
- */
-ipcAddListener('asset-worker:query-asset-url', (event: any, uuid: string) => {
-    // 查询资源
-    const info = queryAsset(uuid);
-    if (!info || !info.asset) {
-        return event.reply(new Error('The specified resource could not be found.'), null);
-    }
-
-    event.reply(null, info.asset.source);
-});
-
-/**
  * 查询指定资源的信息
  */
 ipcAddListener('asset-worker:query-asset-info', async (event: any, uuid: string) => {
@@ -165,7 +160,7 @@ ipcAddListener('asset-worker:query-asset-info', async (event: any, uuid: string)
     // 查询资源
     const info = queryAsset(uuid);
     if (!info || !info.asset) {
-        return event.reply(new Error('File does not exist.'), null);
+        return event.reply(null, null);
     }
 
     const asset = info.asset;

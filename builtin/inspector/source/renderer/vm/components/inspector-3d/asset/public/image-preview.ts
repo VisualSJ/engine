@@ -30,7 +30,8 @@ export const methods = {
     //     if (userData && userData.imageSource) {
     //         return userData.imageSource;
     //     }
-    //     const path = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-path', uuid);
+    //     const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    //     const path = info.file;
     //     return path;
     // },
 

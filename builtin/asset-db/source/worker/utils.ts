@@ -59,7 +59,15 @@ export function queryAsset(uuid: string): IAsset | null {
                     isDirectory() {
                         return false;
                     },
-                    meta: { importer: 'database', files: [] },
+                    meta: {
+                        ver: '1.0.0',
+                        uuid: `db://${name}`,
+                        subMetas: {},
+                        userData: {},
+                        importer: 'database',
+                        imported: true,
+                        files: [],
+                    },
                 },
             };
         }
@@ -94,7 +102,7 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
 
     // 整理跳转数据
     let redirect;
-    if (asset.meta.userData.redirect) {
+    if (asset.meta.userData && asset.meta.userData.redirect) {
         const redirectInfo = queryAsset(asset.meta.userData.redirect);
         if (redirectInfo) {
             const redirectImporter = database.name2importer[redirectInfo.asset.meta.importer] || null;
