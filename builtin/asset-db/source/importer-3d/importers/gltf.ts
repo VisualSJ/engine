@@ -442,7 +442,7 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -1037,58 +1037,29 @@ class GltfConverter {
 
     public createAnimation(gltfAnimation: Animation) {
         // @ts-ignore
-        const frames: cc.AnimationFrame[] = [];
-        let maxLength = 0;
-
+        const channels: any[] = [];
+        let iInputAccessor = -1;
         gltfAnimation.channels.forEach((gltfChannel) => {
             const targetNode = gltfChannel.target.node;
-
             if (targetNode === undefined) {
                 // When node isn't defined, channel should be ignored.
                 return;
             }
 
             const gltfSampler = gltfAnimation.samplers[gltfChannel.sampler];
-            const inputAccessor = this._gltf.accessors![gltfSampler.input];
-
-            // find frame by input name
-            let frame = frames.find((frame) => frame._name === inputAccessor.name);
-
-            // if not found, create one
-            if (!frame) {
-                if (inputAccessor.componentType !== WebGLRenderingContext.FLOAT ||
-                    inputAccessor.type !== 'SCALAR') {
-                    throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
-                }
-                const inputData = new Float32Array(inputAccessor.count);
-                this._readAccessor(inputAccessor, new DataView(inputData.buffer));
-
-                const times = new Array(inputData.length);
-                inputData.forEach((time, index) => {
-                    times[index] = time;
-                });
-                if (times.length > 0) {
-                    maxLength = Math.max(maxLength, times[times.length - 1]);
-                }
-
-                // @ts-ignore
-                frame = new cc.AnimationFrame();
-                frame._name = inputAccessor.name;
-                frame._times = times;
-                frame._channels = [];
-                frames.push(frame);
+            if (gltfSampler.input !== iInputAccessor && iInputAccessor >= 0) {
+                console.error(`All channels should have same input.`);
+                return;
             }
+            iInputAccessor = gltfSampler.input;
 
-            // find output frames by node id
-            let channel = frame._channels.find((channel: any) => channel.target === this._getNodePath(targetNode));
-
-            // if not found, create one
-            if (!channel) {
-                // @ts-ignore
-                channel = new cc.AnimationChannel();
-                channel.target = this._getNodePath(targetNode);
-                frame._channels.push(channel);
-            }
+            const channel = {
+                target: this._getNodePath(targetNode),
+                positionCurve: [],
+                scaleCurve: [],
+                rotationCurve: [],
+            };
+            channels.push(channel);
 
             const outputAccessor = this._gltf.accessors![gltfSampler.output];
             if (outputAccessor.componentType !== WebGLRenderingContext.FLOAT) {
@@ -1101,6 +1072,7 @@ class GltfConverter {
                 if (outputAccessor.type !== 'VEC3') {
                     throw new Error(`Output of an animation channel targetting translation must be 3d vectors.`);
                 }
+                // @ts-ignore
                 channel.positionCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
@@ -1111,6 +1083,7 @@ class GltfConverter {
                 if (outputAccessor.type !== 'VEC4') {
                     throw new Error(`Output of an animation channel targetting translation must be 4d vectors.`);
                 }
+                // @ts-ignore
                 channel.rotationCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
@@ -1121,6 +1094,7 @@ class GltfConverter {
                 if (outputAccessor.type !== 'VEC3') {
                     throw new Error(`Output of an animation channel targetting scale must be 3d vectors.`);
                 }
+                // @ts-ignore
                 channel.scaleCurve = new Array(outputAccessor.count);
                 for (let i = 0; i < outputAccessor.count; ++i) {
                     // @ts-ignore
@@ -1132,10 +1106,31 @@ class GltfConverter {
             }
         });
 
+        let times = [];
+        let maxLength = 0;
+        if (iInputAccessor >= 0) {
+            const inputAccessor = this._gltf.accessors![iInputAccessor];
+            if (inputAccessor.componentType !== WebGLRenderingContext.FLOAT ||
+                inputAccessor.type !== 'SCALAR') {
+                throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
+            }
+            const inputData = new Float32Array(inputAccessor.count);
+            this._readAccessor(inputAccessor, new DataView(inputData.buffer));
+
+            times = new Array(inputData.length);
+            inputData.forEach((time, index) => {
+                times[index] = time;
+            });
+            if (times.length > 0) {
+                maxLength = Math.max(maxLength, times[times.length - 1]);
+            }
+        }
+
         // @ts-ignore
         const animationClip = new cc.AnimationClip();
         animationClip.name = gltfAnimation.name;
-        animationClip._frames = frames;
+        animationClip._channels = channels;
+        animationClip._times = times;
         animationClip._length = maxLength;
         return animationClip;
     }
