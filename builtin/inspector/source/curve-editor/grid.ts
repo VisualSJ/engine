@@ -134,7 +134,7 @@ export default class Grid {
         let textX = 0;
         while (cellX < x + w) {
             this.cxt2D.fillText(textX, cellX, y + h + x / 2);
-            textX = Editor.Utils.mathUtils.add(textX, stepX);
+            textX = Editor.Utils.Math.add(textX, stepX);
             cellX += spaceX;
         }
         // 绘制纵坐标刻度
@@ -142,7 +142,7 @@ export default class Grid {
         let textY = 0;
         while (cellY > x) {
             this.cxt2D.fillText(textY, x / 2 - HALF_TEXT_WIDTH, cellY);
-            textY = Editor.Utils.mathUtils.add(textY, stepY);
+            textY = Editor.Utils.Math.add(textY, stepY);
             cellY -= spaceY;
         }
         this.cxt2D.restore();

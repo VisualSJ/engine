@@ -32,7 +32,7 @@ const Editor = {
     Utils: {
         // todo Hack
         get UuidUtils() {
-            return require('./uuid-utils');
+            return Editor._uuidUtils();
         },
         UuidCache: {
             cache() { },

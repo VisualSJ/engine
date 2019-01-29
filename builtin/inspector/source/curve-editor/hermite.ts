@@ -1,4 +1,4 @@
-const {clamp} = Editor.Utils.mathUtils;
+const {clamp} = Editor.Utils.Math;
 const {drawLine, calcHermite, calcFunc, Point} = require('./utils');
 const POINT_LENGTH = 2; // 设置内部数据使用的小数点位数
 export default class Hermite {

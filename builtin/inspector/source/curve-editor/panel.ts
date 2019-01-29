@@ -139,6 +139,7 @@ export async function ready() {
              */
             checkAndUpdate(this: any, dump: any) {
                 if (!Array.isArray(dump.keyFrames) || dump.keyFrames.length < 1) {
+                    !dump && (dump = {});
                     // @ts-ignore
                     dump.keyFrames = DEFAULT_KEYFRAMES[0];
                 }

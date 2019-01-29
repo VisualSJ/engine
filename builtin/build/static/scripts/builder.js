@@ -484,7 +484,7 @@ class Builder {
     compressUuid(uuid) {
         // 非调试模式下， uuid 需要压缩成短 uuid
         if (this._options && !this._options.debug) {
-            uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
+            uuid = Editor.Utils.Uuid.compressUuid(uuid, true);
         }
         return uuid;
     }

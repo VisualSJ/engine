@@ -109,9 +109,13 @@ interface Dialog {
     saveFile: Function
 }
 interface Utils {
-    getName: Function,
-    uuidUtils: uuidUtils,
-    mathUtils: mathUtils,
+    path:string,
+    File: fileUtils,
+    Uuid: uuidUtils,
+    Math: mathUtils,
+}
+interface fileUtils {
+    getName:Function
 }
 interface uuidUtils {
     compressUuid: Function,

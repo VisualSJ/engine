@@ -117,6 +117,7 @@ async function createWorker() {
             version: info.version,
             project: Editor.Project.path,
             app: Editor.App.path,
+            utilPath: Editor.Utils.path,
         });
 
     });
@@ -133,7 +134,7 @@ async function createWorker() {
         event.reply(null, data);
     });
 
-    // worker 与其他插件的通信转发
+    // worker 构建进度通知
     buildWorker.on('build-worker:update-progress', async (event: any, ...args: any[]) => {
         Editor.Ipc.sendToAll('build:update-progress', ...args);
     });
