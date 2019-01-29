@@ -97,6 +97,12 @@ export const methods = {
         vm.$refs.tree.paste();
     },
     /**
+     * 复制节点
+     */
+    duplicate() {
+        vm.$refs.tree.duplicate();
+    },
+    /**
      * 删除资源
      */
     delete() {

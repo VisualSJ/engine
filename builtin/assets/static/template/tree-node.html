@@ -23,6 +23,7 @@
     <i class="folder"
         :class="asset.isRoot?'i-database':'i-folder'"
         v-if="asset.isDirectory" 
+        @dblclick="open($event, asset)"
     ></i>
     <tree-node-icon
         :asset="asset"

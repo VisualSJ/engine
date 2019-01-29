@@ -33,16 +33,16 @@ export function newItreeAsset() {
         visible: true,
         readOnly: false,
 
-        fileName: '',
-        fileExt: '',
+        fileName: '', // deprecated
+        fileExt: '', // deprecated
         parentSource: '',
         parentUuid: '',
-        topSource: '',
+        topSource: '', // deprecated
         isExpand: false,
         isParent: false,
         isRoot: false,
         isSubAsset: false,
-        state: '',
+        state: '', // deprecated
         depth: 0,
         top: 0,
         left: 0,

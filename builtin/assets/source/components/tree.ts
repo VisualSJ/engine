@@ -693,7 +693,7 @@ export const methods = {
                     target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                     utils.twinkle.sleep();
                     // tslint:disable-next-line:max-line-length
-                    success = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, {copyfile: file.path});
+                    success = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, {src: file.path});
                 }
 
             } while (success);
@@ -749,8 +749,9 @@ export const methods = {
     /**
      * 粘贴
      * @param uuid 粘贴到此目标节点
+     * @param copiedUuids 被复制的节点
      */
-    async paste(uuid: string) {
+    async paste(uuid: string, copiedUuids= vm.copiedUuids) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
@@ -761,7 +762,7 @@ export const methods = {
         }
 
         const finallyCanPaste: string[] = []; // 最后可复制的项
-        vm.copiedUuids.forEach((uuid: string) => {
+        copiedUuids.forEach((uuid: string) => {
             const asset = utils.getAssetFromTree(uuid);
 
             // 节点可复制
@@ -801,12 +802,32 @@ export const methods = {
             success = '';
 
             if (asset) {
-                const target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', asset.source);
+                const name = basename(asset.source);
+                let target = `${parent.source}/${name}`;
+                target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                 utils.twinkle.sleep();
                 success = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
             }
 
         } while (success);
+    },
+
+    /**
+     * 复制资源，平级
+     */
+    async duplicate() {
+        const copiedUuids = vm.selects.filter((uuid: string) => {
+            return uuid && !utils.canNotCopyAsset(utils.getAssetFromTree(uuid));
+        });
+
+        if (copiedUuids.length === 0) {
+            return;
+        }
+
+        for (const uuid of copiedUuids) {
+            const asset = utils.getAssetFromTree(uuid);
+            await vm.paste(asset.parentUuid, [uuid]);
+        }
     },
 
     /**
