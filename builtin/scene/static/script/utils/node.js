@@ -1,4 +1,5 @@
 const EditorMath = require('./math');
+const AabbTool = require('./aabb');
 
 let tempMatrix = cc.mat4();
 let tempQuat = cc.quat();
@@ -57,13 +58,61 @@ Utils.getWorldBounds = function(node, size, out) {
 };
 
 Utils.getWorldOrientedBounds = function(node, size, out_bl, out_tl, out_tr, out_br) {
-    size = size || cc.size(0, 0);
-    let width = size.width;
-    let height = size.height;
-    let rect = new cc.Rect(0, 0, width, height);
-
+    let modelComp = node.getComponent(cc.ModelComponent);
     node.getWorldMatrix(tempMatrix);
-    return Utils.getObbFromRect(tempMatrix, rect, out_bl, out_tl, out_tr, out_br);
+    if (modelComp) {
+        return Utils.getObbFromMeshRenderer(modelComp, tempMatrix);
+    }
+    else {
+        size = size || cc.size(0, 0);
+        let width = size.width;
+        let height = size.height;
+        let rect = new cc.Rect(0, 0, width, height);
+
+        let bounds = Utils.getObbFromRect(tempMatrix, rect, out_bl, out_tl, out_tr, out_br);
+
+        let pos = Utils.getWorldPosition3D(node);
+        bounds.forEach((v) => {
+            v.z = pos.z;
+        });
+
+        return bounds;
+    }
+};
+
+Utils.getObbFromMeshRenderer = function (modelComp, mat) {
+
+    let transformAABB = AabbTool.create(0, 0, 0, 0, 0, 0);
+
+    if (modelComp && modelComp.mesh) {
+        let curMeshAABB = AabbTool.fromPoints(AabbTool.create(), 
+        modelComp.mesh.minPosition, modelComp.mesh.maxPosition);
+        curMeshAABB.transform(mat, null, null, null, transformAABB);
+    }
+    else {
+        transformAABB.transform(mat, null, null, null, transformAABB);
+    }
+
+    let minPos = cc.v3();
+    let maxPos = cc.v3();
+    transformAABB.getBoundary(minPos, maxPos);
+
+    // get eight position from bound
+    let bounds = [];
+
+    // front four pos anti clockwise
+    bounds.push(minPos);
+    bounds.push(cc.v3(maxPos.x, minPos.y, minPos.z));
+    bounds.push(cc.v3(maxPos.x, maxPos.y, minPos.z));
+    bounds.push(cc.v3(minPos.x, maxPos.y, minPos.z));
+
+    // back four pos
+    bounds.push(maxPos);
+    bounds.push(cc.v3(minPos.x, maxPos.y, maxPos.z));
+    bounds.push(cc.v3(minPos.x, minPos.y, maxPos.z));
+    bounds.push(cc.v3(maxPos.x, minPos.y, maxPos.z));
+
+    return bounds;
 };
 
 Utils.getScenePosition = function(node) {
