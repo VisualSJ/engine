@@ -1,7 +1,7 @@
 'use strict';
 
 import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
-import { dirname, extname } from 'path';
+import { dirname, extname, join } from 'path';
 
 import { getName } from './utils';
 import { awaitAsset, forwarding } from './worker';
@@ -60,7 +60,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         } else {
             if (option.copyfile) {
                 if (!existsSync(option.copyfile)) {
-                    console.warn(`复制资源失败: 源地址不存在文件\nsource: ${option.copyfile}`);
+                    console.warn(`创建资源失败: 导入的资源地址不存在\nsource: ${option.copyfile}`);
                     return null;
                 }
 
@@ -72,7 +72,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
                         },
                     });
                 } catch (error) {
-                    console.warn(`复制资源失败: 未知错误`);
+                    console.warn(`创建资源失败: 未知错误`);
                     console.warn(error);
                     return null;
                 }
@@ -164,7 +164,6 @@ export async function copyAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    const a = relative(target, source);
     if (!source.startsWith('db://') || !target.startsWith('db://')) {
         console.warn(`复制资源失败: 参数地址不是 url 地址\nsource: ${source}\ntarget: ${target}`);
         return false;
