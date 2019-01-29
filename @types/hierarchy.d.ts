@@ -14,8 +14,7 @@ declare interface IdragNode {
 }
 
 declare interface IaddNode {
-    type: string; // 一个节点的类型
-    name: string; // 节点的名称
+    assetUuid: string; // 从哪个资源创建出来
 }
 
 declare interface ItreeNode {

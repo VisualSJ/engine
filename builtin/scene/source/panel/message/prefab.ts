@@ -27,4 +27,32 @@ export function apply(messages: any) {
 
         return json;
     };
+
+    /**
+     * 链接一个节点和一个资源
+     */
+    messages['link-prefab'] = async (nodeUuid: string, assetUuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+        const json = await $scene.forwarding('Prefab', 'link', [
+            nodeUuid, assetUuid,
+        ]);
+
+        return json;
+    };
+
+    /**
+     * 解除一个节点和 prefab 资源的链接
+     */
+    messages['unlink-prefab'] = async (nodeUuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+        const json = await $scene.forwarding('Prefab', 'unlink', [
+            nodeUuid,
+        ]);
+
+        return json;
+    };
 }

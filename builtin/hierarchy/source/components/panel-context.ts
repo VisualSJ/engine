@@ -3,12 +3,12 @@ import { join } from 'path';
 const db = require('./panel-db');
 const utils = require('./tree-utils');
 
-exports.createMenu = (callback: any) => {
+exports.createMenu = (callback: any): any[] => {
     return [
         {
             label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
             click() {
-                callback('node');
+                callback('');
             },
         },
         {
@@ -17,49 +17,49 @@ exports.createMenu = (callback: any) => {
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dCube'),
                     click() {
-                        callback('cube');
+                        callback('30da77a1-f02d-4ede-aa56-403452ee7fde');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dCylinder'),
                     click() {
-                        callback('cylinder');
+                        callback('ab3e16f9-671e-48a7-90b7-d0884d9cbb85');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dSphere'),
                     click() {
-                        callback('sphere');
+                        callback('655c9519-1a37-472b-bae6-29fefac0b550');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dCapsule'),
                     click() {
-                        callback('capsule');
+                        callback('73ce1f7f-d1f4-4942-ad93-66ca3b3041ab');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dCone'),
                     click() {
-                        callback('cone');
+                        callback('6350d660-e888-4acf-a552-f3b719ae9110');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dTorus'),
                     click() {
-                        callback('torus');
+                        callback('d47f5d5e-c931-4ff4-987b-cc818a728b82');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dPlane'),
                     click() {
-                        callback('plane');
+                        callback('40563723-f8fc-4216-99ea-a81636435c10');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dQuad'),
                     click() {
-                        callback('quad');
+                        callback('34a07346-9f62-4a84-90ae-cb83f7a426c1');
                     },
                 },
             ],
@@ -71,7 +71,7 @@ exports.createMenu = (callback: any) => {
                     label: Editor.I18n.t('hierarchy.menu.new2dSprite'),
                     enabled: false,
                     click() {
-                        callback('sprite');
+                        callback('');
                     },
                 },
             ],
@@ -82,19 +82,19 @@ exports.createMenu = (callback: any) => {
                 {
                     label: Editor.I18n.t('hierarchy.menu.newLightDirectional'),
                     click() {
-                        callback('directional-light');
+                        callback('a0e9756d-9128-4f49-8097-e041c8b733b8');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newLightPoint'),
                     click() {
-                        callback('point-light');
+                        callback('4182ee46-ffa0-4de2-b66b-c93cc6c7e9b8');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newLightSpot'),
                     click() {
-                        callback('spot-light');
+                        callback('7a49aa24-bd7a-40a8-b31a-b2a9da85abcd');
                     },
                 },
             ],
@@ -102,7 +102,7 @@ exports.createMenu = (callback: any) => {
         {
             label: Editor.I18n.t('hierarchy.menu.newCameraObject'),
             click() {
-                callback('camera');
+                callback('bb0a6472-cd67-4afb-a031-94fca8f4cc92');
             },
         },
     ];
@@ -112,8 +112,8 @@ function panelMenu() {
     return [
         {
             label: Editor.I18n.t('hierarchy.menu.newNode'),
-            submenu: exports.createMenu((type: string) => {
-                db.vm.$refs.tree.ipcAdd({type});
+            submenu: exports.createMenu((assetUuid: string) => {
+                db.vm.$refs.tree.ipcAdd({assetUuid});
             }),
         },
         {
@@ -133,8 +133,8 @@ exports.popupNew = (event: Event) => {
         x: event.pageX,
         // @ts-ignore
         y: event.pageY,
-        menu: exports.createMenu((type: string) => {
-            db.vm.$refs.tree.ipcAdd({type});
+        menu: exports.createMenu((assetUuid: string) => {
+            db.vm.$refs.tree.ipcAdd({assetUuid});
         }),
     });
 };

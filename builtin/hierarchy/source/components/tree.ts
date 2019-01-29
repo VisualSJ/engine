@@ -316,24 +316,16 @@ export const methods = {
             return;
         }
 
-        let dumpdata = '';
-        const filepath = join(__dirname, `../../static/nodecontent/${json.type}`);
-        if (existsSync(filepath)) {
-            dumpdata = JSON.parse(readFileSync(filepath, 'utf8'));
-        }
-
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
         // 发送创建节点
-        if (dumpdata) {
-            vm.renameUuid = await db.pasteNode(uuid, dumpdata);
-        } else {
-            vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
-                parent: uuid,
-                name: 'New Node',
-            });
-        }
+        vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
+            parent: uuid,
+            name: 'New Node',
+            assetUuid: json.assetUuid,
+        });
+        Editor.Ipc.sendToPackage('scene', 'unlink-prefab', vm.renameUuid);
 
         parent.state = '';
     },
