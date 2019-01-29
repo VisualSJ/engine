@@ -65,7 +65,7 @@ export default class TextureImporter extends Importer {
             const userData = asset.userData as Texture2DAssetUserData;
 
             // @ts-ignore
-            let texture = new cc.Texture2D();
+            const texture = new cc.Texture2D();
 
             const imageAsset = this._getImageAsset(asset, texture);
             if (imageAsset) {
