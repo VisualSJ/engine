@@ -20,7 +20,7 @@
             ]
           }
           properties: {
-            mainTexture: { type: 'sampler2D', value: 'default' }
+            mainTexture: { type: 'sampler2D', value: 'white' }
           }
         }
       ]
