@@ -15,7 +15,7 @@ exports.template = `
     .preview-server > div {
         position: relative;
         font-size: 13px;
-        color: #10bc79;
+        color: #22a257;
         margin-right: 5px;
     }
 
@@ -29,15 +29,19 @@ exports.template = `
         z-index: 999;
         top: 30px;
         display: none;
+        border-radius:var(--border-radius-n);
+        flex-direction:column;
     }
 
     .preview-server > div > div[active] {
-        display: block;
+        display: flex;
     }
 
     .preview-server > div > div > canvas {
         width: 150px;
         height: 150px;
+        margin:5px;
+        margin-bottom:2px;
     }
 
     .preview-server .number {

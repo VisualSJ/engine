@@ -32,7 +32,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   box-sizing: border-box;
-  padding-right: 25%;
   vertical-align: middle;
 }
 :host .content > * {
