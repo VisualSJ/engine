@@ -21,20 +21,23 @@ declare interface IaddAsset {
 }
 
 declare interface ItreeAsset {
+    name: string; // 文件名，包含后缀
+    source: string;
+    file: string; // 磁盘路径
     uuid: string;
     importer: string;
     type: string;
-    source: string;
-    file: string; // 磁盘路径
-    library: any; // object 多文件的 library 磁盘路径
     isDirectory: boolean;
+    library: { [key: string]: string }; // object 多文件的 library 磁盘路径
+    subAssets: { [key: string]: ItreeAsset };
     visible: boolean; // 是否显示
     readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
-    subAssets: any;
-    redirect: any; // json 格式， 链接资源 { type, uuid }
+    redirect?: { // 一个资源指向另一个资源
+        type: string; // 跳转资源的类型
+        uuid: string; // 跳转资源的 uuid
+    }
 
     // 以下是扩展的数据
-    name: string; // 文件名，包含后缀
     fileName: string; // 文件名，不包含后缀
     fileExt: string; // 后缀，不包含点好
     parentSource: string; // 父级的 source

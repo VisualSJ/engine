@@ -138,10 +138,13 @@ module.exports = {
         /**
          * 创建一个新的资源
          * @param url db://assets/abc.json
-         * @param data 写入文件的 buffer 或者 string
+         * @param content 写入文件的 buffer 或者 string
+         * @param option 当 content = null 的时候启用
+         * option = { copyfile: PathLike } 复制磁盘文件
+         * content = null && option = null 时创建文件夹
          */
-        async 'create-asset'(url: string, data: Buffer | string) {
-            return await createAsset(url, data);
+        async 'create-asset'(url: string, content: Buffer | string, option: {[key: string]: string} | null) {
+            return await createAsset(url, content, option);
         },
 
         /**

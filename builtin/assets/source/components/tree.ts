@@ -540,8 +540,8 @@ export const methods = {
         utils.twinkle.sleep();
 
         // 重名命资源
-        name = asset.source.replace(basename(asset.source), name);
-        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', asset.source, name);
+        const target = asset.source.replace(new RegExp(`${basename(asset.source)}$`), name);
+        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', asset.source, target);
 
         if (!isSuccess) {
             Editor.Dialog.show({
@@ -676,7 +676,7 @@ export const methods = {
 
             let index = 0;
             let file: any;
-            let dest: any;
+            let success: string;
             toAsset.state = 'loading'; // 显示 loading 效果
             if (toAsset.isExpand === false) {
                 this.toggle(toAsset.uuid, true); // 重新展开父级节点
@@ -684,12 +684,19 @@ export const methods = {
 
             do {
                 file = json.files[index];
-                const ext = extname(file);
-                const name = basename(file, ext);
-                dest = toAsset.source + '/' + name + '_copy' + ext;
                 index++;
-                utils.twinkle.sleep();
-            } while (file && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', file.path, dest));
+                success = '';
+
+                if (file) {
+                    const name = basename(file.path);
+                    let target = `${toAsset.source}/${name}`;
+                    target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
+                    utils.twinkle.sleep();
+                    // tslint:disable-next-line:max-line-length
+                    success = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, {copyfile: file.path});
+                }
+
+            } while (success);
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
@@ -781,20 +788,25 @@ export const methods = {
 
         let index = 0;
         let asset;
-        let dest: any;
+        let success: string;
         parent.state = 'loading'; // 显示 loading 效果
+
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
 
         do {
             asset = utils.getAssetFromTree(finallyCanPaste[index]);
-            const ext = extname(asset.source);
-            const name = basename(asset.source, ext);
-            dest = parent.source + '/' + name + '_copy' + ext;
             index++;
-            utils.twinkle.sleep();
-        } while (asset && await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, dest));
+            success = '';
+
+            if (asset) {
+                const target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', asset.source);
+                utils.twinkle.sleep();
+                success = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
+            }
+
+        } while (success);
     },
 
     /**

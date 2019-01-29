@@ -18,6 +18,40 @@ export const assetHeight: number = 20; // 配置每个资源的高度，需要�
 export const iconWidth: number = 18; // 树形节点 icon 的宽度
 export const padding: number = 4; // 树形头部的间隔，为了保持美观
 
+// 生成一个标准的 ItreeAsset 对象
+export function newItreeAsset() {
+    return {
+        name: '',
+        source: '',
+        file: '',
+        uuid: '',
+        importer: '',
+        type: '',
+        isDirectory: false,
+        library: {},
+        subAssets: {},
+        visible: true,
+        readOnly: false,
+
+        fileName: '',
+        fileExt: '',
+        parentSource: '',
+        parentUuid: '',
+        topSource: '',
+        isExpand: false,
+        isParent: false,
+        isRoot: false,
+        isSubAsset: false,
+        state: '',
+        depth: 0,
+        top: 0,
+        left: 0,
+        _height: 0,
+        height: 0,
+        children: [],
+    };
+}
+
 /**
  * refresh 的时候需要重置数据
  */
@@ -36,7 +70,7 @@ export function reset() {
  * 刷新
  */
 export async function refresh() {
-    const arr = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
+    const arr: ItreeAsset[] = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
 
     if (!arr) { // 数据可能为空
         return;
@@ -88,7 +122,7 @@ function toSubAssetsTree(arr: ItreeAsset[]) {
             if (!asset.subAssets[name]) {
                 continue;
             }
-            data.subAssets[name] = { subAssets: {} };
+            data.subAssets[name] = newItreeAsset();
             step(asset.subAssets[name], data.subAssets[name]);
         }
 
