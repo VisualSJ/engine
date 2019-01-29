@@ -29,7 +29,7 @@ export async function generateAvailableURL(url: string): Promise<string | null> 
  * @param content
  */
 // tslint:disable-next-line:max-line-length
-export async function createAsset(url: string, content: Buffer | string | null, option: { [key: string]: string } | null): Promise<string | null> {
+export async function createAsset(url: string, content: Buffer | string | null, option?: ICreateOption): Promise<string | null> {
     if (!url.startsWith('db://')) {
         console.warn(`创建资源失败: 传入的地址无法识别 \n${url}`);
         return null;
@@ -52,34 +52,32 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         return null;
     }
 
-    if (content !== null) {
+    if (content !== null) { // content 存在，则写入成文件
         await outputFile(file, content);
-    } else {
-        if (!option) {
-            await ensureDir(file);
-        } else {
-            if (option.copyfile) {
-                if (!existsSync(option.copyfile)) {
-                    console.warn(`创建资源失败: 导入的资源地址不存在\nsource: ${option.copyfile}`);
-                    return null;
-                }
-
-                try {
-                    await copy(option.copyfile, file, {
-                        overwrite: true,
-                        filter(a, b) {
-                            return extname(a) !== '.meta';
-                        },
-                    });
-                } catch (error) {
-                    console.warn(`创建资源失败: 未知错误`);
-                    console.warn(error);
-                    return null;
-                }
-            }
+    } else if (!option) { // content 不存在，且 option 不存在，则生成文件夹
+        await ensureDir(file);
+    } else if (option.src) { // 如果 content 不存在，且 option.target 存在，则复制 target
+        if (!existsSync(option.src)) {
+            console.warn(`创建资源失败: 导入的资源地址不存在\nsource: ${option.src}`);
+            return null;
         }
 
+        try {
+            await copy(option.src, file, {
+                overwrite: true,
+                filter(a, b) {
+                    return extname(a) !== '.meta';
+                },
+            });
+        } catch (error) {
+            console.warn(`创建资源失败: 未知错误`);
+            console.warn(error);
+            return null;
+        }
     }
+
+    // 等待 db 发出 add 消息
+    await awaitAsset('add', file);
 
     let newURL;
 
@@ -91,8 +89,6 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         console.warn(`创建资源失败: 文件路径无法转为 url \n${file}`);
         return null;
     }
-
-    await awaitAsset('add', file);
 
     let uuid;
 
