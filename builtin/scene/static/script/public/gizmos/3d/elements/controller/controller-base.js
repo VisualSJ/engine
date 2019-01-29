@@ -124,7 +124,6 @@ class ControllerBase {
             if (this.onMouseDown) {
                 this.onMouseDown(event);
             }
-            event.stopPropagation();
         }.bind(this));
 
         node.on('mouseMove', function(event) {
@@ -134,7 +133,6 @@ class ControllerBase {
             if (this.onMouseMove) {
                 this.onMouseMove(event);
             }
-            event.stopPropagation();
             Utils.repaintEngine();
         }.bind(this));
 
@@ -144,7 +142,6 @@ class ControllerBase {
             if (this.onMouseUp) {
                 this.onMouseUp(event);
             }
-            event.stopPropagation();
             this._updated = false;
         }.bind(this));
 
@@ -153,7 +150,6 @@ class ControllerBase {
             if (this.onMouseLeave) {
                 this.onMouseLeave(event);
             }
-            event.stopPropagation();
             this._updated = false;
         }.bind(this));
 
@@ -163,7 +159,6 @@ class ControllerBase {
             if (this.onHoverIn) {
                 this.onHoverIn(event);
             }
-            event.stopPropagation();
             Utils.repaintEngine();
         }.bind(this));
 
@@ -173,7 +168,6 @@ class ControllerBase {
             if (this.onHoverOut) {
                 this.onHoverOut(event);
             }
-            event.stopPropagation();
             Utils.repaintEngine();
         }.bind(this));
     }
