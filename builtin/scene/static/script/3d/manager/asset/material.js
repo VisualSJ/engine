@@ -61,6 +61,11 @@ function encodeEffect(effect) {
             const prog = effect.shaders.find((s) => s.name === pass.program);
 
             prog.defines.forEach((define) => {
+
+                if (define.name.startsWith('CC_')) {
+                    return;
+                }
+
                 const type = typeMap[define.type] || define.type;
                 const value = getDefaultValue(type);
                 defines.push({
