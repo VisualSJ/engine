@@ -81,8 +81,8 @@ export class GltfConverter {
             let posBuffer = new ArrayBuffer(0);
             attributeNames.forEach((attributeName, iAttribute) => {
                 const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
-                this._readAccessor(attributeAccessor,
-                    new DataView(vertexBuffer, currentByteOffset), vertexBufferStride);
+                const dataView = new DataView(vertexBuffer, currentByteOffset);
+                this._readAccessor(attributeAccessor, dataView, vertexBufferStride);
                 currentByteOffset += attributeByteLengths[iAttribute];
 
                 if (attributeName === 'POSITION') {
@@ -102,10 +102,32 @@ export class GltfConverter {
                     this._readAccessor(attributeAccessor, new DataView(posBuffer));
                 }
 
+                const baseType = this._getAttributeBaseType(attributeAccessor.componentType);
+                const type = this._getAttributeType(attributeAccessor.type);
+
+                // Perform flipY default.
+                if (attributeName.startsWith('TEXCOORD')) {
+                    // FLIP V
+                    if (baseType === AttributeBaseType.FLOAT32 && type === AttributeType.VEC2) {
+                        for (let iVert = 0; iVert < verticesCount; ++iVert) {
+                            const pV = vertexBufferStride * iVert + 4;
+                            const v = dataView.getFloat32(pV, true);
+                            if (v >= 0 && v <= 1) {
+                                dataView.setFloat32(pV, 1 - v, true);
+                            } else {
+                                console.error(
+                                    `We currently do flipping texture coordinates(V) compulsively, ` +
+                                    `so that only normalized texture coordinates are supported.`);
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 formats.push({
                     name: this._getGfxAttributeName(attributeName),
-                    baseType: this._getAttributeBaseType(attributeAccessor.componentType),
-                    type: this._getAttributeType(attributeAccessor.type),
+                    baseType,
+                    type,
                     normalize: false,
                 });
             });
