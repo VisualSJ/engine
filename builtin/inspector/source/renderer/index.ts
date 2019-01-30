@@ -49,7 +49,9 @@ export const messages = {
         }
 
         // 避免 scene 刷新时 inspector 还是旧数据
-        vm.item.uuid = '';
+        if (vm.item.node === 'node') {
+            vm.item.uuid = '';
+        }
 
         vm.state.scene = 'close';
     },

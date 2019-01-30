@@ -1,126 +1,130 @@
 'use strict';
 
+interface IPropItem {
+    name: string;
+    dump: any;
+    type: string;
+    childMap: {[index: string]: IPropItem};
+}
+
 /**
  * 传入一个 technique 下的某个 pass 数据，整理成树形结构
  * @param props
  * @param defs
  */
-export function buildEffect(props: any[], defs: any[]) {
-    const tree: any = {};
-    const curDefs: any = {};
+export function buildEffect(props: any[], defs: any[], defineValues: any, propValues: any) {
 
-    // sort props by define dependencies
-    for (const prop of props) {
-        let cur: any = tree;
-        prop.defines.forEach((d: any) => {
-            if (!cur[d]) {
-                cur[d] = {};
+    defineValues = defineValues || {};
+    propValues = propValues || {};
+
+    const tree: IPropItem = {
+        name: 'root',
+        dump: null,
+        type: 'ui.Depend',
+        childMap: {},
+    };
+
+    function encode(item: any) {
+        let current = tree;
+        if (item.defines && item.defines.length) {
+            item.defines.forEach((name: any) => {
+                let child: IPropItem = current.childMap[name];
+                if (!child) {
+                    child = current.childMap[name] = {
+                        name,
+                        dump: null,
+                        type: 'ui.Depend',
+                        childMap: {},
+                    };
+                }
+                current = child;
+            });
+        }
+
+        if (current.childMap[item.name]) {
+            const child = current.childMap[item.name];
+            child.name = item.name;
+            child.type = item.type;
+            child.dump = item.dump;
+        } else {
+            current.childMap[item.name] = {
+                name: item.name,
+                dump: item.dump,
+                type: item.type,
+                childMap: {},
+            };
+        }
+        current.childMap[item.name].dump.name = item.name;
+
+        if (defineValues[item.name]) {
+            current.childMap[item.name].dump.value = defineValues[item.name];
+            if (typeof defineValues[item.name] === 'object' && '__uuid__' in defineValues[item.name]) {
+                defineValues[item.name].uuid = defineValues[item.name].__uuid__;
+                delete defineValues[item.name].__uuid__;
             }
-            cur = cur[d];
-            curDefs[d] = true;
-        });
-        if (!cur.props) {
-            cur.props = [];
+        } else if (propValues[item.name]) {
+            current.childMap[item.name].dump.value = propValues[item.name];
+            if (typeof propValues[item.name] === 'object' && '__uuid__' in propValues[item.name]) {
+                propValues[item.name].uuid = propValues[item.name].__uuid__;
+                delete propValues[item.name].__uuid__;
+            }
         }
-        cur.props.push(prop);
-    }
-    // add dangling defines
-    for (const def of defs) {
-        if (curDefs[def.key] || def.key.startsWith('CC_')) {
-            continue;
-        }
-        def.defines.concat(def.key).reduce((node: any, d: any) => node[d] || (node[d] = {}), tree);
     }
 
-    return tree;
-}
-
-/**
- * 将 buildEffect 出来的数据，整理成显示使用的数据
- * @param tree
- * @param material
- */
-export function translateEffect(tree: any, props: any, defines: any) {
-    const array: any[] = [];
-    tree.props && tree.props.forEach((item: any) => {
-        let value = item.value;
-        if (item.key in props) {
-            value = props[item.key];
-        }
-
-        if (value && value.__uuid__) {
-            value.uuid = value.__uuid__;
-        }
-
-        if (typeof value === 'object') {
-            value = JSON.parse(JSON.stringify(value));
-        }
-
-        array.push({
-            name: item.key,
-            type: item.compType || '',
-            assetType: item.type,
-            default: item.value,
-            value,
-        });
+    defs.forEach((item) => {
+        item.dump.type = 'ui.Depend';
+        encode(item);
     });
-    Object.keys(tree).forEach((name) => {
-        if (name === 'props') {
-            return;
-        }
-        let value = false;
-        if (name in defines) {
-            value = defines[name];
-        }
-        array.push({
-            name,
-            type: 'ui.Depend',
-            value,
-            default: false,
-            children: translateEffect(tree[name], props, defines),
+    props.forEach(encode);
+
+    function translate(item: IPropItem) {
+        const children = Object.keys(item.childMap).map((name) => {
+            const child = item.childMap[name];
+            translate(child);
+            return child;
         });
-    });
-    return array;
+        if (item.dump) {
+            item.dump.children = children;
+        }
+        return item;
+    }
+
+    return translate(tree);
 }
 
 export async function encodeMTL(name: string, techIdx: number, passes: any) {
 
-    const data = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', name);
+    const effect = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', name);
+
+    const data = effect[techIdx];
 
     const mtl: any = {
-        effectName: name,
-        effectMap: data,
-        _techIdx: techIdx,
-        _props: [],
-        _defines: [],
+        name,
+        technique: techIdx,
+        data,
     };
 
-    function step(array: any[], index: number) {
-        array.forEach((item: any) => {
-            if (item.children) {
-                if (JSON.stringify(item.default) !== JSON.stringify(item.value)) {
-                    const define = mtl.effectMap[techIdx][index].defines.find((child: any) => {
-                        return child.key === item.name;
-                    });
-                    define.value = item.value;
-                    mtl._defines[index][item.name] = item.value;
-                }
-                step(item.children, index);
-            } else {
-                if (JSON.stringify(item.default) !== JSON.stringify(item.value)) {
-                    const prop = mtl.effectMap[techIdx][index].props.find((child: any) => {
-                        return child.key === item.name;
-                    });
-                    prop.value = item.value;
-                    mtl._props[index][item.name] = item.value;
-                }
+    function step(item: IPropItem, index: number) {
+
+        if (item.dump) {
+            const dump = JSON.parse(JSON.stringify(item.dump));
+            delete dump.children;
+
+            let current = data[index].defines.find((child: any) => item.name === child.name);
+            if (!current) {
+                current = data[index].props.find((child: any) => item.name === child.name);
             }
+
+            current.dump.value = dump.value;
+        }
+
+        Object.keys(item.childMap).forEach((name) => {
+            const child = item.childMap[name];
+            step(child, index);
         });
     }
 
-    passes.forEach((pass: any, index: number) => {
-        mtl._props[index] = {};
-        mtl._defines[index] = {};
+    passes.forEach((pass: IPropItem, index: number) => {
         step(pass, index);
     });
 

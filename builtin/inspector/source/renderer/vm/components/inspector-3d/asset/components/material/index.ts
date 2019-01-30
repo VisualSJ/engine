@@ -2,7 +2,7 @@
 
 import { readJSONSync } from 'fs-extra';
 
-import { buildEffect, encodeMTL, translateEffect } from './build';
+import { buildEffect, encodeMTL } from './build';
 
 export const template = `
 <section class="asset-material">
@@ -44,10 +44,10 @@ export const template = `
                     <span>Pass {{index}}</span>
                     <div>
                         <template
-                            v-for="item in pass"
+                            v-for="item in pass.childMap"
                         >
                             <asset-prop auto="true"
-                                :value="item"
+                                :value="item.dump"
                             ></asset-prop>
                         </template>
                     </div>
@@ -111,7 +111,6 @@ export const methods = {
     async apply() {
         // @ts-ignore
         const vm: any = this;
-
         const mtl = await encodeMTL(vm.effect, vm.technique, vm.techniques[vm.technique]);
         const result = await Editor.Ipc.requestToPackage('scene', 'query-serialized-material', mtl);
         await Editor.Ipc.requestToPackage('asset-db', 'save-asset', vm.info.uuid, result);
@@ -132,12 +131,16 @@ export const watch = {
             return;
         }
         const array = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', name);
-
         vm.techniques = array.map((technique: any[], index: number) => {
-            return technique.map((data: any) => {
+            return technique.map((data: any, index: number) => {
                 // 合并 data.defines 和 data.props
-                const tree = buildEffect(data.props, data.defines);
-                return translateEffect(tree, vm.material._props[index] || {}, vm.material._defines[index] || {});
+                const tree = buildEffect(
+                    data.props,
+                    data.defines,
+                    vm.material._defines[index],
+                    vm.material._props[index]
+                );
+                return tree;
             });
         });
 

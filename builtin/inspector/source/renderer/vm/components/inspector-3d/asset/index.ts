@@ -114,9 +114,14 @@ export const methods = {
 
         const meta = JSON.stringify(vm.meta);
         const save = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', vm.uuid, meta);
-        if (save) {
-            vm.refresh();
-        }
+        // if (save) {
+        //     vm.refresh();
+        // }
+
+        vm.dirty = false;
+        requestAnimationFrame(() => {
+            vm.dirty = false;
+        });
     },
 };
 

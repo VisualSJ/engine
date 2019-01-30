@@ -10,19 +10,19 @@ export const template = `
     </div>
     <div class="content">
         <ui-checkbox
-            :value="unfold"
-            @confirm="unfold = !unfold"
+            :value="value"
+            @confirm="$emit('input', !value)"
         ></ui-checkbox>
     </div>
 
     <div class="object"
-        v-if="unfold && children && children.length"
+        v-if="value && children && children.length"
     >
         <template
             v-for="item in children"
         >
             <ui-prop auto="true"
-                :value="item"
+                :value="item.dump"
 
                 :width="width"
                 :height="height"
@@ -48,12 +48,7 @@ export const components = {
 
 export const methods = {};
 
-export const watch = {
-    value() {
-        // @ts-ignore
-        this.unfold = this.value;
-    },
-};
+export const watch = {};
 
 export function data() {
     return {
