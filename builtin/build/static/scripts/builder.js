@@ -49,6 +49,15 @@ class Builder {
         this._options = options;
         this._paths = this._buildPaths(options.dest, options.debug, config);
         static_resource[1] = options.platform + '.css';
+        let customConfig = await getCustomConfig(options.type, config);
+        Object.assign(options, customConfig);
+        // 存在设置分辨率
+        if (options.resolution) {
+            const {width, height} = options.resolution;
+            options.designWidth = width;
+            options.designHeight = height;
+            delete options.resolution;
+        }
         buildResult.options = options;
     }
 
@@ -60,14 +69,13 @@ class Builder {
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
         updateProgress('build setting...');
-        updateProgress('build setting...', 20);
 
         // 并发任务
         await Promise.all([
+            this._buildEngine(), // 构建切割引擎 15%
             this._buildHtml(), // 构建拷贝模板 index.html 文件 5%
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
             this._resolveStatic(), // 其他静态资源拷贝 5%
-            this._buildEngine(), // 构建切割引擎 15%
             this.buildSetting(
                 {
                     // 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
@@ -484,7 +492,7 @@ class Builder {
     compressUuid(uuid) {
         // 非调试模式下， uuid 需要压缩成短 uuid
         if (this._options && !this._options.debug) {
-            uuid = Editor.Utils.Uuid.compressUuid(uuid, true);
+            uuid = Editor.Utils.UuidUtils.compressUuid(uuid, true);
         }
         return uuid;
     }
@@ -516,14 +524,15 @@ class Builder {
      * @returns JSON
      */
     async buildSetting(options, config) {
-        let tempConfig = await getCustomConfig(options.type, config);
+        // let tempConfig = await getCustomConfig(options.type, config);
         let currenScene;
         if (config && config.start_scene) {
             currenScene = await getCurrentScene(config.start_scene);
         } else {
             currenScene = await getCurrentScene();
         }
-        const setting = Object.assign(options, tempConfig);
+        // const setting = Object.assign(options, tempConfig);
+        const setting = options;
         setting.launchScene = currenScene.source;
 
         // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
@@ -538,12 +547,14 @@ class Builder {
                 setting.designHeight = info._designResolution.height;
             }
         }
+
         let scripts = (await scriptBuilder.build(options.type)) || {};
         setting.packedAssets = {};
         setting.md5AssetsMap = {};
         let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, options.type);
         Object.assign(setting, assetBuilderResult, { scripts });
         buildResult.settings = setting;
+        updateProgress('build setting...', 20);
         if (options.type === 'build-release') {
             setting.packedAssets = assetPacker.pack();
             return setting;

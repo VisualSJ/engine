@@ -16,11 +16,9 @@ function data() {
     };
 }
 const methods = {
-    async init() {
-        const url = await getPreviewUrl();
-        // @ts-ignore
-        this.preview_url = join(url, this.setting.build_path);
-        // @ts-ignore
+    async init(this: any) {
+        this.url = await getPreviewUrl();
+        this.preview_url = join(this.url, this.setting.build_path);
         this.data && Object.assign(this.resolution, this.data.resolution);
     },
 
@@ -37,6 +35,9 @@ const methods = {
         if (type === 'setting') {
             // @ts-ignore
             this.preview_url = join(this.url, this.setting.build_path);
+        } else {
+            // @ts-ignore
+            this.data && Object.assign(this.resolution, this.data.resolution);
         }
     },
 };

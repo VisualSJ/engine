@@ -25,8 +25,8 @@ Worker.Ipc.on('build-worker:init', async (event, info) => {
         return require(info.utils + '/serialize');
     };
     editor._uuidUtils = function() {
-        const {uuidUtils} = require(info.utilPath);
-        return uuidUtils;
+        const utils = require(info.utilPath);
+        return utils.Uuid;
     };
     window.Editor = editor;
     // 加载引擎

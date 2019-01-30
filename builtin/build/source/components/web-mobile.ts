@@ -36,9 +36,6 @@ const methods = {
         if (type === 'setting') {
             // @ts-ignore
             this.preview_url = join(this.url, this.setting.build_path);
-        } else {
-            // @ts-ignore
-            this.data && Object.assign(this.resolution, this.data.resolution);
         }
     },
 };

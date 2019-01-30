@@ -171,6 +171,7 @@ export async function ready() {
                 this.rate = 0;
             },
 
+            // 响应场景切换选项
             onChangeScene(event: any, index: any) {
                 const value = !!event.target.value;
                 this.scenes[index] && (this.scenes[index].choose = value);
@@ -253,11 +254,14 @@ export async function ready() {
 
             // 选择构建后的文件夹
             async onChooseBuildPath() {
-                const path = await Editor.Dialog.openDirectory({
+                const paths = await Editor.Dialog.openDirectory({
                     title: '选择发布文件夹',
-                    defaultPath: Editor.Project.path,
+                    root: Editor.Project.path,
                 });
-                this.setting.build_path = relative(Editor.Project.path, path);
+                if (!paths[0]) {
+                    return;
+                }
+                this.setting.build_path = relative(Editor.Project.path, paths[0]);
             },
 
             // 打开构建发布后的文件夹
