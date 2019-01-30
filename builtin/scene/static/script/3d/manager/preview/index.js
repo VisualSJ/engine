@@ -23,8 +23,8 @@ class Preview {
 
         cc.director.root.createWindow({
             title: 'Editor Game',
-            width: 1,
-            height: 1,
+            width: cc.director.root.device.width,
+            height: cc.director.root.device.height,
             colorFmt: cc.GFXFormat.RGBA32F,
             depthStencilFmt: cc.GFXFormat.D24S8,
         });
