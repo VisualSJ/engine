@@ -27,15 +27,51 @@ const typeMap = {
     [cc.GFXType.SAMPLER_CUBE]: 'cc.TextureCube',
 };
 
-function getDefaultValue(type) {
+function getDefaultValue(type, data) {
     switch (type) {
-        case 'Boolean': return false;
-        case 'Number': return 0;
-        case 'cc.Vec2': return new cc.Vec2();
-        case 'cc.Vec3': return new cc.Vec3();
-        case 'cc.Vec4': return new cc.Vec4();
-        case 'cc.Color': return new cc.Color();
-        case 'cc.Mat4': return new cc.Mat4();
+        case 'Boolean':
+            if (data) {
+                return data[0];
+            }
+            return false;
+        case 'Number':
+            if (data) {
+                return data[0];
+            }
+            return 0;
+        case 'cc.Vec2':
+            if (data) {
+                return new cc.Vec2(data[0] || 0, data[1] || 0);
+            }
+            return new cc.Vec2();
+        case 'cc.Vec3':
+            if (data) {
+                return new cc.Vec2(data[0] || 0, data[1] || 0, data[2] || 0);
+            }
+            return new cc.Vec3();
+        case 'cc.Vec4':
+            if (data) {
+                return new cc.Vec2(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 0);
+            }
+            return new cc.Vec4();
+        case 'cc.Color':
+            if (Array.isArray(data)) {
+                if (data[3] === undefined) {
+                    data[3] = 1;
+                }
+                return new cc.Color(data[0] * 255, data[1] * 255, data[2] * 255, data[3] * 255);
+            }
+            return new cc.Color();
+        case 'cc.Mat4':
+            if (Array.isArray(data)) {
+                return new Mat4(
+                    data[0],  data[1],  data[2],  data[3],
+                    data[4],  data[5],  data[6],  data[7],
+                    data[8],  data[9],  data[10], data[11],
+                    data[12], data[13], data[14], data[15]
+                );
+            }
+            return new cc.Mat4();
         case 'cc.Asset': return new cc.Asset();
         case 'cc.Texture2D': return new cc.Texture2D();
         case 'cc.TextureCube': return new cc.TextureCube();
@@ -132,7 +168,7 @@ async function decodeMaterial(dump) {
         for (let j = 0; j < current.props.length; j++) {
             const prop = current.props[j];
 
-            const defaultValue = getDefaultValue(prop.type);
+            const defaultValue = getDefaultValue(prop.type, prop.value);
             const defaultDump = dumpEncode.encodeObject(defaultValue, {
                 default: defaultValue,
             });
