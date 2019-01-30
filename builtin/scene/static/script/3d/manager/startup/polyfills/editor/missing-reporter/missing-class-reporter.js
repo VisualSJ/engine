@@ -51,7 +51,7 @@ function report(parsingOwner, classId, asset, url) {
             info += `Class ID: "${detailedClassId}"\n`;
         }
         info.slice(0, -1);  // remove last '\n'
-        Editor.warn(info);
+        Editor.error(info);
     } else {
         // missing CustomAsset ? not yet implemented
     }
@@ -97,7 +97,7 @@ MissingClassReporter.prototype.reportByOwner = function() {
             reportByWalker(value, obj, parsedObjects, this.root, rootUrl, typeId);
         }
     }, {
-        dontSkipNull: true
+        dontSkipNull: true,
     });
 };
 
@@ -119,7 +119,7 @@ var MissingClass = {
         MissingClass.reporter.root = asset;
         MissingClass.reporter.reportByOwner();
         MissingClass.reporter.reset();
-    }
+    },
 };
 
 MissingClass.classFinder.onDereferenced = function(curOwner, curPropName, newOwner, newPropName) {

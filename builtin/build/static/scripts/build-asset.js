@@ -98,18 +98,6 @@ class AssetBuilder {
                 buildResult.assetCache[uuid] = asset;
                 return;
             }
-            if (Object.keys(asset.subAssets).length > 0) {
-                for (let subAsset of Object.values(asset.subAssets)) {
-                    subAsset.fatherUuid = uuid;
-                    // 注意此时更改 uuid 的顺序问题，并且此时函数全局 uuid 已被更改
-                    buildResult.assetCache[subAsset.uuid] = subAsset;
-                    if (asset.source.startsWith('db://assets')) {
-                        assets[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
-                    } else if (asset.source.startsWith('db://internal')) {
-                        internal[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.type), subAsset.type, 1];
-                    }
-                }
-            }
         }
         if (asset.source.startsWith('db://assets')) {
             assets[uuid] = [getAssetUrl(asset.source), asset.type];
@@ -266,6 +254,15 @@ class AssetBuilder {
             buildResult.uuidDepends[asset.uuid] = deserializeDetails.uuidList;
             for (let uuid of deserializeDetails.uuidList) {
                 await this.buildAsset({uuid});
+            }
+        }
+
+        if (Object.keys(asset.subAssets).length > 0) {
+            for (let subAsset of Object.values(asset.subAssets)) {
+                subAsset.fatherUuid = asset.uuid;
+                // 注意此时更改 uuid 的顺序问题，并且此时函数全局 uuid 已被更改
+                buildResult.assetCache[subAsset.uuid] = subAsset;
+                await this.buildAsset(subAsset);
             }
         }
     }

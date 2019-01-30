@@ -138,6 +138,9 @@ class AssetPacker {
      * 是否可以被打进其它包里面,原始资源不能被打包进其他包里
      */
     _queryPackableByUuid(uuid) {
+        if (!buildResult.assetCache[uuid]) {
+            return;
+        }
         let type = buildResult.assetCache[uuid].type;
         if (!type) {
             return false;

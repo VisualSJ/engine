@@ -98,13 +98,23 @@ export async function ready() {
             pathTest: true,
         },
         computed: {
-            selectAll(): any {
-                // @ts-ignore
-                const value = this.scenes.some((item: any) => {
+            selectAll: {
+                get: () => {
                     // @ts-ignore
-                    return (item.uuid !== this.start_scene && item.choose === false);
-                });
-                return !value;
+                    if (!this.scenes) {
+                        return true;
+                    }
+                    // @ts-ignore
+                    const value = this.scenes.some((item: any) => {
+                        // @ts-ignore
+                        return (item.uuid !== this.start_scene && item.choose === false);
+                    });
+                    return !value;
+                },
+                // 该属性动态绑定后会引起 set 但并不能取到最新的值，不添加 setter 会报错
+                set: (newValue: boolean) => {
+
+                },
             },
             needCompile(): boolean {
                 // @ts-ignore
@@ -233,8 +243,6 @@ export async function ready() {
                                 choose: chooseValue,
                             };
                         });
-                        checkSuccess = true;
-                        break;
                     default:
                         checkSuccess = true;
                 }

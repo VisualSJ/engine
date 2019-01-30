@@ -84,7 +84,7 @@ MissingObjectReporter.prototype.doReport = function(obj, value, parsedObjects, r
         info += `Missing uuid: "${value._uuid}"\n`;
     }
     info.slice(0, -1);  // remove last '\n'
-    Editor.warn(info);
+    Editor.error(info);
 };
 
 MissingObjectReporter.prototype.report = function() {
