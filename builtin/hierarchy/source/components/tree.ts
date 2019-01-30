@@ -261,10 +261,6 @@ export const methods = {
     ipcResetSelect(uuid: string | string[]) {
         const value = Array.isArray(uuid) ? uuid[0] : uuid;
 
-        if (vm.selects.length === 1 && vm.selects[0] === value) { // 避免单选重复选中
-            return;
-        }
-
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
         Editor.Ipc.sendToPackage('selection', 'select', 'node', value);
     },

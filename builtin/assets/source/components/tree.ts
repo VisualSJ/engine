@@ -283,10 +283,6 @@ export const methods = {
     ipcSelect(uuid: string | string[]) {
         const value = Array.isArray(uuid) ? uuid[0] : uuid;
 
-        if (vm.selects.length === 1 && vm.selects[0] === value) { // 避免单选重复选中
-            return;
-        }
-
         vm.intoView = value;
 
         Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
