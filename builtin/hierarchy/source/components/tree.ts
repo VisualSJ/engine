@@ -259,10 +259,8 @@ export const methods = {
      * @param uuid
      */
     ipcResetSelect(uuid: string | string[]) {
-        const value = Array.isArray(uuid) ? uuid[0] : uuid;
-
         Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        Editor.Ipc.sendToPackage('selection', 'select', 'node', value);
+        Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
     },
 
     /**
