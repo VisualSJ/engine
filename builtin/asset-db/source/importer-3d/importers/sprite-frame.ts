@@ -72,7 +72,7 @@ export default class SpriteFrameImporter extends TextureImporter {
                 userData.rawHeight = imageData.height;
 
                 const rect = getTrimRect(
-                    new Buffer(imageData.data),
+                    Buffer.from(imageData.data.buffer),
                     userData.rawWidth,
                     userData.rawHeight,
                     userData.trimThreshold
