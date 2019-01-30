@@ -13,6 +13,7 @@
     @dragover="dragOver($event, asset)" 
     @dragleave="dragLeave($event, asset)" 
     @drop="drop($event, asset)" 
+    @dblclick="open($event, asset)"
 >
     <i class="arrow i-arrow-right"
         v-if="asset.isParent" 
@@ -23,7 +24,6 @@
     <i class="folder"
         :class="asset.isRoot?'i-database':'i-folder'"
         v-if="asset.isDirectory" 
-        @dblclick="open($event, asset)"
     ></i>
     <tree-node-icon
         :asset="asset"
@@ -34,7 +34,6 @@
     <label class="name"
         :twinkle="twinkles[asset.uuid]" 
         v-if="state!=='input'"
-        @dblclick="open($event, asset)"
     >{{asset.name}}</label>
 
     <input class="rename" ref='input'

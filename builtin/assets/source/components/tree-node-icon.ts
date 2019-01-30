@@ -2,6 +2,7 @@
 
 import { existsSync, outputFileSync, readFileSync } from 'fs-extra';
 import { join } from 'path';
+import { parse } from 'url';
 
 let vm: any;
 const mapCommon = {
@@ -59,7 +60,8 @@ const map = {
                     return '';
                 }
 
-                const dbInfo = dbInfos[asset.topSource];
+                const url = new URL(asset.source);
+                const dbInfo = dbInfos[url.hostname];
                 const src = join(dbInfo.target, textureInfo.source.substr(dbInfo.protocol.length));
                 const json = {
                     x: meta.userData.offsetX || 0,
@@ -86,14 +88,15 @@ const map = {
     }),
 };
 
-// 数据 db 的信息
+// 本模块中缓存 db 数据
 const dbInfos: any = {};
 
 async function getDataURL(asset: ItreeAsset) {
-    let dbInfo = dbInfos[asset.topSource];
+    const url: any = parse(asset.source);
+    let dbInfo = dbInfos[url.host];
     if (!dbInfo) {
-        dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', asset.topSource);
-        dbInfos[asset.topSource] = dbInfo;
+        dbInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', url.host);
+        dbInfos[url.host] = dbInfo;
     }
     const cachePath = join(dbInfo.temp, asset.uuid);
     if (existsSync(cachePath)) {

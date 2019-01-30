@@ -42,7 +42,6 @@ declare interface ItreeAsset {
     fileExt: string; // 后缀，不包含点好
     parentSource: string; // 父级的 source
     parentUuid: string; // 父级的 uuid
-    topSource: string; // 顶层父级的 source，如 db://assets/
     isExpand: boolean; // 是否展开显示
     isParent: boolean; // 是否是父节点
     isRoot: boolean; // 是否是根节点，assets 这些

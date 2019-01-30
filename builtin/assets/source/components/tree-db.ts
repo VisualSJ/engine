@@ -33,16 +33,15 @@ export function newItreeAsset() {
         visible: true,
         readOnly: false,
 
-        fileName: '', // deprecated
-        fileExt: '', // deprecated
+        fileName: '',
+        fileExt: '',
         parentSource: '',
         parentUuid: '',
-        topSource: '', // deprecated
         isExpand: false,
         isParent: false,
         isRoot: false,
         isSubAsset: false,
-        state: '', // deprecated
+        state: '',
         depth: 0,
         top: 0,
         left: 0,
@@ -181,7 +180,6 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
     asset.fileExt = extname(name);
     asset.fileName = name.substr(0, name.lastIndexOf(asset.fileExt));
     asset.parentSource = dir.join('/');
-    asset.topSource = dir.slice(0, 2).join('/');
     asset.isRoot = dir.length === 1 ? true : false;
     asset.isDirectory = asset.isRoot ? true : asset.isDirectory;
     asset.isParent = subAssets.length > 0 ? true : asset.isDirectory; // 树形的父级三角形依据此字段
