@@ -6,16 +6,21 @@ const dumpDecode = require('../../../../../dist/utils/dump/decode');
 const typeMap = {
     boolean: 'Boolean',
     number: 'Number',
+    string: 'String',
+
     [cc.GFXType.INT]: 'Number',
     [cc.GFXType.INT2]: 'cc.Vec2',
     [cc.GFXType.INT3]: 'cc.Vec3',
     [cc.GFXType.INT4]: 'cc.Vec4',
-    [cc.GFXType.FLOAT]: 'number',
+
+    [cc.GFXType.FLOAT]: 'Number',
     [cc.GFXType.FLOAT2]: 'cc.Vec2',
     [cc.GFXType.FLOAT3]: 'cc.Vec3',
     [cc.GFXType.FLOAT4]: 'cc.Vec4',
+
     [cc.GFXType.COLOR4]: 'cc.Color',
     [cc.GFXType.MAT4]: 'cc.Mat4',
+
     [cc.GFXType.SAMPLER2D]: 'cc.Asset',
     [cc.GFXType.SAMPLER_CUBE]: 'cc.Asset',
     [cc.GFXType.SAMPLER2D]: 'cc.Texture2D',
