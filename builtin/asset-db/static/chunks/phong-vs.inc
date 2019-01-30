@@ -15,7 +15,7 @@ uniform TexCoords {
 };
 
 #if USE_DIFFUSE_TEXTURE || USE_NORMAL_TEXTURE || USE_EMISSIVE_TEXTURE
-  attribute vec2 a_texCoord1;
+  attribute vec2 a_texCoord;
   varying vec2 uv0;
 #endif
 
@@ -43,7 +43,7 @@ vec4 vert () {
   #endif
 
   #if USE_DIFFUSE_TEXTURE || USE_NORMAL_TEXTURE || USE_EMISSIVE_TEXTURE
-    uv0 = a_texCoord1 * mainTiling + mainOffset;
+    uv0 = a_texCoord * mainTiling + mainOffset;
   #endif
 
   return cc_matViewProj * cc_matWorld * pos;

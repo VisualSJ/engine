@@ -5,16 +5,16 @@
         {
           vert: sky-vs
           frag: sky-fs
-          priority: max - 10
+          priority: min + 10
           rasterizerState: {
             cullMode: none
           }
           depthStencilState: {
-            depthTest: false
+            depthTest: true
             depthWrite: false
           }
           properties: {
-            cubeMap: { type: 'samplerCube', value: 'white-cube' }
+            cubeMap: { type: 'samplerCube', value: 'default-cube' }
           }
         }
       ]
@@ -33,7 +33,8 @@
     mat4 matViewRotOnly = mat4(mat3(cc_matView));
     vec4 clipPos = cc_matProj * matViewRotOnly * vec4(a_position, 1.0);
 
-    gl_Position = clipPos.xyww;
+    gl_Position = clipPos;
+    gl_Position.z = clipPos.w * 0.99999;
     viewDir = a_position;
   }
 }

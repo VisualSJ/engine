@@ -15,7 +15,7 @@ uniform TexCoords {
 };
 
 #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
-  attribute vec2 a_texCoord1;
+  attribute vec2 a_texCoord;
   varying vec2 uv0;
 #endif
 
@@ -39,7 +39,7 @@ vec4 vert () {
   normal_w = (cc_matWorldIT * normal).xyz;
 
   #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
-    uv0 = a_texCoord1 * mainTiling + mainOffset;
+    uv0 = a_texCoord * mainTiling + mainOffset;
   #endif
 
   #if CC_USE_SHADOW_MAP

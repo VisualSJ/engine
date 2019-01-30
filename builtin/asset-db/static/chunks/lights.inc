@@ -42,9 +42,9 @@ LightInfo computeSpotLighting(
   LightInfo ret;
   vec3 lightDir = lightPositionAndRange.xyz - worldPosition;
   float attenuation = max(0., 1.0 - length(lightDir) / lightPositionAndRange.w);
-  float cosConeAngle = max(0., dot(lightDirection.xyz, -lightDir));
-  cosConeAngle = cosConeAngle < lightDirection.w ? 0.0 : cosConeAngle;
   ret.lightDir = normalize(lightDir);
+  float cosConeAngle = max(0., dot(lightDirection.xyz, -ret.lightDir));
+  if (cosConeAngle < lightDirection.w) cosConeAngle = 0.0;
   ret.radiance = lightColor.rgb * attenuation * cosConeAngle;
   return ret;
 }

@@ -66,7 +66,7 @@ uniform Constants {
   uniform sampler2D ao_texture;
 #endif
 
-#if USE_EMISSIVE && USE_EMISSIVE_TEXTURE
+#if USE_EMISSIVE_TEXTURE
   uniform sampler2D emissive_texture;
 #endif
 
@@ -219,13 +219,11 @@ vec4 frag() {
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
 
-  #if USE_EMISSIVE
-    vec3 emissiveColor = emissive.rgb;
-    #if USE_EMISSIVE_TEXTURE
-      emissiveColor *= gammaToLinearSpaceRGB(texture2D(emissive_texture, uv0).rgb);
-    #endif
-    Lo += emissiveColor;
+  vec3 emissiveColor = emissive.rgb;
+  #if USE_EMISSIVE_TEXTURE
+    emissiveColor *= gammaToLinearSpaceRGB(texture2D(emissive_texture, uv0).rgb);
   #endif
+  Lo += emissiveColor;
 
   // ambient lighting, will be replaced by IBL if IBL used.
   vec3 ambient = vec3(0.03) * albedo * ao;
