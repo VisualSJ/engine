@@ -133,6 +133,9 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                 },
             },
             {
+                type: 'separator',
+            },
+            {
                 label: Editor.I18n.t('assets.menu.revealInlibrary'),
                 enabled: !utils.canNotRevealInLibrary(asset),
                 click() {
@@ -146,6 +149,9 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                         shell.showItemInFolder(path);
                     }
                 },
+            },
+            {
+                type: 'separator',
             },
             {
                 label: Editor.I18n.t('assets.menu.showUuid'),

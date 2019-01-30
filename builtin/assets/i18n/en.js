@@ -5,9 +5,9 @@ module.exports = {
 
     menu: {
         createMenu: 'Create asset context menu',
-        searchPlaceholder_name: 'Search name...',
-        searchPlaceholder_uuid: 'Search uuid...',
-        searchPlaceholder_type: 'Search type...',
+        searchPlaceholder_name: 'Search Name...',
+        searchPlaceholder_uuid: 'Search UUID...',
+        searchPlaceholder_type: 'Search Type...',
         search: 'Search',
         searchName: 'Search Name',
         searchUuid: 'Search UUID',
