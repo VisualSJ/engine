@@ -11,6 +11,7 @@ export interface TextureBaseAssetUserData {
     magfilter: Filter;
     premultiplyAlpha: boolean;
     anisotropy: number;
+    generateMipmap: boolean;
 }
 
 export interface SpriteFrameBaseAssetUserData extends TextureBaseAssetUserData {
@@ -39,6 +40,7 @@ export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData 
         magfilter: 'linear',
         premultiplyAlpha: false,
         anisotropy: 1,
+        generateMipmap: false,
     };
 }
 
@@ -66,6 +68,7 @@ export function applyTextureBaseAssetUserData(userData: TextureBaseAssetUserData
     texture.setFilters(getFilter(userData.minfilter), getFilter(userData.magfilter));
     texture.setPremultiplyAlpha(userData.premultiplyAlpha);
     texture.setAnisotropy(userData.anisotropy);
+    texture.setGenMipmap(userData.generateMipmap);
 }
 
 export function makeDefaultSpriteFrameBaseAssetUserData(): SpriteFrameBaseAssetUserData {
