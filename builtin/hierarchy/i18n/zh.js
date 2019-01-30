@@ -24,15 +24,29 @@ module.exports = {
         new3dPlane: 'Plane 平面',
         new3dQuad: 'Quad 四方形',
 
-        new2dObject: '2D 对象',
-        new2dSprite: 'Sprite 精灵',
-
         newLightObject: '光线',
         newLightDirectional: 'Directional 平行光',
         newLightPoint: 'Point 点光',
         newLightSpot: 'Spot 聚光',
 
         newCameraObject: '摄像机',
+
+        newEffects: '特效',
+        newEffectsParticle: '粒子系统',
+
+        newUI: 'UI',
+        newUICanvas: 'Canvas',
+        newUISprite: 'Sprite',
+        newUILabel: 'Label',
+        newUIButton: 'Button',
+        newUIToggle: 'Toggle',
+        newUIToggleGroup: 'ToggleGroup',
+        newUISlider: 'Slider',
+        newUIProgressBar: 'ProgressBar',
+        newUIWidget: 'Widget',
+        newUIEditBox: 'EditBox',
+        newUILayout: 'Layout',
+        newUIScrollView: 'ScrollView',
 
         copy: '拷贝',
         paste: '粘贴',

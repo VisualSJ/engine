@@ -24,15 +24,29 @@ module.exports = {
         new3dPlane: 'Plane',
         new3dQuad: 'Quad',
 
-        new2dObject: '2D Object',
-        new2dSprite: 'Sprite',
-
         newLightObject: 'Light',
         newLightDirectional: 'Directional Light',
         newLightPoint: 'Point Light',
         newLightSpot: 'Spot Light',
 
         newCameraObject: 'Camera',
+
+        newEffects: 'Effects',
+        newEffectsParticle: 'Particle System',
+
+        newUI: 'UI',
+        newUICanvas: 'Canvas',
+        newUISprite: 'Sprite',
+        newUILabel: 'Label',
+        newUIButton: 'Button',
+        newUIToggle: 'Toggle',
+        newUIToggleGroup: 'ToggleGroup',
+        newUISlider: 'Slider',
+        newUIProgressBar: 'ProgressBar',
+        newUIWidget: 'Widget',
+        newUIEditBox: 'EditBox',
+        newUILayout: 'Layout',
+        newUIScrollView: 'ScrollView',
 
         copy: 'Copy',
         paste: 'Paste',

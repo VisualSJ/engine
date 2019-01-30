@@ -65,10 +65,105 @@ exports.createMenu = (callback: any): any[] => {
             ],
         },
         {
-            label: Editor.I18n.t('hierarchy.menu.new2dObject'),
+            label: Editor.I18n.t('hierarchy.menu.newEffects'),
             submenu: [
                 {
-                    label: Editor.I18n.t('hierarchy.menu.new2dSprite'),
+                    label: Editor.I18n.t('hierarchy.menu.newEffectsParticle'),
+                    click() {
+                        callback('f09a0597-10e6-49e5-8759-a148b5e85395');
+                    },
+                },
+            ],
+        },
+        {
+            label: Editor.I18n.t('hierarchy.menu.newUI'),
+            submenu: [
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUICanvas'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUISprite'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUILabel'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIButton'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUICanvas'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIToggle'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIToggleGroup'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUISlider'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIProgressBar'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIWidget'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIEditBox'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUILayout'),
+                    enabled: false,
+                    click() {
+                        callback('');
+                    },
+                },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIScrollView'),
                     enabled: false,
                     click() {
                         callback('');
