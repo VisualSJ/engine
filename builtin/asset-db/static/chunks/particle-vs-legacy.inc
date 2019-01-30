@@ -37,7 +37,7 @@ vec4 lpvs_main() {
     , cc_matView
   #endif
   #if USE_STRETCHED_BILLBOARD
-    , cc_cameraPos
+    , cc_cameraPos.xyz
     , velocity
     , velocityScale
     , lengthScale

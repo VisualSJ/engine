@@ -49,28 +49,32 @@ export const watch = {
 export function data() {
     return {
         preArray: [
-            'renderer',
+            // 'renderer',
+            'duration',
+            'capacity',
+            'startLifetime',
+            'rateOverTime',
+            'rateOverDistance',
+            'startSpeed',
+            'startRotation',
+            'startSize',
+            'startColor',
+            'startDelay',
+            'gravityModifier',
+            'loop',
+            'playOnAwake',
         ],
 
         postArray: [
-            'gravityModifier',
-            'rateOverDistance',
-            'rateOverTime',
-            'startColor',
-            'startDelay',
-            'startLifetime',
-            'startRotation',
-            'startSize',
-            'startSpeed',
-
+            'bursts',
+            'shapeModule',
+            'sizeOvertimeModule',
             'colorOverLifetimeModule',
+            'velocityOvertimeModule',
             'forceOvertimeModule',
             'limitVelocityOvertimeModule',
             'rotationOvertimeModule',
-            'shapeModule',
-            'sizeOvertimeModule',
             'textureAnimationModule',
-            'velocityOvertimeModule',
         ],
     };
 }
