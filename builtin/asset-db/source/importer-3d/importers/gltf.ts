@@ -608,7 +608,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.4';
+        return '1.0.5';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -745,7 +745,7 @@ function visitObjTypeReferences(node: cc.Node, visitor) {
 function getDumpableNode(node: cc.Node, quiet?: boolean) {
     // deep clone, since we dont want the given node changed by codes below
     // @ts-ignore
-    node = cc.instantiate(node);
+    // node = cc.instantiate(node);
 
     walkNode(node, (item) => {
         // strip other node or components references

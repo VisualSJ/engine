@@ -325,12 +325,12 @@ export class GltfConverter {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material.setDefines({ USE_DIFFUSE_TEXTURE: true });
         material._effectAsset = effectGetter('db://internal/builtin-effect-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                material.setProperty('diffuse_texture', textures[pbrMetallicRoughness.baseColorTexture.index]);
+                material._defines = [{ USE_DIFFUSE_TEXTURE: true }];
+                material._props = [{diffuse_texture: textures[pbrMetallicRoughness.baseColorTexture.index]}];
             } else {
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
@@ -341,7 +341,7 @@ export class GltfConverter {
                     // @ts-ignore
                     color = new cc.Color(255, 255, 255, 255);
                 }
-                material.setProperty('diffuseColor', color);
+                material._props = [{diffuseColor: color}];
             }
         }
 
