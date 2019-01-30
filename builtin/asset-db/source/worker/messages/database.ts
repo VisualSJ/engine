@@ -76,3 +76,21 @@ ipcAddListener('asset-worker:shutdown-database', async (event: any, name: string
     delete Manager.AssetWorker[name];
     ipcSend('asset-worker:close', name);
 });
+
+/**
+ * 宿主请求关闭一个数据库
+ */
+ipcAddListener('asset-worker:pause-database', async (event: any, name: string) => {
+    const database = Manager.AssetWorker[name];
+    await database.pause();
+    event.reply();
+});
+
+/**
+ * 宿主请求关闭一个数据库
+ */
+ipcAddListener('asset-worker:resume-database', async (event: any, name: string) => {
+    const database = Manager.AssetWorker[name];
+    await database.resume();
+    event.reply();
+});
