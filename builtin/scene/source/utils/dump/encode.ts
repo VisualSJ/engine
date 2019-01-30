@@ -177,11 +177,23 @@ export function encodeObject(object: any, attributes: any): IProperty {
 
     if (
         cc.js.isChildClassOf(ctor, cc.ValueType) ||
-        data.type === 'cc.Gradient' ||
         data.type === 'cc.AnimationCurve'
     ) { // 如果是 valueType，则直接使用引擎序列化
         const dump = Manager.Utils.serialize(object, { stringify: false });
         delete dump.__type__;
+        data.value = dump;
+    } else if (data.type === 'cc.Gradient') {
+        // 直接修改 object 会修改到默认值（对象引用问题）
+        const dump = JSON.parse(JSON.stringify(object));
+        if (object.colorKeys.length > 0) {
+            object.colorKeys.forEach((item: any, index: number) => {
+                const color = [];
+                color[0] = item.color.a;
+                color[1] = item.color.g;
+                color[2] = item.color.b;
+                dump.colorKeys[index].color = color;
+            });
+        }
         data.value = dump;
     } else if (data.isArray) {
         data.value = (object || []).map((item: any) => {

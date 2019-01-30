@@ -214,8 +214,46 @@ export async function decodePatch(path: string, dump: any, node: any) {
             dump.type === 'String'
         ) {
             dump.value += '';
-        }
+        } else if (dump.type === 'cc.AnimationCurve') {
+            const curve = new ccType();
+            const keyFrameCtor = cc.js.getClassByName('cc.Keyframe');
+            curve.keyFrames = [];
+            for (const item of dump.value.keyFrames) {
+                const keyFrame = new keyFrameCtor();
+                keyFrame.time = item.time;
+                keyFrame.value = item.value;
+                keyFrame.inTangent = item.inTangent;
+                keyFrame.outTangent = item.outTangent;
+                curve.keyFrames.push(keyFrame);
+            }
+            curve.postWrapMode = dump.value.postWrapMode;
+            curve.postWrapMode = dump.value.preWrapMode;
+            dump.value = curve;
+        } else if (dump.type === 'cc.Gradient') {
+            const gradient = new ccType();
+            if (dump.value.alphaKeys.length > 0) {
+                for (const item of dump.value.alphaKeys) {
+                    const AlphaKeyCtor = cc.js.getClassByName('cc.AlphaKey');
+                    const alphaKey = new AlphaKeyCtor();
+                    alphaKey.time = item.time;
+                    alphaKey.alpha = item.alpha;
+                    gradient.alphaKeys.push(alphaKey);
+                }
+            }
 
+            if (dump.value.colorKeys.length > 0) {
+                for (const item of dump.value.colorKeys) {
+                    const ColorKeyCtor = cc.js.getClassByName('cc.ColorKey');
+                    const ColorCtor = cc.js.getClassByName('cc.Color');
+                    const colorKey = new ColorKeyCtor();
+                    colorKey.time = item.time;
+                    item.color && (colorKey.color = new ColorCtor(...item.color));
+                    gradient.colorKeys.push(colorKey);
+                }
+            }
+
+            dump.value = gradient;
+        }
         data[info.key] = dump.value;
     }
 
