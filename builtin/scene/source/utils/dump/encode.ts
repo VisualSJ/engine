@@ -188,7 +188,7 @@ export function encodeObject(object: any, attributes: any): IProperty {
         if (object.colorKeys.length > 0) {
             object.colorKeys.forEach((item: any, index: number) => {
                 const color = [];
-                color[0] = item.color.a;
+                color[0] = item.color.r;
                 color[1] = item.color.g;
                 color[2] = item.color.b;
                 dump.colorKeys[index].color = color;
