@@ -80,93 +80,74 @@ exports.createMenu = (callback: any): any[] => {
             submenu: [
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUICanvas'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('f773db21-62b8-4540-956a-29bacf5ddbf5');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUISprite'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('9db8cd0b-cbe4-42e7-96a9-a239620c0a9d');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUILabel'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('36008810-7ad3-47c0-8112-e30aee089e45');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIButton'),
-                    enabled: false,
                     click() {
-                        callback('');
-                    },
-                },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.newUICanvas'),
-                    enabled: false,
-                    click() {
-                        callback('');
+                        callback('90bdd2a9-2838-4888-b66c-e94c8b7a5169');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIToggle'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('0e89afe7-56de-4f99-96a1-cba8a75bedd2');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIToggleGroup'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('1d86d123-9a96-4be1-9455-ecb1ae4cf8ab');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUISlider'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('2bd7e5b6-cd8c-41a1-8136-ddb8efbf6326');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIProgressBar'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('0d9353c4-6fb9-49bb-bc62-77f1750078c2');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIWidget'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('36ed4422-3542-4cc4-bf02-dc4bfc590836');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIEditBox'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('05e79121-8675-4551-9ad7-1b901a4025db');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUILayout'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('a9ef7dfc-ea8b-4cf8-918e-36da948c4de0');
                     },
                 },
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIScrollView'),
-                    enabled: false,
                     click() {
-                        callback('');
+                        callback('c1baa707-78d6-4b89-8d5d-0b7fdf0c39bc');
                     },
                 },
             ],
