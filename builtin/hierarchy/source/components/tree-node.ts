@@ -214,12 +214,17 @@ export const methods = {
     dragOver(event: any, node: ItreeNode) {
         event.preventDefault(); // 阻止原生事件，这个对效果挺重要的
 
+        // @ts-ignore
         if (
             !event.dataTransfer ||
             (event.dataTransfer.types.length === 1 && event.dataTransfer.types[0] === 'value')
         ) {
-            // @ts-ignore
-            this.$emit('ipcSingleSelect', node.uuid);
+           // @ts-ignore
+            if (!this.selects.includes(node.uuid)) {
+                // @ts-ignore
+                this.$emit('ipcSingleSelect', node.uuid);
+            }
+
             return;
         }
 
