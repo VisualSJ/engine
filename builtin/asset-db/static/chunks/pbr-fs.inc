@@ -204,17 +204,17 @@ vec4 frag() {
   vec3 Lo = vec3(0.0);
 
   for (int i = 0; i < MAX_DIR_LIGHTS; i++) {
-    if (dot(cc_dirLightColor[i], cc_dirLightColor[i]) <= 0.0) break;
+    if (dot(cc_dirLightColor[i].rgb, cc_dirLightColor[i].rgb) <= 0.0) break;
     LightInfo info = computeDirectionalLighting(cc_dirLightDirection[i], cc_dirLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
   for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
-    if (dot(cc_pointLightColor[i], cc_pointLightColor[i]) <= 0.0) break;
+    if (dot(cc_pointLightColor[i].rgb, cc_pointLightColor[i].rgb) <= 0.0) break;
     LightInfo info = computePointLighting(pos_w, cc_pointLightPositionAndRange[i], cc_pointLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
   for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-    if (dot(cc_spotLightColor[i], cc_spotLightColor[i]) <= 0.0) break;
+    if (dot(cc_spotLightColor[i].rgb, cc_spotLightColor[i].rgb) <= 0.0) break;
     LightInfo info = computeSpotLighting(pos_w, cc_spotLightPositionAndRange[i], cc_spotLightDirection[i], cc_spotLightColor[i]);
     Lo += brdf(info, N, V, F0, albedo, metallic, roughness);
   }
@@ -243,19 +243,16 @@ vec4 frag() {
     // sample both the specularEnvTexture and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     vec3 R = reflect(-V, N);
     #if USE_TEX_LOD
-      #if USE_RGBE_IBL_SPECULAR
-        vec3 specularEnv = unpackRGBE(textureCubeLodEXT(specularEnvTexture, R, roughness * maxReflectionLod));
-      #else
-        vec3 specularEnv = textureCubeLodEXT(specularEnvTexture, R, roughness * maxReflectionLod).rgb;
-      #endif
+      vec4 speColor = textureCubeLodEXT(specularEnvTexture, R, roughness * maxReflectionLod);
     #else
-      #if USE_RGBE_IBL_SPECULAR
-        vec3 specularEnv = unpackRGBE(textureCube(specularEnvTexture, R));
-      #else
-        vec3 specularEnv = textureCube(specularEnvTexture, R).rgb;
-      #endif
+      vec4 speColor = textureCube(specularEnvTexture, R);
     #endif
-    vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), 1.0 - roughness)).rg;
+    #if USE_RGBE_IBL_SPECULAR
+      vec3 specularEnv = unpackRGBE(speColor);
+    #else
+      vec3 specularEnv = speColor.rgb;
+    #endif
+    vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = specularEnv * (F * brdf.x + brdf.y);
     ambient = (kD * diffuse + specular) * ao;
   #endif

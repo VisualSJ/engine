@@ -468,7 +468,7 @@ const mapPassParam = (function() {
       if (info.value === undefined) continue;
       const givenType = typeof info.value;
       // convert numbers to array
-      if (givenType === 'number') info.value = [info.value];
+      if (givenType === 'number' || givenType === 'boolean') info.value = [info.value];
       // type check the given value
       const msg = typeCheck(info.value, info.type, givenType, shaderType);
       if (msg) warn(`illegal property declaration ${p}: ${msg}`);

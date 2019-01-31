@@ -30,19 +30,19 @@ Lighting getPhongLighting(vec3 pos_w, vec3 N, vec3 V, float glossiness) {
   result.diffuse = vec3(0, 0, 0);
   result.specular = vec3(0, 0, 0);
   for (int i = 0; i < MAX_DIR_LIGHTS; i++) {
-    if (dot(cc_dirLightColor[i], cc_dirLightColor[i]) <= 0.0) break;
+    if (dot(cc_dirLightColor[i].rgb, cc_dirLightColor[i].rgb) <= 0.0) break;
     Lighting info = brdf(computeDirectionalLighting(cc_dirLightDirection[i], cc_dirLightColor[i]), N, V, glossiness);
     result.diffuse += info.diffuse;
     result.specular += info.specular;
   }
   for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
-    if (dot(cc_pointLightColor[i], cc_pointLightColor[i]) <= 0.0) break;
+    if (dot(cc_pointLightColor[i].rgb, cc_pointLightColor[i].rgb) <= 0.0) break;
     Lighting info = brdf(computePointLighting(pos_w, cc_pointLightPositionAndRange[i], cc_pointLightColor[i]), N, V, glossiness);
     result.diffuse += info.diffuse;
     result.specular += info.specular;
   }
   for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-    if (dot(cc_spotLightColor[i], cc_spotLightColor[i]) <= 0.0) break;
+    if (dot(cc_spotLightColor[i].rgb, cc_spotLightColor[i].rgb) <= 0.0) break;
     Lighting info = brdf(computeSpotLighting(pos_w, cc_spotLightPositionAndRange[i], cc_spotLightDirection[i], cc_spotLightColor[i]), N, V, glossiness);
     result.diffuse += info.diffuse;
     result.specular += info.specular;
