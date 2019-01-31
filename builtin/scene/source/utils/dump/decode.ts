@@ -17,6 +17,7 @@ import {
 
 // @ts-ignore
 import { get } from 'lodash';
+import { setPriority } from 'os';
 
 /**
  * 解码一个 dump 数据
@@ -192,6 +193,24 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 });
             });
         }
+    } else if (ccExtends.includes('cc.Component') || 'cc.Component' === dump.type) {
+        function step(node: any) {
+
+            for (let i = 0; i < node._components.length; i++) {
+                if (node._components[i].uuid === dump.value.uuid) {
+                    data[info.key] = node._components[i];
+                    return true;
+                }
+            }
+
+            for (let i = 0; i < node.children.length; i++) {
+                if (step(node.children[i])) {
+                    return;
+                }
+            }
+        }
+
+        step(cc.director._scene);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
         Object.keys(dump.value).forEach((key: string) => {
             data[info.key][key] = dump.value[key];
