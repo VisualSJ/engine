@@ -299,17 +299,17 @@ export async function deleteAsset(source: string): Promise<boolean> {
     const DBInfo: IDatabaseInfo = await forwarding('asset-worker:query-db-info', source);
 
     try {
-        await forwarding('asset-worker:pause-database', DBInfo.name);
+        // await forwarding('asset-worker:pause-database', DBInfo.name);
         await remove(file);
         await remove(file + '.meta');
     } catch (error) {
         console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unknown')}`);
         console.warn(error);
-        forwarding('asset-worker:resume-database', DBInfo.name);
+        // forwarding('asset-worker:resume-database', DBInfo.name);
         return false;
     }
 
-    forwarding('asset-worker:resume-database', DBInfo.name);
+    // forwarding('asset-worker:resume-database', DBInfo.name);
 
     await awaitAsset('delete', file);
 
