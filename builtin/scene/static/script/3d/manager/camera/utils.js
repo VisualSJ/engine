@@ -88,7 +88,7 @@ function createGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(grid(w, l, w, l));
     let mtl = new cc.Material();
-    mtl.effectName = '__editor-grid';
+    mtl.initialize({ effectName: '__editor-grid' });
     model.material = mtl;
     return node;
 }

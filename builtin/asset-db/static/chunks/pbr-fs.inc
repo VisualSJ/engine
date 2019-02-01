@@ -252,7 +252,7 @@ vec4 frag() {
     #else
       vec3 specularEnv = speColor.rgb;
     #endif
-    vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), 1.0 - roughness)).rg;
     vec3 specular = specularEnv * (F * brdf.x + brdf.y);
     ambient = (kD * diffuse + specular) * ao;
   #endif
