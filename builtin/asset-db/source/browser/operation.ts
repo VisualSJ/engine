@@ -31,7 +31,7 @@ export async function generateAvailableURL(url: string): Promise<string | null> 
 // tslint:disable-next-line:max-line-length
 export async function createAsset(url: string, content: Buffer | string | null, option?: ICreateOption): Promise<string | null> {
     if (!url.startsWith('db://')) {
-        console.warn(`创建资源失败: 传入的地址无法识别 \n${url}`);
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.url')} \n${url}`);
         return null;
     }
 
@@ -43,12 +43,12 @@ export async function createAsset(url: string, content: Buffer | string | null, 
     } catch (error) { }
 
     if (!file) {
-        console.warn(`创建资源失败: 传入的地址无法识别 \n${url}`);
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.url')} \n${url}`);
         return null;
     }
 
     if (existsSync(file)) {
-        console.warn(`创建资源失败: 文件已经存在 \n${url}`);
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.exist')} \n${url}`);
         return null;
     }
 
@@ -58,7 +58,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         await ensureDir(file);
     } else if (option.src) { // 如果 content 不存在，且 option.target 存在，则复制 target
         if (!existsSync(option.src)) {
-            console.warn(`创建资源失败: 导入的资源地址不存在\nsource: ${option.src}`);
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.drop')} \n${option.src}`);
             return null;
         }
 
@@ -70,7 +70,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
                 },
             });
         } catch (error) {
-            console.warn(`创建资源失败: 未知错误`);
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.unknown')}`);
             console.warn(error);
             return null;
         }
@@ -86,7 +86,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
     } catch (error) { }
 
     if (!newURL) {
-        console.warn(`创建资源失败: 文件路径无法转为 url \n${file}`);
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.toUrl')} \n${file}`);
         return null;
     }
 
@@ -97,7 +97,7 @@ export async function createAsset(url: string, content: Buffer | string | null, 
     } catch (error) { }
 
     if (!uuid) {
-        console.warn(`创建资源失败: 无法识别 url 的 uuid \n${newURL}`);
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.uuid')} \n${newURL}`);
         return null;
     }
 
@@ -111,20 +111,20 @@ export async function createAsset(url: string, content: Buffer | string | null, 
  */
 export async function saveAsset(uuid: string, data: Buffer | string): Promise<boolean> {
     if (!uuid) {
-        console.warn(`保存资源失败: 无法识别 uuid \n${uuid}`);
+        console.warn(`${Editor.I18n.t('asset-db.saveAsset.fail.uuid')} \n${uuid}`);
         return false;
     }
     data = data || '';
     const info: IAssetInfo = await forwarding('asset-worker:query-asset-info', uuid);
     if (!info) {
-        console.warn(`保存资源失败: 无法识别 uuid \n${uuid}`);
+        console.warn(`${Editor.I18n.t('asset-db.saveAsset.fail.uuid')} \n${uuid}`);
         return false;
     }
 
     try {
         await outputFile(info.file, data);
     } catch (error) {
-        console.warn(`保存资源失败: 未知错误`);
+        console.warn(`${Editor.I18n.t('asset-db.saveAsset.fail.unknown')}`);
         console.warn(error);
         return false;
     }
@@ -144,6 +144,7 @@ export async function saveAssetMeta(uuid: string, meta: string) {
         console.info('asset meta saved');
         return isSaved;
     } catch (err) {
+        console.warn(`${Editor.I18n.t('asset-db.saveAssetMeta.fail.unknown')}`);
         console.error(err);
         return false;
     }
@@ -155,13 +156,13 @@ export async function saveAssetMeta(uuid: string, meta: string) {
  * @param target 复制到的位置 db://assets/b/a.txt
  */
 export async function copyAsset(source: string, target: string): Promise<boolean> {
-    if (!source || !target) {
-        console.warn(`移动资源失败: 参数不合法\nsource: ${source}\ntarget: ${target}`);
+    if (!source || !source.startsWith('db://')) {
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.url')} \nsource: ${source}`);
         return false;
     }
 
-    if (!source.startsWith('db://') || !target.startsWith('db://')) {
-        console.warn(`复制资源失败: 参数地址不是 url 地址\nsource: ${source}\ntarget: ${target}`);
+    if (!target || !target.startsWith('db://')) {
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.url')} \ntarget: ${target}`);
         return false;
     }
 
@@ -172,26 +173,26 @@ export async function copyAsset(source: string, target: string): Promise<boolean
 
     // 源文件不存在
     if (!assets.source || !existsSync(assets.source)) {
-        console.warn(`复制资源失败: 源地址不存在文件\nsource: ${assets.source}`);
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.source')} \nsource: ${assets.source}`);
         return false;
     }
 
     // 目标文件已经存在
     if (existsSync(assets.target)) {
-        console.warn(`复制资源失败: 目标文件已经存在\ntarget: ${assets.target}`);
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.target')} \ntarget: ${assets.target}`);
         return false;
     }
 
     // 如果源地址不能被目标地址包含
     if (target.startsWith(join(assets.source, '/'))) {
-        console.warn(`复制资源失败: 源地址不能被目标地址包含\nsource: ${source}\ntarget: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.parent')} \nsource: ${source}\ntarget: ${target}`);
         return false;
     }
 
     try {
         await copy(assets.source, assets.target);
     } catch (error) {
-        console.warn(`复制资源失败: 未知错误`);
+        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.unknown')}`);
         console.warn(error);
         return false;
     }
@@ -208,7 +209,7 @@ export async function copyAsset(source: string, target: string): Promise<boolean
  */
 export async function moveAsset(source: string, target: string): Promise<boolean> {
     if (!source || !target) {
-        console.warn(`移动资源失败: 参数不合法\nsource: ${source}\ntarget: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')} \nsource: ${source}\ntarget: ${target}`);
         return false;
     }
 
@@ -221,25 +222,25 @@ export async function moveAsset(source: string, target: string): Promise<boolean
 
     // 如果源地址，目标地址相同
     if (assets.source === assets.target) {
-        console.warn(`移动资源失败: 路径相同\nsource: ${source}\ntarget: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.same')} \nsource: ${source}\ntarget: ${target}`);
         return false;
     }
 
     // 源地址不存在文件
     if (!assets.source || !existsSync(assets.source)) {
-        console.warn(`移动资源失败: 源地址不存在文件\nsource: ${source}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.source')} \nsource: ${source}`);
         return false;
     }
 
     // 目标地址找不到
     if (!assets.target) {
-        console.warn(`移动资源失败: 目标地址不合法\ntarget: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.target')} \ntarget: ${target}`);
         return false;
     }
 
     // 如果目标已经存在
     if (existsSync(assets.target)) {
-        console.warn(`移动资源失败: 目标地址已经存在相同的文件\target: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.exist')} \ntarget: ${target}`);
         return false;
     }
 
@@ -264,7 +265,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
             await move(assets.source, assets.target);
         }
     } catch (error) {
-        console.warn(`移动资源失败: 未知错误`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')}`);
         console.warn(error);
         forwarding('asset-worker:resume-database', DBInfo.name);
         return false;
@@ -283,7 +284,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
  */
 export async function deleteAsset(source: string): Promise<boolean> {
     if (!source) {
-        console.warn(`删除资源失败: 参数不合法\nsource: ${source}`);
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.url')} \nsource: ${source}`);
         return false;
     }
 
@@ -291,7 +292,7 @@ export async function deleteAsset(source: string): Promise<boolean> {
 
     // 如果不存在，停止操作
     if (!file || !existsSync(file)) {
-        console.warn(`删除资源失败: 文件不存在\nsource: ${source}`);
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unexist')} \nsource: ${source}`);
         return false;
     }
 
@@ -302,7 +303,7 @@ export async function deleteAsset(source: string): Promise<boolean> {
         await remove(file);
         await remove(file + '.meta');
     } catch (error) {
-        console.warn(`删除资源失败: 未知错误`);
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unknown')}`);
         console.warn(error);
         forwarding('asset-worker:resume-database', DBInfo.name);
         return false;
