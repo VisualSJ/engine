@@ -32,7 +32,7 @@
     <template
         v-else-if="value.value === null"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name"><span>{{getName(value.name)}}</span></div>
         <div class="content">
             <ui-null></ui-null>
         </div>
@@ -91,7 +91,7 @@
     <template
         v-else-if="value.type === 'Boolean' || value.type === 'boolean'"
     >
-        <div class="name">{{getName(value.name)}}</div>
+        <div class="name"><span>{{getName(value.name)}}</span></div>
         <div class="content">
             <ui-bool
                 :readonly="value.readonly"

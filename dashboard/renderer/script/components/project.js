@@ -43,42 +43,23 @@ exports.methods = {
         const isDelete = await dialog.show({
             type: 'info',
             title: t('delete_project'),
-            message: t('message.delete_project'),
+            message: t('delete_project'),
             detail: path,
-            buttons: [t('cancel'), t('remove')],
+            buttons: [t('message.delete_project_record'), t('message.delete_project_source'), t('cancel')],
+            default: 2,
+            cancel: 2,
         });
 
-        if (isDelete !== 1) {
-            return;
+        switch (isDelete) {
+            case 2:
+                break;
+            case 1:
+                project.remove(path);
+                fse.removeSync(path);
+                break;
+            case 0:
+                project.remove(path);
         }
-
-        const deleteFile = await dialog.show({
-            type: 'warn',
-            title: t('delete_project_source'),
-            message: t('message.delete_project_source'),
-            detail: path,
-            buttons: [t('keep'), t('remove')],
-        });
-
-        project.remove(path);
-
-        if (deleteFile !== 1) {
-            return;
-        }
-
-        const confirmDelete = await dialog.show({
-            type: 'warn',
-            title: t('delete_project_source'),
-            message: t('message.confirm_deletion'),
-            detail: path,
-            buttons: [t('cancel'), t('confirm')],
-        });
-
-        if (confirmDelete !== 1) {
-            return;
-        }
-
-        fse.removeSync(path);
     },
 
     /**

@@ -27,8 +27,8 @@ module.exports = {
     message: {
         duplicate_project: '该文件夹内已存在文件',
         project_missing: '项目不存在！是否移除该记录？',
-        delete_project: '是否移除项目？',
-        delete_project_source: '是否删除硬盘上的文件？',
+        delete_project_record: '仅删除项目记录（保留源文件）',
+        delete_project_source: '删除记录并移除硬盘上的源文件',
         confirm_deletion: '您正在删除硬盘上的项目文件，是否确认删除?',
     },
     template: {
