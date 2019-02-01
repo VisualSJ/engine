@@ -4,6 +4,7 @@
     const q = document.querySelector.bind(document);
 
     // dom element
+    const $msgContainer = q('#msgContainer');
     const canvas = q('#GameCanvas');
     const select = q('#opts-device');
     const optsDebugMode = q('#opts-debug-mode');
@@ -41,8 +42,9 @@
          * @param {Object}  error  错误详细信息
          */
         window.onerror = function(...args) {
+            console.error(...args);
+            args[0] = 'Preview error:' + args[0];
             socket.emit('preview error', ...args);
-            console.log({...args});
             return true; // 注意，在返回 true 的时候，异常才不会继续向上抛出error;
         };
     }
@@ -402,7 +404,7 @@
     }
 
     // 入口函数
-    async function onload() {
+    function onload() {
         // 监听刷新
         socketMonitor();
         // 初始化 select 选项设置

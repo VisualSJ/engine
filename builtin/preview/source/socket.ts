@@ -5,7 +5,6 @@ let app: any = null;
 let reloadTimer: any = null;
 let deviceNum: number = 0; // 连接客户端数量
 let errorCollect: any = [];
-
 /**
  * 启动 io 服务器
  * @param server http 服务器
@@ -26,6 +25,14 @@ export function start(server: any) {
             console.error(error);
         });
     });
+}
+
+/**
+ * 向客户端传递信息
+ * @param msg
+ */
+export function send(msg: string) {
+    app.emit('state:change', msg);
 }
 
 /**

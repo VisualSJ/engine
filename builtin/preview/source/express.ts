@@ -42,11 +42,18 @@ export async function start() {
     app.set('view engine', 'jade');
 
     app.get('/setting.js', async (req: any, res: any) => {
-        const setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
+        let setting: any;
+        setTimeout(() => {
+            if (typeof(setting) !== 'string') {
+                res.status(500).send('settings 脚本构建超时！请查看构建报错信息');
+            }
+        }, 5000);
+        setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
             type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
         });
+
         res.send(setting);
     });
 
