@@ -175,6 +175,7 @@ export const methods: any = {
                     item.translateY = -1000;
                     item.show = false;
                 } else {
+                    item.date = outputItem.date;
                     item.type = outputItem.type;
                     item.rows = outputItem.rows;
                     item.title = outputItem.title;

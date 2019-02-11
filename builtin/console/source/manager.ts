@@ -12,6 +12,7 @@ let collapse: boolean = true;
 let filterType: string = '';
 let filterText: string = '';
 let filterRegex: boolean = false;
+let isShowDate: boolean = false;
 const logPath = join(Editor.Project.path, 'local', 'logs', 'project.log');
 
 /**
@@ -66,6 +67,7 @@ exports.addItem = (item: any) => {
     newItem.content = messageArr.splice(1);
     newItem.fold = true;
     newItem.count = 1;
+    newItem.time = item.time;
     list.push(newItem);
     saveLog(item);
     exports.update();
@@ -106,6 +108,14 @@ exports.setFilterRegex = (bool: boolean) => {
     filterRegex = bool;
     exports.update();
 };
+
+/**
+ * 显示 log 信息日期
+ */
+exports.showDate = (bool: boolean) => {
+    isShowDate = bool;
+    exports.update();
+};
 /**
  * 清除列表
  */
@@ -144,7 +154,7 @@ exports.update = () => {
                 const isRegexMatch = filterRegex
                     ? text.test(item.title)
                     : item.title.indexOf(text) !== -1;
-
+                isShowDate ? (item.date = timetrans(item.time)) : (item.date = null);
                 return hasTitle && isTypeMatch && isRegexMatch;
             }).forEach((item: any) => {
                 const outputItem = outputList[outputList.length - 1];

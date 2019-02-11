@@ -1,25 +1,30 @@
 <div class="console-panel">
-    <header class="header flex-center">
+    <header class="header flex-center" @change="onHeaderChange">
         <!-- 清除的按钮 -->
-        <ui-button class="transparent" @click="onClear">
+        <ui-button class="transparent" path="clear">
             <span class="i-stop"></span>
         </ui-button>
 
         <!-- 打开日志 -->
-        <ui-button class="transparent" @click="onOpenLog">
+        <ui-button class="transparent" path="openLog">
             <span class="i-catalog"></span>
         </ui-button>
 
         <!-- 过滤条件 -->
-        <ui-input class="ml10" @input="onFilterText"></ui-input>
+        <ui-input class="ml10" path="filterText"></ui-input>
 
         <!-- 是否启用正则 -->
-        <ui-checkbox  class="ml10" :value="tabbar.filterRegex" @confirm="onFilterRegex">
-            <span>{{t('tabbar.regex')}}</span>
+        <ui-checkbox  class="ml10" :value="tabbar.filterRegex" path="filterRegex">
+            <span>{{t('tabbar.regex',tabbar.filterRegex)}}</span>
+        </ui-checkbox>
+
+        <!-- 是否显示日期 -->
+        <ui-checkbox  class="ml10" :value="tabbar.showDate" path="showDate">
+            <span>{{t('tabbar.show_date',tabbar.showDate)}}</span>
         </ui-checkbox>
 
         <!-- 筛选种类 -->
-        <ui-select class="ml10" :value="tabbar.filterType" @confirm="onFilterType">
+        <ui-select class="ml10" :value="tabbar.filterType" path="filterType">
             <option value="all">all</option>
             <option value="log">log</option>
             <option value="warn">warn</option>
@@ -29,7 +34,7 @@
         <!-- 调整字体大小 -->
         <div class="flex-center">
             <span class="select-label i-fontsize ml10"></span>
-            <ui-select :value="tabbar.fontSize"  @confirm="setFontSize">
+            <ui-select :value="tabbar.fontSize" path="fontSize">
                 <option  v-for="item in 20" v-if="item > 8" :value="item">{{item}}</option>
             </ui-select>
         </div>
@@ -37,7 +42,7 @@
         <!-- 调整行间距 -->
         <div class="flex-center">
             <span class="select-label i-lineheight ml10"></span>
-            <ui-select :value="tabbar.lineHeight" @confirm="setLineHeight">
+            <ui-select :value="tabbar.lineHeight"  path="lineHeight">
                 <option  v-for="item in 36" v-if="item > 19" :value="item">{{item}}</option>
             </ui-select>
         </div>

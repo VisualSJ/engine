@@ -76,53 +76,54 @@ export async function ready() {
             };
         },
         methods: <any>{
+            onHeaderChange(event: any) {
+                const path = event.target.getAttribute('path');
+                if (!path) {
+                    return;
+                }
+                const value = event.target.value;
+                switch (path) {
+                    case 'clear':
+                        Editor.Logger.clear();
+                        manager.clear();
+                        break;
+                    case 'filterRegex':
+                        manager.setFilterRegex(value);
+                        this.dataChange('filterRegex', value);
+                        break;
+                    case 'filterText':
+                        manager.setFilterText(value);
+                        break;
+                    case 'filterType':
+                        manager.setFilterType(value);
+                        this.dataChange('filterType', value);
+                        break;
+                    case 'fontSize':
+                        const fontSize = parseInt(value, 10);
+                        manager.setFontSize(fontSize);
+                        this.dataChange('fontSize', fontSize);
+                        break;
+                    case 'lineHeight':
+                        const lineHeight = parseInt(value, 10);
+                        manager.setLineHeight(lineHeight);
+                        this.dataChange('lineHeight', lineHeight);
+                        break;
+                    case 'openLog':
+                        const path = join(Editor.Project.path, 'local', 'logs', 'project.log');
+                        if (!existsSync(path)) {
+                            outputFileSync(path, '', 'utf-8');
+                        }
+                        shell.openItem(path);
+                        break;
+                    case 'showDate':
+                        manager.showDate(!!value);
+                        break;
+                }
+            },
             update() {
                 if (!this.change) {
                     this.change = true;
                 }
-            },
-            onClear() {
-                Editor.Logger.clear();
-                manager.clear();
-            },
-            onFilterRegex(event: any) {
-                manager.setFilterRegex(event.target.value);
-                this.dataChange('filterRegex', event.target.value);
-            },
-            // 筛选 log 信息
-            onFilterText(event: any) {
-                manager.setFilterText(event.target.value);
-            },
-
-            // 设置字体大小
-            setFontSize(event: any) {
-                const fontSize = parseInt(event.target.value, 10);
-                manager.setFontSize(fontSize);
-                this.dataChange('fontSize', fontSize);
-            },
-
-            // 设置行间距
-            setLineHeight(event: any) {
-                const lineHeight = parseInt(event.target.value, 10);
-                manager.setLineHeight(lineHeight);
-                this.dataChange('lineHeight', lineHeight);
-            },
-
-            // 点击打开 log 日志文件
-            onOpenLog(event: any) {
-                const path = join(Editor.Project.path, 'local', 'logs', 'project.log');
-                if (!existsSync(path)) {
-                    outputFileSync(path, '', 'utf-8');
-                }
-                shell.openItem(path);
-            },
-            /**
-             * 根据 type 筛选日志
-             * @param event
-             */
-            onFilterType(event: any) {
-                manager.setFilterType(event.target.value);
-                this.dataChange('filterType', event.target.value);
             },
 
             /**
@@ -130,7 +131,7 @@ export async function ready() {
              * @param key
              */
             t(key: string) {
-                const name = `consol.${key}`;
+                const name = `console.${key}`;
                 return Editor.I18n.t(name);
             },
 

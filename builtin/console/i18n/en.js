@@ -6,5 +6,6 @@ module.exports = {
     cocosLog: 'cocos console log',
     tabbar: {
         regex: 'Regex',
+        show_date: 'show date',
     },
 };

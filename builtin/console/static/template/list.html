@@ -10,6 +10,7 @@
                     </span>
                     <span :title="item.title">
                         <i class="i-arrow-right" :unfold="!item.fold" v-if="item.rows > 1"></i>
+                        <span v-if="item.date">{{item.date}}</span>
                         {{item.title}}
                     </span>
                 </div>

@@ -9,6 +9,7 @@ declare interface IMessageItem {
     type: string;
     message: any;
     texture: string;
+    date?: number;
     time?: number;
     process?: string;
     stack: string[];

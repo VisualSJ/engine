@@ -6,5 +6,6 @@ module.exports = {
     cocosLog: 'cocos console 日志',
     tabbar: {
         regex: '正则',
+        show_date: '显示日期',
     },
 };
