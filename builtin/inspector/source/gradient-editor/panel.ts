@@ -72,7 +72,12 @@ function mergeStops(colors: any[], alphas: any[], mode: number) {
 
     // console.log('stops', stops, colors, alphas, times);
     cache.colorKeys = colors;
-    cache.alphaKeys = alphas;
+    cache.alphaKeys = alphas.map((item) => {
+        const result = Object.assign(item);
+        result.alpha = Number((item.alpha * 255).toFixed());
+        return result;
+    });
+
     cache.mode = mode;
     Editor.Ipc.sendToPanel('inspector', 'gradient:change', cache);
 
@@ -239,7 +244,10 @@ export async function ready() {
 
             init(this: any, data: { colorKeys: any[], alphaKeys: any[], mode: number }) {
                 data.colorKeys.map((item: any) => item.type = 'color');
-                data.alphaKeys.map((item: any) => item.type = 'alpha');
+                data.alphaKeys.map((item: any) => {
+                    item.type = 'alpha';
+                    item.alpha = (item.alpha / 255);
+                });
                 this.gradient = data;
                 this.resize();
             },

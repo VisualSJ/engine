@@ -32,10 +32,7 @@ export const methods = {
         vm.value.alphaKeys = dump.alphaKeys;
         vm.value.mode = dump.mode;
 
-        const event = document.createEvent('HTMLEvents');
-        event.initEvent('confirm', true, true);
-        vm.$el.dispatchEvent(event);
-
+        vm.emitConfirm();
         vm.refresh();
     },
 
@@ -65,6 +62,13 @@ export const methods = {
         // @ts-ignore
         open(this.value, this);
     },
+
+    emitConfirm() {
+        const vm: any = this;
+        const event = document.createEvent('HTMLEvents');
+        event.initEvent('confirm', true, true);
+        vm.$el.dispatchEvent(event);
+    },
 };
 
 export const watch = {};
@@ -80,6 +84,14 @@ export function data() {
 export function mounted() {
     // @ts-ignore
     const vm: any = this;
+    if (!vm.value.colorKeys || vm.value.colorKeys.length < 1) {
+        vm.value.colorKeys = [{color: [255, 255, 255], time: 0}, {color: [255, 255, 255], time: 1}];
+        vm.emitConfirm();
+    }
+    if (!vm.value.alphaKeys || vm.value.alphaKeys.length < 1) {
+        vm.value.alphaKeys = [{alpha: 255, time: 0}, {alpha: 255, time: 1}];
+        vm.emitConfirm();
+    }
     vm.refresh();
 }
 
