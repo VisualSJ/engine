@@ -1,9 +1,9 @@
 'use strict';
 
-import { copy, ensureDir, existsSync, move, outputFile, remove, rename } from 'fs-extra';
-import { dirname, extname, join } from 'path';
+import { copy, ensureDir, existsSync, outputFile } from 'fs-extra';
+import { extname, join } from 'path';
 
-import { getName } from './utils';
+import { getName, removeFile, moveFile } from './utils';
 import { awaitAsset, forwarding } from './worker';
 
 /**
@@ -249,29 +249,13 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         target: assets.target + '.meta',
     };
 
-    if (existsSync(metas.target)) {
-        await remove(metas.target);
-    }
-
-    const DBInfo: IDatabaseInfo = await forwarding('asset-worker:query-db-info', source);
-
     try {
-        await forwarding('asset-worker:pause-database', DBInfo.name);
-        if (dirname(assets.source) === dirname(assets.target)) {
-            await rename(metas.source, metas.target);
-            await rename(assets.source, assets.target);
-        } else {
-            await move(metas.source, metas.target);
-            await move(assets.source, assets.target);
-        }
+        await moveFile(assets.source, assets.target);
     } catch (error) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')}`);
         console.warn(error);
-        forwarding('asset-worker:resume-database', DBInfo.name);
         return false;
     }
-
-    forwarding('asset-worker:resume-database', DBInfo.name);
 
     await awaitAsset('add', metas.target);
 
@@ -296,20 +280,14 @@ export async function deleteAsset(source: string): Promise<boolean> {
         return false;
     }
 
-    const DBInfo: IDatabaseInfo = await forwarding('asset-worker:query-db-info', source);
-
     try {
-        // await forwarding('asset-worker:pause-database', DBInfo.name);
-        await remove(file);
-        await remove(file + '.meta');
+        await removeFile(file);
+        await removeFile(file + '.meta');
     } catch (error) {
         console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unknown')}`);
         console.warn(error);
-        // forwarding('asset-worker:resume-database', DBInfo.name);
         return false;
     }
-
-    // forwarding('asset-worker:resume-database', DBInfo.name);
 
     await awaitAsset('delete', file);
 

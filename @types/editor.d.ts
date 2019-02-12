@@ -32,6 +32,7 @@ interface Task {
 interface Project {
     path: string;
     type: string;
+    tmpDir: string;
 }
 
 interface I18n {
