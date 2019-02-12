@@ -212,9 +212,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
 
         step(cc.director._scene);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
+        const value = new ccType();
         Object.keys(dump.value).forEach((key: string) => {
-            data[info.key][key] = dump.value[key];
+            value[key] = dump.value[key];
         });
+        data[info.key] = value;
     } else if (info.key === 'length' && dump.type === 'Array') {
         while (data.length > dump.value) {
             data.pop();
