@@ -49,6 +49,11 @@
 :host([expand]) {
     & > .content {
         display: block;
+
+        & > slot {
+            display: block;
+            height: auto;
+        }
     }
     header {
         i {

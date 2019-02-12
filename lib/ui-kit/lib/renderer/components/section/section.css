@@ -56,6 +56,10 @@
 :host([expand]) > .content {
   display: block;
 }
+:host([expand]) > .content > slot {
+  display: block;
+  height: auto;
+}
 :host([expand]) header i {
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
