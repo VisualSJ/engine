@@ -63,8 +63,8 @@ export const methods = {
     /**
      * 刷新面板
      */
-    refresh() {
-        vm.refresh();
+    async refresh() {
+        await vm.refresh();
     },
     /**
      * 全选
@@ -138,8 +138,7 @@ export const messages = {
      * 刷新数据
      */
     async 'asset-db:ready'(name: string) {
-        vm.ready = true;
-        vm.refresh();
+        await vm.refresh();
     },
 
     /**
@@ -148,7 +147,6 @@ export const messages = {
      * @param name 具体某一个 db 被关闭了
      */
     'asset-db:close'(name: string) {
-        vm.ready = false;
         vm.clear();
     },
     /**
@@ -299,11 +297,13 @@ export async function ready() {
                 vm.clear();
 
                 await vm.$refs.tree.refresh(true);
+                vm.ready = true;
             },
             /**
              * 清空
              */
             clear() {
+                vm.ready = false;
                 vm.$refs.tree.clear();
             },
             /**
@@ -412,9 +412,9 @@ export async function ready() {
     await panel.unstaging();
 
     // db 就绪状态才需要查询数据
-    vm.ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
-    if (vm.ready) {
-        vm.refresh();
+    const dbReady = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
+    if (dbReady) {
+        await vm.refresh();
     }
 
     // 订阅 i18n 变动

@@ -120,18 +120,22 @@ export const methods = {
     /**
      * 刷新树形
      */
-    refresh(intoView = false) {
+    async refresh(intoView = false) {
         if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
             return;
         }
 
-        const delay = intoView ? 0 : 150; // 类似刷新的操作不需要延迟
-
         isRefreshing = true;
-        setTimeout(() => { // 整体延迟
+
+        if (intoView) { // 类似刷新的操作不需要延迟
             isRefreshing = false;
-            run();
-        }, delay);
+            await run();
+        } else {
+            setTimeout(() => { // 接收 ipc 消息的，需要整体延迟
+                isRefreshing = false;
+                run();
+            }, 150);
+        }
 
         async function run() {
             await db.refresh();

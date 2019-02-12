@@ -317,21 +317,18 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
  * add 为数字，1 表示有一个 children
  */
 function addHeight(add: number) {
+    // @ts-ignore
+    const asset = this; // this 是 bind 过来的
     if (add > 0) {
-        // @ts-ignore
-        this._height += assetHeight * add;
+        asset._height += assetHeight * add;
 
         // 触发其父级高度也增加
-        for (const [top, asset] of assetsMap) {
-            // @ts-ignore
-            if (this.parentUuid === asset.uuid) {
-                asset.height = add;
-                break;
-            }
+        const parent = uuidAssets[asset.parentUuid];
+        if (parent) {
+            parent.height = add;
         }
     } else {
-        // @ts-ignore
-        this._height = assetHeight;
+        asset._height = assetHeight;
     }
 }
 
