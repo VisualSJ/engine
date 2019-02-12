@@ -1,12 +1,15 @@
-const { basename, join, relative, extname } = require('path');
-const { readFileSync } = require('fs');
+const { basename, join, relative, extname, dirname } = require('path');
+const { readFileSync , renameSync} = require('fs');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
+const globby = require('globby'); // 路径匹配获取文件路径
 const JSONStream = require('JSONStream');
 const Concat = require('concat-stream');
+const crypto = require('crypto');
 const xtend = require('xtend'); // 用于扩展对象的插件包
 const builtins = require('browserify/lib/builtins.js');
 const buildResult = require('./build-result');
+const HASH_LEN = 5;
 // const mdeps = new Mdeps(mpConfig);
 
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
@@ -348,6 +351,67 @@ function updateProgress(msg, rate) {
     console.info(`build:${msg} ${rate}`);
 }
 
+/**
+ * 根据路径计算 hash 值
+ * @param {*} path
+ */
+function appendHashToFileSuffix(path) {
+    var filename = basename(path);
+    var dir = dirname(path);
+    var originalFile = join(dir, filename);
+    const data = readFileSync(originalFile);
+    var hash = crypto.createHash('md5').update(data).digest('hex');
+    hash = hash.slice(0, HASH_LEN);
+
+    var currentDirname = basename(dir);
+    var isNativeAsset = Editor.Utils.UuidUtils.isUuid(currentDirname);
+
+    var newFilePath;
+    if (isNativeAsset) {
+        var dirnameWithHash = dir + '.' + hash;
+        newFilePath = join(dirnameWithHash, filename);
+        try {
+            renameSync(dir, dirnameWithHash);
+        } catch (err) {
+            console.log(`\x1B[31m[MD5 ASSETS] write file error: ${err.message}\x1B[0m`);
+        }
+    } else {
+        var i = filename.lastIndexOf('.');
+        var newFilename = ~i ? `${filename.slice(0, i)}.${hash}${filename.slice(i)}` : `${filename}.${hash}`;
+        newFilePath = join(dir, newFilename);
+        try {
+            renameSync(originalFile, newFilePath);
+        } catch (err) {
+            console.log(`\x1B[31m[MD5 ASSETS] write file error: ${err.message}\x1B[0m`);
+        }
+    }
+    return { hash, path: newFilePath };
+}
+
+/**
+ * 根据正则匹配，替换生成带有 hash 后缀的文件路径，返回对应的 map
+ * @param {*} pattern
+ */
+async function getMd5Map(pattern) {
+    const getUuidFromLibPath = Editor.Utils.UuidUtils.getUuidFromLibPath;
+    const compressUuid = Editor.Utils.UuidUtils.compressUuid;
+
+    // [uuid_1, md5_1, uuid_2, md5_2, ...]
+    const md5Entries = [];
+    var allResPaths = await globby(pattern, { nodir: true });
+    for (var i = 0; i < allResPaths.length; ++i) {
+        var filePath = allResPaths[i];
+        var originalURL = relative(buildResult.paths.dest, filePath);
+        var uuid = getUuidFromLibPath(originalURL);
+        if (uuid) {
+            md5Entries.push(compressUuid(uuid, true), appendHashToFileSuffix(filePath).hash);
+        } else {
+            Editor.warn(`Can not resolve uuid for path "${filePath}", skip the MD5 process on it.`);
+        }
+    }
+    return md5Entries;
+}
+
 module.exports = {
     getModules,
     getCurrentScene,
@@ -362,4 +426,6 @@ module.exports = {
     updateProgress,
     getRightUrl,
     getAssetUrl,
+    getMd5Map,
+    appendHashToFileSuffix,
 };

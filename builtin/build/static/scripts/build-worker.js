@@ -1,5 +1,6 @@
+const editor = require('./editor'); // editor 要放在最前面
 const builder = require('./builder');
-const editor = require('./editor');
+
 const {initInfo, getModules, getCurrentScene} = require('./utils');
 const {join} = require('path');
 const buildTask = []; // 构建任务列表

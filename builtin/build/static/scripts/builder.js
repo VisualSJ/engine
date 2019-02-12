@@ -1,5 +1,6 @@
-const { join, basename , extname, dirname} = require('path');
-const { getCustomConfig, getCurrentScene, updateProgress, requestToPackage, computeArgs} = require('./utils');
+const { join, basename , extname, dirname, resolve, relative} = require('path');
+const { getCustomConfig, getCurrentScene, updateProgress,
+     requestToPackage, computeArgs, getMd5Map, appendHashToFileSuffix} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
 const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
 const ejs = require('ejs');
@@ -12,6 +13,11 @@ const assetBuilder = require('./build-asset');
 const assetPacker = require('./pack-asset');
 const scriptBuilder = require('./build-script');
 const { spawn } = require('child_process');
+const globby = require('globby'); // 路径匹配获取文件路径
+const RevAll = require('gulp-rev-all');
+const RevDel = require('gulp-rev-delete-original');
+const gulp = require('gulp');
+const HASH_LEN = 5;
 const static_resource = [
     // 需要拷贝的静态资源整理
     'splash.png',
@@ -90,9 +96,114 @@ class Builder {
             ),
         ]);
         await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
+        await this.resolveOthers();
         let endTime = new Date().getTime();
         updateProgress(`build sucess in ${endTime - startTime} ms`);
         requestToPackage('preview', 'set-build-path', this._paths.dest);
+    }
+
+    /**
+     * 整理其他文件
+     */
+    resolveOthers() {
+        return new Promise((resolve) => {
+            if (!this._options.md5Cache) {
+                resolve();
+                return;
+            }
+            const {isWeChatGame, isQQPlay, platform, isNativePlatform} = this._options;
+            const src = [
+                'src/*.js',
+                '*',
+            ];
+            var base = this._paths.dest;
+            var dontRenameFile = ['index.html'];
+            if (isNativePlatform) {
+                dontRenameFile = dontRenameFile.concat(['main.js', 'cocos-project-template.json', 'project.json']);
+            }
+            var dontSearchFile = [relative(base, this._paths.bundledScript)];
+            if (isWeChatGame) {
+                dontRenameFile = dontRenameFile.concat(['game.js', 'game.json', 'project.config.json', 'index.js']);
+                dontSearchFile = dontSearchFile.concat(['game.json', 'project.config.json']);
+            } else if (isQQPlay) {
+                // 玩一玩使用的路径是 GameRes://，这里无法检测到
+                // 最终这些文件会被合并到一个 js 中，所以就不用 md5 了
+                dontRenameFile = dontRenameFile.concat(['main.js', 'cocos2d-js.js', 'cocos2d-js-min.js',
+                                                        'project.dev.js', 'project.js', 'settings.js',
+                                                        'gameConfig.json', 'inviteIcon.png']);
+            }
+
+            if (platform === 'fb-instant-games') {
+                dontRenameFile = dontRenameFile.concat(['fbapp-config.json']);
+            }
+
+            if (process.platform === 'win32') {
+                dontSearchFile = dontSearchFile.map((x) => x.replace(/\\/g, '/'));
+            }
+
+            gulp.src(src, {
+                cwd: this._paths.dest,
+                base: base,
+            })
+                .pipe(RevAll.revision({
+                    // https://github.com/smysnk/gulp-rev-all#options
+                    debug: true,
+                    hashLength: HASH_LEN,
+                    dontRenameFile: dontRenameFile,
+                    // 不查找 project.js 里面引用的路径
+                    dontSearchFile: dontSearchFile,
+                    annotator: function(contents, path) {
+                        return [{ contents, path }];
+                    },
+                    replacer: function(fragment, replaceRegExp, newReference, referencedFile) {
+                        if (extname(fragment.path) === '.map') {
+                            if (referencedFile.revPathOriginal + '.map' !== fragment.path) {
+                                // 只更新 map 文件自身对应的 js 文件的路径
+                                return;
+                            }
+                        }
+                        fragment.contents = fragment.contents.replace(replaceRegExp, '$1' + newReference + '$3$4');
+                    },
+                }))
+                .pipe(RevDel())
+                .pipe(gulp.dest(this._paths.dest))
+                .on('end', resolve);
+        });
+    }
+
+    /**
+     * 给资源添加 hash 值
+     */
+    async buildMd5Map(setting) {
+        if (!this._options.md5Cache) {
+            return;
+        }
+        console.time('revision');
+        let md5AssetsMap = await getMd5Map(join(this._paths.res, 'import', '**'));
+        const md5NativeAssetsPath = [join(this._paths.res, 'raw-assets', '**')];
+        let md5NativeAssetsMap = await getMd5Map(md5NativeAssetsPath);
+        // todo 关于设置为子包后 md5 处理
+        // for (let subId in buildResults._subpackages) {
+        //     let sub = buildResults._subpackages[subId];
+        //     let subPath = join(paths.subpackages, sub.name, 'raw-assets', '**');
+        //     md5NativeAssetsPath.push(subPath);
+        // }
+        if (setting.jsList && setting.jsList.length > 0) {
+            var base = this._paths.src;
+            var jsPaths = setting.jsList.map((x) => resolve(base, x));
+            var jsList = jsPaths.map((jsPath) => {
+                jsPath = appendHashToFileSuffix(jsPath).path;
+                const url = relative(base, jsPath);
+                return url.replace(/\\/g, '/');
+            });
+            jsList.sort();
+            setting.jsList = jsList;
+        }
+        console.timeEnd('revision');
+        return {
+            import: md5AssetsMap,
+            'raw-assets': md5NativeAssetsMap,
+        };
     }
 
     // 拷贝静态资源文件 5%
@@ -438,7 +549,8 @@ class Builder {
         let settingsInitFunction;
         if (that._options.md5Cache) {
             let md5AssetsMap = settings.md5AssetsMap;
-            for (let md5Entries of md5AssetsMap) {
+            for (let key of Object.keys(md5AssetsMap)) {
+                const md5Entries = md5AssetsMap[key];
                 for (let i = 0; i < md5Entries.length; i += 2) {
                     md5Entries[i] = that.compressUuid(md5Entries[i]);
                     let uuidIndex = uuidIndices[md5Entries[i]];
@@ -548,15 +660,15 @@ class Builder {
             }
         }
 
-        let scripts = (await scriptBuilder.build(options.type)) || {};
+        let results = (await scriptBuilder.build(options.type)) || {scripts: [], jsList: []};
         setting.packedAssets = {};
-        setting.md5AssetsMap = {};
         let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, options.type);
-        Object.assign(setting, assetBuilderResult, { scripts });
+        Object.assign(setting, assetBuilderResult, results);
         buildResult.settings = setting;
         updateProgress('build setting...', 20);
         if (options.type === 'build-release') {
             setting.packedAssets = assetPacker.pack();
+            setting.md5AssetsMap = (await this.buildMd5Map(setting)) || {};
             return setting;
         }
         delete setting.type;

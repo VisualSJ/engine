@@ -3,8 +3,9 @@ const platfomConfig = require('./platforms-config');
 const {updateProgress, requestToPackage, getRightUrl, getScriptsCache} = require('./utils');
 const Browserify = require('browserify');
 const gulp = require('gulp');
-const {readFileSync} = require('fs');
-const {join, basename, extname} = require('path');
+const {readFileSync, copyFileSync} = require('fs');
+const {ensureDirSync} = require('fs-extra');
+const {join, basename, extname, dirname} = require('path');
 const projectScripts = require('./project-scripts'); // 配置构建的脚本环境
 // // misc
 const source = require('vinyl-source-stream');
@@ -31,6 +32,7 @@ class ScriptBuilder {
         }
         this.paths = buildResult.paths;
         this.options = buildResult.options;
+        this.jsList = [];
     }
 
     async build(type) {
@@ -38,33 +40,47 @@ class ScriptBuilder {
         this.init(type);
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
         projectScripts.load(scripts);
+        const result = await this.resolveScripts(scripts);
         if (!this.shoudBuild) {
-            return await this.resolveScripts(scripts);
+            return result;
         }
         let scriptInfo = this.sortScripts(scripts); // 查询、分类脚本，分为子包和主包
         this._allScripts = scriptInfo.allScripts;
         rawPathToLibPath = scriptInfo.rawPathToLibPath;
         await this._buildScript(scriptInfo.mainScrips);
+        return result;
         // await this._buildScript(scriptInfo.subScrips);
     }
 
-    async resolveScripts(scripts) {
-        let result = [];
+    async resolveScripts(lists) {
+        let scripts = [];
+        let jsList = [];
         buildResult.script2uuid = {};
-        for (let asset of scripts) {
-            // todo 改脚本是否为插件
-            if (asset.isPlugin) {
-                if (isNative && asset.loadPluginInNative) {
-                    plugins.push(asset.uuid);
-                } else if (asset.loadPluginInWeb) {
-                    plugins.push(asset.uuid);
-                }
-            }
+        for (let asset of lists) {
+            const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
             let url = getRightUrl(asset.source);
+            if (userData.isPlugin) {
+                if (userData.isNative && userData.loadPluginInNative) {
+                    jsList.push(url);
+                } else if (userData.loadPluginInWeb) {
+                    jsList.push(url);
+                }
+                if (this.shoudBuild) {
+                    const src = join(this.paths.project, url);
+                    const dest = join(this.paths.src, url);
+                    ensureDirSync(dirname(dest));
+                    copyFileSync(src, dest);
+                }
+            } else {
+                scripts.push({ deps: {}, file: url });
+            }
             buildResult.script2uuid[url] = asset.uuid;
-            result.push({ deps: {}, file: url });
         }
-        return await getScriptsCache(result);
+        scripts = await getScriptsCache(scripts);
+        return {
+            scripts,
+            jsList,
+        };
     }
 
     // 将脚本根据子包设置，分类

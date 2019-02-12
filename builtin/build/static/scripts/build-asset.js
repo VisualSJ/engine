@@ -7,6 +7,8 @@ const lodash = require('lodash'); // 排序、去重
 const CompressTexture = require('./texture-compress');
 const {promisify} = require('util');
 const _ = require('lodash');
+
+const RAW_ASSET_DEST = 'raw-assets';
 class AssetBuilder {
     init(type) {
         buildResult.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
@@ -267,18 +269,21 @@ class AssetBuilder {
         }
     }
 
-    // 压缩生成新的资源 json 数据，并缓存
+    /**
+     * 重新序列化，压缩生成新的 json 数据，并缓存
+     * @param {*} asset 反序列化新生成的 asset 对象
+     */
     async compress(asset) {
         var nativeAssetEnabled = asset._native &&
         (this.isJSB || !asset.constructor.preventPreloadNativeObject ||
             asset instanceof ALWAYS_INCLUDE_RAW_FILES);
         // output
-        let inCompressTask;
+        let isCompressTask;
         if (nativeAssetEnabled) {
-            inCompressTask = await this._exportNativeAsset(asset);
+            isCompressTask = await this._exportNativeAsset(asset);
         }
         // 是需要压缩的资源，对应的 asset 需要做一些数据添加处理，由后续对应的压缩资源函数处理
-        if (inCompressTask) {
+        if (isCompressTask) {
             return;
         }
         // compress 设置
@@ -291,9 +296,11 @@ class AssetBuilder {
         buildResult.jsonCache[asset._uuid] = contentJson;
     }
 
-    // 导出原始资源
+    /**
+     * 将新的 asset 对象，重新导出原始资源
+     * @param {*} asset 反序列化新生成的 asset 对象
+     */
     async _exportNativeAsset(asset) {
-        const RAW_ASSET_DEST = 'raw-assets';
         let destBase = join(this.paths.res, RAW_ASSET_DEST);
         ensureDirSync(destBase);
         let assetInfo = await requestToPackage('asset-db', 'query-asset-info', asset._uuid);
@@ -318,8 +325,9 @@ class AssetBuilder {
         var dest = join(this.paths.res, RAW_ASSET_DEST, asset.nativeUrl);
         ensureDirSync(dirname(dest));
         if (asset instanceof cc.ImageAsset) {
+            const userData = requestToPackage('asset-db', 'query-asset-meta', asset._uuid);
             // 图片资源设置的压缩参数
-            let {platformSettings} = buildResult.assetCache[asset._uuid];
+            let {platformSettings} = userData;
             let platform = this.options.platform;
             // 未设置压缩参数，或者当前构建平台下未设置且没有设置默认转出格式则直接拷贝
             if (!platformSettings || (!platformSettings[platform] && !platformSettings.default)
@@ -347,7 +355,6 @@ class AssetBuilder {
 
     /**
      * 执行图片压缩格式转换任务
-     * @memberof AssetBuilder
      */
     compressImgs() {
         updateProgress(`build assets : compress image asset ...`);

@@ -81,6 +81,7 @@ export async function ready() {
                 platform: 'web-mobile',
                 build_path: './build',
                 debug: false, // 调试模式
+                md5Cache: false,
                 source_map: false,
                 inline_SpriteFrames: false, // 是否内联所有的 SpriteFrame
             },
@@ -296,13 +297,14 @@ export async function ready() {
                     return;
                 }
                 this.rate = 0;
-                const {platform, source_map, debug, build_path} = this.setting;
+                const {platform, source_map, debug, build_path, md5Cache} = this.setting;
                 const data = {
                     platform,
                     source_map,
                     name: this.name,
                     start_scene: this.start_scene,
                     debug,
+                    md5Cache,
                     scenes: [],
                     dest: join(Editor.Project.path, build_path, platform),
                 };

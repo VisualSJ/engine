@@ -118,9 +118,9 @@ export async function start() {
     });
 
     app.get('/res/raw-*', async (req: any, res: any) => {
-        let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
+        let path = join(Editor.App.project, req.params[0]); // 获取文件名路径
         if (!existsSync(path)) {
-            path = join(Editor.App.path, 'builtin/asset-db/static/internal/library', req.params[0]);
+            path = join(Editor.App.path, 'builtin/asset-db/static/internal', req.params[0]);
         }
         res.sendFile(path);
     });
