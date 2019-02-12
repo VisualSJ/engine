@@ -10,7 +10,7 @@ const awaitHandler: { [key: string]: { [key: string]: Array<() => any> } } = {
     delete: {},
 };
 
-import { close, open, ready, setReady } from './state';
+import { close, getReady, open, ready, setReady } from './state';
 let databaseWorker: any = null;
 
 function startup(info: IEngineInfo) {
@@ -52,7 +52,9 @@ function startup(info: IEngineInfo) {
             });
             delete awaitHandler.add[path];
         }
-        Editor.Ipc.sendToAll('asset-db:asset-add', uuid);
+        if (getReady()) {
+            Editor.Ipc.sendToAll('asset-db:asset-add', uuid);
+        }
     });
 
     // worker 检测到了修改资源
@@ -63,7 +65,9 @@ function startup(info: IEngineInfo) {
             });
             delete awaitHandler.change[path];
         }
-        Editor.Ipc.sendToAll('asset-db:asset-change', uuid);
+        if (getReady()) {
+            Editor.Ipc.sendToAll('asset-db:asset-change', uuid);
+        }
     });
 
     // worker 检测到了删除资源
@@ -74,7 +78,9 @@ function startup(info: IEngineInfo) {
             });
             delete awaitHandler.delete[path];
         }
-        Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
+        if (getReady()) {
+            Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
+        }
     });
 
     // 编辑器内置的两个数据库
