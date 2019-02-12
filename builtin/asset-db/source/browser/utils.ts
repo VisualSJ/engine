@@ -1,6 +1,6 @@
 'use strict';
 
-import { existsSync, readdirSync, remove, statSync, copy } from 'fs-extra';
+import { copy, existsSync, move, readdirSync, remove, statSync } from 'fs-extra';
 import { basename, dirname, extname, join } from 'path';
 
 /**
@@ -36,8 +36,8 @@ export function getName(file: string) {
 }
 
 /**
- * 
- * @param file 
+ * 删除文件
+ * @param file
  */
 export async function removeFile(file: string) {
     if (!existsSync(file)) {
@@ -48,8 +48,7 @@ export async function removeFile(file: string) {
     if (stat.isDirectory()) {
         const list = readdirSync(file);
 
-        for (let i = 0; i < list.length; i++) {
-            const name = list[i];
+        for (const name of list) {
             await removeFile(join(file, name));
         }
         await remove(file);
@@ -59,8 +58,8 @@ export async function removeFile(file: string) {
 }
 
 /**
- * 
- * @param file 
+ * 移动文件
+ * @param file
  */
 export async function moveFile(source: string, target: string) {
     if (
@@ -78,6 +77,6 @@ export async function moveFile(source: string, target: string) {
     await copy(source + '.meta', tmp + '.meta');
     await removeFile(source);
     await removeFile(source + '.meta');
-    await copy(tmp, target);
-    await copy(tmp + '.meta', target + '.meta');
+    await move(tmp, target);
+    await move(tmp + '.meta', target + '.meta');
 }

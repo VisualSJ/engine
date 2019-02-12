@@ -3,7 +3,7 @@
 import { copy, ensureDir, existsSync, outputFile } from 'fs-extra';
 import { extname, join } from 'path';
 
-import { getName, removeFile, moveFile } from './utils';
+import { getName, moveFile, removeFile } from './utils';
 import { awaitAsset, forwarding } from './worker';
 
 /**
