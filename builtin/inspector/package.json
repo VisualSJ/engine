@@ -14,6 +14,7 @@
         "title": "i18n:inspector.title",
         "main": "./dist/renderer/index.js",
         "icon": "./static/icon.png",
+        "save": true,
         "min-width": 300,
         "min-height": 200,
         "width": 400,

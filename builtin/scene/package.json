@@ -28,6 +28,7 @@
         "main": "./dist/panel/index.js",
         "allowClose": false,
         "allowPopup": false,
+        "save": true,
         "icon": "./static/icon.png",
         "min-width": 400,
         "min-height": 300,

@@ -80,9 +80,15 @@ export async function load() {
             buttons: [Editor.I18n.t('engine.confirm')],
         });
         profile.local.set(`${Editor.Project.type}.javascript.builtin`, true);
-        profile.local.save();
+        // profile.local.save();
         info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
-        await compileEngine(info.path);
+
+        // 内置引擎继续编译失败，这时候无法启动编辑器
+        try {
+            await compileEngine(info.path);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     // 注册引擎内的各种 i18n 数据
