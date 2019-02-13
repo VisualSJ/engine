@@ -12,6 +12,9 @@ module.exports = {
         searchName: 'Search Name',
         searchUuid: 'Search UUID',
         searchType: 'Search Type',
+        sort: 'Sort',
+        sortName: 'Sort by Name',
+        sortExtension: 'Sort by Extension',
         refresh: 'Refresh',
         allExpand: 'All Expand',
         allCollapse: 'All Collapse',
@@ -37,15 +40,10 @@ module.exports = {
     },
 
     operate: {
-        sureDelete: 'Are you sure to delete the resource file?',
-        renameFail: 'Rename failed',
-        copyFail: 'The resource cannot be replicated',
-        addFail: 'New resource failed',
-        dropFileFail: 'Failed to import resources',
-        deleteFail: 'Deleted failed',
-        moveFail: 'Failed to move resources',
-        moveFail_parent_into_child: 'Parent resources cannot be moved into a subset resources',
-        pasteFail: 'Replication resource failed',
-        pasteFail_parent_into_child: 'Parent resources cannot be pasted into a subset resources',
+        sureDelete: 'Sure delete these assets?',
+        renameFail: 'Rename Fail: The new file name already exists.',
+        copyFail: 'Asset cannot be copied',
+        pasteFail_parent_into_child: 'subAsset cannot paste ancestry',
     },
 };
+

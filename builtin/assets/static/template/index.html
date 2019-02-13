@@ -4,7 +4,13 @@
             :title="t('menu.createMenu')"
             @click="popupNew($event)"
         ></i>
+        <i class="sort-type i-sort"
+            :title="t('menu.sort')"
+            :type="sortType"
+            @click="popupSortType"
+        ></i>
         <i class="search-type i-search"
+            :title="t('menu.search')"
             :type="searchType"
             @click="popupSearchType"
         ></i>

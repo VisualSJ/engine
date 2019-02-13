@@ -206,7 +206,7 @@ function sortTree(arr: ItreeAsset[]) {
         } else if (!a.isDirectory && b.isDirectory === true) {
             return 1;
         } else {
-            if (a.fileExt !== b.fileExt) {
+            if (vm.sortType === 'ext' && a.fileExt !== b.fileExt) {
                 return a.fileExt.localeCompare(b.fileExt);
             } else {
                 return a.name.localeCompare(b.name, 'en', { numeric: true });

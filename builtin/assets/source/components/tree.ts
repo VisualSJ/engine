@@ -34,6 +34,7 @@ export function data() {
         intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称
         searchType: 'name', // 搜索类型
+        sortType: 'name', // 排序类型
         allExpand: true, // 是否全部展开
         current: {}, // 当前选中项
         viewHeight: 0, // 当前树形的可视区域高度

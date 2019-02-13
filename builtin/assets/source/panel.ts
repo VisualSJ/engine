@@ -34,21 +34,30 @@ export const methods = {
      * 暂存页面数据
      */
     staging() {
+        // 节点折叠状态
         const uuidsIsExpand = [];
         for (const uuid in vm.$refs.tree.folds) {
             if (vm.$refs.tree.folds[uuid]) {
                 uuidsIsExpand.push(uuid);
             }
         }
-        Editor.Ipc.sendToPackage('assets', 'staging-fold', JSON.stringify(uuidsIsExpand));
+        const expand = JSON.stringify(uuidsIsExpand);
+
+        // 排序的方式
+        const sort = vm.$refs.tree.sortType;
+
+        // 保存数据
+        Editor.Ipc.sendToPackage('assets', 'staging', {expand, sort});
     },
 
     /**
      * 恢复页面数据
      */
     async unstaging() {
-        // 初始化缓存的折叠数据
-        const expand = await Editor.Ipc.requestToPackage('assets', 'query-staging-fold');
+        // 初始化缓存数据
+        const {expand, sort} = await Editor.Ipc.requestToPackage('assets', 'query-staging');
+
+        // 节点的折叠
         if (expand === 'false') {
             vm.$refs.tree.firstAllExpand = false;
         } else if (expand === 'true') {
@@ -58,6 +67,11 @@ export const methods = {
             uuidsIsExpand.forEach((uuid: string) => {
                 vm.$set(vm.$refs.tree.folds, uuid, true);
             });
+        }
+
+        // 赋值排序方式
+        if (sort) {
+            vm.sortType = sort;
         }
     },
     /**
@@ -245,6 +259,7 @@ export async function ready() {
             selectBox: false, // 随组件 tree 中属性 selectBox 值
             searchPlaceholder: 'menu.searchPlaceholder_name', // 指定搜索的类型
             searchType: 'name', // 指定搜索的类型
+            sortType: 'name', // 指定排序的类型
         },
         watch: {
             treeHeight() {
@@ -263,6 +278,12 @@ export async function ready() {
                 vm.searchPlaceholder = `menu.searchPlaceholder_${vm.searchType}`;
                 vm.$refs.tree.searchType = vm.searchType;
                 vm.$refs.tree.doSearch();
+            },
+            async sortType() {
+                vm.$refs.tree.sortType = vm.sortType;
+                if (vm.ready) {
+                    await vm.refresh();
+                }
             },
         },
         mounted() {
@@ -377,6 +398,12 @@ export async function ready() {
              */
             popupSearchType(event: Event) {
                 context.popupSearchType(event);
+            },
+            /**
+             * 切换排序类型
+             */
+            popupSortType(event: Event) {
+                context.popupSortType(event);
             },
             /**
              * 面板的右击菜单

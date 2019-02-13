@@ -217,3 +217,30 @@ exports.popupContext = (event: Event) => {
         ],
     });
 };
+
+exports.popupSortType = (event: Event) => {
+    const m = Editor.Menu.popup({
+        // @ts-ignore
+        x: event.pageX,
+        // @ts-ignore
+        y: event.pageY,
+        menu: [
+            {
+                label: Editor.I18n.t('assets.menu.sortName'),
+                type: 'radio',
+                checked: db.vm.sortType === 'name',
+                click() {
+                    db.vm.sortType = 'name';
+                },
+            },
+            {
+                label: Editor.I18n.t('assets.menu.sortExtension'),
+                type: 'radio',
+                checked: db.vm.sortType === 'ext',
+                click() {
+                    db.vm.sortType = 'ext';
+                },
+            },
+        ],
+    });
+};

@@ -85,6 +85,23 @@
             content: 'T';
         }
     }
+    .sort-type {
+        margin: 0;
+        padding: 0 2px;
+        &:after {
+            position: absolute;
+            left: 0;
+            top: -7px;
+            z-index: 1;
+            color: var(--red-c);
+            font-family: sans-serif;
+            transform: scale(0.7);
+            font-size: 12px;
+        }
+        &[type="ext"]:after {
+            content: 'T';
+        }
+    }
 }
 
 .content {
