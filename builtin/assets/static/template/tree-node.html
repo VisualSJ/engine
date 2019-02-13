@@ -39,10 +39,10 @@
     <input class="rename" ref='input'
         v-else
         :value="asset.name"
-        @blur="renameSubmit($event, asset)"
+        @blur="renameSubmit($event)"
         @keydown.stop
-        @keydown.enter="renameSubmit($event, asset)"
-        @keydown.esc="renameCancel($event, asset)"
+        @keydown.enter="renameSubmit($event)"
+        @keydown.esc="renameCancel($event)"
     >
     
     <section class="loading"

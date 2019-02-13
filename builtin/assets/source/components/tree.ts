@@ -349,8 +349,12 @@ export const methods = {
         utils.twinkle.sleep();
 
         const renameSource = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
-        await Editor.Ipc.requestToPackage('asset-db', 'create-asset', renameSource, filedata);
-        vm.renameSource = renameSource;
+        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', renameSource, filedata);
+        if (!isSuccess) {
+            vm.dialogError('addFail');
+        } else {
+            vm.renameSource = renameSource;
+        }
 
         parent.state = '';
     },
@@ -379,29 +383,55 @@ export const methods = {
             return false;
         }
 
+        let selects: string[] = [];
         if (uuid && !vm.selects.includes(uuid)) { // 如果该资源没有被选中，则只是删除此单个
+            selects = [uuid];
+        } else { // 如果该资源是被选中了，表明要删除所有选中项
+            selects = vm.selects.slice();
+        }
+
+        let assets: ItreeAsset[] = []; // 有效的可删除的节点
+        selects.forEach((uuid: string) => {
             const asset = utils.getAssetFromTree(uuid);
             if (utils.canNotDeleteAsset(asset)) {
                 return;
             }
 
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-            Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
-        } else { // 如果该资源是被选中了，表明要删除所有选中项
-            const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'asset');
-            uuids.forEach((uuid: string) => {
-                const asset = utils.getAssetFromTree(uuid);
-                if (utils.canNotDeleteAsset(asset)) {
-                    return;
-                }
+            // 确保 assets 里面某个节点不是 asset 的子节点
+            assets = assets.filter((item) => !item.source.startsWith(`${asset.source}/`));
 
-                asset.state = 'loading';
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
-                Editor.Ipc.sendToPackage('asset-db', 'delete-asset', asset.source);
+            // 确保 asset 不是 assets 里面某个节点的子节点
+            let isChild = false;
+            assets.forEach((item) => {
+                if (asset.source.startsWith(`${item.source}/`)) {
+                    isChild = true;
+                }
             });
-            // 重置所有选中
-            vm.selects = [];
-        }
+            if (!isChild) {
+                assets.push(asset);
+            }
+        });
+
+        const tasks: Array<Promise<boolean>> = [];
+        assets.forEach((asset: ItreeAsset) => {
+            asset.state = 'loading';
+            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', asset.uuid);
+            tasks.push(Editor.Ipc.requestToPackage('asset-db', 'delete-asset', asset.source));
+        });
+        Promise.all(tasks).then((results) => {
+            let throwError = false;
+            results.forEach((success, i) => {
+                if (success === false) {
+                    assets[i].state = '';
+                    if (!throwError) { // 未抛出错误提示时出现一次，已出现对话框的时候不再出现
+                        vm.dialogError('deleteFail');
+                        throwError = true;
+                    }
+                }
+            });
+        });
+        // 重置所有选中
+        vm.selects = [];
     },
 
     /**
@@ -518,18 +548,23 @@ export const methods = {
     /**
      * 节点重名命
      * 这是异步的，只做发送
-     * @param asset
+     * @param uuid
      * @param name
      */
-    async rename(asset: ItreeAsset, name = '') {
+    async rename(uuid: string, name = '') {
+        const asset = utils.getAssetFromMap(uuid);
         if (asset.state === 'loading') {
             return false;
         }
 
-        // @ts-ignore 清空需要 rename 的节点
+        // 清空需要 rename 的节点
         vm.renameSource = '';
 
-        if (utils.canNotRenameAsset(asset) || name === '' || name === asset.name) {
+        if (utils.canNotRenameAsset(asset)
+        || name === ''
+        || name === asset.name // 不变
+        || name.toLowerCase() === asset.fileExt // 不能只发后缀
+        ) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
             asset.state = '';
             return;
@@ -544,12 +579,10 @@ export const methods = {
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', asset.source, target);
 
         if (!isSuccess) {
-            Editor.Dialog.show({
-                type: 'error',
-                message: Editor.I18n.t('assets.operate.renameFail'),
-            });
-            asset.state = '';
+            vm.dialogError('renameFail');
         }
+
+        asset.state = '';
     },
 
     /**
@@ -676,7 +709,7 @@ export const methods = {
 
             let index = 0;
             let file: any;
-            let success: string;
+            let isSuccess: string; // 这里的结果返回 null 或 uuid
             toAsset.state = 'loading'; // 显示 loading 效果
             if (toAsset.isExpand === false) {
                 this.toggle(toAsset.uuid, true); // 重新展开父级节点
@@ -685,7 +718,7 @@ export const methods = {
             do {
                 file = json.files[index];
                 index++;
-                success = '';
+                isSuccess = '';
 
                 if (file) {
                     const name = basename(file.path);
@@ -693,10 +726,16 @@ export const methods = {
                     target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                     utils.twinkle.sleep();
                     // tslint:disable-next-line:max-line-length
-                    success = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, {src: file.path});
+                    isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, { src: file.path });
+
+                    if (!isSuccess) {
+                        vm.dialogError('dropFileFail');
+                    }
                 }
 
-            } while (success);
+            } while (isSuccess);
+
+            toAsset.state = '';
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
@@ -714,7 +753,7 @@ export const methods = {
                 return;
             }
 
-            vm.move(json, toAsset);
+            await vm.move(json, toAsset);
         }
     },
 
@@ -751,7 +790,7 @@ export const methods = {
      * @param uuid 粘贴到此目标节点
      * @param copiedUuids 被复制的节点
      */
-    async paste(uuid: string, copiedUuids= vm.copiedUuids) {
+    async paste(uuid: string, copiedUuids = vm.copiedUuids) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
@@ -789,7 +828,7 @@ export const methods = {
 
         let index = 0;
         let asset;
-        let success: string;
+        let isSuccess: boolean;
         parent.state = 'loading'; // 显示 loading 效果
 
         if (parent.isExpand === false) {
@@ -799,17 +838,23 @@ export const methods = {
         do {
             asset = utils.getAssetFromTree(finallyCanPaste[index]);
             index++;
-            success = '';
+            isSuccess = false;
 
             if (asset) {
                 const name = basename(asset.source);
                 let target = `${parent.source}/${name}`;
                 target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                 utils.twinkle.sleep();
-                success = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
+                isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
+
+                if (!isSuccess) {
+                    vm.dialogError('pasteFail');
+                }
             }
 
-        } while (success);
+        } while (isSuccess);
+
+        parent.state = '';
     },
 
     /**
@@ -833,7 +878,7 @@ export const methods = {
     /**
      * 移动
      */
-    move(json: IdragAsset, toAsset: ItreeAsset) {
+    async move(json: IdragAsset, toAsset: ItreeAsset) {
         if (!json || !json.from || !json.to) {
             return;
         }
@@ -852,7 +897,7 @@ export const methods = {
             return a[0].top - b[0].top;
         });
 
-        groups.forEach((group: any) => {
+        for (const group of groups) {
             const [fromAsset, fromIndex, fromArr, fromParent] = group;
             if (utils.canNotCopyAsset(fromAsset)) {
                 return;
@@ -872,8 +917,12 @@ export const methods = {
 
             // 移动资源
             const target = toAsset.source + '/' + basename(fromAsset.source);
-            Editor.Ipc.sendToPackage('asset-db', 'move-asset', fromAsset.source, target);
-        });
+            const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', fromAsset.source, target);
+
+            if (!isSuccess) {
+                vm.dialogError('moveFail');
+            }
+        }
     },
 
     /**
@@ -939,5 +988,12 @@ export const methods = {
     twinkle(uuid: string) {
         utils.scrollIntoView(uuid);
         utils.twinkle.add(uuid, 'shake');
+    },
+
+    dialogError(message: string) {
+        Editor.Dialog.show({
+            type: 'error',
+            message: Editor.I18n.t(`assets.operate.${message}`),
+        });
     },
 };

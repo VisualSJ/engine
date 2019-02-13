@@ -25,7 +25,7 @@ export const props: string[] = [
 
 export function data() {
     return {
-
+        renameUuid: '',
     };
 }
 
@@ -68,11 +68,17 @@ export const watch = {
         // @ts-ignore
         if (this.state === 'input') {
             // @ts-ignore
+            this.renameUuid = asset.uuid;
+
+            // @ts-ignore
             this.$nextTick(() => {
                 // @ts-ignore
-                this.$refs.input.focus();
-                // @ts-ignore
-                this.$refs.input.setSelectionRange(0, asset.fileName.length);
+                if (this.$refs.input) {
+                    // @ts-ignore
+                    this.$refs.input.focus();
+                    // @ts-ignore
+                    this.$refs.input.setSelectionRange(0, asset.fileName.length);
+                }
             });
         }
     },
@@ -157,27 +163,20 @@ export const methods = {
      * 提交重名命
      * @param asset
      */
-    renameSubmit(event: Event, asset: ItreeAsset) {
+    renameSubmit(event: Event) {
         // @ts-ignore
-        let newName = this.$refs.input.value.trim();
-
-        // 文件名称带有后缀，此时不能只发后缀
-        if (newName.toLowerCase() === asset.fileExt) {
-            newName = '';
-        }
+        const newName = this.$refs.input.value.trim();
 
         // @ts-ignore
-        this.$emit('rename', asset, newName);
+        this.$emit('rename', this.renameUuid, newName);
     },
     /**
      * 取消重名命
      * @param asset
      */
-    renameCancel(event: Event, asset: ItreeAsset) {
-        // @ts-ignore 需要这一步是因为 blur 也随即执行，需要保留原值阻止触发
-        this.$refs.input.value = asset.name;
+    renameCancel(event: Event) {
         // @ts-ignore
-        this.$emit('rename', asset, asset.name);
+        this.$emit('rename', this.renameUuid, '');
     },
     /**
      * 开始拖动

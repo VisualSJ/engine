@@ -39,8 +39,14 @@ module.exports = {
 
     operate: {
         sureDelete: '确定删除资源文件吗？',
-        renameFail: '重命名失败：已存在相同名称的文件',
+        renameFail: '重命名失败',
         copyFail: '资源不能被复制',
+        addFail: '新建资源失败',
+        dropFileFail: '导入资源失败',
+        deleteFail: '删除资源失败',
+        moveFail: '移动资源失败',
+        moveFail_parent_into_child: '父级资源不能移动到其子集资源里',
+        pasteFail: '复制资源失败',
         pasteFail_parent_into_child: '父级资源不能粘贴到其子集资源里',
     },
 };
