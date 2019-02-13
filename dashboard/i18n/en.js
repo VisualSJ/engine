@@ -30,7 +30,7 @@ module.exports = {
     message: {
         duplicate_project: 'Files already exist in this folder.',
         project_missing: 'There is no project path! Do you want to remove the record?',
-        delete_project: 'Do you want to remove project?',
+        delete_project_record: 'Delete only project records (retain source files)',
         delete_project_source: 'Do you want to delete files from your hard drive?',
         confirm_deletion: 'You are deleting the project file on the hard disk. Are you sure to delete it?',
     },
