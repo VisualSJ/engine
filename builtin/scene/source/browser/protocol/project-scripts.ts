@@ -17,23 +17,39 @@ function disableCommonJS(text: string, source: string) {
     const HEADER = `
 (function () {
     "use strict";
-    var __module = CC_EDITOR ? module : { exports: {} };
-    var __filename = '${source}';
-    var __require = CC_EDITOR ?
-        function (request) { return cc.require(request, require); } :
-        function (request) { return cc.require(request, __filename); };
+    const path = require('path');
 
-    function __define(exports, require, module) {
+    const name = path.basename('${source}', '.js');
+    const dir = path.dirname('${source}');
+
+    var __module = { exports: {} };
+    var __require = function (request) {
+        if (window.__name2module[request]) {
+            return window.__name2module[request];
+        }
+        request = path.join(dir, request);
+        if (window.__source2module[request]) {
+            return window.__source2module[request];
+        }
+        return null;
+    };
+
+    function define(exports, require, module) {
     `;
     const FOOTER = `
     }
-    if (CC_EDITOR) {
-        __define(__module.exports, __require, __module);
-    } else {
-        cc.registerModuleFunc(__filename, function () {
-            __define(__module.exports, __require, __module);
-        });
+    define(__module.exports, __require, __module);
+
+    if (!window.__source2module) {
+        window.__source2module = Object.create(null);
     }
+
+    if (!window.__name2module) {
+        window.__name2module = Object.create(null);
+    }
+
+    window.__source2module['${source}'] = __module;
+    window.__name2module[name] = __module;
 })();
     `;
 
