@@ -16,6 +16,7 @@
         "title": "i18n:hierarchy.title",
         "main": "./dist/panel.js",
         "icon": "./static/icon.png",
+        "save": true,
         "min-width": 200,
         "min-height": 200,
         "width": 400,
