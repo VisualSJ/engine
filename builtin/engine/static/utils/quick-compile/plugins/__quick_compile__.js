@@ -41,10 +41,11 @@ function loadScript(src, cb) {
 
 function loadScripts(srcs, cb) {
     var n = srcs.length;
-
+    const onProgress = window.__quick_compile__.onProgress;
     srcs.forEach(function(src) {
         loadScript(src, function() {
             n--;
+            onProgress && onProgress((srcs.length - n), srcs.length);
             if (n === 0) {
                 cb();
             }
@@ -121,5 +122,6 @@ window.__quick_compile__ = {
             self.run();
             cb();
         });
-    }
+    },
+    onProgress: null,
 };

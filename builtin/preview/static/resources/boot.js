@@ -17,12 +17,25 @@
     const progressBar = q('#splash .progress-bar span');
     let splash = null;
     let inited = false;
-    let devices = {};
+    const DEVICES = {
+        ipad: { name: 'iPhone 3Gs (480x320)', height: 480, width: 320},
+        ipad_mini: { name: 'iPhone 4 (960x640)', height: 960, width: 640},
+        iphone4: { name: 'iPhone 5 (1136x640)', height: 1136, width: 640},
+        iphone5: { name: 'iPhone 6 (1334x750)', height: 1334, width: 750},
+        iphone6: { name: 'iPhone 6 Plus (1920x1080)', height: 1920, width: 1080},
+        iphone6_plus: { name: 'iPad (1024x768)', height: 1024, width: 768},
+        ipad_retina: { name: 'iPad Retina (2048x1536)', height: 2048, width: 1536},
+        android_800: { name: 'Android (800x480)', height: 800, width: 480},
+        android_854: { name: 'Android (854x480)', height: 854, width: 480},
+        android_1280: { name: 'Android (1280x720)', height: 1280, width: 720},
+        customize: { name: '自定义', height: 960, width: 640},
+    };
     let scene = null;
     let rotated = false;
     // socket
     // =======================
     let socket = io();
+
     // 开启 socket 监听的消息交互
     function socketMonitor() {
         socket.on('browser:reload', function() {
@@ -78,35 +91,6 @@
     }
 
     /**
-     * initialize select option
-     */
-    async function initSelect() {
-        devices = await getDevices();
-        Object.keys(devices).forEach((key) => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.text = devices[key].name;
-            select.add(option);
-            select.value = 'customize';
-        });
-    }
-
-    // 获取支持的设备列表
-    function getDevices() {
-        return new Promise((resolve) => {
-            const request = new XMLHttpRequest();
-            request.responseType = 'text';
-            request.addEventListener('load', (req) => {
-                if (request.status === 200) {
-                    resolve(JSON.parse(request.response));
-                }
-            });
-            request.open('GET', 'get-devices', 'true');
-            request.send();
-        });
-    }
-
-    /**
      * get layout size and show loading
      */
     function showLoading(flag) {
@@ -158,27 +142,12 @@
             width = designWidth || 960;
             height = designHeight || 480;
         } else {
-             width = devices[select.value].width;
-             height = devices[select.value].height;
+             width = DEVICES[select.value].width;
+             height = DEVICES[select.value].height;
         }
 
         return rotated ? { height: width, width: height } : { width, height };
     }
-
-    function initPreviewOptions() {
-        inputSetFPS.value = '60';
-        showLoading();
-        initSelect();
-    }
-
-    // 全局入口
-    window.onload = function() {
-        if (window.__quick_compile__) {
-            window.__quick_compile__.load(onload);
-        } else {
-            onload();
-        }
-    };
 
     // 检查是否为空场景
     function checkEmptyScene() {
@@ -205,16 +174,18 @@
     }
 
     // 绑定相关按钮处理事件
-    function handles() {
+    function initHandles() {
 
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;
             toggleElementClass(rotateBtn, 'checked');
             updateResolution();
+            socket.emit('changeOption', 'rotate', rotated);
         });
 
         select.addEventListener('change', function(event) {
             updateResolution();
+            socket.emit('changeOption', 'device', event.target.value);
         });
 
         // init show fps, true by default
@@ -222,6 +193,7 @@
             let show = !cc.debug.isDisplayStats();
             cc.debug.setDisplayStats(show);
             toggleElementClass(showFPSBtn, 'checked');
+            socket.emit('changeOption', 'showFps', show);
         });
 
         // init pause button
@@ -240,6 +212,7 @@
         optsDebugMode.addEventListener('change', function(event) {
             var value = event.target.value;
             cc.debug._resetDebugSetting(parseInt(value, 10));
+            socket.emit('changeOption', 'debugMode', value);
         });
 
         // init set fps
@@ -317,7 +290,7 @@
             return;
         }
         cc.loader.onProgress = function(completedCount, totalCount, item) {
-            var percent = 100 * completedCount / totalCount;
+            var percent = 100 * completedCount / totalCount * 0.6; // 划分加载进度，场景加载 60%
             if (progressBar) {
                 progressBar.style.width = percent.toFixed(2) + '%';
             }
@@ -405,13 +378,29 @@
 
     // 入口函数
     function onload() {
-        // 监听刷新
-        socketMonitor();
-        // 初始化 select 选项设置
-        initPreviewOptions();
         // init operation event
-        handles();
+        initHandles();
         // load scene file
         initScene();
     }
+
+    function init() {
+        // 监听刷新
+        socketMonitor();
+        showLoading();
+    }
+
+    init();
+    // 全局入口
+    window.onload = function() {
+        if (window.__quick_compile__) {
+            window.__quick_compile__.onProgress =  function(completedCount, totalCount) {
+                var percent = 100 * completedCount / totalCount * 0.4; // 划分加载进度，引擎加载 40%
+                progressBar && (progressBar.style.width = percent.toFixed(2) + '%');
+            };
+            window.__quick_compile__.load(onload);
+        } else {
+            onload();
+        }
+    };
 })();

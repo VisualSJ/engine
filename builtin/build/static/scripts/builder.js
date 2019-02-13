@@ -3,7 +3,6 @@ const { getCustomConfig, getCurrentScene, updateProgress,
      requestToPackage, computeArgs, getMd5Map, appendHashToFileSuffix} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
 const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
-const ejs = require('ejs');
 const minify = require('html-minifier').minify;
 const CleanCSS = require('clean-css');
 const buildResult = require('./build-result');
@@ -13,10 +12,11 @@ const assetBuilder = require('./build-asset');
 const assetPacker = require('./pack-asset');
 const scriptBuilder = require('./build-script');
 const { spawn } = require('child_process');
-const globby = require('globby'); // 路径匹配获取文件路径
 const RevAll = require('gulp-rev-all');
 const RevDel = require('gulp-rev-delete-original');
 const gulp = require('gulp');
+const template = require('art-template');
+
 const HASH_LEN = 5;
 const static_resource = [
     // 需要拷贝的静态资源整理
@@ -247,10 +247,7 @@ class Builder {
         if (!existsSync(destPath)) {
             destPath = join(this._paths.tmplBase, options.platform, 'index.html');
         }
-        let content = ejs.render(
-            readFileSync(destPath, 'utf8'),
-            data
-        );
+        let content = template.render(readFileSync(destPath, 'utf8'), data);
         if (!options.debug) {
             content = minify(content, {
                 removeComments: true,
@@ -285,7 +282,7 @@ class Builder {
         if (isQQPlay && options.qqplay && options.qqplay.REMOTE_SERVER_ROOT) {
             data.qqplay.REMOTE_SERVER_ROOT = options.qqplay.REMOTE_SERVER_ROOT;
         }
-        const content = ejs.render(contents, data);
+        const content = template.render(contents, data);
         outputFileSync(join(this._paths.dest, 'main.js'), content);
         updateProgress('build main.js success', 5);
     }

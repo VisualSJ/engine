@@ -1,19 +1,26 @@
 'use stirct';
 
-import { createReadStream, existsSync } from 'fs-extra';
+import { copyFile, createReadStream, existsSync, readJSONSync } from 'fs-extra';
 import http from 'http';
 import { basename, join } from 'path';
-import { disconnect , start as startSocket } from './socket';
+import { disconnect , previewProfile , start as startSocket } from './socket';
 const Mobiledetect = require('mobile-detect');
 const { DEVICES } = require('./../static/utils/util');
 const express = require('express');
-
 let app: any = null;
 let server: any = null;
 let port = 7456;
 let enginPath: string = '';
 
 let _buildMiddleware: any;
+// 默认的预览菜单栏设置
+const previewConfig: any = {
+    device: 'customize',
+    rotate: false,
+    debugMode: 0,
+    showFps: false,
+    fps: 60,
+};
 /**
  * 获取当前的端口
  */
@@ -38,9 +45,9 @@ export async function start() {
     app = express();
     app.use(express.static(join(__dirname, '../static/resources')));
 
+    app.set('view engine', 'html');
+    app.engine('.html', require('express-art-template'));
     app.set('views', join(__dirname, '../static/views'));
-    app.set('view engine', 'jade');
-
     app.get('/setting.js', async (req: any, res: any) => {
         let setting: any;
         setTimeout(() => {
@@ -103,11 +110,6 @@ export async function start() {
 
     });
 
-    // 获取设备配置信息
-    app.get('/get-devices', async (req: any, res: any) => {
-        res.json(DEVICES);
-    });
-
     // 根据资源路径加载对应静态资源资源
     app.get('/res/import/*', async (req: any, res: any) => {
         let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
@@ -129,11 +131,14 @@ export async function start() {
     app.get('/', (req: any, res: any, next: any) => {
         const userAgent = req.header('user-agent');
         const md = new Mobiledetect(userAgent);
+        const config = getPreviewConfig();
         res.render('index',
             {
                 title: `Cocos ${Editor.Project.type} | ${basename(Editor.Project.path)}`,
                 tip_sceneIsEmpty: Editor.I18n.t('preview.scene_is_empty'),
                 enableDebugger: !!md.mobile() || (-1 !== userAgent.indexOf('MicroMessenger')),
+                devices: DEVICES,
+                config,
             });
     });
 
@@ -199,4 +204,15 @@ export function stop() {
         disconnect();
         console.info('shutdown server for preview');
     });
+}
+
+/**
+ * 获取当前预览菜单栏设置
+ */
+function getPreviewConfig() {
+    const config: any = {};
+    for (const key of Object.keys(previewConfig)) {
+        config[key] = previewProfile.get(key) || previewConfig[key];
+    }
+    return config;
 }

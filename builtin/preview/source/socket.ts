@@ -5,6 +5,7 @@ let app: any = null;
 let reloadTimer: any = null;
 let deviceNum: number = 0; // 连接客户端数量
 let errorCollect: any = [];
+export const previewProfile = Editor.Profile.load('profile://global/packages/preview.json');
 /**
  * 启动 io 服务器
  * @param server http 服务器
@@ -18,6 +19,10 @@ export function start(server: any) {
         socket.on('disconnect', () => {
             deviceNum = app.eio.clientsCount;
             Editor.Ipc.sendToAll('preview:device-num-change', deviceNum);
+        });
+
+        socket.on('changeOption', (key: string, value: any) => {
+            previewProfile.set(key, value);
         });
 
         socket.on('preview error', (error: any) => {
