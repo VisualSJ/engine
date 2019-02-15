@@ -23,6 +23,7 @@ export function start(server: any) {
 
         socket.on('changeOption', (key: string, value: any) => {
             previewProfile.set(key, value);
+            previewProfile.save();
         });
 
         socket.on('preview error', (error: any) => {

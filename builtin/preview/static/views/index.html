@@ -20,7 +20,7 @@
     <body>
         <div class="toolbar">
             <div class="item">
-                <select id="opts-device">
+                <select id="opts-device" value="{{config.device}}">
                     {{each devices as value key}}
                         <option value="{{key}}">{{value.name}}</option>
                     {{/each}}

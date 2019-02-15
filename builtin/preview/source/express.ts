@@ -15,7 +15,7 @@ let enginPath: string = '';
 let _buildMiddleware: any;
 // 默认的预览菜单栏设置
 const previewConfig: any = {
-    device: 'customize',
+    device: 'default',
     rotate: false,
     debugMode: 0,
     showFps: false,

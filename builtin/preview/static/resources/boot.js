@@ -18,17 +18,19 @@
     let splash = null;
     let inited = false;
     const DEVICES = {
-        ipad: { name: 'iPhone 3Gs (480x320)', height: 480, width: 320},
-        ipad_mini: { name: 'iPhone 4 (960x640)', height: 960, width: 640},
-        iphone4: { name: 'iPhone 5 (1136x640)', height: 1136, width: 640},
-        iphone5: { name: 'iPhone 6 (1334x750)', height: 1334, width: 750},
-        iphone6: { name: 'iPhone 6 Plus (1920x1080)', height: 1920, width: 1080},
-        iphone6_plus: { name: 'iPad (1024x768)', height: 1024, width: 768},
-        ipad_retina: { name: 'iPad Retina (2048x1536)', height: 2048, width: 1536},
-        android_800: { name: 'Android (800x480)', height: 800, width: 480},
-        android_854: { name: 'Android (854x480)', height: 854, width: 480},
-        android_1280: { name: 'Android (1280x720)', height: 1280, width: 720},
-        customize: { name: '自定义', height: 960, width: 640},
+        default: { name: 'default', height: 960, width: 640},
+        ipad: { name: 'Apple iPad', width: 1024, height: 768, ratio: 2 },
+        ipad_mini: { name: 'Apple iPad Mini', width: 1024, height: 768, ratio: 1 },
+        iPhone4: { name: 'Apple iPhone 4', width: 320, height: 480, ratio: 2 },
+        iPhone5: { name: 'Apple iPhone 5', width: 320, height: 568, ratio: 2 },
+        iPhone6: { name: 'Apple iPhone 6', width: 375, height: 667, ratio: 2 },
+        iPhone6_plus: { name: 'Apple iPhone 6 Plus', width: 414, height: 736, ratio: 3 },
+        huawei9: { name: 'Huawei P9', width: 540, height: 960, ratio: 2},
+        huawei_mate9_pro: { name: 'Huawei Mate9 Pro', width: 720, height: 1280, ratio: 2},
+        nexu4: { name: 'Goolge Nexus 4', width: 384, height: 640, ratio: 2 },
+        nexu5: { name: 'Goolge Nexus 5', width: 360, height: 640, ratio: 3 },
+        nexu6: { name: 'Goolge Nexus 6', width: 412, height: 732, ratio: 3.5 },
+        nexu7: { name: 'Goolge Nexus 7', width: 960, height: 600, ratio: 2 },
     };
     let scene = null;
     let rotated = false;
@@ -136,7 +138,7 @@
             return rotated ? { height: width, width: height } : { width, height };
         }
         // 当前分辨路为非自定义
-        if (!select.value || select.value === 'customize') {
+        if (!select.value || select.value === 'default') {
             // 当前模式为自定义
             let {designWidth, designHeight} = window._CCSettings;
             width = designWidth || 960;
@@ -175,7 +177,6 @@
 
     // 绑定相关按钮处理事件
     function initHandles() {
-
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;
             toggleElementClass(rotateBtn, 'checked');
@@ -318,7 +319,7 @@
         // 初始化引擎配置
         const option = {
             id: canvas,
-            showFPS: false,
+            showFPS: showFPSBtn.className === 'checked',
             scenes: window._CCSettings.scenes,
             debugMode: parseInt(optsDebugMode.value, 10),
             frameRate: parseInt(inputSetFPS.value, 10),
@@ -372,7 +373,8 @@
         await new Promise((resolve) => {
             setTimeout(resolve, 100);
         });
-
+        const fps = inputSetFPS.value || 60;
+        cc.game.setFrameRate(fps);
         updateResolution();
     }
 
@@ -385,6 +387,10 @@
     }
 
     function init() {
+        // select 标签的初始化
+        select.value = select.getAttribute('value');
+        optsDebugMode.value = optsDebugMode.getAttribute('value');
+        rotated = (rotateBtn.className === 'checked');
         // 监听刷新
         socketMonitor();
         showLoading();

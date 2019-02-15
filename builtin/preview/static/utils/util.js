@@ -8,17 +8,19 @@ const DB_PROTOCOL_HEADER = 'db://';
 
 // 设备配置信息
 const DEVICES = {
-    ipad: { name: 'iPhone 3Gs (480x320)', height: 480, width: 320},
-    ipad_mini: { name: 'iPhone 4 (960x640)', height: 960, width: 640},
-    iphone4: { name: 'iPhone 5 (1136x640)', height: 1136, width: 640},
-    iphone5: { name: 'iPhone 6 (1334x750)', height: 1334, width: 750},
-    iphone6: { name: 'iPhone 6 Plus (1920x1080)', height: 1920, width: 1080},
-    iphone6_plus: { name: 'iPad (1024x768)', height: 1024, width: 768},
-    ipad_retina: { name: 'iPad Retina (2048x1536)', height: 2048, width: 1536},
-    android_800: { name: 'Android (800x480)', height: 800, width: 480},
-    android_854: { name: 'Android (854x480)', height: 854, width: 480},
-    android_1280: { name: 'Android (1280x720)', height: 1280, width: 720},
-    customize: { name: '自定义', height: 960, width: 640},
+    default: { name: 'default', height: 960, width: 640},
+    ipad: { name: 'Apple iPad', width: 1024, height: 768, ratio: 2 },
+    ipad_mini: { name: 'Apple iPad Mini', width: 1024, height: 768, ratio: 1 },
+    iPhone4: { name: 'Apple iPhone 4', width: 320, height: 480, ratio: 2 },
+    iPhone5: { name: 'Apple iPhone 5', width: 320, height: 568, ratio: 2 },
+    iPhone6: { name: 'Apple iPhone 6', width: 375, height: 667, ratio: 2 },
+    iPhone6_plus: { name: 'Apple iPhone 6 Plus', width: 414, height: 736, ratio: 3 },
+    huawei9: { name: 'Huawei P9', width: 540, height: 960, ratio: 2},
+    huawei_mate9_pro: { name: 'Huawei Mate9 Pro', width: 720, height: 1280, ratio: 2},
+    nexu4: { name: 'Goolge Nexus 4', width: 384, height: 640, ratio: 2 },
+    nexu5: { name: 'Goolge Nexus 5', width: 360, height: 640, ratio: 3 },
+    nexu6: { name: 'Goolge Nexus 6', width: 412, height: 732, ratio: 3.5 },
+    nexu7: { name: 'Goolge Nexus 7', width: 960, height: 600, ratio: 2 },
 };
 
 async function getEnginInfo() {
