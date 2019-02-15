@@ -9,7 +9,7 @@ const { EventEmitter } = require('events');
 const { get } = require('lodash');
 const utils = require('./utils');
 const uuidUtils = require('../../../utils/uuid');
-
+const compManager = require('./../component/index');
 const { promisify } = require('util');
 
 const dumpUtils = require('../../utils/dump');
@@ -52,6 +52,7 @@ class NodeManager extends EventEmitter {
      */
     clear() {
         uuid2node = {};
+        compManager.clear();
     }
 
     /**
@@ -60,7 +61,7 @@ class NodeManager extends EventEmitter {
      */
     add(node) {
         uuid2node[node._id] = node;
-
+        compManager.walkNode(node);
         // prefab 节点有子节点
         if (Array.isArray(node.children)) {
             node.children.forEach((child) => {
@@ -75,6 +76,7 @@ class NodeManager extends EventEmitter {
      */
     remove(node) {
         delete uuid2node[node._id];
+        compManager.walkNode(node, 'remove');
     }
 
     /**
@@ -270,7 +272,7 @@ class NodeManager extends EventEmitter {
             Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', uuid);
 
             const comp = node.addComponent(component);
-
+            compManager.add(comp);
             // 一些组件在添加的时候，需要执行部分特殊的逻辑
             if (comp.constructor && utils.addComponentMap[comp.constructor.name]) {
                 utils.addComponentMap[comp.constructor.name](comp, node);
@@ -281,7 +283,7 @@ class NodeManager extends EventEmitter {
             this.emit('changed', node);
             Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
         } else {
-            console.warn(`create component failed: ${uuid} does not exist`);
+            console.warn(`create component failed: ${component} does not exist`);
             return false;
         }
     }

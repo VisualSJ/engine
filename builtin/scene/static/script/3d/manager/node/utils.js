@@ -1,4 +1,5 @@
 'use stirct';
+const compManager = require('./../component/index');
 
 /**
  * 爬取节点上的数据
@@ -6,6 +7,7 @@
  */
 exports.walkChild = function(node, uuid2node) {
     uuid2node[node._id] = node;
+    compManager.walkNode(node);
     node.children && node.children.forEach((child) => {
         exports.walkChild(child, uuid2node);
     });

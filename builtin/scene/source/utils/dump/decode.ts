@@ -194,23 +194,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
             });
         }
     } else if (ccExtends.includes('cc.Component') || 'cc.Component' === dump.type) {
-        function step(node: any) {
-
-            for (let i = 0; i < node._components.length; i++) {
-                if (node._components[i].uuid === dump.value.uuid) {
-                    data[info.key] = node._components[i];
-                    return true;
-                }
-            }
-
-            for (let i = 0; i < node.children.length; i++) {
-                if (step(node.children[i])) {
-                    return;
-                }
-            }
-        }
-
-        step(cc.director._scene);
+        dump[info.key] = Manager.Component.query(dump.value.uuid);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
         const value = new ccType();
         Object.keys(dump.value).forEach((key: string) => {

@@ -91,6 +91,7 @@ async function initManager(info) {
     manager.Effect = require('../effects');
     manager.Selection = require('../selection');
     manager.Preview = require('../preview');
+    manager.Component = require('../component');
 
     // 创建编辑器使用的 camera
     manager.Camera.init();
