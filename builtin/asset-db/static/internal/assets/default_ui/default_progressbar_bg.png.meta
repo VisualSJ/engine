@@ -1,0 +1,51 @@
+{
+  "ver": "1.0.4",
+  "importer": "image",
+  "imported": true,
+  "uuid": "9fd900dd-221b-4f89-8f2c-fba34243c835",
+  "files": [
+    ".png",
+    ".json"
+  ],
+  "subMetas": {
+    "default_progressbar_bg": {
+      "ver": "1.0.1",
+      "importer": "sprite-frame",
+      "uuid": "9fd900dd-221b-4f89-8f2c-fba34243c835@default_progressbar_bg",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "generateMipmap": false,
+        "anisotropy": 1,
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "width": 60,
+        "height": 15,
+        "rawWidth": 60,
+        "rawHeight": 15,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9fd900dd-221b-4f89-8f2c-fba34243c835"
+      }
+    }
+  },
+  "userData": {
+    "type": "sprite-frame"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "ver": "1.0.4",
+  "importer": "image",
+  "imported": true,
+  "uuid": "ffb88a8f-af62-48f4-8f1d-3cb606443a43",
+  "files": [
+    ".png",
+    ".json"
+  ],
+  "subMetas": {
+    "default_scrollbar_vertical_bg": {
+      "ver": "1.0.1",
+      "importer": "sprite-frame",
+      "uuid": "ffb88a8f-af62-48f4-8f1d-3cb606443a43@default_scrollbar_vertical_bg",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "generateMipmap": false,
+        "anisotropy": 1,
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "width": 15,
+        "height": 30,
+        "rawWidth": 15,
+        "rawHeight": 30,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "ffb88a8f-af62-48f4-8f1d-3cb606443a43"
+      }
+    }
+  },
+  "userData": {
+    "type": "sprite-frame"
+  }
+}

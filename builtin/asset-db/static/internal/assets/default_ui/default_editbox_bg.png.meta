@@ -1,0 +1,51 @@
+{
+  "ver": "1.0.4",
+  "importer": "image",
+  "imported": true,
+  "uuid": "bd1bcaba-bd7d-4a71-b143-997c882383e4",
+  "files": [
+    ".png",
+    ".json"
+  ],
+  "subMetas": {
+    "default_editbox_bg": {
+      "ver": "1.0.1",
+      "importer": "sprite-frame",
+      "uuid": "bd1bcaba-bd7d-4a71-b143-997c882383e4@default_editbox_bg",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "generateMipmap": false,
+        "anisotropy": 1,
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 0,
+        "trimY": 0,
+        "width": 40,
+        "height": 40,
+        "rawWidth": 40,
+        "rawHeight": 40,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "bd1bcaba-bd7d-4a71-b143-997c882383e4"
+      }
+    }
+  },
+  "userData": {
+    "type": "sprite-frame"
+  }
+}

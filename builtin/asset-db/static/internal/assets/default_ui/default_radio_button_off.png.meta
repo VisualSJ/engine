@@ -1,0 +1,51 @@
+{
+  "ver": "1.0.4",
+  "importer": "image",
+  "imported": true,
+  "uuid": "f12a23c4-b924-4322-a260-3d982428f1e8",
+  "files": [
+    ".png",
+    ".json"
+  ],
+  "subMetas": {
+    "default_radio_button_off": {
+      "ver": "1.0.1",
+      "importer": "sprite-frame",
+      "uuid": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "generateMipmap": false,
+        "anisotropy": 1,
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 3,
+        "trimY": 3,
+        "width": 26,
+        "height": 26,
+        "rawWidth": 32,
+        "rawHeight": 32,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "f12a23c4-b924-4322-a260-3d982428f1e8"
+      }
+    }
+  },
+  "userData": {
+    "type": "sprite-frame"
+  }
+}
