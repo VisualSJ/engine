@@ -247,7 +247,8 @@ export async function ready() {
             tree: require('./components/tree'),
         },
         data: {
-            ready: false,
+            ready: false, // 与 db ready 状态保持一致
+            refreshing: false, // 是否正在刷新数据
             state: '',
             language: 'default',
             allExpand: false,

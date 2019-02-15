@@ -40,10 +40,10 @@ module.exports = {
     },
 
     operate: {
+        refreshing: '正在更新资源...',
         sureDelete: '确定删除资源文件吗？',
         renameFail: '重命名失败：已存在相同名称的文件',
         copyFail: '资源不能被复制',
         pasteFail_parent_into_child: '父级资源不能粘贴到其子集资源里',
     },
 };
-

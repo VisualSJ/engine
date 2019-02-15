@@ -52,5 +52,12 @@
 
     <footer class="footer"
         :style="{ width: viewWidth + 'px'}"
-    >{{info}}</footer>
+    >{{info}}
+    </footer>
+
+    <div class="refreshing"
+        v-if="refreshing"
+    >
+        {{t('operate.refreshing')}}
+    </div>
 </div>

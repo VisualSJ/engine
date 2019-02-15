@@ -8,8 +8,6 @@ const utils = require('./tree-utils');
 
 let vm: any = null;
 
-let isRefreshing: boolean = false; // 新增项目带来的请求重新渲染树形
-
 export const name = 'tree';
 
 export const template = readFileSync(
@@ -44,6 +42,7 @@ export function data() {
         copiedUuids: [], // 用于存放已复制节点的 uuid
         db,
         utils,
+        refreshing: false, // 正在刷新数据
     };
 }
 
@@ -101,6 +100,12 @@ export const watch = {
     allExpand() {
         vm.$parent.allExpand = vm.allExpand;
     },
+    /**
+     * 正在刷新数据
+     */
+    refreshing() {
+        vm.$parent.refreshing = vm.refreshing;
+    },
 };
 
 export function mounted() {
@@ -122,42 +127,37 @@ export const methods = {
      * 刷新树形
      */
     async refresh(intoView = false) {
-        if (isRefreshing) { // 性能优化：避免导入带来的批量计算冲击
+        if (vm.refreshing) { // 性能优化：避免导入带来的批量计算冲击
             return;
         }
 
-        isRefreshing = true;
+        vm.refreshing = true;
 
-        if (intoView) { // 类似刷新的操作不需要延迟
-            isRefreshing = false;
-            await run();
-        } else {
-            setTimeout(() => { // 接收 ipc 消息的，需要整体延迟
-                isRefreshing = false;
-                run();
-            }, 150);
+        if (!intoView) { // 接收 ipc 消息的，需要整体延迟
+            await new Promise((r) => setTimeout(r, 500));
         }
 
-        async function run() {
-            await db.refresh();
-            if (!db.assetsTree) { // 容错处理，数据可能为空
-                console.error('Assets data can not be empty.');
-                return;
-            }
+        await db.refresh();
 
-            vm.changeData();
+        vm.refreshing = false;
 
-            // @ts-ignore 准备重新定位
-            if (vm.renameSource !== '') {
-                const asset = utils.getGroupFromTree(db.assetsTree, vm.renameSource, 'source')[0];
-                if (asset) {
-                    vm.intoView = asset.uuid;
-                }
-            } else if (intoView) {
-                vm.$nextTick(() => {
-                    utils.scrollIntoView(vm.intoView);
-                });
+        if (!db.assetsTree) { // 容错处理，数据可能为空
+            console.error('Assets data can not be empty.');
+            return;
+        }
+
+        vm.changeData();
+
+        // @ts-ignore 准备重新定位
+        if (vm.renameSource !== '') {
+            const asset = utils.getGroupFromTree(db.assetsTree, vm.renameSource, 'source')[0];
+            if (asset) {
+                vm.intoView = asset.uuid;
             }
+        } else if (intoView) {
+            vm.$nextTick(() => {
+                utils.scrollIntoView(vm.intoView);
+            });
         }
     },
 
@@ -562,9 +562,9 @@ export const methods = {
         vm.renameSource = '';
 
         if (utils.canNotRenameAsset(asset)
-        || name === ''
-        || name === asset.name // 不变
-        || name.toLowerCase() === asset.fileExt // 不能只发后缀
+            || name === ''
+            || name === asset.name // 不变
+            || name.toLowerCase() === asset.fileExt // 不能只发后缀
         ) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
             asset.state = '';
