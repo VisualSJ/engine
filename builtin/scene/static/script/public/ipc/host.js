@@ -32,6 +32,11 @@ class HostIpc extends EventEmitter {
                 const [id, message, params] = event.args;
                 const handler = this._events[message];
 
+                if (!handler) {
+                    console.warn(`Could not find the message: ${message}`);
+                    return;
+                }
+
                 let result;
                 try {
                     result = handler(...params);
@@ -56,6 +61,11 @@ class HostIpc extends EventEmitter {
             if (event.channel === 'webview-ipc:force-send') {
                 const [id, message, params] = event.args;
                 const handler = this._events[message];
+
+                if (!handler) {
+                    console.warn(`Could not find the message: ${message}`);
+                    return;
+                }
 
                 try {
                     const result = await handler(...params);

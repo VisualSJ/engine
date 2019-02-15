@@ -11,7 +11,7 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 const messages = {
 
     ready() {
-        this.depend.finish('webview-ready');
+        this.depend.execute('webview-ready');
     },
 
     close() {

@@ -28,7 +28,9 @@ exports.webviewReady = [
     'webview-ready',
     {
         depends: [],
-        async handle() {},
+        async handle() {
+            exports.$scene.depend.finish('webview-ready');
+        },
         async reset() {
             Editor.Ipc.sendToAll('scene:close');
         },

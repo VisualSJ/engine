@@ -40,8 +40,13 @@ class SceneManager extends EventEmitter {
 
         if (uuid) {
             try {
-                await ipc.send('query-asset-info', uuid);
+                const info = await ipc.send('query-asset-info', uuid);
+                if (!info) {
+                    console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
+                    uuid = '';
+                }
             } catch (error) {
+                console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
                 uuid = '';
             }
         }
