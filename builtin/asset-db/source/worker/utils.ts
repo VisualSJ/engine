@@ -24,14 +24,14 @@ export function path2url(path: string, name: string) {
  */
 export function libArr2Obj(asset: VirtualAsset | Asset) {
     const result: {[key: string]: string} = {};
-    asset.meta.files.forEach((extname: string) => {
+    for (const extname of asset.meta.files) {
         if (/\.\w+/.test(extname)) {
             // is extname
             result[extname] = asset.library + extname;
         } else {
             result[extname] = resolve(asset.library, extname);
         }
-    });
+    }
     return result;
 }
 

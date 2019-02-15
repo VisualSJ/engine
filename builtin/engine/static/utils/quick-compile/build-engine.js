@@ -1,4 +1,5 @@
 const Path = require('path');
+const Fs = require('fs');
 
 const QuickCompiler = require('./index.js');
 
@@ -21,22 +22,27 @@ let buildEngine = (options, cb) => {
         return Path.join(options.enginePath, path || '');
     }
 
+    let root = 'index.ts';
+    if (!Fs.existsSync(enginePath('index.ts'))) {
+        root = 'index.js';
+    }
+
     let opts = {
         root: enginePath(),
-        entries: [enginePath('index.ts')],
+        entries: [enginePath(root)],
         out: enginePath('bin/.cache/dev'),
         plugins: [
             babelPlugin(),
             modulePlugin({
                 transformPath(src, dst, compiler) {
                     return Path.join('engine-dev', Path.relative(compiler.out, dst));
-                }
+                },
             }),
 
             deleteEngineCache(enginePath),
         ],
         clear: false,
-        onlyRecordChanged: true
+        onlyRecordChanged: true,
     };
 
     if (options.enableWatch) {

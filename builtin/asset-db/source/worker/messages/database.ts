@@ -45,6 +45,14 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
         importer.register(db);
     }
 
+    db.on('add', (uuid) => {
+        console.info(`Import: ${uuid}`);
+    });
+
+    db.on('delete', (uuid) => {
+        console.info(`Destory: ${uuid}`);
+    });
+
     // 绑定文件添加事件
     db.on('added', (uuid) => {
         ipcSend('asset-worker:asset-add', uuid, db.uuidToPath(uuid));
