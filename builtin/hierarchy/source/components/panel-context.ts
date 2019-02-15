@@ -79,6 +79,12 @@ exports.createMenu = (callback: any): any[] => {
             label: Editor.I18n.t('hierarchy.menu.newUI'),
             submenu: [
                 {
+                    label: Editor.I18n.t('hierarchy.menu.newUILayout'),
+                    click() {
+                        callback('a9ef7dfc-ea8b-4cf8-918e-36da948c4de0');
+                    },
+                },
+                {
                     label: Editor.I18n.t('hierarchy.menu.newUICanvas'),
                     click() {
                         callback('f773db21-62b8-4540-956a-29bacf5ddbf5');
@@ -136,12 +142,6 @@ exports.createMenu = (callback: any): any[] => {
                     label: Editor.I18n.t('hierarchy.menu.newUIEditBox'),
                     click() {
                         callback('05e79121-8675-4551-9ad7-1b901a4025db');
-                    },
-                },
-                {
-                    label: Editor.I18n.t('hierarchy.menu.newUILayout'),
-                    click() {
-                        callback('a9ef7dfc-ea8b-4cf8-918e-36da948c4de0');
                     },
                 },
                 {

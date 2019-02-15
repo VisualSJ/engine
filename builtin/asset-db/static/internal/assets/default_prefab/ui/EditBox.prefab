@@ -21,23 +21,29 @@
       },
       {
         "__id__": 6
+      },
+      {
+        "__id__": 10
+      },
+      {
+        "__id__": 14
       }
     ],
     "_active": true,
     "_level": 1,
     "_components": [
       {
-        "__id__": 10
+        "__id__": 18
       },
       {
-        "__id__": 11
+        "__id__": 19
       },
       {
-        "__id__": 12
+        "__id__": 20
       }
     ],
     "_prefab": {
-      "__id__": 13
+      "__id__": 21
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -181,7 +187,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "73hNthkOJBMZY9tTXqetlH",
+    "fileId": "18ZfbsnndD5b07mJXFbDNE",
     "sync": false,
     "_synced": {
       "default": false,
@@ -302,7 +308,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "7fouC4CEhLwYavvLdv7+O5",
+    "fileId": "0faoFP9T1BSYODWImRKE4l",
     "sync": false,
     "_synced": {
       "default": false,
@@ -310,45 +316,246 @@
     }
   },
   {
-    "__type__": "cc.EditBoxComponent",
+    "__type__": "cc.Node",
+    "_name": "TEXT_LABEL",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": false,
+    "_level": 2,
+    "_components": [
+      {
+        "__id__": 11
+      },
+      {
+        "__id__": 12
+      }
+    ],
+    "_prefab": {
+      "__id__": 13
+    },
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": -48,
+      "y": 50,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_layer": 1,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.UITransformComponent",
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 1
+      "__id__": 10
     },
     "_enabled": true,
-    "_useOriginalSize": true,
-    "_string": "",
-    "_tabIndex": 0,
-    "_backgroundImage": null,
-    "_returnType": 0,
-    "_inputFlag": 5,
-    "_inputMode": 6,
-    "_fontSize": 20,
-    "_lineHeight": 40,
-    "_maxLength": 20,
-    "_fontColor": {
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 98,
+      "height": 100
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 1
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.LabelComponent",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 10
+    },
+    "_enabled": true,
+    "_materials": [],
+    "sharedMaterials": [],
+    "_color": {
       "__type__": "cc.Color",
       "r": 255,
       "g": 255,
       "b": 255,
       "a": 255
     },
-    "_placeholder": "Enter text here...",
-    "_placeholderFontSize": 20,
-    "_placeholderFontColor": {
+    "_priority": 0,
+    "_useOriginalSize": true,
+    "_string": "",
+    "_horizontalAlign": 0,
+    "_verticalAlign": 1,
+    "_actualFontSize": 40,
+    "_fontSize": 20,
+    "_fontFamily": "Arial",
+    "_lineHeight": 40,
+    "_overflow": 1,
+    "_enableWrapText": false,
+    "_font": null,
+    "_isSystemFontUsed": true,
+    "_bmFontOriginalSize": -1,
+    "_spacingX": 0,
+    "_isItalic": false,
+    "_isBold": false,
+    "_isUnderline": false,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
+    "asset": {
+      "__id__": 0
+    },
+    "fileId": "98TYZcX0FDMZp8DVH6mO9o",
+    "sync": false,
+    "_synced": {
+      "default": false,
+      "serializable": false
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "_name": "PLACEHOLDER_LABEL",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": true,
+    "_level": 2,
+    "_components": [
+      {
+        "__id__": 15
+      },
+      {
+        "__id__": 16
+      }
+    ],
+    "_prefab": {
+      "__id__": 17
+    },
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": -48,
+      "y": 50,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_layer": 1,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.UITransformComponent",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 14
+    },
+    "_enabled": true,
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 98,
+      "height": 100
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 1
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.LabelComponent",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 14
+    },
+    "_enabled": true,
+    "_materials": [],
+    "sharedMaterials": [],
+    "_color": {
       "__type__": "cc.Color",
       "r": 127,
       "g": 127,
       "b": 127,
       "a": 255
     },
-    "_stayOnTop": false,
-    "editingDidBegan": [],
-    "textChanged": [],
-    "editingDidEnded": [],
-    "editingReturn": [],
+    "_priority": 0,
+    "_useOriginalSize": true,
+    "_string": "Enter text here...",
+    "_horizontalAlign": 0,
+    "_verticalAlign": 1,
+    "_actualFontSize": 20,
+    "_fontSize": 20,
+    "_fontFamily": "Arial",
+    "_lineHeight": 100,
+    "_overflow": 1,
+    "_enableWrapText": false,
+    "_font": null,
+    "_isSystemFontUsed": true,
+    "_bmFontOriginalSize": -1,
+    "_spacingX": 0,
+    "_isItalic": false,
+    "_isBold": false,
+    "_isUnderline": false,
     "_id": ""
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
+    "asset": {
+      "__id__": 0
+    },
+    "fileId": "71OmpOojROwYjOfRhWrtY4",
+    "sync": false,
+    "_synced": {
+      "default": false,
+      "serializable": false
+    }
   },
   {
     "__type__": "cc.UITransformComponent",
@@ -402,6 +609,47 @@
     "_id": ""
   },
   {
+    "__type__": "cc.EditBoxComponent",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "_useOriginalSize": true,
+    "_string": "",
+    "_tabIndex": 0,
+    "_backgroundImage": null,
+    "_returnType": 0,
+    "_inputFlag": 5,
+    "_inputMode": 6,
+    "_fontSize": 20,
+    "_lineHeight": 40,
+    "_maxLength": 20,
+    "_fontColor": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_placeholder": "Enter text here...",
+    "_placeholderFontSize": 20,
+    "_placeholderFontColor": {
+      "__type__": "cc.Color",
+      "r": 127,
+      "g": 127,
+      "b": 127,
+      "a": 255
+    },
+    "_stayOnTop": false,
+    "editingDidBegan": [],
+    "textChanged": [],
+    "editingDidEnded": [],
+    "editingReturn": [],
+    "_id": ""
+  },
+  {
     "__type__": "cc.PrefabInfo",
     "root": {
       "__id__": 1
@@ -409,7 +657,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "47gSez1zNB6IyQflmYFG6m",
+    "fileId": "d7rmG1GaFHlY7bJnGHEBwE",
     "sync": false,
     "_synced": {
       "default": false,
