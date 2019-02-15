@@ -23,7 +23,7 @@ let buildEngine = (options, cb) => {
 
     let opts = {
         root: enginePath(),
-        entries: [enginePath('index.js')],
+        entries: [enginePath('index.ts')],
         out: enginePath('bin/.cache/dev'),
         plugins: [
             babelPlugin(),

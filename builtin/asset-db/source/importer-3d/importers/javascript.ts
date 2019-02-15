@@ -1,16 +1,17 @@
 'use stirct';
 
+import * as Babel from '@babel/core';
 import { Asset, Importer } from '@editor/asset-db';
+import { File, Program } from 'babel-types';
 import { readFile } from 'fs-extra';
-
-const babel = require('@babel/core');
-const uuidUtils = require('../../../static/utils/uuid-utils');
+// @ts-ignore
+import * as uuidUtils from '../../../static/utils/uuid-utils';
 
 export default class JavascriptImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.2';
+        return '1.0.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -38,15 +39,6 @@ export default class JavascriptImporter extends Importer {
             if (!(await asset.existsInLibrary('.js'))) {
                 const target = await this.compile(asset);
 
-                const header = `
-                    'use strict';
-                    cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
-// ${asset.basename}\n
-                `;
-                const footer = `\ncc._RF.pop();\n`;
-
-                target.code = header + target.code + footer;
-
                 // @ts-ignore
                 asset.saveToLibrary('.js', target.code);
                 asset.saveToLibrary('.js.map', JSON.stringify(target.map));
@@ -61,15 +53,16 @@ export default class JavascriptImporter extends Importer {
     }
 
     private async compile(asset: Asset) {
-        const convert = require('convert-source-map');
+        // const convert = require('convert-source-map');
         const file = await readFile(asset.source, 'utf8');
-        const sourceMap = !!convert.fromSource(file);
-        const { code, map = '' } = babel.transformSync(file, {
+        // const sourceMap = !!convert.fromSource(file);
+        const { code, map = '' } = Babel.transformSync(file, {
             ast: false,
-            compact: false,
-            filename: asset.source,
             highlightCode: false,
-            inputSourceMap: sourceMap,
+            sourceMaps: 'inline',
+            sourceFileName: `custom-scripts:///${asset.basename}.${asset.extname}`,
+            filename: asset.source,
+            compact: false,
             presets: [
                 require('@babel/preset-env'),
             ],
@@ -83,9 +76,54 @@ export default class JavascriptImporter extends Importer {
                     { loose: true },
                 ],
                 require('babel-plugin-add-module-exports'),
+                scriptAssetPlugin(asset),
             ],
-            sourceMaps: true,
         });
         return { code, map };
     }
+}
+
+function scriptAssetPlugin(asset: Asset) {
+    return (babel: typeof Babel): Babel.Plugin => {
+        return {
+            visitor: {
+                // CallExpression(nodePath, state) {
+                //     if (nodePath.node.callee.type === 'Identifier' && nodePath.node.callee.name === 'require') {
+                //         nodePath.node.arguments.push(identifier('__filename'));
+                //     }
+                // },
+                Program: {
+                    exit: (nodePath, parent) => {
+                        // injectRF(babel, nodePath.node as Program, asset);
+                    },
+                },
+            },
+            post(state) {
+                const { ast } = state as { ast: File };
+                injectRF(babel, ast.program, asset);
+            },
+        };
+    };
+}
+
+function injectRF(babel: typeof Babel, program: Program, asset: Asset) {
+    const header = `
+    'use strict';
+    cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
+    // ${asset.basename}\n
+    `;
+    insertHeader(babel, program, header);
+
+    const footer = `\ncc._RF.pop();\n`;
+    insertFooter(babel, program, footer);
+}
+
+function insertHeader(babel: typeof Babel, node: Program, content: string) {
+    const headerProgram = (babel.parse(content) as File).program;
+    node.body.unshift(...headerProgram.body);
+}
+
+function insertFooter(babel: typeof Babel, node: Program, content: string) {
+    const footerProgram = (babel.parse(content) as File).program;
+    node.body.push(...footerProgram.body);
 }

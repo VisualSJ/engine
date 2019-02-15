@@ -316,7 +316,7 @@ function getModules(path) {
     const content = readFileSync(libraryPath, 'utf-8');
     let reg = /cc._RF.push\s*\(\s*module,\s*([\'\"][^\'\"]+\s*[\'\"])\s*,\s*([\'\"][^\'\"]*[\'\"])\s*\)/;
     let rightContent = content.replace(reg, 'cc._RF.push(module, $1, $2, __filename)');
-    return HEADER + rightContent + FOOTER;
+    return HEADER + rightContent + '\n' + FOOTER;
 }
 
 /**

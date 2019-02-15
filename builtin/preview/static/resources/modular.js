@@ -79,7 +79,7 @@ window.__modular = {
         var modules = this.modules;
         for (var path in modules) {
             var module = modules[path];
-            if (!module.module) {
+            if (!module.module && module.func) {
                 module.func();
             }
         }
