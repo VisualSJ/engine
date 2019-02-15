@@ -1,7 +1,5 @@
 'use strict';
 
-import { join } from 'path';
-
 import { getReady } from './state';
 
 import {
@@ -10,8 +8,6 @@ import {
 import { debug, forwarding, init, reload } from './worker';
 
 const worker = require('@base/electron-worker');
-
-const protocol = 'db://'; // 支持多 db , 不再列出具体的 db://assets 或 db://internal
 
 module.exports = {
     /**

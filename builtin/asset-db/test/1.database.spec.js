@@ -3,9 +3,11 @@
 const { expect } = require('chai');
 const { join } = require('path');
 
-describe('AssetDB 操作', () => {
+const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-    describe('刷新资源数据库', () => {
+describe('测试 AssetDB 如下 IPC 接口：', () => {
+
+    describe('refresh, query-ready ：刷新数据库', () => {
         let interrupt = false;
         it('当前数据库已经准备就绪', async () => {
             const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
@@ -17,56 +19,101 @@ describe('AssetDB 操作', () => {
             if (interrupt) {
                 throw new Error('数据库没有就绪，无法进行刷新测试');
             }
-            Editor.Ipc.sendToPackage('asset-db', 'refresh');
+            Editor.Ipc.requestToPackage('asset-db', 'refresh');
             const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
             expect(ready).to.be.false;
-        });
 
-        it('等待刷新完成', () => {
-            return new Promise((resolve, reject) => {
-                let timer = null;
-                async function step() {
+            return new Promise(async (resolve, reject) => {
+                async function start() {
                     const ready = await Editor.Ipc.requestToPackage('asset-db', 'query-ready');
                     if (ready) {
                         return resolve();
                     }
-                    timer = setTimeout(() => {
-                        step();
-                    }, 400);
+                    return await start();
                 }
-                step();
-                setTimeout(() => {
-                    clearTimeout(timer);
-                    reject(new Error('刷新超时'));
-                }, 30000);
+                await start();
+
+                await sleep(30000);
+                reject(new Error('限定 30 秒，启动已超时'));
             });
         });
     });
 
-    describe('查询数据库参数', async () => {
+    describe('query-db-info ：查询数据库信息', async () => {
 
-        it('传入错误、不存在的数据库', async () => {
-            let info;
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info');
-            expect(info).to.null;
+        it('传入错误的参数', async () => {
+            return new Promise(async (resolve, reject) => {
+                async function start() {
+                    const queue = [
+                        { args: undefined, expect: null },
+                        { args: null, expect: null },
+                        { args: '', expect: null },
+                        { args: 0, expect: null },
+                        { args: false, expect: null },
+                        { args: true, expect: null },
+                        { args: [], expect: null },
+                        { args: {}, expect: null },
+                        { args: () => { }, expect: null },
+                        { args: 'abc', expect: null },
+                        { args: 123, expect: null },
+                    ];
 
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', '');
-            expect(info).to.null;
+                    for (const test of queue) {
+                        const result = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', test.args);
+                        expect(result).to.equal(test.expect);
+                    }
 
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', 0);
-            expect(info).to.null;
+                    resolve();
+                }
+
+                start();
+
+                await sleep(3000);
+                reject(new Error('限定 3 秒，本测试环节已超时'));
+            });
         });
 
-        it('查询 assets 数据库', async () => {
-            let info = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', 'assets');
-            expect(info).to.have.all.keys('name', 'target', 'library', 'temp', 'visible', 'readOnly');
+        it('传入正确的参数', async () => {
+            const queue = [
+                {
+                    args: 'assets',
+                    expect: {
+                        keys: ['name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                        values: {
+                            name: 'assets',
+                            target: join(Editor.Project.path, 'assets'),
+                            library: join(Editor.Project.path, 'library'),
+                            temp: join(Editor.Project.path, 'temp/asset-db/assets'),
+                            visible: true,
+                            readOnly: false,
+                        },
+                    },
+                },
+                {
+                    args: 'internal',
+                    expect: {
+                        keys: ['name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                        values: {
+                            name: 'internal',
+                            target: join(Editor.Project.path, 'internal'),
+                            library: join(Editor.Project.path, 'library'),
+                            temp: join(Editor.Project.path, 'temp/asset-db/internal'),
+                            visible: true,
+                            readOnly: false,
+                        },
+                    },
+                },
+            ];
 
-            expect(info.name).to.equal('assets');
-            expect(info.target).to.equal(join(Editor.Project.path, 'assets'));
-            expect(info.library).to.equal(join(Editor.Project.path, 'library'));
-            expect(info.temp).to.equal(join(Editor.Project.path, 'temp/asset-db/assets'));
-            expect(info.visible).to.true;
-            expect(info.readOnly).to.false;
+            for (const test of queue) {
+
+                const result = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', test.args);
+                expect(result).to.have.all.keys(test.expect.keys);
+
+                for (const key of test.expect.keys) {
+                    expect(result[key]).to.equal(test.expect.values[key]);
+                }
+            }
         });
 
     });
