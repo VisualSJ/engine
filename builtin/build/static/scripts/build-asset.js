@@ -81,24 +81,39 @@ class AssetBuilder {
         let assets = this.result.rawAssets.assets;
         let internal = this.result.rawAssets.internal;
         let uuid = asset.uuid;
+        if (assets[uuid] || internal[uuid]) {
+            return;
+        }
         if (asset.importer === 'scene') {
             this.result.scenes.push({ url: asset.source, uuid: asset.uuid});
             return;
         }
         // subAssets 资源处理
         if (!asset.source || Object.keys(asset.subAssets).length > 0) {
+            // 子资源
             if (!asset.source) {
                 asset.source = await this.subAssetSource(uuid);
                 if (!asset.source) {
                     console.error(`can not find asset ${uuid} source`);
                 }
                 if (asset.source.startsWith('db://assets')) {
-                    assets[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                    assets[uuid] = [getAssetUrl(asset.source, uuid), asset.type, 1];
                 } else if (asset.source.startsWith('db://internal')) {
-                    internal[uuid] = [getAssetUrl(asset.source, asset.type), asset.type, 1];
+                    internal[uuid] = [getAssetUrl(asset.source, uuid), asset.type, 1];
                 }
                 buildResult.assetCache[uuid] = asset;
                 return;
+            }
+            for (let subAsset of Object.values(asset.subAssets)) {
+                if (buildResult.assetCache[subAsset.uuid]) {
+                    continue;
+                }
+                buildResult.assetCache[subAsset.uuid] = subAsset;
+                if (asset.source.startsWith('db://assets')) {
+                    assets[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.uuid), subAsset.type, 1];
+                } else if (asset.source.startsWith('db://internal')) {
+                    internal[subAsset.uuid] = [getAssetUrl(asset.source, subAsset.uuid), subAsset.type, 1];
+                }
             }
         }
         if (asset.source.startsWith('db://assets')) {

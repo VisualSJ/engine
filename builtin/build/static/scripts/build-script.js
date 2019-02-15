@@ -72,7 +72,7 @@ class ScriptBuilder {
                     copyFileSync(src, dest);
                 }
             } else {
-                scripts.push({ deps: {}, file: url });
+                scripts.push({uuid: asset.uuid, file: url});
             }
             buildResult.script2uuid[url] = asset.uuid;
         }

@@ -153,9 +153,10 @@ async function getScriptsCache(scripts) {
         // module-deps 内部会使用 fs 来读取文件，文件太多的话会造成 too many open files 错误
         // 所以这里使用 fileCache 来提前传入文件内容
         mpConfig.fileCache = {};
-        for (let path of scripts) {
-            let rawPath = join(commonInfo.project, path.file);
-            mpConfig.fileCache[rawPath] = readFileSync(rawPath, 'utf8');
+        for (let item of scripts) {
+            const rawPath = join(commonInfo.project, item.file);
+            const libraryPath = getLibraryPath(item.uuid, '.js');
+            mpConfig.fileCache[rawPath] = readFileSync(libraryPath, 'utf8');
         }
         let md = new Mdeps(mpConfig);
         md.pipe(JSONStream.stringify()).pipe(concat);
@@ -225,10 +226,10 @@ function getRightUrl(path) {
 /**
  * 处理资源类的路径
  * @param {*} path db:// 类型路径
- * @param {*} type 标识是否为 subAsset ，有传值既为 subAsset
+ * @param {*} uuid 标识是否为 subAsset ，有传值既为 subAsset
  * @returns
  */
-function getAssetUrl(path, type) {
+function getAssetUrl(path, uuid) {
     // let rawPath = join(commonInfo.project, getRightUrl(path));
     let rawPath = '';
     var mountPoint = getRightUrl(path);
@@ -241,9 +242,10 @@ function getAssetUrl(path, type) {
         rawPath = join(commonInfo.INTERNAL_PATH, mountPoint.replace(/\binternal/, ''));
     }
     // subAsset 类型的路径需要去掉扩展名
-    if (type) {
+    if (uuid) {
+        uuid = uuid.replace(/@/g, `/`);
         let extName = extname(rawPath);
-        rawPath = rawPath.replace(extName, '');
+        rawPath = rawPath.replace(extName, uuid.slice(36));
     }
     if (inAssets) {
         rawPath = relative(commonInfo.RAWASSET_SPATH, rawPath).replace('resources\\', '');
