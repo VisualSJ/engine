@@ -198,6 +198,12 @@ function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
  * @param arr
  */
 function sortTree(arr: ItreeAsset[]) {
+    // 优化原本的 localCompare 方法，性能提升：1000 空节点 1103ms -> 31ms
+    const collator = new Intl.Collator('en', {
+        numeric: true,
+        sensitivity: 'base',
+    });
+
     // @ts-ignore;
     arr.sort((a: ItreeAsset, b: ItreeAsset) => {
         // 文件夹优先
@@ -207,9 +213,9 @@ function sortTree(arr: ItreeAsset[]) {
             return 1;
         } else {
             if (vm.sortType === 'ext' && a.fileExt !== b.fileExt) {
-                return a.fileExt.localeCompare(b.fileExt);
+                return collator.compare(a.fileExt, b.fileExt);
             } else {
-                return a.name.localeCompare(b.name, 'en', { numeric: true });
+                return collator.compare(a.name, b.name);
             }
         }
     });
