@@ -66,7 +66,7 @@ describe('测试 AssetDB 如下 IPC 接口：', () => {
                     resolve();
                 }
 
-                start();
+                await start();
 
                 await sleep(3000);
                 reject(new Error('限定 3 秒，本测试环节已超时'));
@@ -95,7 +95,7 @@ describe('测试 AssetDB 如下 IPC 接口：', () => {
                         keys: ['name', 'target', 'library', 'temp', 'visible', 'readOnly'],
                         values: {
                             name: 'internal',
-                            target: join(Editor.Project.path, 'internal'),
+                            target: join(Editor.App.path, 'builtin/asset-db/static/internal/assets'),
                             library: join(Editor.Project.path, 'library'),
                             temp: join(Editor.Project.path, 'temp/asset-db/internal'),
                             visible: true,

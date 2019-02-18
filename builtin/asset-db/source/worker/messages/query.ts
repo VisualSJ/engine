@@ -31,7 +31,7 @@ ipcAddListener('asset-worker:query-uuid-from-url', (event: any, url: string) => 
  * 查询一个数据库的具体数据
  */
 ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) => {
-    if (!name) {
+    if (typeof name !== 'string' || name === '') { // 严格限制类型和值范围
         return event.reply(null, null);
     }
 
