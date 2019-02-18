@@ -22,6 +22,9 @@ interface App {
     home: string;
     path: string;
     project: string;
+    version:string;
+    name:string;
+    dev:string;
 }
 
 interface Task {

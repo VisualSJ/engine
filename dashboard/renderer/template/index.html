@@ -9,13 +9,11 @@
 </head>
 
 <body>
-    <div class="window">
+    <div class="window" id="dashboard">
         <div class="window-row" id="window-row">
             <div class="window-title flex-1">
                 <img class="logo-img" src="./../img/logo_white.png" alt="dashboard">
-                <span class="logo-title">
-                    Dashboard
-                </span>
+                <span class="logo-title">{{name}} <span class="version">v{{version}}</span></span>
             </div>
             <div class="window-control flex-1" id="windowContron">
                 <span class="iconfont icon-mini" name="mini"></span>
@@ -23,7 +21,7 @@
                 <span class="iconfont icon-close" name="close"></span>
             </div>
         </div>
-        <div class="dashboard" id="dashboard">
+        <div class="dashboard">
 
             <!-- 2D 与 3D 切换导航 -->
             <silder-type
@@ -56,6 +54,7 @@
                 <content-help
                     v-if="tab === 2"
                     :type="type"
+                    :version="version"
                 ></content-help>
             </div>
 
