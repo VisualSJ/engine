@@ -273,4 +273,8 @@ export function apply(messages: any) {
             await $scene.forwarding('Camera', 'focus', [uuids]);
         }
     };
+
+    messages['apply-material'] = async (uuid: string, materialDump: any) => {
+        await $scene.forwarding('Asset', 'applyMaterial', [uuid, materialDump]);
+    };
 }

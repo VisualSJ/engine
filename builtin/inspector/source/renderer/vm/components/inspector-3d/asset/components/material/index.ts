@@ -1,8 +1,6 @@
 'use strict';
 
-import { readJSONSync } from 'fs-extra';
-
-import { buildEffect, encodeMTL } from './build';
+import { buildEffect } from './build';
 
 export const template = `
 <section class="asset-material">
@@ -80,7 +78,9 @@ export const methods = {
             return;
         }
 
-        vm.material = readJSONSync(vm.info.file);
+        vm.material = await Editor.Ipc.requestToPackage('scene', 'query-material', vm.info.uuid);
+        vm.effect = vm.material.effect;
+        vm.technique = vm.material.technique;
     },
 
     /**
@@ -95,15 +95,7 @@ export const methods = {
         }
 
         const effects: any[] = await Editor.Ipc.requestToPackage('scene', 'query-all-effects');
-        vm.effects = Object.keys(effects); // .filter((key) => !key.startsWith('_'));
-
-        // 数据读取后，更新当前选中的是哪一个 effect
-        const uuid = vm.material && vm.material._effectAsset ? vm.material._effectAsset.__uuid__ : '';
-        // @ts-ignore
-        const effect = Object.values(effects).find((item) => {
-            return item.uuid === uuid;
-        });
-        vm.effect = effect._name;
+        vm.effects = Object.keys(effects);
     },
 
     async reset() {},
@@ -111,10 +103,14 @@ export const methods = {
     async apply() {
         // @ts-ignore
         const vm: any = this;
-        const mtl = await encodeMTL(vm.effect, vm.technique, vm.techniques[vm.technique]);
-        const result = await Editor.Ipc.requestToPackage('scene', 'query-serialized-material', mtl);
-        await Editor.Ipc.requestToPackage('asset-db', 'save-asset', vm.info.uuid, result);
-
+        if (vm.material.effect !== vm.effect) {
+            vm.material.effect = vm.effect;
+            vm.material.data =  vm.data;
+        }
+        if (vm.material.technique !== vm.technique) {
+            vm.material.technique = vm.technique;
+        }
+        await Editor.Ipc.requestToPackage('scene', 'apply-material', vm.info.uuid, vm.material);
         return false;
     },
 };
@@ -126,23 +122,30 @@ export const watch = {
     async effect(name: string) {
         // @ts-ignore
         const vm: any = this;
-        if (!name) {
-            vm.props = [];
-            return;
-        }
-        const array = await Editor.Ipc.requestToPackage('scene', 'query-effect-data-for-inspector', name);
-        vm.techniques = array.map((technique: any[], index: number) => {
-            return technique.map((data: any, index: number) => {
-                // 合并 data.defines 和 data.props
-                const tree = buildEffect(
-                    data.props,
-                    data.defines,
-                    vm.material._defines[index],
-                    vm.material._props[index]
-                );
-                return tree;
+
+        // 更新 techniques
+        if (name === vm.material.effect) {
+            vm.techniques = vm.material.data.map((technique: any[]) => {
+                return technique.map((data: any) => {
+                    // 合并 data.defines 和 data.props
+                    const tree = buildEffect(data.props, data.defines);
+                    return tree;
+                });
             });
-        });
+        } else {
+            let array = await Editor.Ipc.requestToPackage('scene', 'query-effect', name);
+            if (!Array.isArray(array)) {
+                array = [];
+            }
+            vm.data = array;
+            vm.techniques = array.map((technique: any[]) => {
+                return technique.map((data: any) => {
+                    // 合并 data.defines 和 data.props
+                    const tree = buildEffect(data.props, data.defines);
+                    return tree;
+                });
+            });
+        }
 
         if (vm.technique > vm.techniques.length) {
             vm.technique = 0;
@@ -159,6 +162,7 @@ export const watch = {
         vm.effect = '';
         vm.technique = 0;
         vm.techniques = [];
+
         requestAnimationFrame(async () => {
             await vm.loadMaterial();
             await vm.loadAllEffect();
@@ -168,12 +172,13 @@ export const watch = {
 
 export function data() {
     return {
-        material: null, // 当前修改的 material 资源数据（源文件）
         effects: [], // 查询出来记录在案的所有 effect 列表
+        material: null, // 当前修改的 material 资源数据
 
         effect: '', // 当前选中的 effect 名字
         technique: 0, // 当前选中的 technique 索引
 
+        data: null,
         techniques: [], // 用于显示的树形数据
     };
 }
@@ -182,6 +187,6 @@ export async function mounted() {
     // @ts-ignore
     const vm: any = this;
 
-    await vm.loadMaterial();
     await vm.loadAllEffect();
+    await vm.loadMaterial();
 }

@@ -74,24 +74,28 @@ export function apply(messages: any) {
         return await $scene.forwarding('Asset', 'queryAllEffects');
     };
 
+    messages['query-material'] = async (uuid: string, effectName: string) => {
+        return await $scene.forwarding('Asset', 'queryMaterial', [uuid, effectName]);
+    };
+
     /**
      * 根据 effecName 构建指定 Effect 的 props 和 defines 属性
      */
-    messages['query-effect-data-for-inspector'] = async (effectName: string) => {
+    messages['query-effect'] = async (effectName: string) => {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Asset', 'queryEffectDataForInspector', [effectName]);
+        return await $scene.forwarding('Asset', 'queryEffect', [effectName]);
     };
 
     /**
      * 返回根据给定属性创建完整的 material 系列化数据
      */
-    messages['query-serialized-material'] = async (options: IquerySerializedMaterialOptions) => {
+    messages['query-serialized-material'] = async (uuid: string) => {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Asset', 'querySerializedMaterial', [options]);
+        return await $scene.forwarding('Asset', 'querySerializedMaterial', [uuid]);
     };
 
     /**

@@ -160,6 +160,10 @@ const messages = {
             document.exitPointerLock();
         }
     },
+
+    async 'save-asset'(uuid, content) {
+        await Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
+    },
 };
 
 module.exports = function(elem) {

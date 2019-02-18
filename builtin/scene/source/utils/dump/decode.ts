@@ -125,7 +125,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
     const data = info.search ? get(node, info.search) : node;
     // 判断属性是否为 readonly,是则跳过还原步骤
     const propertyInfo: any = Object.getOwnPropertyDescriptor(data, info.key);
-    if (!propertyInfo.writable && !propertyInfo.set) {
+    if (propertyInfo && !propertyInfo.writable && !propertyInfo.set) {
         return;
     }
     const parentData = parentInfo.search ? get(node, parentInfo.search) : node;

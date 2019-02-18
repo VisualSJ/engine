@@ -86,6 +86,12 @@ const getDefines = (name, prog) => {
     if (s) { return s.defines; }
 };
 
+/**
+ * 传入一个 EffectAsset 对象，将其整理成一个二维数组
+ * 第一层: technique
+ * 第二层: pass
+ * @param {*} effect
+ */
 function encodeEffect(effect) {
 
     return effect.techniques.map((tech) => {
@@ -104,13 +110,15 @@ function encodeEffect(effect) {
 
                 const type = typeMap[define.type] || define.type;
                 const value = getDefaultValue(type);
+                const dump = dumpEncode.encodeObject(value, {
+                    default: value,
+                });
                 defines.push({
                     name: define.name,
                     defines: define.defines,
                     type,
-                    dump: dumpEncode.encodeObject(value, {
-                        default: value,
-                    }),
+                    default: dump.value,
+                    dump,
                 });
             });
 
@@ -119,14 +127,16 @@ function encodeEffect(effect) {
                 const defs = getDefines(name, prog);
                 const type = typeMap[prop.type] || prop.type;
                 const value = getDefaultValue(type, prop.value);
+                const dump = dumpEncode.encodeObject(value, {
+                    default: value,
+                    displayName: prop.displayName,
+                });
                 props.push({
                     name,
                     defines: defs,
                     type,
-                    dump: dumpEncode.encodeObject(value, {
-                        default: value,
-                        displayName: prop.displayName,
-                    }),
+                    default: dump.value,
+                    dump,
                 });
             });
 
@@ -140,43 +150,34 @@ function encodeEffect(effect) {
 async function decodeMaterial(dump) {
 
     const material = new cc.Material();
-    material._effectAsset = cc.EffectAsset.get(dump.name);
+    material._effectAsset = cc.EffectAsset.get(dump.effect);
+    debugger;
     material._props = [];
     material._defines = [];
     material._techIdx = dump.technique;
 
-    for (let i = 0; i < dump.data.length; i++) {
-        const current = dump.data[i];
+    const technique = dump.data[dump.technique];
+
+    for (let i = 0; i < technique.length; i++) {
+        const current = technique[i];
         material._props[i] = {};
         material._defines[i] = {};
 
         for (let j = 0; j < current.defines.length; j++) {
             const define = current.defines[j];
 
-            const defaultValue = getDefaultValue(define.type);
-            const defaultDump = dumpEncode.encodeObject(defaultValue, {
-                default: defaultValue,
-            });
-
-            if (JSON.stringify(defaultDump.value) === JSON.stringify(define.dump.value)) {
+            if (JSON.stringify(define.default) === JSON.stringify(define.dump.value)) {
                 continue;
             }
-            material._defines[i][define.name] = defaultValue;
             await dumpDecode.decodePatch(`${define.name}`, define.dump, material._defines[i]);
         }
 
         for (let j = 0; j < current.props.length; j++) {
             const prop = current.props[j];
 
-            const defaultValue = getDefaultValue(prop.type, prop.value);
-            const defaultDump = dumpEncode.encodeObject(defaultValue, {
-                default: defaultValue,
-            });
-
-            if (JSON.stringify(defaultDump.value) === JSON.stringify(prop.dump.value)) {
+            if (JSON.stringify(prop.default) === JSON.stringify(prop.dump.value)) {
                 continue;
             }
-            material._props[i][prop.name] = defaultValue;
             await dumpDecode.decodePatch(`${prop.name}`, prop.dump, material._props[i]);
         }
 
