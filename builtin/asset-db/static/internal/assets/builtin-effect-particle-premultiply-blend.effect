@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: transparent
@@ -36,9 +36,9 @@
       ]
     }
   ]
-%}
+}
 
-%% particle-premultiply-blend-fs {
+CCPROGRAM particle-premultiply-blend-fs {
   uniform sampler2D mainTexture;
   varying vec2 uv;
   varying vec4 color;

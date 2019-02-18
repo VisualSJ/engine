@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       passes: [
@@ -15,4 +15,4 @@
       ]
     }
   ]
-%}
+}

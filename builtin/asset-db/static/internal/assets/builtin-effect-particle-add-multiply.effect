@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: transparent
@@ -38,9 +38,9 @@
       ]
     }
   ]
-%}
+}
 
-%% particle-add-multiply-fs {
+CCPROGRAM particle-add-multiply-fs {
   uniform sampler2D mainTexture;
   uniform FragConstants {
     vec4 tintColor;

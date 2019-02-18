@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#include <cc-global>
+#include <cc-forward-lights>
 
 struct LightInfo {
   vec3 lightDir;

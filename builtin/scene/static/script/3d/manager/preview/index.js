@@ -15,8 +15,8 @@ class Preview {
 
     constructor() {
 
-        this.width = 0;
-        this.height = 0;
+        this.width = 1;
+        this.height = 1;
         this.rt = new cc.RenderTexture();
         this.rt.initWithSize(this.width, this.height, 'D24S8');
         this.data = Buffer.alloc(this.width * this.height * 4);
@@ -86,7 +86,7 @@ class Preview {
         //     this.scene.setDebugCamera(camera);
         // }
         // this.resize(width, height);
-        // cc.game._renderer.render(this.scene);
+        // cc.director.root.pipeline.render(this.scene);
         this.rt.readPixels(this.data);
         return this.data;
     }

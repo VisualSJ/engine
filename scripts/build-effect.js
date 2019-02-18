@@ -35,13 +35,21 @@ const stringifyEffect = (() => {
   const stringifyShaders = (shaders) => {
     let code = '';
     for (let i = 0; i < shaders.length; ++i) {
-      let { name, vert, frag, defines, blocks, samplers, dependencies } = shaders[i];
-      vert = vert.replace(newlines, '\\n');
-      frag = frag.replace(newlines, '\\n');
+      let { name, glsl3, glsl1, defines, blocks, samplers, dependencies } = shaders[i];
+      [glsl3, glsl1].forEach((s) => {
+        s.vert = s.vert.replace(newlines, '\\n');
+        s.frag = s.frag.replace(newlines, '\\n');
+      });
       code += '  {\n';
       code += `    "name": "${name}",\n`;
-      code += `    "vert": "${vert}",\n`;
-      code += `    "frag": "${frag}",\n`;
+      code += '    "glsl3": {\n';
+      code += `      "vert": "${glsl3.vert}",\n`;
+      code += `      "frag": "${glsl3.frag}"\n`;
+      code += '    },\n';
+      code += '    "glsl1": {\n';
+      code += `      "vert": "${glsl1.vert}",\n`;
+      code += `      "frag": "${glsl1.frag}"\n`;
+      code += '    },\n';
       code += '    "defines": [';
       code += defines.map(toOneLiner);
       code += (defines.length ? '\n    ' : '') + '],\n';

@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       passes: [
@@ -114,10 +114,9 @@
       ]
     }
   ]
+}
 
-%}
-
-%% gizmo-vs {
+CCPROGRAM gizmo-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
 
@@ -146,7 +145,7 @@
   }
 }
 
-%% gizmo-fs {
+CCPROGRAM gizmo-fs {
   #include <gamma-correction>
   #include <rect-area-light>
 
@@ -182,7 +181,7 @@
   }
 }
 
-%% line-vs {
+CCPROGRAM line-vs {
   attribute highp vec3 a_position;
 
   #include <cc-local>
@@ -194,7 +193,7 @@
   }
 }
 
-%% line-fs {
+CCPROGRAM line-fs {
   uniform Constant {
     vec4 color;
   };

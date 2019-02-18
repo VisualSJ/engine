@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       passes: [
@@ -36,9 +36,9 @@
       ]
     }
   ]
-%}
+}
 
-%% particle-add-fs {
+CCPROGRAM particle-add-fs {
   uniform sampler2D mainTexture;
   uniform FragConstants {
     vec4 tintColor;

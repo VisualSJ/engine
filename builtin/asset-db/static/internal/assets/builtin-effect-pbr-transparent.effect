@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: transparent
@@ -52,4 +52,4 @@
       ]
     }
   ]
-%}
+}

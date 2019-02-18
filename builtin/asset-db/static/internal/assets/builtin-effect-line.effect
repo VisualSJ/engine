@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: opaque
@@ -15,9 +15,9 @@
       ]
     }
   ]
-%}
+}
 
-%% line-vs {
+CCPROGRAM line-vs {
   attribute vec3 a_position;
   attribute vec3 a_color;
 
@@ -53,7 +53,7 @@
   }
 }
 
-%% line-fs {
+CCPROGRAM line-fs {
   varying vec3 color;
 
   void main () {

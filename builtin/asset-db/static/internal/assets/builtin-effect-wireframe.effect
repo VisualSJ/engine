@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: opaque
@@ -18,9 +18,9 @@
       ]
     }
   ]
-%}
+}
 
-%% wire-vs {
+CCPROGRAM wire-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
 
@@ -41,7 +41,7 @@
   }
 }
 
-%% wire-fs {
+CCPROGRAM wire-fs {
   #include <cc-global>
 
   uniform Constants {

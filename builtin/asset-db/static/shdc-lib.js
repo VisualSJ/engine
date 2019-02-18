@@ -353,6 +353,7 @@ const buildShader = (function() {
 
     let defines = [], cache = createCache(), tokens, ast;
     let blocks = [], samplers = [], attributes = [], dependencies = {};
+    let glsl3 = {}, glsl1 = {};
 
     shaderName = vertName;
     vert = glslStripComment(vert);
@@ -366,7 +367,7 @@ const buildShader = (function() {
       ast = parser(tokens);
       vert = wrapEntry(vert, vertName, vEntry, ast, true);
     } catch (e) { error(`parse ${vertName} failed: ${e}`); }
-    vert = glsl300to100(vert, blocks, cache);
+    glsl3.vert = vert; glsl1.vert = glsl300to100(vert, blocks, cache);
 
     shaderName = fragName;
     cache = createCache();
@@ -381,7 +382,7 @@ const buildShader = (function() {
       ast = parser(tokens);
       frag = wrapEntry(frag, fragName, fEntry, ast);
     } catch (e) { error(`parse ${fragName} failed: ${e}`); }
-    frag = glsl300to100(frag, blocks, cache);
+    glsl3.frag = frag; glsl1.frag = glsl300to100(frag, blocks, cache);
 
     // filter out builtin uniforms & assign bindings
     blocks = blocks.filter(u => !builtins.test(u.name));
@@ -390,7 +391,7 @@ const buildShader = (function() {
     blocks.forEach((u) => u.binding = bindingIdx++);
     samplers.forEach((u) => u.binding = bindingIdx++);
 
-    return { vert, frag, defines, blocks, samplers, dependencies };
+    return { glsl3, glsl1, defines, blocks, samplers, dependencies };
   };
 })();
 
@@ -399,10 +400,11 @@ const buildShader = (function() {
 // ==================
 
 const parseEffect = (function() {
-  let effectRE = /%{([^]+)%}/;
-  let blockRE = /%%\s*([\w-]+)\s*{([^]+)}/;
-  let parenRE = /[{}]/g;
-  let trimToSize = content => {
+  const blockTypes = /CCEFFECT|CCPROGRAM/g;
+  const effectRE = /CCEFFECT\s*{([^]+)}/;
+  const programRE = /CCPROGRAM\s*([\w-]+)\s*{([^]+)}/;
+  const parenRE = /[{}]/g;
+  const trimToSize = (content) => {
     let level = 1, end = content.length;
     content.replace(parenRE, (p, i) => {
       if (p === '{') level++;
@@ -411,15 +413,34 @@ const parseEffect = (function() {
     });
     return content.substring(0, end);
   };
+  const stripComments = (content, hashAsComment) => {
+    // TODO: strip comments in case of something like '// {'
+    return content;
+  };
   return function (content) {
-    let effectCap = effectRE.exec(content);
-    let effect = HJSON.parse(`{${effectCap[1]}}`), templates = {};
-    content = content.substring(effectCap.index + effectCap[0].length);
-    let blockCap = blockRE.exec(content);
+    shaderName = 'syntax error';
+    // code block split points
+    const blockInfo = {};
+    let blockCap = blockTypes.exec(content);
     while (blockCap) {
-      let str = templates[blockCap[1]] = trimToSize(blockCap[2]);
-      content = content.substring(blockCap.index + str.length);
-      blockCap = blockRE.exec(content);
+      blockInfo[blockCap.index] = blockCap[0];
+      blockCap = blockTypes.exec(content);
+    }
+    const blockPos = Object.keys(blockInfo);
+    if (!blockPos.length) error('CCEFFECT must be specified.');
+    // process each block
+    let effect = {}, templates = {};
+    for (let i = 0; i < blockPos.length; i++) {
+      const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
+      if (blockInfo[blockPos[i]] === 'CCEFFECT') {
+        let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
+        if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
+        else effect = HJSON.parse(`{${effectCap[1]}}`);
+      } else {
+        let programCap = programRE.exec(trimToSize(stripComments(str)));
+        if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
+        else templates[programCap[1]] = programCap[2];
+      }
     }
     return { effect, templates };
   };

@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: transparent
@@ -36,9 +36,9 @@
       ]
     }
   ]
-%}
+}
 
-%% particle-add-smooth-fs {
+CCPROGRAM particle-add-smooth-fs {
   uniform sampler2D mainTexture;
 
   varying vec2 uv;

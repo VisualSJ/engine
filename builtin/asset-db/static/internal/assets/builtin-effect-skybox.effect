@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       passes: [
@@ -20,9 +20,9 @@
       ]
     }
   ]
-%}
+}
 
-%% sky-vs {
+CCPROGRAM sky-vs {
   attribute vec3 a_position;
 
   #include <cc-global>
@@ -39,7 +39,7 @@
   }
 }
 
-%% sky-fs {
+CCPROGRAM sky-fs {
   varying vec3 viewDir;
 
   uniform samplerCube cubeMap;

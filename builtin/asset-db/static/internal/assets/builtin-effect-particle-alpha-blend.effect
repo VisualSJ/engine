@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: transparent
@@ -38,9 +38,9 @@
       ]
     }
   ]
-%}
+}
 
-%% particle-alpha-blend-fs {
+CCPROGRAM particle-alpha-blend-fs {
   uniform sampler2D mainTexture;
   uniform FragConstants {
     vec4 tintColor;

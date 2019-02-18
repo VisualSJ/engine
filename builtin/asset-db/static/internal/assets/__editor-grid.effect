@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       passes: [
@@ -27,7 +27,7 @@
       ]
     }
   ]
-%}
+}
 
 /**
  * a_texCoord.x:
@@ -40,7 +40,7 @@
  * a_texCoord.y = 0 for lines along Z axis
  * a_texCoord.y = 1 for lines along X axis
  */
-%% grid-vs {
+CCPROGRAM grid-vs {
   attribute vec2 a_texCoord;
   attribute vec3 a_position;
 
@@ -64,7 +64,7 @@
   }
 }
 
-%% grid-fs {
+CCPROGRAM grid-fs {
   #include <cc-global>
 
   varying vec2 uv;

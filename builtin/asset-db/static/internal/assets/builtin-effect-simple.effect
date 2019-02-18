@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: opaque
@@ -13,9 +13,9 @@
       ]
     }
   ]
-%}
+}
 
-%% sp-vs {
+CCPROGRAM sp-vs {
   attribute vec3 a_position;
 
   #include <cc-local>
@@ -37,7 +37,7 @@
   }
 }
 
-%% sp-fs {
+CCPROGRAM sp-fs {
   #if USE_TEXTURE
     uniform sampler2D texture;
     varying vec2 uv0;

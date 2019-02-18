@@ -1,4 +1,4 @@
-%{
+CCEFFECT {
   techniques: [
     {
       queue: opaque
@@ -21,9 +21,9 @@
       ]
     }
   ]
-%}
+}
 
-%% matcap-vs {
+CCPROGRAM matcap-vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
 
@@ -62,7 +62,7 @@
   }
 }
 
-%% matcap-fs {
+CCPROGRAM matcap-fs {
   uniform sampler2D matcapTex;
   uniform FragConstants {
     float colorFactor;
