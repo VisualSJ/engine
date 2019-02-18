@@ -47,6 +47,8 @@ class It extends Info {
      */
     constructor(message, handle) {
         super(message, handle);
+        this._reject = null;
+        this._timer = null;
     }
 
     async run() {
@@ -57,7 +59,22 @@ class It extends Info {
         }
 
         try {
-            await this.handle();
+            await new Promise((resolve, reject) => {
+                this.timeout(5000);
+                const result = this.handle.call(this);
+                if (result instanceof Promise) {
+                    this._reject = reject;
+                    result.then(() => {
+                        clearTimeout(this._timer);
+                        resolve();
+                    }).catch((error) => {
+                        clearTimeout(this._timer);
+                        reject(error);
+                    });
+                } else {
+                    resolve();
+                }
+            });
         } catch (error) {
             logger.error(new Error(`${this.prefix} ${this.message || ''}`));
 
@@ -67,6 +84,13 @@ class It extends Info {
         }
 
         exports.current = this.parent;
+    }
+
+    timeout(ms) {
+        clearTimeout(this._timer);
+        this._timer = setTimeout(() => {
+            this._reject && this._reject(new Error(`操作超时 ${ms}ms`));
+        }, ms);
     }
 }
 
