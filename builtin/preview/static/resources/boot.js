@@ -5,6 +5,7 @@
 
     // dom element
     const $msgContainer = q('#msgContainer');
+    const $error = q('#error');
     const canvas = q('#GameCanvas');
     const select = q('#opts-device');
     const optsDebugMode = q('#opts-debug-mode');
@@ -48,20 +49,29 @@
             window.location.reload();
         });
 
-        /**
-         * 全局错误捕获
-         * @param {String}  msg    错误信息
-         * @param {String}  url    出错文件
-         * @param {Number}  row    行号
-         * @param {Number}  col    列号
-         * @param {Object}  error  错误详细信息
-         */
-        window.onerror = function(...args) {
-            console.error(...args);
-            args[0] = 'Preview error:' + args[0];
-            socket.emit('preview error', ...args);
-            return true; // 注意，在返回 true 的时候，异常才不会继续向上抛出error;
-        };
+        // 全局捕获错误
+        window.addEventListener('error', function(args) {
+            var eventType = [].toString.call(args, args);
+            if (eventType === '[object Event]') { // 加载错误,显示错误页面
+                showLoadError(`load ${args.target.src} failed`);
+                return true;
+            } else {
+                console.error(args);
+                args[0] = 'Preview error:' + args[0];
+                socket.emit('preview error', ...args);
+                return true; // 注意，在返回 true 的时候，异常才不会继续向上抛出error;
+            }
+          },
+          true
+        );
+    }
+
+    // 显示加载错误
+    function showLoadError(message) {
+        socket.emit('preview error', message);
+        showLoading(false);
+        q('#error .wrroy').style.display = 'block';
+        q('#error .error-main').innerText += message;
     }
 
     const isMobile = function() {
@@ -121,7 +131,7 @@
             if (flag) {
                 splash.style.display = '';
             } else {
-                splash.style.display = none;
+                splash.style.display = 'none';
             }
         }
     }

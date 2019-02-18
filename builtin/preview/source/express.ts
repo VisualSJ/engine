@@ -7,6 +7,8 @@ import { disconnect , previewProfile , start as startSocket } from './socket';
 const Mobiledetect = require('mobile-detect');
 const { DEVICES } = require('./../static/utils/util');
 const express = require('express');
+const {URLSearchParams } = require('url');
+
 let app: any = null;
 let server: any = null;
 let port = 7456;
@@ -48,11 +50,11 @@ export async function start() {
     app.set('view engine', 'html');
     app.engine('.html', require('express-art-template'));
     app.set('views', join(__dirname, '../static/views'));
-    app.get('/setting.js', async (req: any, res: any) => {
+    app.get('/setting.js', async (req: any, res: any, next: any) => {
         let setting: any;
         setTimeout(() => {
             if (typeof(setting) !== 'string') {
-                res.status(500).send('settings 脚本构建超时！请查看构建报错信息');
+                res.status(500).send('构建 settings 出错');
             }
         }, 5000);
         setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
