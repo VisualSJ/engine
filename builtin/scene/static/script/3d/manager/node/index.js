@@ -71,7 +71,7 @@ class NodeManager extends EventEmitter {
     }
 
     /**
-     * 从管理起内移除一个指定的节点
+     * 从管理器内移除一个指定的节点
      * @param {*} node
      */
     remove(node) {
@@ -237,10 +237,8 @@ class NodeManager extends EventEmitter {
 
         if (path === '_components') {
             const comp = data[index];
-            this.emit('before-component-remove', comp);
-            comp._destroyImmediate();
-            node.removeComponent(comp);
-            this.emit('component-removed', comp);
+            this.removeComponent(comp.uuid);
+
         } else {
             // 删除某个 item
             data.splice(index, 1);
@@ -272,14 +270,13 @@ class NodeManager extends EventEmitter {
             Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', uuid);
 
             const comp = node.addComponent(component);
-            compManager.add(comp);
+            compManager.addComponent(comp);
             // 一些组件在添加的时候，需要执行部分特殊的逻辑
             if (comp.constructor && utils.addComponentMap[comp.constructor.name]) {
                 utils.addComponentMap[comp.constructor.name](comp, node);
             }
 
             // 发送节点修改消息
-            this.emit('component-added', comp, node);
             this.emit('changed', node);
             Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
         } else {
@@ -290,28 +287,16 @@ class NodeManager extends EventEmitter {
 
     /**
      * 移除一个 entity 上的指定组件
-     * @param uuid entity 的 uuid
-     * @param component 组件的名字
+     * @param uuid component 的 uuid
      */
-    removeComponent(uuid, component) {
-        const node = this.query(uuid);
-        if (!node) {
-            console.warn(`Move property failed: ${uuid} does not exist`);
+    removeComponent(uuid) {
+        const comp = compManager.query(uuid);
+        if (!comp) {
+            console.warn(`Remove Component failed: ${uuid} does not exist`);
             return false;
         }
 
-        // 发送节点修改消息
-        this.emit('before-change', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', uuid);
-
-        const comp = node.getComponent(component);
-        this.emit('before-component-remove', comp, node);
-        node.removeComponent(component);
-        this.emit('component-removed', comp, node);
-
-        // 发送节点修改消息
-        this.emit('changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+        compManager.removeComponent(comp);
     }
 
     /**

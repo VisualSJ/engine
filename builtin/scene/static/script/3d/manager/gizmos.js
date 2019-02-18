@@ -1,7 +1,8 @@
 'use strict';
 
 const scene = require('./scene');
-const node = require('./node');
+const nodeMgr = require('./node');
+const compMgr = require('./component');
 const EditorCamera = require('./camera');
 const CameraMoveMode = EditorCamera.CameraMoveMode;
 const gizmo = require('../../public/gizmos');
@@ -14,20 +15,20 @@ scene.on('reload', (error, scene) => {
     gizmo.onSceneLoaded();
 });
 
-node.on('changed', (node) => {
+nodeMgr.on('changed', (node) => {
     gizmo.onNodeChanged(node);
 });
 
-node.on('removed', (node) => {
+nodeMgr.on('removed', (node) => {
     gizmo.onNodeRemoved(node);
 });
 
-node.on('component-added', (comp, node) => {
-    gizmo.onComponentAdded(comp, node);
+compMgr.on('component-added', (comp) => {
+    gizmo.onComponentAdded(comp);
 });
 
-node.on('before-component-remove', (comp, node) => {
-    gizmo.onBeforeComponentRemove(comp, node);
+compMgr.on('before-component-remove', (comp) => {
+    gizmo.onBeforeComponentRemove(comp);
 });
 
 EditorCamera.on('camera-move-mode', (mode) => {

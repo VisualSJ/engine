@@ -193,7 +193,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        await $scene.forwarding('Node', 'removeComponent', [options.uuid, options.component]);
+        await $scene.forwarding('Node', 'removeComponent', [options.uuid]);
     };
 
     /**

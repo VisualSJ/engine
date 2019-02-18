@@ -556,11 +556,11 @@ class GizmoManager {
         }
     }
 
-    onComponentAdded(comp, node) {
-        this.showNodeGizmo(node);
+    onComponentAdded(comp) {
+        this.showNodeGizmo(comp.node);
     }
 
-    onBeforeComponentRemove(comp, node) {
+    onBeforeComponentRemove(comp) {
         this.destoryGizmo(comp.gizmo);
     }
 }

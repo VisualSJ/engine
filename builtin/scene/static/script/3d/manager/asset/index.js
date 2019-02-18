@@ -1,6 +1,13 @@
 'use stirct';
 
 const material = require('./material');
+require('../../../../../dist/utils/asset/asset-library-extends');
+const sceneMgr = require('../scene');
+const nodeMgr = require('../node');
+const compMgr = require('../component');
+const assetWatcher = require('../../../../../dist/utils/asset/asset-watcher');
+
+const assetLibrary = cc.AssetLibrary;
 
 /**
  * 返回包含所有 Effect 的对象
@@ -40,8 +47,48 @@ function querySerializedMaterial(mtl) {
     return material.decodeMaterial(mtl);
 }
 
+function assetChange(uuid) {
+    assetLibrary.onAssetChanged(uuid);
+}
+
+function assetDelete(uuid) {
+    assetLibrary.onAssetRemoved(uuid);
+}
+
+function onSceneLoaded() {
+    // iterate all component
+    nodeMgr.queryUuids().forEach((uuid) => {
+        const node = nodeMgr.query(uuid);
+
+        node._components.forEach((component) => {
+            assetWatcher.start(component);
+        });
+    });
+}
+
+sceneMgr.on('open', (error, scene) => {
+    onSceneLoaded();
+});
+
+compMgr.on('component-added', (comp) => {
+    assetWatcher.start(comp);
+});
+
+compMgr.on('before-component-remove', (comp) => {
+    assetWatcher.stop(comp);
+});
+
+// 可能会和component事件重复了，但是undo里目前只有这个消息
+nodeMgr.on('changed', (node) => {
+    node._components.forEach((component) => {
+        assetWatcher.start(component);
+    });
+});
+
 module.exports = {
     queryAllEffects,
     queryEffectDataForInspector,
     querySerializedMaterial,
+    assetChange,
+    assetDelete,
 };

@@ -1,7 +1,9 @@
+const { EventEmitter } = require('events');
+
 // 存储组件 uuid 与组件对象的 map
 const uuid2comp = {};
 
-class CompManager {
+class CompManager extends EventEmitter {
 
     /**
      * 清空当前管理的节点
@@ -11,7 +13,7 @@ class CompManager {
     }
 
     /**
-     * 添加组件
+     * 添加到组件缓存
      * @param {cc.Component} component
      */
     add(component) {
@@ -20,10 +22,10 @@ class CompManager {
 
     /**
      * 移除组件缓存
-     * @param {*} uuid
+     * @param {cc.Component} component
      */
-    remove(uuid) {
-        delete uuid2comp[uuid];
+    remove(component) {
+        delete uuid2comp[component.uuid];
     }
 
     /**
@@ -47,6 +49,26 @@ class CompManager {
         for (let comp of node._components) {
             this[operate](comp);
         }
+    }
+
+    /**
+     * 在编辑器中添加新的component
+     * @param {*} component 组件
+     */
+    addComponent(component) {
+        this.emit('component-added', component);
+        this.add(component);
+    }
+
+    /**
+     * 在编辑器中删除一个component
+     * @param {*} component 组件
+     */
+    removeComponent(component) {
+        this.emit('before-component-remove', component);
+        component._destroyImmediate();
+        component.node.removeComponent(component);
+        this.emit('component-removed', component);
     }
 }
 module.exports = new CompManager();
