@@ -123,6 +123,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
 
     // 获取需要修改的数据
     const data = info.search ? get(node, info.search) : node;
+    // 判断属性是否为 readonly,是则跳过还原步骤
+    const propertyInfo: any = Object.getOwnPropertyDescriptor(data, info.key);
+    if (!propertyInfo.writable && !propertyInfo.set) {
+        return;
+    }
     const parentData = parentInfo.search ? get(node, parentInfo.search) : node;
 
     // 如果 dump.value 为 null，则需要自动填充默认数据
