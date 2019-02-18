@@ -8,11 +8,11 @@ exports.template = fs.readFileSync(ps.join(__dirname, '../../template/help.html'
 
 exports.props = [
     'type',
-    'version',
 ];
 
 exports.data = function() {
     return {
+        ver: '1.0.0',
     };
 };
 

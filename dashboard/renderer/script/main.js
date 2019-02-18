@@ -3,7 +3,7 @@
 const ipc = require('@base/electron-base-ipc');
 const Vue = require('vue/dist/vue.js');
 const {t} = require('./util');
-const App = require('../../../lib/app');
+
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
@@ -30,8 +30,7 @@ const $vm = new Vue({
 
         // 顶部菜单项
         tabs: ['open_project', 'new_project', 'help.title'],
-        version: App.version,
-        name: App.name,
+
     },
 
     components: {
