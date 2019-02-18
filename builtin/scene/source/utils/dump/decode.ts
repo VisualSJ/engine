@@ -17,7 +17,6 @@ import {
 
 // @ts-ignore
 import { get } from 'lodash';
-import { setPriority } from 'os';
 
 /**
  * 解码一个 dump 数据
@@ -194,7 +193,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
             });
         }
     } else if (ccExtends.includes('cc.Component') || 'cc.Component' === dump.type) {
-        dump[info.key] = Manager.Component.query(dump.value.uuid);
+        data[info.key] = Manager.Component.query(dump.value.uuid);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
         const value = new ccType();
         Object.keys(dump.value).forEach((key: string) => {
