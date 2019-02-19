@@ -32,6 +32,11 @@
             <div class="item"><button id="btn-step" style="display: none;">Step</button></div>
             <div class="item"><button id="btn-recompile">Recompile</button></div>
         </div>
+        <div class="error" id="error">
+            <title></title>
+            <div class="error-main"></div>
+            <div class="wrroy"></div>
+        </div>
         <div id="content" class="content">
             <div class="contentWrap">
                 <div id="GameDiv" class="wrapper">
@@ -42,18 +47,14 @@
                     <div id="bulletin">
                         <div id="sceneIsEmpty" class="inner">{{tip_sceneIsEmpty}}</div>
                     </div>
-                    <div class="error" id="error">
-                        <title></title>
-                        <div class="error-main"></div>
-                        <div class="wrroy"></div>
-                    </div>
                 </div>
             </div>
         </div>
         <script src="/modular.js"></script>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/boot.js"></script>
+        <script src="/init.js"></script>
         <script name="setting" src="/setting.js"></script>
+        <script src="/boot.js"></script>
         {{if enableDebugger}}
             <script src="node_modules/eruda/eruda.min.js"></script>
             <script>

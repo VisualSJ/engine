@@ -1,11 +1,6 @@
 (function() {
     ('use strict');
-    // abbreviation for querySelector
-    const q = document.querySelector.bind(document);
-
     // dom element
-    const $msgContainer = q('#msgContainer');
-    const $error = q('#error');
     const canvas = q('#GameCanvas');
     const select = q('#opts-device');
     const optsDebugMode = q('#opts-debug-mode');
@@ -35,9 +30,6 @@
     };
     let scene = null;
     let rotated = false;
-    // socket
-    // =======================
-    let socket = io();
 
     // 开启 socket 监听的消息交互
     function socketMonitor() {
@@ -48,30 +40,6 @@
         socket.on('browser:disconnect', function() {
             window.location.reload();
         });
-
-        // 全局捕获错误
-        window.addEventListener('error', function(args) {
-            var eventType = [].toString.call(args, args);
-            if (eventType === '[object Event]') { // 加载错误,显示错误页面
-                showLoadError(`load ${args.target.src} failed`);
-                return true;
-            } else {
-                console.error(args);
-                args[0] = 'Preview error:' + args[0];
-                socket.emit('preview error', ...args);
-                return true; // 注意，在返回 true 的时候，异常才不会继续向上抛出error;
-            }
-          },
-          true
-        );
-    }
-
-    // 显示加载错误
-    function showLoadError(message) {
-        socket.emit('preview error', message);
-        showLoading(false);
-        q('#error .wrroy').style.display = 'block';
-        q('#error .error-main').innerText += message;
     }
 
     const isMobile = function() {
@@ -105,7 +73,10 @@
     /**
      * get layout size and show loading
      */
-    function showLoading(flag) {
+    window.showLoading = (flag) => {
+        if (window.hasError) {
+            return;
+        }
         if (!splash) {
             const { width, height } = getEmulatedScreenSize();
             splash = q('#splash');
@@ -134,7 +105,7 @@
                 splash.style.display = 'none';
             }
         }
-    }
+    };
 
     /**
      * get emulated screen size
@@ -150,7 +121,7 @@
         // 当前分辨路为非自定义
         if (!select.value || select.value === 'default') {
             // 当前模式为自定义
-            let {designWidth, designHeight} = window._CCSettings;
+            let {designWidth, designHeight} = window._CCSettings || {};
             width = designWidth || 960;
             height = designHeight || 480;
         } else {
@@ -390,6 +361,14 @@
 
     // 入口函数
     function onload() {
+        if (window.hasError) {
+            return;
+        }
+
+        if (!window._CCSettings) {
+            console.error('setting 不存在！');
+            return;
+        }
         // init operation event
         initHandles();
         // load scene file
