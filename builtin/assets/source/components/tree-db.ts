@@ -161,10 +161,15 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
         if (subNames.length === 0) {
             continue;
         }
-        dir.push(name);
-        toAssetsTree(subAsset, subTree, dir.slice());
+
+        const nextDir = dir.slice();
+        nextDir.push(name);
+        toAssetsTree(subAsset, subTree, nextDir);
     }
-    sortTree(asset.children);
+
+    if (asset.children.length > 1) {
+        sortTree(asset.children);
+    }
 }
 
 /**
