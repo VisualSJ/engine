@@ -23,11 +23,12 @@ CCEFFECT {
 }
 
 CCPROGRAM sky-vs {
-  attribute vec3 a_position;
+  precision mediump float;
+  in vec3 a_position;
 
   #include <cc-global>
 
-  varying vec3 viewDir;
+  out vec3 viewDir;
 
   void main() {
     mat4 matViewRotOnly = mat4(mat3(cc_matView));
@@ -40,19 +41,21 @@ CCPROGRAM sky-vs {
 }
 
 CCPROGRAM sky-fs {
-  varying vec3 viewDir;
+  precision mediump float;
+  in vec3 viewDir;
 
   uniform samplerCube cubeMap;
   #include <gamma-correction>
   #include <unpack>
+  out vec4 fragColor;
 
   void main() {
   #if USE_RGBE_CUBEMAP
-      vec3 c = unpackRGBE(textureCube(cubeMap, viewDir));
+      vec3 c = unpackRGBE(texture(cubeMap, viewDir));
       c = linearToGammaSpaceRGB(c / (1.0 + c));
-      gl_FragColor = vec4(c, 1.0);
+      fragColor = vec4(c, 1.0);
   #else
-      gl_FragColor = textureCube(cubeMap, viewDir);
+      fragColor = texture(cubeMap, viewDir);
   #endif
   }
 }

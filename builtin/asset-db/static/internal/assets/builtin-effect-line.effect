@@ -18,13 +18,14 @@ CCEFFECT {
 }
 
 CCPROGRAM line-vs {
-  attribute vec3 a_position;
-  attribute vec3 a_color;
+  precision mediump float;
+  in vec3 a_position;
+  in vec3 a_color;
 
   #include <cc-local>
   #include <cc-global>
 
-  varying vec3 color;
+  out vec3 color;
 
   void main () {
     vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
@@ -54,9 +55,11 @@ CCPROGRAM line-vs {
 }
 
 CCPROGRAM line-fs {
-  varying vec3 color;
+  precision mediump float;
+  in vec3 color;
+  out vec4 fragColor;
 
   void main () {
-    gl_FragColor = vec4(color, 1.0);
+    fragColor = vec4(color, 1.0);
   }
 }

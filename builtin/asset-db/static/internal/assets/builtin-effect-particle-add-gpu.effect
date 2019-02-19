@@ -41,16 +41,18 @@ CCEFFECT {
 }
 
 CCPROGRAM particle-add-gpu-fs {
+  precision mediump float;
   uniform sampler2D mainTexture;
   uniform FragConstants {
     vec4 tintColor;
   };
 
-  varying vec2 uv;
-  varying vec4 color;
+  in vec2 uv;
+  in vec4 color;
+  out vec4 fragColor;
 
   void main () {
     // TODO: soft particle
-    gl_FragColor = 2.0 * color * tintColor * texture2D(mainTexture, uv);
+    fragColor = 2.0 * color * tintColor * texture(mainTexture, uv);
   }
 }

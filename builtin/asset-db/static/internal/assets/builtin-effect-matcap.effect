@@ -24,17 +24,18 @@ CCEFFECT {
 }
 
 CCPROGRAM matcap-vs {
-  attribute vec3 a_position;
-  attribute vec3 a_normal;
+  precision mediump float;
+  in vec3 a_position;
+  in vec3 a_normal;
 
   #include <cc-local>
   #include <cc-global>
 
-  varying vec2 matcapUV;
+  out vec2 matcapUV;
 
   #if USE_MAIN_TEX
-    attribute vec2 a_texCoord;
-    varying vec2 uv0;
+    in vec2 a_texCoord;
+    out vec2 uv0;
   #endif
 
   #if CC_USE_SKINNING
@@ -63,16 +64,18 @@ CCPROGRAM matcap-vs {
 }
 
 CCPROGRAM matcap-fs {
+  precision mediump float;
   uniform sampler2D matcapTex;
   uniform FragConstants {
     float colorFactor;
     vec4 color;
   };
 
-  varying vec2 matcapUV;
+  in vec2 matcapUV;
+  out vec4 fragColor;
 
   #if USE_MAIN_TEX
-    varying vec2 uv0;
+    in vec2 uv0;
     uniform sampler2D mainTex;
   #endif
 
@@ -80,9 +83,9 @@ CCPROGRAM matcap-fs {
     vec4 col = vec4(1, 1, 1, 1);
     col *= color;
     #if USE_MAIN_TEX
-      col *= texture2D(mainTex, uv0);
+      col *= texture(mainTex, uv0);
     #endif
-    vec4 matcapColor = texture2D(matcapTex, matcapUV);
-    gl_FragColor = col * colorFactor + matcapColor * (1.0 - colorFactor);
+    vec4 matcapColor = texture(matcapTex, matcapUV);
+    fragColor = col * colorFactor + matcapColor * (1.0 - colorFactor);
   }
 }

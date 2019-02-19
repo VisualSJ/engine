@@ -1,4 +1,5 @@
 
+precision mediump float;
 #include <particle-common>
 #define MAX_KEY_NUM 8
 #define CURVE_MODE_CONSTANT 0
@@ -83,11 +84,11 @@
   u_##name##_minGradMode, u_##name##_minColorKeyValue, u_##name##_minColorKeyTime, u_##name##_minAlphaKeyValue, u_##name##_minAlphaKeyTime, \
   u_##name##_maxGradMode, u_##name##_maxColorKeyValue, u_##name##_maxColorKeyTime, u_##name##_maxAlphaKeyValue, u_##name##_maxAlphaKeyTime, t, rnd);
 
-attribute vec4 a_position_starttime; // center position,particle start time
-attribute vec4 a_vertIdx_size_angle;  // xy:vertex index,z:size,w:angle
-attribute vec4 a_color;
-attribute vec4 a_dir_life;  // xyz:particle start velocity,w:particle lifetime
-attribute float a_rndSeed;
+in vec4 a_position_starttime; // center position,particle start time
+in vec4 a_vertIdx_size_angle;  // xy:vertex index,z:size,w:angle
+in vec4 a_color;
+in vec4 a_dir_life;  // xyz:particle start velocity,w:particle lifetime
+in float a_rndSeed;
 
 uniform Constants2 {
   float u_psTime;

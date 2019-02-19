@@ -21,14 +21,15 @@ CCEFFECT {
 }
 
 CCPROGRAM wire-vs {
-  attribute vec3 a_position;
-  attribute vec3 a_normal;
+  precision mediump float;
+  in vec3 a_position;
+  in vec3 a_normal;
 
   #include <cc-local>
   #include <cc-global>
 
-  varying vec3 position_w;
-  varying vec3 normal_w;
+  out vec3 position_w;
+  out vec3 normal_w;
 
   void main () {
     vec4 pos = vec4(a_position, 1);
@@ -42,21 +43,23 @@ CCPROGRAM wire-vs {
 }
 
 CCPROGRAM wire-fs {
+  precision mediump float;
   #include <cc-global>
 
   uniform Constants {
     vec4 color;
   };
 
-  varying vec3 position_w;
-  varying vec3 normal_w;
+  in vec3 position_w;
+  in vec3 normal_w;
+  out vec4 fragColor;
 
   void main () {
-    gl_FragColor = color;
+    fragColor = color;
 
     vec3 V = normalize(cc_cameraPos.xyz - position_w);
     if (dot (normal_w, V) <= 0.0) {
-      gl_FragColor.rgb *= 0.6;
+      fragColor.rgb *= 0.6;
     }
   }
 }

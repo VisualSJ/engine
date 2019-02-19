@@ -1,13 +1,13 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-varying vec4 posLightspace;
-varying float vDepth;
+in vec4 posLightspace;
+in float vDepth;
 uniform sampler2D cc_shadowMap;
 
 float computeShadow(sampler2D shadowMap, vec4 posLightspace, float bias) {
   vec3 projCoords = posLightspace.xyz / posLightspace.w;
   projCoords = projCoords * 0.5 + 0.5;
-  float closestDepth = unpackRGBAToDepth(texture2D(shadowMap, projCoords.xy));
+  float closestDepth = unpackRGBAToDepth(texture(shadowMap, projCoords.xy));
   float currentDepth = projCoords.z;
   float shadow = (currentDepth - bias > closestDepth) ? 0.0 : 1.0;
   return shadow;
@@ -26,7 +26,7 @@ float computeFallOff(float esm, vec2 coords, float frustumEdgeFalloff) {
 //     return 1.0;
 //   }
 //   float currentDepth = clamp(vDepth, 0.0, 1.0);
-//   float closestDepth = unpackRGBAToDepth(texture2D(shadowMap, shadowUV));
+//   float closestDepth = unpackRGBAToDepth(texture(shadowMap, shadowUV));
 //   float esm = 1.0 - clamp(exp(min(87.0, _depthScale * currentDepth)) * closestDepth, 0.0, darkness);
 //   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
 // }
@@ -38,7 +38,7 @@ float computeShadowESM(sampler2D shadowMap, vec4 posLightspace, float vDepth, fl
     return 1.0;
   }
   float currentDepth = clamp(vDepth, 0.0, 1.0);
-  float closestDepth = unpackRGBAToDepth(texture2D(shadowMap, shadowUV));
+  float closestDepth = unpackRGBAToDepth(texture(shadowMap, shadowUV));
   //float esm = clamp(exp(min(87.0, -_depthScale * (currentDepth - closestDepth))), 1.0 - darkness, 1.0);
   float esm = clamp(exp(-depthScale * (currentDepth - closestDepth)), 1.0 - darkness, 1.0);
   return computeFallOff(esm, projCoords, frustumEdgeFalloff);
@@ -57,10 +57,10 @@ float computeShadowPCF(sampler2D shadowMap, vec4 posLightspace, float vDepth, fl
   poissonDisk[1] = vec2(0.94558609, -0.76890725);
   poissonDisk[2] = vec2(-0.094184101, -0.92938870);
   poissonDisk[3] = vec2(0.34495938, 0.29387760);
-  if (unpackRGBAToDepth(texture2D(shadowMap, shadowUV + poissonDisk[0] * texelSize)) < currentDepth) visibility -= 0.25;
-  if (unpackRGBAToDepth(texture2D(shadowMap, shadowUV + poissonDisk[1] * texelSize)) < currentDepth) visibility -= 0.25;
-  if (unpackRGBAToDepth(texture2D(shadowMap, shadowUV + poissonDisk[2] * texelSize)) < currentDepth) visibility -= 0.25;
-  if (unpackRGBAToDepth(texture2D(shadowMap, shadowUV + poissonDisk[3] * texelSize)) < currentDepth) visibility -= 0.25;
+  if (unpackRGBAToDepth(texture(shadowMap, shadowUV + poissonDisk[0] * texelSize)) < currentDepth) visibility -= 0.25;
+  if (unpackRGBAToDepth(texture(shadowMap, shadowUV + poissonDisk[1] * texelSize)) < currentDepth) visibility -= 0.25;
+  if (unpackRGBAToDepth(texture(shadowMap, shadowUV + poissonDisk[2] * texelSize)) < currentDepth) visibility -= 0.25;
+  if (unpackRGBAToDepth(texture(shadowMap, shadowUV + poissonDisk[3] * texelSize)) < currentDepth) visibility -= 0.25;
 
   return computeFallOff(min(1.0, visibility + 1.0 - darkness), projCoords, frustumEdgeFalloff);
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-attribute vec4 a_weights;
-attribute vec4 a_joints;
+in vec4 a_weights;
+in vec4 a_joints;
 
 uniform CCSkinning {
   mat4 cc_matJoint[128];
@@ -21,10 +21,10 @@ mat4 getBoneMatrix(const in float i) {
 
   y = dy * (y + 0.5);
 
-  vec4 v1 = texture2D(cc_jointsTexture, vec2(dx * (x + 0.5), y));
-  vec4 v2 = texture2D(cc_jointsTexture, vec2(dx * (x + 1.5), y));
-  vec4 v3 = texture2D(cc_jointsTexture, vec2(dx * (x + 2.5), y));
-  vec4 v4 = texture2D(cc_jointsTexture, vec2(dx * (x + 3.5), y));
+  vec4 v1 = texture(cc_jointsTexture, vec2(dx * (x + 0.5), y));
+  vec4 v2 = texture(cc_jointsTexture, vec2(dx * (x + 1.5), y));
+  vec4 v3 = texture(cc_jointsTexture, vec2(dx * (x + 2.5), y));
+  vec4 v4 = texture(cc_jointsTexture, vec2(dx * (x + 3.5), y));
 
   return mat4(v1, v2, v3, v4);
 }

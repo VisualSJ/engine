@@ -1,12 +1,6 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#if USE_NORMAL_TEXTURE
-#extension GL_OES_standard_derivatives : enable
-#endif
-
-#if USE_TEX_LOD
-#extension GL_EXT_shader_texture_lod: enable
-#endif
+precision mediump float;
 
 #include <common>
 #include <gamma-correction>
@@ -22,11 +16,11 @@
   #include <shadow-mapping>
 #endif
 
-varying vec3 pos_w;
-varying vec3 normal_w;
+in vec3 pos_w;
+in vec3 normal_w;
 
 #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_EMISSIVE_TEXTURE
-  varying vec2 uv0;
+  in vec2 uv0;
 #endif
 
 #if USE_IBL
@@ -74,7 +68,7 @@ uniform Constants {
   uniform sampler2D normal_texture;
   // get world-space normal from normal texture
   vec3 getNormalFromTexture() {
-    vec3 tangentNormal = texture2D(normal_texture, uv0).rgb * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normal_texture, uv0).rgb * 2.0 - 1.0;
     vec3 q1  = dFdx(pos_w);
     vec3 q2  = dFdy(pos_w);
     vec2 st1 = dFdx(uv0);
@@ -160,7 +154,7 @@ vec4 frag() {
   float opacity = 1.0;
 
   #if USE_ALBEDO_TEXTURE
-    vec4 baseColor = albedo * gammaToLinearSpaceRGBA(texture2D(albedo_texture, uv0));
+    vec4 baseColor = albedo * gammaToLinearSpaceRGBA(texture(albedo_texture, uv0));
     vec3 albedo = baseColor.rgb;
     opacity = baseColor.a;
   #else
@@ -173,19 +167,19 @@ vec4 frag() {
   #endif
 
   #if USE_MRA_TEXTURE
-    vec3 metalRoughness = texture2D(mra_texture, uv0).rgb;
+    vec3 metalRoughness = texture(mra_texture, uv0).rgb;
     float metallic = metalRoughness.r;
     float roughness = metalRoughness.g;
     float ao = metalRoughness.b;
   #else
     #if USE_METALLIC_TEXTURE
-      float metallic  = texture2D(metallic_texture, uv0).r;
+      float metallic  = texture(metallic_texture, uv0).r;
     #endif
     #if USE_ROUGHNESS_TEXTURE
-      float roughness  = texture2D(roughness_texture, uv0).r;
+      float roughness  = texture(roughness_texture, uv0).r;
     #endif
     #if USE_AO_TEXTURE
-      float ao  = texture2D(ao_texture, uv0).r;
+      float ao  = texture(ao_texture, uv0).r;
     #endif
   #endif
 
@@ -221,7 +215,7 @@ vec4 frag() {
 
   vec3 emissiveColor = emissive.rgb;
   #if USE_EMISSIVE_TEXTURE
-    emissiveColor *= gammaToLinearSpaceRGB(texture2D(emissive_texture, uv0).rgb);
+    emissiveColor *= gammaToLinearSpaceRGB(texture(emissive_texture, uv0).rgb);
   #endif
   Lo += emissiveColor;
 
@@ -235,24 +229,24 @@ vec4 frag() {
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metallic;
     #if USE_RGBE_IBL_DIFFUSE
-      vec3 diffuseEnv = unpackRGBE(textureCube(diffuseEnvTexture, N));
+      vec3 diffuseEnv = unpackRGBE(texture(diffuseEnvTexture, N));
     #else
-      vec3 diffuseEnv = textureCube(diffuseEnvTexture, N).rgb;
+      vec3 diffuseEnv = texture(diffuseEnvTexture, N).rgb;
     #endif
     vec3 diffuse = diffuseEnv * albedo;
     // sample both the specularEnvTexture and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     vec3 R = reflect(-V, N);
     #if USE_TEX_LOD
-      vec4 speColor = textureCubeLodEXT(specularEnvTexture, R, roughness * maxReflectionLod);
+      vec4 speColor = textureLod(specularEnvTexture, R, roughness * maxReflectionLod);
     #else
-      vec4 speColor = textureCube(specularEnvTexture, R);
+      vec4 speColor = texture(specularEnvTexture, R);
     #endif
     #if USE_RGBE_IBL_SPECULAR
       vec3 specularEnv = unpackRGBE(speColor);
     #else
       vec3 specularEnv = speColor.rgb;
     #endif
-    vec2 brdf  = texture2D(brdfLUT, vec2(max(dot(N, V), 0.0), 1.0 - roughness)).rg;
+    vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), 1.0 - roughness)).rg;
     vec3 specular = specularEnv * (F * brdf.x + brdf.y);
     ambient = (kD * diffuse + specular) * ao;
   #endif

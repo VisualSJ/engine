@@ -39,12 +39,15 @@ CCEFFECT {
 }
 
 CCPROGRAM particle-premultiply-blend-fs {
+  precision mediump float;
   uniform sampler2D mainTexture;
-  varying vec2 uv;
-  varying vec4 color;
+
+  in vec2 uv;
+  in vec4 color;
+  out vec4 fragColor;
 
   void main () {
     // TODO: soft particle
-    gl_FragColor = color * texture2D(mainTexture, uv) * color.a;
+    fragColor = color * texture(mainTexture, uv) * color.a;
   }
 }

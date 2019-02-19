@@ -41,13 +41,14 @@ CCEFFECT {
  * a_texCoord.y = 1 for lines along X axis
  */
 CCPROGRAM grid-vs {
-  attribute vec2 a_texCoord;
-  attribute vec3 a_position;
+  precision mediump float;
+  in vec2 a_texCoord;
+  in vec3 a_position;
 
   #include <cc-global>
 
-  varying vec2 uv;
-  varying vec3 pos_w;
+  out vec2 uv;
+  out vec3 pos_w;
 
   void main () {
     uv = a_texCoord;
@@ -65,10 +66,12 @@ CCPROGRAM grid-vs {
 }
 
 CCPROGRAM grid-fs {
+  precision mediump float;
   #include <cc-global>
 
-  varying vec2 uv;
-  varying vec3 pos_w;
+  in vec2 uv;
+  in vec3 pos_w;
+  out vec4 fragColor;
 
   void main () {
     // alpha wrt. UVs
@@ -76,6 +79,6 @@ CCPROGRAM grid-fs {
     // fade out at grazing angles
     float scale = abs(normalize(cc_cameraPos.xyz - pos_w).y);
     if (scale < 0.5) alpha *= max(0.3, scale / 0.5);
-    gl_FragColor = vec4(0.5, 0.5, 0.5, alpha);
+    fragColor = vec4(0.5, 0.5, 0.5, alpha);
   }
 }

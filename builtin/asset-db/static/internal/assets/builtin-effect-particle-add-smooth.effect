@@ -39,15 +39,17 @@ CCEFFECT {
 }
 
 CCPROGRAM particle-add-smooth-fs {
+  precision mediump float;
   uniform sampler2D mainTexture;
 
-  varying vec2 uv;
-  varying vec4 color;
+  in vec2 uv;
+  in vec4 color;
+  out vec4 fragColor;
 
   void main () {
     // TODO: soft particle
-    vec4 col = color * texture2D(mainTexture, uv);
+    vec4 col = color * texture(mainTexture, uv);
     col.rgb *= col.a;
-    gl_FragColor = col;
+    fragColor = col;
   }
 }

@@ -10,8 +10,8 @@ uniform Constants {
 #include <cc-global>
 #include <cc-local>
 
-varying vec2 uv;
-varying vec4 color;
+out vec2 uv;
+out vec4 color;
 
 void computeVertPos(inout vec4 pos, vec2 vertOffset
 #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD

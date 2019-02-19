@@ -1,8 +1,6 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#if USE_NORMAL_TEXTURE
-#extension GL_OES_standard_derivatives : enable
-#endif
+precision mediump float;
 
 #include <common>
 #include <gamma-correction>
@@ -55,11 +53,11 @@ Lighting getPhongLighting(vec3 pos_w, vec3 N, vec3 V, float glossiness) {
   #include <shadow-mapping>
 #endif
 
-varying vec3 normal_w;
-varying vec3 pos_w;
+in vec3 normal_w;
+in vec3 pos_w;
 
 #if USE_DIFFUSE_TEXTURE || USE_NORMAL_TEXTURE || USE_EMISSIVE_TEXTURE
-  varying vec2 uv0;
+  in vec2 uv0;
 #endif
 
 struct phongMaterial
@@ -101,7 +99,7 @@ uniform Constants {
     vec3 S = normalize( q0 * st1.t - q1 * st0.t );
     vec3 T = normalize( -q0 * st1.s + q1 * st0.s );
     vec3 N = normal;
-    vec3 mapN = texture2D(normal_texture, uv0).rgb * 2.0 - 1.0;
+    vec3 mapN = texture(normal_texture, uv0).rgb * 2.0 - 1.0;
     mapN.xy = 1.0 * mapN.xy;
     mat3 tsn = mat3( S, T, N );
     return normalize( tsn * mapN );
@@ -112,7 +110,7 @@ phongMaterial getPhongMaterial() {
   phongMaterial result;
 
   #if USE_DIFFUSE_TEXTURE
-    vec4 baseColor = diffuseColor * gammaToLinearSpaceRGBA(texture2D(diffuse_texture, uv0));
+    vec4 baseColor = diffuseColor * gammaToLinearSpaceRGBA(texture(diffuse_texture, uv0));
     result.diffuse = baseColor.rgb;
     result.opacity = baseColor.a;
   #else
@@ -123,14 +121,14 @@ phongMaterial getPhongMaterial() {
   #if USE_EMISSIVE
     result.emissive = emissiveColor.rgb;
     #if USE_EMISSIVE_TEXTURE
-      result.emissive *= gammaToLinearSpaceRGB(texture2D(emissive_texture, uv0).rgb);
+      result.emissive *= gammaToLinearSpaceRGB(texture(emissive_texture, uv0).rgb);
     #endif
   #endif
 
   #if USE_SPECULAR
     result.specular = specularColor.rgb;
     #if USE_SPECULAR_TEXTURE
-      result.specular = gammaToLinearSpaceRGB(texture2D(specular_texture, uv0).rgb);
+      result.specular = gammaToLinearSpaceRGB(texture(specular_texture, uv0).rgb);
     #endif
 
     result.glossiness = glossiness;

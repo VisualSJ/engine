@@ -1,11 +1,12 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-attribute vec3 a_position;
-attribute vec2 a_texCoord;
-attribute vec4 a_color;
+precision mediump float;
+in vec3 a_position;
+in vec2 a_texCoord;
+in vec4 a_color;
 
-varying vec2 uv0;
-varying vec4 color;
+out vec2 uv0;
+out vec4 color;
 
 uniform ui {
   mat4 cc_matViewProj;

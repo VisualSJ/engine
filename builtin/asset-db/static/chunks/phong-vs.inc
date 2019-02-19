@@ -1,13 +1,14 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-attribute vec3 a_position;
-attribute vec3 a_normal;
+precision mediump float;
+in vec3 a_position;
+in vec3 a_normal;
 
 #include <cc-global>
 #include <cc-local>
 
-varying vec3 normal_w;
-varying vec3 pos_w;
+out vec3 normal_w;
+out vec3 pos_w;
 
 uniform TexCoords {
   vec2 mainTiling;
@@ -15,8 +16,8 @@ uniform TexCoords {
 };
 
 #if USE_DIFFUSE_TEXTURE || USE_NORMAL_TEXTURE || USE_EMISSIVE_TEXTURE
-  attribute vec2 a_texCoord;
-  varying vec2 uv0;
+  in vec2 a_texCoord;
+  out vec2 uv0;
 #endif
 
 #if CC_USE_SKINNING

@@ -18,6 +18,9 @@ const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
 const builtins = /^cc\w+$/i;
 const samplerRE = /sampler/;
+const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+);/gm;
+const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+));/gm;
+const texLookup = /texture(\w*)\s*\((\w+),/g;
 
 let effectName = '', shaderName = '';
 const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
@@ -259,11 +262,10 @@ const extractParams = (() => {
   let exMap = { whitespace: true };
   const nextWord = (tokens, i) => { while (exMap[tokens[++i].type]); return i; }
   const nextSemicolon = (tokens, i, check = () => {}) => { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
-  return (tokens, cache, blocks, samplers, dependencies, attributes) => {
+  return (tokens, cache, blocks, samplers, dependencies) => {
     for (let i = 0; i < tokens.length; i++) {
       let t = tokens[i], str = t.data, dest;
       if (str === 'uniform') dest = blocks;
-      // else if (str === 'attribute') dest = attributes;
       else if (str.startsWith('#extension')) dest = dependencies;
       else continue;
       let defines = getDefs(t.line, cache), param = {};
@@ -313,8 +315,10 @@ const extractParams = (() => {
   }
 })();
 
-const glsl300to100 = (code, blocks, cache) => {
-  let res = '', idx = 0;
+const glsl300to100 = (code, blocks, cache, vert) => {
+  let res = '';
+  // unpack UBOs
+  let idx = 0;
   cache.blocksInfo.forEach(i => {
     res += code.slice(idx, i.beg);
     blocks.find(u => u.name === i.name).members.forEach(m => {
@@ -324,6 +328,26 @@ const glsl300to100 = (code, blocks, cache) => {
     idx = i.end + (code[i.end] === ';');
   });
   res += code.slice(idx);
+  // texture functions
+  res = res.replace(texLookup, (_, suffix, name) => {
+    const re = new RegExp('sampler(\\w+)\\s+' + name);
+    const cap = re.exec(res);
+    return `texture${cap[1]}(${name},`;
+  });
+  if (vert) {
+    // in/out => attribute/varying
+    res = res.replace(inDecl, (_, indent, decl) => `${indent}attribute ${decl};`);
+    res = res.replace(outDecl, (_, indent, decl) => `${indent}varying ${decl};`);
+  } else {
+    // in/out => varying/gl_FragColor
+    res = res.replace(inDecl, (_, indent, decl) => `${indent}varying ${decl};`);
+    const outList = [];
+    res = res.replace(outDecl, (_, indent, decl, name) => { outList.push(name); return ''; });
+    if (outList.length) {
+      const outRE = new RegExp(outList.reduce((acc, cur) => `${acc}|${cur}`, '').substring(1), 'g');
+      res = res.replace(outRE, 'gl_FragColor');
+    }
+  }
   return res;
 };
 
@@ -337,23 +361,22 @@ const getChunkByName = (() => {
 })();
 
 const wrapEntry = (() => {
-  let wrapperFactory = (vert, fn) => `\nvoid main() { ${vert ? 'gl_Position' : 'gl_FragColor'} = ${fn}(); }\n`;
+  let wrapperFactory = (vert, fn) => vert ? `\nvoid main() { gl_Position = ${fn}(); }\n` : `\nout vec4 fragColor;\nvoid main() { fragColor = ${fn}(); }\n`;
   return (content, name, entry, ast, isVert) => {
-    if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
-      error(`entry function ${name} not found`);
+    // if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
+    //   error(`entry function ${name} not found`);
     return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
   };
 })();
 
 const buildShader = (() => {
-  let versionDecl = '#version 300 es';
   let createCache = () => { return { lines: [], blocksInfo: [] }; };
   return (vertName, fragName, chunks) => {
     let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
     let [ frag, fEntry ] = getChunkByName(fragName, chunks);
 
     let defines = [], cache = createCache(), tokens, ast;
-    let blocks = [], samplers = [], attributes = [], dependencies = {};
+    let blocks = [], samplers = [], dependencies = {};
     let glsl3 = {}, glsl1 = {};
 
     shaderName = vertName;
@@ -363,12 +386,12 @@ const buildShader = (() => {
     vert = replacePlainDefines(vert);
     tokens = tokenizer(vert);
     extractDefines(tokens, defines, cache);
-    extractParams(tokens, cache, blocks, samplers, dependencies, attributes);
+    extractParams(tokens, cache, blocks, samplers, dependencies);
     try {
-      ast = parser(tokens);
+      ast = null;//parser(tokens);
       vert = wrapEntry(vert, vertName, vEntry, ast, true);
     } catch (e) { error(`parse ${vertName} failed: ${e}`); }
-    glsl3.vert = versionDecl + vert; glsl1.vert = glsl300to100(vert, blocks, cache);
+    glsl3.vert = vert; glsl1.vert = glsl300to100(vert, blocks, cache, true);
 
     shaderName = fragName;
     cache = createCache();
@@ -378,12 +401,12 @@ const buildShader = (() => {
     frag = replacePlainDefines(frag);
     tokens = tokenizer(frag);
     extractDefines(tokens, defines, cache);
-    extractParams(tokens, cache, blocks, samplers, dependencies, attributes);
+    extractParams(tokens, cache, blocks, samplers, dependencies);
     try {
-      ast = parser(tokens);
+      ast = null;//parser(tokens);
       frag = wrapEntry(frag, fragName, fEntry, ast);
     } catch (e) { error(`parse ${fragName} failed: ${e}`); }
-    glsl3.frag = versionDecl + frag; glsl1.frag = glsl300to100(frag, blocks, cache);
+    glsl3.frag = frag; glsl1.frag = glsl300to100(frag, blocks, cache);
 
     // filter out builtin uniforms & assign bindings
     blocks = blocks.filter(u => !builtins.test(u.name));
@@ -418,17 +441,18 @@ const parseEffect = (() => {
     // TODO: strip comments in case of something like '// {'
     return content;
   };
-  return (content) => {
+  return (name, content) => {
     shaderName = 'syntax error';
     // code block split points
     const blockInfo = {};
-    let blockCap = blockTypes.exec(content);
+    let blockCap = blockTypes.exec(content), effectCount = 0;
     while (blockCap) {
       blockInfo[blockCap.index] = blockCap[0];
+      if (blockCap[0] === 'CCEFFECT') effectCount++;
       blockCap = blockTypes.exec(content);
     }
     const blockPos = Object.keys(blockInfo);
-    if (!blockPos.length) error('CCEFFECT must be specified.');
+    if (effectCount !== 1) error('there must be exactly one CCEFFECT.');
     // process each block
     let effect = {}, templates = {};
     for (let i = 0; i < blockPos.length; i++) {
@@ -436,7 +460,7 @@ const parseEffect = (() => {
       if (blockInfo[blockPos[i]] === 'CCEFFECT') {
         let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
-        else effect = HJSON.parse(`{${effectCap[1]}}`);
+        else { effect = HJSON.parse(`{${effectCap[1]}}`); effect.name = name; }
       } else {
         let programCap = programRE.exec(trimToSize(stripComments(str)));
         if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
@@ -547,8 +571,8 @@ const mapPassParam = (() => {
 })();
 
 const buildEffect = (name, content) => {
-  let { effect, templates } = parseEffect(content);
-  effectName = effect.name = name;
+  effectName = name;
+  let { effect, templates } = parseEffect(name, content);
   Object.assign(templates, chunksCache);
   let shaders = effect.shaders = [];
   for (let j = 0; j < effect.techniques.length; ++j) {

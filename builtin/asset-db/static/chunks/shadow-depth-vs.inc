@@ -1,11 +1,11 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-attribute vec3 a_position;
+in vec3 a_position;
 
 #include <cc-global>
 #include <cc-local>
 
-varying float vDepth;
+out float vDepth;
 
 #if CC_USE_SKINNING
   #include <skinning>

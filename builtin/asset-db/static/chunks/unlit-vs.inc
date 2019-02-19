@@ -1,17 +1,18 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-attribute vec3 a_position;
+precision mediump float;
+in vec3 a_position;
 
 #include <cc-global>
 #include <cc-local>
 
 #if USE_TEXTURE
-  attribute vec2 a_texCoord;
+  in vec2 a_texCoord;
   uniform TexCoords {
     vec2 mainTiling;
     vec2 mainOffset;
   };
-  varying vec2 uv0;
+  out vec2 uv0;
 #endif
 
 #if CC_USE_SKINNING

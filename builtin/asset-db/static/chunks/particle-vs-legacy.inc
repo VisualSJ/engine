@@ -1,10 +1,11 @@
+precision mediump float;
 #include <particle-common>
-attribute vec3 a_position; // center position
-attribute vec3 a_texCoord;  // xy:vertex index,z:frame index
-attribute vec2 a_texCoord1; // size, angle
-attribute vec4 a_color;
+in vec3 a_position; // center position
+in vec3 a_texCoord;  // xy:vertex index,z:frame index
+in vec2 a_texCoord1; // size, angle
+in vec4 a_color;
 #if USE_STRETCHED_BILLBOARD
-attribute vec3 a_color1; // velocity.x, velocity.y, velocity.z, scale
+in vec3 a_color1; // velocity.x, velocity.y, velocity.z, scale
 #endif
 
 #include <cc-local>
