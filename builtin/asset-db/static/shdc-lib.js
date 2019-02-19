@@ -20,13 +20,13 @@ const builtins = /^cc\w+$/i;
 const samplerRE = /sampler/;
 
 let effectName = '', shaderName = '';
-function warn(msg, ln) { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
-function error(msg) { console.error(`${effectName} - ${shaderName}: ${msg}`); }
+const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
+const error = (msg) => { console.error(`${effectName} - ${shaderName}: ${msg}`); }
 
-function convertType(t) { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
+const convertType = (t) => { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 
-function unwindIncludes(str, chunks, record = {}) {
-  function replace(_, include) {
+const unwindIncludes = (str, chunks, record = {}) => {
+  const replace = (_, include) => {
     if (record[include]) return '';
     record[include] = true;
     let replace = chunks[include];
@@ -52,8 +52,8 @@ const glslStripComment = (() => {
   };
 })();
 
-const expandStructMacro = (function() {
-  function matchParenthesisPair(string, startIdx) {
+const expandStructMacro = (() => {
+  const matchParenthesisPair = (string, startIdx) => {
     let parHead = startIdx;
     let parTail = parHead;
     let depth = 0;
@@ -68,13 +68,13 @@ const expandStructMacro = (function() {
     if (depth !== 0) return parHead;
     return parTail;
   }
-  function generateHypenRE(hyphen, macroParam) {
+  const generateHypenRE = (hyphen, macroParam) => {
     return '(' + [hyphen + macroParam + hyphen, hyphen + macroParam, macroParam + hyphen].join('|') + ')';
   }
-  function generateParamRE(param) {
+  const generateParamRE = (param) => {
     return '\\b' + param + '\\b';
   }
-  return function (code) {
+  return (code) => {
     code = code.replace(/\\\n/g, '');
     let defineCapture = defineRE.exec(code);
     //defineCapture[1] - the macro name
@@ -192,7 +192,7 @@ const replacePlainDefines = (code) => {
  * }
  * ````
  */
-function extractDefines(tokens, defines, cache) {
+const extractDefines = (tokens, defines, cache) => {
   let curDefs = [], save = (line) => {
     cache[line] = curDefs.reduce((acc, val) => acc.concat(val), []);
     cache.lines.push(line);
@@ -235,13 +235,13 @@ function extractDefines(tokens, defines, cache) {
   }
 }
 
-const extractParams = (function() {
-  function getDefs(line, cache) {
+const extractParams = (() => {
+  const getDefs = (line, cache) => {
     let idx = cache.lines.findIndex(i => i > line);
     return cache[cache.lines[idx - 1]] || [];
   }
   // tokens (from ith): [ ..., ('highp', ' ',) 'vec4', ' ', 'color', ('[', '4', ']',) ... ]
-  function extractInfo(tokens, i) {
+  const extractInfo = (tokens, i) => {
     let param = {};
     let offset = precision.exec(tokens[i].data) ? 2 : 0;
     param.name = tokens[i+offset+2].data;
@@ -257,9 +257,9 @@ const extractParams = (function() {
     return param;
   }
   let exMap = { whitespace: true };
-  function nextWord(tokens, i) { while (exMap[tokens[++i].type]); return i; }
-  function nextSemicolon(tokens, i, check = () => {}) { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
-  return function(tokens, cache, blocks, samplers, dependencies, attributes) {
+  const nextWord = (tokens, i) => { while (exMap[tokens[++i].type]); return i; }
+  const nextSemicolon = (tokens, i, check = () => {}) => { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
+  return (tokens, cache, blocks, samplers, dependencies, attributes) => {
     for (let i = 0; i < tokens.length; i++) {
       let t = tokens[i], str = t.data, dest;
       if (str === 'uniform') dest = blocks;
@@ -313,7 +313,7 @@ const extractParams = (function() {
   }
 })();
 
-const glsl300to100 = function(code, blocks, cache) {
+const glsl300to100 = (code, blocks, cache) => {
   let res = '', idx = 0;
   cache.blocksInfo.forEach(i => {
     res += code.slice(idx, i.beg);
@@ -327,27 +327,28 @@ const glsl300to100 = function(code, blocks, cache) {
   return res;
 };
 
-const getChunkByName = (function() {
+const getChunkByName = (() => {
   let entryRE = /([\w-]+)(?::(\w+))?/;
-  return function(name, cache) {
+  return (name, cache) => {
     let entryCap = entryRE.exec(name), entry = entryCap[2] || 'main', content = cache[entryCap[1]];
     if (!content) { error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
     return [ content, entry ];
   };
 })();
 
-const wrapEntry = (function() {
+const wrapEntry = (() => {
   let wrapperFactory = (vert, fn) => `\nvoid main() { ${vert ? 'gl_Position' : 'gl_FragColor'} = ${fn}(); }\n`;
-  return function(content, name, entry, ast, isVert) {
+  return (content, name, entry, ast, isVert) => {
     if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
       error(`entry function ${name} not found`);
     return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
   };
 })();
 
-const buildShader = (function() {
+const buildShader = (() => {
+  let versionDecl = '#version 300 es';
   let createCache = () => { return { lines: [], blocksInfo: [] }; };
-  return function(vertName, fragName, chunks) {
+  return (vertName, fragName, chunks) => {
     let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
     let [ frag, fEntry ] = getChunkByName(fragName, chunks);
 
@@ -367,7 +368,7 @@ const buildShader = (function() {
       ast = parser(tokens);
       vert = wrapEntry(vert, vertName, vEntry, ast, true);
     } catch (e) { error(`parse ${vertName} failed: ${e}`); }
-    glsl3.vert = vert; glsl1.vert = glsl300to100(vert, blocks, cache);
+    glsl3.vert = versionDecl + vert; glsl1.vert = glsl300to100(vert, blocks, cache);
 
     shaderName = fragName;
     cache = createCache();
@@ -382,7 +383,7 @@ const buildShader = (function() {
       ast = parser(tokens);
       frag = wrapEntry(frag, fragName, fEntry, ast);
     } catch (e) { error(`parse ${fragName} failed: ${e}`); }
-    glsl3.frag = frag; glsl1.frag = glsl300to100(frag, blocks, cache);
+    glsl3.frag = versionDecl + frag; glsl1.frag = glsl300to100(frag, blocks, cache);
 
     // filter out builtin uniforms & assign bindings
     blocks = blocks.filter(u => !builtins.test(u.name));
@@ -399,7 +400,7 @@ const buildShader = (function() {
 // effects
 // ==================
 
-const parseEffect = (function() {
+const parseEffect = (() => {
   const blockTypes = /CCEFFECT|CCPROGRAM/g;
   const effectRE = /CCEFFECT\s*{([^]+)}/;
   const programRE = /CCPROGRAM\s*([\w-]+)\s*{([^]+)}/;
@@ -417,7 +418,7 @@ const parseEffect = (function() {
     // TODO: strip comments in case of something like '// {'
     return content;
   };
-  return function (content) {
+  return (content) => {
     shaderName = 'syntax error';
     // code block split points
     const blockInfo = {};
@@ -447,7 +448,7 @@ const parseEffect = (function() {
 })();
 
 const chunksCache = {};
-const addChunksCache = function(chunksDir) {
+const addChunksCache = (chunksDir) => {
   const path_ = require('path');
   const fsJetpack = require('fs-jetpack');
   const fs = require('fs');
@@ -460,7 +461,7 @@ const addChunksCache = function(chunksDir) {
   return chunksCache;
 };
 
-const mapPassParam = (function() {
+const mapPassParam = (() => {
   const findUniformType = (name, shader) => {
     let res = -1, cb = (u) => {
       if (u.name !== name) return false;
@@ -545,7 +546,7 @@ const mapPassParam = (function() {
   };
 })();
 
-const buildEffect = function (name, content) {
+const buildEffect = (name, content) => {
   let { effect, templates } = parseEffect(content);
   effectName = effect.name = name;
   Object.assign(templates, chunksCache);
