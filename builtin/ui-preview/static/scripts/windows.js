@@ -33,11 +33,11 @@ exports.load = function() {
     });
 
     // 闪烁对应面板的资源
-    Editor.UI.DragObject.setFocusedAction((uuid) => {
-        if (uuid && uuid.length > 22) { // 资源
-             Editor.Ipc.sendToPanel('assets', 'twinkle', uuid);
-        } else { // 节点
-            Editor.Ipc.sendToPanel('hierarchy', 'twinkle', uuid);
-        }
-    });
+    // Editor.UI.DragObject.setFocusedAction((uuid) => {
+    //     if (uuid && uuid.length > 22) { // 资源
+    //          Editor.Ipc.sendToPanel('assets', 'twinkle', uuid);
+    //     } else { // 节点
+    //         Editor.Ipc.sendToPanel('hierarchy', 'twinkle', uuid);
+    //     }
+    // });
 };

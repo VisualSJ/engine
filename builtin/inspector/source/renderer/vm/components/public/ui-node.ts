@@ -9,6 +9,8 @@ export const template = `
         :dropable="type"
         :value="value ? value.uuid : null"
         :default="dataDefault"
+
+        @click.stop="_onClick($event, value ? value.uuid : null)"
     ></ui-drag-object>
 </div>
 `;
@@ -31,6 +33,15 @@ export const methods = {
         return {
             uuid,
         };
+    },
+
+    /**
+     * 单击资源组件，在 assts 面板上闪烁一下
+     * @param event
+     * @param uuid
+     */
+    _onClick(event: any, uuid: string) {
+        Editor.Ipc.sendToPanel('hierarchy', 'twinkle', uuid);
     },
 };
 

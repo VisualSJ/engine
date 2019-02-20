@@ -27,12 +27,12 @@ export function encodeNode(node: any): INode {
     };
 
     const data: INode = {
-        active: encodeObject(node.active, emptyAttribute),
-        name: encodeObject(node.name, emptyAttribute),
-        position: encodeObject(node._lpos, emptyAttribute),
-        rotation: encodeObject(node.eulerAngles, emptyAttribute),
-        scale: encodeObject(node._lscale, emptyAttribute),
-        uuid: encodeObject(node.uuid, emptyAttribute),
+        active: encodeObject(node.active, { default: null }),
+        name: encodeObject(node.name, { default: null }),
+        position: encodeObject(node._lpos, { default: new cc.Vec3() }),
+        rotation: encodeObject(node.eulerAngles, { default: new cc.Vec3() }),
+        scale: encodeObject(node._lscale, { default: new cc.Vec3(1, 1, 1) }),
+        uuid: encodeObject(node.uuid, { default: null }),
 
         parent: encodeObject(node.parent, {
             ctor: cc.Node,

@@ -1,8 +1,8 @@
 import { Asset, Importer, queryUrlFromPath } from '@editor/asset-db';
 import { AssertionError } from 'assert';
 import { extname } from 'path';
-import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
 import { makeDefaultSpriteFrameAssetUserDataFromImageUuid } from './sprite-frame';
+import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
 import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './texture-cube';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
@@ -11,7 +11,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.4';
+        return '1.0.5';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -70,15 +70,18 @@ export default class ImageImporter extends Importer {
 
             switch (importType) {
                 case 'raw':
+                    delete asset.userData.redirect;
                     break;
                 case 'texture':
                 case 'normal map':
                     const texture2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
+                    asset.userData.redirect = texture2DSubAsset.uuid;
                     Object.assign(texture2DSubAsset.userData,
                         makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
                     break;
                 case 'texture cube':
                     const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
+                    asset.userData.redirect = textureCubeSubAsset.uuid;
                     Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
                     (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
                     break;
@@ -87,6 +90,7 @@ export default class ImageImporter extends Importer {
                     // Object.assign(sprite2DSubAsset.userData,
                     //     makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
                     const textureSpriteFrameSubAsset = await asset.createSubAsset(asset.basename, 'sprite-frame');
+                    asset.userData.redirect = textureSpriteFrameSubAsset.uuid;
                     Object.assign(textureSpriteFrameSubAsset.userData,
                         makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid));
                     break;
