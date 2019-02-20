@@ -150,7 +150,7 @@ class AssetWatcher {
     }
 
     public owner: any = null;
-    public watchingInfos = Object.create(null);
+    public watchingInfos: { [index: string]: any}  = Object.create(null);
 
     constructor(owner: any) {
         this.owner = owner;
@@ -167,7 +167,11 @@ class AssetWatcher {
     }
 
     public stop() {
-        for (const info of this.watchingInfos) {
+        for (const name in this.watchingInfos) {
+            if (!(name in this.watchingInfos)) {
+                continue;
+            }
+            const info = this.watchingInfos[name];
             if (info) {
                 for (const uuid of info.uuids) {
                     cc.AssetLibrary.assetListener.remove(uuid, info.callback);
