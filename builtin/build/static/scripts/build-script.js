@@ -40,6 +40,7 @@ class ScriptBuilder {
         updateProgress('build scripts...');
         this.init(type);
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
+        mountProjectScripts.reset();
         mountProjectScripts.mount(scripts);
         // projectScripts.load(scripts);
         const result = await this.resolveScripts(scripts);

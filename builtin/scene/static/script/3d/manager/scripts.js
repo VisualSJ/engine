@@ -5,13 +5,8 @@ const uuidUtils = require('../../utils/uuid');
 const mountProjectScripts = require('../../../../../engine/static/utils/3d/mount-project-scripts');
 
 async function init() {
-    const scriptAssetInfos = new Array();
     const uuids = await ipc.send('query-scripts');
-    for (const uuid of uuids) {
-        const scriptAssetInfo = await ipc.send('query-asset-info', uuid);
-        scriptAssetInfos.push(scriptAssetInfo);
-    }
-    mountProjectScripts.mount(scriptAssetInfos);
+    await loadScripts(uuids);
 }
 
 /**
@@ -59,9 +54,15 @@ function loadScript(uuid) {
  * @param {*} uuids
  */
 async function loadScripts(uuids) {
-    await Promise.all(uuids.map((uuid) => {
-        return loadScript(uuid);
-    }));
+    const scriptAssetInfos = new Array();
+    for (const uuid of uuids) {
+        const scriptAssetInfo = await ipc.send('query-asset-info', uuid);
+        scriptAssetInfos.push(scriptAssetInfo);
+    }
+    mountProjectScripts.mount(scriptAssetInfos);
+    // await Promise.all(uuids.map((uuid) => {
+    //     return loadScript(uuid);
+    // }));
 }
 
 module.exports = {
