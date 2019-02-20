@@ -9,11 +9,6 @@ import { ipcAddListener } from '../ipc';
 import { encodeAsset, queryAsset } from '../utils';
 
 const minimatch = require('minimatch');
-// 对资源进来分类，方便筛选
-const TYPES: any = {
-    scripts: ['.js', '.ts'],
-    scene: ['.scene', '.fire'],
-};
 
 ipcAddListener('asset-worker:query-path-from-url', (event: any, url: string) => {
     event.reply(null, queryPathFromUrl(url));
@@ -52,7 +47,12 @@ ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) =>
 /**
  * 根据提供的 options 查询对应的资源数组
  */
-ipcAddListener('asset-worker:query-assets', async (event: any, options: any) => {
+ipcAddListener('asset-worker:query-assets', async (event: any, options?: any) => {
+    if ((options !== undefined  && typeof options !== 'object') || Array.isArray(options)) {
+        event.reply(null, null);
+        return;
+    }
+
     options = options || {};
 
     let assets: IAssetInfo[] = [];
@@ -89,17 +89,26 @@ ipcAddListener('asset-worker:query-assets', async (event: any, options: any) => 
         }
     }
 
+    // pattern 为 globs 格式，如 db://internal/**/*.prefab 注意需要加 db:// ,直接 internal/**/* 过滤无效
     if (options.pattern && typeof options.pattern === 'string') {
-        // TODO
         assets = assets.filter((info: IAssetInfo) => {
             return minimatch(info.source, options.pattern);
         });
     }
-    if (options.type && TYPES[options.type]) {
+
+    // 根据资源类型筛选
+    const TYPES: any = {
+        scripts: ['.js', '.ts'],
+        scene: ['.scene'],
+        effect: ['.effect'],
+        image: ['.png', '.jpg'],
+    };
+    if (options.type && typeof options.type === 'string') {
+        const types = TYPES[options.type];
         // TODO 这里只过滤了实体资源，虚拟资源无法查询
-        assets = assets.filter((info: IAssetInfo) => {
-            return TYPES[options.type].includes(extname(info.source));
-        });
+        if (types) {
+            assets = assets.filter((info: IAssetInfo) => types.includes(extname(info.source)));
+        }
     }
 
     event.reply(null, assets);

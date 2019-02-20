@@ -5,7 +5,7 @@ const { join } = require('path');
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-describe('测试 AssetDB 如下 IPC 接口：', () => {
+describe('测试 DB 中 Database 的 IPC 接口：', () => {
 
     describe('refresh, query-ready ：刷新数据库', () => {
         let interrupt = false;
