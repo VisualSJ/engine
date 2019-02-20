@@ -1,4 +1,4 @@
-const { basename, join, relative, extname, dirname } = require('path');
+const { basename, join, relative, extname, dirname, sep } = require('path');
 const { readFileSync , renameSync} = require('fs');
 const BrowserResolve = require('browser-resolve'); // 解析成 Node 和浏览器共用的 JavaScript 包
 const Mdeps = require('module-deps'); // 用于获取 js 模块依赖
@@ -46,7 +46,7 @@ function computeArgs(options) {
 }
 // 判断是否为 node 依赖模块
 function isNodeModulePath(path) {
-    return path.replace(/\\/g, '/').indexOf('/node_modules/') !== -1;
+    return path.split(sep).join('/').indexOf('/node_modules/') !== -1;
 }
 
 // 更新处理模块依赖数据（转换路径，转换依赖路径为 index）
@@ -205,7 +205,7 @@ async function getCustomConfig(type, config) {
 // 将绝对路径转换为 preview-script 路径下的
 function rawPathToAssetPath(path) {
     let mainPoint = path.replace(commonInfo.project, PREVIEW_PATH);
-    return mainPoint.replace(/\\/g, '/');
+    return mainPoint.split(sep).join('/');
 }
 
 // 去除 db:// 的路径
@@ -248,11 +248,11 @@ function getAssetUrl(path, uuid) {
         rawPath = rawPath.replace(extName, uuid.slice(36));
     }
     if (inAssets) {
-        rawPath = relative(commonInfo.RAWASSET_SPATH, rawPath).replace('resources\\', '');
+        rawPath = relative(commonInfo.RAWASSET_SPATH, rawPath).replace(`resources${sep}`, '');
     } else if (inInternal) {
-        rawPath = relative(commonInfo.INTERNAL_PATH, rawPath).replace('resources\\', '');
+        rawPath = relative(commonInfo.INTERNAL_PATH, rawPath).replace(`resources${sep}`, '');
     }
-    return rawPath.replace(/\\/g, '\/');
+    return rawPath.split(sep).join('/');
 }
 
 // 获取当前展示场景的数据信息
