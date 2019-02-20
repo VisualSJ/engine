@@ -95,5 +95,5 @@ export function makeDefaultSpriteFrameBaseAssetUserData(): SpriteFrameBaseAssetU
         borderBottom: 0,
         borderLeft: 0,
         borderRight: 0,
-    }
+    };
 }

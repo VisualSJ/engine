@@ -33,7 +33,7 @@
         "@base/electron-profile": "1.0.2",
         "@base/electron-windows": "1.0.1",
         "@base/electron-worker": "1.0.4",
-        "@editor/asset-db": "1.1.0",
+        "@editor/asset-db": "1.1.1",
         "@editor/dock": "1.0.1",
         "@editor/package": "1.0.0",
         "@editor/panel": "1.0.7",

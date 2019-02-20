@@ -1,6 +1,6 @@
 'use stirct';
 
-import { Asset, Importer } from '@editor/asset-db';
+import { Asset, Importer, VirtualAsset } from '@editor/asset-db';
 
 export default class UnknownImporter extends Importer {
 
@@ -23,7 +23,7 @@ export default class UnknownImporter extends Importer {
      * 实际导入流程
      * @param asset
      */
-    public async import(asset: Asset) {
+    public async import(asset: Asset | VirtualAsset) {
         return false;
     }
 }

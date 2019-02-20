@@ -108,6 +108,7 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
             const redirectImporter = database.name2importer[redirectInfo.asset.meta.importer] || null;
             redirect = {
                 uuid: redirectInfo.asset.uuid,
+                // @ts-ignore
                 type: redirectImporter ? (redirectImporter.assetType || 'cc.Asset') : 'cc.Asset',
             };
         }
@@ -119,6 +120,7 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
         file, // 实际磁盘路径
         uuid: asset.uuid,
         importer: asset.meta.importer,
+        // @ts-ignore
         type: importer ? (importer.assetType || 'cc.Asset') : 'cc.Asset',
         isDirectory: await asset.isDirectory(),
         library: libArr2Obj(asset),
