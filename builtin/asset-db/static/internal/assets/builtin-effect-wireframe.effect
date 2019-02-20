@@ -5,8 +5,8 @@ CCEFFECT {
       lod: 100
       passes: [
         {
-          vert: wire-vs
-          frag: wire-fs
+          vert: wire-vs:vert
+          frag: wire-fs:frag
           depthStencilState: {
             depthTest: true
             depthWrite: false
@@ -31,14 +31,14 @@ CCPROGRAM wire-vs {
   out vec3 position_w;
   out vec3 normal_w;
 
-  void main () {
+  vec4 vert () {
     vec4 pos = vec4(a_position, 1);
 
     position_w = (cc_matWorld * pos).xyz;
     pos = cc_matViewProj * cc_matWorld * pos;
     normal_w = _normalMatrix * a_normal.xyz;
 
-    gl_Position = pos;
+    return pos;
   }
 }
 
@@ -52,14 +52,14 @@ CCPROGRAM wire-fs {
 
   in vec3 position_w;
   in vec3 normal_w;
-  out vec4 fragColor;
 
-  void main () {
-    fragColor = color;
+  vec4 frag () {
+    vec4 res = color;
 
     vec3 V = normalize(cc_cameraPos.xyz - position_w);
     if (dot (normal_w, V) <= 0.0) {
-      fragColor.rgb *= 0.6;
+      res.rgb *= 0.6;
     }
+    return res;
   }
 }

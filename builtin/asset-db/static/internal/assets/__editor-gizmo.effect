@@ -3,8 +3,8 @@ CCEFFECT {
     {
       passes: [
         {
-          vert: gizmo-vs
-          frag: gizmo-fs
+          vert: gizmo-vs:vert
+          frag: gizmo-fs:frag
           priority: max - 10
           rasterizerState: {
             cullMode: none
@@ -32,7 +32,7 @@ CCEFFECT {
     {
       passes: [
         {
-          vert: line-vs
+          vert: line-vs:vert
           frag: line-fs:front
           priority: max - 10
           rasterizerState: {
@@ -61,7 +61,7 @@ CCEFFECT {
     {
       passes: [
         {
-          vert: line-vs
+          vert: line-vs:vert
           frag: line-fs:front
           priority: max - 10
           rasterizerState: {
@@ -86,7 +86,7 @@ CCEFFECT {
           }
         }
         {
-          vert: line-vs
+          vert: line-vs:vert
           frag: line-fs:back
           priority: max - 10
           rasterizerState: {
@@ -131,7 +131,7 @@ CCPROGRAM gizmo-vs {
   out vec3 up;
   out vec3 forward;
 
-  void main () {
+  vec4 vert () {
     vec4 pos = vec4(a_position, 1);
     vec4 normal = vec4(a_normal, 0);
 
@@ -142,7 +142,7 @@ CCPROGRAM gizmo-vs {
     up = vec3(cc_matView[0][1], cc_matView[1][1], cc_matView[2][1]);
     forward = vec3(cc_matView[0][2], cc_matView[1][2], cc_matView[2][2]);
 
-    gl_Position = cc_matViewProj * cc_matWorld * pos;
+    return cc_matViewProj * cc_matWorld * pos;
   }
 }
 
@@ -164,9 +164,7 @@ CCPROGRAM gizmo-fs {
   in vec3 up;
   in vec3 forward;
 
-  out vec4 fragColor;
-
-  void main () {
+  vec4 frag () {
     vec3 N = normalize(normal_w);
     vec3 V = normalize(cc_cameraPos.xyz - pos_w);
 
@@ -181,7 +179,7 @@ CCPROGRAM gizmo-fs {
     points[3] = (forward * 3.0 + right - up) * 40.0;
     vec3 diffuse = color.rgb * (0.2 + LTC_Evaluate(N, V, pos_l, mat3(1), points) * 0.8);
 
-    fragColor = linearToGammaSpaceRGBA(vec4(diffuse, color.a));
+    return linearToGammaSpaceRGBA(vec4(diffuse, color.a));
   }
 }
 
@@ -192,9 +190,10 @@ CCPROGRAM line-vs {
   #include <cc-local>
   #include <cc-global>
 
-  void main () {
-    gl_Position = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
-    gl_Position.z -= 0.0001;
+  vec4 vert () {
+    vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
+    pos.z -= 0.0001;
+    return pos;
   }
 }
 

@@ -3,8 +3,8 @@ CCEFFECT {
     {
       passes: [
         {
-          vert: sky-vs
-          frag: sky-fs
+          vert: sky-vs:vert
+          frag: sky-fs:frag
           priority: min + 10
           rasterizerState: {
             cullMode: none
@@ -30,13 +30,14 @@ CCPROGRAM sky-vs {
 
   out vec3 viewDir;
 
-  void main() {
+  vec4 vert () {
     mat4 matViewRotOnly = mat4(mat3(cc_matView));
     vec4 clipPos = cc_matProj * matViewRotOnly * vec4(a_position, 1.0);
-
-    gl_Position = clipPos;
-    gl_Position.z = clipPos.w * 0.99999;
     viewDir = a_position;
+
+    vec4 pos = clipPos;
+    pos.z = clipPos.w * 0.99999;
+    return pos;
   }
 }
 
@@ -47,15 +48,14 @@ CCPROGRAM sky-fs {
   uniform samplerCube cubeMap;
   #include <gamma-correction>
   #include <unpack>
-  out vec4 fragColor;
 
-  void main() {
+  vec4 frag () {
   #if USE_RGBE_CUBEMAP
       vec3 c = unpackRGBE(texture(cubeMap, viewDir));
       c = linearToGammaSpaceRGB(c / (1.0 + c));
-      fragColor = vec4(c, 1.0);
+      return vec4(c, 1.0);
   #else
-      fragColor = texture(cubeMap, viewDir);
+      return texture(cubeMap, viewDir);
   #endif
   }
 }

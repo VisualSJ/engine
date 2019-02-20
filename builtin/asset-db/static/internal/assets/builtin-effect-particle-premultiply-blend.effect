@@ -5,7 +5,7 @@ CCEFFECT {
       passes: [
         {
           vert: particle-vs-legacy:lpvs_main
-          frag: particle-premultiply-blend-fs
+          frag: particle-premultiply-blend-fs:frag
           rasterizerState: {
             cullMode: none
           }
@@ -44,10 +44,9 @@ CCPROGRAM particle-premultiply-blend-fs {
 
   in vec2 uv;
   in vec4 color;
-  out vec4 fragColor;
 
-  void main () {
+  vec4 frag () {
     // TODO: soft particle
-    fragColor = color * texture(mainTexture, uv) * color.a;
+    return color * texture(mainTexture, uv) * color.a;
   }
 }

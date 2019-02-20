@@ -36,19 +36,22 @@ const stringifyEffect = (() => {
     let code = '';
     for (let i = 0; i < shaders.length; ++i) {
       let { name, glsl3, glsl1, defines, blocks, samplers, dependencies } = shaders[i];
-      [glsl3, glsl1].forEach((s) => {
-        s.vert = s.vert.replace(newlines, '\\n');
-        s.frag = s.frag.replace(newlines, '\\n');
-      });
+
+      // comment any of the following lines to keep shaders readable
+      glsl1.vert = glsl1.vert.replace(newlines, '\\n');
+      glsl1.frag = glsl1.frag.replace(newlines, '\\n');
+      glsl3.vert = glsl3.vert.replace(newlines, '\\n');
+      glsl3.frag = glsl3.frag.replace(newlines, '\\n');
+
       code += '  {\n';
       code += `    "name": "${name}",\n`;
       code += '    "glsl3": {\n';
-      code += `      "vert": "${glsl3.vert}",\n`;
-      code += `      "frag": "${glsl3.frag}"\n`;
+      code += `      "vert": \`${glsl3.vert}\`,\n`;
+      code += `      "frag": \`${glsl3.frag}\`\n`;
       code += '    },\n';
       code += '    "glsl1": {\n';
-      code += `      "vert": "${glsl1.vert}",\n`;
-      code += `      "frag": "${glsl1.frag}"\n`;
+      code += `      "vert": \`${glsl1.vert}\`,\n`;
+      code += `      "frag": \`${glsl1.frag}\`\n`;
       code += '    },\n';
       code += '    "defines": [';
       code += defines.map(toOneLiner);

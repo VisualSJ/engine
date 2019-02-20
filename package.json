@@ -12,7 +12,7 @@
         "build:engine": "node ./scripts/build-engine.js",
         "build:js": "node ./scripts/build-js.js",
         "build:npm": "node ./scripts/build-npm.js",
-        "refresh": "touch ./builtin/asset-db/static/internal/assets/*",
+        "refresh": "touch ./builtin/asset-db/static/internal/assets/*.effect",
         "update": "node ./scripts/update.js",
         "publish": "node ./scripts/publish/index.js",
         "test": "node ./scripts/test.js"

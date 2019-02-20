@@ -8,6 +8,7 @@ const HJSON = require('hjson');
 const includeRE = /#include +<([\w-.]+)>/gm;
 const plainDefineRE = /#define\s+(\w+)\s+(.*)\n/g;
 const defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
+const precisionRE = /precision\s+\w+\s+\w+/;
 const whitespaces = /\s+/g;
 const ident = /[_a-zA-Z]\w*/;
 const extensionRE = /(?:GL_)?(\w+)/;
@@ -21,6 +22,9 @@ const samplerRE = /sampler/;
 const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+);/gm;
 const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+));/gm;
 const texLookup = /texture(\w*)\s*\((\w+),/g;
+const layoutRE = /layout\(.*?\)/g;
+const layoutExtract = /layout\((.*?)\)(\s*)$/;
+const bindingExtract = /binding\s*=\s*(\d+)/;
 
 let effectName = '', shaderName = '';
 const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
@@ -200,10 +204,9 @@ const extractDefines = (tokens, defines, cache) => {
     cache[line] = curDefs.reduce((acc, val) => acc.concat(val), []);
     cache.lines.push(line);
   };
-  for (let i = 0; i < tokens.length; ) {
+  for (let i = 0; i < tokens.length; i++) {
     let t = tokens[i], str = t.data, id, df;
-    if (t.type !== 'preprocessor' || str.startsWith('#extension')) { i++; continue; }
-    tokens.splice(i, 1); // strip out other preprocessor tokens for parser to work
+    if (t.type !== 'preprocessor' || str.startsWith('#extension')) { continue; }
     str = str.split(whitespaces);
     if (str[0] === '#endif') { // pop one level up
       curDefs.pop(); save(t.line); continue;
@@ -264,7 +267,7 @@ const extractParams = (() => {
   const nextSemicolon = (tokens, i, check = () => {}) => { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
   return (tokens, cache, blocks, samplers, dependencies) => {
     for (let i = 0; i < tokens.length; i++) {
-      let t = tokens[i], str = t.data, dest;
+      let t = tokens[i], str = t.data, dest, type;
       if (str === 'uniform') dest = blocks;
       else if (str.startsWith('#extension')) dest = dependencies;
       else continue;
@@ -280,11 +283,12 @@ const extractParams = (() => {
       if (tokens[idx].data !== '{') { // plain types
         if (!samplerRE.test(tokens[i+2].data))
           warn('none-sampler uniforms must be declared in blocks.', t.line);
-        dest = samplers;
+        dest = samplers; type = 'sampler';
         param = extractInfo(tokens, i+2);
+        idx = nextSemicolon(tokens, idx);
       } else { // blocks
         param.name = tokens[i+2].data;
-        param.members = [];
+        param.members = []; type = 'block';
         while (tokens[idx = nextWord(tokens, idx)].data !== '}') {
           const info = extractInfo(tokens, idx);
           info.size = mappings.sizeMap[info.type] * info.count;
@@ -295,33 +299,70 @@ const extractParams = (() => {
         // check for preprocessors inside blocks
         let pre = cache.lines.find(l => l >= tokens[i].line && l < tokens[idx].line)
         if (pre) warn(`${param.name}: no preprocessors allowed inside uniform blocks!`, pre);
-        // save necessary info for later glsl 1 conversion
-        cache.blocksInfo.push({ beg: tokens[i].position, end: tokens[nextWord(tokens, idx)].position, name: param.name });
-        // strip out blocks for parser to work
-        tokens.splice(i, idx - i + 2); i--;
         // check for duplicates
         let item = dest.find(i => i.name === param.name);
         if (item) {
           if (JSON.stringify(item.members) !== JSON.stringify(param.members))
             warn(`different UBO using the same name ${param.name}`, t.line);
-          param = null;
+          param.duplicate = true;
         }
+        idx = nextWord(tokens, idx);
       }
-      if (param) {
+      // save necessary info for later conversions
+      cache.paramInfos.push({ beg: tokens[i].position, end: tokens[idx].position, name: param.name, type });
+      if (!param.duplicate) {
         param.defines = defines;
         dest.push(param);
       }
+      // now we are done with the whole expression
+      i = idx;
     }
   }
+})();
+
+const getChunkByName = (() => {
+  let entryRE = /([\w-]+)(?::(\w+))?/;
+  return (name, cache) => {
+    let entryCap = entryRE.exec(name), entry = entryCap[2] || 'main', content = cache[entryCap[1]];
+    if (!content) { error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
+    return [ content, entry ];
+  };
+})();
+
+const wrapEntry = (() => {
+  let wrapperFactory = (vert, fn) => vert ? `\nvoid main() { gl_Position = ${fn}(); }\n` : `\nout vec4 cc_FragColor;\nvoid main() { cc_FragColor = ${fn}(); }\n`;
+  return (content, entry, isVert) => {
+    return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
+  };
+})();
+
+const miscChecks = (() => {
+  return (code, entry) => {
+    // precision declaration check
+    const cap = precisionRE.exec(code);
+    if (cap) {
+      if (/#extension/.test(code.slice(cap.index)))
+        warn('precision declaration must come after extensions');
+    } else warn('precision declaration not found.');
+    // AST based checks
+    try {
+      const tokens = tokenizer(code).filter((t) => t.type !== 'preprocessor');
+      const ast = parser(tokens);
+      // entry function check
+      if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
+        error(`entry function '${entry}' not found.`);
+    } catch (e) { error(`parse ${shaderName} failed: ${e}`); }
+  };
 })();
 
 const glsl300to100 = (code, blocks, cache, vert) => {
   let res = '';
   // unpack UBOs
   let idx = 0;
-  cache.blocksInfo.forEach(i => {
+  cache.paramInfos.forEach((i) => {
+    if (i.type !== 'block') return;
     res += code.slice(idx, i.beg);
-    blocks.find(u => u.name === i.name).members.forEach(m => {
+    blocks.find((u) => u.name === i.name).members.forEach((m) => {
       let type = mappings.invTypeParams[m.type];
       res += `  uniform ${type} ${m.name}${m.count > 1 ? `[${m.count}]` : ''};\n`;
     });
@@ -334,6 +375,8 @@ const glsl300to100 = (code, blocks, cache, vert) => {
     const cap = re.exec(res);
     return `texture${cap[1]}(${name},`;
   });
+  // layout qualifiers
+  res = res.replace(layoutRE, () => '');
   if (vert) {
     // in/out => attribute/varying
     res = res.replace(inDecl, (_, indent, decl) => `${indent}attribute ${decl};`);
@@ -351,31 +394,73 @@ const glsl300to100 = (code, blocks, cache, vert) => {
   return res;
 };
 
-const getChunkByName = (() => {
-  let entryRE = /([\w-]+)(?::(\w+))?/;
-  return (name, cache) => {
-    let entryCap = entryRE.exec(name), entry = entryCap[2] || 'main', content = cache[entryCap[1]];
-    if (!content) { error(`shader ${entryCap[1]} not found!`); return [ '', entry ]; }
-    return [ content, entry ];
+const decorateBindings = (() => {
+  const record = new Map();
+  const nextBinding = (cache) => {
+    const candidate = cache.bindings;
+    while (record.get(candidate)) candidate++;
+    cache.bindings = candidate + 1;
+    return candidate;
   };
-})();
+  return (code, blocks, samplers, cache) => {
+    const manifest = { block: blocks, sampler: samplers };
+    record.clear();
+    let idx = 0;
+    // extract existing binding infos
+    cache.paramInfos.forEach((i) => {
+      const frag = code.slice(idx, i.beg);
+      const info = {};
+      const cap = layoutExtract.exec(frag);
+      if (cap) {
+        // position of ')'
+        info.position = idx + cap.index + cap[0].length - cap[2].length - 1;
+        const cap2 = bindingExtract.exec(cap[1]);
+        if (cap2) {
+          info.position = -1; // indicating no-op
+          const binding = parseInt(cap2[1]);
+          info.binding = binding;
+          record.set(binding, true);
+        }
+      }
+      record.set(i.name, info);
+      idx = i.end;
+    });
+    let res = ''; idx = 0;
+    cache.paramInfos.forEach((i) => {
+      // TODO: block bindings first and must be contiguous
+      let { binding, position } = record.get(i.name);
 
-const wrapEntry = (() => {
-  let wrapperFactory = (vert, fn) => vert ? `\nvoid main() { gl_Position = ${fn}(); }\n` : `\nout vec4 fragColor;\nvoid main() { fragColor = ${fn}(); }\n`;
-  return (content, name, entry, ast, isVert) => {
-    // if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
-    //   error(`entry function ${name} not found`);
-    return entry === 'main' ? content : content + wrapperFactory(isVert, entry);
+      // assign binding
+      if (binding === undefined) binding = nextBinding(cache);
+      const u = manifest[i.type].find((u) => u.name === i.name);
+      u.binding = binding;
+      // insert declaration
+      if (position === undefined) { // no qualifier, just insert everything
+        res += code.slice(idx, i.beg);
+        res += `layout(binding = ${binding}) `;
+      } else if (position >= 0) { // qualifier exists, but no binding specified
+        res += code.slice(idx, position);
+        res += `, binding = ${binding}`;
+        res += code.slice(position, i.beg);
+      } else { // no-op, binding is already specified
+        res += code.slice(idx, i.beg);
+      }
+      res += code.slice(i.beg, i.end);
+      idx = i.end;
+    });
+    res += code.slice(idx);
+    return code; // disabled 'till we move to vulkan
   };
 })();
 
 const buildShader = (() => {
-  let createCache = () => { return { lines: [], blocksInfo: [] }; };
+  let createCache = () => { return { bindings: 0, lines: [], paramInfos: [] }; };
+  let resetCache = (c) => { c.lines.length = c.paramInfos.length = 0; };
   return (vertName, fragName, chunks) => {
     let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
     let [ frag, fEntry ] = getChunkByName(fragName, chunks);
 
-    let defines = [], cache = createCache(), tokens, ast;
+    let defines = [], cache = createCache(), tokens;
     let blocks = [], samplers = [], dependencies = {};
     let glsl3 = {}, glsl1 = {};
 
@@ -384,33 +469,31 @@ const buildShader = (() => {
     vert = unwindIncludes(vert, chunks);
     vert = expandStructMacro(vert);
     vert = replacePlainDefines(vert);
+    vert = wrapEntry(vert, vEntry, true);
     tokens = tokenizer(vert);
     extractDefines(tokens, defines, cache);
     extractParams(tokens, cache, blocks, samplers, dependencies);
-    try {
-      ast = null;//parser(tokens);
-      vert = wrapEntry(vert, vertName, vEntry, ast, true);
-    } catch (e) { error(`parse ${vertName} failed: ${e}`); }
-    glsl3.vert = vert; glsl1.vert = glsl300to100(vert, blocks, cache, true);
+    glsl3.vert = decorateBindings(vert, blocks, samplers, cache);
+    glsl1.vert = glsl300to100(vert, blocks, cache, true);
+    miscChecks(glsl1.vert, vEntry);
 
+    resetCache(cache);
     shaderName = fragName;
-    cache = createCache();
     frag = glslStripComment(frag);
     frag = unwindIncludes(frag, chunks);
     frag = expandStructMacro(frag);
     frag = replacePlainDefines(frag);
+    frag = wrapEntry(frag, fEntry);
     tokens = tokenizer(frag);
     extractDefines(tokens, defines, cache);
     extractParams(tokens, cache, blocks, samplers, dependencies);
-    try {
-      ast = null;//parser(tokens);
-      frag = wrapEntry(frag, fragName, fEntry, ast);
-    } catch (e) { error(`parse ${fragName} failed: ${e}`); }
-    glsl3.frag = frag; glsl1.frag = glsl300to100(frag, blocks, cache);
+    glsl3.frag = decorateBindings(frag, blocks, samplers, cache);
+    glsl1.frag = glsl300to100(frag, blocks, cache, false);
+    miscChecks(glsl1.frag, fEntry);
 
-    // filter out builtin uniforms & assign bindings
-    blocks = blocks.filter(u => !builtins.test(u.name));
-    samplers = samplers.filter(u => !builtins.test(u.name));
+    // filter out pipeline builtin params
+    blocks = blocks.filter((u) => !builtins.test(u.name));
+    samplers = samplers.filter((u) => !builtins.test(u.name));
     let bindingIdx = 0;
     blocks.forEach((u) => u.binding = bindingIdx++);
     samplers.forEach((u) => u.binding = bindingIdx++);
@@ -444,20 +527,20 @@ const parseEffect = (() => {
   return (name, content) => {
     shaderName = 'syntax error';
     // code block split points
-    const blockInfo = {};
+    const blockInfos = {};
     let blockCap = blockTypes.exec(content), effectCount = 0;
     while (blockCap) {
-      blockInfo[blockCap.index] = blockCap[0];
+      blockInfos[blockCap.index] = blockCap[0];
       if (blockCap[0] === 'CCEFFECT') effectCount++;
       blockCap = blockTypes.exec(content);
     }
-    const blockPos = Object.keys(blockInfo);
+    const blockPos = Object.keys(blockInfos);
     if (effectCount !== 1) error('there must be exactly one CCEFFECT.');
     // process each block
     let effect = {}, templates = {};
     for (let i = 0; i < blockPos.length; i++) {
       const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
-      if (blockInfo[blockPos[i]] === 'CCEFFECT') {
+      if (blockInfos[blockPos[i]] === 'CCEFFECT') {
         let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
         else { effect = HJSON.parse(`{${effectCap[1]}}`); effect.name = name; }

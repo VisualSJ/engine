@@ -36,11 +36,11 @@ CCEFFECT {
             alphaTestThreshold: { type: 'float',     value: 0                  }
           }
         }
-        {
-          vert: shadow-depth-vs:vert
-          frag: shadow-depth-fs:frag
-          stage: shadowcast
-        }
+        // {
+        //   vert: shadow-depth-vs:vert
+        //   frag: shadow-depth-fs:frag
+        //   stage: shadowcast
+        // }
       ]
     }
   ]

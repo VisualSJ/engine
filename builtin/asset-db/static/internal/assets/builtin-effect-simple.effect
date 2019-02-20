@@ -4,8 +4,8 @@ CCEFFECT {
       queue: opaque
       passes: [
         {
-          vert: sp-vs
-          frag: sp-fs
+          vert: sp-vs:vert
+          frag: sp-fs:frag
           properties: {
             color: { type: 'color4', value: [0.4, 0.4, 0.4, 1] }
           }
@@ -27,14 +27,14 @@ CCPROGRAM sp-vs {
     out vec2 uv0;
   #endif
 
-  void main () {
+  vec4 vert () {
     vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
 
     #if USE_TEXTURE
       uv0 = a_texCoord;
     #endif
 
-    gl_Position = pos;
+    return pos;
   }
 }
 
@@ -50,9 +50,8 @@ CCPROGRAM sp-fs {
       vec4 color;
     };
   #endif
-  out vec4 fragColor;
 
-  void main () {
+  vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
     #if USE_TEXTURE
@@ -67,6 +66,6 @@ CCPROGRAM sp-fs {
       o.rgb *= 0.5;
     }
 
-    fragColor = o;
+    return o;
   }
 }

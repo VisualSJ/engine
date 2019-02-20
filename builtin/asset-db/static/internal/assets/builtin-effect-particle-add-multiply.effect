@@ -6,7 +6,7 @@ CCEFFECT {
       passes: [
         {
           vert: particle-vs-legacy:lpvs_main
-          frag: particle-add-multiply-fs
+          frag: particle-add-multiply-fs:frag
           rasterizerState: {
             cullMode: none
           }
@@ -49,14 +49,13 @@ CCPROGRAM particle-add-multiply-fs {
 
   in vec2 uv;
   in vec4 color;
-  out vec4 fragColor;
 
-  void main () {
+  vec4 frag () {
     // TODO: soft particle
     vec4 col;
     vec4 texColor = texture(mainTexture, uv);
     col.rgb = tintColor.rgb * texColor.rgb * color.rgb * vec3(2.0);
     col.a = (1.0 - texColor.a) * (tintColor.a * color.a * 2.0);
-    fragColor = col;
+    return col;
   }
 }

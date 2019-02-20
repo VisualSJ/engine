@@ -5,8 +5,8 @@ CCEFFECT {
       lod: 100
       passes: [
         {
-          vert: matcap-vs
-          frag: matcap-fs
+          vert: matcap-vs:vert
+          frag: matcap-fs:frag
           depthStencilState: {
             depthTest: true
             depthWrite: true
@@ -42,7 +42,7 @@ CCPROGRAM matcap-vs {
     #include <skinning>
   #endif
 
-  void main(void){
+  vec4 vert () {
     vec4 pos = vec4(a_position, 1);
     vec4 normal = vec4(a_normal, 0);
 
@@ -52,7 +52,6 @@ CCPROGRAM matcap-vs {
 
     pos = cc_matViewProj * cc_matWorld * pos;
     normal = vec4(normalize(_normalMatrix * normal.xyz), 0);
-    gl_Position = pos;
 
     matcapUV = normal.xy;
     matcapUV = matcapUV * 0.5 + 0.5;
@@ -60,6 +59,7 @@ CCPROGRAM matcap-vs {
     #if USE_MAIN_TEX
       uv0 = a_texCoord;
     #endif
+    return pos;
   }
 }
 
@@ -72,20 +72,19 @@ CCPROGRAM matcap-fs {
   };
 
   in vec2 matcapUV;
-  out vec4 fragColor;
 
   #if USE_MAIN_TEX
     in vec2 uv0;
     uniform sampler2D mainTex;
   #endif
 
-  void main(void){
+  vec4 frag() {
     vec4 col = vec4(1, 1, 1, 1);
     col *= color;
     #if USE_MAIN_TEX
       col *= texture(mainTex, uv0);
     #endif
     vec4 matcapColor = texture(matcapTex, matcapUV);
-    fragColor = col * colorFactor + matcapColor * (1.0 - colorFactor);
+    return col * colorFactor + matcapColor * (1.0 - colorFactor);
   }
 }
