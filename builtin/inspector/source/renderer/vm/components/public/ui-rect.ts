@@ -5,18 +5,20 @@ export const template = `
     <ui-vec2
         :readobly="readonly"
         v-model="value"
+        :data-default="dataDefault"
     ></ui-vec2>
 
     <ui-size
         :readobly="readonly"
         v-model="value"
+        :data-default="dataDefault"
     ></ui-size>
 </div>
 `;
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'value',
 ];
 

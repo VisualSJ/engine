@@ -4,7 +4,6 @@
     :node="value && isType('cc.Node')"
     :asset="value && isType('cc.Asset')"
     :component="value && isType('cc.Component')"
-
     @confirm="_onConfirm($event)"
 >
 
@@ -82,6 +81,7 @@
                 :max="value.max"
                 :step="value.step"
                 :slide="value.slide"
+                :data-default="value.default"
                 v-model="value.value"
             ></ui-number>
         </div>
@@ -96,6 +96,7 @@
             <ui-bool
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-bool>
         </div>
     </template>
@@ -113,6 +114,7 @@
         <div class="content">
             <ui-string
                 :readonly="value.readonly"
+                :data-default="value.default"
                 v-model="value.value"
             ></ui-string>
         </div>
@@ -132,6 +134,7 @@
             <ui-enum
                 :readonly="value.readonly"
                 :list="value.enumList"
+                :data-default="value.default"
                 v-model="value.value"
             ></ui-enum>
         </div>
@@ -151,6 +154,7 @@
             <ui-size
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-size>
         </div>
     </template>
@@ -169,6 +173,7 @@
             <ui-vec2
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-vec2>
         </div>
     </template>
@@ -187,6 +192,7 @@
             <ui-vec3
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-vec3>
         </div>
     </template>
@@ -205,6 +211,7 @@
             <ui-color
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-color>
         </div>
     </template>
@@ -223,6 +230,7 @@
             <ui-rect
                 :readonly="value.readonly"
                 :value="value.value"
+                :data-default="value.default"
             ></ui-rect>
         </div>
     </template>
@@ -242,6 +250,7 @@
                 :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-node>
         </div>
     </template>
@@ -261,6 +270,7 @@
                 :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-asset>
         </div>
     </template>
@@ -280,6 +290,7 @@
                 :readonly="value.readonly"
                 :type="value.type"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-component>
         </div>
     </template>
@@ -298,7 +309,7 @@
             <ui-curve
                 :readonly="value.readonly"
                 v-model="value.value"
-
+                :data-default="value.default"
                 :width="width"
                 :height="height"
             ></ui-curve>
@@ -333,6 +344,7 @@
             <ui-gradient
                 :readonly="value.readonly"
                 v-model="value.value"
+                :data-default="value.default"
             ></ui-gradient>
         </div>
     </template>

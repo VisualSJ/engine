@@ -7,6 +7,7 @@ export const template = `
     <ui-color
         :disabled="readonly"
         :value="color"
+        :default="defaultColor"
         @change="_onChange($event)"
     ></ui-color>
 </div>
@@ -14,7 +15,7 @@ export const template = `
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'value',
 ];
 
@@ -66,6 +67,18 @@ export const methods = {
             vm.$el.dispatchEvent(event);
             vm.lock = false;
         }, 200);
+    },
+};
+
+export const computed = {
+    defaultColor(): string {
+        // @ts-ignore
+        if (this.defaultValue) {
+            // @ts-ignore
+            return JSON.stringify([this.defaultValue.r, this.defaultValue.g, this.defaultValue.this.defaultValue.a]);
+        } else {
+            return '[255, 255, 255, 255]';
+        }
     },
 };
 

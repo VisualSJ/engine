@@ -7,6 +7,7 @@ export const template = `
     <ui-select
         :disabled="readonly"
         :value="value"
+        :default="dataDefault"
     >
         <option
             v-for="item in list"
@@ -20,6 +21,7 @@ export const props = [
     'readonly',
     'list',
     'value',
+    'dataDefault',
 ];
 
 export const components = {};

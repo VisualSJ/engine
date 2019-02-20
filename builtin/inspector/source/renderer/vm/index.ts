@@ -37,6 +37,19 @@ export function init(elem: HTMLElement) {
                 // @ts-ignore
                 this.height = rect.height;
             },
+            /**
+             * 数据重置
+             */
+            reset(event: any) {
+                const target = event.target;
+                const value: any = target.getAttribute('default');
+                // 没有默认值则不作处理
+                if (value === undefined || value === null) {
+                    return;
+                }
+                target.setAttribute('value', value);
+                target.dispatch && target.dispatch('change');
+            },
         },
 
         components: {

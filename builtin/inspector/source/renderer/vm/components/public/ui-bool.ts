@@ -7,13 +7,14 @@ export const template = `
     <ui-checkbox
         :disabled="readonly"
         :value="value"
+        :default="dataDefault"
     ></ui-checkbox>
 </div>
 `;
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'value',
 ];
 

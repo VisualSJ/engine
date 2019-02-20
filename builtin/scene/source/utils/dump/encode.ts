@@ -68,6 +68,7 @@ export function encodeComponent(component: any): IProperty {
 
     const data: IProperty = {
         value: {},
+        default: undefined,
         type: getTypeName(ctor),
         readonly: false,
         visible: true,
@@ -116,6 +117,7 @@ export function encodeObject(object: any, attributes: any): IProperty {
 
     const data: IProperty = {
         value: null,
+        default: defValue,
         type: getTypeName(ctor),
         readonly: !!attributes.readonly,
         visible: ('visible' in attributes) ? attributes.visible : true,

@@ -3,7 +3,7 @@
 import { close, open } from '../../../../gradient-editor/manager';
 
 export const template = `
-<div class="ui-gradient">
+<div class="ui-gradient" @click.right="reset">
     <div class="graphics"
         :style="style"
         @click="_onClick"
@@ -13,6 +13,7 @@ export const template = `
 
 export const props = [
     'readyonly',
+    'dataDefault',
     'value',
 ];
 
@@ -68,6 +69,11 @@ export const methods = {
         const event = document.createEvent('HTMLEvents');
         event.initEvent('confirm', true, true);
         vm.$el.dispatchEvent(event);
+    },
+
+    reset() {
+        // @ts-ignore
+        this.dataDefault && (this.apply(this.dataDefault));
     },
 };
 

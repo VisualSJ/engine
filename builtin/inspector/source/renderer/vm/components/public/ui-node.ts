@@ -8,13 +8,14 @@ export const template = `
         :disabled="readonly"
         :dropable="type"
         :value="value ? value.uuid : null"
+        :default="dataDefault"
     ></ui-drag-object>
 </div>
 `;
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'type',
     'value',
 ];

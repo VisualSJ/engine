@@ -2,8 +2,8 @@
 import { close as closeCurve, drawCurve , open as openCurve } from '../../../../curve-editor/manager';
 
 export const template = `
-<div class="ui-curve">
-    <canvas @click="showEditor" ref="thumb"></canvas>
+<div class="ui-curve" @click.right="reset">
+    <canvas @click="showEditor" ref="thumb" ></canvas>
 </div>
 `;
 
@@ -11,7 +11,7 @@ export const props = [
     'readonly',
     'width',
     'height',
-
+    'dataDefault',
     'value',
 ];
 
@@ -51,6 +51,14 @@ export const methods = {
      */
     showEditor(this: any) {
         openCurve(this.value, this);
+    },
+
+    /**
+     * 数据重置
+     */
+    reset() {
+        // @ts-ignore
+        this.dataDefault && (this.apply(this.dataDefault));
     },
 };
 

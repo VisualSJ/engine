@@ -2,6 +2,7 @@
 
 export interface IProperty {
     value: { [key: string]: IProperty | IProperty[] | null | undefined | number | boolean | string } | null;
+    default: any; // 默认值
 
     // name: string;
     type: string;
@@ -10,7 +11,6 @@ export interface IProperty {
 
     isArray?: boolean;
     invalid?: boolean;
-    default?: any; // 默认值
     extends?: string[]; // 继承链
     displayName?: string; // 显示到界面上的名字
     tooltip?: string; // 提示文本

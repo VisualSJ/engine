@@ -29,7 +29,7 @@ export const template = `
 export const props = [
     'readonly',
     'name',
-
+    'dataDefault',
     'value',
 ];
 

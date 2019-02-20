@@ -18,6 +18,7 @@ export const template = `
             :max="max"
             :step="step"
             :value="value"
+            :default="dataDefault"
             @change="_onChange($event)"
         ></ui-slider>
     </template>
@@ -30,6 +31,7 @@ export const template = `
             :max="max"
             :step="step"
             :value="value"
+            :default="dataDefault"
             @change="_onChange($event)"
         ></ui-num-input>
     </template>
@@ -43,8 +45,9 @@ export const props = [
     'max',
     'step',
     'slide',
-
+    'test',
     'value',
+    'dataDefault',
 ];
 
 export const components = {};

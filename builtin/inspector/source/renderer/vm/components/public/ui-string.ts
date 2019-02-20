@@ -7,6 +7,7 @@ export const template = `
     <ui-input
         :disabled="readonly"
         :value="value"
+        :default="dataDefault"
         @change="_onChange($event)"
     ></ui-input>
 </div>
@@ -14,7 +15,7 @@ export const template = `
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'value',
 ];
 

@@ -5,17 +5,19 @@ export const template = `
     <ui-number name="X"
         :readonly="readonly"
         v-model="value.x"
+        :data-default="dataDefault && dataDefault.x"
     ></ui-number>
     <ui-number name="Y"
         :readonly="readonly"
         v-model="value.y"
+        :data-default="dataDefault && dataDefault.y"
     ></ui-number>
 </div>
 `;
 
 export const props = [
     'readonly',
-
+    'dataDefault',
     'value',
 ];
 
