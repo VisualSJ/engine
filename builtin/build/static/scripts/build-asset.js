@@ -34,12 +34,12 @@ class AssetBuilder {
         updateProgress('build assets...');
         let startTime = new Date().getTime();
         this.init(type);
-        if (!Array.isArray(scenes) || !scenes) {
-            buildResult.assetCache[scenes.uuid] = scenes;
-        } else {
+        if (Array.isArray(scenes)) {
             for (let item of scenes) {
                 buildResult.assetCache[item.uuid] = item;
             }
+        } else if (scenes.source) {
+            buildResult.assetCache[scenes.uuid] = scenes;
         }
 
         this.result.scenes = [];

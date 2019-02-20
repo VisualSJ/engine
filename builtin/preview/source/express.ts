@@ -1,13 +1,12 @@
 'use stirct';
 
-import { copyFile, createReadStream, existsSync, readJSONSync } from 'fs-extra';
+import { createReadStream, existsSync } from 'fs-extra';
 import http from 'http';
 import { basename, join } from 'path';
 import { disconnect , previewProfile , start as startSocket } from './socket';
 const Mobiledetect = require('mobile-detect');
 const { DEVICES } = require('./../static/utils/util');
 const express = require('express');
-const {URLSearchParams } = require('url');
 
 let app: any = null;
 let server: any = null;
@@ -51,18 +50,15 @@ export async function start() {
     app.engine('.html', require('express-art-template'));
     app.set('views', join(__dirname, '../static/views'));
     app.get('/setting.js', async (req: any, res: any, next: any) => {
-        let setting: any;
-        setTimeout(() => {
-            if (typeof(setting) !== 'string') {
-                res.status(500).send('构建 settings 出错');
-            }
-        }, 5000);
-        setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
+        // 监听构建
+        const setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
             type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
         });
-
+        if (!setting) {
+            res.status(500).send('构建 settings 出错');
+        }
         res.send(setting);
     });
 
@@ -93,23 +89,26 @@ export async function start() {
             'Content-Type': 'text/javascript',
         });
         const str = await Editor.Ipc.requestToPackage('build', 'get-modules', req.params[0]);
+        if (!str) {
+            res.status(500).end(`${req.params[0]} 脚本编译出错`);
+        }
         res.end(str);
     });
 
     // 获取当前场景资源 json 与 uuid
     app.get('/current-scene.json', async (req: any, res: any) => {
         const asset = await Editor.Ipc.requestToPackage('build', 'get-current-scene');
-        if (asset.currenSceneFlag) {
+        if (asset.source && asset.currenSceneFlag) {
             const json = await Editor.Ipc.requestToPanel('scene', 'query-scene-json');
             res.end(json);
-        } else {
+        } else if (asset.source) {
             const filepath = asset.library['.json'];
-
             if (filepath) {
                 res.sendFile(filepath);
             }
+        } else {
+            res.end(asset);
         }
-
     });
 
     // 根据资源路径加载对应静态资源资源

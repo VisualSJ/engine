@@ -11,10 +11,10 @@ function mount(scriptAssetInfos) {
             }
             return result;
         });
-    } 
+    }
     for (const scriptAssetInfo of scriptAssetInfos) {
         require(scriptAssetInfo.source);
-        console.log(`Script ${scriptAssetInfo.uuid}(${scriptAssetInfo.source}) mounted.`);
+        console.info(`Script ${scriptAssetInfo.uuid}(${scriptAssetInfo.source}) mounted.`);
     }
 }
 

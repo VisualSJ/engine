@@ -96,7 +96,7 @@ function findDepIndex(scripts, dep) {
  * @returns
  */
 async function getScriptsCache(scripts) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         let concat = Concat((buf) => {
             let str = buf.toString();
             str = `{"scripts": ${str}}`;
@@ -104,7 +104,7 @@ async function getScriptsCache(scripts) {
             try {
                 parsedScripts = JSON.parse(str).scripts;
             } catch (err) {
-                console.error(err);
+                reject(err);
             }
             let newScripts = updateNodeModules(parsedScripts);
             resolve(newScripts);
@@ -258,6 +258,10 @@ function getAssetUrl(path, uuid) {
 // 获取当前展示场景的数据信息
 async function getCurrentScene(uuid) {
     let currenUuid = await requestToPackage('scene', 'query-current-scene');
+    if (!currenUuid) {
+        const json = await requestToPackage('scene', 'query-scene-json');
+        return json;
+    }
     if (!uuid) {
         uuid = await getProSetting('preview.start_scene');
         if ((uuid && uuid === 'current_scene') || typeof(uuid) === 'object' || !uuid) {

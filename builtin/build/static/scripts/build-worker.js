@@ -47,13 +47,25 @@ Worker.Ipc.on('build-worker:build', async (event, options) => {
 
 // 构建 setting 信息
 Worker.Ipc.on('build-worker:build-setting', async (event, options, config) => {
-    const setting = await builder.buildSetting(options, config);
+    let setting;
+    try {
+         setting = await builder.buildSetting(options, config);
+    } catch (error) {
+        console.error(error);
+        event.reply(null, null);
+    }
     event.reply(null, setting);
 });
 
 // 构建脚本模块信息，添加头尾部
 Worker.Ipc.on('build-worker:get-modules', async (event, path) => {
-    const content = await getModules(path);
+    let content;
+    try {
+        content = await getModules(path);
+    } catch (error) {
+        console.error(error);
+        event.reply(null, null);
+    }
     event.reply(null, content);
 });
 

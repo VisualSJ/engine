@@ -633,21 +633,25 @@ class Builder {
      * @returns JSON
      */
     async buildSetting(options, config) {
-        // let tempConfig = await getCustomConfig(options.type, config);
-        let currenScene;
+        let currenScene; let sceneJson;
         if (config && config.start_scene) {
             currenScene = await getCurrentScene(config.start_scene);
         } else {
             currenScene = await getCurrentScene();
         }
-        // const setting = Object.assign(options, tempConfig);
         const setting = options;
-        setting.launchScene = currenScene.source;
-
+        if (currenScene && !currenScene.source) {
+            sceneJson = JSON.parse(currenScene);
+        } else {
+            setting.launchScene = currenScene.source;
+            sceneJson = readJSONSync(currenScene.library['.json']);
+        }
+        if (!sceneJson) {
+            throw new Error('获取当前场景信息失败');
+        }
         // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
         if (options.type !== 'build-release') {
-            let json = readJSONSync(currenScene.library['.json']);
-            let info = json.find((item) => {
+            let info = sceneJson.find((item) => {
                 return item.__type__ === 'cc.Canvas';
             });
             // 存在 canvas 节点数据则更新分辨率
