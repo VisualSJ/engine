@@ -40,7 +40,7 @@ exports.canNotRenameAsset = (asset: ItreeAsset) => {
  * @param asset
  */
 exports.canNotDragAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isRoot || asset.readOnly;
+    return !asset || asset.isRoot;
 };
 
 /**

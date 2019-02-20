@@ -34,6 +34,7 @@ module.exports = {
         paste: 'Paste',
         delete: 'Delete',
         rename: 'Rename',
+        readOnly: 'Read Only',
         revealInlibrary: 'Reveal In Library',
         revealInExplorer: 'Reveal In Explorer',
         showUuid: 'Show Asset UUID and PATH',

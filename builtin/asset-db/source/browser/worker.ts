@@ -87,6 +87,8 @@ function startup(info: IEngineInfo) {
     const list = [{
         name: 'internal',
         target: join(__dirname, '../../static/internal/assets'),
+        // @ts-ignore TODO 这里暂时兼容性处理，目标值是 !Editor.App.dev
+        readOnly: Editor.dev !== undefined ? !Editor.dev : !Editor.App.dev || true,
     }, {
         name: 'assets',
         target: join(Editor.Project.path, 'assets'),
@@ -95,20 +97,19 @@ function startup(info: IEngineInfo) {
     Editor.Package.getPackages({
         autoEnable: true,
     }).forEach((item: any) => {
-        const data = item.info['runtime-resource'];
-        if (!data) {
+        const config = item.info['runtime-resource'];
+        if (!config) {
             return;
         }
-        list.push({
-            name: data.name,
-            target: data.path,
-        });
+        list.push(config);
     });
 
     // 启动插件注册的数据库
     list.forEach((config: any) => {
         open(config.name);
-        startDatabase({
+
+        // 默认配置项
+        const option = {
             // 数据库配置
             name: config.name,
             target: config.target,
@@ -120,7 +121,13 @@ function startup(info: IEngineInfo) {
             // 用户可覆盖配置
             visible: true,
             readOnly: false,
-        });
+        };
+
+        // 合并具体数据库的配置
+        Object.assign(option, config);
+
+        // 启动数据库
+        startDatabase(option);
     });
 }
 

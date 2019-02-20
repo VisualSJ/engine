@@ -4,6 +4,7 @@ import { join } from 'path';
 
 const open = require('./tree-node-open');
 const context = require('./tree-node-context');
+const utils = require('./tree-utils');
 
 export const name = 'tree-node';
 
@@ -52,7 +53,7 @@ export const computed = {
         const asset = this.asset;
 
         // @ts-ignore
-        if (this.state !== '' || asset.readOnly) {
+        if (this.state !== '' || utils.canNotDragAsset(asset)) {
             return 'false';
         }
 
@@ -85,6 +86,14 @@ export const watch = {
 };
 
 export const methods = {
+    /**
+     * 翻译
+     * @param {*} key
+     */
+    t(key: string): string {
+        // @ts-ignore
+        return this.$parent.t(key);
+    },
     /**
      * 打开一个 asset
      * @param event

@@ -34,6 +34,7 @@ module.exports = {
         paste: '粘贴',
         delete: '删除',
         rename: '重命名',
+        readOnly: '只读',
         revealInlibrary: '在 Library 中显示',
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',

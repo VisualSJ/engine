@@ -115,6 +115,14 @@ export function mounted() {
 
 export const methods = {
     /**
+     * 翻译
+     * @param {*} key
+     */
+    t(key: string): string {
+        // @ts-ignore
+        return this.$parent.t(key);
+    },
+    /**
      * 清空树形
      */
     clear() {
