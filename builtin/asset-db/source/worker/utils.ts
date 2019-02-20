@@ -97,7 +97,7 @@ export function queryAsset(uuid: string): IAsset | null {
  * @param database
  * @param asset
  */
-export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset | IAssetVirtual) {
+export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset) {
     const importer = database.name2importer[asset.meta.importer] || null;
 
     let name = '';

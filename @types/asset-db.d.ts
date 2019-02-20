@@ -87,7 +87,7 @@ declare interface IAssetMeta {
 
 declare interface IAsset {
     name: string; // 资源名字
-    asset: IAssetVirtual; // AssetDB 的资源
+    asset: any; // AssetDB 的资源
 }
 
 declare interface IRedirectInfo {
