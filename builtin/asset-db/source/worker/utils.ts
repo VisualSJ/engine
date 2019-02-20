@@ -9,6 +9,11 @@ import { basename, relative, resolve } from 'path';
  * @param name
  */
 export function path2url(path: string, name: string) {
+    // 否则会出现返回 'db://internal/../../../../../db:/internal' 的情况
+    if (path === `db://${name}`) {
+        return path;
+    }
+
     const database = Manager.AssetWorker[name];
 
     // 将 windows 上的 \ 转成 /，统一成 url 格式
@@ -22,7 +27,7 @@ export function path2url(path: string, name: string) {
  * assetDB 内 asset 资源自带的 library 是一个数组，需要转成对象
  * @param asset
  */
-export function libArr2Obj(asset: VirtualAsset | Asset) {
+export function libArr2Obj(asset: VirtualAsset | Asset | IAssetVirtual) {
     const result: {[key: string]: string} = {};
     for (const extname of asset.meta.files) {
         if (/\.\w+/.test(extname)) {
@@ -49,18 +54,25 @@ export function queryAsset(uuid: string): IAsset | null {
             continue;
         }
 
-        // 查找的是数据库
+        // 查找的是数据库, 由于数据库的单条数据不在 database 里，所以需要这里单独返回
         if (uuid === `db://${name}`) {
             return {
                 name,
                 asset: {
+                    basename: name,
+                    extname: '',
+                    imported: true,
                     source: `db://${name}`,
-                    uuid: `db://${name}`,
+                    subAssets: {},
+                    library: '',
+                    parent: null,
+                    userData: {},
                     isDirectory() {
                         return false;
                     },
+                    uuid: `db://${name}`,
                     meta: {
-                        ver: '1.0.0',
+                        ver: '1.0.0', // TODO 这个值应该为其他变动的参数来复制，或者空值
                         uuid: `db://${name}`,
                         subMetas: {},
                         userData: {},
@@ -85,7 +97,7 @@ export function queryAsset(uuid: string): IAsset | null {
  * @param database
  * @param asset
  */
-export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset) {
+export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset | IAssetVirtual) {
     const importer = database.name2importer[asset.meta.importer] || null;
 
     let name = '';

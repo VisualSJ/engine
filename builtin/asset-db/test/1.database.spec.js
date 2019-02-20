@@ -3,8 +3,6 @@
 const { expect } = require('chai');
 const { join } = require('path');
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
-
 describe('测试 DB 中 Database 的 IPC 接口：', () => {
 
     describe('refresh, query-ready ：刷新数据库', () => {
@@ -32,9 +30,6 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                     return await start();
                 }
                 await start();
-
-                await sleep(30000);
-                reject(new Error('限定 30 秒，启动已超时'));
             });
         });
     });
@@ -67,9 +62,6 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                 }
 
                 await start();
-
-                await sleep(3000);
-                reject(new Error('限定 3 秒，本测试环节已超时'));
             });
         });
 

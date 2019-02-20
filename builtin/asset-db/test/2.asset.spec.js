@@ -4,8 +4,6 @@ const { existsSync, readFileSync } = require('fs');
 const { join } = require('path');
 const { expect } = require('chai');
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
-
 describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
 
     describe('query-assets ：查询资源树', async () => {
@@ -33,8 +31,6 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
 
                 await start();
 
-                await sleep(3000);
-                reject(new Error('限定 3 秒，本测试环节已超时'));
             });
         });
         it('传入正确的参数', async () => {
@@ -81,7 +77,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                     expect: expectValues,
                 },
                 {
-                    args: () => {},
+                    args: () => { },
                     expect: expectValues,
                 },
                 {
@@ -198,30 +194,80 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
 
     });
 
-    return; //  TODO 开发到这里，以上先提交
+    describe('query-asset-info ：查询资源信息', async () => {
 
-    describe('查询资源信息', async () => {
+        it('传入错误的参数', async () => {
+            return new Promise(async (resolve, reject) => {
+                async function start() {
+                    const queue = [
+                        { args: undefined, expect: null },
+                        { args: null, expect: null },
+                        { args: '', expect: null },
+                        { args: 0, expect: null },
+                        { args: false, expect: null },
+                        { args: true, expect: null },
+                        { args: [], expect: null },
+                        { args: {}, expect: null },
+                        { args: () => { }, expect: null },
+                        { args: 'abc', expect: null },
+                        { args: 123, expect: null },
+                    ];
 
-        it('传入错误、不存在的资源', async () => {
-            let info;
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info');
-            expect(info).to.null;
+                    for (const test of queue) {
+                        const result = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', test.args);
+                        expect(result).to.equal(test.expect);
+                    }
 
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', '');
-            expect(info).to.null;
+                    resolve();
+                }
 
-            info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', 0);
-            expect(info).to.null;
+                await start();
+            });
         });
 
-        it('查询 assets 数据库资源', async () => {
-            const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', 'db://assets');
-            expect(info).to.have.all.keys(
-                'name', 'source', 'file', 'uuid', 'importer', 'type', 'isDirectory', 'library', 'subAssets',
-                'visible', 'readOnly'
-            );
+        it('传入正确的参数', async () => {
+            const expectValues = {
+                keys: ['name', 'source', 'file', 'uuid', 'importer', 'type',
+                    'isDirectory', 'library', 'subAssets', 'visible', 'readOnly'],
+                values: {
+                    name: 'string',
+                    source: 'string',
+                    file: 'string',
+                    uuid: 'string',
+                    importer: 'string',
+                    type: 'string',
+                    isDirectory: 'boolean',
+                    library: 'object',
+                    subAssets: 'object',
+                    visible: 'boolean',
+                    readOnly: 'boolean',
+                },
+
+            };
+            const queue = [
+                {
+                    args: 'db://internal',
+                    expect: expectValues,
+                },
+                {
+                    args: '90bdd2a9-2838-4888-b66c-e94c8b7a5169', // 是一个资源 db://internal/default_prefab/ui/Button.prefab
+                    expect: expectValues,
+                },
+            ];
+
+            for (const test of queue) {
+                const result = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', test.args);
+
+                expect(result).to.have.all.keys(test.expect.keys);
+                for (const key of test.expect.keys) {
+                    expect(result[key]).to.be.a(test.expect.values[key]);
+                }
+            }
         });
+
     });
+
+    return; //  TODO 开发到这里，以上先提交
 
     describe('查询资源 meta', () => {
 

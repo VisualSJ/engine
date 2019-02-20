@@ -140,7 +140,7 @@ ipcAddListener('asset-worker:query-asset-uuid', (event: any, url: string) => {
  */
 ipcAddListener('asset-worker:query-asset-info', async (event: any, uuid: string) => {
     // 查询资源IAssetInfo
-    if (!uuid) {
+    if (!uuid || typeof uuid !== 'string') {
         return event.reply(null, null);
     }
 
