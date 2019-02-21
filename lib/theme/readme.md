@@ -51,11 +51,11 @@
 ```css
 :host {
   border-color: var(--border-dark-c, #999);
-  background-image: var(--image-bg);
+  background: var(--image-bg);
 }
 
 :host(:hover) {
-  background-image: var(--image-light-bg);
+  background: var(--image-light-bg);
   color: var(--hover-c);
 }
 ```

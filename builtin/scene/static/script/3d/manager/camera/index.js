@@ -7,6 +7,7 @@ const nodeUtils = require('../../../utils/node');
 
 const operationManager = require('../operation');
 const nodeManager = require('../node');
+const compManager = require('../component');
 const sceneManager = require('../scene');
 
 const listener = require('./listener');
@@ -330,7 +331,7 @@ nodeManager.on('removed', (node) => {
 });
 
 // 如果节点增加了 light，需要更新摄像机使用的光源数据
-nodeManager.on('component-added', (comp, node) => {
+compManager.on('component-added', (comp, node) => {
     if (!(comp instanceof cc.LightComponent)) {
         return;
     }
@@ -341,7 +342,7 @@ nodeManager.on('component-added', (comp, node) => {
 });
 
 // 如果节点删除，并且删除的节点带有 light，需要更新光源数据
-nodeManager.on('component-removed', (comp, node) => {
+compManager.on('component-removed', (comp, node) => {
     if (!(comp instanceof cc.LightComponent)) {
         return;
     }

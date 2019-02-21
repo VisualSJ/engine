@@ -15,7 +15,7 @@ exports.template = `
         text-decoration: none;
         text-overflow: ellipsis;
         border: 1px solid var(--border-dark-c);
-        background-image: var(--image-bg, linear-gradient(#585858, #444));
+        background: var(--image-bg, linear-gradient(#585858, #444));
         color: inherit;
         height: 24px;
     }

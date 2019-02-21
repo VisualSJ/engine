@@ -20,6 +20,7 @@ const componentMap: any = {
     'cc.ToggleComponent': 'cc-toggle-component',
     'cc.SliderComponent': 'cc-slider-component',
     'cc.WidgetComponent': 'cc-widget-component',
+    'cc.LightComponent': 'cc-light-component',
 };
 
 export const components: any = {
@@ -29,6 +30,7 @@ export const components: any = {
     'cc-toggle-component': require('./components/toggle'),
     'cc-slider-component': require('./components/slider'),
     'cc-widget-component': require('./components/widget'),
+    'cc-light-component': require('./components/light'),
 };
 
 export const methods = {

@@ -13,7 +13,7 @@
   border: 1px solid var(--border-dark-c);
   border-radius: var(--border-radius-n);
   cursor: pointer;
-  background-image: var(--image-bg, linear-gradient(#585858, #444));
+  background: var(--image-bg, linear-gradient(#585858, #444));
 }
 
 :host(:last-child) {
@@ -32,7 +32,7 @@ select {
   border-radius: var(--border-radius-n);
   text-decoration: none;
   text-overflow: ellipsis;
-  background-image: var(--image-bg, linear-gradient(#585858, #444));
+  background: var(--image-bg, linear-gradient(#585858, #444));
   width: 100%;
   color: inherit;
 }
@@ -63,7 +63,7 @@ select optgroup {
 
 :host(:hover) {
   border-color: var(--hover-c);
-  background-image: var(--image-light-bg, linear-gradient(#626262, #4e4e4e));
+  background: var(--image-light-bg, linear-gradient(#626262, #4e4e4e));
   &::after {
     border-top-color: var(--hover-c);
   }
@@ -76,7 +76,7 @@ select optgroup {
 :host([disabled]) {
   cursor: default;
   border-color: var(--disabled-c);
-  background-image: var(--image-bg);
+  background: var(--image-bg);
   opacity: var(--opacity-n);
   select {
     cursor: default;
