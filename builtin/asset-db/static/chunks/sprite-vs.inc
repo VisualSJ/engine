@@ -8,7 +8,7 @@ in vec4 a_color;
 out vec2 uv0;
 out vec4 color;
 
-uniform CCUI {
+uniform ui {
   mat4 cc_matViewProj;
 };
 
