@@ -33,6 +33,7 @@
 }
 :host header slot {
   display: inline-block;
+  width: 100%;
 }
 :host .content {
   padding: 3px 4px;

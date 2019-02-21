@@ -61,6 +61,12 @@ export const template = `
                 >{{item}}</option>
             </ui-select>
         </ui-prop>
+        <ui-prop label="Generate Mipmap">
+            <ui-checkbox slot="content"
+                :value="meta.userData.generateMipmap"
+                @change="_onChangeData($event, 'generateMipmap')"
+            ></ui-checkbox>
+        </ui-prop>
     </div>
 
     <asset-image-preview
