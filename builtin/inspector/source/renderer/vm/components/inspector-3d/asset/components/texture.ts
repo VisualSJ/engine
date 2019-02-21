@@ -70,7 +70,7 @@ export const template = `
     </div>
 
     <asset-image-preview
-        v-if="meta"
+        v-if="imgSrc && meta"
         :meta="meta"
         :imgSrc="imgSrc"
     ></asset-image-preview>

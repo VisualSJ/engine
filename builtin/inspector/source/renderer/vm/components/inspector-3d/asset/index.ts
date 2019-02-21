@@ -8,6 +8,7 @@ const importers: string[] = [
     'image',
     'javascript',
     'texture',
+    'texture-cube',
     'material',
 ];
 
@@ -27,6 +28,7 @@ export const components = {
     'asset-image': require('./components/image'),
     'asset-javascript': require('./components/javascript'),
     'asset-texture': require('./components/texture'),
+    'asset-texture-cube': require('./components/texture'),
     'asset-material': require('./components/material/index'),
 };
 
