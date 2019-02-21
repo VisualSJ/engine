@@ -266,6 +266,7 @@ const extractParams = (() => {
   const nextWord = (tokens, i) => { while (exMap[tokens[++i].type]); return i; }
   const nextSemicolon = (tokens, i, check = () => {}) => { while (tokens[i].data !== ';') check(tokens[i++]); return i; }
   return (tokens, cache, blocks, samplers, dependencies) => {
+    const res = [];
     for (let i = 0; i < tokens.length; i++) {
       let t = tokens[i], str = t.data, dest, type;
       if (str === 'uniform') dest = blocks;
@@ -308,8 +309,7 @@ const extractParams = (() => {
         }
         idx = nextWord(tokens, idx);
       }
-      // save necessary info for later conversions
-      cache.paramInfos.push({ beg: tokens[i].position, end: tokens[idx].position, name: param.name, type });
+      res.push({ beg: tokens[i].position, end: tokens[idx].position, name: param.name, type });
       if (!param.duplicate) {
         param.defines = defines;
         dest.push(param);
@@ -317,6 +317,7 @@ const extractParams = (() => {
       // now we are done with the whole expression
       i = idx;
     }
+    return res;
   }
 })();
 
@@ -355,11 +356,11 @@ const miscChecks = (() => {
   };
 })();
 
-const glsl300to100 = (code, blocks, cache, vert) => {
+const glsl300to100 = (code, blocks, paramInfo, vert) => {
   let res = '';
   // unpack UBOs
   let idx = 0;
-  cache.paramInfos.forEach((i) => {
+  paramInfo.forEach((i) => {
     if (i.type !== 'block') return;
     res += code.slice(idx, i.beg);
     blocks.find((u) => u.name === i.name).members.forEach((m) => {
@@ -396,18 +397,12 @@ const glsl300to100 = (code, blocks, cache, vert) => {
 
 const decorateBindings = (() => {
   const record = new Map();
-  const nextBinding = (cache) => {
-    const candidate = cache.bindings;
-    while (record.get(candidate)) candidate++;
-    cache.bindings = candidate + 1;
-    return candidate;
-  };
-  return (code, blocks, samplers, cache) => {
+  return (code, blocks, samplers, paramInfo) => {
     const manifest = { block: blocks, sampler: samplers };
     record.clear();
     let idx = 0;
     // extract existing binding infos
-    cache.paramInfos.forEach((i) => {
+    paramInfo.forEach((i) => {
       const frag = code.slice(idx, i.beg);
       const info = {};
       const cap = layoutExtract.exec(frag);
@@ -420,27 +415,28 @@ const decorateBindings = (() => {
           const binding = parseInt(cap2[1]);
           info.binding = binding;
           record.set(binding, true);
+          // adapt bingings
+          const u = manifest[i.type].find((u) => u.name === i.name);
+          const b = manifest[i.type].find((u) => u.binding === binding);
+          if (b) { b.binding = u.binding; u.binding = binding; }
+          // because blocks are one consecutive array indexed by thier bindings at runtime (pass.ts)
+          else warn(`illegal custom binding for ${i.name}, (block.binding < sampler.binding) should always hold true`);
         }
       }
       record.set(i.name, info);
       idx = i.end;
     });
     let res = ''; idx = 0;
-    cache.paramInfos.forEach((i) => {
-      // TODO: block bindings first and must be contiguous
-      let { binding, position } = record.get(i.name);
-
-      // assign binding
-      if (binding === undefined) binding = nextBinding(cache);
+    paramInfo.forEach((i) => {
+      let { position } = record.get(i.name);
       const u = manifest[i.type].find((u) => u.name === i.name);
-      u.binding = binding;
       // insert declaration
       if (position === undefined) { // no qualifier, just insert everything
         res += code.slice(idx, i.beg);
-        res += `layout(binding = ${binding}) `;
+        res += `layout(binding = ${u.binding}) `;
       } else if (position >= 0) { // qualifier exists, but no binding specified
         res += code.slice(idx, position);
-        res += `, binding = ${binding}`;
+        res += `, binding = ${u.binding}`;
         res += code.slice(position, i.beg);
       } else { // no-op, binding is already specified
         res += code.slice(idx, i.beg);
@@ -449,13 +445,12 @@ const decorateBindings = (() => {
       idx = i.end;
     });
     res += code.slice(idx);
-    return code; // disabled 'till we move to vulkan
+    return res;
   };
 })();
 
 const buildShader = (() => {
-  let createCache = () => { return { bindings: 0, lines: [], paramInfos: [] }; };
-  let resetCache = (c) => { c.lines.length = c.paramInfos.length = 0; };
+  let createCache = () => { return { lines: [] }; };
   return (vertName, fragName, chunks) => {
     let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
     let [ frag, fEntry ] = getChunkByName(fragName, chunks);
@@ -472,13 +467,10 @@ const buildShader = (() => {
     vert = wrapEntry(vert, vEntry, true);
     tokens = tokenizer(vert);
     extractDefines(tokens, defines, cache);
-    extractParams(tokens, cache, blocks, samplers, dependencies);
-    glsl3.vert = decorateBindings(vert, blocks, samplers, cache);
-    glsl1.vert = glsl300to100(vert, blocks, cache, true);
-    miscChecks(glsl1.vert, vEntry);
+    let vertInfo = extractParams(tokens, cache, blocks, samplers, dependencies);
 
-    resetCache(cache);
     shaderName = fragName;
+    cache = createCache();
     frag = glslStripComment(frag);
     frag = unwindIncludes(frag, chunks);
     frag = expandStructMacro(frag);
@@ -486,17 +478,27 @@ const buildShader = (() => {
     frag = wrapEntry(frag, fEntry);
     tokens = tokenizer(frag);
     extractDefines(tokens, defines, cache);
-    extractParams(tokens, cache, blocks, samplers, dependencies);
-    glsl3.frag = decorateBindings(frag, blocks, samplers, cache);
-    glsl1.frag = glsl300to100(frag, blocks, cache, false);
+    let fragInfo = extractParams(tokens, cache, blocks, samplers, dependencies);
+
+    glsl3.vert = vert; glsl3.frag = frag;
+    glsl1.vert = glsl300to100(vert, blocks, vertInfo, true);
+    miscChecks(glsl1.vert, vEntry);
+    glsl1.frag = glsl300to100(frag, blocks, fragInfo, false);
     miscChecks(glsl1.frag, fEntry);
 
     // filter out pipeline builtin params
     blocks = blocks.filter((u) => !builtins.test(u.name));
     samplers = samplers.filter((u) => !builtins.test(u.name));
+    vertInfo = vertInfo.filter((u) => !builtins.test(u.name));
+    fragInfo = fragInfo.filter((u) => !builtins.test(u.name));
+    // assign bindings
     let bindingIdx = 0;
     blocks.forEach((u) => u.binding = bindingIdx++);
     samplers.forEach((u) => u.binding = bindingIdx++);
+
+    // disabled 'till we add vulkan support
+    // glsl4.vert = decorateBindings(vert, blocks, samplers, vertInfo);
+    // glsl4.frag = decorateBindings(frag, blocks, samplers, fragInfo);
 
     return { glsl3, glsl1, defines, blocks, samplers, dependencies };
   };
