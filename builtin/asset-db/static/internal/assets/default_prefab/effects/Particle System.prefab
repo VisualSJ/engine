@@ -66,10 +66,9 @@
     },
     "_enabled": true,
     "_materials": [
-      null
-    ],
-    "sharedMaterials": [
-      null
+      {
+        "__uuid__": "default-particle-material"
+      }
     ],
     "_renderMode": 0,
     "_velocityScale": 1,
@@ -202,21 +201,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 1,
     "constantMin": 0,
@@ -228,21 +266,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 1,
     "constantMin": 0,
@@ -254,21 +331,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -280,21 +396,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -306,21 +461,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 5,
     "constantMin": 0,
@@ -332,21 +526,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -358,21 +591,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 10,
     "constantMin": 0,
@@ -384,21 +656,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -513,21 +824,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -556,21 +906,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -582,21 +971,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -608,21 +1036,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -634,21 +1101,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -677,21 +1183,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -703,21 +1248,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -729,21 +1313,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -755,21 +1378,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 1,
     "constantMin": 0,
@@ -795,21 +1457,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -821,21 +1522,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -847,21 +1587,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -892,21 +1671,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -918,21 +1736,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -944,21 +1801,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -970,21 +1866,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1010,21 +1945,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1036,21 +2010,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1062,21 +2075,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1108,21 +2160,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1134,21 +2225,60 @@
     "mode": 0,
     "curve": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMin": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "curveMax": {
       "__type__": "cc.AnimationCurve",
-      "preWrapMode": 0,
-      "postWrapMode": 0,
-      "keyFrames": null
+      "preWrapMode": 2,
+      "postWrapMode": 2,
+      "keyFrames": [
+        {
+          "time": 0,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        },
+        {
+          "time": 1,
+          "value": 1,
+          "inTangent": 0,
+          "outTangent": 0
+        }
+      ]
     },
     "constant": 0,
     "constantMin": 0,
@@ -1163,7 +2293,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "78TBZoazVGwJ/cAMcPKWj/",
+    "fileId": "d1dtAVQlJBmqPyKFtZhbA3",
     "sync": false,
     "_synced": {
       "default": false,
