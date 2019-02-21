@@ -219,10 +219,12 @@ export async function decodePatch(path: string, dump: any, node: any) {
             dump.type === 'Enum'
         ) {
             dump.value -= 0;
+            data[info.key] = dump.value;
         } else if (
             dump.type === 'String'
         ) {
             dump.value += '';
+            data[info.key] = dump.value;
         } else if (dump.type === 'cc.AnimationCurve') {
             const curve = new ccType();
             const keyFrameCtor = cc.js.getClassByName('cc.Keyframe');
@@ -262,21 +264,31 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
 
             dump.value = gradient;
+        } else if (typeof dump.value === 'object') {
+            for (const childKey in dump.value) {
+                if (dump.value[childKey] === undefined) {
+                    continue;
+                }
+                await decodePatch(childKey, dump.value[childKey], node[info.key]);
+            }
+        } else {
+            data[info.key] = dump.value;
         }
-        data[info.key] = dump.value;
     }
 
     // 特殊属性
-    switch (info.key) {
-        case '_lpos':
-            node.setPosition(node._lpos);
-            break;
-        case 'eulerAngles':
-            node.setRotationFromEuler(node.eulerAngles.x, node.eulerAngles.y, node.eulerAngles.z);
-            break;
-        case '_lscale':
-            node.setScale(node._lscale);
-            break;
+    if (node instanceof cc.Node) {
+        switch (info.key) {
+            case '_lpos':
+                node.setPosition(node._lpos);
+                break;
+            case 'eulerAngles':
+                node.setRotationFromEuler(node.eulerAngles.x, node.eulerAngles.y, node.eulerAngles.z);
+                break;
+            case '_lscale':
+                node.setScale(node._lscale);
+                break;
+        }
     }
 
     // 触发引擎内的 setter 更新部分数据
