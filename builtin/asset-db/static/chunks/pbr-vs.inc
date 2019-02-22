@@ -11,8 +11,7 @@ out vec3 normal_w;
 #include <cc-local>
 
 uniform TexCoords {
-  vec2 mainTiling;
-  vec2 mainOffset;
+  vec4 tilingAndOffset;
 };
 
 #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
@@ -40,7 +39,7 @@ vec4 vert () {
   normal_w = (cc_matWorldIT * normal).xyz;
 
   #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
-    uv0 = a_texCoord * mainTiling + mainOffset;
+    uv0 = a_texCoord * tilingAndOffset.xy + tilingAndOffset.zw;
   #endif
 
   #if CC_USE_SHADOW_MAP

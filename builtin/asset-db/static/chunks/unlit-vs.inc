@@ -9,8 +9,7 @@ in vec3 a_position;
 #if USE_TEXTURE
   in vec2 a_texCoord;
   uniform TexCoords {
-    vec2 mainTiling;
-    vec2 mainOffset;
+    vec4 tilingAndOffset;
   };
   out vec2 uv0;
 #endif
@@ -29,7 +28,7 @@ vec4 vert () {
   pos = cc_matViewProj * cc_matWorld * pos;
 
   #if USE_TEXTURE
-    uv0 = a_texCoord * mainTiling + mainOffset;
+    uv0 = a_texCoord * tilingAndOffset.xy + tilingAndOffset.zw;
   #endif
 
   return pos;

@@ -7,25 +7,20 @@ CCEFFECT {
           vert: pbr-vs:vert
           frag: pbr-fs:frag
           properties: {
-            albedo:              { type: 'color4',      value: [1, 1, 1, 1] }
-            mainTiling:          { type: 'vec2',        value: [1, 1]       }
-            mainOffset:          { type: 'vec2',        value: [0, 0]       }
-            albedo_texture:      { type: 'sampler2D',   value: 'grey'       }
-            metallic:            { type: 'float',       value: 0.5          }
-            metallic_texture:    { type: 'sampler2D',   value: 'grey'       }
-            roughness:           { type: 'float',       value: 0.1          }
-            roughness_texture:   { type: 'sampler2D',   value: 'grey'       }
-            ao:                  { type: 'float',       value: 1.0          }
-            ao_texture:          { type: 'sampler2D',   value: 'grey'       }
-            mra_texture:         { type: 'sampler2D',   value: 'grey'       }
-            emissive:            { type: 'color4',      value: [0, 0, 0, 0] }
-            emissive_texture:    { type: 'sampler2D',   value: 'grey'       }
-            normal_texture:      { type: 'sampler2D',   value: 'normal'     }
-            diffuseEnvTexture:   { type: 'samplerCube', value: 'default-cube' }
+            albedo:              { type: 'color4',      value: [1, 1, 1, 1]     }
+            tilingAndOffset:     { type: 'vec4',        value: [1, 1, 0, 0]     }
+            props:               { type: 'vec4',        value: [0.5, 0.1, 1, 9] }
+            emissive:            { type: 'color4',      value: [0, 0, 0, 0]     }
+            albedo_texture:      { type: 'sampler2D',   value: 'grey'           }
+            metallic_texture:    { type: 'sampler2D',   value: 'grey'           }
+            roughness_texture:   { type: 'sampler2D',   value: 'grey'           }
+            ao_texture:          { type: 'sampler2D',   value: 'grey'           }
+            mra_texture:         { type: 'sampler2D',   value: 'grey'           }
+            emissive_texture:    { type: 'sampler2D',   value: 'grey'           }
+            normal_texture:      { type: 'sampler2D',   value: 'normal'         }
+            diffuseEnvTexture:   { type: 'samplerCube', value: 'default-cube'   }
             specularEnvTexture:  { type: 'samplerCube', value: 'default-cube', sampler: { mipFilter: 'linear' } }
-            brdfLUT:             { type: 'sampler2D',   value: 'grey'       }
-            maxReflectionLod:    { type: 'float',       value: 9            }
-            alphaTestThreshold:  { type: 'float',       value: 0            }
+            brdfLUT:             { type: 'sampler2D',   value: 'grey'           }
           }
         }
         // {

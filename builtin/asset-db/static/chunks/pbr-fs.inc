@@ -31,12 +31,8 @@ in vec3 normal_w;
 
 uniform Constants {
   vec4 albedo;
-  float metallic;
-  float roughness;
-  float ao;
-  float maxReflectionLod;
-  vec4 emissive;
-  float alphaTestThreshold;
+  vec4 props; // metallic, roughness, ao, maxReflectionLod
+  vec4 emissive; // emissive.rgb, alphaTestThreshold
 };
 
 // material parameters
@@ -152,6 +148,9 @@ vec3 brdf(LightInfo lightInfo, vec3 N, vec3 V, vec3 F0, vec3 albedo, float metal
 
 vec4 frag() {
   float opacity = 1.0;
+  float metallic = props.x;
+  float roughness = props.y;
+  float ao = props.z;
 
   #if USE_ALBEDO_TEXTURE
     vec4 baseColor = albedo * gammaToLinearSpaceRGBA(texture(albedo_texture, uv0));
@@ -163,23 +162,23 @@ vec4 frag() {
   #endif
 
   #if USE_ALPHA_TEST
-    if(opacity < alphaTestThreshold) discard;
+    if(opacity < emissive.w) discard;
   #endif
 
   #if USE_MRA_TEXTURE
     vec3 metalRoughness = texture(mra_texture, uv0).rgb;
-    float metallic = metalRoughness.r;
-    float roughness = metalRoughness.g;
-    float ao = metalRoughness.b;
+    metallic = metalRoughness.r;
+    roughness = metalRoughness.g;
+    ao = metalRoughness.b;
   #else
     #if USE_METALLIC_TEXTURE
-      float metallic  = texture(metallic_texture, uv0).r;
+      metallic  = texture(metallic_texture, uv0).r;
     #endif
     #if USE_ROUGHNESS_TEXTURE
-      float roughness  = texture(roughness_texture, uv0).r;
+      roughness  = texture(roughness_texture, uv0).r;
     #endif
     #if USE_AO_TEXTURE
-      float ao  = texture(ao_texture, uv0).r;
+      ao  = texture(ao_texture, uv0).r;
     #endif
   #endif
 
@@ -237,7 +236,7 @@ vec4 frag() {
     // sample both the specularEnvTexture and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     vec3 R = reflect(-V, N);
     #if USE_TEX_LOD
-      vec4 speColor = textureLod(specularEnvTexture, R, roughness * maxReflectionLod);
+      vec4 speColor = textureLod(specularEnvTexture, R, roughness * props.w);
     #else
       vec4 speColor = texture(specularEnvTexture, R);
     #endif
