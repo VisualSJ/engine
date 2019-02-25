@@ -34,7 +34,7 @@ exports.addComponentMap = {
         const boundingBox = getBoundingBox(node);
         const boundingSize = getSize(boundingBox);
 
-        component.radius = maxComponent(boundingSize);
+        component.radius = maxComponent(boundingSize) / 2;
         component.center = getCenter(boundingBox);
     },
 

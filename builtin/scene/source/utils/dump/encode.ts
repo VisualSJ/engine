@@ -79,6 +79,9 @@ export function encodeComponent(component: any): IProperty {
         if (!data.value) {
             return;
         }
+        if (component[key] === undefined) {
+            return;
+        }
         const attrs = cc.Class.attr(ctor, key);
         data.value[key] = encodeObject(component[key], attrs);
     });
