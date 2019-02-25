@@ -54,40 +54,9 @@ declare interface IAssetInfo {
     redirect?: IRedirectInfo; // 跳转指向资源
 }
 
-declare interface IAssetVirtual  {
-    basename: string;
-    extname: string;
-    imported: boolean;
-    source: string;
-    subAssets: {
-        [index: string]: IAssetVirtual;
-    };
-    library: string;
-    parent: string | null;
-    userData: {
-        [index: string]: any;
-    };
-    isDirectory: Function;
-    uuid: string;
-    meta: IAssetMeta;
-}
-
-declare interface IAssetMeta {
-    [key:string]: any; // missing index defintion
-    ver: string;
-    uuid: string;
-    subMetas: object;
-    userData: {
-        [index: string]: any;
-    };
-    importer: string;
-    imported: boolean;
-    files: Array<string>;
-}
-
 declare interface IAsset {
     name: string; // 资源名字
-    asset: any; // AssetDB 的资源
+    asset: import('@editor/asset-db').Asset; // AssetDB 的资源
 }
 
 declare interface IRedirectInfo {

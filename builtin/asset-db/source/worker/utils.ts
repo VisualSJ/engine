@@ -27,8 +27,8 @@ export function path2url(path: string, name: string) {
  * assetDB 内 asset 资源自带的 library 是一个数组，需要转成对象
  * @param asset
  */
-export function libArr2Obj(asset: VirtualAsset | Asset | IAssetVirtual) {
-    const result: {[key: string]: string} = {};
+export function libArr2Obj(asset: VirtualAsset | Asset) {
+    const result: { [key: string]: string } = {};
     for (const extname of asset.meta.files) {
         if (/\.\w+/.test(extname)) {
             // is extname
@@ -58,6 +58,7 @@ export function queryAsset(uuid: string): IAsset | null {
         if (uuid === `db://${name}`) {
             return {
                 name,
+                // @ts-ignore
                 asset: {
                     basename: name,
                     extname: '',
@@ -72,7 +73,7 @@ export function queryAsset(uuid: string): IAsset | null {
                     },
                     uuid: `db://${name}`,
                     meta: {
-                        ver: '1.0.0', // TODO 这个值应该为其他变动的参数来复制，或者空值
+                        ver: '1.0.0',
                         uuid: `db://${name}`,
                         subMetas: {},
                         userData: {},
@@ -80,7 +81,7 @@ export function queryAsset(uuid: string): IAsset | null {
                         imported: true,
                         files: [],
                     },
-                },
+                } as Asset,
             };
         }
 
@@ -103,7 +104,8 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
     let name = '';
     let source = '';
     let file = '';
-    if ('source' in asset) {
+
+    if (asset instanceof Asset && asset.source) {
         name = basename(asset.source);
         source = path2url(asset.source, database.options.name);
         file = asset.source;

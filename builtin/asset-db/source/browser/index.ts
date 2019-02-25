@@ -91,7 +91,7 @@ module.exports = {
          * @param url
          */
         async 'query-asset-uuid'(url: string) {
-            return await forwarding('asset-worker:query-asset-uuid', url);
+            return await forwarding('asset-worker:query-uuid-from-url', url);
         },
 
         /**

@@ -11,14 +11,30 @@ import { encodeAsset, queryAsset } from '../utils';
 const minimatch = require('minimatch');
 
 ipcAddListener('asset-worker:query-path-from-url', (event: any, url: string) => {
+    if (!url || typeof url !== 'string') {
+        return event.reply(null, null);
+    }
+
     event.reply(null, queryPathFromUrl(url));
 });
 
-ipcAddListener('asset-worker:query-url-from-path', (event: any, url: string) => {
-    event.reply(null, queryUrlFromPath(url));
+ipcAddListener('asset-worker:query-url-from-path', (event: any, path: string) => {
+    if (!path || typeof path !== 'string') {
+        return event.reply(null, null);
+    }
+
+    event.reply(null, queryUrlFromPath(path));
 });
 
 ipcAddListener('asset-worker:query-uuid-from-url', (event: any, url: string) => {
+    if (!url || typeof url !== 'string') {
+        return event.reply(null, null);
+    }
+
+    if (!url.startsWith('db://')) {
+        return event.reply(null, null);
+    }
+
     event.reply(null, queryUuidFromUrl(url));
 });
 
@@ -115,27 +131,6 @@ ipcAddListener('asset-worker:query-assets', async (event: any, options?: any) =>
 });
 
 /**
- * 传入一个 db 协议地址，将其转成对应的 uuid
- */
-ipcAddListener('asset-worker:query-asset-uuid', (event: any, url: string) => {
-    if (!url.startsWith('db://')) {
-        return event.reply(null, null);
-    }
-    const uri = parse(url);
-    const database = Manager.AssetWorker[uri.host || ''];
-    if (!database) {
-        return event.reply(null, null);
-    }
-    const root = database.options.target;
-    const path = unescape(join(root, uri.path || ''));
-    const asset = database.path2asset[path];
-    if (!asset) {
-        return event.reply(null, null);
-    }
-    event.reply(null, asset.uuid);
-});
-
-/**
  * 查询指定资源的信息
  */
 ipcAddListener('asset-worker:query-asset-info', async (event: any, uuid: string) => {
@@ -161,7 +156,7 @@ ipcAddListener('asset-worker:query-asset-info', async (event: any, uuid: string)
  * 查询指定的资源的 meta
  */
 ipcAddListener('asset-worker:query-asset-meta', (event: any, uuid: string) => {
-    if (!uuid) {
+    if (!uuid || typeof uuid !== 'string') {
         return event.reply(null, null);
     }
 

@@ -19,6 +19,7 @@ ipcAddListener('asset-worker:save-asset-meta', async (event: any, uuid: string, 
         const meta = JSON.parse(data);
         Object.keys(info.asset.meta).map((key) => {
             if (meta[key] !== undefined) {
+                // @ts-ignore
                 info.asset.meta[key] = meta[key];
             }
         });
