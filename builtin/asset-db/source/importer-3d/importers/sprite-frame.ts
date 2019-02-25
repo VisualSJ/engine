@@ -1,6 +1,6 @@
 'use strict';
 
-import { Asset, VirtualAsset } from '@editor/asset-db';
+import { Asset } from '@editor/asset-db';
 import { clamp, getTrimRect } from '../utils';
 import { getImageData } from '../utils';
 import TextureImporter from './texture';
@@ -53,68 +53,73 @@ export default class SpriteFrameImporter extends TextureImporter {
 
         // 如果没有生成 json 文件，则重新生成
         if (!(await asset.existsInLibrary('.json'))) {
+            if (!asset.parent) {
+                return false;
+            }
+
             if (Object.getOwnPropertyNames(asset.userData).length === 0) {
                 Object.assign(asset.userData, makeDefaultSpriteFrameBaseAssetUserData());
             }
 
-            const userData = asset.userData as SpriteFrameBaseAssetUserData;
+            if (asset.parent.meta.importer === 'image') {
+                const userData = asset.userData as SpriteFrameBaseAssetUserData;
+                // @ts-ignore
+                const file = asset.parent.source;
 
-            // @ts-ignore
-            const file = asset.parent && asset.parent.source;
+                const imageData = await getImageData(file);
 
-            const imageData = await getImageData(file);
+                userData.trimThreshold = 1;
+                userData.rotated = false;
 
-            userData.trimThreshold = 1;
-            userData.rotated = false;
+                if (imageData) {
+                    userData.rawWidth = imageData.width;
+                    userData.rawHeight = imageData.height;
 
-            if (imageData) {
-                userData.rawWidth = imageData.width;
-                userData.rawHeight = imageData.height;
+                    const rect = getTrimRect(
+                        Buffer.from(imageData.data.buffer),
+                        userData.rawWidth,
+                        userData.rawHeight,
+                        userData.trimThreshold
+                    );
+                    userData.trimX = rect[0];
+                    userData.trimY = rect[1];
+                    userData.width = rect[2];
+                    userData.height = rect[3];
+                }
 
-                const rect = getTrimRect(
-                    Buffer.from(imageData.data.buffer),
-                    userData.rawWidth,
-                    userData.rawHeight,
-                    userData.trimThreshold
+                userData.offsetX =
+                    userData.trimX + userData.width / 2 - userData.rawWidth / 2;
+                userData.offsetY = -(
+                    userData.trimY +
+                    userData.height / 2 -
+                    userData.rawHeight / 2
                 );
-                userData.trimX = rect[0];
-                userData.trimY = rect[1];
-                userData.width = rect[2];
-                userData.height = rect[3];
+
+                userData.borderTop = clamp(
+                    userData.borderTop || 0,
+                    0,
+                    userData.height - (userData.borderBottom || 0)
+                );
+                userData.borderBottom = clamp(
+                    userData.borderBottom || 0,
+                    0,
+                    userData.height - (userData.borderTop || 0)
+                );
+                userData.borderLeft = clamp(
+                    userData.borderLeft || 0,
+                    0,
+                    userData.width - (userData.borderRight || 0)
+                );
+                userData.borderRight = clamp(
+                    userData.borderRight || 0,
+                    0,
+                    userData.width - (userData.borderLeft || 0)
+                );
             }
-
-            userData.offsetX =
-                userData.trimX + userData.width / 2 - userData.rawWidth / 2;
-            userData.offsetY = -(
-                userData.trimY +
-                userData.height / 2 -
-                userData.rawHeight / 2
-            );
-
-            userData.borderTop = clamp(
-                userData.borderTop || 0,
-                0,
-                userData.height - (userData.borderBottom || 0)
-            );
-            userData.borderBottom = clamp(
-                userData.borderBottom || 0,
-                0,
-                userData.height - (userData.borderTop || 0)
-            );
-            userData.borderLeft = clamp(
-                userData.borderLeft || 0,
-                0,
-                userData.width - (userData.borderRight || 0)
-            );
-            userData.borderRight = clamp(
-                userData.borderRight || 0,
-                0,
-                userData.width - (userData.borderLeft || 0)
-            );
 
             // userData.vertices = undefined;
 
-            const spriteFrame = this.createSpriteFrame(userData);
+            const spriteFrame = this.createSpriteFrame(asset);
             const imageAsset = this._getImageAsset(asset, spriteFrame);
             if (imageAsset) {
                 spriteFrame._mipmaps = [imageAsset];
@@ -124,14 +129,13 @@ export default class SpriteFrameImporter extends TextureImporter {
             await asset.saveToLibrary('.json', Manager.serialize(spriteFrame));
 
             updated = true;
-
         }
 
         return updated;
     }
 
-    private createSpriteFrame(userData: SpriteFrameBaseAssetUserData) {
-        // const userData = asset.userData;
+    private createSpriteFrame(asset: Asset) {
+        const userData = asset.userData;
 
         // @ts-ignore
         const sprite = new cc.SpriteFrame();
@@ -154,10 +158,12 @@ export default class SpriteFrameImporter extends TextureImporter {
         );
         sprite.setRotated(userData.rotated);
 
-        sprite.insetTop = userData.borderTop;
-        sprite.insetBottom = userData.borderBottom;
-        sprite.insetLeft = userData.borderLeft;
-        sprite.insetRight = userData.borderRight;
+        sprite._setBorder(
+            userData.borderLeft,
+            userData.borderBottom,
+            userData.borderRight,
+            userData.borderTop
+        );
 
         // sprite.vertices = userData.vertices;
 
