@@ -43,7 +43,7 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newScene'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'fire' });
+                    db.vm.$refs.tree.ipcAdd({ ext: 'scene' });
                 },
             },
             {
@@ -167,7 +167,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newScene'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'fire' });
+                            db.vm.$refs.tree.ipcAdd({ ext: 'scene' });
                         },
                     },
                     {

@@ -1,7 +1,6 @@
 {
     "name": "scene",
     "version": "0.0.1",
-
     "menu": {
         "i18n:menu.panel/i18n:scene.title": {
             "message": "open",
@@ -16,11 +15,14 @@
             "message": "save-scene",
             "accelerator": "CmdOrCtrl+s"
         },
+        "i18n:menu.file/i18n:scene.save_as": {
+            "message": "save-as-scene",
+            "accelerator": "Shift+CmdOrCtrl+s"
+        },
         "i18n:menu.develop/i18n:scene.develop": {
             "message": "open-devtools"
         }
     },
-
     "main": "./dist/browser/index.js",
     "description": "scene about editor",
     "panel": {
@@ -35,7 +37,6 @@
         "width": 500,
         "height": 400
     },
-
     "toolbar": {
         "position": "left",
         "file": "./static/toolbar.js"

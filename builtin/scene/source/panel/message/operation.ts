@@ -3,6 +3,7 @@
 const ipc = require('@base/electron-base-ipc');
 
 import { outputFile } from 'fs-extra';
+import { join, relative } from 'path';
 
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
@@ -66,14 +67,14 @@ export function apply(messages: any) {
                 // 同步一下缓存数据
                 await $scene.forwarding('Scene', 'syncSceneData');
                 console.log(`Save scene: ${asset.source}`);
-                return '';
+                return uuid;
             }
         }
 
         const url = await Editor.Ipc.requestToPackage(
             'asset-db',
             'generate-available-url',
-            'db://assets/New Scene.fire'
+            'db://assets/New Scene.scene'
         );
 
         Editor.Ipc.sendToAll('notice:editor-title-change', `Editor 3D - ${url}`);
@@ -87,7 +88,56 @@ export function apply(messages: any) {
         profile.save();
         console.log(`Save scene: ${url}`);
 
+        return newUUID;
+    };
+
+    /**
+     * 另存场景
+     */
+    messages['save-as-scene'] = async () => {
+        if (!$scene) {
+            return '';
+        }
+
+        const text = await $scene.forwarding('Scene', 'serialize');
+
+        const savePath = await Editor.Dialog.saveFile({
+            title: Editor.I18n.t('scene.save_as'),
+            filters: [
+                { name: 'Custom File Type', extensions: ['scene'] },
+            ],
+        });
+
+        if (!savePath) {
+            return;
+        }
+
+        const assetsPath = join(Editor.Project.path, 'assets');
+        if (!savePath.startsWith(assetsPath) || !savePath.endsWith('.scene')) {
+            await Editor.Dialog.show({
+                type: 'warning',
+                title: Editor.I18n.t('scene.messages.warning'),
+                message: Editor.I18n.t('scene.messages.save_as_fail'),
+            });
+            return;
+        }
+
+        await outputFile(savePath, text);
+
+        const relatiePath = relative(assetsPath, savePath);
+        const url = `db://assets/${relatiePath.replace(/\\/g, '/')}`;
+        Editor.Ipc.sendToAll('notice:editor-title-change', `Editor 3D - ${url}`);
+
+        const uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', url);
+        // 同步一下缓存数据
+        await $scene.forwarding('Scene', 'syncSceneData');
+
+        profile.set('current-scene', uuid);
+        profile.save();
+        console.log(`Save scene: ${url}`);
+
         return uuid;
+
     };
 
     /**

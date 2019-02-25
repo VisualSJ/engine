@@ -4,7 +4,16 @@
  * 打开一个 asset
  * 根据文件的后缀处理
  */
-exports['.fire'] = (asset: ItreeAsset) => {
+exports['.scene'] = (asset: ItreeAsset) => {
+    Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
+};
+
+exports['.fire'] = async (asset: ItreeAsset) => {
+    await Editor.Dialog.show({
+        type: 'warning',
+        title: Editor.I18n.t('assets.operate.dialogWaining'),
+        message: Editor.I18n.t('assets.deprecate.fire'),
+    });
     Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
 };
 

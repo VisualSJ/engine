@@ -332,7 +332,7 @@ export const methods = {
         if (!json.name) {
             switch (json.ext) {
                 case 'folder': json.name = 'New Folder'; break;
-                case 'fire': json.name = `New Scene.${json.ext}`; break;
+                case 'scene': json.name = `New Scene.${json.ext}`; break;
                 default: json.name = `New File.${json.ext}`; break;
             }
         }
@@ -384,7 +384,7 @@ export const methods = {
             type: 'question',
             default: 0,
             cancel: 1,
-            title: Editor.I18n.t('assets.menu.delete'),
+            title: Editor.I18n.t('assets.operate.dialogQuestion'),
             message: Editor.I18n.t('assets.operate.sureDelete'),
         });
 
@@ -999,9 +999,10 @@ export const methods = {
         utils.twinkle.add(uuid, 'shake');
     },
 
-    dialogError(message: string) {
-        Editor.Dialog.show({
+    async dialogError(message: string) {
+        await Editor.Dialog.show({
             type: 'error',
+            title: Editor.I18n.t('assets.operate.dialogError'),
             message: Editor.I18n.t(`assets.operate.${message}`),
         });
     },

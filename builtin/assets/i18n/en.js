@@ -41,10 +41,18 @@ module.exports = {
     },
 
     operate: {
+        dialogError: 'Error',
+        dialogWaining: 'Warning',
+        dialogQuestion: 'Confirm',
+        dialogInfo: 'Tips',
         refreshing: 'Now refreshing assets...',
         sureDelete: 'Sure delete these assets?',
         renameFail: 'Rename Fail: The new file name already exists.',
         copyFail: 'Asset cannot be copied',
         pasteFail_parent_into_child: 'subAsset cannot paste ancestry',
+    },
+
+    deprecate: {
+        fire: '.fire extension has been discarded. Please save the file as .scene file',
     },
 };

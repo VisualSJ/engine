@@ -5,6 +5,7 @@ module.exports = {
 
     new: 'New Scene',
     save: 'Save Scene',
+    save_as: 'Save As',
 
     develop: 'Open Scene DevTools',
 
@@ -15,5 +16,6 @@ module.exports = {
         save: 'Save',
         dont_save: 'Don\'t save',
         cancel: 'Cancel',
+        save_as_fail: 'Failed to save scene: please limit the saved path to the current project assets path and suffix it with.scene',
     },
 };
