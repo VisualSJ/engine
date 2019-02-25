@@ -73,8 +73,7 @@ uniform Constants {
   vec4 diffuseColor;
   vec4 emissiveColor;
   vec4 specularColor;
-  float glossiness;
-  float alphaTestThreshold;
+  vec4 glossAlphaTest;
 };
 
 #if USE_DIFFUSE_TEXTURE
@@ -131,7 +130,7 @@ phongMaterial getPhongMaterial() {
       result.specular = gammaToLinearSpaceRGB(texture(specular_texture, uv0).rgb);
     #endif
 
-    result.glossiness = glossiness;
+    result.glossiness = glossAlphaTest.x;
   #endif
 
   return result;
@@ -160,7 +159,7 @@ vec4 frag () {
 
   phongMaterial mtl = getPhongMaterial();
   #if USE_ALPHA_TEST
-    if(mtl.opacity < alphaTestThreshold) discard;
+    if(mtl.opacity < glossAlphaTest.y) discard;
   #endif
   vec3 normal = normalize(normal_w);
   #if USE_NORMAL_TEXTURE

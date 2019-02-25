@@ -8,14 +8,14 @@ in vec4 a_color;
 out vec2 uv0;
 out vec4 color;
 
-uniform ui {
-  mat4 cc_matViewProj;
+uniform UI {
+  mat4 u_matViewProj;
 };
 
 vec4 vert () {
   vec4 pos = vec4(a_position, 1);
 
-  pos = cc_matViewProj * pos;
+  pos = u_matViewProj * pos;
 
   uv0 = a_texCoord;
 
