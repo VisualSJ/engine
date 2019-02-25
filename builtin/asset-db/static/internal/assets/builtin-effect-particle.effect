@@ -38,10 +38,10 @@ CCEFFECT {
   }
   techniques: [
     {
-      name: add-gpu
+      name: add
       passes: [
         {
-          vert: particle-vs-gpu:gpvs_main
+          vert: particle-vs-legacy:lpvs_main
           frag: tinted-fs:add
           rasterizerState: $r1
           depthStencilState: $d1
@@ -51,10 +51,10 @@ CCEFFECT {
       ]
     }
     {
-      name: add
+      name: add-gpu
       passes: [
         {
-          vert: particle-vs-legacy:lpvs_main
+          vert: particle-vs-gpu:gpvs_main
           frag: tinted-fs:add
           rasterizerState: $r1
           depthStencilState: $d1

@@ -65,11 +65,12 @@ const stringifyEffect = (() => {
 const path = 'builtin/asset-db/static/internal/assets';
 const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
 
+// empty array for all techs
 const essentialList = {
-  'builtin-effect-unlit': true,
-  'builtin-effect-skybox': true,
-  'builtin-effect-sprite': true,
-  'builtin-effect-particle': true,
+  'builtin-effect-unlit': [0],
+  'builtin-effect-skybox': [],
+  'builtin-effect-sprite': [],
+  'builtin-effect-particle': [0],
 };
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 
@@ -78,9 +79,15 @@ for (let i = 0; i < files.length; ++i) {
   const name = ps.basename(files[i], '.effect');
   const content = fs.readFileSync(files[i], { encoding: 'utf8' });
   const effect = shdcLib.buildEffect(name, content);
-  const str = indent(stringifyEffect(effect), 2);
-  if (essentialList[name]) essential += str;
-  all += str;
+  all += indent(stringifyEffect(effect), 2);
+  const techs = essentialList[name];
+  if (techs !== undefined) {
+    if (techs.length) {
+      effect.techniques = effect.techniques.filter((_, i) => techs.some((idx) => idx === i));
+      effect.shaders = effect.shaders.filter((s) => effect.techniques.some((tech) => tech.passes.some((p) => p.program === s.name)));
+    }
+    essential += indent(stringifyEffect(effect), 2);
+  }
 }
 
 fs.writeFileSync('effects.js', `export default [\n  ${all.slice(0, -4)}\n];\n`, { encoding: 'utf8' });
