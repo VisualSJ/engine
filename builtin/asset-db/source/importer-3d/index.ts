@@ -1,6 +1,7 @@
 'use strict';
 
 import { AssetDB } from '@editor/asset-db';
+import BitmapImporter from './importers/bitmap-font';
 import BufferImporter from './importers/buffer';
 import EffectImporter from './importers/effect';
 import FbxImporter from './importers/fbx';
@@ -84,4 +85,5 @@ export function register(database: AssetDB) {
     database.register(new PrefabImporter(), '.prefab');
     database.register(new EffectImporter(), '.effect');
     database.register(new TTFFontImporter(), '.ttf');
+    database.register(new BitmapImporter(), '.fnt');
 }
