@@ -686,13 +686,13 @@ const unrollDeclarations = (() => {
 
 const buildEffect = (name, content) => {
   effectName = name;
-  const { effect, templates } = parseEffect(name, content);
+  let { effect, templates } = parseEffect(name, content);
   // compile time references
   const declarations = unrollDeclarations(effect.declarations);
   delete effect.declarations;
   unrollReferences(effect.techniques, declarations);
   // map passes
-  Object.assign(templates, chunksCache);
+  templates = Object.assign({}, chunksCache, templates);
   const shaders = effect.shaders = [];
   for (const jsonTech of effect.techniques) {
     for (const pass of jsonTech.passes) {
