@@ -42,11 +42,10 @@ CCEFFECT {
  */
 CCPROGRAM grid-vs {
   precision mediump float;
-  in vec2 a_texCoord;
-  in vec3 a_position;
-
   #include <cc-global>
 
+  in vec2 a_texCoord;
+  in vec3 a_position;
   out vec2 uv;
   out vec3 pos_w;
 

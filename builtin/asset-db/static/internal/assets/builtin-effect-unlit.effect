@@ -1,17 +1,110 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 CCEFFECT {
+  declarations: {
+    p1: {
+      color:        { type: 'color4',    value: [1, 1, 1, 1] }
+      tilingOffset: { type: 'vec4',      value: [1, 1, 0, 0] }
+      mainTexture:  { type: 'sampler2D', value: 'grey'       }
+    }
+  }
   techniques: [
     {
+      name: opaque
       passes: [
         {
           vert: unlit-vs:vert
           frag: unlit-fs:frag
-          properties: {
-            color:       { type: 'color4',    value: [1, 1, 1, 1] }
-            tilingAndOffset: { type: 'vec4',     value: [1, 1, 0, 0] }
-            mainTexture: { type: 'sampler2D', value: 'grey'       }
+          properties: $p1
+        }
+      ]
+    }
+    {
+      name: transparent
+      passes: [
+        {
+          vert: unlit-vs:vert
+          frag: unlit-fs:frag
+          depthStencilState: {
+            depthTest: true
+            depthWrite: false
           }
+          blendState: {
+            targets: [
+              {
+                blend: true
+                blendSrc: src_alpha
+                blendDst: one_minus_src_alpha
+                blendDstAlpha: one_minus_src_alpha
+              }
+            ]
+          }
+          properties: $p1
         }
       ]
     }
   ]
+}
+
+CCPROGRAM unlit-vs {
+  precision mediump float;
+  #include <cc-global>
+  #include <cc-local>
+
+  #if CC_USE_SKINNING
+    #include <skinning>
+  #endif
+
+  in vec3 a_position;
+  #if USE_TEXTURE
+    in vec2 a_texCoord;
+    out vec2 uv0;
+    uniform TexCoords {
+      vec4 tilingOffset;
+    };
+  #endif
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if CC_USE_SKINNING
+      skinVertex(pos);
+    #endif
+
+    pos = cc_matViewProj * cc_matWorld * pos;
+
+    #if USE_TEXTURE
+      uv0 = a_texCoord * tilingOffset.xy + tilingOffset.zw;
+    #endif
+
+    return pos;
+  }
+}
+
+CCPROGRAM unlit-fs {
+  precision mediump float;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    uniform sampler2D mainTexture;
+  #endif
+
+  #if USE_COLOR
+    uniform Constant {
+      vec4 color;
+    };
+  #endif
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      o *= texture(mainTexture, uv0);
+    #endif
+
+    #if USE_COLOR
+      o *= color;
+    #endif
+
+    return o;
+  }
 }

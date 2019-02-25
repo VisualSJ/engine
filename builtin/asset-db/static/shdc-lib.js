@@ -5,7 +5,7 @@ const parser = require('glsl-parser/direct');
 const mappings = require('./offline-mappings');
 const HJSON = require('hjson');
 
-const includeRE = /#include +<([\w-.]+)>/gm;
+const includeRE = /#include +<([\w-.]+)>/g;
 const plainDefineRE = /#define\s+(\w+)\s+(.*)\n/g;
 const defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
 const precisionRE = /precision\s+\w+\s+\w+/;
@@ -25,6 +25,8 @@ const texLookup = /texture(\w*)\s*\((\w+),/g;
 const layoutRE = /layout\(.*?\)/g;
 const layoutExtract = /layout\((.*?)\)(\s*)$/;
 const bindingExtract = /binding\s*=\s*(\d+)/;
+const lineComments = /(\/\/|#).*$/gm;
+const blockComments = /\/\*.*?\*\//gs;
 
 let effectName = '', shaderName = '';
 const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
@@ -45,19 +47,6 @@ const unwindIncludes = (str, chunks, record = {}) => {
   }
   return str.replace(includeRE, replace);
 }
-
-const glslStripComment = (() => {
-  const commentExcludeMap = { "block-comment": true, "line-comment": true, "eof": true };
-  return (code) => {
-    const tokens = tokenizer(code);
-    let result = '';
-    for (let i = 0; i < tokens.length; ++i) {
-      let t = tokens[i];
-      if (!commentExcludeMap[t.type]) result += t.data;
-    }
-    return result;
-  };
-})();
 
 const expandStructMacro = (() => {
   const matchParenthesisPair = (string, startIdx) => {
@@ -452,15 +441,13 @@ const decorateBindings = (() => {
 const buildShader = (() => {
   let createCache = () => { return { lines: [] }; };
   return (vertName, fragName, chunks) => {
-    let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
-    let [ frag, fEntry ] = getChunkByName(fragName, chunks);
 
-    let defines = [], cache = createCache(), tokens;
-    let blocks = [], samplers = [], dependencies = {};
-    let glsl3 = {}, glsl1 = {};
+    let defines = [], blocks = [], samplers = [], dependencies = {};
+    let cache = createCache(), tokens;
+    const glsl3 = {}, glsl1 = {};
 
     shaderName = vertName;
-    vert = glslStripComment(vert);
+    let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
     vert = unwindIncludes(vert, chunks);
     vert = expandStructMacro(vert);
     vert = replacePlainDefines(vert);
@@ -471,7 +458,7 @@ const buildShader = (() => {
 
     shaderName = fragName;
     cache = createCache();
-    frag = glslStripComment(frag);
+    let [ frag, fEntry ] = getChunkByName(fragName, chunks);
     frag = unwindIncludes(frag, chunks);
     frag = expandStructMacro(frag);
     frag = replacePlainDefines(frag);
@@ -508,6 +495,29 @@ const buildShader = (() => {
 // effects
 // ==================
 
+const stripComments = (() => {
+  const includeHash = () => '';
+  const excludeHash = (m, p) => p === '#' ? m : '';
+  return (code, hashAsComment = false) => {
+    let result = code.replace(blockComments, '');
+    return result.replace(lineComments, hashAsComment ? includeHash : excludeHash);
+  };
+})();
+
+const chunksCache = {};
+const addChunksCache = (chunksDir) => {
+  const path_ = require('path');
+  const fsJetpack = require('fs-jetpack');
+  const fs = require('fs');
+  let files = fsJetpack.find(chunksDir, { matching: ['**/*.inc'] });
+  for (let i = 0; i < files.length; ++i) {
+    let name = path_.basename(files[i], '.inc');
+    let content = fs.readFileSync(files[i], { encoding: 'utf8' });
+    chunksCache[name] = stripComments(content);
+  }
+  return chunksCache;
+};
+
 const parseEffect = (() => {
   const blockTypes = /CCEFFECT|CCPROGRAM/g;
   const effectRE = /CCEFFECT\s*{([^]+)}/;
@@ -521,10 +531,6 @@ const parseEffect = (() => {
       else level--;
     });
     return content.substring(0, end);
-  };
-  const stripComments = (content, hashAsComment) => {
-    // TODO: strip comments in case of something like '// {'
-    return content;
   };
   return (name, content) => {
     shaderName = 'syntax error';
@@ -542,6 +548,7 @@ const parseEffect = (() => {
     let effect = {}, templates = {};
     for (let i = 0; i < blockPos.length; i++) {
       const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
+      // strip comments this early here in case of something like '// {'
       if (blockInfos[blockPos[i]] === 'CCEFFECT') {
         let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
@@ -555,20 +562,6 @@ const parseEffect = (() => {
     return { effect, templates };
   };
 })();
-
-const chunksCache = {};
-const addChunksCache = (chunksDir) => {
-  const path_ = require('path');
-  const fsJetpack = require('fs-jetpack');
-  const fs = require('fs');
-  let files = fsJetpack.find(chunksDir, { matching: ['**/*.inc'] });
-  for (let i = 0; i < files.length; ++i) {
-    let name = path_.basename(files[i], '.inc');
-    let content = fs.readFileSync(files[i], { encoding: 'utf8' });
-    chunksCache[name] = glslStripComment(content);
-  }
-  return chunksCache;
-};
 
 const mapPassParam = (() => {
   const findUniformType = (name, shader) => {
@@ -594,7 +587,7 @@ const mapPassParam = (() => {
       if (info.type === undefined) info.type = shaderType;
       else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
       // sampler specification
-      if (info.sampler) mapPassParam(info.sampler);
+      if (info.sampler) generalMap(info.sampler);
       // default values
       if (info.value === undefined) continue;
       const givenType = typeof info.value;
@@ -655,15 +648,54 @@ const mapPassParam = (() => {
   };
 })();
 
+const unrollReferences = (obj, decls) => {
+  const type = typeof obj;
+  if (type === 'string' && obj.startsWith('$')) {
+    return JSON.parse(JSON.stringify(decls[obj.slice(1)]));
+  } else if (type === 'object') {
+    if (Array.isArray(obj)) {
+      const len = obj.length;
+      for (let i = 0; i < len; i++) {
+        obj[i] = unrollReferences(obj[i], decls);
+      }
+    } else {
+      for (const key of Object.keys(obj)) {
+        obj[key] = unrollReferences(obj[key], decls);
+      }
+    }
+  }
+  return obj;
+};
+
+const unrollDeclarations = (() => {
+  const unroll = (obj, decls) => {
+    const parent = obj.__extends__;
+    if (parent) {
+      delete obj.__extends__;
+      return unroll(Object.assign({}, decls[parent], obj));
+    } else return obj;
+  };
+  return (decls) => {
+    if (!decls) return {};
+    for (const key of Object.keys(decls)) {
+      decls[key] = unroll(decls[key], decls);
+    }
+    return decls;
+  };
+})();
+
 const buildEffect = (name, content) => {
   effectName = name;
-  let { effect, templates } = parseEffect(name, content);
+  const { effect, templates } = parseEffect(name, content);
+  // compile time references
+  const declarations = unrollDeclarations(effect.declarations);
+  delete effect.declarations;
+  unrollReferences(effect.techniques, declarations);
+  // map passes
   Object.assign(templates, chunksCache);
-  let shaders = effect.shaders = [];
-  for (let j = 0; j < effect.techniques.length; ++j) {
-    let jsonTech = effect.techniques[j];
-    for (let k = 0; k < jsonTech.passes.length; ++k) {
-      let pass = jsonTech.passes[k];
+  const shaders = effect.shaders = [];
+  for (const jsonTech of effect.techniques) {
+    for (const pass of jsonTech.passes) {
       let vert = pass.vert, frag = pass.frag;
       delete pass.vert; delete pass.frag;
       let name = pass.program = `${effectName}|${vert}|${frag}`;

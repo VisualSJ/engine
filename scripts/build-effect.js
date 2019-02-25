@@ -12,63 +12,51 @@ const shdcLib = require('../builtin/asset-db/static/shdc-lib');
 shdcLib.addChunksCache('builtin/asset-db/static/chunks');
 
 const indent = (str, num) => str.replace(/\n/g, '\n'+' '.repeat(num));
+const stringify = (o) => { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
+const stringifyArray = (arr, stringifyObj = stringify) => {
+  let code = '';
+  if (!arr.length) return '[]';
+  for (const obj of arr) code += `  ${indent(stringifyObj(obj), 2)},\n`;
+  return `[\n${code.slice(0, -2)}\n]`;
+};
 
 const stringifyEffect = (() => {
   const newlines = /\n+/g;
-  const toOneLiner = o => '\n      ' + stringify(o);
-  const stringify = (o) => { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
-  const stringifyUniforms = (uniforms) => {
+  const stringifyBlock = (u) => `{"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": ${stringifyArray(u.members)}}`;
+  const stringifyShader = (shader) => {
     let code = '';
-    if (!uniforms.length) return '[]';
-    for (let i = 0; i < uniforms.length; ++i) {
-      let u = uniforms[i];
-      if (u.members) {
-        code += `  {"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": [`;
-        code += u.members.map(u => '\n    ' + stringify(u));
-        code += '\n  ]},\n';
-      } else {
-        code += `  ${stringify(u)},\n`;
-      }
-    }
-    return `[\n${code.slice(0, -2)}\n]`;
-  };
-  const stringifyShaders = (shaders) => {
-    let code = '';
-    for (let i = 0; i < shaders.length; ++i) {
-      let { name, glsl3, glsl1, defines, blocks, samplers, dependencies } = shaders[i];
+    let { name, glsl3, glsl1, defines, blocks, samplers, dependencies } = shader;
 
-      // comment any of the following lines to keep shaders readable
-      glsl1.vert = glsl1.vert.replace(newlines, '\\n');
-      glsl1.frag = glsl1.frag.replace(newlines, '\\n');
-      glsl3.vert = glsl3.vert.replace(newlines, '\\n');
-      glsl3.frag = glsl3.frag.replace(newlines, '\\n');
+    // comment any of the following lines to keep shaders readable
+    glsl1.vert = glsl1.vert.replace(newlines, '\\n');
+    glsl1.frag = glsl1.frag.replace(newlines, '\\n');
+    glsl3.vert = glsl3.vert.replace(newlines, '\\n');
+    glsl3.frag = glsl3.frag.replace(newlines, '\\n');
 
-      code += '  {\n';
-      code += `    "name": "${name}",\n`;
-      code += '    "glsl3": {\n';
-      code += `      "vert": \`${glsl3.vert}\`,\n`;
-      code += `      "frag": \`${glsl3.frag}\`\n`;
-      code += '    },\n';
-      code += '    "glsl1": {\n';
-      code += `      "vert": \`${glsl1.vert}\`,\n`;
-      code += `      "frag": \`${glsl1.frag}\`\n`;
-      code += '    },\n';
-      code += '    "defines": [';
-      code += defines.map(toOneLiner);
-      code += (defines.length ? '\n    ' : '') + '],\n';
-      code += `    "blocks": ${indent(stringifyUniforms(blocks), 4)},\n`;
-      code += `    "samplers": ${indent(stringifyUniforms(samplers), 4)},\n`;
-      code += `    "dependencies": ${stringify(dependencies)}\n`;
-      code += '  },\n';
-    }
-    return `[\n${code.slice(0, -2)}\n]`;
+    code += '{\n';
+    code += `  "name": "${name}",\n`;
+    code += '  "glsl3": {\n';
+    code += `    "vert": \`${glsl3.vert}\`,\n`;
+    code += `    "frag": \`${glsl3.frag}\`\n`;
+    code += '  },\n';
+    code += '  "glsl1": {\n';
+    code += `    "vert": \`${glsl1.vert}\`,\n`;
+    code += `    "frag": \`${glsl1.frag}\`\n`;
+    code += '  },\n';
+    code += `  "defines": ${indent(stringifyArray(defines), 2)},\n`;
+    code += `  "blocks": ${indent(stringifyArray(blocks, stringifyBlock), 2)},\n`;
+    code += `  "samplers": ${indent(stringifyArray(samplers), 2)},\n`;
+    code += `  "dependencies": ${stringify(dependencies)}\n`;
+    code += '}';
+
+    return code;
   };
   return (effect) => {
     let code = '';
     code += '{\n';
     code += `  "name": "${effect.name}",\n`;
-    code += `  "techniques": ${stringify(effect.techniques)},\n`;
-    code += `  "shaders": ${indent(stringifyShaders(effect.shaders), 2)}\n`;
+    code += `  "techniques": ${indent(stringifyArray(effect.techniques), 2)},\n`;
+    code += `  "shaders": ${indent(stringifyArray(effect.shaders, stringifyShader), 2)}\n`;
     code += '},\n';
     return code;
   };
@@ -81,7 +69,7 @@ const essentialList = {
   'builtin-effect-unlit': true,
   'builtin-effect-skybox': true,
   'builtin-effect-sprite': true,
-  'builtin-effect-particle-add': true,
+  'builtin-effect-particle': true,
 };
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 

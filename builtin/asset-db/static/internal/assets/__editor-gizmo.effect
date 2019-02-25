@@ -118,12 +118,11 @@ CCEFFECT {
 
 CCPROGRAM gizmo-vs {
   precision mediump float;
-  in vec3 a_position;
-  in vec3 a_normal;
-
   #include <cc-local>
   #include <cc-global>
 
+  in vec3 a_position;
+  in vec3 a_normal;
   out vec3 normal_w;
   out vec3 pos_w;
   out vec3 pos_l;
@@ -150,12 +149,7 @@ CCPROGRAM gizmo-fs {
   precision mediump float;
   #include <gamma-correction>
   #include <rect-area-light>
-
   #include <cc-global>
-
-  uniform Constant {
-    vec4 color;
-  };
 
   in vec3 normal_w;
   in vec3 pos_w;
@@ -163,6 +157,10 @@ CCPROGRAM gizmo-fs {
   in vec3 right;
   in vec3 up;
   in vec3 forward;
+
+  uniform Constant {
+    vec4 color;
+  };
 
   vec4 frag () {
     vec3 N = normalize(normal_w);
@@ -185,10 +183,10 @@ CCPROGRAM gizmo-fs {
 
 CCPROGRAM line-vs {
   precision mediump float;
-  in highp vec3 a_position;
-
   #include <cc-local>
   #include <cc-global>
+
+  in highp vec3 a_position;
 
   vec4 vert () {
     vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);

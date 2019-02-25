@@ -1,0 +1,162 @@
+CCEFFECT {
+  declarations: {
+    b1: { targets: [ {
+      blend: true
+      blendSrc: src_alpha
+      blendDst: one_minus_src_color
+      blendSrcAlpha: src_alpha
+      blendDstAlpha: one_minus_src_color
+    } ] }
+    b2: { targets: [ {
+      blend: true
+      blendSrc: src_alpha
+      blendDst: one
+      blendSrcAlpha: src_alpha
+      blendDstAlpha: one
+    } ] }
+    b3: { targets: [ {
+      blend: true
+      blendSrc: one
+      blendDst: one_minus_src_alpha
+      blendSrcAlpha: one
+      blendDstAlpha: one_minus_src_alpha
+    } ] }
+    d1: { depthTest: 'true', depthWrite: 'false' }
+    r1: { cullMode: 'none' }
+    p1: {
+      mainTexture:   { type: 'sampler2D' value: 'grey' }
+      mainTiling:    { type: 'vec2'      value: [1, 1] }
+      mainOffset:    { type: 'vec2'      value: [0, 0] }
+      frameTile:     { type: 'vec2'      value: [1, 1] }
+      velocityScale: { type: 'float'     value: 0      }
+      lengthScale:   { type: 'float'     value: 0      }
+    }
+    p2: {
+      __extends__: p1
+      tintColor:     { type: 'color4' value: [0.5, 0.5, 0.5, 0.5] }
+    }
+  }
+  techniques: [
+    {
+      name: add-gpu
+      passes: [
+        {
+          vert: particle-vs-gpu:gpvs_main
+          frag: tinted-fs:add
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b1
+          properties: $p2
+        }
+      ]
+    }
+    {
+      name: add
+      passes: [
+        {
+          vert: particle-vs-legacy:lpvs_main
+          frag: tinted-fs:add
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b1
+          properties: $p2
+        }
+      ]
+    }
+    {
+      name: alpha-blend
+      passes: [
+        {
+          vert: particle-vs-legacy:lpvs_main
+          frag: tinted-fs:add
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b1
+          properties: $p2
+        }
+      ]
+    }
+    {
+      name: add-multiply
+      passes: [
+        {
+          vert: particle-vs-legacy:lpvs_main
+          frag: tinted-fs:multiply
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b3
+          properties: $p2
+        }
+      ]
+    }
+    {
+      name: add-smooth
+      passes: [
+        {
+          vert: particle-vs-legacy:lpvs_main
+          frag: no-tint-fs:smooth
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b3
+          properties: $p1
+        }
+      ]
+    }
+    {
+      name: premultiply-blend
+      passes: [
+        {
+          vert: particle-vs-legacy:lpvs_main
+          frag: no-tint-fs:premultiplied
+          rasterizerState: $r1
+          depthStencilState: $d1
+          blendState: $b3
+          properties: $p1
+        }
+      ]
+    }
+  ]
+}
+
+// TODO: soft particle
+
+CCPROGRAM tinted-fs {
+  precision mediump float;
+  in vec2 uv;
+  in vec4 color;
+
+  uniform sampler2D mainTexture;
+  uniform FragConstants {
+    vec4 tintColor;
+  };
+
+  vec4 add () {
+    return 2.0 * color * tintColor * texture(mainTexture, uv);
+  }
+
+  vec4 multiply () {
+    vec4 col;
+    vec4 texColor = texture(mainTexture, uv);
+    col.rgb = tintColor.rgb * texColor.rgb * color.rgb * vec3(2.0);
+    col.a = (1.0 - texColor.a) * (tintColor.a * color.a * 2.0);
+    return col;
+  }
+}
+
+CCPROGRAM no-tint-fs {
+  precision mediump float;
+  in vec2 uv;
+  in vec4 color;
+
+  uniform sampler2D mainTexture;
+
+  vec4 smooth () {
+    vec4 col = color * texture(mainTexture, uv);
+    col.rgb *= col.a;
+    return col;
+  }
+
+  vec4 premultiplied () {
+    return color * texture(mainTexture, uv) * color.a;
+  }
+}
