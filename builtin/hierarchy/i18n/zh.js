@@ -25,9 +25,9 @@ module.exports = {
         new3dQuad: 'Quad 四方形',
 
         newLightObject: '光线',
-        newLightDirectional: 'Directional 平行光',
-        newLightPoint: 'Point 点光',
-        newLightSpot: 'Spot 聚光',
+        newLightDirectional: '平行光',
+        newLightPoint: '点光',
+        newLightSpot: '聚光',
 
         newCameraObject: '摄像机',
 
