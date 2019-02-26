@@ -1,5 +1,6 @@
 'use strict';
-import { close as closeCurve, drawCurve , open as openCurve } from '../../../../curve-editor/manager';
+import { close as closeCurve, drawCurve ,
+     open as openCurve, update as updateCurve } from '../../../../curve-editor/manager';
 
 export const template = `
 <div class="ui-curve" @click.right="reset">
@@ -59,6 +60,8 @@ export const methods = {
     reset() {
         // @ts-ignore
         this.dataDefault && (this.apply(this.dataDefault));
+        // @ts-ignore
+        updateCurve(this.value);
     },
 };
 

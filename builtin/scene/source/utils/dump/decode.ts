@@ -239,7 +239,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
             curve.postWrapMode = dump.value.postWrapMode;
             curve.postWrapMode = dump.value.preWrapMode;
-            dump.value = curve;
+            data[info.key] = curve;
         } else if (dump.type === 'cc.Gradient') {
             const gradient = new ccType();
             if (dump.value.alphaKeys.length > 0) {
@@ -263,7 +263,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 }
             }
 
-            dump.value = gradient;
+            data[info.key] = gradient;
         } else if (typeof dump.value === 'object') {
             for (const childKey in dump.value) {
                 if (dump.value[childKey] === undefined) {

@@ -36,6 +36,10 @@ export function drawCurve(keyframes: any, ctx: any) {
 export function open(data: any, vue: any) {
     vm = vue;
     Editor.Panel.open('inspector.curve-editor');
+    update(data);
+}
+
+export function update(data: any) {
     cache = data;
     if (isOpend) {
         // hack ipc 消息延迟

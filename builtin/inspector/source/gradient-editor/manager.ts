@@ -28,9 +28,13 @@ export function changeGrandintData(dump: any) {
  * @param data
  */
 export function open(data: any, vue: any) {
-    cache = data;
     vm = vue;
     Editor.Panel.open('inspector.gradient-editor');
+    update(data);
+}
+
+export function update(data: any) {
+    cache = data;
     if (isOpend) {
         setTimeout(() => {
             Editor.Ipc.sendToPanel('inspector.gradient-editor', 'data', cache);

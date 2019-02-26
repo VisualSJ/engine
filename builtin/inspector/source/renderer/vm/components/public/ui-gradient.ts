@@ -1,6 +1,6 @@
 'use strict';
 
-import { close, open } from '../../../../gradient-editor/manager';
+import { close, open, update } from '../../../../gradient-editor/manager';
 
 export const template = `
 <div class="ui-gradient" @click.right="reset">
@@ -74,6 +74,8 @@ export const methods = {
     reset() {
         // @ts-ignore
         this.dataDefault && (this.apply(this.dataDefault));
+        // @ts-ignore
+        update(this.value);
     },
 };
 
