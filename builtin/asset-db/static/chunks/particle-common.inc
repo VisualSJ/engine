@@ -1,10 +1,7 @@
 
 uniform Constants {
-  vec2 frameTile;
-  vec2 mainTiling;
-  vec2 mainOffset;
-  float velocityScale;
-  float lengthScale;
+  vec4 mainTiling_Offset;
+  vec4 frameTile_velLenScale;
 };
 
 #include <cc-global>

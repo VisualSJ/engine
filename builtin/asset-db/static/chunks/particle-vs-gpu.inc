@@ -367,10 +367,10 @@ void gpvs_main() {
   if (u_animation_mode == ANIMATION_MODE_WHOLE_SHEET) {
     frameIndex = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
   } else if (u_animation_mode == ANIMATION_MODE_SINGLE_ROW) {
-    float rowLength = 1. / frameTile.y;
+    float rowLength = 1. / frameTile_velLenScale.y;
     if (u_random_row) {
       float f = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
-      float startRow = floor(random(floor(u_psTime * 1000.)) * frameTile.y);
+      float startRow = floor(random(floor(u_psTime * 1000.)) * frameTile_velLenScale.y);
       float from = startRow * rowLength;
       float to = from + rowLength;
       frameIndex = mix(from, to, f);
@@ -382,7 +382,7 @@ void gpvs_main() {
     }
   }
 #endif
-  uv = computeUV(frameIndex, a_vertIdx_size_angle.xy, frameTile) * mainTiling + mainOffset;
+  uv = computeUV(frameIndex, a_vertIdx_size_angle.xy, frameTile_velLenScale.xy) * mainTiling_Offset.xy + mainOffset.zw;
 
 #if COLOR_OVERTIME_MODULE_ENABLE
   color = a_color * EVAL_GRADIENT_RANGE(color, normalizedTime, a_rndSeed + COLOR_OVERTIME_RAND_OFFSET);

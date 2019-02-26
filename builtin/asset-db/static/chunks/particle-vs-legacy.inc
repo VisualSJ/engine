@@ -40,8 +40,8 @@ vec4 lpvs_main() {
   #if USE_STRETCHED_BILLBOARD
     , cc_cameraPos.xyz
     , velocity
-    , velocityScale
-    , lengthScale
+    , frameTile_velLenScale.z
+    , frameTile_velLenScale.w
     , a_texCoord1.x
     , a_texCoord.x
   #endif
@@ -49,7 +49,7 @@ vec4 lpvs_main() {
 
   pos = cc_matViewProj * pos;
 
-  uv = computeUV(a_texCoord.z, a_texCoord.xy, frameTile) * mainTiling + mainOffset;
+  uv = computeUV(a_texCoord.z, a_texCoord.xy, frameTile_velLenScale.xy) * mainTiling_Offset.xy + mainTiling_Offset.zw;
 
   color = a_color;
 
