@@ -1,4 +1,4 @@
-CCEFFECT {
+CCEffect {
   techniques: [
     {
       passes: [
@@ -22,7 +22,7 @@ CCEFFECT {
   ]
 }
 
-CCPROGRAM sky-vs {
+CCProgram sky-vs {
   precision mediump float;
   in vec3 a_position;
 
@@ -41,7 +41,7 @@ CCPROGRAM sky-vs {
   }
 }
 
-CCPROGRAM sky-fs {
+CCProgram sky-fs {
   precision mediump float;
   in vec3 viewDir;
 

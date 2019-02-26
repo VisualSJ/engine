@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEFFECT {
+CCEffect {
   techniques: [
     {
       passes: [
@@ -29,7 +29,7 @@ CCEFFECT {
   ]
 }
 
-CCPROGRAM sprite-vs {
+CCProgram sprite-vs {
   precision mediump float;
   #include <cc-global>
 
@@ -52,7 +52,7 @@ CCPROGRAM sprite-vs {
   }
 }
 
-CCPROGRAM sprite-fs {
+CCProgram sprite-fs {
   precision mediump float;
   in vec2 uv0;
   in vec4 color;

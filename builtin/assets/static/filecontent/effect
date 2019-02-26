@@ -1,4 +1,4 @@
-CCEFFECT {
+CCEffect {
   "techniques": [
     {
       "queue": "opaque",
@@ -16,7 +16,7 @@ CCEFFECT {
 }
 
 
-CCPROGRAM vs {
+CCProgram vs {
   attribute vec3 a_position;
   attribute vec3 a_normal;
   attribute vec2 a_texCoord;
@@ -34,7 +34,7 @@ CCPROGRAM vs {
   }
 }
 
-CCPROGRAM fs {
+CCProgram fs {
   varying vec2 uv;
   varying vec3 normal;
 

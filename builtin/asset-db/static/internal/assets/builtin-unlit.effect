@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEFFECT {
+CCEffect {
   declarations: {
     p1: {
       color:        { type: 'color4',    value: [1, 1, 1, 1] }
@@ -45,7 +45,7 @@ CCEFFECT {
   ]
 }
 
-CCPROGRAM unlit-vs {
+CCProgram unlit-vs {
   precision mediump float;
   #include <cc-global>
   #include <cc-local>
@@ -80,7 +80,7 @@ CCPROGRAM unlit-vs {
   }
 }
 
-CCPROGRAM unlit-fs {
+CCProgram unlit-fs {
   precision mediump float;
 
   #if USE_TEXTURE

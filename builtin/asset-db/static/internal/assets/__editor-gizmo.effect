@@ -1,4 +1,9 @@
-CCEFFECT {
+CCEffect {
+  declarations: {
+    p1: {
+      color: { type: 'color4', value: [1, 1, 1, 1] }
+    }
+  }
   techniques: [
     {
       passes: [
@@ -23,9 +28,7 @@ CCEFFECT {
               }
             ]
           }
-          properties: {
-            color: { type: 'color4', value: [1, 1, 1, 1] }
-          }
+          properties: $p1
         }
       ]
     }
@@ -52,9 +55,7 @@ CCEFFECT {
               }
             ]
           }
-          properties: {
-            color: { type: 'color4', value: [1, 1, 1, 1] }
-          }
+          properties: $p1
         }
       ]
     }
@@ -81,9 +82,7 @@ CCEFFECT {
               }
             ]
           }
-          properties: {
-            color: { type: 'color4', value: [1, 1, 1, 1] }
-          }
+          properties: $p1
         }
         {
           vert: line-vs:vert
@@ -107,16 +106,14 @@ CCEFFECT {
               }
             ]
           }
-          properties: {
-            color: { type: 'color4', value: [1, 1, 1, 1] }
-          }
+          properties: $p1
         }
       ]
     }
   ]
 }
 
-CCPROGRAM gizmo-vs {
+CCProgram gizmo-vs {
   precision mediump float;
   #include <cc-local>
   #include <cc-global>
@@ -145,7 +142,7 @@ CCPROGRAM gizmo-vs {
   }
 }
 
-CCPROGRAM gizmo-fs {
+CCProgram gizmo-fs {
   precision mediump float;
   #include <gamma-correction>
   #include <rect-area-light>
@@ -181,7 +178,7 @@ CCPROGRAM gizmo-fs {
   }
 }
 
-CCPROGRAM line-vs {
+CCProgram line-vs {
   precision mediump float;
   #include <cc-local>
   #include <cc-global>
@@ -195,7 +192,7 @@ CCPROGRAM line-vs {
   }
 }
 
-CCPROGRAM line-fs {
+CCProgram line-fs {
   precision mediump float;
   uniform Constant {
     vec4 color;

@@ -347,7 +347,7 @@ export class GltfConverter {
         // @ts-ignore
         const material = new cc.Material();
         material.name = gltfMaterial.name;
-        material._effectAsset = effectGetter('db://internal/builtin-effect-phong.effect');
+        material._effectAsset = effectGetter('db://internal/builtin-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {

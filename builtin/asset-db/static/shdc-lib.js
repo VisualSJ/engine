@@ -25,8 +25,6 @@ const texLookup = /texture(\w*)\s*\((\w+),/g;
 const layoutRE = /layout\(.*?\)/g;
 const layoutExtract = /layout\((.*?)\)(\s*)$/;
 const bindingExtract = /binding\s*=\s*(\d+)/;
-const lineComments = /(\/\/|#).*$/gm;
-const blockComments = /\/\*.*?\*\//gs;
 
 let effectName = '', shaderName = '';
 const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
@@ -341,7 +339,7 @@ const miscChecks = (() => {
       // entry function check
       if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
         error(`entry function '${entry}' not found.`);
-    } catch (e) { error(`parse ${shaderName} failed: ${e}`); }
+    } catch (e) { error(`parser failed: ${e}`); }
   };
 })();
 
@@ -455,6 +453,8 @@ const buildShader = (() => {
     tokens = tokenizer(vert);
     extractDefines(tokens, defines, cache);
     let vertInfo = extractParams(tokens, cache, blocks, samplers, dependencies);
+    glsl1.vert = glsl300to100(vert, blocks, vertInfo, true);
+    miscChecks(glsl1.vert, vEntry); glsl3.vert = vert;
 
     shaderName = fragName;
     cache = createCache();
@@ -466,12 +466,8 @@ const buildShader = (() => {
     tokens = tokenizer(frag);
     extractDefines(tokens, defines, cache);
     let fragInfo = extractParams(tokens, cache, blocks, samplers, dependencies);
-
-    glsl3.vert = vert; glsl3.frag = frag;
-    glsl1.vert = glsl300to100(vert, blocks, vertInfo, true);
-    miscChecks(glsl1.vert, vEntry);
     glsl1.frag = glsl300to100(frag, blocks, fragInfo, false);
-    miscChecks(glsl1.frag, fEntry);
+    miscChecks(glsl1.frag, fEntry); glsl3.frag = frag;
 
     // filter out pipeline builtin params
     blocks = blocks.filter((u) => !builtins.test(u.name));
@@ -496,10 +492,13 @@ const buildShader = (() => {
 // ==================
 
 const stripComments = (() => {
+  const crlfNewLines = /\r\n/g;
+  const blockComments = /\/\*.*?\*\//gs;
+  const lineComments = /(\/\/|#).*$/gm;
   const includeHash = () => '';
   const excludeHash = (m, p) => p === '#' ? m : '';
   return (code, hashAsComment = false) => {
-    let result = code.replace(blockComments, '');
+    let result = code.replace(crlfNewLines, '\n').replace(blockComments, '');
     return result.replace(lineComments, hashAsComment ? includeHash : excludeHash);
   };
 })();
@@ -519,9 +518,10 @@ const addChunksCache = (chunksDir) => {
 };
 
 const parseEffect = (() => {
-  const blockTypes = /CCEFFECT|CCPROGRAM/g;
-  const effectRE = /CCEFFECT\s*{([^]+)}/;
-  const programRE = /CCPROGRAM\s*([\w-]+)\s*{([^]+)}/;
+  const cceffect = /CCEffect/i;
+  const blockTypes = /CCEffect|CCProgram/gi;
+  const effectRE = /CCEffect\s*{([^]+)}/i;
+  const programRE = /CCProgram\s*([\w-]+)\s*{([^]+)}/i;
   const parenRE = /[{}]/g;
   const trimToSize = (content) => {
     let level = 1, end = content.length;
@@ -539,20 +539,24 @@ const parseEffect = (() => {
     let blockCap = blockTypes.exec(content), effectCount = 0;
     while (blockCap) {
       blockInfos[blockCap.index] = blockCap[0];
-      if (blockCap[0] === 'CCEFFECT') effectCount++;
+      if (cceffect.test(blockCap[0])) effectCount++;
       blockCap = blockTypes.exec(content);
     }
     const blockPos = Object.keys(blockInfos);
-    if (effectCount !== 1) error('there must be exactly one CCEFFECT.');
+    if (effectCount !== 1) error('there must be exactly one CCEffect.');
     // process each block
     let effect = {}, templates = {};
     for (let i = 0; i < blockPos.length; i++) {
       const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
       // strip comments this early here in case of something like '// {'
-      if (blockInfos[blockPos[i]] === 'CCEFFECT') {
+      if (cceffect.test(blockInfos[blockPos[i]])) {
         let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
-        else { effect = HJSON.parse(`{${effectCap[1]}}`); effect.name = name; }
+        else {
+          effect = HJSON.parse(`{${effectCap[1]}}`);
+          if (effect.name) effectName = effect.name;
+          else effect.name = name;
+        }
       } else {
         let programCap = programRE.exec(trimToSize(stripComments(str)));
         if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
@@ -634,6 +638,7 @@ const mapPassParam = (() => {
     };
   })();
   return (obj, shader) => {
+    shaderName = 'type error';
     const tmp = {};
     // special treatments
     if (obj.properties) {

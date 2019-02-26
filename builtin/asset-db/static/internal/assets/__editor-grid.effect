@@ -1,4 +1,4 @@
-CCEFFECT {
+CCEffect {
   techniques: [
     {
       passes: [
@@ -40,7 +40,7 @@ CCEFFECT {
  * a_texCoord.y = 0 for lines along Z axis
  * a_texCoord.y = 1 for lines along X axis
  */
-CCPROGRAM grid-vs {
+CCProgram grid-vs {
   precision mediump float;
   #include <cc-global>
 
@@ -65,7 +65,7 @@ CCPROGRAM grid-vs {
   }
 }
 
-CCPROGRAM grid-fs {
+CCProgram grid-fs {
   precision mediump float;
   #include <cc-global>
 

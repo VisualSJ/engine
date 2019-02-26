@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co. Ltd.
-CCEFFECT {
+CCEffect {
   declarations: {
     p1: {
       albedo:              { type: 'color4',      value: [1, 1, 1, 1]     }
@@ -56,7 +56,7 @@ CCEFFECT {
   ]
 }
 
-CCPROGRAM pbr-vs {
+CCProgram pbr-vs {
   precision mediump float;
   #include <cc-global>
   #include <cc-local>
@@ -96,7 +96,7 @@ CCPROGRAM pbr-vs {
   }
 }
 
-CCPROGRAM pbr-fs {
+CCProgram pbr-fs {
   precision mediump float;
   #include <cc-global>
   #include <pbr-lighting>

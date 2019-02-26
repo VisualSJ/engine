@@ -57,38 +57,43 @@ const stringifyEffect = (() => {
     code += `  "name": "${effect.name}",\n`;
     code += `  "techniques": ${indent(stringifyArray(effect.techniques), 2)},\n`;
     code += `  "shaders": ${indent(stringifyArray(effect.shaders, stringifyShader), 2)}\n`;
-    code += '},\n';
+    code += '}';
     return code;
+  };
+})();
+
+const addEssential = (() => {
+  // empty array will keep all techs
+  const essentialList = {
+    'builtin-unlit': [0],
+    'builtin-skybox': [],
+    'builtin-sprite': [],
+    'builtin-particle': [0],
+  };
+  return (essentials, name, effect) => {
+    const techs = essentialList[name];
+    if (techs !== undefined) {
+      const partial = Object.assign({}, effect);
+      if (techs.length) {
+        partial.techniques = techs.reduce((acc, cur) => (acc.push(partial.techniques[cur]), acc), []);
+        partial.shaders = partial.shaders.filter((s) => partial.techniques.some((tech) => tech.passes.some((p) => p.program === s.name)));
+      }
+      essentials.push(partial);
+    }
   };
 })();
 
 const path = 'builtin/asset-db/static/internal/assets';
 const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
-
-// empty array for all techs
-const essentialList = {
-  'builtin-effect-unlit': [0],
-  'builtin-effect-skybox': [],
-  'builtin-effect-sprite': [],
-  'builtin-effect-particle': [0],
-};
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 
-let all = ``, essential = '';
+let all = [], essentials = [];
 for (let i = 0; i < files.length; ++i) {
   const name = ps.basename(files[i], '.effect');
   const content = fs.readFileSync(files[i], { encoding: 'utf8' });
   const effect = shdcLib.buildEffect(name, content);
-  all += indent(stringifyEffect(effect), 2);
-  const techs = essentialList[name];
-  if (techs !== undefined) {
-    if (techs.length) {
-      effect.techniques = effect.techniques.filter((_, i) => techs.some((idx) => idx === i));
-      effect.shaders = effect.shaders.filter((s) => effect.techniques.some((tech) => tech.passes.some((p) => p.program === s.name)));
-    }
-    essential += indent(stringifyEffect(effect), 2);
-  }
+  all.push(effect); addEssential(essentials, name, effect);
 }
 
-fs.writeFileSync('effects.js', `export default [\n  ${all.slice(0, -4)}\n];\n`, { encoding: 'utf8' });
-fs.writeFileSync(essentialDir, `// absolute essential effects\nexport default [\n  ${essential.slice(0, -4)}\n];\n`, { encoding: 'utf8' });
+fs.writeFileSync('effects.js', `export default ${stringifyArray(all, stringifyEffect)};\n`, { encoding: 'utf8' });
+fs.writeFileSync(essentialDir, `// absolute essential effects\nexport default ${stringifyArray(essentials, stringifyEffect)};\n`, { encoding: 'utf8' });
