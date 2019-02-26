@@ -30,11 +30,11 @@ class AssetPacker {
         const packUuidArray = HashUuid.calculate(uuidssArray, HashUuid.BuiltinHashType.PackedAssets);
         this.groups.forEach((item, index) => {
             let fileName = packUuidArray[index];
+            packedAssets[fileName] = item.uuids;
             if (item.type === 'texture') {
                 // texture 资源打包
                 this.packTexture(fileName, item.uuids);
             } else {
-                packedAssets[fileName] = item.uuids;
                 // json 资源打包
                 this.packJson(fileName, item.uuids);
             }
@@ -53,7 +53,7 @@ class AssetPacker {
     packTexture(hasName, uuids) {
         uuids.sort();
         let values = uuids.map(function(uuid) {
-            return buildResult.jsonCache[uuid];
+            return buildResult.jsonCache[uuid].content.base;
         });
         values = values.join('|');
         const packedData = {
@@ -298,17 +298,17 @@ class AssetPacker {
      * @memberof AssetPacker
      */
     removeFromGroups(groups, uuidsToRemove) {
-        let fastRemove = cc.js.array.fastRemove;
         for (let i = 0; i < groups.length; i++) {
             let groupUuids = groups[i].uuids;
             if (!groupUuids) {
-                return;
+                continue;
             }
             for (let j = 0; j < uuidsToRemove.length; j++) {
-                fastRemove(groupUuids, uuidsToRemove[j]);
+                const index = groupUuids.indexOf(uuidsToRemove[j]);
+                groupUuids.splice(index, 1);
             }
             if (groupUuids.length === 0) {
-                cc.js.array.fastRemoveAt(groups, i);
+                groups.splice(i, 1);
                 --i;
             }
         }

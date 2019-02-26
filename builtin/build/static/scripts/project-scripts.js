@@ -1,42 +1,4 @@
-const {basename, extname} = require('path');
-let modules = Object.create(null);
-// 缓存模块信息
-function addModule(path, name) {
-    name = name || basename(path, extname(path));
-    let m = modules[name];
-
-    if (!m) {
-        m = modules[name] = {
-            name: name,
-            path: path,
-            children: [],
-        };
-    }
-
-    return m;
-}
-
-/**
- * 注销和清理之前缓存的模块
- * @param {*} path
- */
-function unregisterPathClass(path) {
-    let name = basename(path, extname(path));
-    delete require.cache[path];
-    delete modules[name];
-}
-
-/**
- * 注册、导入模块
- * @param {*} path 模块路径
- */
-function registerPathClass(path) {
-    try {
-        require(path);
-    } catch (err) {
-        console.error(`load script [${path}] failed : ${err.stack}`);
-    }
-}
+const virtualModule = require('virtual-module');
 
 /**
  * TODO 对脚本进行整理，拆分为插件类脚本和普通脚本
@@ -45,7 +7,11 @@ function sortScripts(scripts) {
     let mainPaths = [];
     let plugins = [];
     for (let asset of scripts) {
-        mainPaths.push(asset.library['.js']);
+        if (!asset.isPlugin) {
+            mainPaths.push(asset);
+        } else {
+            plugins.push(asset);
+        }
     }
     return {
         mainPaths,
@@ -82,22 +48,21 @@ function loadPlugins(paths) {
     }
 }
 
-function loadCommon(paths) {
-    // 把之前注册过缓存的脚本信息删除
-    if (modules && modules.length > 0) {
-        for (let name of Object.keys(modules)) {
-            unregisterPathClass(modules[name].path);
-        }
+function loadCommon(scriptAssetInfos) {
+    virtualModule.reset();
+    for (const scriptAssetInfo of scriptAssetInfos) {
+        virtualModule.addAlias(scriptAssetInfo.source, (fromPath, request, alias) => {
+            const result = scriptAssetInfo.library['.js'];
+            // This may be caused by parsing error.
+            if (result === undefined) {
+                throw new Error(`Script (${scriptAssetInfo.source}) can't found in library, please check it`);
+            }
+            return result;
+        });
     }
-
-    modules = {};
-    // 导入脚本模块
-    paths.forEach((path) => {
-        addModule(path);
-    });
-    // 注册脚本
-    for (let i = 0; i < paths.length; i++) {
-        registerPathClass(paths[i]);
+    for (const scriptAssetInfo of scriptAssetInfos) {
+        require(scriptAssetInfo.source);
+        console.info(`Script ${scriptAssetInfo.uuid}(${scriptAssetInfo.source}) mounted.`);
     }
 }
 

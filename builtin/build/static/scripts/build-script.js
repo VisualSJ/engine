@@ -12,7 +12,6 @@ const source = require('vinyl-source-stream');
 const viniBuffer = require('vinyl-buffer');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
-const mountProjectScripts = require('../../../engine/static/utils/3d/mount-project-scripts');
 
 // browserify prelude
 const prelude = readFileSync(join(__dirname, './_prelude.js'), 'utf8');
@@ -40,9 +39,7 @@ class ScriptBuilder {
         updateProgress('build scripts...');
         this.init(type);
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
-        mountProjectScripts.reset();
-        mountProjectScripts.mount(scripts);
-        // projectScripts.load(scripts);
+        projectScripts.load(scripts);
         const result = await this.resolveScripts(scripts);
         if (!this.shoudBuild) {
             return result;

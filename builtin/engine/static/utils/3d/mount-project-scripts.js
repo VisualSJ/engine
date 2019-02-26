@@ -7,7 +7,7 @@ function mount(scriptAssetInfos) {
             const result = scriptAssetInfo.library['.js'];
             // This may be caused by parsing error.
             if (result === undefined) {
-                throw new Error(`Script parsing error, fix it first.`);
+                throw new Error(`Script (${scriptAssetInfo.source}) can't found in library, please check it`);
             }
             return result;
         });
