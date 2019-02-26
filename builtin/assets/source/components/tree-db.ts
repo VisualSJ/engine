@@ -179,6 +179,10 @@ function toAssetsTree(asset: ItreeAsset, tree: any, dir: string[]) {
  * @param name 完整的文件名称
  */
 function assetAttr(asset: ItreeAsset, dir: string[], name: string) {
+    if (!asset || !asset.subAssets) {
+        return; // 容错处理
+    }
+
     const subAssets = Object.keys(asset.subAssets);
 
     asset.name = name;

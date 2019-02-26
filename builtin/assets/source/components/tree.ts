@@ -909,17 +909,17 @@ export const methods = {
         for (const group of groups) {
             const [fromAsset, fromIndex, fromArr, fromParent] = group;
             if (utils.canNotCopyAsset(fromAsset)) {
-                return;
+                continue;
             }
 
             const isSubChild = utils.getGroupFromTree(fromAsset, json.to);
             if (isSubChild[0]) { // toAsset 是 fromAsset 的子集，所以父不能移到子里面
-                return;
+                continue;
             }
 
             // 资源移动仍在原来的目录内，不需要移动
             if (toAsset.uuid === fromParent.uuid) {
-                return;
+                continue;
             }
 
             utils.twinkle.sleep();
@@ -927,8 +927,8 @@ export const methods = {
             // 移动资源
             const target = toAsset.source + '/' + basename(fromAsset.source);
             const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', fromAsset.source, target);
-
             if (!isSuccess) {
+                console.warn(`${Editor.I18n.t('assets.operate.moveFail')}: ${fromAsset.source}`);
                 vm.dialogError('moveFail');
             }
         }

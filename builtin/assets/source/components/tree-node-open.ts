@@ -11,9 +11,11 @@ exports['.scene'] = (asset: ItreeAsset) => {
 exports['.fire'] = async (asset: ItreeAsset) => {
     await Editor.Dialog.show({
         type: 'warning',
+        buttons: [], // 只留一个 确定 按钮
         title: Editor.I18n.t('assets.operate.dialogWaining'),
         message: Editor.I18n.t('assets.deprecate.fire'),
     });
+
     Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
 };
 

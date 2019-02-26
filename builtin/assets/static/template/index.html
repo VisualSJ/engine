@@ -56,7 +56,7 @@
     </footer>
 
     <div class="refreshing"
-        v-if="refreshing"
+        :class="refreshing ? 'fadeIn' : ''"
     >
         {{t('operate.refreshing')}}
     </div>

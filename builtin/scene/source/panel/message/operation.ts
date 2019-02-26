@@ -99,12 +99,10 @@ export function apply(messages: any) {
             return '';
         }
 
-        const text = await $scene.forwarding('Scene', 'serialize');
-
         const savePath = await Editor.Dialog.saveFile({
             title: Editor.I18n.t('scene.save_as'),
             filters: [
-                { name: 'Custom File Type', extensions: ['scene'] },
+                { name: 'Scene File', extensions: ['scene'] },
             ],
         });
 
@@ -122,6 +120,7 @@ export function apply(messages: any) {
             return;
         }
 
+        const text = await $scene.forwarding('Scene', 'serialize');
         await outputFile(savePath, text);
 
         const relatiePath = relative(assetsPath, savePath);

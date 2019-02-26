@@ -143,19 +143,26 @@
     background-color: var(--panel-header-bg);
 }
 
-.refreshing{
+.refreshing {
     position: absolute;
-    bottom: 5px;
+    opacity: 0;
+    bottom: -30px;
     right: 5px;
     z-index: 10;
     height: 20px;
     line-height: 20px;
     padding: 0 10px;
     border-radius: 3px;
-    background-color: var(--focus-c);
+    background-color: #09b8e0;
     color: #fff;
-    box-shadow: 0 0 8px 2px #000;
+    box-shadow: 0 0 8px 2px #036f88;
     pointer-events: none;
+    transition: opacity, bottom 0.3s;
+    transition-delay: 0.3s;
+    &.fadeIn {
+        opacity: 1;
+        bottom: 5px;
+    }
 }
 
 @import './tree';
