@@ -16,7 +16,7 @@ import {
 } from './utils';
 
 // @ts-ignore
-import { get } from 'lodash';
+import { get, set } from 'lodash';
 
 /**
  * 解码一个 dump 数据
@@ -212,6 +212,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
         const parentData = get(node, parentInfo.search);
         const attr = cc.Class.attr(parentData, parentInfo.key);
         fillDefaultValue(attr, data, data.length, dump.value);
+        set(node, info.search, data);
     } else {
         // 转换数据，防止因为 js 弱类型导致数据类型被更改
         if (
@@ -293,6 +294,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
 
     // 触发引擎内的 setter 更新部分数据
     data[info.key] = data[info.key];
+    set(node, info.search, data);
     if (parentInfo && parentInfo.search) {
         const data = get(node, parentInfo.search);
         data[parentInfo.key] = data[parentInfo.key];
