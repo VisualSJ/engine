@@ -4,19 +4,29 @@ const { existsSync, readFileSync } = require('fs');
 const { join } = require('path');
 const { expect } = require('chai');
 
-describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
-    // 选取 db://internal 里面较为固定的资源作为共用的测试用例
-    const dbInternal = {
-        prefab: {
-            button: {
-                uuid: '90bdd2a9-2838-4888-b66c-e94c8b7a5169',
-                url: 'db://internal/default_prefab/ui/Button.prefab',
-                path: join(Editor.App.path, 'builtin/asset-db/static/internal/assets/default_prefab/ui/Button.prefab'),
-            },
+// 选取 db://internal 里面较为固定的资源作为共用的测试用例
+const dbInternal = {
+    prefab: {
+        button: {
+            uuid: '90bdd2a9-2838-4888-b66c-e94c8b7a5169',
+            url: 'db://internal/default_prefab/ui/Button.prefab',
+            availableUrl001: 'db://internal/default_prefab/ui/Button-001.prefab',
+            path: join(Editor.App.path, 'builtin/asset-db/static/internal/assets/default_prefab/ui/Button.prefab'),
         },
-    };
+    },
+};
 
-    // 以下对应功能代码 asset-db/index.ts 上的接口顺序
+const dbAsset = {
+    addDir: {
+        url: 'db://assets/test-dir',
+        urlWithSpace: 'db://assets/test dir',
+    },
+};
+
+// 以下对应功能代码 asset-db/source/browser/index.ts 上的接口顺序
+
+describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
+    return;
 
     // ------- 地址转换
     describe('------ 地址转换', () => {
@@ -66,6 +76,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                     expect(result).to.equal(test.expect);
                 }
             });
+
         });
 
         describe('query-url-by-path ：由 url 查资源 path', () => {
@@ -113,6 +124,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                     expect(result).to.equal(test.expect);
                 }
             });
+
         });
 
     });
@@ -494,9 +506,128 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
 
 });
 
-return; //  TODO 开发到这里，以上先提交
-
 describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
+
+    // ----- 资源增删
+    describe('------ 资源增删', () => {
+
+        describe('generate-available-url ：返回可用格式的 url', async () => {
+
+            it('传入错误的参数', async () => {
+                return new Promise(async (resolve, reject) => {
+                    async function start() {
+                        const queue = [
+                            { args: undefined, expect: null },
+                            { args: null, expect: null },
+                            { args: '', expect: null },
+                            { args: 0, expect: null },
+                            { args: false, expect: null },
+                            { args: true, expect: null },
+                            { args: [], expect: null },
+                            { args: {}, expect: null },
+                            { args: () => { }, expect: null },
+                            { args: 'abc', expect: null },
+                            { args: 123, expect: null },
+                        ];
+
+                        for (const test of queue) {
+                            // tslint:disable-next-line:max-line-length
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
+                            expect(result).to.equal(test.expect);
+                        }
+
+                        resolve();
+                    }
+
+                    await start();
+                });
+            });
+
+            it('传入正确的参数', async () => {
+                const queue = [
+                    {
+                        args: dbInternal.prefab.button.url,
+                        expect: dbInternal.prefab.button.availableUrl001,
+                    },
+                    {
+                        args: dbInternal.prefab.button.availableUrl001,
+                        expect: dbInternal.prefab.button.availableUrl001,
+                    },
+                ];
+
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
+                    expect(result).to.equal(test.expect);
+                }
+            });
+
+        });
+
+        describe('create-asset ：创建一个新的资源', async () => {
+
+            it('传入错误的参数', async () => {
+                return new Promise(async (resolve, reject) => {
+                    async function start() {
+                        const queue = [
+                            // { args: [undefined], expect: null },
+                            // { args: [null], expect: null },
+                            // { args: [''], expect: null },
+                            // { args: [0], expect: null },
+                            // { args: [false], expect: null },
+                            // { args: [true], expect: null },
+                            // { args: [[]], expect: null },
+                            // { args: [{}], expect: null },
+                            // { args: [() => { }], expect: null },
+                            // { args: ['abc'], expect: null },
+                            // { args: [123], expect: null },
+                            { args: [dbAsset.addDir.url, undefined], expect: null },
+                            // { args: [dbAsset.addDir.url, ''], expect: null },
+                            // { args: [dbAsset.addDir.url, []], expect: null },
+                            // { args: [dbAsset.addDir.url, {}], expect: null },
+                            // { args: [dbAsset.addDir.url, false], expect: null },
+                            // { args: [dbAsset.addDir.url, () => { }], expect: null },
+                            // { args: [dbAsset.addDir.url, 123], expect: null },
+                        ];
+
+                        for (const test of queue) {
+                            // tslint:disable-next-line:max-line-length
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', ...test.args);
+                            console.log(result, test.args);
+                            expect(result).to.equal(test.expect);
+                        }
+
+                        resolve();
+                    }
+
+                    await start();
+                });
+            });
+            return;
+
+            it('传入正确的参数', async () => {
+                const queue = [
+                    {
+                        args: dbInternal.prefab.button.url,
+                        expect: dbInternal.prefab.button.availableUrl001,
+                    },
+                    {
+                        args: dbInternal.prefab.button.availableUrl001,
+                        expect: dbInternal.prefab.button.availableUrl001,
+                    },
+                ];
+
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
+                    expect(result).to.equal(test.expect);
+                }
+            });
+
+        });
+
+    });
+
+    return;
+
     const name1 = (new Date()).getTime() + '_1';
     const name2 = (new Date()).getTime() + '_2';
 

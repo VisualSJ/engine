@@ -359,9 +359,7 @@ export const methods = {
 
         const renameSource = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', renameSource, filedata);
-        if (!isSuccess) {
-            vm.dialogError('addFail');
-        } else {
+        if (isSuccess) {
             vm.renameSource = renameSource;
         }
 
@@ -428,14 +426,9 @@ export const methods = {
             tasks.push(Editor.Ipc.requestToPackage('asset-db', 'delete-asset', asset.source));
         });
         Promise.all(tasks).then((results) => {
-            let throwError = false;
             results.forEach((success, i) => {
                 if (success === false) {
-                    assets[i].state = '';
-                    if (!throwError) { // 未抛出错误提示时出现一次，已出现对话框的时候不再出现
-                        vm.dialogError('deleteFail');
-                        throwError = true;
-                    }
+                    assets[i].state = ''; // 此资源是删不掉的，还留在面板中
                 }
             });
         });
@@ -736,10 +729,6 @@ export const methods = {
                     utils.twinkle.sleep();
                     // tslint:disable-next-line:max-line-length
                     isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, { src: file.path });
-
-                    if (!isSuccess) {
-                        vm.dialogError('dropFileFail');
-                    }
                 }
 
             } while (isSuccess);
@@ -855,10 +844,6 @@ export const methods = {
                 target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                 utils.twinkle.sleep();
                 isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
-
-                if (!isSuccess) {
-                    vm.dialogError('pasteFail');
-                }
             }
 
         } while (isSuccess);
@@ -906,6 +891,8 @@ export const methods = {
             return a[0].top - b[0].top;
         });
 
+        const tasks: Array<Promise<boolean>> = [];
+
         for (const group of groups) {
             const [fromAsset, fromIndex, fromArr, fromParent] = group;
             if (utils.canNotCopyAsset(fromAsset)) {
@@ -926,12 +913,16 @@ export const methods = {
 
             // 移动资源
             const target = toAsset.source + '/' + basename(fromAsset.source);
-            const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', fromAsset.source, target);
-            if (!isSuccess) {
-                console.warn(`${Editor.I18n.t('assets.operate.moveFail')}: ${fromAsset.source}`);
-                vm.dialogError('moveFail');
-            }
+            tasks.push(Editor.Ipc.requestToPackage('asset-db', 'move-asset', fromAsset.source, target));
         }
+
+        Promise.all(tasks).then((results) => {
+            results.forEach((success, i) => {
+                if (success === false) {
+                    // 暂不需要有失败的反馈
+                }
+            });
+        });
     },
 
     /**

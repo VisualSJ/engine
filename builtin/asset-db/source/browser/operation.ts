@@ -12,6 +12,10 @@ import { awaitAsset, forwarding } from './worker';
  * @param url
  */
 export async function generateAvailableURL(url: string): Promise<string | null> {
+    if (!url || typeof url !== 'string') {
+        return null;
+    }
+
     let file: string = await forwarding('asset-worker:query-path-from-url', url);
 
     if (!file) {
@@ -30,7 +34,7 @@ export async function generateAvailableURL(url: string): Promise<string | null> 
  */
 // tslint:disable-next-line:max-line-length
 export async function createAsset(url: string, content: Buffer | string | null, option?: ICreateOption): Promise<string | null> {
-    if (!url.startsWith('db://')) {
+    if (!url || typeof url !== 'string' || !url.startsWith('db://')) {
         console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.url')} \n${url}`);
         return null;
     }
@@ -52,12 +56,16 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         return null;
     }
 
-    if (content !== null) { // content 存在，则写入成文件
+    if (content !== null && (content instanceof Buffer || typeof content === 'string')) { // content 存在，则写入成文件
         await outputFile(file, content);
-    } else if (!option) { // content 不存在，且 option 不存在，则生成文件夹
+    }
+
+    if (content === null && !option) { // content 不存在，且 option 不存在，则生成文件夹
         await ensureDir(file);
-    } else if (option.src) { // 如果 content 不存在，且 option.target 存在，则复制 target
-        if (!existsSync(option.src)) {
+    }
+
+    if (content === null && option && option.src) { // 如果 content 不存在，且 option.src 存在，则复制这一指定资源
+        if (typeof option.src !== 'string' || !url.startsWith('db://') || !existsSync(option.src))  {
             console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.drop')} \n${option.src}`);
             return null;
         }
@@ -257,7 +265,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    await awaitAsset('add', metas.target);
+    await awaitAsset('add', assets.target);
 
     return true;
 }

@@ -48,8 +48,6 @@ module.exports = {
         refreshing: 'Now refreshing assets...',
         sureDelete: 'Sure delete these assets?',
         renameFail: 'Rename Fail: The new file name already exists.',
-        copyFail: 'Asset cannot be copied',
-        moveFail: 'Failed to move asset',
         pasteFail_parent_into_child: 'subAsset cannot paste ancestry',
     },
 
