@@ -1,0 +1,56 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+CCEFFECT {
+  declarations: {
+    p1: {
+      u_texSampler: {
+        type: 'sampler2D', 
+        sampler: { minFilter: 'linear', magFilter: 'linear', mipFilter: 'none'},
+      }
+    }
+  }
+  techniques: [
+    {
+      name: tonemap
+      passes: [
+        {
+          vert: tonemap-vs:vert
+          frag: tonemap-fs:frag
+          depthStencilState: {
+            depthTest: false
+            depthWrite: false
+          }
+          properties: $p1
+        }
+      ]
+    }
+  ]
+}
+
+CCPROGRAM tonemap-vs {
+  precision mediump float;
+  #include <common>
+  #include <cc-global>
+
+  in vec2 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_uv;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 0, 1);
+    v_uv = a_texCoord * cc_screenScale.xy;
+
+    return pos;
+  }
+}
+
+CCPROGRAM tonemap-fs {
+  precision mediump float;
+
+  in vec2 v_uv;
+  uniform sampler2D u_texSampler;
+
+  vec4 frag () {
+    vec4 o = texture(u_texSampler, v_uv);
+    return o;
+  }
+}

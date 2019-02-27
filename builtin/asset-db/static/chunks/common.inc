@@ -10,3 +10,7 @@
 
 // common function
 #define saturate(a) clamp( a, 0.0, 1.0 )
+
+vec2 ScreenSpaceTexCoord(vec2 pos) {
+	return pos * 0.5 + 0.5;
+}
