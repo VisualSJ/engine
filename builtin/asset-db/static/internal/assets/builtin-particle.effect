@@ -3,18 +3,11 @@ CCEffect {
     b1: { targets: [ {
       blend: true
       blendSrc: src_alpha
-      blendDst: one_minus_src_color
-      blendSrcAlpha: src_alpha
-      blendDstAlpha: one_minus_src_color
-    } ] }
-    b2: { targets: [ {
-      blend: true
-      blendSrc: src_alpha
       blendDst: one
       blendSrcAlpha: src_alpha
       blendDstAlpha: one
     } ] }
-    b3: { targets: [ {
+    b2: { targets: [ {
       blend: true
       blendSrc: one
       blendDst: one_minus_src_alpha
@@ -55,7 +48,7 @@ CCEffect {
           frag: tinted-fs:add
           rasterizerState: $r1
           depthStencilState: $d1
-          blendState: $b1
+          blendState: $b2
           properties: $p2
         }
       ]
@@ -68,7 +61,7 @@ CCEffect {
           frag: tinted-fs:multiply
           rasterizerState: $r1
           depthStencilState: $d1
-          blendState: $b3
+          blendState: $b2
           properties: $p2
         }
       ]
@@ -81,7 +74,7 @@ CCEffect {
           frag: no-tint-fs:smooth
           rasterizerState: $r1
           depthStencilState: $d1
-          blendState: $b3
+          blendState: $b2
           properties: $p1
         }
       ]
@@ -94,7 +87,7 @@ CCEffect {
           frag: no-tint-fs:premultiplied
           rasterizerState: $r1
           depthStencilState: $d1
-          blendState: $b3
+          blendState: $b2
           properties: $p1
         }
       ]
