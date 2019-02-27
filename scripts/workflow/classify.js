@@ -5,6 +5,8 @@ const fse = require('fs-extra');
 const ps = require('path');
 const chalk = require('chalk');
 
+const slog = require('single-line-log').stdout;
+
 class Workflow {
 
     constructor(options) {
@@ -18,10 +20,16 @@ class Workflow {
             fse.writeJSONSync(this._temp, {}, { spaces: 2 });
         }
         this._json = fse.readJSONSync(this._temp);
+
+        this._current = {
+            i: 0,
+            name: '',
+        };
     }
 
     /**
      * 设置一个缓存数据
+     * 8a54c7b9f37050d5abd0f5bef1e64a5bf1e45072
      * @param {*} key
      * @param {*} value
      */
@@ -64,21 +72,34 @@ class Workflow {
 
         console.log(chalk.magenta(`Workflow: ${this.name} start`));
         for (let i = 0; i < this.tasks.length; i++) {
+            slog(chalk.cyanBright(`    ${this._current.i + 1}. ${this._current.name}... `));
             const task = this.tasks[i];
+            this._current.i = i;
+            this._current.name = task.name;
             try {
                 const bool = await task.handle.call(this);
+                slog('');
                 if (bool === false) {
                     console.log(chalk.cyanBright(`    ${i + 1}. ${task.name}... skip`));
                 } else {
                     console.log(chalk.cyanBright(`    ${i + 1}. ${task.name}... success`));
                 }
             } catch (error) {
+                slog('');
                 console.log(chalk.cyanBright(`    ${i + 1}. ${task.name}... failure`));
                 console.error(error);
                 return;
             }
 
         }
+    }
+
+    /**
+     * 打印进度 log
+     * @param {*} str
+     */
+    log(str) {
+        slog(chalk.cyanBright(`    ${this._current.i + 1}. ${this._current.name}... `) + str);
     }
 
     /**

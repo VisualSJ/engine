@@ -77,12 +77,11 @@ export async function ready() {
         },
         methods: <any>{
             onHeaderChange(event: any) {
-                const path = event.target.getAttribute('path');
-                if (!path) {
+                if (!event.target.getAttribute('path')) {
                     return;
                 }
                 const value = event.target.value;
-                switch (path) {
+                switch (event.target.getAttribute('path')) {
                     case 'clear':
                         Editor.Logger.clear();
                         manager.clear();
