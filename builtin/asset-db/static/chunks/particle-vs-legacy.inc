@@ -1,3 +1,4 @@
+
 precision mediump float;
 #include <particle-common>
 in vec3 a_position; // center position

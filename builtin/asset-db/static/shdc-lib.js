@@ -5,6 +5,7 @@ const parser = require('glsl-parser/direct');
 const mappings = require('./offline-mappings');
 const HJSON = require('hjson');
 
+const tabAsSpaces = 4;
 const includeRE = /#include +<([\w-.]+)>/g;
 const plainDefineRE = /#define\s+(\w+)\s+(.*)\n/g;
 const defineRE = /#define\s+(\w+)\(([\w,\s]+)\)\s+(.*##.*)\n/g;
@@ -17,7 +18,6 @@ const ifprocessor = /#(el)?if/;
 const rangePragma = /range\(([\d.,\s]+)\)\s(\w+)/;
 const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
-const builtins = /^cc\w+$/i;
 const samplerRE = /sampler/;
 const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+);/gm;
 const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+));/gm;
@@ -352,7 +352,7 @@ const glsl300to100 = (code, blocks, paramInfo, vert) => {
     res += code.slice(idx, i.beg);
     blocks.find((u) => u.name === i.name).members.forEach((m) => {
       let type = mappings.invTypeParams[m.type];
-      res += `  uniform ${type} ${m.name}${m.count > 1 ? `[${m.count}]` : ''};\n`;
+      res += `uniform ${type} ${m.name}${m.count > 1 ? `[${m.count}]` : ''};\n`;
     });
     idx = i.end + (code[i.end] === ';');
   });
@@ -437,7 +437,15 @@ const decorateBindings = (() => {
 })();
 
 const buildShader = (() => {
-  let createCache = () => { return { lines: [] }; };
+  const builtinRE = /^cc\w+$/i;
+  const newlines = /(^\s*\n){2,}/gm;
+  const clean = (code) => {
+    // clean newlines
+    let result = code.replace(newlines, '\n');
+    return result;
+  };
+  const clearFormat = (glsl) => { glsl.vert = clean(glsl.vert); glsl.frag = clean(glsl.frag); };
+  const createCache = () => { return { lines: [] }; };
   return (vertName, fragName, chunks) => {
 
     let defines = [], blocks = [], samplers = [], dependencies = {};
@@ -470,10 +478,21 @@ const buildShader = (() => {
     miscChecks(glsl1.frag, fEntry); glsl3.frag = frag;
 
     // filter out pipeline builtin params
-    blocks = blocks.filter((u) => !builtins.test(u.name));
-    samplers = samplers.filter((u) => !builtins.test(u.name));
-    vertInfo = vertInfo.filter((u) => !builtins.test(u.name));
-    fragInfo = fragInfo.filter((u) => !builtins.test(u.name));
+    const builtins = { blocks: [], textures: [] };
+    blocks = blocks.filter((u) => {
+      if (builtinRE.test(u.name)) {
+        builtins.blocks.push(u.name);
+        return false;
+      } else return true;
+    });
+    samplers = samplers.filter((u) => {
+      if (builtinRE.test(u.name)) {
+        builtins.textures.push(u.name);
+        return false;
+      } else return true;
+    });
+    vertInfo = vertInfo.filter((u) => !builtinRE.test(u.name));
+    fragInfo = fragInfo.filter((u) => !builtinRE.test(u.name));
     // assign bindings
     let bindingIdx = 0;
     blocks.forEach((u) => u.binding = bindingIdx++);
@@ -483,7 +502,9 @@ const buildShader = (() => {
     // glsl4.vert = decorateBindings(vert, blocks, samplers, vertInfo);
     // glsl4.frag = decorateBindings(frag, blocks, samplers, fragInfo);
 
-    return { glsl3, glsl1, defines, blocks, samplers, dependencies };
+    clearFormat(glsl1); clearFormat(glsl3);
+
+    return { glsl3, glsl1, builtins, defines, blocks, samplers, dependencies };
   };
 })();
 
@@ -498,8 +519,12 @@ const stripComments = (() => {
   const includeHash = () => '';
   const excludeHash = (m, p) => p === '#' ? m : '';
   return (code, hashAsComment = false) => {
-    let result = code.replace(crlfNewLines, '\n').replace(blockComments, '');
-    return result.replace(lineComments, hashAsComment ? includeHash : excludeHash);
+    // strip comments
+    let result = code.replace(blockComments, '');
+    result = result.replace(lineComments, hashAsComment ? includeHash : excludeHash);
+    // replace CRLFs
+    result = result.replace(crlfNewLines, '\n');
+    return result;
   };
 })();
 
@@ -523,6 +548,9 @@ const parseEffect = (() => {
   const effectRE = /CCEffect\s*{([^]+)}/i;
   const programRE = /CCProgram\s*([\w-]+)\s*{([^]+)}/i;
   const parenRE = /[{}]/g;
+  const noIndent = /\n[^\s]/;
+  const leadingSpace = /^[^\S\n]/gm; // \s without \n
+  const tabs = /\t/g;
   const trimToSize = (content) => {
     let level = 1, end = content.length;
     content.replace(parenRE, (p, i) => {
@@ -560,7 +588,12 @@ const parseEffect = (() => {
       } else {
         let programCap = programRE.exec(trimToSize(stripComments(str)));
         if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
-        else templates[programCap[1]] = programCap[2];
+        else {
+          let result = programCap[2];
+          result = result.replace(tabs, ' '.repeat(tabAsSpaces));
+          while (!noIndent.test(result)) result = result.replace(leadingSpace, '');
+          templates[programCap[1]] = result;
+        }
       }
     }
     return { effect, templates };

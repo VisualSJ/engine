@@ -1,16 +1,20 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEFFECT {
+CCEffect {
   declarations: {
     p1: {
       u_texSampler: {
-        type: 'sampler2D', 
-        sampler: { minFilter: 'linear', magFilter: 'linear', mipFilter: 'none'},
+        type: sampler2D
+        sampler: {
+          minFilter: linear
+          magFilter: linear
+          mipFilter: none
+        }
       }
     }
   }
   techniques: [
     {
-      name: tonemap
+      name: none
       passes: [
         {
           vert: tonemap-vs:vert
@@ -26,7 +30,7 @@ CCEFFECT {
   ]
 }
 
-CCPROGRAM tonemap-vs {
+CCProgram tonemap-vs {
   precision mediump float;
   #include <common>
   #include <cc-global>
@@ -43,7 +47,7 @@ CCPROGRAM tonemap-vs {
   }
 }
 
-CCPROGRAM tonemap-fs {
+CCProgram tonemap-fs {
   precision mediump float;
 
   in vec2 v_uv;

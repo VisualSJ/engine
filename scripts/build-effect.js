@@ -25,7 +25,7 @@ const stringifyEffect = (() => {
   const stringifyBlock = (u) => `{"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": ${stringifyArray(u.members)}}`;
   const stringifyShader = (shader) => {
     let code = '';
-    let { name, glsl3, glsl1, defines, blocks, samplers, dependencies } = shader;
+    let { name, glsl3, glsl1, builtins, defines, blocks, samplers, dependencies } = shader;
 
     // comment any of the following lines to keep shaders readable
     glsl1.vert = glsl1.vert.replace(newlines, '\\n');
@@ -43,6 +43,7 @@ const stringifyEffect = (() => {
     code += `    "vert": \`${glsl1.vert}\`,\n`;
     code += `    "frag": \`${glsl1.frag}\`\n`;
     code += '  },\n';
+    code += `  "builtins": ${stringify(builtins)},\n`;
     code += `  "defines": ${indent(stringifyArray(defines), 2)},\n`;
     code += `  "blocks": ${indent(stringifyArray(blocks, stringifyBlock), 2)},\n`;
     code += `  "samplers": ${indent(stringifyArray(samplers), 2)},\n`;

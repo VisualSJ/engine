@@ -1,8 +1,6 @@
 CCEFFECT {
   techniques: [
     {
-      queue: transparent
-      lod: 300
       passes: [
         {
           vert: particle-vs-gpu:gpvs_main
@@ -37,6 +35,8 @@ CCEFFECT {
   ]
 }
 
+// TODO: soft particle
+
 CCPROGRAM particle-add-gpu-fs {
   precision mediump float;
   uniform sampler2D mainTexture;
@@ -48,7 +48,6 @@ CCPROGRAM particle-add-gpu-fs {
   in vec4 color;
 
   vec4 frag () {
-    // TODO: soft particle
     return 2.0 * color * tintColor * texture(mainTexture, uv);
   }
 }
