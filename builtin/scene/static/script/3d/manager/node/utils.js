@@ -60,6 +60,19 @@ exports.addComponentMap = {
         component.size = boundingSize;
         component.center = getCenter(boundingBox);
     },
+
+    CylinderColliderComponent(component, node) {
+        const boundingBox = getBoundingBox(node);
+        const boundingSize = getSize(boundingBox);
+
+        const radius = Math.max(boundingSize.x, boundingSize.z) / 2;
+        const height = boundingSize.y;
+        component.radiusTop = radius;
+        component.radiusBottom = radius;
+        component.height = height;
+        component.segmentCount = 20;
+        component.center = getCenter(boundingBox);
+    }
 };
 
 function getBoundingBox(node) {

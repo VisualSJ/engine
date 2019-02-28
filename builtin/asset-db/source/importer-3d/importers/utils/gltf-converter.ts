@@ -399,14 +399,6 @@ export class GltfConverter {
 
     public getImageUriInfo(uri: string, resolve: boolean = true): GltfImageUriInfo {
         if (uri.startsWith('data:')) {
-            const dataUri = parseDataUrl(uri);
-            if (dataUri && dataUri.mediaType === 'image/ccmissing') {
-                const originalPath = dataUri.toBuffer().toString();
-                return {
-                    isDataUri: false,
-                    fullPath: originalPath,
-                } as GltfImagePathInfo;
-            }
             return {
                 isDataUri: true,
             };
@@ -760,6 +752,10 @@ export class GltfConverter {
                 throw new Error(`Unrecognized wrapMode: ${wrapMode}.`);
         }
     }
+}
+
+export function isDataUri(uri: string) {
+    return uri.startsWith('data:');
 }
 
 class BufferBlob {

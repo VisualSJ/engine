@@ -7,7 +7,7 @@ import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Animation, GlTf, Image, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
-import { GltfConverter, GltfImageUriInfo, IGltfAssetTable, isFilesystemPath } from './utils/gltf-converter';
+import { GltfConverter, GltfImageUriInfo, IGltfAssetTable, isDataUri, isFilesystemPath } from './utils/gltf-converter';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -41,7 +41,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.47';
+        return '1.0.57';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -202,7 +202,7 @@ export default class GltfImporter extends Importer {
             assetTable.images = new Array(gltfConverter.gltf.images.length).fill(null);
             for (let index = 0; index < gltfConverter.gltf.images.length; ++index) {
                 const gltfImage = gltfConverter.gltf.images[index];
-                const imageUrl = getFinalImageUrl(gltfImage, userData, gltfConverter);
+                const imageUrl = getFinalImageUrl(gltfImage, userData, gltfConverter, asset.source);
 
                 const imageOriginalName = gltfImage.name;
                 if (imageOriginalName !== undefined && typeof (imageOriginalName) === 'string') {
@@ -215,7 +215,7 @@ export default class GltfImporter extends Importer {
                     }
                 }
 
-                if (imageUrl === undefined) {
+                if (imageUrl === null) {
                     continue;
                 }
 
@@ -300,16 +300,7 @@ export default class GltfImporter extends Importer {
 }
 
 function tryGetOriginalPath(image: Image, gltfConverter: GltfConverter): string | null {
-    if (!image.uri) {
-        return null;
-    }
-
-    const uriInfo =  gltfConverter.getImageUriInfo(image.uri, false);
-    if (isFilesystemPath(uriInfo)) {
-        return uriInfo.fullPath;
-    }
-
-    return null;
+    return image.uri || null;
 }
 
 function _uniqueIndex(index: number, length: number) {
@@ -341,21 +332,117 @@ function validateAssetName(name: string | undefined) {
     }
 }
 
-function getFinalImageUrl(gltfImage: Image, gltfUserData: IGltfUserData, gltfConverter: GltfConverter) {
-    let imageUri = gltfImage.uri;
-    if (gltfImage.name !== undefined && (typeof gltfImage.name === 'string')) {
+function getFinalImageUrl(
+    gltfImage: Image, gltfUserData: IGltfUserData, gltfConverter: GltfConverter, assetPath: string) {
+    let imageName: string | undefined;
+    if (typeof gltfImage.name === 'string') {
+        imageName = gltfImage.name;
+    }
+
+    // If remapping is applied, return the remapped path.
+    if (imageName) {
         const remapLocation = gltfUserData.imageLocations[gltfImage.name];
         if (remapLocation && remapLocation.targetDatabaseUrl) {
             const targetPath = queryPathFromUrl(remapLocation.targetDatabaseUrl);
             if (targetPath) {
-                imageUri = targetPath;
+                return targetPath;
             } else {
                 console.warn(`Images can only be remapped to project images.` +
                     ` ${remapLocation.targetDatabaseUrl} doesn't refer to a project image.`);
             }
         }
     }
-    return imageUri;
+
+    const rawUri = gltfImage.uri;
+    let expectedUri: string | undefined;
+    if (rawUri !== undefined) {
+        if (isDataUri(rawUri)) {
+            return null;
+        }
+        expectedUri = rawUri;
+        if (!path.isAbsolute(rawUri)) {
+            expectedUri = path.join(path.basename(assetPath), rawUri);
+        }
+    }
+
+    if (expectedUri && fs.existsSync(expectedUri)) {
+        return expectedUri;
+    }
+
+    // Try find texture.
+
+    const targetName = rawUri || imageName;
+    if (!targetName) {
+        return null;
+    }
+
+    console.log(`Image ${gltfImage.name} ` +
+        `(Raw url: ${gltfImage.uri}, Expected url: ${expectedUri})` +
+        ` is not found, fuzzy search starts.`);
+    const extName = path.extname(targetName);
+    const baseName = path.basename(targetName, extName);
+    const searchExtensions = [
+        extName.toLocaleLowerCase(),
+        '.jpg',
+        '.jpeg',
+        '.png',
+    ];
+    const searchDirectories = [
+        '.',
+        'textures',
+        'materials',
+    ];
+
+    const maxDepth = 2;
+    const projectPath = toNormalizedAbsolute(Manager.AssetWorker.assets.options.target);
+    const inProjectPath = (p: string) => {
+        return p.startsWith(projectPath);
+    };
+
+    let baseDir = path.dirname(toNormalizedAbsolute(assetPath));
+    for (let i = 0; i < maxDepth && inProjectPath(baseDir); ++i) {
+        for (const searchDirectory of searchDirectories) {
+            const dir = path.join(baseDir, searchDirectory);
+            console.log(`Do fuzzy search in ${dir}.`);
+            const result = fuzzySearchTexture(dir, baseName, searchExtensions);
+            if (result) {
+                console.log(`Found ${result}, use it.`);
+                return result;
+            }
+        }
+        baseDir = path.dirname(baseDir);
+    }
+
+    console.log(`Fuzzy search failed.`);
+    return rawUri || null;
+}
+
+function toNormalizedAbsolute(p: string) {
+    const np = path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+    return path.normalize(np);
+}
+
+function fuzzySearchTexture(directory: string, targetBaseName: string, extensions: string[]) {
+    if (!fs.existsSync(directory)) {
+        return null;
+    }
+    const dirItems = fs.readdirSync(directory);
+    for (const dirItem of dirItems) {
+        const extName = path.extname(dirItem);
+        const baseName = path.basename(dirItem, extName);
+        if (baseName !== targetBaseName) {
+            continue;
+        }
+        const fullName = path.join(directory, dirItem);
+        const stat = fs.statSync(fullName);
+        if (!stat.isFile()) {
+            continue;
+        }
+        if (extensions.indexOf(extName.toLowerCase()) >= 0) {
+            return fullName;
+        }
+    }
+    return null;
 }
 
 /**
