@@ -75,6 +75,11 @@ class Operation {
          * 键盘操作
          * keydown
          * keyup
+         *
+         * 拖拽操作
+         * dragover
+         * dragleave
+         * drop
          */
         this._events = new Map();
 

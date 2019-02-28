@@ -143,6 +143,80 @@ nodeMgr.on('changed', (node) => {
     });
 });
 
+const gizmoManager = require('./../gizmos');
+const nodeManger = require('./../node');
+const selection = require('./../selection');
+
+// 存储支持拖拽的资源类型
+const supportTypes = ['cc.Material', 'cc.Prefab', 'cc.Mesh'];
+let lastHilightNode;
+
+function canDrop(type) {
+    return supportTypes.includes(type);
+}
+
+function onDragOver(event) {
+    if (!canDrop(event.type)) {
+        return;
+    }
+    const {resultNode} = selection.getResultNode(event.x, event.y);
+    if (!resultNode || lastHilightNode === resultNode) {
+        return;
+    }
+    if (event.type === 'cc.Material') {
+        const result = resultNode._components.find((comp) => {
+            return comp.__classname__ === 'cc.ModelComponent';
+        });
+        if (!result) {
+            return;
+        }
+        gizmoManager.clearAllGizmos();
+        // 高亮显示节点
+        lastHilightNode = resultNode;
+        gizmoManager.showNodeGizmo(resultNode);
+    }
+}
+
+async function onDrop(event) {
+    if (!canDrop(event.type)) {
+        return;
+    }
+    gizmoManager.clearAllGizmos();
+    const {resultNode, ray} = selection.getResultNode(event.x, event.y);
+    // 放置的位置有节点
+    if (resultNode) {
+        // 当前拖拽资源为材质
+        switch (event.type) {
+            case 'cc.Material':
+                const result = resultNode._components.find((comp) => {
+                    return comp.__classname__ === 'cc.ModelComponent';
+                });
+                if (!result) {
+                    return;
+                }
+                const material = await util.promisify(cc.AssetLibrary.loadAsset)(event.uuid);
+                material && (result.material = material);
+                return;
+        }
+    }
+
+    // 可以直接生成节点的类型
+    if (nodeManger.supportTypes.includes(event.type)) {
+        // 计算射线与平面的交点
+        const plane = cc.geometry.plane.create(0, 1, 0, 0);
+        const result = cc.geometry.intersect.ray_plane(ray, plane);
+        const position = new cc.Vec3(0, 0, 0);
+        cc.vmath.vec3.scaleAndAdd(position, ray.o, ray.d, result);
+        const uuid = nodeManger.createNodeFromAsset(null, event.uuid, {
+            position,
+            type: event.type,
+        });
+        const node = nodeManger.query(uuid);
+        gizmoManager.showNodeGizmo(node);
+    }
+    lastHilightNode = null;
+}
+
 module.exports = {
     queryAllEffects,
     queryEffect,
@@ -150,4 +224,6 @@ module.exports = {
     applyMaterial,
     assetChange,
     assetDelete,
+    onDragOver,
+    onDrop,
 };

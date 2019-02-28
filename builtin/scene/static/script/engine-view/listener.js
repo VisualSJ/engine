@@ -3,7 +3,6 @@
 /**
  * engine-view 监听的操作事件
  */
-
 const utils = {
     createMouseEvent(event, bcr) {
         return {
@@ -25,7 +24,6 @@ const utils = {
             rightButton: !!(event.buttons & 2) || event.button === 2,
         };
     },
-
     createKeyboardEvent(event) {
         return {
             ctrlKey: event.ctrlKey,
@@ -36,8 +34,16 @@ const utils = {
             keyCode: event.keyCode,
         };
     },
+    creatDragEvent(event, bcr) {
+        const {type, value} = Editor.UI.DragArea.currentDragInfo;
+        const newEvent = utils.createMouseEvent(event, bcr);
+        newEvent.type = type;
+        newEvent.uuid = value;
+        return newEvent;
+    },
 };
 
+const dragSupportTypes = ['cc.Material', 'cc.Prefab', 'cc.Mesh'];
 module.exports = function(elem) {
     elem.addEventListener('mousedown', (event) => {
         const bcr = elem.getBoundingClientRect();
@@ -100,6 +106,30 @@ module.exports = function(elem) {
             module: 'Operation',
             handler: 'emit',
             params: ['keyup', , utils.createKeyboardEvent(event)],
+        });
+    });
+
+    elem.addEventListener('dragover', (event) => {
+        const bcr = elem.getBoundingClientRect();
+        const newEvent = utils.creatDragEvent(event, bcr);
+        if (!dragSupportTypes.includes(newEvent.type)) {
+            return;
+        }
+        event.preventDefault(); // 阻止原生事件，不添加 drop 事件无法触发
+        elem.ipc.forceSend('call-method', {
+            module: 'Asset',
+            handler: 'onDragOver',
+            params: [newEvent],
+        });
+    });
+
+    elem.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const bcr = elem.getBoundingClientRect();
+        elem.ipc.forceSend('call-method', {
+            module: 'Asset',
+            handler: 'onDrop',
+            params: [utils.creatDragEvent(event, bcr)],
         });
     });
 };

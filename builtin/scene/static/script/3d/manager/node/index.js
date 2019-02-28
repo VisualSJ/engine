@@ -19,6 +19,7 @@ const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
 const Reg_NormalizedUuid = /^[0-9a-fA-F]{32}$/;
 const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
 
+const supportTypes = ['cc.Prefab', 'cc.Mesh'];
 let uuid2node = {};
 
 /**
@@ -37,6 +38,9 @@ class NodeManager extends EventEmitter {
         super();
     }
 
+    get supportTypes() {
+        return supportTypes;
+    }
     /**
      * 传入一个场景，将内部的节点全部缓存
      * @param {*} scene
@@ -369,18 +373,39 @@ class NodeManager extends EventEmitter {
      * 从一个资源创建对应的节点
      * @param {*} parentUuid
      * @param {*} assetUuid
-     * @param {*} index
+     * @param {*} options {type:资源类型,position:位置坐标(vect3)}
      */
-    async createNodeFromAsset(parentUuid, assetUuid) {
+    async createNodeFromAsset(parentUuid, assetUuid, options) {
         if (!cc.director._scene) {
             return;
         }
-
-        const parent = this.query(parentUuid);
+        let parent;
+        if (parent) {
+            parent = this.query(parentUuid);
+        } else {
+            parent = cc.director._scene;
+        }
         try {
             const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
-            const node = cc.instantiate(asset);
-
+            let node;
+            // hack 兼容旧的没有传入 options 的写法，后续需要全部改成相同用法
+            if (!options || options.type === 'cc.Prefab') {
+                node = cc.instantiate(asset);
+            } else if (supportTypes.includes(options.type)) {
+                const {type, position} = options;
+                node = new cc.Node(asset.name);
+                switch (type) {
+                    case 'cc.Mesh':
+                        const model = node.addComponent(cc.ModelComponent);
+                        model.mesh = asset;
+                        break;
+                }
+                if (position) {
+                    node.setPosition(position);
+                }
+            } else {
+                return;
+            }
             this.emit('before-add', node);
             Manager.Ipc.forceSend('broadcast', 'scene:before-node-create', node.uuid);
             this.emit('before-change', parent);
