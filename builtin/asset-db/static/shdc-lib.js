@@ -670,6 +670,18 @@ const mapPassParam = (() => {
       return res;
     };
   })();
+  const mapDynamics = (() => {
+    const seperator = /[\s|]+/;
+    return (str) => {
+      const arr = str.split(seperator);
+      for (let i = 0; i < arr.length; i++) {
+        const res = mappings.DynamicState[arr[i].toUpperCase()];
+        if (res === undefined) warn(`illegal dynamic state '${arr[i]}'`);
+        arr[i] = res;
+      }
+      return arr;
+    }
+  })();
   return (obj, shader) => {
     shaderName = 'type error';
     const tmp = {};
@@ -681,6 +693,10 @@ const mapPassParam = (() => {
     if (obj.priority) {
       tmp.priority = mapPriority(obj.priority);
       delete obj.priority;
+    }
+    if (obj.dynamics) {
+      tmp.dynamics = mapDynamics(obj.dynamics);
+      delete obj.dynamics;
     }
     generalMap(obj); Object.assign(obj, tmp);
   };

@@ -173,7 +173,9 @@ const passParams = {
 };
 Object.assign(passParams, RenderPassStage);
 
-let mappings = {
+const DynamicState = gfx.GFXDynamicState;
+
+const mappings = {
   typeParams,
   invTypeParams,
   sizeMap,
@@ -181,6 +183,7 @@ let mappings = {
   passParams,
   RenderQueue,
   RenderPriority,
+  DynamicState,
 };
 
 module.exports = mappings;
