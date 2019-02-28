@@ -14,6 +14,7 @@ module.exports = {
             drop: 'Failed to create a resource: the address of the imported resource does not exist',
             toUrl: 'Failed to create resource: file path cannot be converted to url',
             uuid: 'Failed to create the resource: unable to identify uuid of the url',
+            content: 'Failed to create the resource: file content format is not correct',
         },
     },
 
@@ -32,11 +33,11 @@ module.exports = {
 
     copyAsset: {
         fail: {
-            unknown: 'Replication resource failure: unknown error',
-            url: 'Replication resource failed: invalid parameter',
+            unknown: 'Failed to copy resource: unknown error',
+            url: 'Failed to copy resource: invalid parameter',
             source: 'Failed to copy resource: file does not exist at source address',
             target: 'Failed to copy resource: target file already exists',
-            parent: 'Replication resource failed: source address cannot be contained by destination address',
+            parent: 'Failed to copy resource: source address cannot be contained by destination address',
         },
     },
 
@@ -44,10 +45,10 @@ module.exports = {
         fail: {
             unknown: 'Failed to move resource: unknown error',
             url: 'Failed to move resource: invalid parameter',
-            same: 'Failed to move resource: same path',
             source: 'Failed to move resource: source address does not exist',
             target: 'Failed to move resource: destination address is not valid',
             exist: 'Failed to move the resource: the same file already exists at the destination address',
+            parent: 'Failed to move the resource: source address cannot be contained by destination address',
         },
     },
 

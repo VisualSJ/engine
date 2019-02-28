@@ -4,7 +4,16 @@ const { existsSync, readFileSync } = require('fs');
 const { join } = require('path');
 const { expect } = require('chai');
 
-// 选取 db://internal 里面较为固定的资源作为共用的测试用例
+const randomName = Date.now();
+const dbUrl = 'db://assets';
+
+const dirUrl = `${dbUrl}/dir`;
+const dirPath = join(Editor.Project.path, 'assets/dir');
+
+const fileUrl = `${dbUrl}/file`;
+const filePath = join(Editor.Project.path, 'assets/file');
+
+// 选取 db://internal 里面较为固定的资源作为 查询类型 的测试用例
 const dbInternal = {
     prefab: {
         button: {
@@ -18,16 +27,30 @@ const dbInternal = {
 
 const dbAsset = {
     addDir: {
-        url: 'db://assets/test-dir',
-        urlWithSpace: 'db://assets/test dir',
+        url: `${dirUrl}-${randomName}`,
+        path: `${dirPath}-${randomName}`,
+
+        urlWithSpace: `${dirUrl} ${randomName}`,
+        pathWithSpace: `${dirPath} ${randomName}`,
     },
+    addFile: {
+        url: `${fileUrl}-${randomName}`,
+        path: `${filePath}-${randomName}`,
+
+        urlWithSpace: `${fileUrl} ${randomName}`,
+        pathWithSpace: `${filePath} ${randomName}`,
+
+        contentEmpty: '',
+        contentString: 'Test',
+        contentBuffer: Buffer.from('Test'),
+    },
+
 };
 
 // 以下对应功能代码 asset-db/source/browser/index.ts 上的接口顺序
 
 describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
     return;
-
     // ------- 地址转换
     describe('------ 地址转换', () => {
 
@@ -512,7 +535,7 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
     describe('------ 资源增删', () => {
 
         describe('generate-available-url ：返回可用格式的 url', async () => {
-
+            return;
             it('传入错误的参数', async () => {
                 return new Promise(async (resolve, reject) => {
                     async function start() {
@@ -563,36 +586,32 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
 
         });
 
-        describe('create-asset ：创建一个新的资源', async () => {
-
-            it('传入错误的参数', async () => {
+        describe('create-asset, delete-asset ：新增资源, 删除资源', async () => {
+            return;
+            it('新增：传入错误的参数', async () => {
                 return new Promise(async (resolve, reject) => {
                     async function start() {
                         const queue = [
-                            // { args: [undefined], expect: null },
-                            // { args: [null], expect: null },
-                            // { args: [''], expect: null },
-                            // { args: [0], expect: null },
-                            // { args: [false], expect: null },
-                            // { args: [true], expect: null },
-                            // { args: [[]], expect: null },
-                            // { args: [{}], expect: null },
-                            // { args: [() => { }], expect: null },
-                            // { args: ['abc'], expect: null },
-                            // { args: [123], expect: null },
-                            { args: [dbAsset.addDir.url, undefined], expect: null },
-                            // { args: [dbAsset.addDir.url, ''], expect: null },
-                            // { args: [dbAsset.addDir.url, []], expect: null },
-                            // { args: [dbAsset.addDir.url, {}], expect: null },
-                            // { args: [dbAsset.addDir.url, false], expect: null },
-                            // { args: [dbAsset.addDir.url, () => { }], expect: null },
-                            // { args: [dbAsset.addDir.url, 123], expect: null },
+                            { args: [undefined], expect: null },
+                            { args: [null], expect: null },
+                            { args: [''], expect: null },
+                            { args: [0], expect: null },
+                            { args: [false], expect: null },
+                            { args: [true], expect: null },
+                            { args: [[]], expect: null },
+                            { args: [{}], expect: null },
+                            { args: [() => { }], expect: null },
+                            { args: ['abc'], expect: null },
+                            { args: [123], expect: null },
+                            { args: [dbAsset.addDir.url, []], expect: null },
+                            { args: [dbAsset.addDir.url, {}], expect: null },
+                            { args: [dbAsset.addDir.url, false], expect: null },
+                            { args: [dbAsset.addDir.url, 123], expect: null },
                         ];
 
                         for (const test of queue) {
                             // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', ...test.args);
-                            console.log(result, test.args);
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', ...test.args);
                             expect(result).to.equal(test.expect);
                         }
 
@@ -602,63 +621,281 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
                     await start();
                 });
             });
-            return;
 
-            it('传入正确的参数', async () => {
+            it('删除：传入错误的参数', async () => {
+                return new Promise(async (resolve, reject) => {
+                    async function start() {
+                        const queue = [
+                            { args: undefined, expect: false },
+                            { args: null, expect: false },
+                            { args: '', expect: false },
+                            { args: 0, expect: false },
+                            { args: false, expect: false },
+                            { args: true, expect: false },
+                            { args: [], expect: false },
+                            { args: {}, expect: false },
+                            { args: () => { }, expect: false },
+                            { args: 'abc', expect: false },
+                            { args: 123, expect: false },
+                        ];
+
+                        for (const test of queue) {
+                            // tslint:disable-next-line:max-line-length
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.args);
+                            expect(result).to.equal(test.expect);
+                        }
+
+                        resolve();
+                    }
+
+                    await start();
+                });
+            });
+
+            it('传入正确的参数：新增后删除', async () => {
                 const queue = [
-                    {
-                        args: dbInternal.prefab.button.url,
-                        expect: dbInternal.prefab.button.availableUrl001,
+                    { // 创建文件夹，名称连续
+                        args: [dbAsset.addDir.url],
+                        expect: {
+                            url: dbAsset.addDir.url,
+                            path: dbAsset.addDir.path,
+                        },
                     },
-                    {
-                        args: dbInternal.prefab.button.availableUrl001,
-                        expect: dbInternal.prefab.button.availableUrl001,
+                    { // 创建文件夹：名称带有空格, 函数传过去为 null
+                        args: [dbAsset.addDir.urlWithSpace, () => { }],
+                        expect: {
+                            url: dbAsset.addDir.urlWithSpace,
+                            path: dbAsset.addDir.pathWithSpace,
+                        },
+                    },
+                    { // 创建文件：空内容
+                        args: [dbAsset.addFile.url, dbAsset.addFile.contentEmpty],
+                        expect: {
+                            url: dbAsset.addFile.url,
+                            path: dbAsset.addFile.path,
+                            content: dbAsset.addFile.contentEmpty,
+                        },
+                    },
+                    { // 创建文件：字符串内容
+                        args: [dbAsset.addFile.urlWithSpace, dbAsset.addFile.contentString],
+                        expect: {
+                            url: dbAsset.addFile.urlWithSpace,
+                            path: dbAsset.addFile.pathWithSpace,
+                            content: dbAsset.addFile.contentString,
+                        },
+                    },
+                    { // 创建文件：Buffer 内容
+                        args: [dbAsset.addFile.urlWithSpace, dbAsset.addFile.contentBuffer],
+                        expect: {
+                            url: dbAsset.addFile.urlWithSpace,
+                            path: dbAsset.addFile.pathWithSpace,
+                            content: dbAsset.addFile.contentBuffer.toString(),
+                        },
                     },
                 ];
 
                 for (const test of queue) {
-                    const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
-                    expect(result).to.equal(test.expect);
+                    // 新增
+                    const uuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', ...test.args);
+
+                    expect(uuid).to.be.a('string');
+                    const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+                    expect(info.source).to.equal(test.expect.url); // db 数据存在
+
+                    // tslint:disable-next-line:max-line-length
+                    const filePath = await Editor.Ipc.requestToPackage('asset-db', 'query-path-by-url', test.expect.url);
+                    expect(filePath).to.equal(test.expect.path);
+                    expect(existsSync(filePath)).to.true; // 磁盘文件存在
+                    expect(existsSync(`${filePath}.meta`)).to.true;
+
+                    // 再检查一次内容
+                    if (test.expect.content !== undefined) {
+                        const content = readFileSync(filePath, 'utf8');
+                        expect(content).to.be.equal(test.expect.content);
+                    }
+
+                    // 删除
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.expect.url);
+                    expect(result).to.be.true;
+
+                    expect(existsSync(filePath)).to.false; // 磁盘文件也不存在了
+                    expect(existsSync(`${filePath}.meta`)).to.false;
+
                 }
             });
 
         });
 
+        describe('copy-asset ：复制资源', async () => {
+            return;
+            it('传入错误的参数', async () => {
+                return new Promise(async (resolve, reject) => {
+                    async function start() {
+                        const queue = [
+                            { args: [undefined, undefined], expect: false },
+                            { args: [undefined, dirUrl], expect: false },
+                            { args: [null, dirUrl], expect: false },
+                            { args: ['', dirUrl], expect: false },
+                            { args: [0, dirUrl], expect: false },
+                            { args: [false, dirUrl], expect: false },
+                            { args: [true, dirUrl], expect: false },
+                            { args: [[], dirUrl], expect: false },
+                            { args: [{}, dirUrl], expect: false },
+                            { args: [() => { }, dirUrl], expect: false },
+                            { args: ['abc', dirUrl], expect: false },
+                            { args: [123, dirUrl], expect: false },
+
+                            { args: [dirUrl, undefined], expect: false },
+                            { args: [dirUrl, null], expect: false },
+                            { args: [dirUrl, ''], expect: false },
+                            { args: [dirUrl, 0], expect: false },
+                            { args: [dirUrl, false], expect: false },
+                            { args: [dirUrl, true], expect: false },
+                            { args: [dirUrl, []], expect: false },
+                            { args: [dirUrl, {}], expect: false },
+                            { args: [dirUrl, () => { }], expect: false },
+                            { args: [dirUrl, 'abc'], expect: false },
+                            { args: [dirUrl, 123], expect: false },
+
+                            // 源地址被目标地址包含
+                            { args: [dirUrl, dbUrl], expect: false },
+                            // 源文件不存在
+                            { args: [dbInternal.prefab.button.availableUrl001, dirUrl], expect: false },
+                            // 目标文件已经存在
+                            { args: [dirUrl, dbInternal.prefab.button.url], expect: false },
+                        ];
+
+                        for (const test of queue) {
+                            // tslint:disable-next-line:max-line-length
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', ...test.args);
+                            expect(result).to.equal(test.expect);
+                        }
+
+                        resolve();
+                    }
+
+                    await start();
+                });
+            });
+
+            it('传入正确的参数：新增-复制-删除', async () => {
+                const queue = [
+                    { // 复制文件夹
+                        createArgs: [dbAsset.addDir.url],
+                        args: [dbAsset.addDir.url, `${dbAsset.addDir.url}-001`],
+                        expect: {
+                            path: `${dbAsset.addDir.path}-001`,
+                        },
+                    },
+                    { // 复制文件夹: 名成带空格
+                        createArgs: [dbAsset.addDir.urlWithSpace],
+                        args: [dbAsset.addDir.urlWithSpace, `${dbAsset.addDir.urlWithSpace}-001`],
+                        expect: {
+                            path: `${dbAsset.addDir.pathWithSpace}-001`,
+                        },
+                    },
+                    { // 复制文件
+                        createArgs: [dbAsset.addFile.url, ''],
+                        args: [dbAsset.addFile.url, `${dbAsset.addFile.url}-001`],
+                        expect: {
+                            path: `${dbAsset.addFile.path}-001`,
+                        },
+                    },
+                    { // 复制文件: 名成带空格
+                        createArgs: [dbAsset.addFile.urlWithSpace, ''],
+                        args: [dbAsset.addFile.urlWithSpace, `${dbAsset.addFile.urlWithSpace}-001`],
+                        expect: {
+                            path: `${dbAsset.addFile.pathWithSpace}-001`,
+                        },
+                    },
+                ];
+
+                for (const test of queue) {
+                    // 新增
+                    const uuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', ...test.createArgs);
+                    expect(uuid).to.be.a('string');
+
+                    // 复制
+                    const copy = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', ...test.args);
+                    expect(copy).to.be.true;
+
+                    // tslint:disable-next-line:max-line-length
+                    const filePath = await Editor.Ipc.requestToPackage('asset-db', 'query-path-by-url', test.args[1]);
+                    expect(filePath).to.equal(test.expect.path);
+                    expect(existsSync(filePath)).to.true; // 磁盘文件存在
+                    expect(existsSync(`${filePath}.meta`)).to.true;
+
+                    // 删除
+                    const delSoure = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.args[0]);
+                    expect(delSoure).to.be.true;
+                    const delTarget = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.args[1]);
+                    expect(delTarget).to.be.true;
+                }
+            });
+
+        });
+
+        describe('move-asset ：移动资源', async () => {
+
+            it('传入错误的参数', async () => {
+                return new Promise(async (resolve, reject) => {
+                    async function start() {
+                        const queue = [
+                            { args: [undefined, undefined], expect: false },
+                            { args: [undefined, dirUrl], expect: false },
+                            { args: [null, dirUrl], expect: false },
+                            { args: ['', dirUrl], expect: false },
+                            { args: [0, dirUrl], expect: false },
+                            { args: [false, dirUrl], expect: false },
+                            { args: [true, dirUrl], expect: false },
+                            { args: [[], dirUrl], expect: false },
+                            { args: [{}, dirUrl], expect: false },
+                            { args: [() => { }, dirUrl], expect: false },
+                            { args: ['abc', dirUrl], expect: false },
+                            { args: [123, dirUrl], expect: false },
+
+                            { args: [dirUrl, undefined], expect: false },
+                            { args: [dirUrl, null], expect: false },
+                            { args: [dirUrl, ''], expect: false },
+                            { args: [dirUrl, 0], expect: false },
+                            { args: [dirUrl, false], expect: false },
+                            { args: [dirUrl, true], expect: false },
+                            { args: [dirUrl, []], expect: false },
+                            { args: [dirUrl, {}], expect: false },
+                            { args: [dirUrl, () => { }], expect: false },
+                            { args: [dirUrl, 'abc'], expect: false },
+                            { args: [dirUrl, 123], expect: false },
+
+                            // 源地址被目标地址包含
+                            { args: [dirUrl, dbUrl], expect: false },
+                            // 源文件不存在
+                            { args: [dbInternal.prefab.button.availableUrl001, dirUrl], expect: false },
+                            // 目标文件已经存在
+                            { args: [dbInternal.prefab.button.url, dbInternal.prefab.button.url], expect: false },
+                        ];
+
+                        for (const test of queue) {
+                            // tslint:disable-next-line:max-line-length
+                            const result = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', ...test.args);
+                            expect(result).to.equal(test.expect);
+                        }
+
+                        resolve();
+                    }
+
+                    await start();
+                });
+            });
+        });
+
     });
 
-    return;
+    return; // 以上先提交
 
     const name1 = (new Date()).getTime() + '_1';
     const name2 = (new Date()).getTime() + '_2';
 
     let uuid;
-
-    describe('创建资源', async () => {
-        // TODO 传入错误资源的处理
-        uuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', `db://assets/${name1}`, 'test');
-        expect(uuid).to.have.lengthOf(36);
-    });
-
-    describe('移动资源', async () => {
-
-        it('传入错误的数据', async () => {
-            let bool;
-
-            bool = await Editor.Ipc.requestToPackage('asset-db', 'move-asset');
-            expect(bool).to.be.false;
-            bool = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', `db://assets/${name2}`);
-            expect(bool).to.be.false;
-        });
-
-        it('移动 name2 到 name1', async () => {
-            await Editor.Ipc.requestToPackage('asset-db', 'move-asset', `db://assets/${name2}`, `db://assets/${name1}`);
-
-            const oldFileExists = existsSync(join(Editor.Project.path, `assets/${name2}`));
-            expect(oldFileExists).to.be.false;
-            const newFileExists = existsSync(join(Editor.Project.path, `assets/${name1}`));
-            expect(newFileExists).to.be.true;
-        });
-    });
 
     describe('复制资源', async () => {
 
@@ -706,27 +943,4 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
         // TODO expect
     });
 
-    describe('删除资源', async () => {
-
-        it('传入错误的数据', async () => {
-            let bool;
-
-            bool = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset');
-            expect(bool).to.be.false;
-            bool = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', `db://assets/ddd`);
-            expect(bool).to.be.false;
-        });
-
-        it(`删除资源`, async () => {
-            let exists;
-
-            await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', `db://assets/${name1}`);
-            exists = existsSync(join(Editor.Project.path, `assets/${name1}`));
-            expect(exists).to.be.false;
-
-            await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', `db://assets/${name2}`);
-            exists = existsSync(join(Editor.Project.path, `assets/${name2}`));
-            expect(exists).to.be.false;
-        });
-    });
 });

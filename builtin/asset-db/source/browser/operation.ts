@@ -33,7 +33,7 @@ export async function generateAvailableURL(url: string): Promise<string | null> 
  * @param content
  */
 // tslint:disable-next-line:max-line-length
-export async function createAsset(url: string, content: Buffer | string | null, option?: ICreateOption): Promise<string | null> {
+export async function createAsset(url: string, content?: Buffer | string | null, option?: ICreateOption): Promise<string | null> {
     if (!url || typeof url !== 'string' || !url.startsWith('db://')) {
         console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.url')} \n${url}`);
         return null;
@@ -56,32 +56,42 @@ export async function createAsset(url: string, content: Buffer | string | null, 
         return null;
     }
 
-    if (content !== null && (content instanceof Buffer || typeof content === 'string')) { // content 存在，则写入成文件
-        await outputFile(file, content);
-    }
-
-    if (content === null && !option) { // content 不存在，且 option 不存在，则生成文件夹
-        await ensureDir(file);
-    }
-
-    if (content === null && option && option.src) { // 如果 content 不存在，且 option.src 存在，则复制这一指定资源
-        if (typeof option.src !== 'string' || !url.startsWith('db://') || !existsSync(option.src))  {
-            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.drop')} \n${option.src}`);
+    if (content !== undefined && content !== null) { // content 存在
+        if (content instanceof Buffer || typeof content === 'string') { // 格式正确，写入成文件
+            await outputFile(file, content);
+        } else {
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.content')}`); // 格式不正确，报错
             return null;
         }
+    } else { // content 不存在
+        if (option === undefined || option === null) { // option 不存在，则生成文件夹
+            await ensureDir(file);
+        } else {
+            if (option.src) { // 如果 option.src 存在，则复制这一指定资源
+                if (typeof option.src !== 'string' || !url.startsWith('db://') || !existsSync(option.src)) {
+                    console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.drop')} \n${option.src}`);
+                    return null;
+                }
 
-        try {
-            await copy(option.src, file, {
-                overwrite: true,
-                filter(a, b) {
-                    return extname(a) !== '.meta';
-                },
-            });
-        } catch (error) {
-            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.unknown')}`);
-            console.warn(error);
-            return null;
+                try {
+                    await copy(option.src, file, {
+                        overwrite: true,
+                        filter(a, b) {
+                            return extname(a) !== '.meta';
+                        },
+                    });
+                } catch (error) {
+                    console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.unknown')}`);
+                    console.warn(error);
+                    return null;
+                }
+            }
         }
+    }
+
+    if (!existsSync(file)) { // node 没有创建文件
+        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.drop')} \n${file}`);
+        return null;
     }
 
     // 等待 db 发出 add 消息
@@ -164,12 +174,12 @@ export async function saveAssetMeta(uuid: string, meta: string) {
  * @param target 复制到的位置 db://assets/b/a.txt
  */
 export async function copyAsset(source: string, target: string): Promise<boolean> {
-    if (!source || !source.startsWith('db://')) {
+    if (!source || typeof source !== 'string' || !source.startsWith('db://')) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.url')} \nsource: ${source}`);
         return false;
     }
 
-    if (!target || !target.startsWith('db://')) {
+    if (!target || typeof target !== 'string' || !target.startsWith('db://')) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.url')} \ntarget: ${target}`);
         return false;
     }
@@ -185,14 +195,14 @@ export async function copyAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    // 目标文件已经存在
-    if (existsSync(assets.target)) {
+    // 目标地址错误 或 文件已经存在
+    if (!assets.target || existsSync(assets.target)) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.target')} \ntarget: ${assets.target}`);
         return false;
     }
 
-    // 如果源地址不能被目标地址包含
-    if (target.startsWith(join(assets.source, '/'))) {
+    // 源地址不能被目标地址包含
+    if (assets.target.startsWith(join(assets.source, '/'))) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.parent')} \nsource: ${source}\ntarget: ${target}`);
         return false;
     }
@@ -216,8 +226,13 @@ export async function copyAsset(source: string, target: string): Promise<boolean
  * @param target 目标 url db://assets/a.txt
  */
 export async function moveAsset(source: string, target: string): Promise<boolean> {
-    if (!source || !target) {
-        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')} \nsource: ${source}\ntarget: ${target}`);
+    if (!source || typeof source !== 'string' || !source.startsWith('db://')) {
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')} \nsource: ${source}`);
+        return false;
+    }
+
+    if (!target || typeof target !== 'string' || !target.startsWith('db://')) {
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.url')} \ntarget: ${target}`);
         return false;
     }
 
@@ -228,34 +243,23 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         target: await forwarding('asset-worker:query-path-from-url', target),
     };
 
-    // 如果源地址，目标地址相同
-    if (assets.source === assets.target) {
-        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.same')} \nsource: ${source}\ntarget: ${target}`);
-        return false;
-    }
-
-    // 源地址不存在文件
+    // 源地址错误 或 源地址不存在文件
     if (!assets.source || !existsSync(assets.source)) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.source')} \nsource: ${source}`);
         return false;
     }
 
-    // 目标地址找不到
-    if (!assets.target) {
+    // 目标地址错误 或 目标已经存在
+    if (!assets.target || existsSync(assets.target)) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.target')} \ntarget: ${target}`);
         return false;
     }
 
-    // 如果目标已经存在
-    if (existsSync(assets.target)) {
-        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.exist')} \ntarget: ${target}`);
+    // 源地址不能被目标地址包含
+    if (assets.target.startsWith(join(assets.source, '/'))) {
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.parent')} \nsource: ${source}\ntarget: ${target}`);
         return false;
     }
-
-    const metas = {
-        source: assets.source + '.meta',
-        target: assets.target + '.meta',
-    };
 
     try {
         await moveFile(assets.source, assets.target);
@@ -272,19 +276,19 @@ export async function moveAsset(source: string, target: string): Promise<boolean
 
 /**
  * 删除资源
- * @param source
+ * @param url
  */
-export async function deleteAsset(source: string): Promise<boolean> {
-    if (!source) {
-        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.url')} \nsource: ${source}`);
+export async function deleteAsset(url: string): Promise<boolean> {
+    if (!url || typeof url !== 'string' || !url.startsWith('db://')) {
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.url')} \nurl: ${url}`);
         return false;
     }
 
-    const file = await forwarding('asset-worker:query-path-from-url', source);
+    const file = await forwarding('asset-worker:query-path-from-url', url);
 
     // 如果不存在，停止操作
     if (!file || !existsSync(file)) {
-        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unexist')} \nsource: ${source}`);
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unexist')} \nurl: ${url}`);
         return false;
     }
 
