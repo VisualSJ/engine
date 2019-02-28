@@ -37,11 +37,7 @@ exports.watch = {
      * 如果 type 更新，则使用新数据刷新页面
      */
     type() {
-        ipc
-            .send('dashboard:getTemplate', this.type)
-            .callback((error, templates) => {
-                this.list = templates;
-            });
+
     },
 };
 
@@ -65,13 +61,18 @@ exports.methods = {
                 buttons: ['直接覆盖同名文件', '重新选择路径'],
             }).then((index) => {
                 if (index === 0) {
-                    project.create(path, template.path);
+                    // 复制文件夹
+                    fse.copySync(template.path, path);
                     project.open(path);
                 }
             });
             return;
         }
-        project.create(path, template.path);
+
+        // 复制文件夹
+        fse.copySync(template.path, path);
+
+        // 打开项目
         project.open(path);
     },
 
@@ -79,14 +80,14 @@ exports.methods = {
     chooseProSrc() {
         let that = this;
         dialog.openDirectory({ title: '选择项目路径'})
-        .then((array) => {
-            if (array && array[0]) {
-                let path = ps.join(array[0] , 'NewProject');
-                that.directoryPath = getName(path);
-                dashProfile.set('recentProPath', array[0]);
-                dashProfile.save();
-            }
-        });
+            .then((array) => {
+                if (array && array[0]) {
+                    let path = ps.join(array[0] , 'NewProject');
+                    that.directoryPath = getName(path);
+                    dashProfile.set('recentProPath', array[0]);
+                    dashProfile.save();
+                }
+            });
     },
 
     /**
@@ -109,17 +110,19 @@ exports.methods = {
         let path = getName(ps.join(dashProfile.get('recentProPath'), 'NewProject'));
         this.directoryPath = path;
     },
+
+    /**
+     * 更新模版列表
+     */
+    updateList() {
+        this.list.push({
+            name: 'empty',
+            path: ps.join(__dirname, `../../../static/${this.type}-template/empty`),
+        });
+    },
 };
 
 exports.mounted = function() {
-    ipc
-        .send('dashboard:getTemplate', this.type)
-        .callback((error, templates) => {
-            this.list = templates;
-        });
+    this.updateList();
     this.updatedRecProPath();
-    // 监听项目内容更新，刷新列表
-    project.on('update', () => {
-        this.updatedRecProPath();
-    });
 };

@@ -1,10 +1,12 @@
 'use strict';
 
+const fse = require('fs-extra');
 const ps = require('path'); // path system
-const { app, Tray, Menu, BrowserWindow } = require('electron');
+const { spawn } = require('child_process');
+const { app, Tray, Menu, BrowserWindow, dialog } = require('electron');
 const ipc = require('@base/electron-base-ipc');
 const setting = require('@editor/setting');
-const proManager = require('./../lib/project');
+const project = require('@editor/project');
 const i18n = require('@base/electron-i18n');
 
 let window = null;
@@ -54,9 +56,6 @@ exports.window = function() {
         window.hide();
         app.dock && app.dock.hide();
     });
-
-    // 临时全局变量，便于其他插件访问
-    global.dashboard = window;
 };
 
 let tray = null;
@@ -129,7 +128,99 @@ exports.listener = function() {
 
     // 监听查询模板的消息事件
     ipc.on('dashboard:getTemplate', (event, type) => {
-        let template = proManager.getTemplate(type);
-        event.reply(null, template);
+        event.reply(null, {
+            '2d': [],
+            '3d': [],
+        });
+    });
+
+    // 打开所有项目的键值对
+    const projectMap = new Map();
+
+    // 设置打开项目方法
+    project.setOpenHandler((path) => {
+
+        if (projectMap.get(path)) {
+
+            const config = {
+                title: 'warn',
+                message: 'Project has been opened!',
+                detail: 'Project has been opened!',
+                type: 'warning',
+                buttons: ['Cancel'],
+            };
+
+            dialog.showMessageBox(null, config);
+            return;
+        }
+
+        // 检查 package.json
+        const pkgJsonFile = ps.join(path, 'package.json');
+
+        if (!fse.existsSync(pkgJsonFile)) {
+            // todo 提示
+            alert(`This project is not a ${this.type} project`);
+            return;
+        }
+        const pkgJson = fse.readJSONSync(pkgJsonFile);
+
+        // 0.0.1 旧版本兼容
+        if (!pkgJson.type && pkgJson.engine) {
+            pkgJson.type = pkgJson.engine.includes('3d') ? '3d' : '2d';
+        }
+
+        // 判断当前打开项目与选择的 type 是否匹配
+        if (this.type && this.type !== pkgJson.type) {
+            // todo 提示错误
+            alert(`This project is not a ${this.type} project`);
+            return;
+        }
+
+        // electron 程序地址
+        const exePath = app.getPath('exe');
+
+        // 拼接参数
+        const args = [ps.resolve()];
+        if (setting.dev) {
+            args.push('--dev');
+            args.push('--remote-debugging-port=9223');
+        }
+
+        args.push('--project');
+        args.push(path);
+
+        // 实际启动
+        const child = spawn(exePath, args, {
+            stdio: [0, 1, 2, 'ipc'],
+        });
+        projectMap.set(path, child);
+        child.on('message', (options) => {
+            if (options.channel && options.channel === `open-project`) {
+                if (options.options.path) {
+                    return project.open(options.options.path);
+                }
+                window && window.show();
+                ipc.broadcast('dashboard:set-options', options.options);
+            }
+
+            // 菜单项 新建项目
+            if (options.channel && options.channel === `show-dashboard`) {
+                window && window.show();
+                ipc.broadcast('dashboard:set-options', options.options);
+            }
+        });
+
+        child.on('exit', () => {
+            projectMap.delete(path);
+            if (projectMap.size <= 0) {
+                // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
+                global.dashboard && dashboard.show();
+                app.dock && app.dock.show();
+            }
+        });
+
+        // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
+        window && window.hide();
+        app.dock && app.dock.hide();
     });
 };

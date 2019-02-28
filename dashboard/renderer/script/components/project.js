@@ -4,7 +4,8 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const ps = require('path');
 
-const project = require('./../../../../lib/project');
+const project = require('@editor/project');
+
 const dialog = require('./../../../../lib/dialog');
 const { t } = require('./../util');
 
@@ -26,14 +27,16 @@ exports.watch = {
      * 如果 type 更新，则使用新数据刷新页面
      */
     type() {
-        this.list = project.getList({
+        this.list = project.query({
             type: this.type,
         });
     },
 };
 
 exports.methods = {
+
     t,
+
     /**
      * 从列表内删除一个项目
      * @param {*} event
@@ -68,51 +71,31 @@ exports.methods = {
      * @param {*} path 项目路径，如果打开新项目，则传入空值
      */
     async openProject(event, path) {
-        if (path) {
-            // 判断路径是否存在,不存在则提示并从项目管理器中删除
-            if (!fs.existsSync(path)) {
-                const result = await dialog.show({
-                    type: 'warn',
-                    title: t('project_missing'),
-                    message: t('message.project_missing'),
-                    buttons: [t('cancel'), t('remove')],
-                });
-                if (result === 1) {
-                    project.remove(path);
-                }
-                return;
-            }
-            project.open(path);
-            return;
-        }
-        const that = this;
-        dialog.openDirectory({title: t('open_project')}).then((array) => {
+        // 如果没传入 path，则弹窗补全
+        if (!path) {
+            const array = await dialog.openDirectory({title: t('open_project')});
             if (!array || !array[0]) {
                 return;
             }
-            const path = array[0];
-            const pkgJsonFile = ps.join(path, 'package.json');
-            if (!fs.existsSync(pkgJsonFile)) {
-                // todo toast 提示
-                const projectJson = fse.readJSONSync(ps.join(path, 'project.json'));
-                fse.outputJSONSync(pkgJsonFile, {
-                    type: projectJson.engine.includes('3d') ? '3d' : '2d',
-                }, { spaces: 2 });
-            }
-            const pkgJson = fse.readJSONSync(pkgJsonFile);
+            path = array[0];
+        }
 
-            if (!pkgJson.type && pkgJson.engine) {
-                pkgJson.type = pkgJson.engine.includes('3d') ? '3d' : '2d';
+        // 判断路径是否存在,不存在则提示并从项目管理器中删除
+        if (!fs.existsSync(path)) {
+            const result = await dialog.show({
+                type: 'warn',
+                title: t('project_missing'),
+                message: t('message.project_missing'),
+                buttons: [t('cancel'), t('remove')],
+            });
+            if (result === 1) {
+                project.remove(path);
             }
+            return;
+        }
 
-            // 判断当前打开项目与选择的 type 是否匹配
-            if (that.type && that.type !== pkgJson.type) {
-                // todo 提示错误
-                alert(`This project is not a ${that.type} project`);
-                return;
-            }
-            project.open(path);
-        });
+        // 实际打开流程
+        project.open(path);
     },
 
     /**
@@ -144,17 +127,21 @@ exports.methods = {
      * 更新当前项目信息
      */
     updateProjects() {
-        this.list = project.getList({
+        this.list = project.query({
             type: this.type,
         });
     },
 };
 
 exports.mounted = function() {
-    let that = this;
-    that.updateProjects();
+    const update = () => {
+        this.updateProjects();
+    };
+    update();
+
     // 监听项目内容更新，刷新列表
-    project.on('update', () => {
-        that.updateProjects();
-    });
+    project
+        .on('add', update)
+        .on('remove', update)
+        .on('open', update);
 };

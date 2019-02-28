@@ -151,7 +151,7 @@ async function decodeMaterial(dump) {
 
     const material = new cc.Material();
     material._effectAsset = cc.EffectAsset.get(dump.effect);
-    debugger;
+
     material._props = [];
     material._defines = [];
     material._techIdx = dump.technique;
