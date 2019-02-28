@@ -13,14 +13,34 @@ export const template = `
             :disabled="readonly"
             :value="value.length"
         ></ui-num-input>
+        <span
+        :unfold="unfold"
+        @click="unfold = !unfold"
+    >
+        <i :class="['iconfont', 'fold', 'foldable', unfold ? 'icon-collapse' : 'icon-expand']"></i>
+    </span>
     </div>
-    <div class="array">
+    <div class="array"
+        v-if="unfold"
+        @click="onDelete"
+    >
         <template
-            v-for="item in value"
+            v-for="(item, index) in value"
         >
-            <ui-prop auto="true"
-                :value="item"
-            ></ui-prop>
+            <div class="array-item"
+                draggable = true
+                @dragstart="onDragStart"
+                @dragleave="onDragLeave"
+                @dragover="onDragOver"
+                @drop="onDrop"
+                :index = 'index'
+            >
+                <ui-prop auto="true"
+                    :value="item"
+                    :label="index"
+                ></ui-prop>
+                <i class="iconfont icon-del" :index = 'index'></i>
+            </div>
         </template>
     </div>
 </div>
@@ -37,12 +57,76 @@ export const components = {
     'ui-prop': require('./ui-prop'),
 };
 
-export const methods = {};
+export const methods = {
+    onDragStart(event: any) {
+        event.dataTransfer.setData('index', event.target.getAttribute('index'));
+    },
+    onDragOver(event: any) {
+        event.preventDefault();
+        // @ts-ignore
+        const target: any = event.currentTarget;
+
+        const offset = target.getBoundingClientRect();
+        let position = 'after'; // 中间位置
+        // @ts-ignore
+        if (event.clientY - offset.top <= 5) {
+            position = 'before'; // 偏上位置
+            // @ts-ignore
+        } else if (offset.bottom - event.clientY <= 5) {
+            position = 'after'; // 偏下位置
+        }
+        target.setAttribute('insert', position);
+    },
+    onDragLeave(event: any) {
+        event.currentTarget.removeAttribute('insert'); // 还原节点状态
+    },
+    onDrop(event: any) {
+        // @ts-ignore
+        const vm: any = this;
+        const target = event.currentTarget;
+        const insert = target.getAttribute('insert');
+        if (!insert) {
+            return;
+        }
+        const indexFrom = Number(event.dataTransfer.getData('index'));
+        let indexInsert = Number(target.getAttribute('index'));
+        if (insert === 'after') {
+            indexInsert = indexInsert + 1;
+        }
+        vm.value.splice(indexInsert, 0, vm.value[indexFrom]);
+        if (indexFrom > indexInsert) {
+            vm.value.splice(indexFrom + 1, 1);
+        } else {
+            vm.value.splice(indexFrom, 1);
+        }
+        vm.emitConfirm();
+        event.currentTarget.removeAttribute('insert'); // 还原节点状态
+    },
+    onDelete(event: any) {
+        if (event.target.tagName !== 'I') {
+            return;
+        }
+        // @ts-ignore
+        const vm: any = this;
+        const index = event.target.getAttribute('index');
+        vm.value.splice(index, 1);
+        vm.emitConfirm();
+    },
+    emitConfirm() {
+        // 主动通知数据更新
+        const conformEvent = document.createEvent('HTMLEvents');
+        conformEvent.initEvent('confirm', true, true);
+         // @ts-ignore
+        this.$el.dispatchEvent(conformEvent);
+    },
+};
 
 export const watch = {};
 
 export function data() {
-    return {};
+    return {
+        unfold: true,
+    };
 }
 
 export function mounted() {}

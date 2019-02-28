@@ -2,7 +2,7 @@
 
 declare const cc: any;
 declare const Manager: any;
-
+const {promisify} = require('util');
 import {
     INode,
     IProperty,
@@ -124,10 +124,17 @@ export async function decodePatch(path: string, dump: any, node: any) {
     // 获取需要修改的数据
     const data = info.search ? get(node, info.search) : node;
     // 判断属性是否为 readonly,是则跳过还原步骤
-    const propertyInfo: any = Object.getOwnPropertyDescriptor(data, info.key);
-    if (propertyInfo && !propertyInfo.writable && !propertyInfo.set) {
+    let propertyConfig: any = Object.getOwnPropertyDescriptor(data, info.key);
+    if (propertyConfig === undefined) {
+        // 原型链上的判断
+        propertyConfig = cc.Class.attr(data, info.key);
+        if (!propertyConfig || !propertyConfig.hasSetter) {
+            return;
+        }
+    } else if (!propertyConfig.writable && !propertyConfig.set) {
         return;
     }
+
     const parentData = parentInfo.search ? get(node, parentInfo.search) : node;
 
     // 如果 dump.value 为 null，则需要自动填充默认数据
@@ -187,16 +194,29 @@ export async function decodePatch(path: string, dump: any, node: any) {
             return await decodePatch(`${path}.${index}`, item, data);
         }));
     } else if (ccExtends.includes(assetType) || assetType === dump.type) {
-        if (!dump.value || !dump.value.uuid) {
-            data[info.key] = null;
-        } else {
-            await new Promise((resolve, reject) => {
-                cc.AssetLibrary.loadAsset(dump.value.uuid, (error: Error, asset: any) => {
-                    data[info.key] = asset;
-                    resolve();
-                });
-            });
+        try {
+            if (Array.isArray(dump.value)) {
+                const result: any = [];
+                for (let i = 0; i < dump.value.length; i++) {
+                    const data = dump.value[i];
+                    if (!dump.value || !dump.value.uuid) {
+                        result[i] = null;
+                    } else {
+                        result[i] = await promisify(cc.AssetLibrary.loadAsset)(data.value.uuid);
+                    }
+                }
+                data[info.key] = result;
+            } else {
+                if (!dump.value || !dump.value.uuid) {
+                    data[info.key] = null;
+                } else {
+                    data[info.key] = await promisify(cc.AssetLibrary.loadAsset)(dump.value.uuid);
+                }
+            }
+        } catch (error) {
+            console.error(error);
         }
+
     } else if (ccExtends.includes('cc.Component') || 'cc.Component' === dump.type) {
         data[info.key] = Manager.Component.query(dump.value.uuid);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
