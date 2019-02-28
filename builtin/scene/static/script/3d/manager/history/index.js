@@ -74,11 +74,16 @@ function snapshot() {
 
     if (step === false) {
         return;
+    } else {
+        // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
+        if (JSON.stringify(step.undo) === JSON.stringify(step.redo)) {
+            return;
+        }
     }
 
-    // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
-    if (current && JSON.stringify(current.undo) === JSON.stringify(step.undo)) {
-        return;
+    // 如果是处于 undo 状态中的新增步骤，index 步骤数处于上一步的 undo 中，需要修正 -1
+    if (current && method === 'undo') {
+        index -= 1;
     }
 
     // 清除指针后面的数据
@@ -115,7 +120,7 @@ function snapshot() {
 /**
  * 撤销
  */
-function undo() {
+async function undo() {
     if (records.length !== 0) {
         snapshot();
     }
@@ -132,13 +137,13 @@ function undo() {
         }
         method = 'undo';
     }
-    const state = restore();
+    const state = await restore();
 
     // 运行中，定时下次运行
     if (state === false) {
         clearTimeout(timeId);
-        timeId = setTimeout(() => {
-            restore();
+        timeId = setTimeout(async () => {
+            await restore();
         }, 500);
     }
     return state;
@@ -147,7 +152,7 @@ function undo() {
 /**
  * 重做
  */
-function redo() {
+async function redo() {
     if (records.length !== 0) {
         snapshot();
     }
@@ -161,13 +166,13 @@ function redo() {
     } else {
         method = 'redo';
     }
-    const state = restore();
+    const state = await restore();
 
     // 运行中，定时下次运行
     if (state === false) {
         clearTimeout(timeId);
-        timeId = setTimeout(() => {
-            restore();
+        timeId = setTimeout(async () => {
+            await restore();
         }, 500);
     }
     return state;
