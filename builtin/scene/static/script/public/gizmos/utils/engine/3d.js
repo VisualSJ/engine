@@ -51,13 +51,20 @@ class Engine3D extends EngineInterface {
     }
 
     createMesh(primitive) {
+        // prepare data
         primitive.primitiveMode = primitive.primitiveType;
         primitive.positions = flat(primitive.positions, (v) => [v.x, v.y, v.z]);
         if (primitive.normals) { primitive.normals = flat(primitive.normals, (v) => [v.x, v.y, v.z]); }
         if (primitive.uvs) { primitive.uvs = flat(primitive.uvs, (v) => [v.x, v.y]); }
+        // create
         let mesh = cc.utils.createMesh(primitive);
-        const info = mesh.renderingMesh.getSubmesh(0).geometricInfo;
+        // set double sided flag for raycast
+        const submesh = mesh.renderingMesh.getSubmesh(0);
+        const info = submesh.geometricInfo;
         if (info) info.doubleSided = primitive.doubleSided;
+        // cache vb buffer for vb update
+        const vbInfo = mesh.struct.vertexBundles[0].data;
+        submesh.vbuffer = mesh.data.buffer.slice(vbInfo.offset, vbInfo.offset + vbInfo.length);
         return mesh;
     }
 
@@ -116,9 +123,18 @@ class Engine3D extends EngineInterface {
 
     updateVBAttr(comp, attr, data) {
         const model = comp.model.getSubModel(0);
-        if (!model) return;
+        if (!model) { return; }
         const ia = model.inputAssembler;
-        if (ia) ia.updateVertexAttr(attr, flat(data, (v) => [v.x, v.y, v.z]));
+        if (ia && model.subMeshData) {
+            const mesh = model.subMeshData;
+            // update vb
+            const points = flat(data, (v) => [v.x, v.y, v.z]);
+            ia.updateVertexAttr(mesh.vbuffer, attr, points);
+            // sync to raycast data
+            if (mesh.geometricInfo) {
+                mesh.geometricInfo.positions.set(points);
+            }
+        }
     }
 
     getBoudingBox(component) {
