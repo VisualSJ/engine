@@ -27,7 +27,7 @@ export default class TextureCubeImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.5';
+        return '1.0.6';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -48,65 +48,59 @@ export default class TextureCubeImporter extends Importer {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
-        let updated = false;
-
-        if (!(await asset.existsInLibrary('.json'))) {
-            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-                Object.assign(asset.userData, makeDefaultTextureCubeAssetUserData());
-            }
-
-            const userData = asset.userData as TextureCubeAssetUserData;
-
-            const imageSource = queryPathFromUrl(userData.imageDatabaseUri as string);
-            if (!imageSource) {
-                return false;
-            }
-
-            const equirectImage = await new Promise((resolve: (equirectImage: HTMLImageElement) => void, reject) => {
-                const equirectImage = document.createElement('img');
-                equirectImage.onload = () => resolve(equirectImage);
-                equirectImage.onerror = reject;
-                equirectImage.src = imageSource;
-            });
-
-            const faceArray = equirectToCubemapFaces(equirectImage);
-            if (faceArray.length !== 6) {
-                throw new Error(`Failed to split cubemap faces.`);
-            }
-
-            const faces = {
-                right: faceArray[0],
-                left: faceArray[1],
-                top: faceArray[2],
-                bottom: faceArray[3],
-                front: faceArray[4],
-                back: faceArray[5],
-            };
-
-            const facesAssets = {};
-
-            const swapSpace = {};
-            for (const face of Object.getOwnPropertyNames(faces)) {
-                const faceCanvas = (faces as any)[face] as HTMLCanvasElement;
-                (swapSpace as any)[face] = faceCanvas;
-                const faceAsset = await asset.createSubAsset(face, 'texture-cube-face');
-                // @ts-ignore
-                (facesAssets as any)[face] = Manager.serialize.asAsset(faceAsset.uuid);
-            }
-            (asset as any).swapSpace = swapSpace;
-
-            // @ts-ignore
-            const texture = new cc.TextureCube();
-            applyTextureBaseAssetUserData(userData, texture);
-            texture._mipmaps = [facesAssets];
-
-            // @ts-ignore
-            await asset.saveToLibrary('.json', Manager.serialize(texture));
-
-            updated = true;
+        if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+            Object.assign(asset.userData, makeDefaultTextureCubeAssetUserData());
         }
 
-        return updated;
+        const userData = asset.userData as TextureCubeAssetUserData;
+
+        const imageSource = queryPathFromUrl(userData.imageDatabaseUri as string);
+        if (!imageSource) {
+            return false;
+        }
+
+        const equirectImage = await new Promise((resolve: (equirectImage: HTMLImageElement) => void, reject) => {
+            const equirectImage = document.createElement('img');
+            equirectImage.onload = () => resolve(equirectImage);
+            equirectImage.onerror = reject;
+            equirectImage.src = imageSource;
+        });
+
+        const faceArray = equirectToCubemapFaces(equirectImage);
+        if (faceArray.length !== 6) {
+            throw new Error(`Failed to split cubemap faces.`);
+        }
+
+        const faces = {
+            right: faceArray[0],
+            left: faceArray[1],
+            top: faceArray[2],
+            bottom: faceArray[3],
+            front: faceArray[4],
+            back: faceArray[5],
+        };
+
+        const facesAssets = {};
+
+        const swapSpace = {};
+        for (const face of Object.getOwnPropertyNames(faces)) {
+            const faceCanvas = (faces as any)[face] as HTMLCanvasElement;
+            (swapSpace as any)[face] = faceCanvas;
+            const faceAsset = await asset.createSubAsset(face, 'texture-cube-face');
+            // @ts-ignore
+            (facesAssets as any)[face] = Manager.serialize.asAsset(faceAsset.uuid);
+        }
+        (asset as any).swapSpace = swapSpace;
+
+        // @ts-ignore
+        const texture = new cc.TextureCube();
+        applyTextureBaseAssetUserData(userData, texture);
+        texture._mipmaps = [facesAssets];
+
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(texture));
+
+        return true;
     }
 }
 

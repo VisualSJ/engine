@@ -1,9 +1,10 @@
 import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
-import { Accessor, Animation, GlTf,
-    Material, Mesh, Node, Scene, Skin, AnimationChannel } from '../../../../../../@types/asset-db/glTF';
+import { Accessor, Animation, AnimationChannel,
+    GlTf, Material, Mesh, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
 import { AttributeBaseType, AttributeType, IMeshStruct,
     IndexUnit, IPrimitive, IVertexAttribute, IVertexBundle } from '../mesh';
+import { Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
 
 export interface GltfImageUriInfo {
     isDataUri: boolean;
@@ -105,24 +106,24 @@ export class GltfConverter {
                 const baseType = this._getAttributeBaseType(attributeAccessor.componentType);
                 const type = this._getAttributeType(attributeAccessor.type);
 
-                // Perform flipY default.
-                if (attributeName.startsWith('TEXCOORD')) {
-                    // FLIP V
-                    if (baseType === AttributeBaseType.FLOAT32 && type === AttributeType.VEC2) {
-                        for (let iVert = 0; iVert < verticesCount; ++iVert) {
-                            const pV = vertexBufferStride * iVert + 4;
-                            const v = dataView.getFloat32(pV, true);
-                            if (v >= 0 && v <= 1) {
-                                dataView.setFloat32(pV, 1 - v, true);
-                            } else {
-                                console.error(
-                                    `We currently do flipping texture coordinates(V) compulsively, ` +
-                                    `so that only normalized texture coordinates are supported.`);
-                                break;
-                            }
-                        }
-                    }
-                }
+                // // Perform flipY default.
+                // if (attributeName.startsWith('TEXCOORD')) {
+                //     // FLIP V
+                //     if (baseType === AttributeBaseType.FLOAT32 && type === AttributeType.VEC2) {
+                //         for (let iVert = 0; iVert < verticesCount; ++iVert) {
+                //             const pV = vertexBufferStride * iVert + 4;
+                //             const v = dataView.getFloat32(pV, true);
+                //             if (v >= 0 && v <= 1) {
+                //                 dataView.setFloat32(pV, 1 - v, true);
+                //             } else {
+                //                 console.error(
+                //                     `We currently do flipping texture coordinates(V) compulsively, ` +
+                //                     `so that only normalized texture coordinates are supported.`);
+                //                 break;
+                //             }
+                //         }
+                //     }
+                // }
 
                 formats.push({
                     name: this._getGfxAttributeName(attributeName),
@@ -370,31 +371,40 @@ export class GltfConverter {
         return material;
     }
 
-    public createTexture(index: number) {
-        if (this._gltf.textures === undefined || index >= this._gltf.textures.length) {
-            return null;
-        }
+    public getTextureParameters(gltfTexture: Texture, userData: TextureBaseAssetUserData) {
+        const convertWrapMode = (gltfWrapMode: number): WrapMode =>  {
+            switch (gltfWrapMode) {
+                case 33071: return 'clamp-to-edge';
+                case 33648: return 'mirrored-repeat';
+                case 10497: return 'repeat';
+                default:
+                    console.error(`Unrecognized wrapMode: ${gltfWrapMode}, 'repeat' is used.`);
+                    return 'repeat';
+            }
+        };
 
-        const gltfTexture = this._gltf.textures[index];
-        // @ts-ignore
-        const texture = new cc.Texture();
-        texture.name = gltfTexture.name;
+        const convertFilter = (gltfFilter: number): Filter => {
+            switch (gltfFilter) {
+                case 9728: return 'nearest';
+                case 9729: return 'linear';
+                default:
+                    console.error(`Unrecognized filter: ${gltfFilter}, 'linear' is used.`);
+                    return 'linear';
+            }
+        };
+
         if (gltfTexture.sampler === undefined) {
-            // @ts-ignore
-            texture.setWrapMode(cc.TextureBase.WrapMode.REPEAT, cc.TextureBase.WrapMode.REPEAT);
+            userData.wrapModeS = 'repeat';
+            userData.wrapModeT = 'repeat';
         } else {
             const gltfSampler = this._gltf.samplers![gltfTexture.sampler];
-            texture.setFilters(
-                gltfSampler.minFilter === undefined ? undefined : this._getFilter(gltfSampler.minFilter),
-                gltfSampler.magFilter === undefined ? undefined : this._getFilter(gltfSampler.magFilter)
-            );
-            texture.setWrapMode(
-                this._getWrapMode(gltfSampler.wrapS === undefined ? 10497 : gltfSampler.wrapS),
-                this._getWrapMode(gltfSampler.wrapT === undefined ? 10497 : gltfSampler.wrapT)
-            );
+            userData.minfilter = gltfSampler.minFilter === undefined ?
+                'linear' : convertFilter(gltfSampler.minFilter);
+            userData.magfilter = gltfSampler.magFilter === undefined ?
+                'linear' : convertFilter(gltfSampler.magFilter);
+            userData.wrapModeS = convertWrapMode(gltfSampler.wrapS === undefined ? 10497 : gltfSampler.wrapS);
+            userData.wrapModeT = convertWrapMode(gltfSampler.wrapT === undefined ? 10497 : gltfSampler.wrapT);
         }
-
-        return texture;
     }
 
     public getImageUriInfo(uri: string, resolve: boolean = true): GltfImageUriInfo {
@@ -723,35 +733,6 @@ export class GltfConverter {
         }
     }
     // tslint:enable: max-line-length
-
-    private _getFilter(filter: number) {
-        switch (filter) {
-            case 9728:
-                // @ts-ignore
-                return cc.TextureBase.Filter.NEAREST;
-            case 9729:
-                // @ts-ignore
-                return cc.TextureBase.Filter.LINEAR;
-            default:
-                throw new Error(`Unrecognized filter: ${filter}.`);
-        }
-    }
-
-    private _getWrapMode(wrapMode: number) {
-        switch (wrapMode) {
-            case 33071:
-                // @ts-ignore
-                return cc.TextureBase.WrapMode.CLAMP_TO_EDGE;
-            case 33648:
-                // @ts-ignore
-                return cc.TextureBase.WrapMode.MIRRORED_REPEAT;
-            case 10497:
-                // @ts-ignore
-                return cc.TextureBase.WrapMode.REPEAT;
-            default:
-                throw new Error(`Unrecognized wrapMode: ${wrapMode}.`);
-        }
-    }
 }
 
 export function isDataUri(uri: string) {

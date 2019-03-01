@@ -125,6 +125,7 @@
         "@types/node": "^10.5.2",
         "chai": "^4.2.0",
         "chalk": "^2.4.1",
+        "jimp": "^0.6.0",
         "less": "^3.8.0",
         "single-line-log": "^1.1.2",
         "spectorjs": "^0.9.5",

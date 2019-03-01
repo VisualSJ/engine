@@ -41,7 +41,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.57';
+        return '1.0.63';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -100,16 +100,9 @@ export default class GltfImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
-        let updated = false;
-
-        // 如果当前资源没有导入，则开始导入当前资源
-        if (!(await asset.existsInLibrary(asset.extname))) {
-            await asset.copyToLibrary(asset.extname, asset.source);
-            updated = true;
-            await this._importSubAssets(asset);
-        }
-
-        return updated;
+        await asset.copyToLibrary(asset.extname, asset.source);
+        await this._importSubAssets(asset);
+        return true;
     }
 
     protected async getGltfFilePath(asset: Asset) {
@@ -258,7 +251,9 @@ export default class GltfImporter extends Importer {
                     _uniqueIndex(index, gltfConverter.gltf.textures.length),
                     '.texture');
                 const subAsset = await asset.createSubAsset(name, 'texture');
-                Object.assign(subAsset.userData, makeDefaultTexture2DAssetUserData());
+                const textureUserdata = subAsset.userData as Texture2DAssetUserData;
+                Object.assign(textureUserdata, makeDefaultTexture2DAssetUserData());
+                gltfConverter.getTextureParameters(gltfTexture, textureUserdata);
                 if (gltfTexture.source !== undefined) {
                     const image = assetTable.images![gltfTexture.source];
                     if (image) {

@@ -33,7 +33,7 @@ export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.12';
+        return '1.0.15';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -55,38 +55,29 @@ export default class TextureImporter extends Importer {
      * @param asset
      */
     public async import(asset: VirtualAsset) {
-        let updated = false;
-
-        if (!(await asset.existsInLibrary('.json'))) {
-            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-                Object.assign(asset.userData, makeDefaultTexture2DAssetUserData());
-            }
-
-            const userData = asset.userData as Texture2DAssetUserData;
-
-            // @ts-ignore
-            const texture = new cc.Texture2D();
-
-            const imageAsset = this._getImageAsset(asset, texture);
-            if (imageAsset) {
-                texture._mipmaps = [imageAsset];
-            }
-
-            // @ts-ignore
-            await asset.saveToLibrary('.json', Manager.serialize(texture));
-
-            // 关联到 sprite frame 那里
-
-            updated = true;
+        if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+            Object.assign(asset.userData, makeDefaultTexture2DAssetUserData());
         }
 
-        return updated;
+        const userData = asset.userData as Texture2DAssetUserData;
+
+        // @ts-ignore
+        const texture = new cc.Texture2D();
+        applyTextureBaseAssetUserData(userData, texture);
+        const imageAsset = this._getImageAsset(asset);
+        if (imageAsset) {
+            texture._mipmaps = [imageAsset];
+        }
+
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(texture));
+
+        return true;
     }
 
     // @ts-ignore
-    protected _getImageAsset(asset: VirtualAsset, texture: cc.Texture2D) {
+    protected _getImageAsset(asset: VirtualAsset) {
         const userData = asset.userData as Texture2DAssetUserData;
-        applyTextureBaseAssetUserData(userData, texture);
         // Get image.
         const imageUuidOrDatabaseUri = userData.imageUuidOrDatabaseUri;
         if (!imageUuidOrDatabaseUri) {

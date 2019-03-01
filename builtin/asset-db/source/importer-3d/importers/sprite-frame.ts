@@ -5,8 +5,10 @@ import { clamp, getTrimRect } from '../utils';
 import { getImageData } from '../utils';
 import TextureImporter from './texture';
 import {
+    applyTextureBaseAssetUserData,
     makeDefaultSpriteFrameBaseAssetUserData,
-    SpriteFrameBaseAssetUserData
+    SpriteFrameBaseAssetUserData,
+    TextureBaseAssetUserData
 } from './texture-base';
 export interface SpriteFrameAssetUserData extends SpriteFrameBaseAssetUserData {
     isUuid?: boolean;
@@ -28,7 +30,7 @@ export default class SpriteFrameImporter extends TextureImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.3';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -49,89 +51,83 @@ export default class SpriteFrameImporter extends TextureImporter {
      * @param asset
      */
     public async import(asset: Asset) {
-        let updated = false;
-
-        // 如果没有生成 json 文件，则重新生成
-        if (!(await asset.existsInLibrary('.json'))) {
-            if (!asset.parent) {
-                return false;
-            }
-
-            if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-                Object.assign(asset.userData, makeDefaultSpriteFrameBaseAssetUserData());
-            }
-
-            if (asset.parent.meta.importer === 'image') {
-                const userData = asset.userData as SpriteFrameBaseAssetUserData;
-                // @ts-ignore
-                const file = asset.parent.source;
-
-                const imageData = await getImageData(file);
-
-                userData.trimThreshold = 1;
-                userData.rotated = false;
-
-                if (imageData) {
-                    userData.rawWidth = imageData.width;
-                    userData.rawHeight = imageData.height;
-
-                    const rect = getTrimRect(
-                        Buffer.from(imageData.data.buffer),
-                        userData.rawWidth,
-                        userData.rawHeight,
-                        userData.trimThreshold
-                    );
-                    userData.trimX = rect[0];
-                    userData.trimY = rect[1];
-                    userData.width = rect[2];
-                    userData.height = rect[3];
-                }
-
-                userData.offsetX =
-                    userData.trimX + userData.width / 2 - userData.rawWidth / 2;
-                userData.offsetY = -(
-                    userData.trimY +
-                    userData.height / 2 -
-                    userData.rawHeight / 2
-                );
-
-                userData.borderTop = clamp(
-                    userData.borderTop || 0,
-                    0,
-                    userData.height - (userData.borderBottom || 0)
-                );
-                userData.borderBottom = clamp(
-                    userData.borderBottom || 0,
-                    0,
-                    userData.height - (userData.borderTop || 0)
-                );
-                userData.borderLeft = clamp(
-                    userData.borderLeft || 0,
-                    0,
-                    userData.width - (userData.borderRight || 0)
-                );
-                userData.borderRight = clamp(
-                    userData.borderRight || 0,
-                    0,
-                    userData.width - (userData.borderLeft || 0)
-                );
-            }
-
-            // userData.vertices = undefined;
-
-            const spriteFrame = this.createSpriteFrame(asset);
-            const imageAsset = this._getImageAsset(asset, spriteFrame);
-            if (imageAsset) {
-                spriteFrame._mipmaps = [imageAsset];
-            }
-
-            // @ts-ignore
-            await asset.saveToLibrary('.json', Manager.serialize(spriteFrame));
-
-            updated = true;
+        if (!asset.parent) {
+            return false;
         }
 
-        return updated;
+        if (Object.getOwnPropertyNames(asset.userData).length === 0) {
+            Object.assign(asset.userData, makeDefaultSpriteFrameBaseAssetUserData());
+        }
+
+        if (asset.parent.meta.importer === 'image') {
+            const userData = asset.userData as SpriteFrameBaseAssetUserData;
+            // @ts-ignore
+            const file = asset.parent.source;
+
+            const imageData = await getImageData(file);
+
+            userData.trimThreshold = 1;
+            userData.rotated = false;
+
+            if (imageData) {
+                userData.rawWidth = imageData.width;
+                userData.rawHeight = imageData.height;
+
+                const rect = getTrimRect(
+                    Buffer.from(imageData.data.buffer),
+                    userData.rawWidth,
+                    userData.rawHeight,
+                    userData.trimThreshold
+                );
+                userData.trimX = rect[0];
+                userData.trimY = rect[1];
+                userData.width = rect[2];
+                userData.height = rect[3];
+            }
+
+            userData.offsetX =
+                userData.trimX + userData.width / 2 - userData.rawWidth / 2;
+            userData.offsetY = -(
+                userData.trimY +
+                userData.height / 2 -
+                userData.rawHeight / 2
+            );
+
+            userData.borderTop = clamp(
+                userData.borderTop || 0,
+                0,
+                userData.height - (userData.borderBottom || 0)
+            );
+            userData.borderBottom = clamp(
+                userData.borderBottom || 0,
+                0,
+                userData.height - (userData.borderTop || 0)
+            );
+            userData.borderLeft = clamp(
+                userData.borderLeft || 0,
+                0,
+                userData.width - (userData.borderRight || 0)
+            );
+            userData.borderRight = clamp(
+                userData.borderRight || 0,
+                0,
+                userData.width - (userData.borderLeft || 0)
+            );
+        }
+
+        // userData.vertices = undefined;
+
+        const spriteFrame = this.createSpriteFrame(asset);
+        applyTextureBaseAssetUserData(asset.userData as TextureBaseAssetUserData, spriteFrame);
+        const imageAsset = this._getImageAsset(asset);
+        if (imageAsset) {
+            spriteFrame._mipmaps = [imageAsset];
+        }
+
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(spriteFrame));
+
+        return true;
     }
 
     private createSpriteFrame(asset: Asset) {

@@ -1,8 +1,8 @@
 'use strict';
 
-type WrapMode = 'repeat' | 'clamp-to-edge' | 'mirrored-repeat';
+export type WrapMode = 'repeat' | 'clamp-to-edge' | 'mirrored-repeat';
 
-type Filter = 'nearest' | 'linear';
+export type Filter = 'nearest' | 'linear';
 
 export interface TextureBaseAssetUserData {
     wrapModeS: WrapMode;

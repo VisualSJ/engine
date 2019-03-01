@@ -1,5 +1,6 @@
 import { Asset, Importer, queryUrlFromPath } from '@editor/asset-db';
 import { AssertionError } from 'assert';
+import Jimp from 'jimp';
 import { extname } from 'path';
 import { makeDefaultSpriteFrameAssetUserDataFromImageUuid } from './sprite-frame';
 import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
@@ -11,7 +12,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.5';
+        return '1.0.7';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -41,64 +42,65 @@ export default class ImageImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
-        let updated = false;
-
         const ext = extname(asset.source);
 
-        if (!(await asset.existsInLibrary(ext))) {
+        // @ts-ignore
+        const image = new cc.ImageAsset();
+        image._setRawAsset(asset.extname);
+
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(image));
+
+        let importType = asset.userData.type as (ImageImportType | undefined);
+        if (importType === undefined) {
+            importType = 'texture';
+            asset.userData.type = importType;
+        }
+
+        const imageDatabaseUri = queryUrlFromPath(asset.source);
+        if (!imageDatabaseUri) {
+            throw new AssertionError({ message: `${asset.source} is not found in asset-db.` });
+        }
+
+        let flipY = false;
+        switch (importType) {
+            case 'raw':
+                delete asset.userData.redirect;
+                break;
+            case 'texture':
+            case 'normal map':
+                const texture2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
+                asset.userData.redirect = texture2DSubAsset.uuid;
+                Object.assign(texture2DSubAsset.userData,
+                    makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
+                flipY = true;
+                break;
+            case 'texture cube':
+                const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
+                asset.userData.redirect = textureCubeSubAsset.uuid;
+                Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
+                (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
+                break;
+            case 'sprite-frame':
+                // const sprite2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
+                // Object.assign(sprite2DSubAsset.userData,
+                //     makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
+                const textureSpriteFrameSubAsset = await asset.createSubAsset(asset.basename, 'sprite-frame');
+                asset.userData.redirect = textureSpriteFrameSubAsset.uuid;
+                Object.assign(textureSpriteFrameSubAsset.userData,
+                    makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid));
+                break;
+        }
+
+        if (!flipY) {
             await asset.copyToLibrary(ext, asset.source);
-            updated = true;
+        } else {
+            const img = await Jimp.read(asset.source);
+            img.flip(false, true);
+            const buffer = await img.getBufferAsync(img.getMIME());
+            await asset.saveToLibrary(ext, buffer);
         }
 
-        if (!(await asset.existsInLibrary('.json'))) {
-            // @ts-ignore
-            const image = new cc.ImageAsset();
-            image._setRawAsset(asset.extname);
-            // @ts-ignore
-            await asset.saveToLibrary('.json', Manager.serialize(image));
-
-            let importType = asset.userData.type as (ImageImportType | undefined);
-            if (importType === undefined) {
-                importType = 'texture';
-                asset.userData.type = importType;
-            }
-
-            const imageDatabaseUri = queryUrlFromPath(asset.source);
-            if (!imageDatabaseUri) {
-                throw new AssertionError({ message: `${asset.source} is not found in asset-db.` });
-            }
-
-            switch (importType) {
-                case 'raw':
-                    delete asset.userData.redirect;
-                    break;
-                case 'texture':
-                case 'normal map':
-                    const texture2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
-                    asset.userData.redirect = texture2DSubAsset.uuid;
-                    Object.assign(texture2DSubAsset.userData,
-                        makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
-                    break;
-                case 'texture cube':
-                    const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
-                    asset.userData.redirect = textureCubeSubAsset.uuid;
-                    Object.assign(textureCubeSubAsset.userData, makeDefaultTextureCubeAssetUserData());
-                    (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
-                    break;
-                case 'sprite-frame':
-                    // const sprite2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');
-                    // Object.assign(sprite2DSubAsset.userData,
-                    //     makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
-                    const textureSpriteFrameSubAsset = await asset.createSubAsset(asset.basename, 'sprite-frame');
-                    asset.userData.redirect = textureSpriteFrameSubAsset.uuid;
-                    Object.assign(textureSpriteFrameSubAsset.userData,
-                        makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid));
-                    break;
-            }
-
-            updated = true;
-        }
-
-        return updated;
+        return true;
     }
 }
