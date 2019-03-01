@@ -38,6 +38,9 @@ module.exports = {
         revealInlibrary: 'Reveal In Library',
         revealInExplorer: 'Reveal In Explorer',
         showUuid: 'Show Asset UUID and PATH',
+
+        errorNewnameDuplicate: 'The name of the file or folder already exists. Please select another name',
+        errorNewnameEmpty: 'The name cannot be empty',
     },
 
     operate: {

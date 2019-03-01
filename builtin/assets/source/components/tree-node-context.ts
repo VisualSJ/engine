@@ -13,7 +13,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newFolder'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'folder' }, asset.uuid);
+                            self.$emit('addTo', { type: 'folder' }, asset.uuid);
                         },
                     },
                     {
@@ -22,19 +22,19 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newJavaScript'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'js' }, asset.uuid);
+                            self.$emit('addTo', { type: 'js' }, asset.uuid);
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newTypeScript'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'ts' }, asset.uuid);
+                            self.$emit('addTo', { type: 'ts' }, asset.uuid);
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newCoffeeScript'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'coffee' }, asset.uuid);
+                            self.$emit('addTo', { type: 'coffee' }, asset.uuid);
                         },
                     },
                     {
@@ -43,7 +43,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newScene'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'scene' }, asset.uuid);
+                            self.$emit('addTo', { type: 'scene' }, asset.uuid);
                         },
                     },
                     {
@@ -52,13 +52,13 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newMaterials'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'mtl' }, asset.uuid);
+                            self.$emit('addTo', { type: 'mtl' }, asset.uuid);
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newEffect'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'effect' }, asset.uuid);
+                            self.$emit('addTo', { type: 'effect' }, asset.uuid);
                         },
                     },
                     {
@@ -67,7 +67,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newAnimationClip'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'anim' }, asset.uuid);
+                            self.$emit('addTo', { type: 'anim' }, asset.uuid);
                         },
                     },
                     {
@@ -76,7 +76,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newAutoAtlas'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'pac' }, asset.uuid);
+                            self.$emit('addTo', { type: 'pac' }, asset.uuid);
                         },
                     },
                     {
@@ -85,7 +85,7 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                     {
                         label: Editor.I18n.t('assets.menu.newLabelAtlas'),
                         click() {
-                            self.$emit('ipcAdd', { ext: 'labelatlas' }, asset.uuid);
+                            self.$emit('addTo', { type: 'labelatlas' }, asset.uuid);
                         },
                     },
                 ],

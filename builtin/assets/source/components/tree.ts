@@ -1,7 +1,7 @@
 'use strict';
 
 import { existsSync, readFileSync } from 'fs';
-import { basename, extname, join } from 'path';
+import { basename, dirname, extname, join } from 'path';
 
 const db = require('./tree-db');
 const utils = require('./tree-utils');
@@ -29,6 +29,12 @@ export function data() {
         firstAllExpand: false, // 根据编辑器的配置来设置第一次的所有节点是否展开
         types: { file: 1, 'cc.Node': 2 }, // 收集所有 asset 的 type, 用于 ui-drag-area 的 droppable 设置
         renameSource: '', // 需要 rename 的节点的 url，只有一个
+        addAsset: { // 添加一个新资源前的数据，需要事前重命名
+            type: '',
+            name: '',
+            ext: '',
+            parentDir: '',
+        },
         intoView: '', // 定位显示资源，uuid, 只有一个
         search: '', // 搜索节点名称
         searchType: 'name', // 搜索类型
@@ -314,11 +320,11 @@ export const methods = {
     },
 
     /**
-     * ipc 发起创建资源
-     * @param asset
+     * 创建资源前名称事前处理
      * @param json
+     * @param uuid 在该资源上发起的新增
      */
-    async ipcAdd(json: IaddAsset, uuid: string, filedata: any) {
+    async addTo(json: IaddAsset, uuid: string) {
         if (!uuid) {
             uuid = this.getFirstSelect();
         }
@@ -328,42 +334,74 @@ export const methods = {
             return;
         }
 
-        let url = parent.source;
-        if (!json.name) {
-            switch (json.ext) {
-                case 'folder': json.name = 'New Folder'; break;
-                case 'scene': json.name = `New Scene.${json.ext}`; break;
-                default: json.name = `New File.${json.ext}`; break;
-            }
-        }
-
-        url += `/${json.name}`;
-
-        parent.state = 'loading';
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
 
-        if (json.ext === 'folder') {
-            filedata = null; // 注意，文件夹的内容必须传 null 过去
-        }
-        if (filedata === undefined) {
-            filedata = '';
+        let url = parent.source;
 
-            const filepath = join(__dirname, `../../static/filecontent/${json.ext}`);
+        switch (json.type) {
+            case 'folder': json.name = 'New Folder'; break;
+            case 'scene': json.name = `New Scene.${json.type}`; break;
+            default: json.name = `New File.${json.type}`; break;
+        }
+
+        url += `/${json.name}`;
+
+        url = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
+
+        vm.addAsset = {
+            type: json.type,
+            name: basename(url),
+            ext: extname(url),
+            parentDir: dirname(url),
+        };
+    },
+
+    /**
+     * 新增资源，事前重命名后接收数据
+     */
+    async addConfirm(json: IaddAsset | null) {
+        // 新增的输入框消失
+        vm.addAsset.parentDir = '';
+
+        // 数据错误时取消
+        if (!json || !json.parentDir || !json.parentUuid || !json.name) {
+            return;
+        }
+
+        const parent = utils.closestCanCreateAsset(json.parentUuid); // 自身或父级文件夹
+        if (!parent) { // 父级不可新建资源
+            return;
+        }
+
+        parent.state = 'loading';
+
+        let content = null; // 注意，文件夹的内容必须传 null 过去
+
+        if (json.type !== 'folder') {
+            const filepath = join(__dirname, `../../static/filecontent/${json.type}`);
             if (existsSync(filepath)) {
-                filedata = readFileSync(filepath, 'utf8');
+                content = readFileSync(filepath, 'utf8');
+            } else {
+                content = '';
             }
         }
+
+        const url = `${json.parentDir}/${json.name}`;
+        await vm.ipcAdd(url, content);
+        parent.state = '';
+    },
+
+    /**
+     * ipc 发起创建资源
+     * @param url
+     * @param content
+     */
+    async ipcAdd(url: string, content: Buffer | string | null) {
         utils.twinkle.sleep();
 
-        const renameSource = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
-        const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', renameSource, filedata);
-        if (isSuccess) {
-            vm.renameSource = renameSource;
-        }
-
-        parent.state = '';
+        return await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content);
     },
 
     /**
@@ -738,7 +776,7 @@ export const methods = {
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
             const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', json.from);
-            vm.ipcAdd({ name: `${dump.name.value}.prefab` }, json.to, content);
+            vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content);
 
         } else {
             if (!json.from) {

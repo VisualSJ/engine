@@ -38,6 +38,9 @@ module.exports = {
         revealInlibrary: '在 Library 中显示',
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',
+
+        errorNewnameDuplicate: '同级下的文件名称已存在，请选择其他名称',
+        errorNewnameEmpty: '名称不能为空',
     },
 
     operate: {

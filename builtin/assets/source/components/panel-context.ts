@@ -13,7 +13,7 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newFolder'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'folder' });
+                    db.vm.$refs.tree.addTo({ type: 'folder' });
                 },
             },
             {
@@ -22,19 +22,19 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newJavaScript'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'js' });
+                    db.vm.$refs.tree.addTo({ type: 'js' });
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.newTypeScript'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'ts' });
+                    db.vm.$refs.tree.addTo({ type: 'ts' });
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.newCoffeeScript'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'coffee' });
+                    db.vm.$refs.tree.addTo({ type: 'coffee' });
                 },
             },
             {
@@ -43,7 +43,7 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newScene'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'scene' });
+                    db.vm.$refs.tree.addTo({ type: 'scene' });
                 },
             },
             {
@@ -52,13 +52,13 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newMaterials'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'mtl' });
+                    db.vm.$refs.tree.addTo({ type: 'mtl' });
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.newEffect'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'effect' });
+                    db.vm.$refs.tree.addTo({ type: 'effect' });
                 },
             },
             {
@@ -67,7 +67,7 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newAnimationClip'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'anim' });
+                    db.vm.$refs.tree.addTo({ type: 'anim' });
                 },
             },
             {
@@ -76,13 +76,13 @@ exports.popupNew = (event: Event) => {
             {
                 label: Editor.I18n.t('assets.menu.newAutoAtlas'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'pac' });
+                    db.vm.$refs.tree.addTo({ type: 'pac' });
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.newLabelAtlas'),
                 click() {
-                    db.vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
+                    db.vm.$refs.tree.addTo({ type: 'labelatlas' });
                 },
             },
         ],
@@ -137,7 +137,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newFolder'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'folder' });
+                            db.vm.$refs.tree.addTo({ type: 'folder' });
                         },
                     },
                     {
@@ -146,19 +146,19 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newJavaScript'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'js' });
+                            db.vm.$refs.tree.addTo({ type: 'js' });
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newTypeScript'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'ts' });
+                            db.vm.$refs.tree.addTo({ type: 'ts' });
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newCoffeeScript'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'coffee' });
+                            db.vm.$refs.tree.addTo({ type: 'coffee' });
                         },
                     },
                     {
@@ -167,7 +167,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newScene'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'scene' });
+                            db.vm.$refs.tree.addTo({ type: 'scene' });
                         },
                     },
                     {
@@ -176,13 +176,13 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newMaterials'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'mtl' });
+                            db.vm.$refs.tree.addTo({ type: 'mtl' });
                         },
                     },
                     {
                         label: Editor.I18n.t('assets.menu.newEffect'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'effect' });
+                            db.vm.$refs.tree.addTo({ type: 'effect' });
                         },
                     },
                     {
@@ -191,7 +191,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newAnimationClip'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'anim' });
+                            db.vm.$refs.tree.addTo({ type: 'anim' });
                         },
                     },
                     {
@@ -200,7 +200,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newAutoAtlas'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'pac' });
+                            db.vm.$refs.tree.addTo({ type: 'pac' });
                         },
                     },
                     {
@@ -209,7 +209,7 @@ exports.popupContext = (event: Event) => {
                     {
                         label: Editor.I18n.t('assets.menu.newLabelAtlas'),
                         click() {
-                            db.vm.$refs.tree.ipcAdd({ ext: 'labelatlas' });
+                            db.vm.$refs.tree.addTo({ type: 'labelatlas' });
                         },
                     },
                 ],

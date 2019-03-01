@@ -98,24 +98,44 @@
         transform: scale(0.8);
     }
     .rename {
+        position: relative;
+        display: inline-block;
         font-size: 12px;
-        outline: none;
         border: 1px solid var(--panel-active-c);
-        color: var(--default-text-c);
-        background-color: transparent;
         padding-left: 4px;
         margin-left: 4px;
         margin-right: 20px;
-        vertical-align: middle;
+        >input {
+            outline: none;
+            border: none;
+            background-color: transparent;
+            color: var(--default-text-c);
+            vertical-align: top;
+        }
+        &[state^="error"] {
+            border-color: var(--red-c);
+            &:after {
+                content: attr(title);
+                padding: 0 4px;
+                background-color: var(--red-c);
+                color: #fff;
+                position: absolute;
+                top: 20px;
+                left: -1px;
+                z-index: 1;
+                min-width: calc(100% - 6px);
+            }
+        }
     }
     .readonly {
         position: absolute;
         top: -1px;
-        left: 0;
+        left: 10px;
         z-index: 100;
         font-size: 8px;
         color: var(--disabled-c) !important;
-        .icon {
+        opacity: 0.7;
+        >.icon {
             color: var(--disabled-c) !important;
         }
     }

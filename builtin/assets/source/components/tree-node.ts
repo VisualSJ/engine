@@ -1,6 +1,6 @@
 'use strict';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { basename, dirname, join } from 'path';
 
 const open = require('./tree-node-open');
 const context = require('./tree-node-context');
@@ -22,11 +22,15 @@ export const props: string[] = [
     'selects',
     'twinkles',
     'renameSource',
+    'addAsset',
 ];
 
 export function data() {
     return {
         renameUuid: '',
+        renameValue: '',
+        renameInputState: '',
+        addInputState: '',
     };
 }
 
@@ -44,6 +48,10 @@ export const computed = {
         if (asset.source && this.renameSource === asset.source) {
             // @ts-ignore 选中该节点
             return 'input';
+            // @ts-ignore
+        } else if (asset.source && this.addAsset.parentDir === asset.source) {
+            // @ts-ignore 选中该节点
+            return 'add';
         }
 
         return asset.state;
@@ -70,15 +78,39 @@ export const watch = {
         if (this.state === 'input') {
             // @ts-ignore
             this.renameUuid = asset.uuid;
+            // @ts-ignore
+            this.renameValue = asset.name;
+            // @ts-ignore
+            this.renameInputState = '';
 
             // @ts-ignore
             this.$nextTick(() => {
                 // @ts-ignore
-                if (this.$refs.input) {
+                if (this.$refs.renameInput) {
                     // @ts-ignore
-                    this.$refs.input.focus();
+                    this.$refs.renameInput.focus();
                     // @ts-ignore
-                    this.$refs.input.setSelectionRange(0, asset.fileName.length);
+                    this.$refs.renameInput.setSelectionRange(0, asset.fileName.length);
+                }
+            });
+        }
+
+        // @ts-ignore
+        if (this.state === 'add') {
+            // @ts-ignore
+            const { name, ext } = this.addAsset;
+
+            // @ts-ignore
+            this.addInputState = '';
+
+            // @ts-ignore
+            this.$nextTick(() => {
+                // @ts-ignore
+                if (this.$refs.addInput) {
+                    // @ts-ignore
+                    this.$refs.addInput.focus();
+                    // @ts-ignore
+                    this.$refs.addInput.setSelectionRange(0, basename(name, ext).length);
                 }
             });
         }
@@ -169,12 +201,36 @@ export const methods = {
         asset.state = 'input';
     },
     /**
+     * 改变输入值时判断是否重名
+     */
+    renameChange(event: Event) {
+        // @ts-ignore
+        const {asset} = this;
+        const parentAsset = utils.getAssetFromTree(asset.parentUuid);
+        // @ts-ignore
+        const filenames = parentAsset.children.map((one) => one.name).filter((name) => name !== asset.name);
+
+        // @ts-ignore
+        this.renameValue = this.$refs.renameInput.value.trim();
+        let state = '';
+        // @ts-ignore
+        if (filenames.includes(this.renameValue)) {
+            state = 'errorNewnameDuplicate';
+            // @ts-ignore
+        } else if (this.renameValue === '' || this.renameValue === asset.fileExt) {
+            state = 'errorNewnameEmpty';
+        }
+
+        // @ts-ignore
+        this.renameInputState = state;
+    },
+    /**
      * 提交重名命
      * @param asset
      */
     renameSubmit(event: Event) {
         // @ts-ignore
-        const newName = this.$refs.input.value.trim();
+        const newName = this.$refs.renameInput.value.trim();
 
         // @ts-ignore
         this.$emit('rename', this.renameUuid, newName);
@@ -186,6 +242,57 @@ export const methods = {
     renameCancel(event: Event) {
         // @ts-ignore
         this.$emit('rename', this.renameUuid, '');
+    },
+    /**
+     * 改变输入值时判断是否重名
+     */
+    addChange(event: Event) {
+        // @ts-ignore
+        const {asset, addAsset} = this;
+        // @ts-ignore
+        const filenames = asset.children.map((one) => one.name);
+
+        // @ts-ignore
+        addAsset.name = this.$refs.addInput.value.trim();
+        let state = '';
+        if (filenames.includes(addAsset.name)) {
+            state = 'errorNewnameDuplicate';
+        } else if (addAsset.name === '' || addAsset.name === addAsset.ext) {
+            state = 'errorNewnameEmpty';
+        }
+
+        // @ts-ignore
+        this.addInputState = state;
+    },
+    /**
+     * 提交新增资源
+     * @param event
+     */
+    addSubmit(event: Event) {
+        // @ts-ignore
+        const json: IaddAsset = Object.assign({}, this.addAsset);
+        // @ts-ignore
+        const newName = this.$refs.addInput.value.trim();
+        // @ts-ignore
+        if (newName === '' || newName === this.addAsset.ext || /[/\\]/.test(newName)) {
+            // @ts-ignore
+            this.$emit('addConfirm', null);
+            return;
+        }
+
+        json.name = newName;
+        // @ts-ignore
+        json.parentUuid = this.asset.uuid;
+        // @ts-ignore
+        this.$emit('addConfirm', json);
+    },
+    /**
+     * 取消新增
+     * @param event
+     */
+    addCancel(event: Event) {
+        // @ts-ignore
+        this.$emit('addConfirm', null);
     },
     /**
      * 开始拖动

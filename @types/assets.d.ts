@@ -15,9 +15,12 @@ declare interface IdragAsset {
 }
 
 declare interface IaddAsset {
-    ext: string; // 新文件的后缀，文件夹为 folder
-    name: string; // 文件名称
-    content: string; // 文件的内容
+    type: string; // 类型 folder, js, ts, png 等
+    ext: string; // 新文件的后缀，.js, .ts 等
+    name: string; // 文件名称 带后缀
+    content?: string; // 文件的内容
+    parentDir?: string; // 所在的目录的 url
+    parentUuid?: string; // 所在的目录的 uuid
 }
 
 declare interface ItreeAsset {
