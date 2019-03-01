@@ -22,12 +22,15 @@ module.exports = {
         fail: {
             unknown: 'Failed to save resource: unknown error',
             uuid: 'Failed to save resource: unable to identify uuid',
+            content: 'Failed to save the resource: file content format is not correct',
         },
     },
 
     saveAssetMeta: {
         fail: {
             unknown: 'Failed to save resource META: unknown error',
+            uuid: 'Failed to save resource META: unable to identify uuid',
+            content: 'Failed to save resource META: file content format is not correct',
         },
     },
 
@@ -37,7 +40,9 @@ module.exports = {
             url: 'Failed to copy resource: invalid parameter',
             source: 'Failed to copy resource: file does not exist at source address',
             target: 'Failed to copy resource: target file already exists',
-            parent: 'Failed to copy resource: source address cannot be contained by destination address',
+            include: 'Failed to copy resource: source address cannot be contained by destination address',
+            parent: 'Failed to copy resource: the parent address of the destination address is incorrect',
+            readonly: 'Failed to copy resource: The parent address of the destination address is readonly',
         },
     },
 
@@ -48,7 +53,9 @@ module.exports = {
             source: 'Failed to move resource: source address does not exist',
             target: 'Failed to move resource: destination address is not valid',
             exist: 'Failed to move the resource: the same file already exists at the destination address',
-            parent: 'Failed to move the resource: source address cannot be contained by destination address',
+            include: 'Failed to move the resource: source address cannot be contained by destination address',
+            parent: 'Failed to move the resource: the parent address of the destination address is incorrect',
+            readonly: 'Failed to copy resource: The parent address of the destination address is readonly',
         },
     },
 

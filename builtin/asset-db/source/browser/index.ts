@@ -170,20 +170,20 @@ module.exports = {
         /**
          * 保存资源
          * @param uuid
-         * @param data
+         * @param content
          */
-        async 'save-asset'(uuid: string, data: Buffer | string) {
-            return await saveAsset(uuid, data);
+        async 'save-asset'(uuid: string, content: Buffer | string) {
+            return await saveAsset(uuid, content);
         },
 
         /**
          * 保存资源的 meta 信息
          * @param uuid
-         * @param data
+         * @param content
          * @returns
          */
-        async 'save-asset-meta'(uuid: string, meta: string) {
-            return await saveAssetMeta(uuid, meta);
+        async 'save-asset-meta'(uuid: string, content: string) {
+            return await saveAssetMeta(uuid, content);
         },
 
     },

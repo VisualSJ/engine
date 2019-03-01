@@ -6,17 +6,21 @@ import { queryAsset } from '../utils';
 /**
  * 存储指定的资源的 meta
  */
-ipcAddListener('asset-worker:save-asset-meta', async (event: any, uuid: string, data: any) => {
+ipcAddListener('asset-worker:save-asset-meta', async (event: any, uuid: string, content: string) => {
     if (!uuid) {
-        return event.reply(null, null);
+        return event.reply(null, false);
     }
     const info = queryAsset(uuid);
     if (!info) {
-        return event.reply(null);
+        return event.reply(null, false);
     }
     try {
         let isSaved = false;
-        const meta = JSON.parse(data);
+        const meta = JSON.parse(content);
+        if (Array.isArray(meta)) { // 不能为数组
+            return event.reply(null, false);
+        }
+
         Object.keys(info.asset.meta).map((key) => {
             if (meta[key] !== undefined) {
                 // @ts-ignore

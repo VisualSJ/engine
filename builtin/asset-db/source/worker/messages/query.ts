@@ -35,6 +35,11 @@ ipcAddListener('asset-worker:query-uuid-from-url', (event: any, url: string) => 
         return event.reply(null, null);
     }
 
+    // 处理 db://assets 约定返回 uuid = db://assets 的情况
+    if (/^db:\/\/[^/]+$/.test(url)) {
+        return event.reply(null, url);
+    }
+
     event.reply(null, queryUuidFromUrl(url));
 });
 
@@ -64,7 +69,7 @@ ipcAddListener('asset-worker:query-db-info', async (event: any, name: string) =>
  * 根据提供的 options 查询对应的资源数组
  */
 ipcAddListener('asset-worker:query-assets', async (event: any, options?: any) => {
-    if ((options !== undefined  && typeof options !== 'object') || Array.isArray(options)) {
+    if ((options !== undefined && typeof options !== 'object') || Array.isArray(options)) {
         event.reply(null, null);
         return;
     }
