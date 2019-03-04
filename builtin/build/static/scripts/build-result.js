@@ -4,12 +4,18 @@
  */
 class BuildResults {
     constructor() {
+       this.reset();
+    }
+
+    /**
+     * 重置缓存，恢复初始值
+     */
+    reset() {
         this._buildAssets = null;
         this._packedAssets = null;
         this.settings = null; // 构建生成的 setting 对象
         this.paths = null; // 构建需要的路径整理
         this.options = null; // 构建传入的配置信息
-        this.scrips = null;
         this.script2uuid = {}; // 脚本 asset 与 uuid 的映射表
         this.assetCache = {}; // uuid 与查找到的 asset 信息的缓存映射表
         this.uuidDepends = {}; // 资源 uuid 有对应依赖资源 uuid 数组的映射表

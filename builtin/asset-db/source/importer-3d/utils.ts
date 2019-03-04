@@ -1,4 +1,5 @@
 'use strict';
+import { Asset } from '@editor/asset-db';
 
 /**
  * 判断 val 的值是否超出
@@ -112,7 +113,7 @@ export async function getImageData(file: string) {
     $canvas.width = $img.width;
     $canvas.height = $img.height;
 
-    let $context: CanvasRenderingContext2D | null = $canvas.getContext('2d');
+    const $context: CanvasRenderingContext2D | null = $canvas.getContext('2d');
     $context && $context.drawImage($img, 0, 0);
     return $context && $context.getImageData(0, 0, $img.width, $img.height);
-};
+}

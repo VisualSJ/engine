@@ -71,7 +71,7 @@ function startup(info: IEngineInfo) {
     });
 
     // worker 检测到了删除资源
-    databaseWorker.on('asset-worker:asset-delete', (event: any, uuid: string, path: string) => {
+    databaseWorker.on('asset-worker:asset-delete', (event: any, uuid: string, info: any, path: string) => {
         if (awaitHandler.delete[path]) {
             awaitHandler.delete[path].forEach((item) => {
                 item();
@@ -79,7 +79,7 @@ function startup(info: IEngineInfo) {
             delete awaitHandler.delete[path];
         }
         if (getReady()) {
-            Editor.Ipc.sendToAll('asset-db:asset-delete', uuid);
+            Editor.Ipc.sendToAll('asset-db:asset-delete', uuid, info);
         }
     });
 

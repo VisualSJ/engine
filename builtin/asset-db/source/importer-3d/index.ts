@@ -24,6 +24,7 @@ import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
 import TextureCubeImporter, { TextureCubeFaceImporter } from './importers/texture-cube';
 import TTFFontImporter from './importers/ttf-font';
+import TypeScriptImporter from './importers/typescipt';
 import UnknownImporter from './importers/unknown';
 
 export function register(database: AssetDB) {
@@ -53,6 +54,9 @@ export function register(database: AssetDB) {
 
     // javascript 导入
     database.register(new JavascriptImporter(), '.js');
+
+    // typescript 导入
+    database.register(new TypeScriptImporter(), '.ts');
 
     // 场景文件导入
     database.register(new SceneImporter(), ['.scene', '.fire']);

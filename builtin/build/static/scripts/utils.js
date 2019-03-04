@@ -434,4 +434,5 @@ module.exports = {
     getAssetUrl,
     getMd5Map,
     appendHashToFileSuffix,
+    isNodeModulePath,
 };

@@ -156,3 +156,14 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
 
     return info;
 }
+
+// 整理出需要在删除资源后传播的主要信息
+export function tranAssetInfo(asset: any) {
+    const info = {
+        file: asset.source,
+        uuid: asset.uuid,
+        library: libArr2Obj(asset),
+        importer: asset.meta.importer,
+    };
+    return info;
+}

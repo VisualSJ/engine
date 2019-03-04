@@ -1,11 +1,14 @@
 'use strict';
 
 let pkg: any = null;
-const {join} = require('path');
+const { join } = require('path');
 const profile = Editor.Profile.load('profile://global/packages/builder.json');
 const ipc = require('@base/electron-base-ipc');
 const worker = require('@base/electron-worker');
+const url = require('url');
 let buildWorker: any = null;
+const { readFile } = require('fs');
+
 /**
  * 打开 build 面板
  */

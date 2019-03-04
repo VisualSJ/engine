@@ -24,9 +24,9 @@ let rawPathToLibPath = {};
  * @class ScriptsBuilder
  */
 class ScriptBuilder {
-    init(type) {
+    init() {
         this.shoudBuild = true;
-        if (type !== 'build-release') {
+        if (buildResult.options.type !== 'build-release') {
             this.shoudBuild = false;
             return;
         }
@@ -35,12 +35,11 @@ class ScriptBuilder {
         this.jsList = [];
     }
 
-    async build(type) {
+    async build() {
         updateProgress('build scripts...');
-        this.init(type);
+        this.init();
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
-        projectScripts.load(scripts);
-        const result = await this.resolveScripts(scripts);
+        const result = await projectScripts.load(scripts);
         if (!this.shoudBuild) {
             return result;
         }
@@ -48,39 +47,8 @@ class ScriptBuilder {
         this._allScripts = scriptInfo.allScripts;
         rawPathToLibPath = scriptInfo.rawPathToLibPath;
         await this._buildScript(scriptInfo.mainScrips);
+        await this.copyFiles(result.jsList);
         return result;
-        // await this._buildScript(scriptInfo.subScrips);
-    }
-
-    async resolveScripts(lists) {
-        let scripts = [];
-        let jsList = [];
-        buildResult.script2uuid = {};
-        for (let asset of lists) {
-            const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
-            let url = getRightUrl(asset.source);
-            if (userData.isPlugin) {
-                if (userData.isNative && userData.loadPluginInNative) {
-                    jsList.push(url);
-                } else if (userData.loadPluginInWeb) {
-                    jsList.push(url);
-                }
-                if (this.shoudBuild) {
-                    const src = join(this.paths.project, url);
-                    const dest = join(this.paths.src, url);
-                    ensureDirSync(dirname(dest));
-                    copyFileSync(src, dest);
-                }
-            } else {
-                scripts.push({uuid: asset.uuid, file: url});
-            }
-            buildResult.script2uuid[url] = asset.uuid;
-        }
-        scripts = await getScriptsCache(scripts);
-        return {
-            scripts,
-            jsList,
-        };
     }
 
     // 将脚本根据子包设置，分类
@@ -245,6 +213,21 @@ class ScriptBuilder {
                 // todo 细节优化
                 resolve();
             });
+        });
+    }
+    copyFiles(files) {
+        if (files.length === 0) {
+            return;
+        }
+        return new Promise((resolve) => {
+            Promise.all(files.map((url) => {
+                const src = join(this.paths.project, url);
+                const dest = join(this.paths.src, url);
+                ensureDirSync(dirname(dest));
+                copyFileSync(src, dest);
+            })).then(() => {
+                resolve();
+            }).catch((err) => console.error(err));
         });
     }
 }

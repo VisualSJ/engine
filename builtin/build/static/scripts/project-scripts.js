@@ -1,78 +1,78 @@
-const virtualModule = require('virtual-module');
+const { requestToPackage, getRightUrl, isNodeModulePath } = require('./utils');
+const { extname, isAbsolute, resolve} = require('path');
+const buildResult = require('./build-result');
+const model = require('module');
+let raw2library = {};
 
 /**
- * TODO 对脚本进行整理，拆分为插件类脚本和普通脚本
+ * 对脚本进行整理，拆分为插件类脚本和普通脚本，缓存 asset
  */
-function sortScripts(scripts) {
-    let mainPaths = [];
-    let plugins = [];
-    for (let asset of scripts) {
-        if (!asset.isPlugin) {
-            mainPaths.push(asset);
+async function sortScripts(scriptAssets) {
+    let scripts = [];
+    let jsList = [];
+    for (let asset of scriptAssets) {
+        asset.url = getRightUrl(asset.source);
+        const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
+        if (userData.isPlugin &&
+            (userData.isNative && userData.loadPluginInNative || userData.loadPluginInWeb)) {
+            jsList.push(asset.url);
+            raw2library[asset.file] = asset.library['.js'];
         } else {
-            plugins.push(asset);
+            scripts.push({uuid: asset.uuid, file: asset.url});
+            raw2library[asset.file] = asset.library['.js'];
         }
+        buildResult.script2uuid[asset.url] = asset.uuid;
     }
-    return {
-        mainPaths,
-        plugins,
-    };
+    return {scripts, jsList};
 }
 
-function loadScript(src, cb) {
-    var scriptElement = document.createElement('script');
-    scriptElement.onload = function() {
-        scriptElement.remove();
-
-        cb();
-    };
-    scriptElement.onerror = function() {
-        scriptElement.remove();
-
-        Editor.error('Failed to load %s', src);
-        cb(new Error('Failed to load ' + src));
-    };
-
-    scriptElement.setAttribute('type', 'text/javascript');
-    scriptElement.setAttribute('charset', 'utf-8');
-    scriptElement.setAttribute('src', FireUrl.addRandomQuery(src));
-
-    document.head.appendChild(scriptElement);
-}
-
-// 导入插件模块
-function loadPlugins(paths) {
-    // 注册脚本
-    for (let i = 0; i < paths.length; i++) {
-        loadScript(DISABLE_COMMONJS_PROTOCOL + paths[i]);
+function loadScripts() {
+    for (const file of Object.keys(raw2library)) {
+        require(file);
+        console.info(`Script (${file}) mounted.`);
     }
 }
 
-function loadCommon(scriptAssetInfos) {
-    virtualModule.reset();
-    for (const scriptAssetInfo of scriptAssetInfos) {
-        virtualModule.addAlias(scriptAssetInfo.source, (fromPath, request, alias) => {
-            const result = scriptAssetInfo.library['.js'];
-            // This may be caused by parsing error.
-            if (result === undefined) {
-                throw new Error(`Script (${scriptAssetInfo.source}) can't found in library, please check it`);
+function setModuleResolve() {
+    model._resolveFilenameVendor = model._resolveFilename;
+    model._resolveFilename = function(request, parent, isMain) {
+        if (Object.keys(raw2library).length > 0) {
+            let rawPath = request;
+            if (!isAbsolute(request)) {
+                rawPath = resolve(parent.filename, request);
             }
-            return result;
-        });
-    }
-    for (const scriptAssetInfo of scriptAssetInfos) {
-        require(scriptAssetInfo.source);
-        console.info(`Script ${scriptAssetInfo.uuid}(${scriptAssetInfo.source}) mounted.`);
-    }
+            // 不带扩展名，先查找 js
+            if (extname(rawPath) === '') {
+                const path = rawPath + '.js';
+                if (!raw2library[path]) {
+                    rawPath += '.ts';
+                }
+            }
+            let libraryPath = raw2library[rawPath];
+            if (!isNodeModulePath(parent.filename) && libraryPath) {
+                return libraryPath;
+            }
+        }
+        return model._resolveFilenameVendor(request, parent, isMain);
+    };
 }
 
 /**
  * 导入项目脚本模块
  * @param {*} scripts
  */
-function load(scripts) {
-    let {mainPaths, plugins} = sortScripts(scripts);
-    // loadPlugins(plugins);
-    loadCommon(mainPaths);
+async function load(scripts) {
+    raw2library = {};
+    const result = await sortScripts(scripts);
+    if (buildResult.options.type !== 'build-release') {
+        return result;
+    }
+
+    if (!model._resolveFilenameVendor) {
+        setModuleResolve();
+    }
+
+    loadScripts();
+    return result;
 }
 exports.load = load;

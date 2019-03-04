@@ -35,6 +35,7 @@ class Builder {
 
     // 初始化整理 options 数据
     async _init(options, config) {
+        buildResult.reset(); // 重置缓存
         const tempConfig = await getCustomConfig('build-release');
         const isWeChatSubdomain = options.platform === 'wechatgame-subcontext';
         const isWeChatGame = options.platform === 'wechatgame' || isWeChatSubdomain;
@@ -71,6 +72,7 @@ class Builder {
     async build(options, config) {
         let startTime = new Date().getTime();
         await this._init(options, config);
+        buildResult.options.type = 'build-release'; // 构建 setting 的种类
         // 先清空文件夹
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
@@ -88,7 +90,6 @@ class Builder {
                     scenes: options.scenes,
                     debug: options.debug,
                     platform: options.platform,
-                    type: 'build-release', // 构建 setting 的种类
                 },
                 {
                     start_scene: options.start_scene,
@@ -264,7 +265,7 @@ class Builder {
     _buildMain() {
         updateProgress('build main.js...');
         let options = this._options;
-        let contents = readFileSync(join(this._paths.tmplBase, 'common', 'main.js'), 'utf8');
+        let contents = readFileSync(join(this._paths.tmplBase, 'common', 'main.ejs'), 'utf8');
         // qqplay set REMOTE_SERVER_ROOT value
         let isQQPlay = options.platform === 'qqplay';
         const data = {
@@ -650,7 +651,7 @@ class Builder {
             throw new Error('获取当前场景信息失败');
         }
         // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
-        if (options.type !== 'build-release') {
+        if (this._options.type !== 'build-release') {
             let info = sceneJson.find((item) => {
                 return item.__type__ === 'cc.Canvas';
             });
@@ -661,15 +662,16 @@ class Builder {
             }
         }
 
-        let results = (await scriptBuilder.build(options.type)) || {scripts: [], jsList: []};
+        let results = (await scriptBuilder.build()) || {scripts: [], jsList: []};
         setting.packedAssets = {};
-        let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, options.type);
+        setting.md5AssetsMap = {};
+        let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, this._options.type);
         Object.assign(setting, assetBuilderResult, results);
         buildResult.settings = setting;
         updateProgress('build setting...', 20);
         if (options.type === 'build-release') {
             setting.packedAssets = assetPacker.pack();
-            setting.md5AssetsMap = (await this.buildMd5Map(setting)) || {};
+            setting.md5AssetsMap = await this.buildMd5Map(setting);
             return setting;
         }
         delete setting.type;

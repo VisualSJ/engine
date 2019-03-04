@@ -61,15 +61,7 @@ const messages = {
      */
     async 'query-scripts'() {
         // 加载项目脚本
-        const assets = await Editor.Ipc.requestToPackage('asset-db', 'query-assets');
-        const scripts = assets
-            .map((asset) => {
-                if (asset.importer === 'javascript') {
-                    return asset.uuid;
-                }
-            })
-            .filter(Boolean);
-
+        const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
         return scripts;
     },
 
@@ -94,6 +86,15 @@ const messages = {
      */
     async 'query-asset-info'(uuid) {
         return Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+    },
+
+    /**
+     * 通过 uuid 查询 meta 信息
+     * 场景加载脚本判断是否为插件时需要使用
+     * @param {string} uuid
+     */
+    async 'query-asset-meta'(uuid) {
+        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
     },
 
     /**

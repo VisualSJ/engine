@@ -56,6 +56,8 @@ async function initManager(info) {
 
     const manager = window.Manager;
 
+    manager.project = info.project;
+
     // 用于编辑器绘制的背景和前景节点
     const foregroundNode = new cc.Node('Editor Scene Foreground');
     const backgroundNode = new cc.Node('Editor Scene Background');

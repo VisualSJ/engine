@@ -100,7 +100,7 @@ export function apply(messages: any) {
         switch (info.importer) {
             case 'javascript':
                 // 如果新建的是脚本，需要导入到场景内
-                $scene.forwarding('Script', 'loadScripts', [[uuid]]);
+                $scene.forwarding('Script', 'loadScript', [uuid]);
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
@@ -116,7 +116,7 @@ export function apply(messages: any) {
         switch (info.importer) {
             case 'javascript':
                 // 如果修改的是脚本，需要更新场景内的脚本数据
-                $scene.forwarding('Script', 'loadScripts', [[uuid]]);
+                $scene.forwarding('Script', 'loadScript', [uuid]);
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
@@ -129,8 +129,15 @@ export function apply(messages: any) {
     /**
      * 刪除资源广播
      */
-    messages['asset-db:asset-delete'] = (uuid: string) => {
-        // 如果删除的是 effect，需要通知更新 effect 列表
-        $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
+    messages['asset-db:asset-delete'] = (uuid: string, info: any) => {
+        switch (info.importer) {
+            case 'javascript':
+            // 如果修改的是脚本，需要更新场景内的脚本数据
+            $scene.forwarding('Script', 'removeScript', [info]);
+            break;
+        case 'effect':
+            // 如果删除的是 effect，需要通知更新 effect 列表
+            $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
+        }
     };
 }

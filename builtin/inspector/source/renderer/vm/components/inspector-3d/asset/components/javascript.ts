@@ -66,6 +66,9 @@ export const methods = {
             if (!('loadPluginInNative' in vm.meta.userData)) {
                 vm.$set(vm.meta.userData, 'loadPluginInNative', true);
             }
+            if (!('loadPluginInEditor' in vm.meta.userData)) {
+                vm.$set(vm.meta.userData, 'loadPluginInEditor', true);
+            }
         }
     },
 

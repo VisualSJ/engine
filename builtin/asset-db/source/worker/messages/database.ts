@@ -4,8 +4,8 @@ import { ensureDirSync } from 'fs-extra';
 import { join } from 'path';
 
 import { AssetDB } from '@editor/asset-db';
-
 import { ipcAddListener, ipcSend } from '../ipc';
+import { queryAsset, tranAssetInfo } from '../utils';
 
 /**
  * 宿主进程将启动参数发送过来
@@ -65,7 +65,7 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
 
     // 绑定文件删除事件
     db.on('delete', (uuid) => {
-        ipcSend('asset-worker:asset-delete', uuid, db.uuidToPath(uuid));
+        ipcSend('asset-worker:asset-delete', uuid, tranAssetInfo(db.uuid2asset[uuid]), db.uuidToPath(uuid));
     });
 
     // 启动数据库

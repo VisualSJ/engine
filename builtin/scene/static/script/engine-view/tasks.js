@@ -60,7 +60,7 @@ exports.webviewManagerInit = [
             await exports.$scene.ipc.forceSend('call-method', {
                 module: 'Startup',
                 handler: 'manager',
-                params: [exports.$scene.info],
+                params: [Object.assign(exports.$scene.info, {project: Editor.App.project})],
             });
             exports.$scene.depend.finish('webview-manager-init');
         },

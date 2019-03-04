@@ -3,10 +3,9 @@
 import * as Babel from '@babel/core';
 import { Asset, Importer } from '@editor/asset-db';
 import { File, Program } from 'babel-types';
-import { readFile } from 'fs-extra';
+import { readFile, readFileSync } from 'fs-extra';
 // @ts-ignore
 import * as uuidUtils from '../../../static/utils/uuid-utils';
-
 export default class JavascriptImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
@@ -34,32 +33,40 @@ export default class JavascriptImporter extends Importer {
      */
     public async import(asset: Asset) {
         let updated = false;
+        const isPlugin = asset.meta.userData.isPlugin;
         try {
-            // 如果当前资源没有导入，则开始导入当前资源
-            if (!(await asset.existsInLibrary('.js'))) {
+            let code;
+            if (isPlugin) {
+                code = readFileSync(asset.source, 'utf-8');
+                const header = '(function(){var require = undefined;var module = undefined; ';
+                const footer = '\n})();\n';
+                code = header + code + footer;
+            } else {
                 const target = await this.compile(asset);
-
-                // @ts-ignore
-                asset.saveToLibrary('.js', target.code);
+                code = target.code;
                 asset.saveToLibrary('.js.map', JSON.stringify(target.map));
-
-                updated = true;
             }
+            // @ts-ignore
+            asset.saveToLibrary('.js', code);
+
+            updated = true;
+            isPlugin && (asset.meta.userData.importAsPlugin = true);
+            !isPlugin && (asset.meta.userData.importAsPlugin = false);
         } catch (err) {
             console.error(err);
         }
-
         return updated;
     }
 
     private async compile(asset: Asset) {
         // const convert = require('convert-source-map');
         const file = await readFile(asset.source, 'utf8');
+        const isPlugin = asset.meta.userData.isPlugin;
         // const sourceMap = !!convert.fromSource(file);
         const { code, map = '' } = Babel.transformSync(file, {
             ast: false,
             highlightCode: false,
-            sourceMaps: 'inline',
+            sourceMaps: true,
             sourceFileName: `custom-scripts:///${asset.basename}.${asset.extname}`,
             filename: asset.source,
             compact: false,

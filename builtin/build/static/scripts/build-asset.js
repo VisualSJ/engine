@@ -10,12 +10,12 @@ const _ = require('lodash');
 
 const RAW_ASSET_DEST = 'raw-assets';
 class AssetBuilder {
-    init(type) {
-        buildResult.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
+    init() {
+        // buildResult.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
         this.result = {};
         this.hasBuild = {};
         this.shoudBuild = true;
-        if (type !== 'build-release') {
+        if (buildResult.options.type !== 'build-release') {
             this.shoudBuild = false;
             return;
         }
@@ -30,10 +30,10 @@ class AssetBuilder {
         this.copyPaths = [];
     }
 
-    async build(scenes, type) {
+    async build(scenes) {
         updateProgress('build assets...');
         let startTime = new Date().getTime();
-        this.init(type);
+        this.init();
         if (Array.isArray(scenes)) {
             for (let item of scenes) {
                 buildResult.assetCache[item.uuid] = item;
