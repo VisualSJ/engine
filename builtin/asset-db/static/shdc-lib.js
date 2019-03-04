@@ -138,19 +138,21 @@ const expandStructMacro = (() => {
 
 // replace the obvious constants, which are often used inside array subscripts
 const replacePlainDefines = (code) => {
-  const defMap = {};
   let defCap = plainDefineRE.exec(code);
   while (defCap != null) {
-    defMap[defCap[1]] = { beg: defCap.index, end: defCap.index + defCap[0].length, value: defCap[2] };
-    defCap = plainDefineRE.exec(code);
-  }
-  for (const key of Object.keys(defMap)) {
-    // here node.js(10.14.2) seems to behave differently than chrome on those regexes,
-    // after working around the '\w', everything looks good
-    code = code.replace(new RegExp(`(?<![a-zA-Z0-9_])(?:${key})(?![a-zA-Z0-9_])`, 'g') , (m, offset) => {
-      const info = defMap[m];
-      return (offset < info.beg || offset > info.end) ? info.value : m;
+    // extraction
+    const key = defCap[1];
+    const beg = defCap.index;
+    const end = defCap.index + defCap[0].length;
+    const value = defCap[2];
+    // replacement
+    const regex = new RegExp(`(?<![a-zA-Z0-9_])${key}(?![a-zA-Z0-9_])`, 'g');
+    code = code.replace(regex, (m, offset) => {
+      const validRef = offset < beg || offset > end;
+      return validRef ? value : m;
     });
+    // iteration
+    defCap = plainDefineRE.exec(code);
   }
   return code;
 };

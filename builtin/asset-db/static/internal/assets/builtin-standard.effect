@@ -54,7 +54,7 @@ CCProgram standard-vs {
   #include <cc-local>
 
   #if CC_USE_SKINNING
-  #include <skinning>
+    #include <skinning>
   #endif
 
   in vec3 a_position;
@@ -63,8 +63,8 @@ CCProgram standard-vs {
   out vec3 v_worldNormal;
 
   #if USE_ALBEDO_MAP || USE_NORMAL_MAP || USE_PBR_MAP || USE_EMISSIVE_MAP
-  in vec2 a_texCoord;
-  out vec2 v_uv;
+    in vec2 a_texCoord;
+    out vec2 v_uv;
   #endif
 
   uniform Constants {
@@ -107,7 +107,7 @@ CCProgram standard-fs {
   in vec3 v_worldNormal;
 
   #if USE_ALBEDO_MAP || USE_NORMAL_MAP || USE_PBR_MAP || USE_EMISSIVE_MAP
-  in vec2 v_uv;
+    in vec2 v_uv;
   #endif
 
   uniform Constants {

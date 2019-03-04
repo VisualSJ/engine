@@ -31,7 +31,7 @@ const stringifyEffect = (() => {
 
     // comment any of the following lines to keep shaders readable
     glsl1.vert = glsl1.vert.replace(newlines, '\\n');
-    glsl1.frag = glsl1.frag.replace(newlines, '\\n');
+    // glsl1.frag = glsl1.frag.replace(newlines, '\\n');
     glsl3.vert = glsl3.vert.replace(newlines, '\\n');
     glsl3.frag = glsl3.frag.replace(newlines, '\\n');
 
@@ -88,14 +88,31 @@ const addEssential = (() => {
   };
 })();
 
-// build specified effect file
+// build specified files or directories
 if (process.argv.length > 2) {
-  for (let i = 2; i < process.argv.length; i++)  {
-    const file = process.argv[i];
+  const getFileSystemInfo = (file) => {
+    try { return fs.lstatSync(file); }
+    catch (e) { console.warn(file, 'does not exist!'); }
+    return null;
+  }
+  const compile = (file) => {
     const name = ps.basename(file, '.effect');
     const content = fs.readFileSync(file, { encoding: 'utf8' });
     const effect = shdcLib.buildEffect(name, content);
     fs.writeFileSync(`${name}.js`, `export default ${stringifyEffect(effect)};\n`, { encoding: 'utf8' });
+    console.log(`${name}.js saved.`)
+  }
+  for (let i = 2; i < process.argv.length; i++)  {
+    const file = process.argv[i];
+    const stats = getFileSystemInfo(file);
+    if (!stats) continue;
+    if (stats.isDirectory()) {
+      shdcLib.addChunksCache(file);
+      fsJetpack.find(file, { matching: ['**/*.effect'] }).forEach((f) => compile(f));
+    } else {
+      shdcLib.addChunksCache(ps.dirname(file));
+      compile(file);
+    }
   }
   process.exit();
 }
