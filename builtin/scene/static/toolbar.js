@@ -47,6 +47,11 @@ exports.template = `
     width: 40px;
 }
 
+.camera-dimension {
+    display: flex;
+    margin-left: 10px;
+}
+
 </style>
 <div class="scene-gizmo-buttons">
     <i class="position">
@@ -64,6 +69,11 @@ exports.template = `
             <path fill="currentColor" d="M448.1 344v112c0 13.3-10.7 24-24 24h-112c-21.4 0-32.1-25.9-17-41l36.2-36.2L224 295.6 116.8 402.9 153 439c15.1 15.1 4.4 41-17 41H24c-13.3 0-24-10.7-24-24V344c0-21.4 25.9-32.1 41-17l36.2 36.2L184.5 256 77.2 148.7 41 185c-15.1 15.1-41 4.4-41-17V56c0-13.3 10.7-24 24-24h112c21.4 0 32.1 25.9 17 41l-36.2 36.2L224 216.4l107.3-107.3L295.1 73c-15.1-15.1-4.4-41 17-41h112c13.3 0 24 10.7 24 24v112c0 21.4-25.9 32.1-41 17l-36.2-36.2L263.6 256l107.3 107.3 36.2-36.2c15.1-15.2 41-4.5 41 16.9z"></path>
         </svg>
     </i>
+    <i class="rect">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+    <path fill="currentColor" d="M512 128V32c0-17.67-14.33-32-32-32h-96c-17.67 0-32 14.33-32 32H160c0-17.67-14.33-32-32-32H32C14.33 0 0 14.33 0 32v96c0 17.67 14.33 32 32 32v192c-17.67 0-32 14.33-32 32v96c0 17.67 14.33 32 32 32h96c17.67 0 32-14.33 32-32h192c0 17.67 14.33 32 32 32h96c17.67 0 32-14.33 32-32v-96c0-17.67-14.33-32-32-32V160c17.67 0 32-14.33 32-32zm-96-64h32v32h-32V64zM64 64h32v32H64V64zm32 384H64v-32h32v32zm352 0h-32v-32h32v32zm-32-96h-32c-17.67 0-32 14.33-32 32v32H160v-32c0-17.67-14.33-32-32-32H96V160h32c17.67 0 32-14.33 32-32V96h192v32c0 17.67 14.33 32 32 32h32v192z"/>
+    </svg>
+</i>
 </div>
 
 <div class="scene-gizmo-buttons scene-gizmo-localtion">
@@ -80,15 +90,23 @@ exports.template = `
         <span>Local</span>
     </i>
 </div>
+
+<div class="scene-gizmo-buttons camera-dimension">
+    <i class="dimension">
+        <span>3D</span>
+    </i>
+</div>
 `;
 
 exports.$ = {
     position: '.position',
     rotation: '.rotation',
     scale: '.scale',
+    rect: '.rect',
 
     pivot: '.pivot',
     coordinate: '.coordinate',
+    dimension: '.dimension',
 };
 
 exports.methods = {
@@ -97,7 +115,7 @@ exports.methods = {
      * @param {*} toolName
      */
     updateGizmoTool(toolName) {
-        ['position', 'rotation', 'scale'].forEach((name) => {
+        ['position', 'rotation', 'scale', 'rect'].forEach((name) => {
             if (name === toolName) {
                 this.$[name].setAttribute('active', '');
             } else {
@@ -119,11 +137,20 @@ exports.methods = {
             return str.toUpperCase();
         });
     },
+
+    updateDimension(is2D) {
+        this.dimension = is2D;
+        let name = is2D ? '2D' : '3D';
+        this.$.dimension.getElementsByTagName('span')[0].innerHTML = name.replace(/^\S/, (str) => {
+            return str.toUpperCase();
+        });
+    },
 };
 
 exports.ready = async function() {
     this.pivot = 'center';
     this.coordinate = 'global';
+    this.is2D = false;
 
     ipc.on(`scene:ready`, async (event) => {
         const toolName = await Editor.Ipc.requestToPanel('scene', 'query-gizmo-tool-name');
@@ -132,6 +159,8 @@ exports.ready = async function() {
         this.updateGizmoPivot(pivot);
         const coordinate = await Editor.Ipc.requestToPanel('scene', 'query-gizmo-coordinate');
         this.updateGizmoCoordinate(coordinate);
+        const is2D = await Editor.Ipc.requestToPanel('scene', 'query-is2D');
+        this.updateDimension(is2D);
     });
 
     ipc.on('scene:gizmo-tool-changed', (event, name) => {
@@ -146,7 +175,11 @@ exports.ready = async function() {
         this.updateGizmoCoordinate(name);
     });
 
-    ['position', 'rotation', 'scale'].forEach((name) => {
+    ipc.on('scene:dimension-changed', (event, value) => {
+        this.updateDimension(value);
+    });
+
+    ['position', 'rotation', 'scale', 'rect'].forEach((name) => {
         this.$[name].addEventListener('click', () => {
             Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', name);
         });
@@ -168,6 +201,16 @@ exports.ready = async function() {
             this.coordinate = 'local';
         }
         Editor.Ipc.sendToPanel('scene', 'change-gizmo-coordinate', this.coordinate);
+    });
+
+    this.$.dimension.addEventListener('click', () => {
+        if (this.is2D === true) {
+            this.is2D = false;
+        } else {
+            this.is2D = true;
+        }
+
+        Editor.Ipc.sendToPanel('scene', 'change-is2D', this.is2D);
     });
 
     document.body.addEventListener('keydown', async (event) => {
@@ -199,6 +242,10 @@ exports.ready = async function() {
             case 'r':
             case 'R':
                 Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'scale');
+                break;
+            case 't':
+            case 'T':
+                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rect');
                 break;
             case 'f':
             case 'F':

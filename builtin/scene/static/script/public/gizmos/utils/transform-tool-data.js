@@ -4,7 +4,7 @@ let EventEmitter = require('events');
 class TransformToolData extends EventEmitter {
     constructor() {
         super();
-        this._toolName = 'position';   // position/rotation/scale
+        this._toolName = 'position';   // position/rotation/scale/rect
         this._coordinate = 'local'; // local/global
         this._pivot = 'pivot';  // pivot/center
         this._isLocked = false;

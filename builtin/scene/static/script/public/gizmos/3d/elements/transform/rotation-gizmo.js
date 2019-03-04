@@ -11,6 +11,8 @@ let RotationController = require('../controller/rotation-controller');
 const TransformToolData = require('../../../utils/transform-tool-data');
 const MathUtil = External.EditorMath;
 
+const GizmoConfig = require('../../../gizmo-config');
+
 class RotationGizmo extends TransformGizmo {
     init() {
         this._rotList = [];
@@ -43,7 +45,7 @@ class RotationGizmo extends TransformGizmo {
 
         for (let i = 0; i < topNodes.length; ++i) {
 
-            if (this._controller.is2D) {
+            if (GizmoConfig.isCreator2x && this._controller.is2D) {
                 this._rotList.push(topNodes[i].angle);
             }
             else {
@@ -153,7 +155,7 @@ class RotationGizmo extends TransformGizmo {
     }
 
     updateDataFromController() {
-        if (this._controller.is2D) {
+        if (GizmoConfig.isCreator2x && this._controller.is2D) {
             this.updateDataFromController2D();
         } 
         else {

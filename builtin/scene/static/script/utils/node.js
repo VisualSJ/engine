@@ -476,7 +476,7 @@ Utils.getCenterWorldPos3D = function(nodes) {
 };
 
 Utils.getMaxRangeOfNode = function(node) {
-    let maxRange = 10;
+    let maxRange = 1;
 
     if (node) {
         let compRange = 0;
@@ -485,6 +485,19 @@ Utils.getMaxRangeOfNode = function(node) {
             switch (componentName) {
                 case 'cc.LightComponent':
                     compRange = component.range;
+                    break;
+                case 'cc.ModelComponent':
+                    if (component.model) {
+                        let worldBound = component.model.worldBounds;
+                        if (worldBound) {
+                            compRange = Math.max(worldBound.halfExtents.x,
+                                worldBound.halfExtents.y, worldBound.halfExtents.z);
+                        }
+                    }
+                    break;
+                case 'cc.UITransformComponent':
+                    let size = component.contentSize;
+                    compRange = Math.max(size.width / 2, size.height / 2);
                     break;
             }
 

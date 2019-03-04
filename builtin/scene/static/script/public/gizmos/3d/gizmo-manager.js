@@ -1,22 +1,27 @@
 'use strict';
 const { create3DNode, getRaycastResults } = require('../utils/engine');
 const GizmoDefines = require('./gizmo-defines');
-const NodeQueryUtils = require('../../../3d/manager/node');
+const nodeManager = require('../../../3d/manager/node');
 const Selection = require('../../selection');
 const TransformToolData = require('../utils/transform-tool-data');
 const operationManager = require('../../operation');
 const WorldAxisController = require('./elements/controller/world-axis-controller');
+const { EventEmitter } = require('events');
 
 let hitPoint = cc.v3();
 
 class GizmoManager {
+    constructor() {
+        // 对外暴露，用于监听数据的改变
+        this.TransformToolData = TransformToolData;
+    }
 
     queryToolName() {
         return this.transformToolName;
     }
 
     setTransformToolName(name) {
-        if (['position', 'rotation', 'scale'].includes(name)) {
+        if (['position', 'rotation', 'scale', 'rect'].includes(name)) {
             this.transformToolName = name;
         }
     }
@@ -38,6 +43,20 @@ class GizmoManager {
     setPivot(name) {
         if (['pivot', 'center'].includes(name)) {
             this.pivot = name;
+        }
+    }
+
+    queryIs2D() {
+        return TransformToolData.is2D;
+    }
+
+    setIs2D(value) {
+        TransformToolData.is2D = value;
+
+        if (value) {
+            this._worldAxisController.hide();
+        } else {
+            this._worldAxisController.show();
         }
     }
 
@@ -81,6 +100,18 @@ class GizmoManager {
         // 软刷新后保留原先的gizmo
         let selectedNodes = Selection.query();
         this.select(selectedNodes);
+
+        // 显示常驻的node gizmo
+        this.initNodeGizmo();
+    }
+
+    initNodeGizmo() {
+        nodeManager.queryUuids().forEach((uuid) => {
+            const node = nodeManager.query(uuid);
+            if (node) {
+                this.showNodeGizmoOfNode(node);
+            }
+        });
     }
 
     get transformTool() {
@@ -155,6 +186,9 @@ class GizmoManager {
                 case 'scale':
                     gizmoDef = GizmoDefines.scale;
                     break;
+                case 'rect':
+                    gizmoDef = GizmoDefines.rect;
+                    break;
                 default:
 
             }
@@ -215,24 +249,38 @@ class GizmoManager {
         }
     }
 
-    showNodeGizmo(node) {
+    showAllGizmoOfNode(node) {
         if (!node) {
             return;
         }
 
-        let gizmoDef = null;
-        let gizmoObj = null;
-        // node gizmo
-        if (node.gizmo == null) {
-            let className = cc.js.getClassName(node);
-            gizmoDef = GizmoDefines[className];
-            if (gizmoDef) {
-                gizmoObj = this.createGizmo(className, gizmoDef, node);
-                gizmoObj.show();
-                node.gizmo = gizmoObj;
+        this.showNodeGizmoOfNode(node);
+        this.showComponentGizmoOfNode(node);
+    }
+
+    showNodeGizmoOfNode(node) {
+        // node gizmo,常驻的gizmo，只要Node在场景中是active的就会显示
+        if (node.active) {
+            let gizmoDef = null;
+            let gizmoObj = null;
+            if (node.gizmo == null) {
+                let className = cc.js.getClassName(node);
+                gizmoDef = GizmoDefines[className];
+                if (gizmoDef) {
+                    gizmoObj = this.createGizmo(className, gizmoDef, node);
+                    node.gizmo = gizmoObj;
+                }
+            }
+
+            if (node.gizmo) {
+                node.gizmo.show();
             }
         }
+    }
 
+    showComponentGizmoOfNode(node) {
+        let gizmoDef = null;
+        let gizmoObj = null;
         // for component gizmo
         node._components.forEach((component) => {
             let needShow = node.active && component.enabled;
@@ -252,16 +300,23 @@ class GizmoManager {
         });
     }
 
-    hideNodeGizmo(node) {
+    hideAllGizmoOfNode(node) {
         if (!node) {
             return;
         }
 
+        this.hideNodeGizmoOfNode(node);
+        this.hideComponentGizmoOfNode(node);
+    }
+
+    hideNodeGizmoOfNode(node) {
         if (node.gizmo) {
             this.destoryGizmo(node.gizmo);
             node.gizmo = null;
         }
+    }
 
+    hideComponentGizmoOfNode(node) {
         // for component gizmo
         node._components.forEach((component) => {
             if (component.gizmo) {
@@ -278,7 +333,7 @@ class GizmoManager {
         let index = this._selection.indexOf(component.node.uuid);
         //当前component所在node为选中状态
         if (index !== -1) {
-            this.showNodeGizmo(component.node);
+            this.showComponentGizmoOfNode(component.node);
         }
     }
 
@@ -327,16 +382,16 @@ class GizmoManager {
             return;
         }
 
-        let newSelecedNode = NodeQueryUtils.query(newId);
+        let newSelecedNode = nodeManager.query(newId);
         if (!newSelecedNode) {
             return;
         }
-        this.showNodeGizmo(newSelecedNode);
+        this.showComponentGizmoOfNode(newSelecedNode);
 
         this._selection = ids;
         let nodes = [];
         ids.forEach((id) => {
-            let node = NodeQueryUtils.query(id);
+            let node = nodeManager.query(id);
             if (!node) {
                 return;
             }
@@ -363,17 +418,17 @@ class GizmoManager {
                 this._selection.splice(index, 1);
             }
 
-            let node = NodeQueryUtils.query(id);
+            let node = nodeManager.query(id);
             this.updateGizmosState(node, {
                 selecting: false,
                 editing: false,
             });
 
-            this.hideNodeGizmo(node);
+            this.hideComponentGizmoOfNode(node);
         });
 
         let nodes = this._selection.map((id) => {
-            return NodeQueryUtils.query(id);
+            return nodeManager.query(id);
         });
 
         this.edit(
@@ -542,22 +597,22 @@ class GizmoManager {
 
         // 目前node的active,component的enable都走nodechange事件，
         // 先在这里统一处理，把Node的所有gizmo重置一遍。
-        this.hideNodeGizmo(node);
+        this.hideAllGizmoOfNode(node);
 
         let index = this._selection.indexOf(node.uuid);
         if (index !== -1) {
-            this.showNodeGizmo(node);
+            this.showAllGizmoOfNode(node);
         }
     }
 
     onNodeRemoved(node) {
         if (node != null) {
-            this.hideNodeGizmo(node);
+            this.hideAllGizmoOfNode(node);
         }
     }
 
     onComponentAdded(comp) {
-        this.showNodeGizmo(comp.node);
+        this.showComponentGizmoOfNode(comp.node);
     }
 
     onBeforeComponentRemove(comp) {
@@ -575,6 +630,10 @@ TransformToolData.on('coordinate-changed', (name) => {
 
 TransformToolData.on('pivot-changed', (name) => {
     Manager.Ipc.send('broadcast', 'scene:gizmo-pivot-changed', name);
+});
+
+TransformToolData.on('dimension-changed', (name) => {
+    Manager.Ipc.send('broadcast', 'scene:dimension-changed', name);
 });
 
 module.exports = new GizmoManager();

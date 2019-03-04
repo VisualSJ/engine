@@ -51,7 +51,7 @@ class PositionController extends ControllerBase {
         borderPlane.parent = this.shape;
         NodeUtils.setEulerAngles(borderPlane, rotation);
         borderPlane.setPosition(pos.x, pos.y, pos.z);
-        let panPlane = ControllerUtils.quad(100000, 100000);
+        let panPlane = ControllerUtils.quad(cc.v3(), 100000, 100000);
         panPlane.parent = this._rootNode;
         panPlane.name = axisName + 'PanPlane';
         panPlane.active = false;

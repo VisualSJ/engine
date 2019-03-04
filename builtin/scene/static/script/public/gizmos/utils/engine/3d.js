@@ -61,7 +61,7 @@ class Engine3D extends EngineInterface {
         // set double sided flag for raycast
         const submesh = mesh.renderingMesh.getSubmesh(0);
         const info = submesh.geometricInfo;
-        if (info) info.doubleSided = primitive.doubleSided;
+        if (info) { info.doubleSided = primitive.doubleSided; }
         // cache vb buffer for vb update
         const vbInfo = mesh.struct.vertexBundles[0].data;
         submesh.vbuffer = mesh.data.buffer.slice(vbInfo.offset, vbInfo.offset + vbInfo.length);
@@ -85,8 +85,8 @@ class Engine3D extends EngineInterface {
         let overrides = {};
         if (opts.cullMode) { overrides.rasterizerState = { cullMode: opts.cullMode }; }
         if (pm !== triangles) { overrides.primitive = pm; }
-        if (Object.keys(overrides).length) mtl.overridePipelineStates(overrides);
-        if (opts.alpha !== undefined) node.modelColor.a = opts.alpha;
+        if (Object.keys(overrides).length) { mtl.overridePipelineStates(overrides); }
+        if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }
         mtl.setProperty('color', node.modelColor);
         model.material = mtl;
     }

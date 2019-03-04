@@ -144,6 +144,13 @@ export function apply(messages: any) {
         return await $scene.forceForwarding('Gizmo', 'queryCoordinate');
     };
 
+    /**
+     * 查询 是否处于2D编辑模式
+     */
+    messages['query-is2D'] = async () => {
+        return await $scene.forceForwarding('Gizmo', 'queryIs2D');
+    };
+
     messages['query-components'] = async () => {
         return await $scene.forceForwarding('Scene', 'queryComponents');
     };

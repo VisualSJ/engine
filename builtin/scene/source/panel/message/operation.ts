@@ -314,6 +314,13 @@ export function apply(messages: any) {
         await $scene.forwarding('Gizmo', 'setCoordinate', [type]);
     };
 
+    messages['change-is2D'] = async (value: boolean) => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('Gizmo', 'setIs2D', [value]);
+    };
+
     messages['focus-camera'] = async (uuids: string[] | null) => {
         if (!$scene) {
             return null;

@@ -32,6 +32,9 @@ class EngineInterface {
     updateVBAttr(mesh, attr, data) {
     }
 
+    updateBoundingBox(meshComp, minPos, maxPos) {
+    }
+
     /**
      * 获得模型相关组件的包围盒
      * @param {*} component

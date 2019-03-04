@@ -46,6 +46,8 @@ class EditableController extends ControllerBase {
     createEditControllerShape() {
         this._editControllerShape = create3DNode('EditControllerShape');
         this._editControllerShape.parent = this.shape;
+
+        this.registerSizeChangeEvents();
     }
 
     setEditCtrlColor(color) {
@@ -69,7 +71,7 @@ class EditableController extends ControllerBase {
 
     createEditController(axisName, color) {
         let ctrlSize = this._defaultEditCtrlSize;
-        let editCtrlNode = ControllerUtils.quad(ctrlSize, ctrlSize, color, {unlit : true});
+        let editCtrlNode = ControllerUtils.quad(cc.v3(), ctrlSize, ctrlSize, color, {unlit : true});
         editCtrlNode.name = axisName;
         editCtrlNode.parent = this._editControllerShape;
         this._editCtrlScales[axisName] = cc.v3(1, 1, 1);
@@ -84,6 +86,10 @@ class EditableController extends ControllerBase {
             Object.keys(this._axisDir).forEach((key) => {
                 this.createEditController(key, this._color);
             });
+
+            if (this.onInitEditController) {
+                this.onInitEditController();
+            }
         }
     }
 
@@ -116,6 +122,10 @@ class EditableController extends ControllerBase {
         this.adjustEditControllerSize();
     }
 
+    adjustControllerSize() {
+        this.adjustEditControllerSize();
+    }
+
     adjustEditControllerSize() {
         if (this.edit) {
             Object.keys(this._axisDir).forEach((key) => {
@@ -123,7 +133,13 @@ class EditableController extends ControllerBase {
                 if (axisData) {
                     let node = axisData.topNode;
                     node.getWorldPosition(tempVec3);
-                    let scalar = this.getCameraDistScalar(tempVec3);
+                    let scalar = 1;
+                    if (this.is2D) {
+                        scalar = 1 / this.scale2D;
+                    } else {
+                        scalar = this.getCameraDistScalar(tempVec3);
+                    }
+
                     this._editCtrlScales[this._axisDir] = scalar;
                     node.setScale(cc.v3(scalar / this._scale.x, scalar / this._scale.y, scalar / this._scale.z));
 

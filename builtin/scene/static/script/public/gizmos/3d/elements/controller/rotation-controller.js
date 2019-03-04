@@ -105,7 +105,7 @@ class RotationController extends ControllerBase {
         // let cutoffNode = ControllerUtils.disc(cc.v3(), cameraNormal,
         //     this._baseRadius, ControllerUtils.RED);
         // 圆盘暂时无法碰撞检测，先用quad代替
-        let cutoffNode = ControllerUtils.quad(this._baseRadius * 2 , this._baseRadius * 2);
+        let cutoffNode = ControllerUtils.quad(cc.v3(), this._baseRadius * 2 , this._baseRadius * 2);
         setNodeOpacity(cutoffNode, 0);
         cutoffNode.parent = this._rootNode;
         cutoffNode.layer = panPlaneLayer;
@@ -115,7 +115,7 @@ class RotationController extends ControllerBase {
         // for rotation indicator sector
         let indicator = {};
         indicator.sectorNode = ControllerUtils.sector(cc.v3(), cc.v3(0, 1, 0), cc.v3(1, 0, 0),
-            Math.PI, this._baseRadius, ControllerUtils.YELLOW, {unlit:true});
+            Math.PI, this._baseRadius, ControllerUtils.YELLOW, {unlit: true});
         setNodeOpacity(indicator.sectorNode, 200);
         indicator.sectorNode.parent = this._rootNode;
         indicator.sectorNode.active = false;
@@ -267,14 +267,14 @@ class RotationController extends ControllerBase {
         Utils.exitPointerLock();
         this._indicator.sectorNode.active = false;
         this._deltaRotation = cc.quat(0, 0, 0, 1);
-        // show border
-        this._circleBorderNode.active = true;
 
         if (this.is2D) {
             this._axisDataMap.w.indicatorCircle.active = false;
             this._axisDataMap.w.normalTorusNode.active = true;
             this._axisDataMap.w.topNode.active = true;
         } else {
+            // show border
+            this._circleBorderNode.active = true;
             Object.keys(this._axisDataMap).forEach((key) => {
                 if (key !== 'w') {
                     this._axisDataMap[key].normalTorusNode.active = true;

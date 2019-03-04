@@ -25,8 +25,7 @@ class SphereColliderComponentGizmo extends Gizmo {
     onHide() {
         this._controller.hide();
         let nodes = this.nodes;
-        this.unRegisterNodeEvents(nodes, this.onNodeChanged, this);
-        this.unRegisterTransformEvent(nodes, this.onNodeTransformChanged, this);
+        this.unregisterListeners(nodes);
     }
 
     createController() {

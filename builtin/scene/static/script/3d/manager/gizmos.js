@@ -31,12 +31,16 @@ compMgr.on('before-component-remove', (comp) => {
     gizmo.onBeforeComponentRemove(comp);
 });
 
-EditorCamera.on('camera-move-mode', (mode) => {
+EditorCamera.controller.on('camera-move-mode', (mode) => {
     if (mode === CameraMoveMode.NONE) {
         gizmo.lockGizmoTool(false);
     } else if (mode === CameraMoveMode.WANDER) {
         gizmo.lockGizmoTool(true);
     }
+});
+
+gizmo.TransformToolData.on('dimension-changed', (is2D) => {
+    EditorCamera.is2D = is2D;
 });
 
 module.exports = gizmo;

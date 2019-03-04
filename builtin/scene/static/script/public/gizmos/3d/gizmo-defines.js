@@ -3,12 +3,14 @@
 let GizmoDefines = {};
 module.exports = GizmoDefines;
 
-//GizmoDefines.GizmosUtils = require('../utils/utils');
+// node gizmo
+GizmoDefines['cc.Node'] = require('./elements/node-gizmo');
 
 // for transform tool
 GizmoDefines.position = require('./elements/transform/position-gizmo');
 GizmoDefines.rotation = require('./elements/transform/rotation-gizmo');
 GizmoDefines.scale = require('./elements/transform/scale-gizmo');
+GizmoDefines.rect = require('./elements/transform/rect-gizmo');
 
 // component gizmos
 GizmoDefines.components = {};

@@ -39,9 +39,9 @@ ControllerUtils.arrow = function(headHeight, headRadius, bodyHeight, color) {
     return axisNode;
 };
 
-ControllerUtils.quad = function(width, height, color = cc.Color.RED, opts = {}) {
+ControllerUtils.quad = function(center, width, height, color = cc.Color.RED, opts = {}) {
     let quadNode = create3DNode('quad');
-    addMeshToNode(quadNode, ControllerShape.quad(width, height), opts);
+    addMeshToNode(quadNode, ControllerShape.quad(center, width, height), opts);
     setMeshColor(quadNode, color);
     return quadNode;
 };
@@ -53,7 +53,7 @@ ControllerUtils.borderPlane = function(width, height, color, opacity) {
     // plane
     let planeNode = create3DNode('Plane');
     addMeshToNode(planeNode,
-        ControllerShape.quad(width, height));
+        ControllerShape.quad(cc.v3(), width, height));
     setMeshColor(planeNode, color);
     setNodeOpacity(planeNode, opacity);
     planeNode.parent = borderPlane;
@@ -204,6 +204,15 @@ ControllerUtils.frustum = function(fov, aspect, near, far, color) {
     setMeshColor(frustumNode, color);
 
     return frustumNode;
+};
+
+ControllerUtils.rectangle = function(center, rotation, size, color) {
+    let rectangleNode = create3DNode('rectangleNode');
+    addMeshToNode(rectangleNode,
+        ControllerShape.rectangle(center, rotation, size));
+    setMeshColor(rectangleNode, color);
+
+    return rectangleNode;
 };
 
 ControllerUtils.angle = function(from, to) {

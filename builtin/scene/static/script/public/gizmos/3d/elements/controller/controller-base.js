@@ -51,7 +51,7 @@ class ControllerBase {
         this.registerCameraMovedEvent();
 
         TransformToolData.on('dimension-changed', this.onDimensionChanged.bind(this));
-        TransformToolData.on('scale2D-changed', this.onScale2DChanged.bind(this));
+        TransformToolData.on('scale-2d-changed', this.onScale2DChanged.bind(this));
     }
 
     registerCameraMovedEvent() {

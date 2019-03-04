@@ -215,17 +215,32 @@ ControllerShape.cone = function(radius, height, opts) {
     return ControllerShape.cylinder(0, radius, height, opts);
 };
 
-ControllerShape.quad = function(width, height) {
+ControllerShape.calcQuadData = function(center, width, height) {
     let hw = width / 2;
     let hh = height / 2;
+    let points = [];
+    points[0] = center.add(cc.v3(-hw, hh, 0));
+    points[1] = center.add(cc.v3(-hw, -hh, 0));
+    points[2] = center.add(cc.v3(hw, -hh, 0));
+    points[3] = center.add(cc.v3(hw, hh, 0));
+
+    let indices = [0, 3, 1, 1, 3, 2];
+
+    let minPos = center.add(cc.v3(-hw, -hh, -1));
+    let maxPos = center.add(cc.v3(hw, hh, 1));
+
+    return {vertices: points, indices: indices, minPos: minPos, maxPos: maxPos};
+};
+
+ControllerShape.quad = function(center, width, height) {
+    let quadData = ControllerShape.calcQuadData(center, width, height);
 
     return createMesh({
-        positions: [cc.v3(-hw, hh, 0), cc.v3(-hw, -hh, 0),
-        cc.v3(hw, -hh, 0), cc.v3(hw, hh, 0)],
+        positions: quadData.vertices,
         normals: Array(4).fill(cc.v3(0, 0, 1)),
-        indices: [0, 3, 1, 1, 3, 2],
-        minPos: cc.v3(-hw, -hh, -1),
-        maxPos: cc.v3(hw, hh, 1),
+        indices: quadData.indices,
+        minPos: quadData.minPos,
+        maxPos: quadData.maxPos,
         doubleSided: true,
     });
 };
@@ -624,6 +639,38 @@ ControllerShape.frustum = function(fov, aspect, near, far) {
             positions: frustumData.vertices,
             normals: Array(frustumData.vertices.length).fill(cc.v3(0, 1, 0)),
             indices: frustumData.indices,
+            primitiveType: PrimitiveMode.LINE_LIST,
+        });
+};
+
+ControllerShape.calcRectanglePoints = function(center, rotation, size) {
+    let right = cc.v3(size.x / 2, 0, 0);
+    let up = cc.v3(0, size.y / 2, 0);
+    vec3.transformQuat(right, right, rotation);
+    vec3.transformQuat(up, up, rotation);
+
+    let vertices = [];
+    vertices[0] = center.add(right).add(up);
+    vertices[1] = center.add(right).sub(up);
+    vertices[2] = center.sub(right).sub(up);
+    vertices[3] = center.sub(right).add(up);
+
+    let indices = [];
+    for (let i = 1; i < 4; i++) {
+        indices.push(i - 1, i);
+    }
+    indices.push(0, 3);
+
+    return { vertices: vertices, indices: indices };
+};
+
+ControllerShape.rectangle = function(center, rotation, size) {
+    let rectData = ControllerShape.calcRectanglePoints(center, rotation, size);
+    return createMesh(
+        {
+            positions: rectData.vertices,
+            normals: Array(rectData.vertices.length).fill(cc.v3(0, 1, 0)),
+            indices: rectData.indices,
             primitiveType: PrimitiveMode.LINE_LIST,
         });
 };

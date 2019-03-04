@@ -158,10 +158,38 @@ function isSceneHasActiveLight(nodes) {
     return hasActive;
 }
 
+/**
+ * 查询指定component列表
+ * @param {*} compName
+ */
+function queryComponent(compName) {
+    const comps = [];
+    nodeManager.queryUuids().forEach((uuid) => {
+        const node = nodeManager.query(uuid);
+        const comp = node.getComponent(compName);
+        if (!comp) {
+            return;
+        }
+        comps.push(comp);
+    });
+
+    return comps;
+}
+
+let CameraMoveMode = cc.Enum({
+    NONE: 0,
+    ORBIT: 1,
+    PAN: 2,
+    ZOOM: 3,
+    WANDER: 4, //漫游
+});
+
 module.exports = {
     $info,
     createCamera,
     createGrid,
     queryLightNodes,
     isSceneHasActiveLight,
+    queryComponent,
+    CameraMoveMode,
 };

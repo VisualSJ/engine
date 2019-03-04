@@ -29,15 +29,13 @@ class GizmoBase {
     set target(value) {
         let nodes = this.nodes;
         if (nodes && nodes.length > 0) {
-            this.unRegisterTransformEvent(this.nodes);
-            this.unRegisterNodeEvents(this.nodes);
+            this.unregisterListeners(nodes);
         }
 
         this._target = value;
         nodes = this.nodes;
         if (nodes && nodes.length > 0) {
-            this.registerTransformEvent(this.nodes);
-            this.registerNodeEvents(this.nodes);
+            this.registerListeners(nodes);
 
             if (this.onTargetUpdate) {
                 this.onTargetUpdate();
@@ -130,38 +128,40 @@ class GizmoBase {
         }
     }
 
-    // 监听Node的transform改变事件
-    registerTransformEvent(nodes) {
-        if (this.onNodeTransformChanged) {
+    registerListener(nodes, eventName, listener) {
+        if (listener) {
             for (let i = 0; i < nodes.length; i++) {
-                nodes[i].on('transform-changed', this.onNodeTransformChanged, this);
+                nodes[i].on(eventName, listener, this);
             }
         }
     }
 
-    unRegisterTransformEvent(nodes) {
-        if (this.onNodeTransformChanged) {
+    unregisterListener(nodes, eventName, listener) {
+        if (listener) {
             for (let i = 0; i < nodes.length; i++) {
-                nodes[i].off('transform-changed', this.onNodeTransformChanged, this);
+                nodes[i].off(eventName, listener, this);
             }
         }
     }
 
-    // 监听Node和component的属性变化事件，目前由编辑器发送
-    registerNodeEvents(nodes) {
-        if (this.onNodeChanged) {
-            for (let i = 0; i < nodes.length; i++) {
-                nodes[i].on('change', this.onNodeChanged, this);
-            }
+    registerListeners(nodes) {
+        // 监听Node的transform改变事件
+        this.registerListener(nodes, 'transform-changed', this.onNodeTransformChanged);
+        // 监听Node和component的属性变化事件，目前由编辑器发送
+        this.registerListener(nodes, 'change', this.onNodeChanged);
+
+        if (this.onSubRegisterListeners) {
+            this.onSubRegisterListeners(nodes);
         }
     }
 
-    // gizmo会被复用，所以在component Hide的时候要取消注册事件
-    unRegisterNodeEvents(nodes) {
-        if (this.onNodeChanged) {
-            for (let i = 0; i < nodes.length; i++) {
-                nodes[i].off('change', this.onNodeChanged, this);
-            }
+    unregisterListeners(nodes) {
+        this.unregisterListener(nodes, 'transform-changed', this.onNodeTransformChanged);
+        // gizmo会被复用，所以在component Hide的时候要取消注册事件
+        this.unregisterListener(nodes, 'change', this.onNodeChanged);
+
+        if (this.onSubUnregisterListeners) {
+            this.onSubUnregisterListeners(nodes);
         }
     }
 
