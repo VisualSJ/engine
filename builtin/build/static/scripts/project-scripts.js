@@ -64,7 +64,7 @@ function setModuleResolve() {
 async function load(scripts) {
     raw2library = {};
     const result = await sortScripts(scripts);
-    if (buildResult.options.type !== 'build-release') {
+    if (!buildResult.options || buildResult.options.type !== 'build-release') {
         return result;
     }
 

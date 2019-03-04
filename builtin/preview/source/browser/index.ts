@@ -3,20 +3,12 @@
 import { ipcMain, shell } from 'electron';
 import { getPort, setPreviewBuildPath, start, stop } from './express';
 import { emitReload } from './socket';
-const profile = Editor.Profile.load('profile://global/packages/preferences.json');
-const { DEVICES } = require('./../static/utils/util.js');
-const simulator = require('./../static/simulator/simulator.js');
+
+const { configProfile, getConfig} = require('./util');
+const { DEVICES } = require('./../../static/utils/config.js');
+// const simulator = require('./../../static/simulator/simulator.js');
 let previewPlatform = 'browser';
 let pkg: any = null;
-
-/**
- * 获取预览的配置信息
- * @param {string} name
- * @returns
- */
-function getConfig(name: string) {
-    return profile.get(`preview.${name}`);
-}
 
 export const messages = {
     open() {
@@ -40,6 +32,24 @@ export const messages = {
         setPreviewBuildPath(path);
     },
 
+    /**
+     * 设置预览偏好设置
+     * @param key
+     * @param value
+     * @param type [global | project]
+     */
+    'set-preference'(key: string, value: any, type: string) {
+        configProfile[type].set(key, value);
+    },
+
+    /**
+     * 查询设置信息(默认查询偏好设置里的内容)
+     * @param key
+     * @param type
+     */
+    'get-prefrence'(key: string, type: string = 'previewConfig') {
+        return getConfig(key, type);
+    },
     //////////////////////////
 
     /**
@@ -50,7 +60,7 @@ export const messages = {
             shell.openExternal(`http://localhost:${getPort()}`);
         } else {
             // 模拟器预览
-            simulator.run();
+            // simulator.run();
         }
     },
 

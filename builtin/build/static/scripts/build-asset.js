@@ -15,7 +15,7 @@ class AssetBuilder {
         this.result = {};
         this.hasBuild = {};
         this.shoudBuild = true;
-        if (buildResult.options.type !== 'build-release') {
+        if (!buildResult.options || buildResult.options.type !== 'build-release') {
             this.shoudBuild = false;
             return;
         }
@@ -38,7 +38,7 @@ class AssetBuilder {
             for (let item of scenes) {
                 buildResult.assetCache[item.uuid] = item;
             }
-        } else if (scenes.source) {
+        } else if (scenes && scenes.source) {
             buildResult.assetCache[scenes.uuid] = scenes;
         }
 

@@ -5,7 +5,8 @@ let app: any = null;
 let reloadTimer: any = null;
 let deviceNum: number = 0; // 连接客户端数量
 let errorCollect: any = [];
-export const previewProfile = Editor.Profile.load('profile://global/packages/preview.json');
+const {configProfile} = require('./util');
+
 /**
  * 启动 io 服务器
  * @param server http 服务器
@@ -22,8 +23,8 @@ export function start(server: any) {
         });
 
         socket.on('changeOption', (key: string, value: any) => {
-            previewProfile.set(key, value);
-            previewProfile.save();
+            configProfile.global.set(key, value);
+            configProfile.global.save();
         });
 
         socket.on('preview error', (error: any) => {

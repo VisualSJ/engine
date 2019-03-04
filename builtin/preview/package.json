@@ -17,7 +17,7 @@
             "group": "preview"
         }
     },
-    "main": "./dist/browser.js",
+    "main": "./dist/browser/index.js",
     "description": "preview about editor",
 
     "toolbar": [

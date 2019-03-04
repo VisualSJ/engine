@@ -1,5 +1,5 @@
 const { join, basename , extname, dirname, resolve, relative} = require('path');
-const { getCustomConfig, getCurrentScene, updateProgress,
+const { getCurrentScene, updateProgress,
      requestToPackage, computeArgs, getMd5Map, appendHashToFileSuffix} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
 const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
@@ -35,14 +35,12 @@ class Builder {
 
     // 初始化整理 options 数据
     async _init(options, config) {
-        buildResult.reset(); // 重置缓存
-        const tempConfig = await getCustomConfig('build-release');
         const isWeChatSubdomain = options.platform === 'wechatgame-subcontext';
         const isWeChatGame = options.platform === 'wechatgame' || isWeChatSubdomain;
         const isQQPlay = options.platform === 'qqplay';
         const platformInfo = platfomConfig[options.platform];
         const nativeRenderer = !!options.nativeRenderer;
-        Object.assign(options, tempConfig, {
+        Object.assign(options, {
             isWeChatGame,
             isQQPlay,
             nativeRenderer,
@@ -56,8 +54,6 @@ class Builder {
         this._options = options;
         this._paths = this._buildPaths(options.dest, options.debug, config);
         static_resource[1] = options.platform + '.css';
-        let customConfig = await getCustomConfig(options.type, config);
-        Object.assign(options, customConfig);
         // 存在设置分辨率
         if (options.resolution) {
             const {width, height} = options.resolution;
@@ -90,8 +86,7 @@ class Builder {
                     scenes: options.scenes,
                     debug: options.debug,
                     platform: options.platform,
-                },
-                {
+                    type: 'build-release', // 构建 setting 的种类
                     start_scene: options.start_scene,
                 }
             ),
@@ -630,28 +625,15 @@ class Builder {
     /**
      * 构建 setting 的脚本信息
      * @param {*} options 脚本配置信息(除 type 之外的可以直接放置进 setting 的部分)
-     * @param {*} config 其他平台配置 (需要处理后方能加进 setting 的部分)
      * @returns JSON
      */
-    async buildSetting(options, config) {
-        let currenScene; let sceneJson;
-        if (config && config.start_scene) {
-            currenScene = await getCurrentScene(config.start_scene);
-        } else {
-            currenScene = await getCurrentScene();
-        }
+    async buildSetting(options) {
+        const { sceneJson, scenceAsset } = await getCurrentScene(options.start_scene);
         const setting = options;
-        if (currenScene && !currenScene.source) {
-            sceneJson = JSON.parse(currenScene);
-        } else {
-            setting.launchScene = currenScene.source;
-            sceneJson = readJSONSync(currenScene.library['.json']);
-        }
-        if (!sceneJson) {
-            throw new Error('获取当前场景信息失败');
-        }
+        scenceAsset && (setting.launchScene = scenceAsset.source);
+
         // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
-        if (this._options.type !== 'build-release') {
+        if (options.type !== 'build-release') {
             let info = sceneJson.find((item) => {
                 return item.__type__ === 'cc.Canvas';
             });
@@ -662,16 +644,15 @@ class Builder {
             }
         }
 
-        let results = (await scriptBuilder.build()) || {scripts: [], jsList: []};
+        let results = (await scriptBuilder.build(options.type)) || {scripts: [], jsList: []};
         setting.packedAssets = {};
-        setting.md5AssetsMap = {};
-        let assetBuilderResult = await assetBuilder.build(setting.scenes || currenScene, this._options.type);
+        let assetBuilderResult = await assetBuilder.build(setting.scenes || scenceAsset, options.type);
         Object.assign(setting, assetBuilderResult, results);
         buildResult.settings = setting;
         updateProgress('build setting...', 20);
         if (options.type === 'build-release') {
             setting.packedAssets = assetPacker.pack();
-            setting.md5AssetsMap = await this.buildMd5Map(setting);
+            setting.md5AssetsMap = (await this.buildMd5Map(setting)) || {};
             return setting;
         }
         delete setting.type;

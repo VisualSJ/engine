@@ -11,12 +11,11 @@ const builtins = require('browserify/lib/builtins.js');
 const buildResult = require('./build-result');
 const HASH_LEN = 5;
 // const mdeps = new Mdeps(mpConfig);
-
+const PREVIEW_PATH = 'preview-scripts';
 // 配置一个insert-module-globals 转换来检测和执行 process, Buffer, global, __dirname, __filename.
 const insertGlobals = require('insert-module-globals');
 
 const DB_PROTOCOL_HEADER = 'db://';
-const PREVIEW_PATH = 'preview-scripts';
 
 const commonInfo = {};
 
@@ -168,40 +167,6 @@ async function getScriptsCache(scripts) {
     });
 }
 
-/**
- * 获取初始配置信息
- * @param {*} type 当前构建种类
- * @param {*} config 相关配置
- * @returns
- */
-async function getCustomConfig(type, config) {
-    let info ;
-    switch (type) {
-        case 'simulator':
-            info = {
-                designWidth: config.simulator_width || 960,
-                designHeight: config.simulator_height || 480,
-            };
-            break;
-        case 'build-release':
-            info = {
-                designWidth: await getProSetting('preview.design_width') || 960,
-                designHeight: await getProSetting('preview.design_height') || 480,
-            };
-            break;
-        default:
-            info = {
-                designWidth: 960,
-                designHeight: 480,
-            };
-            break;
-    }
-    info.groupList = await getProSetting('preview.group_list') || ['default'];
-    info.collisionMatrix =  await getProSetting('preview.collision_matrix') || ['default'];
-    info.rawAssets = {};
-    return info;
-}
-
 // 将绝对路径转换为 preview-script 路径下的
 function rawPathToAssetPath(path) {
     let mainPoint = path.replace(commonInfo.project, PREVIEW_PATH);
@@ -256,71 +221,25 @@ function getAssetUrl(path, uuid) {
 }
 
 // 获取当前展示场景的数据信息
-async function getCurrentScene(uuid) {
-    let currenUuid = await requestToPackage('scene', 'query-current-scene');
-    if (!currenUuid) {
-        const json = await requestToPackage('scene', 'query-scene-json');
-        return json;
-    }
-    if (!uuid) {
-        uuid = await getProSetting('preview.start_scene');
-        if ((uuid && uuid === 'current_scene') || typeof(uuid) === 'object' || !uuid) {
-            uuid = currenUuid;
+async function getCurrentScene(info) {
+    let launchScene;
+    let sceneJson;
+    let scenceAsset;
+    if (info !== 'current_scene' && info) {
+        scenceAsset = await requestToPackage('asset-db', 'query-asset-info', info);
+        if (scenceAsset) {
+            launchScene = scenceAsset.source;
+            sceneJson = readJSONSync(scenceAsset.library['.json']);
         }
+    } else {
+        const json =  await requestToPackage('scene', 'query-scene-json');
+        json && (sceneJson = JSON.parse(json));
     }
-    const asset = await requestToPackage('asset-db', 'query-asset-info', uuid);
-    if (uuid === currenUuid) {
-        asset.currenSceneFlag = true;
-    }
-    return asset;
+    return {launchScene, sceneJson, scenceAsset};
 }
 
-/**
- * 查询项目配置信息
- * @param {*} key
- */
-async function getProSetting(key) {
-    let value = await requestToPackage('project-setting', 'get-setting', key);
-    return value;
-}
-
-/**
- * 查询全局配置信息
- * @param {*} key
- * @returns
- */
-async function getGroSetting(key) {
-    return await requestToPackage('preferences', 'get-setting', key);
-}
-
-function getLibraryPath(uuid, extname) {
+function getLibraryPath(uuid, extname = '.json') {
     return join(commonInfo.project, 'library', uuid.substr(0, 2), uuid + extname);
-}
-
-function getModules(path) {
-    let rawPath = join(commonInfo.project, path);
-    let uuid = buildResult.script2uuid[path];
-    let previewPath = rawPathToAssetPath(rawPath);
-    let libraryPath = getLibraryPath(uuid, extname(rawPath));
-    const HEADER = `(function() {
-    "use strict";
-    var __module = CC_EDITOR ? module : {exports:{}};
-    var __filename = '${previewPath}';
-    var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} :
-    function (request) {return cc.require(request, __filename);};
-    function __define (exports, require, module) {
-    "use strict";`;
-    const FOOTER = `    }if (CC_EDITOR) {
-        __define(__module.exports, __require, __module);
-}else {
-    cc.registerModuleFunc(__filename, function () {
-        __define(__module.exports, __require, __module);
-    });
-}})();`;
-    const content = readFileSync(libraryPath, 'utf-8');
-    let reg = /cc._RF.push\s*\(\s*module,\s*([\'\"][^\'\"]+\s*[\'\"])\s*,\s*([\'\"][^\'\"]*[\'\"])\s*\)/;
-    let rightContent = content.replace(reg, 'cc._RF.push(module, $1, $2, __filename)');
-    return HEADER + rightContent + '\n' + FOOTER;
 }
 
 /**
@@ -419,11 +338,7 @@ async function getMd5Map(pattern) {
 }
 
 module.exports = {
-    getModules,
     getCurrentScene,
-    getProSetting,
-    getGroSetting,
-    getCustomConfig,
     getScriptsCache,
     initInfo,
     computeArgs,

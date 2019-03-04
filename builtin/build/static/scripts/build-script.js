@@ -26,7 +26,7 @@ let rawPathToLibPath = {};
 class ScriptBuilder {
     init() {
         this.shoudBuild = true;
-        if (buildResult.options.type !== 'build-release') {
+        if (!buildResult.options || buildResult.options.type !== 'build-release') {
             this.shoudBuild = false;
             return;
         }
@@ -39,7 +39,8 @@ class ScriptBuilder {
         updateProgress('build scripts...');
         this.init();
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
-        const result = await projectScripts.load(scripts);
+        let result = await projectScripts.load(scripts);
+        result.scripts = await  getScriptsCache(result.scripts);
         if (!this.shoudBuild) {
             return result;
         }

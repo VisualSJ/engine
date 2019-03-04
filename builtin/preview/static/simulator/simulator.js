@@ -1,5 +1,5 @@
 const TreeKill = require('tree-kill');
-const {getGroSetting , getEnginInfo, writScripts} = require('./../utils/util');
+const {getGroSetting , getEnginInfo, writScripts} = require('./../utils');
 const {ensureDirSync, copySync, emptyDirSync, writeFileSync} = require('fs-extra');
 const {readFileSync} = require('fs');
 const spawn = require('child_process').spawn;

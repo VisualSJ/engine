@@ -6,23 +6,6 @@ const TEMP_PATH = join(Editor.App.project, 'temp');
 
 const DB_PROTOCOL_HEADER = 'db://';
 
-// 设备配置信息
-const DEVICES = {
-    default: { name: 'default', height: 960, width: 640},
-    ipad: { name: 'Apple iPad', width: 1024, height: 768, ratio: 2 },
-    ipad_mini: { name: 'Apple iPad Mini', width: 1024, height: 768, ratio: 1 },
-    iPhone4: { name: 'Apple iPhone 4', width: 320, height: 480, ratio: 2 },
-    iPhone5: { name: 'Apple iPhone 5', width: 320, height: 568, ratio: 2 },
-    iPhone6: { name: 'Apple iPhone 6', width: 375, height: 667, ratio: 2 },
-    iPhone6_plus: { name: 'Apple iPhone 6 Plus', width: 414, height: 736, ratio: 3 },
-    huawei9: { name: 'Huawei P9', width: 540, height: 960, ratio: 2},
-    huawei_mate9_pro: { name: 'Huawei Mate9 Pro', width: 720, height: 1280, ratio: 2},
-    nexu4: { name: 'Goolge Nexus 4', width: 384, height: 640, ratio: 2 },
-    nexu5: { name: 'Goolge Nexus 5', width: 360, height: 640, ratio: 3 },
-    nexu6: { name: 'Goolge Nexus 6', width: 412, height: 732, ratio: 3.5 },
-    nexu7: { name: 'Goolge Nexus 7', width: 960, height: 600, ratio: 2 },
-};
-
 async function getEnginInfo() {
     let info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
     return info;
@@ -62,28 +45,7 @@ async function writScripts() {
     return path;
 }
 
-/**
- * 查询项目配置信息
- * @param {*} key
- */
-async function getProSetting(key) {
-    let value = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', key);
-    return value;
-}
-
-/**
- * 查询全局配置信息
- * @param {*} key
- * @returns
- */
-async function getGroSetting(key) {
-    return await Editor.Ipc.requestToPackage('preferences', 'get-setting', key);
-}
-
 module.exports = {
-    getProSetting,
-    getGroSetting,
     getEnginInfo,
     writScripts,
-    DEVICES,
 };

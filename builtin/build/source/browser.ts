@@ -63,23 +63,6 @@ export const messages = {
     async 'build-setting'(options: object, config: object) {
         return await buildWorker.send('build-worker:build-setting', options, config);
     },
-
-    /**
-     * 将脚本处理为 web 端可用的格式
-     * @param {string} path
-     */
-    async 'get-modules'(path: string) {
-        return await buildWorker.send('build-worker:get-modules', path);
-    },
-
-    /**
-     * 获取当前场景信息，若有传入 uuid 则查询该 uuid 的场景 asset 数据
-     * @param {string} uuid
-     * @returns {object} asset
-     */
-    async 'get-current-scene'(uuid: string) {
-        return await buildWorker.send('build-worker:get-current-scene', uuid);
-    },
 };
 
 export async function load() {
