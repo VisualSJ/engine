@@ -28,7 +28,7 @@ export const components = {
     'asset-fbx': require('./components/fbx'),
     'asset-image': require('./components/image'),
     'asset-javascript': require('./components/javascript'),
-    'asset-typescript': require('./components/typescript'),
+    // 'asset-typescript': require('./components/typescript'),
     'asset-texture': require('./components/texture'),
     'asset-texture-cube': require('./components/texture'),
     'asset-material': require('./components/material/index'),
