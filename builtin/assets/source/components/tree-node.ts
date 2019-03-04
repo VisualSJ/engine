@@ -250,7 +250,7 @@ export const methods = {
         // @ts-ignore
         const {asset, addAsset} = this;
         // @ts-ignore
-        const filenames = asset.children.map((one) => one.name);
+        const filenames = asset.children ? asset.children.map((one) => one.name) : [];
 
         // @ts-ignore
         addAsset.name = this.$refs.addInput.value.trim();
