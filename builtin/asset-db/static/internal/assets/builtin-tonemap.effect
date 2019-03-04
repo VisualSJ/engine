@@ -14,7 +14,7 @@ CCEffect {
   }
   techniques: [
     {
-      name: none
+      name: tonemap
       passes: [
         {
           vert: tonemap-vs:vert
@@ -49,12 +49,15 @@ CCProgram tonemap-vs {
 
 CCProgram tonemap-fs {
   precision mediump float;
+  #include <exposure>
+  #include <aces>
 
   in vec2 v_uv;
   uniform sampler2D u_texSampler;
 
   vec4 frag () {
     vec4 o = texture(u_texSampler, v_uv);
+    // o.rgb = ACESToneMap(o.rgb);
     return o;
   }
 }

@@ -13,4 +13,8 @@ uniform CCGlobal {
   mat4 cc_matViewProj;
   mat4 cc_matViewProjInv;
   vec4 cc_cameraPos; // xyz
+  vec4 cc_mainLitDir; // xyz
+  vec4 cc_mainLitColor; // xyz: color, w: intensity
+  vec4 cc_ambientSky;
+  vec4 cc_ambientGround;
 };
