@@ -532,36 +532,28 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
 
     // ----- 增删资源
     describe('------ 增删资源', () => {
+
         describe('generate-available-url ：返回可用格式的 url', async () => {
 
             it('传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: undefined, expect: null },
-                            { args: null, expect: null },
-                            { args: '', expect: null },
-                            { args: 0, expect: null },
-                            { args: false, expect: null },
-                            { args: true, expect: null },
-                            { args: [], expect: null },
-                            { args: {}, expect: null },
-                            { args: () => { }, expect: null },
-                            { args: 'abc', expect: null },
-                            { args: 123, expect: null },
-                        ];
+                const queue = [
+                    { args: undefined, expect: null },
+                    { args: null, expect: null },
+                    { args: '', expect: null },
+                    { args: 0, expect: null },
+                    { args: false, expect: null },
+                    { args: true, expect: null },
+                    { args: [], expect: null },
+                    { args: {}, expect: null },
+                    { args: () => { }, expect: null },
+                    { args: 'abc', expect: null },
+                    { args: 123, expect: null },
+                ];
 
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
             it('传入正确的参数', async () => {
@@ -587,70 +579,53 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
         describe('create-asset, delete-asset ：新增资源, 删除资源', async () => {
 
             it('新增：传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: [undefined], expect: null },
-                            { args: [null], expect: null },
-                            { args: [''], expect: null },
-                            { args: [0], expect: null },
-                            { args: [false], expect: null },
-                            { args: [true], expect: null },
-                            { args: [[]], expect: null },
-                            { args: [{}], expect: null },
-                            { args: [() => { }], expect: null },
-                            { args: ['abc'], expect: null },
-                            { args: [123], expect: null },
-                            { args: [dbAsset.addDir.url, []], expect: null },
-                            { args: [dbAsset.addDir.url, {}], expect: null },
-                            { args: [dbAsset.addDir.url, false], expect: null },
-                            { args: [dbAsset.addDir.url, 123], expect: null },
-                        ];
+                const queue = [
+                    { args: [undefined], expect: null },
+                    { args: [null], expect: null },
+                    { args: [''], expect: null },
+                    { args: [0], expect: null },
+                    { args: [false], expect: null },
+                    { args: [true], expect: null },
+                    { args: [[]], expect: null },
+                    { args: [{}], expect: null },
+                    { args: [() => { }], expect: null },
+                    { args: ['abc'], expect: null },
+                    { args: [123], expect: null },
+                    { args: [dbAsset.addDir.url, []], expect: null },
+                    { args: [dbAsset.addDir.url, {}], expect: null },
+                    { args: [dbAsset.addDir.url, false], expect: null },
+                    { args: [dbAsset.addDir.url, 123], expect: null },
+                ];
 
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', ...test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', ...test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
-            it('删除：传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: undefined, expect: false },
-                            { args: null, expect: false },
-                            { args: '', expect: false },
-                            { args: 0, expect: false },
-                            { args: false, expect: false },
-                            { args: true, expect: false },
-                            { args: [], expect: false },
-                            { args: {}, expect: false },
-                            { args: () => { }, expect: false },
-                            { args: 'abc', expect: false },
-                            { args: 123, expect: false },
-                        ];
-
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+            it('删除：传入错误的参数', async function() {
+                const queue = [
+                    { args: undefined, expect: false },
+                    { args: null, expect: false },
+                    { args: '', expect: false },
+                    { args: 0, expect: false },
+                    { args: false, expect: false },
+                    { args: true, expect: false },
+                    { args: [], expect: false },
+                    { args: {}, expect: false },
+                    { args: () => { }, expect: false },
+                    { args: 'abc', expect: false },
+                    { args: 123, expect: false },
+                ];
+                for (const test of queue) {
+                    // tslint:disable-next-line:max-line-length
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
-            it('传入正确的参数：新增后删除', async () => {
+            it('传入正确的参数：新增后删除', async function() {
+                this.timeout(30000);
                 const queue = [
                     { // 创建文件夹，名称连续
                         args: [dbAsset.addDir.url],
@@ -732,60 +707,52 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
         describe('copy-asset ：复制资源', async () => {
 
             it('传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: [undefined, undefined], expect: false },
+                const queue = [
+                    { args: [undefined, undefined], expect: false },
 
-                            { args: [undefined, dirUrl], expect: false },
-                            { args: [null, dirUrl], expect: false },
-                            { args: ['', dirUrl], expect: false },
-                            { args: [0, dirUrl], expect: false },
-                            { args: [false, dirUrl], expect: false },
-                            { args: [true, dirUrl], expect: false },
-                            { args: [[], dirUrl], expect: false },
-                            { args: [{}, dirUrl], expect: false },
-                            { args: [() => { }, dirUrl], expect: false },
-                            { args: ['abc', dirUrl], expect: false },
-                            { args: [123, dirUrl], expect: false },
+                    { args: [undefined, dirUrl], expect: false },
+                    { args: [null, dirUrl], expect: false },
+                    { args: ['', dirUrl], expect: false },
+                    { args: [0, dirUrl], expect: false },
+                    { args: [false, dirUrl], expect: false },
+                    { args: [true, dirUrl], expect: false },
+                    { args: [[], dirUrl], expect: false },
+                    { args: [{}, dirUrl], expect: false },
+                    { args: [() => { }, dirUrl], expect: false },
+                    { args: ['abc', dirUrl], expect: false },
+                    { args: [123, dirUrl], expect: false },
 
-                            { args: [dbInternal.prefab.button.url, undefined], expect: false },
-                            { args: [dbInternal.prefab.button.url, null], expect: false },
-                            { args: [dbInternal.prefab.button.url, ''], expect: false },
-                            { args: [dbInternal.prefab.button.url, 0], expect: false },
-                            { args: [dbInternal.prefab.button.url, false], expect: false },
-                            { args: [dbInternal.prefab.button.url, true], expect: false },
-                            { args: [dbInternal.prefab.button.url, []], expect: false },
-                            { args: [dbInternal.prefab.button.url, {}], expect: false },
-                            { args: [dbInternal.prefab.button.url, () => { }], expect: false },
-                            { args: [dbInternal.prefab.button.url, 'abc'], expect: false },
-                            { args: [dbInternal.prefab.button.url, 123], expect: false },
+                    { args: [dbInternal.prefab.button.url, undefined], expect: false },
+                    { args: [dbInternal.prefab.button.url, null], expect: false },
+                    { args: [dbInternal.prefab.button.url, ''], expect: false },
+                    { args: [dbInternal.prefab.button.url, 0], expect: false },
+                    { args: [dbInternal.prefab.button.url, false], expect: false },
+                    { args: [dbInternal.prefab.button.url, true], expect: false },
+                    { args: [dbInternal.prefab.button.url, []], expect: false },
+                    { args: [dbInternal.prefab.button.url, {}], expect: false },
+                    { args: [dbInternal.prefab.button.url, () => { }], expect: false },
+                    { args: [dbInternal.prefab.button.url, 'abc'], expect: false },
+                    { args: [dbInternal.prefab.button.url, 123], expect: false },
 
-                            // 源地址被目标地址包含
-                            { args: [dbUrl, dirUrl], expect: false },
-                            // 源文件不存在
-                            { args: [dbInternal.prefab.button.availableUrl001, dirUrl], expect: false },
-                            // 目标文件已经存在
-                            { args: [dbInternal.prefab.button.url, dbUrl], expect: false },
-                            // 目标文件的父级文件夹被锁定 TODO 锁定的情况新开一个条件测试
-                            // tslint:disable-next-line:max-line-length
-                            // { args: [dbInternal.prefab.button.url, dbInternal.prefab.button.availableUrl001], expect: false },
-                        ];
+                    // 源地址被目标地址包含
+                    { args: [dbUrl, dirUrl], expect: false },
+                    // 源文件不存在
+                    { args: [dbInternal.prefab.button.availableUrl001, dirUrl], expect: false },
+                    // 目标文件已经存在
+                    { args: [dbInternal.prefab.button.url, dbUrl], expect: false },
+                    // 目标文件的父级文件夹被锁定 TODO 锁定的情况新开一个条件测试
+                    // tslint:disable-next-line:max-line-length
+                    // { args: [dbInternal.prefab.button.url, dbInternal.prefab.button.availableUrl001], expect: false },
+                ];
 
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', ...test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', ...test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
-            it('传入正确的参数：新增-复制-删除', async () => {
+            it('传入正确的参数：新增-复制-删除', async function() {
+                this.timeout(60000);
                 const queue = [
                     { // 复制文件夹
                         createArgs: [dbAsset.addDir.url],
@@ -857,83 +824,75 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
             const dirFileUrl = `${dirUrl}/${randomName}`;
             const filesArr = [fileUrl, fileUrl001, dirFileUrl];
 
-            it('测试前准备工作', async () => {
+            it('测试前准备工作', async function() {
+                this.timeout(20000);
+
                 // 先创建文件夹
                 for (const url of dirsArr) {
-                    // tslint:disable-next-line:max-line-length
                     const uuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url);
                     expect(uuid).to.be.a('string');
                 }
 
                 for (const url of filesArr) {
-                    // tslint:disable-next-line:max-line-length
                     const uuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, '');
                     expect(uuid).to.be.a('string');
                 }
             });
 
             it('传入错误的参数', async () => {
+                const queueA = [
+                    { args: [undefined, undefined], expect: false },
 
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queueA = [
-                            { args: [undefined, undefined], expect: false },
+                    { args: [undefined, dirUrl], expect: false },
+                    { args: [null, dirUrl], expect: false },
+                    { args: ['', dirUrl], expect: false },
+                    { args: [0, dirUrl], expect: false },
+                    { args: [false, dirUrl], expect: false },
+                    { args: [true, dirUrl], expect: false },
+                    { args: [[], dirUrl], expect: false },
+                    { args: [{}, dirUrl], expect: false },
+                    { args: [() => { }, dirUrl], expect: false },
+                    { args: ['abc', dirUrl], expect: false },
+                    { args: [123, dirUrl], expect: false },
+                ];
+                for (const test of queueA) {
+                    // tslint:disable-next-line:max-line-length
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', ...test.args);
+                    expect(result).to.equal(test.expect);
+                }
 
-                            { args: [undefined, dirUrl], expect: false },
-                            { args: [null, dirUrl], expect: false },
-                            { args: ['', dirUrl], expect: false },
-                            { args: [0, dirUrl], expect: false },
-                            { args: [false, dirUrl], expect: false },
-                            { args: [true, dirUrl], expect: false },
-                            { args: [[], dirUrl], expect: false },
-                            { args: [{}, dirUrl], expect: false },
-                            { args: [() => { }, dirUrl], expect: false },
-                            { args: ['abc', dirUrl], expect: false },
-                            { args: [123, dirUrl], expect: false },
-                        ];
-                        for (const test of queueA) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', ...test.args);
-                            expect(result).to.equal(test.expect);
-                        }
+                // 测试数据 B 组
+                const queueB = [
+                    { args: [fileUrl, undefined], expect: false },
+                    { args: [fileUrl, null], expect: false },
+                    { args: [fileUrl, ''], expect: false },
+                    { args: [fileUrl, 0], expect: false },
+                    { args: [fileUrl, false], expect: false },
+                    { args: [fileUrl, true], expect: false },
+                    { args: [fileUrl, []], expect: false },
+                    { args: [fileUrl, {}], expect: false },
+                    { args: [fileUrl, () => { }], expect: false },
+                    { args: [fileUrl, 'abc'], expect: false },
+                    { args: [fileUrl, 123], expect: false },
 
-                        // 测试数据 B 组
-                        const queueB = [
-                            { args: [fileUrl, undefined], expect: false },
-                            { args: [fileUrl, null], expect: false },
-                            { args: [fileUrl, ''], expect: false },
-                            { args: [fileUrl, 0], expect: false },
-                            { args: [fileUrl, false], expect: false },
-                            { args: [fileUrl, true], expect: false },
-                            { args: [fileUrl, []], expect: false },
-                            { args: [fileUrl, {}], expect: false },
-                            { args: [fileUrl, () => { }], expect: false },
-                            { args: [fileUrl, 'abc'], expect: false },
-                            { args: [fileUrl, 123], expect: false },
+                    // 源地址被目标地址包含
+                    { args: [dbUrl, dirUrl], expect: false },
+                    // 源文件不存在
+                    { args: [dirUrl, fileUrl], expect: false },
+                    // 目标文件已经存在
+                    { args: [fileUrl, dirFileUrl], expect: false },
+                    // TODO 源文件被锁定的情况
+                    // TODO 目标文件的父级文件夹被锁定的情况
+                ];
+                for (const test of queueB) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', ...test.args);
 
-                            // 源地址被目标地址包含
-                            { args: [dbUrl, dirUrl], expect: false },
-                            // 源文件不存在
-                            { args: [dirUrl, fileUrl], expect: false },
-                            // 目标文件已经存在
-                            { args: [fileUrl, dirFileUrl], expect: false },
-                            // TODO 源文件被锁定的情况
-                            // TODO 目标文件的父级文件夹被锁定的情况
-                        ];
-                        for (const test of queueB) {
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', ...test.args);
-
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                    expect(result).to.equal(test.expect);
+                }
             });
 
-            it('传入正确的参数：新增-移动(重命名)-删除', async () => {
+            it('传入正确的参数：新增-移动(重命名)-删除', async function() {
+                this.timeout(300000);
 
                 const queue = [
                     { // 移入：一个文件夹移入另一个文件夹
@@ -975,7 +934,8 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
                 }
             });
 
-            it('测试后清理', async () => {
+            it('测试后清理', async function() {
+                this.timeout(10000);
                 // 测试后删除之前新增的文件, 文件夹
                 for (const url of filesArr) {
                     const result = await Editor.Ipc.requestToPackage('asset-db', 'delete-asset', url);
@@ -1006,73 +966,57 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
             });
 
             it('传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: [undefined, undefined], expect: false },
+                const queue = [
+                    { args: [undefined, undefined], expect: false },
 
-                            { args: [undefined, ''], expect: false },
-                            { args: [null, ''], expect: false },
-                            { args: ['', ''], expect: false },
-                            { args: [0, ''], expect: false },
-                            { args: [false, ''], expect: false },
-                            { args: [true, ''], expect: false },
-                            { args: [[], ''], expect: false },
-                            { args: [{}, ''], expect: false },
-                            { args: [() => { }, ''], expect: false },
-                            { args: ['abc', ''], expect: false },
-                            { args: [123, ''], expect: false },
+                    { args: [undefined, ''], expect: false },
+                    { args: [null, ''], expect: false },
+                    { args: ['', ''], expect: false },
+                    { args: [0, ''], expect: false },
+                    { args: [false, ''], expect: false },
+                    { args: [true, ''], expect: false },
+                    { args: [[], ''], expect: false },
+                    { args: [{}, ''], expect: false },
+                    { args: [() => { }, ''], expect: false },
+                    { args: ['abc', ''], expect: false },
+                    { args: [123, ''], expect: false },
 
-                            { args: [fileUuid, undefined], expect: false },
-                            { args: [fileUuid, null], expect: false },
-                            { args: [fileUuid, 0], expect: false },
-                            { args: [fileUuid, false], expect: false },
-                            { args: [fileUuid, true], expect: false },
-                            { args: [fileUuid, []], expect: false },
-                            { args: [fileUuid, {}], expect: false },
-                            { args: [fileUuid, () => { }], expect: false },
-                            { args: [fileUuid, 123], expect: false },
-                        ];
+                    { args: [fileUuid, undefined], expect: false },
+                    { args: [fileUuid, null], expect: false },
+                    { args: [fileUuid, 0], expect: false },
+                    { args: [fileUuid, false], expect: false },
+                    { args: [fileUuid, true], expect: false },
+                    { args: [fileUuid, []], expect: false },
+                    { args: [fileUuid, {}], expect: false },
+                    { args: [fileUuid, () => { }], expect: false },
+                    { args: [fileUuid, 123], expect: false },
+                ];
 
-                        for (const test of queue) {
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', ...test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', ...test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
             it('传入正确的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            {
-                                args: [fileUuid, dbAsset.addFile.contentString],
-                                expect: dbAsset.addFile.contentString,
-                            },
-                            {
-                                args: [fileUuid, dbAsset.addFile.contentBuffer],
-                                expect: dbAsset.addFile.contentBuffer.toString(),
-                            },
-                        ];
+                const queue = [
+                    {
+                        args: [fileUuid, dbAsset.addFile.contentString],
+                        expect: dbAsset.addFile.contentString,
+                    },
+                    {
+                        args: [fileUuid, dbAsset.addFile.contentBuffer],
+                        expect: dbAsset.addFile.contentBuffer.toString(),
+                    },
+                ];
 
-                        for (const test of queue) {
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', ...test.args);
-                            expect(result).to.be.true;
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', ...test.args);
+                    expect(result).to.be.true;
 
-                            const content = readFileSync(filePath, 'utf8');
-                            expect(content).to.be.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                    const content = readFileSync(filePath, 'utf8');
+                    expect(content).to.be.equal(test.expect);
+                }
             });
 
             it('测试后清理', async () => {
@@ -1100,74 +1044,57 @@ describe('测试 DB 中 Asset 增删改的 IPC 接口：', () => {
             });
 
             it('传入错误的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            { args: [undefined, undefined], expect: false },
+                const queue = [
+                    { args: [undefined, undefined], expect: false },
 
-                            { args: [undefined, ''], expect: false },
-                            { args: [null, ''], expect: false },
-                            { args: ['', ''], expect: false },
-                            { args: [0, ''], expect: false },
-                            { args: [false, ''], expect: false },
-                            { args: [true, ''], expect: false },
-                            { args: [[], ''], expect: false },
-                            { args: [{}, ''], expect: false },
-                            { args: [() => { }, ''], expect: false },
-                            { args: ['abc', ''], expect: false },
-                            { args: [123, ''], expect: false },
+                    { args: [undefined, ''], expect: false },
+                    { args: [null, ''], expect: false },
+                    { args: ['', ''], expect: false },
+                    { args: [0, ''], expect: false },
+                    { args: [false, ''], expect: false },
+                    { args: [true, ''], expect: false },
+                    { args: [[], ''], expect: false },
+                    { args: [{}, ''], expect: false },
+                    { args: [() => { }, ''], expect: false },
+                    { args: ['abc', ''], expect: false },
+                    { args: [123, ''], expect: false },
 
-                            { args: [fileUuid, undefined], expect: false },
-                            { args: [fileUuid, null], expect: false },
-                            { args: [fileUuid, 0], expect: false },
-                            { args: [fileUuid, false], expect: false },
-                            { args: [fileUuid, true], expect: false },
-                            { args: [fileUuid, []], expect: false },
-                            { args: [fileUuid, {}], expect: false },
-                            { args: [fileUuid, () => { }], expect: false },
-                            { args: [fileUuid, 123], expect: false },
-                            { args: [fileUuid, '[]'], expect: false },
-                            { args: [fileUuid, ''], expect: false },
-                        ];
+                    { args: [fileUuid, undefined], expect: false },
+                    { args: [fileUuid, null], expect: false },
+                    { args: [fileUuid, 0], expect: false },
+                    { args: [fileUuid, false], expect: false },
+                    { args: [fileUuid, true], expect: false },
+                    { args: [fileUuid, []], expect: false },
+                    { args: [fileUuid, {}], expect: false },
+                    { args: [fileUuid, () => { }], expect: false },
+                    { args: [fileUuid, 123], expect: false },
+                    { args: [fileUuid, '[]'], expect: false },
+                    { args: [fileUuid, ''], expect: false },
+                ];
 
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', ...test.args);
-                            expect(result).to.equal(test.expect);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                for (const test of queue) {
+                    // tslint:disable-next-line:max-line-length
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', ...test.args);
+                    expect(result).to.equal(test.expect);
+                }
             });
 
             it('传入正确的参数', async () => {
-                return new Promise(async (resolve, reject) => {
-                    async function start() {
-                        const queue = [
-                            {
-                                args: [fileUuid, fileContent],
-                                expect: fileContent,
-                            },
-                        ];
+                const queue = [
+                    {
+                        args: [fileUuid, fileContent],
+                        expect: fileContent,
+                    },
+                ];
 
-                        for (const test of queue) {
-                            // tslint:disable-next-line:max-line-length
-                            const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', ...test.args);
-                            expect(result).to.be.true;
+                for (const test of queue) {
+                    const result = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', ...test.args);
+                    expect(result).to.be.true;
 
-                            const content = readFileSync(filePath, 'utf8');
-                            const meta = JSON.parse(content);
-                            expect(meta.userData.fileUrl).to.be.equal(fileUrl);
-                        }
-
-                        resolve();
-                    }
-
-                    await start();
-                });
+                    const content = readFileSync(filePath, 'utf8');
+                    const meta = JSON.parse(content);
+                    expect(meta.userData.fileUrl).to.be.equal(fileUrl);
+                }
             });
 
             it('测试后清理', async () => {

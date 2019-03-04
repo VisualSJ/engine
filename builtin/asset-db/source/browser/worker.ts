@@ -2,6 +2,7 @@
 
 import { join } from 'path';
 
+const windows = require('@base/electron-windows');
 const worker = require('@base/electron-worker');
 
 const awaitHandler: { [key: string]: { [key: string]: Array<() => any> } } = {
@@ -146,6 +147,16 @@ export async function init() {
     // 启动 worker 后的初始化操作
     databaseWorker.on('asset-worker:startup', () => {
         startup(info);
+    });
+
+    // 程序丢失焦点的时候暂停数据库的导入任务
+    windows.on('blur', () => {
+        databaseWorker.send('asset-worker:pause-all-database');
+    });
+
+    // 程序获得焦点的时候，启动任务对列内暂存的所有任务
+    windows.on('focus', () => {
+        databaseWorker.send('asset-worker:resume-all-database');
     });
 }
 

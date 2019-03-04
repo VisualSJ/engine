@@ -36,7 +36,12 @@ exports.generateElectron = function() {
 /**
  * 复制需要打包的开发文件
  */
-exports.copyFiles = function() {
+exports.copyFiles = async function() {
+    // await this.bash('git', {
+    //     params: ['rev-parse', '--short', 'HEAD', '>', 'version.info'],
+    //     root: ps.join(__dirname, '../../'),
+    // });
+
     this.log('复制 @types');
     const types = ps.join(__dirname, '../../@types');
     fse.copySync(types, ps.join(APP, '@types'));

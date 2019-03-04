@@ -18,7 +18,8 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                 expect(ready).to.be.true;
             });
 
-            it('刷新数据库', async () => {
+            it('刷新数据库', async function() {
+                this.timeout(10000);
                 if (interrupt) {
                     throw new Error('数据库没有就绪，无法进行刷新测试');
                 }
@@ -41,7 +42,7 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
 
         describe('query-db-info ：查询数据库信息', async () => {
 
-            it('传入错误的参数', async () => {
+            it('传入错误的参数', async function() {
                 return new Promise(async (resolve, reject) => {
                     async function start() {
                         const queue = [
@@ -75,8 +76,9 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                     {
                         args: 'assets',
                         expect: {
-                            keys: ['name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                            keys: ['level', 'name', 'target', 'library', 'temp', 'visible', 'readOnly'],
                             values: {
+                                level: 4,
                                 name: 'assets',
                                 target: join(Editor.Project.path, 'assets'),
                                 library: join(Editor.Project.path, 'library'),
@@ -89,8 +91,9 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                     {
                         args: 'internal',
                         expect: {
-                            keys: ['name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                            keys: ['level', 'name', 'target', 'library', 'temp', 'visible', 'readOnly'],
                             values: {
+                                level: 4,
                                 name: 'internal',
                                 target: join(Editor.App.path, 'builtin/asset-db/static/internal/assets'),
                                 library: join(Editor.Project.path, 'library'),

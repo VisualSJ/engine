@@ -1,15 +1,15 @@
 {
-  "ver": "1.0.5",
+  "ver": "1.0.7",
   "importer": "image",
   "imported": true,
   "uuid": "b5b27ab1-e740-4398-b407-848fc2b2c897",
   "files": [
-    ".png",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "Default-Particle": {
-      "ver": "1.0.12",
+      "ver": "1.0.15",
       "importer": "texture",
       "uuid": "b5b27ab1-e740-4398-b407-848fc2b2c897@Default-Particle",
       "imported": true,

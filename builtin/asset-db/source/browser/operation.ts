@@ -324,7 +324,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    await awaitAsset('add', assets.target);
+    await awaitAsset('change', assets.target);
 
     return true;
 }

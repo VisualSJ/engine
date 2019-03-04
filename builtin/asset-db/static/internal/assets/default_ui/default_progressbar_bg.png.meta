@@ -1,15 +1,15 @@
 {
-  "ver": "1.0.5",
+  "ver": "1.0.7",
   "importer": "image",
   "imported": true,
   "uuid": "9fd900dd-221b-4f89-8f2c-fba34243c835",
   "files": [
-    ".png",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "default_progressbar_bg": {
-      "ver": "1.0.1",
+      "ver": "1.0.3",
       "importer": "sprite-frame",
       "uuid": "9fd900dd-221b-4f89-8f2c-fba34243c835@default_progressbar_bg",
       "imported": true,

@@ -72,11 +72,11 @@ class Workflow {
 
         console.log(chalk.magenta(`Workflow: ${this.name} start`));
         for (let i = 0; i < this.tasks.length; i++) {
-            slog(chalk.cyanBright(`    ${this._current.i + 1}. ${this._current.name}... `));
             const task = this.tasks[i];
             this._current.i = i;
             this._current.name = task.name;
             try {
+                slog(chalk.cyanBright(`    ${i + 1}. ${task.name}... `));
                 const bool = await task.handle.call(this);
                 slog('');
                 if (bool === false) {

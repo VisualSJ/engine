@@ -32,7 +32,7 @@ ipcAddListener('asset-worker:save-asset-meta', async (event: any, uuid: string, 
 
         return event.reply(null, isSaved);
     } catch (err) {
-        console.error(err);
+        console.warn(err);
         return event.reply(null, false);
     }
 });

@@ -1,15 +1,15 @@
 {
-  "ver": "1.0.5",
+  "ver": "1.0.7",
   "importer": "image",
   "imported": true,
   "uuid": "ffb88a8f-af62-48f4-8f1d-3cb606443a43",
   "files": [
-    ".png",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "default_scrollbar_vertical_bg": {
-      "ver": "1.0.1",
+      "ver": "1.0.3",
       "importer": "sprite-frame",
       "uuid": "ffb88a8f-af62-48f4-8f1d-3cb606443a43@default_scrollbar_vertical_bg",
       "imported": true,

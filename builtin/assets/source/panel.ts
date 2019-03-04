@@ -186,9 +186,18 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-
         vm.delete(uuid);
     },
+
+    async 'asset-db:asset-change'(uuid: string) {
+        // 没有初始化的时候，无需处理添加消息
+        if (!vm.ready) {
+            return;
+        }
+        vm.delete(uuid);
+        vm.add(uuid);
+    },
+
     /**
      * 选中了某个物体
      * @param type 选中物体的类型

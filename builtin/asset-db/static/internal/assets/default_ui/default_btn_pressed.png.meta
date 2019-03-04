@@ -1,15 +1,15 @@
 {
-  "ver": "1.0.5",
+  "ver": "1.0.7",
   "importer": "image",
   "imported": true,
   "uuid": "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8",
   "files": [
-    ".png",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "default_btn_pressed": {
-      "ver": "1.0.1",
+      "ver": "1.0.3",
       "importer": "sprite-frame",
       "uuid": "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@default_btn_pressed",
       "imported": true,

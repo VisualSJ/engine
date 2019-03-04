@@ -27,6 +27,8 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
     const date = new Date().getTime();
     console.log(`Start the '${info.name}' database...`);
 
+    info.level = 4;
+
     // 保证文件夹存在
     ensureDirSync(info.target);
     ensureDirSync(info.library);
@@ -44,14 +46,6 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
         const importer = require(join(Manager.AssetInfo.dist, 'importer-3d'));
         importer.register(db);
     }
-
-    db.on('add', (uuid) => {
-        console.info(`Import: ${uuid}`);
-    });
-
-    db.on('delete', (uuid) => {
-        console.info(`Destory: ${uuid}`);
-    });
 
     // 绑定文件添加事件
     db.on('added', (uuid) => {
@@ -86,19 +80,27 @@ ipcAddListener('asset-worker:shutdown-database', async (event: any, name: string
 });
 
 /**
- * 宿主请求关闭一个数据库
+ * 宿主请求暂停所有数据库
  */
-ipcAddListener('asset-worker:pause-database', async (event: any, name: string) => {
-    const database = Manager.AssetWorker[name];
-    await database.pause();
+ipcAddListener('asset-worker:pause-all-database', async (event: any, name: string) => {
+    for (const name in Manager.AssetWorker) {
+        if (!Manager.AssetWorker[name]) {
+            continue;
+        }
+        await Manager.AssetWorker[name].pause();
+    }
     event.reply();
 });
 
 /**
- * 宿主请求关闭一个数据库
+ * 宿主请求重启所有数据库
  */
-ipcAddListener('asset-worker:resume-database', async (event: any, name: string) => {
-    const database = Manager.AssetWorker[name];
-    await database.resume();
+ipcAddListener('asset-worker:resume-all-database', async (event: any, name: string) => {
+    for (const name in Manager.AssetWorker) {
+        if (!Manager.AssetWorker[name]) {
+            continue;
+        }
+        await Manager.AssetWorker[name].resume();
+    }
     event.reply();
 });
