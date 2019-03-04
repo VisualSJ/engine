@@ -1,6 +1,7 @@
 'use strict';
 
 import { AssetDB } from '@editor/asset-db';
+import AudioImporter from './importers/audio-clip';
 import BitmapImporter from './importers/bitmap-font';
 import BufferImporter from './importers/buffer';
 import EffectImporter from './importers/effect';
@@ -88,6 +89,7 @@ export function register(database: AssetDB) {
     database.register(new MaterialImporter(), '.mtl');
     database.register(new PrefabImporter(), '.prefab');
     database.register(new EffectImporter(), '.effect');
+    database.register(new AudioImporter(), ['.mp3', '.wav', '.ogg', '.aac', '.pcm', 'm4a']);
     database.register(new TTFFontImporter(), '.ttf');
     database.register(new BitmapImporter(), '.fnt');
 }

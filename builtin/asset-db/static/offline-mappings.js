@@ -1,10 +1,10 @@
 
-const path_ = require('path');
-const src = path_.join(Manager.AssetInfo.engine, 'bin/.cache/dev/cocos/');
+const ps = require('path');
+const src = ps.join(Manager.AssetInfo.engine, 'bin/.cache/dev/cocos/');
 
-const gfx = require(path_.join(src, 'gfx/define'));
-const { RenderQueue } = require(path_.join(src, 'renderer/core/constants'));
-const { RenderPassStage, RenderPriority } = require(path_.join(src, 'pipeline/define'));
+const gfx = require(ps.join(src, 'gfx/define'));
+const { RenderQueue } = require(ps.join(src, 'renderer/core/constants'));
+const { RenderPassStage, RenderPriority } = require(ps.join(src, 'pipeline/define'));
 
 const typeParams = {
   BOOL: gfx.GFXType.BOOL,

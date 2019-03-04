@@ -9,8 +9,8 @@ CCEffect {
       albedo_texture:      { type: 'sampler2D',   value: 'grey'           }
       metallic_texture:    { type: 'sampler2D',   value: 'grey'           }
       roughness_texture:   { type: 'sampler2D',   value: 'grey'           }
-      ao_texture:          { type: 'sampler2D',   value: 'grey'           }
-      mra_texture:         { type: 'sampler2D',   value: 'grey'           }
+      occlusion_texture:   { type: 'sampler2D',   value: 'grey'           }
+      orm_texture:         { type: 'sampler2D',   value: 'grey'           }
       emissive_texture:    { type: 'sampler2D',   value: 'grey'           }
       normal_texture:      { type: 'sampler2D',   value: 'normal'         }
       diffuseEnvTexture:   { type: 'samplerCube', value: 'default-cube'   }
@@ -64,7 +64,7 @@ CCProgram pbr-vs {
     #include <skinning>
   #endif
 
-  #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
+  #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_ORM_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_OCCLUSION_TEXTURE || USE_EMISSIVE_TEXTURE
     in vec2 a_texCoord;
     out vec2 uv0;
   #endif
@@ -88,7 +88,7 @@ CCProgram pbr-vs {
     pos_w = (cc_matWorld * pos).xyz;
     normal_w = (cc_matWorldIT * normal).xyz;
 
-    #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_MRA_TEXTURE || USE_EMISSIVE_TEXTURE
+    #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_ORM_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_OCCLUSION_TEXTURE || USE_ORM_TEXTURE || USE_EMISSIVE_TEXTURE
       uv0 = a_texCoord * tilingOffset.xy + tilingOffset.zw;
     #endif
 
@@ -106,7 +106,7 @@ CCProgram pbr-fs {
   in vec3 pos_w;
   in vec3 normal_w;
 
-  #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_MRA_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_AO_TEXTURE || USE_EMISSIVE_TEXTURE
+  #if USE_ALBEDO_TEXTURE || USE_NORMAL_TEXTURE || USE_ORM_TEXTURE || USE_METALLIC_TEXTURE || USE_ROUGHNESS_TEXTURE || USE_OCCLUSION_TEXTURE || USE_EMISSIVE_TEXTURE
     in vec2 uv0;
   #endif
 
@@ -118,7 +118,7 @@ CCProgram pbr-fs {
 
   uniform Constants {
     vec4 albedo;
-    vec4 props; // metallic, roughness, ao, maxReflectionLod
+    vec4 props; // metallic, roughness, occlusion, maxReflectionLod
     vec4 emissive; // emissive.rgb, alphaTestThreshold
   };
 
@@ -127,8 +127,8 @@ CCProgram pbr-fs {
     uniform sampler2D albedo_texture;
   #endif
 
-  #if USE_MRA_TEXTURE
-    uniform sampler2D mra_texture;
+  #if USE_ORM_TEXTURE
+    uniform sampler2D orm_texture;
   #endif
 
   #if USE_METALLIC_TEXTURE
@@ -139,8 +139,8 @@ CCProgram pbr-fs {
     uniform sampler2D roughness_texture;
   #endif
 
-  #if USE_AO_TEXTURE
-    uniform sampler2D ao_texture;
+  #if USE_OCCLUSION_TEXTURE
+    uniform sampler2D occlusion_texture;
   #endif
 
   #if USE_EMISSIVE_TEXTURE
@@ -169,7 +169,7 @@ CCProgram pbr-fs {
     float opacity = 1.0;
     float metallic = props.x;
     float roughness = props.y;
-    float ao = props.z;
+    float occlusion = props.z;
 
     #if USE_ALBEDO_TEXTURE
       vec4 baseColor = albedo * gammaToLinearSpaceRGBA(texture(albedo_texture, uv0));
@@ -184,21 +184,20 @@ CCProgram pbr-fs {
       if(opacity < emissive.w) discard;
     #endif
 
-    #if USE_MRA_TEXTURE
-      vec3 metalRoughness = texture(mra_texture, uv0).rgb;
-      metallic = metalRoughness.r;
-      roughness = metalRoughness.g;
-      ao = metalRoughness.b;
-    #else
-      #if USE_METALLIC_TEXTURE
-        metallic  = texture(metallic_texture, uv0).r;
-      #endif
-      #if USE_ROUGHNESS_TEXTURE
-        roughness  = texture(roughness_texture, uv0).r;
-      #endif
-      #if USE_AO_TEXTURE
-        ao  = texture(ao_texture, uv0).r;
-      #endif
+    #if USE_ORM_TEXTURE
+      vec3 orm = texture(orm_texture, uv0).rgb;
+      occlusion = orm.r;
+      roughness = orm.g;
+      metallic = orm.b;
+    #endif
+    #if USE_METALLIC_TEXTURE
+      metallic  = texture(metallic_texture, uv0).r;
+    #endif
+    #if USE_ROUGHNESS_TEXTURE
+      roughness  = texture(roughness_texture, uv0).r;
+    #endif
+    #if USE_OCCLUSION_TEXTURE
+      occlusion = texture(occlusion_texture, uv0).r;
     #endif
 
     vec3 N = normalize(normal_w);
@@ -221,7 +220,7 @@ CCProgram pbr-fs {
     Lo += emissiveColor;
 
     // ambient lighting, will be replaced by IBL if IBL used.
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = vec3(0.03) * albedo * occlusion;
 
     #if USE_IBL
       // generate ambient when using IBL.
@@ -249,7 +248,7 @@ CCProgram pbr-fs {
       #endif
       vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), 1.0 - roughness)).rg;
       vec3 specular = specularEnv * (F * brdf.x + brdf.y);
-      ambient = (kD * diffuse + specular) * ao;
+      ambient = (kD * diffuse + specular) * occlusion;
     #endif
 
     vec3 color = ambient + Lo;

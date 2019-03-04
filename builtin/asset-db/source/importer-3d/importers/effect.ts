@@ -44,7 +44,6 @@ export default class EffectImporter extends Importer {
                 // @ts-ignore
                 let result = new cc.EffectAsset();
                 result = Object.assign(result, effect);
-                // @ts-ignore
                 await asset.saveToLibrary('.json', Manager.serialize(result));
                 updated = true;
             }

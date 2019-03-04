@@ -4,12 +4,14 @@ const ps = require('path');
 const fs = require('fs');
 const fsJetpack = require('fs-jetpack');
 
+const editorRoot = ps.resolve(ps.dirname(process.argv[1]), '..');
+
 global.Manager = {};
 Manager.AssetInfo = {};
-Manager.AssetInfo.engine = ps.join(__dirname, '../resources/3d/engine'); // change here if using custom engines
+Manager.AssetInfo.engine = ps.join(editorRoot, 'resources/3d/engine'); // change here if using custom engines
 
-const shdcLib = require('../builtin/asset-db/static/shdc-lib');
-shdcLib.addChunksCache('builtin/asset-db/static/chunks');
+const shdcLib = require(ps.join(editorRoot, 'builtin/asset-db/static/shdc-lib'));
+shdcLib.addChunksCache(ps.join(editorRoot, 'builtin/asset-db/static/chunks'));
 
 const indent = (str, num) => str.replace(/\n/g, '\n'+' '.repeat(num));
 const stringify = (o) => { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
@@ -86,7 +88,19 @@ const addEssential = (() => {
   };
 })();
 
-const path = 'builtin/asset-db/static/internal/assets';
+// build specified effect file
+if (process.argv.length > 2) {
+  for (let i = 2; i < process.argv.length; i++)  {
+    const file = process.argv[i];
+    const name = ps.basename(file, '.effect');
+    const content = fs.readFileSync(file, { encoding: 'utf8' });
+    const effect = shdcLib.buildEffect(name, content);
+    fs.writeFileSync(`${name}.js`, `export default ${stringifyEffect(effect)};\n`, { encoding: 'utf8' });
+  }
+  process.exit();
+}
+
+const path = ps.join(editorRoot, 'builtin/asset-db/static/internal/assets');
 const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 

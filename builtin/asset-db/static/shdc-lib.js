@@ -515,13 +515,11 @@ const buildShader = (() => {
 const stripComments = (() => {
   const crlfNewLines = /\r\n/g;
   const blockComments = /\/\*.*?\*\//gs;
-  const lineComments = /(\/\/|#).*$/gm;
-  const includeHash = () => '';
-  const excludeHash = (m, p) => p === '#' ? m : '';
-  return (code, hashAsComment = false) => {
+  const lineComments = /\/\/.*$/gm;
+  return (code) => {
     // strip comments
     let result = code.replace(blockComments, '');
-    result = result.replace(lineComments, hashAsComment ? includeHash : excludeHash);
+    result = result.replace(lineComments, '');
     // replace CRLFs
     result = result.replace(crlfNewLines, '\n');
     return result;
@@ -530,12 +528,12 @@ const stripComments = (() => {
 
 const chunksCache = {};
 const addChunksCache = (chunksDir) => {
-  const path_ = require('path');
+  const ps = require('path');
   const fsJetpack = require('fs-jetpack');
   const fs = require('fs');
   let files = fsJetpack.find(chunksDir, { matching: ['**/*.inc'] });
   for (let i = 0; i < files.length; ++i) {
-    let name = path_.basename(files[i], '.inc');
+    let name = ps.basename(files[i], '.inc');
     let content = fs.readFileSync(files[i], { encoding: 'utf8' });
     chunksCache[name] = stripComments(content);
   }
@@ -547,10 +545,12 @@ const parseEffect = (() => {
   const blockTypes = /CCEffect|CCProgram/gi;
   const effectRE = /CCEffect\s*{([^]+)}/i;
   const programRE = /CCProgram\s*([\w-]+)\s*{([^]+)}/i;
+  const hashComments = /#.*$/gm;
   const parenRE = /[{}]/g;
   const noIndent = /\n[^\s]/;
   const leadingSpace = /^[^\S\n]/gm; // \s without \n
   const tabs = /\t/g;
+  const stripHashComments = (code) => code.replace(hashComments, '');
   const trimToSize = (content) => {
     let level = 1, end = content.length;
     content.replace(parenRE, (p, i) => {
@@ -562,6 +562,8 @@ const parseEffect = (() => {
   };
   return (name, content) => {
     shaderName = 'syntax error';
+    // strip comments this early here in case of something like '// {'
+    content = stripComments(content);
     // code block split points
     const blockInfos = {};
     let blockCap = blockTypes.exec(content), effectCount = 0;
@@ -576,17 +578,17 @@ const parseEffect = (() => {
     let effect = {}, templates = {};
     for (let i = 0; i < blockPos.length; i++) {
       const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
-      // strip comments this early here in case of something like '// {'
       if (cceffect.test(blockInfos[blockPos[i]])) {
-        let effectCap = effectRE.exec(trimToSize(stripComments(str, true)));
+        let effectCap = effectRE.exec(trimToSize(stripHashComments(str)));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
         else {
-          effect = HJSON.parse(`{${effectCap[1]}}`);
+          try { effect = HJSON.parse(`{${effectCap[1]}}`); }
+          catch (e) { warn(`parse HJSON failed: ${e}`); }
           if (effect.name) effectName = effect.name;
           else effect.name = name;
         }
       } else {
-        let programCap = programRE.exec(trimToSize(stripComments(str)));
+        let programCap = programRE.exec(trimToSize(str));
         if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
         else {
           let result = programCap[2];
@@ -622,7 +624,10 @@ const mapPassParam = (() => {
       const info = props[p], shaderType = findUniformType(p, shader);
       // type translation or extraction
       if (info.type === undefined) info.type = shaderType;
-      else info.type = mappings.typeParams[info.type.toUpperCase()] || info.type;
+      else if (typeof info.type === 'string') {
+        info.type = mappings.typeParams[info.type.toUpperCase()];
+        if (!info.type) warn(`illegal property type for '${p}'`);
+      }
       // sampler specification
       if (info.sampler) generalMap(info.sampler);
       // default values
@@ -702,49 +707,92 @@ const mapPassParam = (() => {
   };
 })();
 
-const unrollReferences = (obj, decls) => {
-  const type = typeof obj;
-  if (type === 'string' && obj.startsWith('$')) {
-    return JSON.parse(JSON.stringify(decls[obj.slice(1)]));
-  } else if (type === 'object') {
-    if (Array.isArray(obj)) {
-      const len = obj.length;
-      for (let i = 0; i < len; i++) {
-        obj[i] = unrollReferences(obj[i], decls);
-      }
-    } else {
-      for (const key of Object.keys(obj)) {
-        obj[key] = unrollReferences(obj[key], decls);
+const unrollReferences = (() => {
+  const record = new Set();
+  const printLoop = (name) => [...record.values()].reduce((acc, cur) => `${acc} -> ${cur}`, '').slice(4) + ` -> ${name}`;
+  const unroll = (obj, decls) => {
+    const type = typeof obj;
+    if (type === 'string' && obj.startsWith('$')) {
+      const name = obj.slice(1);
+      const next = decls[name];
+      if (next === undefined) { warn(`illegal reference '${name}'`); return obj; }
+      if (record.has(name)) { warn(`reference loop: ${printLoop(name)}`); return obj; }
+      record.add(name);
+      const res = unroll(JSON.parse(JSON.stringify(next)), decls); // recursive tracking
+      record.delete(name);
+      return res;
+    } else if (type === 'object') {
+      if (Array.isArray(obj)) {
+        const len = obj.length;
+        for (let i = 0; i < len; i++) {
+          obj[i] = unroll(obj[i], decls);
+        }
+      } else {
+        for (const key of Object.keys(obj)) {
+          obj[key] = unroll(obj[key], decls);
+        }
       }
     }
-  }
-  return obj;
-};
-
-const unrollDeclarations = (() => {
-  const unroll = (obj, decls) => {
-    const parent = obj.__extends__;
-    if (parent) {
-      delete obj.__extends__;
-      return unroll(Object.assign({}, decls[parent], obj));
-    } else return obj;
+    return obj;
   };
-  return (decls) => {
-    if (!decls) return {};
+  return (techs, decls) => {
+    if (!decls) return;
     for (const key of Object.keys(decls)) {
       decls[key] = unroll(decls[key], decls);
     }
-    return decls;
+    for (let i = 0; i < techs.length; i++) {
+      techs[i] = unroll(techs[i], decls);
+    }
+  };
+})();
+
+const unrollInheritance = (() => {
+  const record = new Set();
+  const printLoop = (name) => [...record.values()].reduce((acc, cur) => `${acc} -> ${cur}`, '').slice(4) + ` -> ${name}`;
+  const unroll = (obj, decls) => {
+    if (typeof obj === 'object') {
+      if (Array.isArray(obj)) { // array
+        for (let i = 0; i < obj.length; i++) {
+          obj[i] = unroll(obj[i], decls);
+        }
+      } else { // object
+        const parent = obj.__extends__;
+        if (parent) {
+          delete obj.__extends__;
+          const next = decls[parent];
+          if (next === undefined) { warn(`illegal parent '${parent}'`); return obj; }
+          if (record.has(parent)) { warn(`inheritance loop: ${printLoop(parent)}`); return obj; }
+          record.add(parent);
+          const res = unroll(Object.assign({}, next, obj), decls); // recursive tracking
+          record.delete(parent);
+          return res;
+        } else {
+          for (const key of Object.keys(obj)) {
+            obj[key] = unroll(obj[key], decls);
+          }
+        }
+      }
+    }
+    return obj;
+  };
+  return (techs, decls) => {
+    if (!decls) return;
+    for (const key of Object.keys(decls)) {
+      decls[key] = unroll(decls[key], decls);
+    }
+    for (let i = 0; i < techs.length; i++) {
+      techs[i] = unroll(techs[i], decls);
+    }
   };
 })();
 
 const buildEffect = (name, content) => {
   effectName = name;
   let { effect, templates } = parseEffect(name, content);
-  // compile time references
-  const declarations = unrollDeclarations(effect.declarations);
+  // compile-time references
+  unrollReferences(effect.techniques, effect.declarations);
+  unrollInheritance(effect.techniques, effect.declarations);
   delete effect.declarations;
-  unrollReferences(effect.techniques, declarations);
   // map passes
   templates = Object.assign({}, chunksCache, templates);
   const shaders = effect.shaders = [];
