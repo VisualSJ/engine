@@ -40,7 +40,7 @@ export const messages = {
 
 export const listeners = {
     resize() {
-        // TODO
+        vm.reRender();
     },
 };
 
@@ -84,13 +84,19 @@ export async function ready() {
             },
             // 工具栏显示的默认参数（固定）
             defaultKeyFrames: DEFAULT_KEYFRAMES,
+            toolCanvas: [], // 缓存绘制在底部菜单项的预制 canvas
+        },
+
+        computed: {
+            toolCanvasSize() {
+                // @ts-ignore
+                const result: any = {w: this.mainCtx.canvas.width / 10, h: this.mainCtx.canvas.height / 5};
+                return result;
+            },
         },
 
         async mounted() {
-            this.initCanvas();
-            this.drawGrid();
-            this.drawCurve();
-            this.initTools();
+            this.reRender();
         },
 
         methods: {
@@ -98,13 +104,13 @@ export async function ready() {
                 return Editor.I18n.t(key);
             },
 
-            /**
-             * 初始化工具栏
-             */
-            initTools(this: any) {
-                // 小缩略图的尺寸
-                const size = {w: 30, h: 15};
-                this.drawThumb(this.$refs.tools, this.defaultKeyFrames, size);
+            // 重新绘制
+            reRender() {
+                this.initCanvas();
+                this.drawGrid();
+                this.drawCurve();
+                // @ts-ignore
+                this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
             },
 
             /**
@@ -129,8 +135,7 @@ export async function ready() {
                 // TODO
                 const {offsetX, offsetY} = event.target;
                 // 小缩略图的尺寸
-                const size = {w: 60, h: 20};
-                this.drawThumb(this.$refs.presets, this.defaultKeyFrames, size);
+                this.drawThumb(this.$refs.presets, this.defaultKeyFrames);
             },
 
             /**
@@ -160,15 +165,26 @@ export async function ready() {
              * @param keyFrames 关键帧数据
              * @param size canvas 尺寸
              */
-            drawThumb(father: Document, keyFrames: any, size: any) {
+            drawThumb(father: Document, keyFrames: any) {
                 keyFrames.map((item: any, index: number) => {
-                    const $canvas = document.createElement('canvas');
-                    $canvas.width = size.w;
-                    $canvas.height = size.h;
-                    $canvas.setAttribute('index', String(index));
-                    father.append($canvas);
+                    let $canvas;
+                    // @ts-ignore
+                    if (this.toolCanvas.length !== keyFrames.length) {
+                        $canvas = document.createElement('canvas');
+                        $canvas.setAttribute('index', String(index));
+                        father.append($canvas);
+                        // @ts-ignore
+                        this.toolCanvas.push($canvas);
+                    } else {
+                        // @ts-ignore
+                        $canvas = this.toolCanvas[index];
+                    }
+
+                    // @ts-ignore
+                    this.resizeCanvas([$canvas], this.toolCanvasSize);
                     const ctx: any = $canvas.getContext('2d');
                     ctx.strokeStyle = 'white';
+                    // @ts-ignore
                     drawHermite(item, ctx);
                 });
             },
@@ -182,15 +198,16 @@ export async function ready() {
                 // 获取绘图点信息
                 this.mainCtx = this.$refs.mainCanvas.getContext('2d');
                 this.ctrlCxt = this.$refs.controlCanvas.getContext('2d');
-                this.gridCtx.strokeStyle = '#333';
                 // 更新画布的宽高
-                this.gridCtx.canvas.style.background = '#1f1e1ede';
-                this.gridCtx.canvas.width = this.gridCtx.canvas.offsetWidth;
-                this.gridCtx.canvas.height = this.gridCtx.canvas.offsetHeight;
-                this.mainCtx.canvas.width = this.mainCtx.canvas.offsetWidth;
-                this.mainCtx.canvas.height = this.mainCtx.canvas.offsetHeight;
-                this.ctrlCxt.canvas.width = this.ctrlCxt.canvas.offsetWidth;
-                this.ctrlCxt.canvas.height = this.ctrlCxt.canvas.offsetHeight;
+                this.resizeCanvas([this.gridCtx.canvas, this.mainCtx.canvas, this.ctrlCxt.canvas]);
+            },
+
+            // 重新调节 canvas 的宽高
+            resizeCanvas(canvasArr: any[],  size?: any) {
+                for (const $canvas of canvasArr) {
+                    $canvas.width = size ? size.w : $canvas.offsetWidth;
+                    $canvas.height = size ? size.h : $canvas.offsetHeight;
+                }
             },
 
             /**

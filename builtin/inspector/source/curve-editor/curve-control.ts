@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
 import Hermite from './hermite';
-const PIXEL_RANGE = 2; // 控制像素点击获取的范围
+const PIXEL_RANGE = 20; // 控制线上像素点击获取的范围（点击线的灵敏度）
 // 与 PIXEL_RANGE 对应，代表区域内像素颜色数据 PIXEL_RANGE 为 2 时，该值为 2 的平方个颜色数据（rgba）
-const UINT8_COLOR_DEFALT = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0';
-const DEFAULT_CTROL_COLOR = 'rgba(255, 0, 0, 0.01)'; // 默认的控制画布上的曲线颜色（需要设置尽量透明，但又不能影响后续点的判断）
+const UINT8_COLOR_DEFALT = Array(4 * PIXEL_RANGE * PIXEL_RANGE).fill(0).toString();
+const DEFAULT_CTROL_COLOR = 'rgba(255, 0, 0, 0.1)'; // 默认的控制画布上的曲线颜色（需要设置尽量透明，但又不能影响后续点的判断）
 
-const CLICK_RANGE = 5; // 点击范围/灵敏度
+const CLICK_RANGE = 5; // 点击范围/关键帧位置的点击灵敏度
 const {Point} = require('./utils');
 interface Point {
     x: number;
@@ -100,6 +100,7 @@ export default class CurveControl extends EventEmitter {
         this.isShowCtrl = false;
         this.cxt2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.cxt2D.strokeStyle = DEFAULT_CTROL_COLOR;
+        // this.cxt2D.
         this.hermite.update(this.cxt2D);
         this.initContrl();
         flag && (this.ctrlPoints = null);
@@ -116,10 +117,10 @@ export default class CurveControl extends EventEmitter {
         const {radius} = this.ctrlConfig;
         this.canvas.addEventListener('mousedown', (event: any) => {
             let flag = false;
-            const {offsetX, offsetY} = event;
+            const {offsetX, offsetY, y} = event;
             // 判断是否在线上(取像素颜色判断)
-            const myImageData = this.cxt2D.getImageData(offsetX, offsetY, PIXEL_RANGE, PIXEL_RANGE);
-
+            const myImageData = this.cxt2D.getImageData(offsetX - PIXEL_RANGE / 2, offsetY,
+                 PIXEL_RANGE, PIXEL_RANGE);
             // 先判断是否在关键帧控制点处（圆点需要加上原点半径）
             for (const info of this.ctrlKey) {
                 const {x, y} = info.point.canvas;
