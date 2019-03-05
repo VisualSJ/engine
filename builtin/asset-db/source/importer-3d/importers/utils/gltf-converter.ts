@@ -80,6 +80,7 @@ export class GltfConverter {
 
             let currentByteOffset = 0;
             let posBuffer = new ArrayBuffer(0);
+            let posBufferAlign = 0;
             attributeNames.forEach((attributeName, iAttribute) => {
                 const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
                 const dataView = new DataView(vertexBuffer, currentByteOffset);
@@ -100,6 +101,7 @@ export class GltfConverter {
                     const comps = this._getComponentsPerAttribute(attributeAccessor.type);
                     const bytes = this._getBytesPerComponent(attributeAccessor.componentType);
                     posBuffer = new ArrayBuffer(comps * bytes * attributeAccessor.count);
+                    posBufferAlign = bytes;
                     this._readAccessor(attributeAccessor, new DataView(posBuffer));
                 }
 
@@ -133,6 +135,7 @@ export class GltfConverter {
                 });
             });
 
+            bufferBlob.setNextAlignment(0);
             vertexBundles.push({
                 data: {
                     offset: bufferBlob.getLength(),
@@ -151,6 +154,7 @@ export class GltfConverter {
             // geometric info for raycast purposes
             // @ts-ignore
             if (primitive.primitiveMode >= cc.GFXPrimitiveMode.TRIANGLE_LIST) {
+                bufferBlob.setNextAlignment(posBufferAlign);
                 primitive.geometricInfo = {
                     range: { offset: bufferBlob.getLength(), length: posBuffer.byteLength },
                 };
@@ -162,6 +166,7 @@ export class GltfConverter {
                 const indexStride = this._getBytesPerAttribute(indicesAccessor);
                 const indicesData = new ArrayBuffer(indexStride * indicesAccessor.count);
                 this._readAccessor(indicesAccessor, new DataView(indicesData));
+                bufferBlob.setNextAlignment(indexStride);
                 primitive.indices = {
                     indexUnit: this._getIndexUnit(indicesAccessor.componentType),
                     range: {
@@ -184,7 +189,7 @@ export class GltfConverter {
 
         // @ts-ignore
         const mesh = new cc.Mesh();
-        mesh.name = gltfMesh.name;
+        mesh.name = getGltfXXName(gltfMesh);
         mesh.assign(meshStruct, bufferBlob.getCombined());
         return mesh;
     }
@@ -224,7 +229,7 @@ export class GltfConverter {
 
         // @ts-ignore
         const skeleton = new cc.Skeleton();
-        skeleton.name = gltfSkin.name;
+        skeleton.name = getGltfXXName(gltfSkin);
         skeleton._joints = gltfSkin.joints.map((nodeIndex) => this._getNodePath(nodeIndex));
         skeleton._inverseBindMatrices = inverseBindMatrices;
 
@@ -331,7 +336,7 @@ export class GltfConverter {
 
         // @ts-ignore
         const animationClip = new cc.AnimationClip();
-        animationClip.name = gltfAnimation.name;
+        animationClip.name = getGltfXXName(gltfAnimation);
         animationClip._channels = channels;
         animationClip._keysList = keysList;
         animationClip._length = maxLength;
@@ -347,7 +352,7 @@ export class GltfConverter {
         effectGetter: (name: string) => cc.EffectAsset) {
         // @ts-ignore
         const material = new cc.Material();
-        material.name = gltfMaterial.name;
+        material.name = getGltfXXName(gltfMaterial);
         material._effectAsset = effectGetter('db://internal/builtin-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
@@ -378,17 +383,31 @@ export class GltfConverter {
                 case 33648: return 'mirrored-repeat';
                 case 10497: return 'repeat';
                 default:
-                    console.error(`Unrecognized wrapMode: ${gltfWrapMode}, 'repeat' is used.`);
+                    console.error(`Unsupported wrapMode: ${gltfWrapMode}, 'repeat' is used.`);
                     return 'repeat';
             }
         };
 
-        const convertFilter = (gltfFilter: number): Filter => {
+        const convertMagFilter = (gltfFilter: number): Filter => {
             switch (gltfFilter) {
                 case 9728: return 'nearest';
                 case 9729: return 'linear';
                 default:
-                    console.error(`Unrecognized filter: ${gltfFilter}, 'linear' is used.`);
+                    console.warn(`Unsupported filter: ${gltfFilter}, 'linear' is used.`);
+                    return 'linear';
+            }
+        };
+
+        const convertMinFilter = (gltfFilter: number): Filter => {
+            switch (gltfFilter) {
+                case 9728: return 'nearest';
+                case 9729: return 'linear';
+                case 9984: // NEAREST_MIPMAP_NEAREST
+                case 9985: // LINEAR_MIPMAP_NEAREST
+                case 9986: // NEAREST_MIPMAP_LINEAR
+                case 9987: // LINEAR_MIPMAP_LINEAR
+                default:
+                    console.warn(`Unsupported filter: ${gltfFilter}, 'linear' is used.`);
                     return 'linear';
             }
         };
@@ -399,9 +418,9 @@ export class GltfConverter {
         } else {
             const gltfSampler = this._gltf.samplers![gltfTexture.sampler];
             userData.minfilter = gltfSampler.minFilter === undefined ?
-                'linear' : convertFilter(gltfSampler.minFilter);
+                'linear' : convertMinFilter(gltfSampler.minFilter);
             userData.magfilter = gltfSampler.magFilter === undefined ?
-                'linear' : convertFilter(gltfSampler.magFilter);
+                'linear' : convertMagFilter(gltfSampler.magFilter);
             userData.wrapModeS = convertWrapMode(gltfSampler.wrapS === undefined ? 10497 : gltfSampler.wrapS);
             userData.wrapModeT = convertWrapMode(gltfSampler.wrapT === undefined ? 10497 : gltfSampler.wrapT);
         }
@@ -428,7 +447,7 @@ export class GltfConverter {
             this._gltf.animations.forEach((gltfAnimation, index) => {
                 const animationUUID = gltfAssetsTable.animations![index];
                 if (animationUUID) {
-                    animationComponent.addClip(gltfAnimation.name, this._assetLoader(animationUUID));
+                    animationComponent.addClip(getGltfXXName(gltfAnimation), this._assetLoader(animationUUID));
                 }
             });
         }
@@ -468,8 +487,7 @@ export class GltfConverter {
         }
 
         // @ts-ignore
-        const result = new cc.Node();
-        result.name = gltfScene.name;
+        const result = new cc.Node(getGltfXXName(gltfScene));
         rootNodes.forEach((node) => node.parent = result);
         return result;
     }
@@ -511,7 +529,7 @@ export class GltfConverter {
 
     private _createEmptyNode(gltfNode: Node) {
         // @ts-ignore
-        const node = new cc.Node(gltfNode.name);
+        const node = new cc.Node(getGltfXXName(gltfNode));
         if (gltfNode.translation) {
             node.setPosition(
                 gltfNode.translation[0],
@@ -552,7 +570,7 @@ export class GltfConverter {
         const result = new Array<string>(this._gltf.nodes.length);
         result.fill('');
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
-            const myPath = result[nodeIndex] + gltfNode.name;
+            const myPath = result[nodeIndex] + (getGltfXXName(gltfNode));
             result[nodeIndex] = myPath;
             if (gltfNode.children) {
                 gltfNode.children.forEach((childNodeIndex) => {
@@ -573,7 +591,7 @@ export class GltfConverter {
 
     private _readAccessor(gltfAccessor: Accessor, outputBuffer: DataView, outputStride = 0) {
         if (gltfAccessor.bufferView === undefined) {
-            console.warn(`Note, there is an accessor assiociate with no buffer view.`);
+            console.warn(`Note, there is an accessor assiociating with no buffer view in file ${this.path}.`);
             return;
         }
 
@@ -740,12 +758,23 @@ export function isDataUri(uri: string) {
 }
 
 class BufferBlob {
-    private _arrayBuffers: ArrayBuffer[] = [];
+    private _arrayBufferOrPaddings: Array<ArrayBuffer | number> = [];
     private _length = 0;
+
+    public setNextAlignment(align: number) {
+        if (align !== 0) {
+            const remainder = this._length % align;
+            if (remainder !== 0) {
+                const padding = align - remainder;
+                this._arrayBufferOrPaddings.push(padding);
+                this._length += padding;
+            }
+        }
+    }
 
     public addBuffer(arrayBuffer: ArrayBuffer) {
         const result = this._length;
-        this._arrayBuffers.push(arrayBuffer);
+        this._arrayBufferOrPaddings.push(arrayBuffer);
         this._length += arrayBuffer.byteLength;
         return result;
     }
@@ -755,14 +784,20 @@ class BufferBlob {
     }
 
     public getCombined() {
-        let length = 0;
-        this._arrayBuffers.forEach((arrayBuffer) => length += arrayBuffer.byteLength);
-        const result = new Uint8Array(length);
+        const result = new Uint8Array(this._length);
         let counter = 0;
-        this._arrayBuffers.forEach((arrayBuffer) => {
-            result.set(new Uint8Array(arrayBuffer), counter);
-            counter += arrayBuffer.byteLength;
+        this._arrayBufferOrPaddings.forEach((arrayBufferOrPadding) => {
+            if (typeof arrayBufferOrPadding === 'number') {
+                counter += arrayBufferOrPadding;
+            } else {
+                result.set(new Uint8Array(arrayBufferOrPadding), counter);
+                counter += arrayBufferOrPadding.byteLength;
+            }
         });
         return result.buffer;
     }
+}
+
+function getGltfXXName(asset: Node | Mesh | Texture | Skin | Animation | Material) {
+    return (typeof asset.name) === 'string' ? asset.name : '';
 }

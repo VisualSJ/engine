@@ -41,7 +41,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.63';
+        return '1.0.69';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -371,8 +371,8 @@ function getFinalImageUrl(
         return null;
     }
 
-    console.log(`Image ${gltfImage.name} ` +
-        `(Raw url: ${gltfImage.uri}, Expected url: ${expectedUri})` +
+    console.log(`Image` +
+        `(Name: ${gltfImage.name}, Raw url: ${gltfImage.uri}, Expected url: ${expectedUri})` +
         ` is not found, fuzzy search starts.`);
     const extName = path.extname(targetName);
     const baseName = path.basename(targetName, extName);
