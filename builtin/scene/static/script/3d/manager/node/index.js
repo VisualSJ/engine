@@ -314,7 +314,13 @@ class NodeManager extends EventEmitter {
             return;
         }
 
-        const parent = this.query(uuid);
+        let parent;
+        if (uuid) {
+            parent = this.query(uuid);
+        } else {
+            parent = cc.director._scene;
+        }
+
         const node = new cc.Node();
 
         if (name) {
@@ -379,12 +385,14 @@ class NodeManager extends EventEmitter {
         if (!cc.director._scene) {
             return;
         }
+
         let parent;
-        if (parent) {
+        if (parentUuid) {
             parent = this.query(parentUuid);
         } else {
             parent = cc.director._scene;
         }
+
         try {
             const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
             let node;
