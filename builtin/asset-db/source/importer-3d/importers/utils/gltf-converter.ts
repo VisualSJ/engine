@@ -656,18 +656,29 @@ export class GltfConverter {
             return [];
         }
 
-        const result = new Array<string>(this._gltf.nodes.length);
-        result.fill('');
+        const nodeNames = new Array<string>(this._gltf.nodes.length).fill('');
+        for (let iNode = 0; iNode < nodeNames.length; ++iNode) {
+            nodeNames[iNode] = this._getGltfXXName(GltfAssetKind.Node, iNode);
+        }
+
+        const parentTable = new Array<number>(this._gltf.nodes.length).fill(-1);
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
-            const myPath = result[nodeIndex] + (this._getGltfXXName(GltfAssetKind.Node, nodeIndex));
-            result[nodeIndex] = myPath;
             if (gltfNode.children) {
-                gltfNode.children.forEach((childNodeIndex) => {
-                    const childPath = result[childNodeIndex];
-                    result[childNodeIndex] = `${myPath}/${childPath}`;
+                gltfNode.children.forEach((iChildNode) => {
+                    parentTable[iChildNode] = nodeIndex;
                 });
             }
         });
+
+        const result = new Array<string>(this._gltf.nodes.length).fill('');
+        this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
+            const segments: string[] = [];
+            for (let i = nodeIndex; i >= 0; i = parentTable[i]) {
+                segments.unshift(nodeNames[i]);
+            }
+            result[nodeIndex] = segments.join('/');
+        });
+
         // Remove root segment
         result.forEach((path, index) => {
             const segments = path.split('/');

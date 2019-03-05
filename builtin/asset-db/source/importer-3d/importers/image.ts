@@ -12,7 +12,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.7';
+        return '1.0.9';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -62,7 +62,11 @@ export default class ImageImporter extends Importer {
             throw new AssertionError({ message: `${asset.source} is not found in asset-db.` });
         }
 
-        let flipY = false;
+        let flipVertical = false;
+        if (asset.userData.flipVertical !== undefined) {
+            flipVertical = asset.userData.flipVertical;
+        }
+
         switch (importType) {
             case 'raw':
                 delete asset.userData.redirect;
@@ -73,7 +77,6 @@ export default class ImageImporter extends Importer {
                 asset.userData.redirect = texture2DSubAsset.uuid;
                 Object.assign(texture2DSubAsset.userData,
                     makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
-                flipY = true;
                 break;
             case 'texture cube':
                 const textureCubeSubAsset = await asset.createSubAsset(asset.basename, 'texture-cube');
@@ -92,7 +95,7 @@ export default class ImageImporter extends Importer {
                 break;
         }
 
-        if (!flipY) {
+        if (!flipVertical) {
             await asset.copyToLibrary(ext, asset.source);
         } else {
             const img = await Jimp.read(asset.source);
