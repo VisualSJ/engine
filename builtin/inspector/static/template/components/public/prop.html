@@ -17,7 +17,9 @@
         v-else-if="!auto"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -31,7 +33,11 @@
     <template
         v-else-if="value.value === null"
     >
-        <div class="name"><span>{{getName(value.name)}}</span></div>
+        <div class="name">
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
+        </div>
         <div class="content">
             <ui-null></ui-null>
         </div>
@@ -42,7 +48,9 @@
         v-else-if="value.type === 'Unknown' || value.type === 'unknown'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -69,7 +77,9 @@
         v-else-if="value.type === 'Number' || value.type === 'number'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -91,7 +101,11 @@
     <template
         v-else-if="value.type === 'Boolean' || value.type === 'boolean'"
     >
-        <div class="name"><span>{{getName(value.name)}}</span></div>
+        <div class="name">
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
+        </div>
         <div class="content">
             <ui-bool
                 :readonly="value.readonly"
@@ -106,7 +120,9 @@
         v-else-if="value.type === 'String' || value.type === 'string'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -125,7 +141,9 @@
         v-else-if="value.type === 'Enum' || value.type === 'enum'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -145,7 +163,9 @@
         v-else-if="value.type === 'cc.Size'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -164,7 +184,9 @@
         v-else-if="value.type === 'cc.Vec2'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -183,7 +205,9 @@
         v-else-if="value.type === 'cc.Vec3'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -197,12 +221,45 @@
         </div>
     </template>
 
+    <!-- Vec4 -->
+    <template
+        v-else-if="value.type === 'cc.Vec4' || value.type === 'cc.Quat'"
+    >
+        <div class="name">
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
+        <div class="content">
+            <ui-vec4
+                :readonly="value.readonly"
+                v-model="value.value"
+                :data-default="value.default"
+            ></ui-vec4>
+        </div>
+    </template>
+
+    <!-- Mat4 -->
+    <template
+        v-else-if="value.type === 'cc.Mat4'"
+    >
+        <ui-mat4
+            :name="getName(value.name)"
+            v-model="value.value"
+        ></ui-mat4>
+    </template>
+
     <!-- Color -->
     <template
         v-else-if="value.type === 'cc.Color'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -221,7 +278,9 @@
         v-else-if="value.type === 'cc.Rect'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -240,7 +299,9 @@
         v-else-if="isType('cc.Node')"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -260,7 +321,9 @@
         v-else-if="isType('cc.Asset')"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -280,7 +343,9 @@
         v-else-if="isType('cc.Component')"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -300,7 +365,9 @@
         v-else-if="value.type === 'cc.AnimationCurve'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>
@@ -335,7 +402,9 @@
         v-else-if="value.type === 'cc.Gradient'"
     >
         <div class="name">
-            <span>{{getName(value.name)}}</span>
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
             <i class="iconfont icon-lock"
                 v-if="value.readonly"
             ></i>

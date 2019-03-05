@@ -46,14 +46,19 @@ function getDefaultValue(type, data) {
             return new cc.Vec2();
         case 'cc.Vec3':
             if (data) {
-                return new cc.Vec2(data[0] || 0, data[1] || 0, data[2] || 0);
+                return new cc.Vec3(data[0] || 0, data[1] || 0, data[2] || 0);
             }
             return new cc.Vec3();
         case 'cc.Vec4':
             if (data) {
-                return new cc.Vec2(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 0);
+                return new cc.Vec4(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 0);
             }
             return new cc.Vec4();
+        case 'cc.Quat':
+            if (data) {
+                return new cc.Quat(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 0);
+            }
+            return new cc.Quat();
         case 'cc.Color':
             if (Array.isArray(data)) {
                 if (data[3] === undefined) {

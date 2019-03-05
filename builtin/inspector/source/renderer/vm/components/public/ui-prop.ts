@@ -23,6 +23,8 @@ export const components = {
     'ui-size': require('./ui-size'),
     'ui-vec2': require('./ui-vec2'),
     'ui-vec3': require('./ui-vec3'),
+    'ui-vec4': require('./ui-vec4'),
+    'ui-mat4': require('./ui-mat4'),
     'ui-enum': require('./ui-enum'),
     'ui-color': require('./ui-color'),
     'ui-rect': require('./ui-rect'),

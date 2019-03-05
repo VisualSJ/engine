@@ -3,7 +3,9 @@
 export const template = `
 <div class="ui-array">
     <div class="name">
-        <span>{{name}}</span>
+        <span
+            :title="name"
+        >{{name}}</span>
         <i class="iconfont icon-lock"
             v-if="readonly"
         ></i>
@@ -14,11 +16,11 @@ export const template = `
             :value="value.length"
         ></ui-num-input>
         <span
-        :unfold="unfold"
-        @click="unfold = !unfold"
-    >
-        <i :class="['iconfont', 'fold', 'foldable', unfold ? 'icon-collapse' : 'icon-expand']"></i>
-    </span>
+            :unfold="unfold"
+            @click="unfold = !unfold"
+        >
+            <i :class="['iconfont', 'fold', 'foldable', unfold ? 'icon-collapse' : 'icon-expand']"></i>
+        </span>
     </div>
     <div class="array"
         v-if="unfold"

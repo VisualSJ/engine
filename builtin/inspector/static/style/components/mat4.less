@@ -1,0 +1,34 @@
+.ui-mat4 {
+    flex: 1;
+    display: flex;
+    flex-flow: wrap;
+
+    & > .name {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 4px;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    & > .mat {
+        flex: 1;
+        display: block;
+        flex-direction: column;
+        margin: 4px 0 10px 10px;
+
+        & > div {
+            display: flex;
+            margin-top: 2px;
+    
+            &:first-child {
+                margin-top: 0;
+            }
+
+            & > .ui-number {
+                margin-right: 2px;
+            }
+        }
+    }
+}

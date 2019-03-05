@@ -3,7 +3,9 @@
 export const template = `
 <div class="ui-curve-range">
     <div class="name">
-        <span>{{name}}</span>
+        <span
+            :title="name"
+        >{{name}}</span>
         <i class="iconfont icon-lock"
             v-if="value.readonly"
         ></i>
