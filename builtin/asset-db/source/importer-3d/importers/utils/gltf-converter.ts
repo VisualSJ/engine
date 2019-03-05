@@ -1,7 +1,9 @@
+import * as fs from 'fs-extra';
+import * as imageDataUri from 'image-data-uri';
 import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, AnimationChannel,
-    GlTf, Material, Mesh, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
+    BufferView, GlTf, Image, Material, Mesh, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
 import { AttributeBaseType, AttributeType, IMeshStruct,
     IndexUnit, IPrimitive, IVertexAttribute, IVertexBundle } from '../mesh';
 import { Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
@@ -33,6 +35,17 @@ export interface IGltfAssetTable {
 // @ts-ignore
 export type AssetLoader = (uuid: string) => cc.Asset;
 
+enum GltfAssetKind {
+    Node,
+    Mesh,
+    Texture,
+    Skin,
+    Animation,
+    Image,
+    Material,
+    Scene,
+}
+
 export class GltfConverter {
     private _nodePathTable: string[] | null = null;
 
@@ -52,7 +65,8 @@ export class GltfConverter {
         return this._gltfFilePath;
     }
 
-    public createMesh(gltfMesh: Mesh) {
+    public createMesh(iGltfMesh: number) {
+        const gltfMesh = this._gltf.meshes![iGltfMesh];
         const bufferBlob = new BufferBlob();
 
         // @ts-ignore
@@ -189,12 +203,13 @@ export class GltfConverter {
 
         // @ts-ignore
         const mesh = new cc.Mesh();
-        mesh.name = getGltfXXName(gltfMesh);
+        mesh.name = this._getGltfXXName(GltfAssetKind.Mesh, iGltfMesh);
         mesh.assign(meshStruct, bufferBlob.getCombined());
         return mesh;
     }
 
-    public createSkeleton(gltfSkin: Skin) {
+    public createSkeleton(iGltfSkin: number) {
+        const gltfSkin = this._gltf.skins![iGltfSkin];
         const inverseBindMatrices = new Array(gltfSkin.joints.length);
         if (gltfSkin.inverseBindMatrices === undefined) {
             // The default is that each matrix is a 4x4 identity matrix,
@@ -215,7 +230,7 @@ export class GltfConverter {
                 throw new Error(`The inverse bind matrix should be floating-point 4x4 matrix.`);
             }
             const data = new Float32Array(inverseBindMatrices.length * 16);
-            this._readAccessor(inverseBindMatricesAccessor, new DataView(data.buffer));
+            this._readAccessor(inverseBindMatricesAccessor, createDataViewFromTypedArray(data));
             for (let i = 0; i < inverseBindMatrices.length; ++i) {
                 // @ts-ignore
                 inverseBindMatrices[i] = new cc.Mat4(
@@ -229,14 +244,16 @@ export class GltfConverter {
 
         // @ts-ignore
         const skeleton = new cc.Skeleton();
-        skeleton.name = getGltfXXName(gltfSkin);
+        skeleton.name = this._getGltfXXName(GltfAssetKind.Skin, iGltfSkin);
         skeleton._joints = gltfSkin.joints.map((nodeIndex) => this._getNodePath(nodeIndex));
         skeleton._inverseBindMatrices = inverseBindMatrices;
 
         return skeleton;
     }
 
-    public createAnimation(gltfAnimation: Animation) {
+    public createAnimation(iGltfAnimation: number) {
+        const gltfAnimation = this._gltf.animations![iGltfAnimation];
+
         // @ts-ignore
         const channels: any[] = [];
         const channelMap = new Map<number, number>();
@@ -265,7 +282,7 @@ export class GltfConverter {
                     throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
                 }
                 const inputData = new Float32Array(inputAccessor.count);
-                this._readAccessor(inputAccessor, new DataView(inputData.buffer));
+                this._readAccessor(inputAccessor, createDataViewFromTypedArray(inputData));
 
                 const keys = new Array(inputData.length);
                 inputData.forEach((time, index) => {
@@ -304,7 +321,7 @@ export class GltfConverter {
             }
             const outputData = new Float32Array(
                 this._getComponentsPerAttribute(outputAccessor.type) * outputAccessor.count);
-            this._readAccessor(outputAccessor, new DataView(outputData.buffer));
+            this._readAccessor(outputAccessor, createDataViewFromTypedArray(outputData));
             if (gltfChannel.target.path === 'translation') {
                 // @ts-ignore
                 propertyAnimation.property = cc.AnimationTargetProperty.position;
@@ -336,7 +353,7 @@ export class GltfConverter {
 
         // @ts-ignore
         const animationClip = new cc.AnimationClip();
-        animationClip.name = getGltfXXName(gltfAnimation);
+        animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
         animationClip._channels = channels;
         animationClip._keysList = keysList;
         animationClip._length = maxLength;
@@ -345,14 +362,15 @@ export class GltfConverter {
 
     // @ts-ignore
     public createMaterial(
-        gltfMaterial: Material,
+        iGltfMaterial: number,
         // @ts-ignore
         textures: cc.Texture[],
         // @ts-ignore
         effectGetter: (name: string) => cc.EffectAsset) {
+        const gltfMaterial = this._gltf.materials![iGltfMaterial];
         // @ts-ignore
         const material = new cc.Material();
-        material.name = getGltfXXName(gltfMaterial);
+        material.name = this._getGltfXXName(GltfAssetKind.Material, iGltfMaterial);
         material._effectAsset = effectGetter('db://internal/builtin-phong.effect');
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
@@ -440,21 +458,88 @@ export class GltfConverter {
     }
 
     // @ts-ignore
-    public createScene(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable): cc.Node {
-        const sceneNode = this._getSceneNode(gltfScene, gltfAssetsTable);
+    public createScene(iGltfScene: number, gltfAssetsTable: IGltfAssetTable): cc.Node {
+        const sceneNode = this._getSceneNode(iGltfScene, gltfAssetsTable);
         if (this._gltf.animations !== undefined) {
             const animationComponent = sceneNode.addComponent('cc.AnimationComponent');
             this._gltf.animations.forEach((gltfAnimation, index) => {
                 const animationUUID = gltfAssetsTable.animations![index];
                 if (animationUUID) {
-                    animationComponent.addClip(getGltfXXName(gltfAnimation), this._assetLoader(animationUUID));
+                    const animationName = this._getGltfXXName(GltfAssetKind.Animation, index);
+                    animationComponent.addClip(animationName, this._assetLoader(animationUUID));
                 }
             });
         }
         return sceneNode;
     }
 
-    private _getSceneNode(gltfScene: Scene, gltfAssetsTable: IGltfAssetTable) {
+    public readImage(gltfImage: Image) {
+        const imageUri = gltfImage.uri;
+        if (imageUri !== undefined) {
+            const imageUriInfo = this.getImageUriInfo(imageUri);
+            if (isFilesystemPath(imageUriInfo)) {
+                return this._readImageByFsPath(imageUriInfo.fullPath);
+            } else {
+                return this._readImageByDataUri(imageUri);
+            }
+        } else if (gltfImage.bufferView !== undefined) {
+            const bufferView = this._gltf.bufferViews![gltfImage.bufferView];
+            return this._readImageInBufferview(bufferView, gltfImage.mimeType);
+        }
+    }
+
+    private _readImageByFsPath(imagePath: string) {
+        try {
+            return {
+                imageData: fs.readFileSync(imagePath),
+                extName: path.extname(imagePath),
+            };
+        } catch (error) {
+            console.error(`Failed to load texture with path: ${imagePath}`);
+            return undefined;
+        }
+    }
+
+    private _readImageByDataUri(dataUri: string) {
+        const result = imageDataUri.decode(dataUri);
+        if (!result) {
+            return undefined;
+        }
+        const x = result.imageType.split('/');
+        if (x.length === 0) {
+            console.error(`Bad data uri.${dataUri}`);
+            return undefined;
+        }
+        return {
+            extName: `.${x[x.length - 1]}`,
+            imageData: result.dataBuffer,
+        };
+    }
+
+    private _readImageInBufferview(bufferView: BufferView, mimeType: string | undefined) {
+        let extName = '';
+        switch (mimeType) {
+            case 'image/jpeg':
+                extName = '.jpg';
+                break;
+            case 'image/png':
+                extName = '.png';
+                break;
+            default:
+                throw new Error(`Bad MIME Type ${mimeType}`);
+        }
+
+        const buffer = this._buffers[bufferView.buffer];
+        const imageData = Buffer.from(
+            buffer.buffer, buffer.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
+        return {
+            extName,
+            imageData,
+        };
+    }
+
+    private _getSceneNode(iGltfScene: number, gltfAssetsTable: IGltfAssetTable) {
+        const gltfScene = this._gltf.scenes![iGltfScene];
         const nodes = new Array(this._gltf.nodes!.length);
         // @ts-ignore
         const getNode = (index: number, root: cc.Node) => {
@@ -462,7 +547,7 @@ export class GltfConverter {
                 return nodes[index];
             }
             const gltfNode = this._gltf.nodes![index];
-            const node = this._createNode(gltfNode, gltfAssetsTable, root);
+            const node = this._createNode(index, gltfAssetsTable, root);
             nodes[index] = node;
             if (gltfNode.children !== undefined) {
                 gltfNode.children.forEach((childIndex) => {
@@ -486,15 +571,17 @@ export class GltfConverter {
             return rootNodes[0];
         }
 
+        const sceneName = this._getGltfXXName(GltfAssetKind.Scene, iGltfScene);
         // @ts-ignore
-        const result = new cc.Node(getGltfXXName(gltfScene));
+        const result = new cc.Node(sceneName);
         rootNodes.forEach((node) => node.parent = result);
         return result;
     }
 
     // @ts-ignore
-    private _createNode(gltfNode: Node, gltfAssetsTable: IGltfAssetTable, root: cc.Node) {
-        const node = this._createEmptyNode(gltfNode);
+    private _createNode(iGltfNode: number, gltfAssetsTable: IGltfAssetTable, root: cc.Node) {
+        const gltfNode = this._gltf.nodes![iGltfNode];
+        const node = this._createEmptyNode(iGltfNode);
         if (gltfNode.mesh !== undefined) {
             let modelComponent = null;
             if (gltfNode.skin === undefined) {
@@ -527,9 +614,11 @@ export class GltfConverter {
         return node;
     }
 
-    private _createEmptyNode(gltfNode: Node) {
+    private _createEmptyNode(iGltfNode: number) {
+        const gltfNode = this._gltf.nodes![iGltfNode];
+        const nodeName = this._getGltfXXName(GltfAssetKind.Node, iGltfNode);
         // @ts-ignore
-        const node = new cc.Node(getGltfXXName(gltfNode));
+        const node = new cc.Node(nodeName);
         if (gltfNode.translation) {
             node.setPosition(
                 gltfNode.translation[0],
@@ -570,7 +659,7 @@ export class GltfConverter {
         const result = new Array<string>(this._gltf.nodes.length);
         result.fill('');
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
-            const myPath = result[nodeIndex] + (getGltfXXName(gltfNode));
+            const myPath = result[nodeIndex] + (this._getGltfXXName(GltfAssetKind.Node, nodeIndex));
             result[nodeIndex] = myPath;
             if (gltfNode.children) {
                 gltfNode.children.forEach((childNodeIndex) => {
@@ -608,7 +697,7 @@ export class GltfConverter {
             (gltfAccessor.byteOffset !== undefined ? gltfAccessor.byteOffset : 0) +
             (gltfBufferView.byteOffset !== undefined ? gltfBufferView.byteOffset : 0);
 
-        const inputBuffer = new DataView(this._buffers[gltfBufferView.buffer].buffer, inputStartOffset);
+        const inputBuffer = createDataViewFromBuffer(this._buffers[gltfBufferView.buffer], inputStartOffset);
 
         const inputStride = gltfBufferView.byteStride !== undefined ?
             gltfBufferView.byteStride : componentsPerAttribute * bytesPerElement;
@@ -617,8 +706,8 @@ export class GltfConverter {
         const componentWriter = this._getComponentWriter(gltfAccessor.componentType);
 
         for (let iAttribute = 0; iAttribute < gltfAccessor.count; ++iAttribute) {
-            const i = new DataView(inputBuffer.buffer, inputBuffer.byteOffset + inputStride * iAttribute);
-            const o = new DataView(outputBuffer.buffer, outputBuffer.byteOffset + outputStride * iAttribute);
+            const i = createDataViewFromTypedArray(inputBuffer, inputStride * iAttribute);
+            const o = createDataViewFromTypedArray(outputBuffer, outputStride * iAttribute);
             for (let iComponent = 0; iComponent < componentsPerAttribute; ++iComponent) {
                 const componentBytesOffset = bytesPerElement * iComponent;
                 const value = componentReader(i, componentBytesOffset);
@@ -751,6 +840,112 @@ export class GltfConverter {
         }
     }
     // tslint:enable: max-line-length
+
+    private _getGltfXXName(assetKind: GltfAssetKind, index: number) {
+        const assetsArrayName = {
+            [GltfAssetKind.Animation]: 'animations',
+            [GltfAssetKind.Image]: 'images',
+            [GltfAssetKind.Material]: 'materials',
+            [GltfAssetKind.Node]: 'nodes',
+            [GltfAssetKind.Skin]: 'skins',
+            [GltfAssetKind.Texture]: 'textures',
+            [GltfAssetKind.Scene]: 'scenes',
+        };
+        // @ts-ignore
+        const assets = this._gltf[assetsArrayName[assetKind]];
+        if (!assets) {
+            return '';
+        }
+        const asset = assets[index];
+        if ((typeof asset.name) === 'string') {
+            return asset.name;
+        } else {
+            return `${GltfAssetKind[assetKind]}-${index}`;
+        }
+    }
+}
+
+export async function readGltf(gltfFilePath: string) {
+    return path.extname(gltfFilePath) === '.glb' ?
+        await readGlb(gltfFilePath) :
+        await readGltfJson(gltfFilePath);
+}
+
+async function readGltfJson(path: string) {
+    const gltf = await fs.readJSONSync(path) as GlTf;
+    let binaryBuffers: Buffer[] = [];
+    if (gltf.buffers) {
+        binaryBuffers = gltf.buffers.map((gltfBuffer) => {
+            if (!gltfBuffer.uri) {
+                return Buffer.alloc(0);
+            }
+            return readBufferData(path, gltfBuffer.uri);
+        });
+    }
+    return { gltf, binaryBuffers };
+}
+
+async function readGlb(path: string) {
+    const badGLBFormat = (): never => {
+        throw new Error(`Bad glb format.`);
+    };
+
+    const glb = await fs.readFile(path);
+    if (glb.length < 12) {
+        return badGLBFormat();
+    }
+
+    const magic = glb.readUInt32LE(0);
+    if (magic !== 0x46546C67) {
+        return badGLBFormat();
+    }
+
+    const ChunkTypeJson = 0x4E4F534A;
+    const ChunkTypeBin = 0x004E4942;
+    const version = glb.readUInt32LE(4);
+    const length = glb.readUInt32LE(8);
+    let gltf: GlTf | undefined;
+    let embededBinaryBuffer: Buffer | undefined;
+    for (let iChunk = 0, offset = 12; (offset + 8) <= glb.length; ++iChunk) {
+        const chunkLength = glb.readUInt32LE(offset);
+        offset += 4;
+        const chunkType = glb.readUInt32LE(offset);
+        offset += 4;
+        if (offset + chunkLength > glb.length) {
+            return badGLBFormat();
+        }
+        const payload = Buffer.from(glb.buffer, offset, chunkLength);
+        offset += chunkLength;
+        if (iChunk === 0) {
+            if (chunkType !== ChunkTypeJson) {
+                return badGLBFormat();
+            }
+            const gltfJson = new TextDecoder('utf-8').decode(payload);
+            gltf = JSON.parse(gltfJson) as GlTf;
+        } else if (chunkType === ChunkTypeBin) {
+            // TODO: Should we copy?
+            // embededBinaryBuffer = payload.slice();
+            embededBinaryBuffer = payload;
+        }
+    }
+
+    if (!gltf) {
+        return badGLBFormat();
+    } else {
+        let binaryBuffers: Buffer[] = [];
+        if (gltf.buffers) {
+            binaryBuffers = gltf.buffers.map((gltfBuffer, index) => {
+                if (!gltfBuffer.uri) {
+                    if (index === 0 && embededBinaryBuffer) {
+                        return embededBinaryBuffer;
+                    }
+                    return Buffer.alloc(0);
+                }
+                return readBufferData(path, gltfBuffer.uri);
+            });
+        }
+        return { gltf, binaryBuffers };
+    }
 }
 
 export function isDataUri(uri: string) {
@@ -798,6 +993,23 @@ class BufferBlob {
     }
 }
 
-function getGltfXXName(asset: Node | Mesh | Texture | Skin | Animation | Material) {
-    return (typeof asset.name) === 'string' ? asset.name : '';
+function readBufferData(gltfFilePath: string, uri: string): Buffer {
+    if (!uri.startsWith('data:')) {
+        const bufferPath = path.resolve(path.dirname(gltfFilePath), uri);
+        return fs.readFileSync(bufferPath);
+    } else {
+        const dataUrl = parseDataUrl(uri);
+        if (!dataUrl) {
+            throw new Error(`Bad data uri.${uri}`);
+        }
+        return Buffer.from(dataUrl.toBuffer().buffer);
+    }
+}
+
+function createDataViewFromBuffer(buffer: Buffer, offset: number = 0) {
+    return new DataView(buffer.buffer, buffer.byteOffset + offset);
+}
+
+function createDataViewFromTypedArray(typedArray: ArrayBufferView, offset: number = 0) {
+    return new DataView(typedArray.buffer, typedArray.byteOffset + offset);
 }

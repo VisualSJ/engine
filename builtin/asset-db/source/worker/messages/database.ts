@@ -59,7 +59,8 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
 
     // 绑定文件删除事件
     db.on('delete', (uuid) => {
-        ipcSend('asset-worker:asset-delete', uuid, tranAssetInfo(db.uuid2asset[uuid]), db.uuidToPath(uuid));
+        const asset = db.uuid2asset[uuid];
+        ipcSend('asset-worker:asset-delete', uuid, asset ? tranAssetInfo(asset) : {}, db.uuidToPath(uuid));
     });
 
     // 启动数据库

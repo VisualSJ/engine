@@ -71,12 +71,12 @@ export function register(database: AssetDB) {
     // bin 文件导入
     database.register(new BufferImporter(), ['.bin']);
 
-    database.register(new ImageImporter(), ['.jpg', '.png', 'jpeg', 'webp']);
+    database.register(new ImageImporter(), ['.jpg', '.png', '.jpeg', '.webp']);
     database.register(new TextureImporter(), '.texture');
     database.register(new TextureCubeImporter(), '.texture-cube');
     database.register(new TextureCubeFaceImporter(), '.texture-cube-face');
 
-    database.register(new GltfImporter(), '.gltf');
+    database.register(new GltfImporter(), ['.gltf', '.glb']);
     database.register(new GltfMeshImporter());
     database.register(new GltfAnimationImporter());
     database.register(new GltfSkeletonImporter());
