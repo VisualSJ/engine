@@ -174,6 +174,7 @@ async function decodeMaterial(dump) {
             if (JSON.stringify(define.default) === JSON.stringify(define.dump.value)) {
                 continue;
             }
+            material._defines[i][define.name] = undefined;
             await dumpDecode.decodePatch(`${define.name}`, define.dump, material._defines[i]);
         }
 
@@ -183,6 +184,7 @@ async function decodeMaterial(dump) {
             if (JSON.stringify(prop.default) === JSON.stringify(prop.dump.value)) {
                 continue;
             }
+            material._props[i][prop.name] = undefined;
             await dumpDecode.decodePatch(`${prop.name}`, prop.dump, material._props[i]);
         }
 
