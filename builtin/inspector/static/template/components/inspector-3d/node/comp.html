@@ -14,6 +14,7 @@
             <div class="name">
                 <ui-drag-item
                     :type="value.type"
+                    :extends="value.extends"
                     @dragstart="_onDragStart($event)"
                 >{{value.name}}</ui-drag-item>
             </div>

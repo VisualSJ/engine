@@ -106,6 +106,11 @@ export function encodeComponent(component: any): IProperty {
         scriptType.value = { uuid: component.__scriptUuid };
     }
 
+    // 继承链
+    if (ctor) {
+        data.extends = getTypeInheritanceChain(ctor);
+    }
+
     return data;
 }
 

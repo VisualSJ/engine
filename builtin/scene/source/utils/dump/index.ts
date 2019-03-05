@@ -5,7 +5,7 @@ import {
 } from './interface';
 
 import {
-    encodeNode,
+    encodeComponent, encodeNode,
 } from './encode';
 
 import {
@@ -15,6 +15,10 @@ import {
 
 export function get(node: any) {
     return encodeNode(node);
+}
+
+export function getComponent(comp: any) {
+    return encodeComponent(comp);
 }
 
 export async function set(dump: INode, node?: any) {

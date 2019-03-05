@@ -14,6 +14,13 @@ function dumpNode(node) {
     return dump.get(node);
 }
 
+function dumpComponent(comp) {
+    if (!comp) {
+        return null;
+    }
+    return dump.getComponent(comp);
+}
+
 /**
  * 恢复一个 dump 数据到 property
  * @param node
@@ -45,6 +52,7 @@ async function restorePrefab(node, prefab) {
 
 module.exports = {
     dumpNode,
+    dumpComponent,
     restoreProperty,
     restoreNode,
 };

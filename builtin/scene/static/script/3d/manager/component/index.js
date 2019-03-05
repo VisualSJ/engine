@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events');
+const dumpUtils = require('../../utils/dump');
 
 // 存储组件 uuid 与组件对象的 map
 const uuid2comp = {};
@@ -69,6 +70,19 @@ class CompManager extends EventEmitter {
         component._destroyImmediate();
         component.node.removeComponent(component);
         this.emit('component-removed', component);
+    }
+
+    /**
+     * 查询一个组件，并返回该节点的 dump 数据
+     *   如果组件不存在，则返回 null
+     * @param {String} uuid
+     */
+    queryDump(uuid) {
+        let node = this.query(uuid);
+        if (!node) {
+            return null;
+        }
+        return dumpUtils.dumpComponent(node);
     }
 }
 module.exports = new CompManager();

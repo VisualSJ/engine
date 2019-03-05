@@ -34,6 +34,16 @@ export function apply(messages: any) {
     };
 
     /**
+     * 查询一个组件的 dump 数据
+     */
+    messages['query-component'] = async (uuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+        return await $scene.forwarding('Component', 'queryDump', [uuid]);
+    };
+
+    /**
      * 查询某个节点的路径信息
      * 相对于场景的 path 搜索路径
      */
