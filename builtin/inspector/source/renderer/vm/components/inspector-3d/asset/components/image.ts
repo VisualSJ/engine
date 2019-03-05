@@ -1,7 +1,5 @@
 'use strict';
 
-import { readFileSync } from 'fs';
-
 export const template = `
 <section class="asset-image">
     <ui-prop class="type"
@@ -9,7 +7,7 @@ export const template = `
     >
         <ui-select slot="content"
             :value="meta ? meta.userData.type : ''"
-            @confirm="_onTextureTypeChanged($event)"
+            @confirm="_onDataChanged($event, 'type')"
         >
             <option
                 v-for="(item, index) in types"
@@ -17,6 +15,15 @@ export const template = `
                 :index="index"
             >{{item}}</option>
         </ui-select>
+    </ui-prop>
+
+    <ui-prop class="flipVertical"
+        label="FlipVertical"
+    >
+        <ui-checkbox slot="content"
+            :value="meta ? meta.userData.flipVertical : false"
+            @confirm="_onDataChanged($event, 'flipVertical')"
+        ></ui-checkbox>
     </ui-prop>
 
     <div class="platform-setting">
@@ -37,37 +44,37 @@ export const template = `
         </div>
 
         <div class="settings">
-        <ui-select value="none"
-            @confirm="_onFormatAdded($event)"
-        >
-            <option
-                v-for="name in defaultOption"
-                :value="name"
-            >{{formatsInfo[name]}}</option>
-            <option
-                v-if="tab !== 'default' && tab !== 'android'"
-                v-for="extname in extOption"
-                :value="extname"
-            >{{formatsInfo[extname]}}</option>
-        </ui-select>
-        <div class="formats"
-            v-if="meta && meta.userData && meta.userData.platformSettings"
-        >
-            <div class="item"
-                v-for="(item,key) in meta.userData.platformSettings[tab]"
-                v-if="item"
+            <ui-select value="none"
+                @confirm="_onFormatAdded($event)"
             >
-                <div>{{key}} | Quality</div>
-                <ui-num-input max="1" min="0" step="0.1" preci="2"
-                    :value="item.quality"
-                    @confirm="_onFormatChanged($event, key)"
-                ></ui-num-input>
-                <ui-button class="iconfont icon-del transparent red"
-                    @confirm="_onFormatDeleted(key)"
-                ></ui-button>
+                <option
+                    v-for="name in defaultOption"
+                    :value="name"
+                >{{formatsInfo[name]}}</option>
+                <option
+                    v-if="tab !== 'default' && tab !== 'android'"
+                    v-for="extname in extOption"
+                    :value="extname"
+                >{{formatsInfo[extname]}}</option>
+            </ui-select>
+            <div class="formats"
+                v-if="meta && meta.userData && meta.userData.platformSettings"
+            >
+                <div class="item"
+                    v-for="(item,key) in meta.userData.platformSettings[tab]"
+                    v-if="item"
+                >
+                    <div>{{key}} | Quality</div>
+                    <ui-num-input max="1" min="0" step="0.1" preci="2"
+                        :value="item.quality"
+                        @confirm="_onFormatChanged($event, key)"
+                    ></ui-num-input>
+                    <ui-button class="iconfont icon-del transparent red"
+                        @confirm="_onFormatDeleted(key)"
+                    ></ui-button>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </section>
 `;
@@ -84,10 +91,10 @@ export const methods = {
     /**
      * 更改图片的导入类型
      */
-    _onTextureTypeChanged(event: any) {
+    _onDataChanged(event: any, key: string) {
         // @ts-ignore
         const vm: any = this;
-        vm.meta.userData.type = event.target.value;
+        vm.meta.userData[key] = event.target.value;
     },
 
     /**
