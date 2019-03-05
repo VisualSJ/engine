@@ -31,7 +31,7 @@ const stringifyEffect = (() => {
 
     // comment any of the following lines to keep shaders readable
     glsl1.vert = glsl1.vert.replace(newlines, '\\n');
-    // glsl1.frag = glsl1.frag.replace(newlines, '\\n');
+    glsl1.frag = glsl1.frag.replace(newlines, '\\n');
     glsl3.vert = glsl3.vert.replace(newlines, '\\n');
     glsl3.frag = glsl3.frag.replace(newlines, '\\n');
 

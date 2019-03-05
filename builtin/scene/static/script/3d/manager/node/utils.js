@@ -25,10 +25,6 @@ exports.walk = function(scene, uuid2node) {
  * 添加组件对应的内部处理方法
  */
 exports.addComponentMap = {
-    /**
-     * 添加 Skybox 组件
-     */
-    SkyboxComponent(comp, node) { },
 
     SphereColliderComponent(component, node) {
         const boundingBox = getBoundingBox(node);

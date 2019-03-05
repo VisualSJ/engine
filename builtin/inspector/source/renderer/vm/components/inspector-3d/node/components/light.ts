@@ -3,6 +3,10 @@
 export const template = `
 <div class="light-component">
     <ui-prop auto="true"
+        :value="value.value.isMainLight"
+    ></ui-prop>
+
+    <ui-prop auto="true"
         :value="value.value.type"
     ></ui-prop>
 

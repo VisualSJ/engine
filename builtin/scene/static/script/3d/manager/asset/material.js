@@ -56,7 +56,7 @@ function getDefaultValue(type, data) {
             return new cc.Vec4();
         case 'cc.Quat':
             if (data) {
-                return new cc.Quat(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 0);
+                return new cc.Quat(data[0] || 0, data[1] || 0, data[2] || 0, data[3] || 1);
             }
             return new cc.Quat();
         case 'cc.Color':

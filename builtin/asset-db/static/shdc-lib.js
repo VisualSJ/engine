@@ -146,7 +146,7 @@ const replacePlainDefines = (code) => {
     const end = defCap.index + defCap[0].length;
     const value = defCap[2];
     // replacement
-    const regex = new RegExp(`(?<![a-zA-Z0-9_])${key}(?![a-zA-Z0-9_])`, 'g');
+    const regex = new RegExp(`(?<=\\W)${key}(?=\\W)`, 'g');
     code = code.replace(regex, (m, offset) => {
       const validRef = offset < beg || offset > end;
       return validRef ? value : m;
