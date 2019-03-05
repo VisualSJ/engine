@@ -77,7 +77,7 @@ async function initManager(info) {
     await require('../effects').init();
 
     // 启动脚本管理器，注册资源数据库内的 effect 资源
-    await require('../scripts').init();
+    await require('../scripts').init(info.project);
 
     // 给 Manager 挂上所有的管理器
     manager.Ipc = require('../ipc');

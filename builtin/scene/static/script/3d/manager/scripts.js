@@ -1,14 +1,21 @@
 'use stirct';
 
 const ipc = require('./ipc');
-const { extname, isAbsolute, resolve, basename} = require('path');
+const { extname, isAbsolute, resolve, basename, dirname} = require('path');
 const uuidUtils = require('../../utils/uuid');
 const model = require('module');
 const _ = require('lodash');
 const raw2library = {}; // 存储实际路径与 library 路径的索引 map,(路径默认带有扩展名)
+const library2raw = {};
 const scriptNames = new Set(); // 存储现有脚本名称
+let projectPath = '';
 function isNodeModulePath(path) {
     return path.replace(/\\/g, '/').indexOf('/node_modules/') !== -1;
+}
+
+// 是否在项目路径下
+function isInProject(path) {
+    return path.indexOf(projectPath) !== -1;
 }
 
 function setModuleResolve() {
@@ -16,14 +23,16 @@ function setModuleResolve() {
     model._resolveFilename = function(request, parent, isMain) {
         if (Object.keys(raw2library).length > 0) {
             let rawPath = request;
-            if (!isAbsolute(request)) {
-                rawPath = resolve(parent.filename, request);
+            if (!isAbsolute(request) && isInProject(parent.filename)) {
+                rawPath = resolve(dirname(library2raw[parent.filename]), request);
             }
             // 不带扩展名，先查找 js
             if (extname(rawPath) === '') {
                 const path = rawPath + '.js';
                 if (!raw2library[path]) {
                     rawPath += '.ts';
+                } else {
+                    rawPath = path;
                 }
             }
             let libraryPath = raw2library[rawPath];
@@ -47,7 +56,8 @@ function _loadScriptInEngin(uuid) {
     }
 }
 
-async function init() {
+async function init(project) {
+    projectPath = project;
     const scripts = await ipc.send('query-scripts');
     if (!model._resolveFilenameVendor) {
         setModuleResolve();
@@ -75,6 +85,7 @@ async function loadScript(uuid) {
         return;
     }
     raw2library[asset.file] =  asset.library['.js'];
+    library2raw[asset.library['.js']] =  asset.file;
     require(asset.file);
     _loadScriptInEngin(uuid);
 }
@@ -106,10 +117,10 @@ async function _loadScripts(scripts) {
             throw new Error(`Script (${asset.source}) can't found in library, please check it`);
         }
         raw2library[asset.file] = result;
+        library2raw[result] = asset.file;
     }
     for (const asset of scripts) {
         require(asset.file);
-        _loadScriptInEngin(asset.uuid);
         console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
     }
 }
@@ -130,6 +141,7 @@ async function removeScript(asset) {
     }
     scriptNames.delete(name);
     delete raw2library[asset.file];
+    delete library2raw[asset.library['.js']];
     // 移除 require 中的缓存
     delete require.cache[asset.library['.js']];
     // 移除引擎内的索引
