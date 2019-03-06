@@ -3,39 +3,24 @@
 const ps = require('path'); // path system
 const fse = require('fs-extra');
 
-const vWorkflow = require('./workflow');
+const vWorkflow = require('v-workflow');
 
 const workflow = new vWorkflow({
     name: 'build-js',
-    tmpdir: ps.join(__dirname, '../.workflow'),
+    tmpdir: ps.join(__dirname, '../../.workflow'),
 });
 
 /////////////////////////
 // 编译 typescript
 
-let tsDirnames = [
-    './builtin/asset-db',
-    './builtin/assets',
-    './builtin/console',
-    './builtin/engine',
-    './builtin/hierarchy',
-    './builtin/inspector',
-    './builtin/preferences',
-    './builtin/scene',
-    './builtin/selection',
-    './builtin/ui-preview',
-    './builtin/package-manager',
-    './builtin/project-setting',
-    './builtin/preview',
-    './builtin/build',
-];
+const builtin = ps.join(__dirname, '../../app/builtin');
+fse.readdirSync(builtin).forEach((name) => {
+    const dir = ps.join(builtin, name);
+    if (!fse.existsSync(ps.join(dir, 'tsconfig.json'))) {
+        return;
+    }
 
-tsDirnames.forEach((path) => {
-    const searchPaths = path.split('/');
-    const name = searchPaths.pop();
     workflow.task(name, async function() {
-        const dir = ps.join(__dirname, '..', path);
-
         const sourceDir = ps.join(dir, './source');
         const cache = this.get(name) || {};
         let changed = false;

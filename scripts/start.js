@@ -14,7 +14,7 @@ if (process.platform === 'darwin') {
 }
 
 // 拼接 dev 参数
-options = ['./', '--dev'].concat(args);
+options = ['./app', '--dev'].concat(args);
 
 spawn(command, options, {
   stdio: 'inherit',

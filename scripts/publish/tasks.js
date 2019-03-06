@@ -5,10 +5,26 @@ const fse = require('fs-extra');
 const UglifyJS = require('uglify-es');
 
 const pkg = require('../../package.json');
+
 // 发布目录
 const DIRECTORY = ps.join(__dirname, '../../.publish');
+
 // 发布的 .app 名字
-const ELECTRON = ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-x64.app`);
+const time = new Date();
+let month = time.getMonth() + 1;
+if (month < 10) {
+    month = `0${month}`;
+}
+let date = time.getDate();
+if (date < 10) {
+    date = `0${date}`;
+}
+let hours = time.getHours();
+if (hours < 10) {
+    hours = `0${hours}`;
+}
+const ELECTRON = ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}.app`);
+
 // 发布程序内的 app 目录
 const APP = process.platform === 'win' ?
     ps.join(ELECTRON, './resources/app') :
@@ -26,47 +42,12 @@ const cmd = {
 exports.generateElectron = function() {
     // 检查 piblish 文件夹是否存在，并清空重制文件夹
     this.log('生成发布文件夹');
-    if (fse.existsSync(DIRECTORY)) {
-        fse.emptyDirSync(DIRECTORY);
-    } else {
+    if (!fse.existsSync(DIRECTORY)) {
         fse.ensureDirSync(DIRECTORY);
     }
-};
-
-/**
- * 复制需要打包的开发文件
- */
-exports.copyFiles = async function() {
-    // await this.bash('git', {
-    //     params: ['rev-parse', '--short', 'HEAD', '>', 'version.info'],
-    //     root: ps.join(__dirname, '../../'),
-    // });
-
-    this.log('复制 @types');
-    const types = ps.join(__dirname, '../../@types');
-    fse.copySync(types, ps.join(APP, '@types'));
-
-    this.log('复制根目录文件');
-    const pkg = ps.join(__dirname, '../../package.json');
-    fse.copySync(pkg, ps.join(APP, 'package.json'));
-    const boot = ps.join(__dirname, '../../index.js');
-    fse.copySync(boot, ps.join(APP, 'index.js'));
-
-    this.log('复制 dashboard');
-    const dashboard = ps.join(__dirname, '../../dashboard');
-    fse.copySync(dashboard, ps.join(APP, 'dashboard'));
-
-    this.log('复制 lib');
-    const lib = ps.join(__dirname, '../../lib');
-    fse.copySync(lib, ps.join(APP, 'lib'));
-
-    this.log('复制 builtin');
-    const builtin = ps.join(__dirname, '../../builtin');
-    fse.copySync(builtin, ps.join(APP, 'builtin'), {
-        filter(name) {
-            return !name.includes('dist') && !name.includes('readme.md');
-        },
-    });
+    if (fse.existsSync(ELECTRON)) {
+        fse.removeSync(ELECTRON);
+    }
 };
 
 /**
@@ -79,20 +60,23 @@ exports.copyMacElectron = function() {
         ps.join(__dirname, '../../node_modules/electron/dist') :
         ps.join(__dirname, '../../node_modules/electron/dist/Electron.app');
     fse.copySync(source, ELECTRON);
+
     // 保证 app 文件夹存在
     fse.ensureDirSync(APP);
 };
 
 /**
- * 复制第三方模块
+ * 复制需要打包的开发文件
  */
-exports.copyModules = function() {
-    const modules = ps.join(__dirname, '../../node_modules');
-    const list = fse.readdirSync(modules);
-    list.forEach((name) => {
-        this.log(name);
-        fse.copySync(ps.join(modules, name), ps.join(APP, 'node_modules', name));
-    });
+exports.copyFiles = async function() {
+    // await this.bash('git', {
+    //     params: ['rev-parse', '--short', 'HEAD', '>', 'version.info'],
+    //     root: ps.join(__dirname, '../../'),
+    // });
+
+    this.log('复制 app');
+    const types = ps.join(__dirname, '../../app');
+    fse.copySync(types, APP);
 };
 
 /**
@@ -106,44 +90,6 @@ exports.copyResources = function() {
             return !name.includes('/.git/');
         },
     });
-};
-
-/**
- * 编译 builtin 里面的各种
- */
-exports.buildBuiltin = async function() {
-    const source = ps.join(APP, './builtin');
-    const list = fse.readdirSync(source);
-
-    for (let i = 0; i < list.length; i++) {
-        const name = list[i];
-        this.log(name);
-        const dir = ps.join(source, name);
-        if (!fse.statSync(dir).isDirectory()) {
-            continue;
-        }
-
-        const config = ps.join(dir, 'tsconfig.json');
-        if (fse.existsSync(config)) {
-            const json = fse.readJSONSync(config);
-            json.sourceMap = false;
-            json.inlineSourceMap = false;
-            json.inlineSources = false;
-            fse.writeJSONSync(config, json);
-
-            await this.bash(cmd.tsc, {
-                root: dir,
-            });
-        }
-
-        const less = ps.join(dir, './static/style/index.less');
-        if (fse.existsSync(less)) {
-            await this.bash(cmd.lessc, {
-                params: ['./static/style/index.less', './dist/index.css'],
-                root: dir,
-            });
-        }
-    }
 };
 
 /**
@@ -163,34 +109,6 @@ exports.clearBuiltin = async function() {
 
         fse.removeSync(ps.join(dir, 'tsconfig.json'));
         fse.removeSync(ps.join(dir, 'source'));
-    }
-};
-
-/**
- * 构建 theme 里的 less
- */
-exports.buildTheme = async function() {
-    const DIR = {
-        theme: ps.join(APP, './lib/theme'),
-        source: ps.join(APP, './lib/theme/source'),
-        dist: ps.join(APP, './lib/theme/dist'),
-    };
-
-    const files = [];
-    this.recursive(DIR.source, (file) => {
-        files.push(file);
-    });
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        this.log(file);
-        const rPath = ps.relative(DIR.source, file);
-        const dPath = ps.join(DIR.dist, rPath).replace('.less', '.css');
-
-        await this.bash(cmd.lessc, {
-            params: [file, dPath],
-            root: DIR.theme,
-        });
     }
 };
 

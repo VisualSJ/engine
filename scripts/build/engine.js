@@ -4,16 +4,16 @@ const fse = require('fs-extra');
 const path = require('path');
 const vGit = require('v-git');
 
-const vWorkflow = require('./workflow');
+const vWorkflow = require('v-workflow');
 
-const RESOURCE = path.join(__dirname, '../resources');
+const RESOURCE = path.join(__dirname, '../../resources');
 
 const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const gulp = process.platform === 'win32' ? 'gulp.cmd' : 'gulp';
 
 const workflow = new vWorkflow({
     name: 'build-engine',
-    tmpdir: path.join(__dirname, '../.workflow'),
+    tmpdir: path.join(__dirname, '../../.workflow'),
 });
 
 // 检查文件夹是否存在

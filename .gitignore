@@ -1,31 +1,22 @@
 # 临时文件
-.*
-!.npmrc
-yarn*
-effects.js
+.publish
+.vscode
+.workflow
 
 # node 模块
-node_modules/
+**/node_modules/
 **/package-lock.json
+yarn*
 
 # 插件内的构建后目录
-/builtin/**/dist
-/lib/theme/**/dist
+app/builtin/**/dist
+app/lib/theme/**/dist
 
 # 引擎文件夹
 /resources
 
-# 内置数据库
-# /builtin/asset-db/static/internal/library
-# /builtin/asset-db/static/internal/temp
-# /builtin/asset-db/static/internal/*
-
 # 模拟器
 /builtin/preview/simulator
 
-/builtin/engine/resources
-/builtin/scene/engine
+# 可能出现的多余文件
 /builtin/*/source/**/*.js
-
-# cocos2d-x
-/cocos2d-x

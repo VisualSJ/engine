@@ -35,7 +35,7 @@ export const messages = {
         // 是否使用内置引擎
         if (profile.local.get(`${type}.javascript.builtin`)) {
             version = `builtin`;
-            directory = path.join(__dirname, '../../../../resources', type, `engine`);
+            directory = path.join(__dirname, '../../../../../resources', type, `engine`);
         } else {
             version = `custom`;
             directory = profile.local.get(`${type}.javascript.custom`);

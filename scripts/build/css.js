@@ -3,11 +3,11 @@
 const ps = require('path'); // path system
 const fse = require('fs-extra');
 
-const vWorkflow = require('./workflow');
+const vWorkflow = require('v-workflow');
 
 const workflow = new vWorkflow({
     name: 'build-less',
-    tmpdir: ps.join(__dirname, '../.workflow'),
+    tmpdir: ps.join(__dirname, '../../.workflow'),
 });
 
 const cmd = process.platform === 'win32' ? 'lessc.cmd' : 'lessc';
@@ -15,27 +15,15 @@ const cmd = process.platform === 'win32' ? 'lessc.cmd' : 'lessc';
 /////////////////////////
 // 编译插件内的 less
 
-let lessDirnames = [
-    './builtin/assets',
-    './builtin/console',
-    './builtin/hierarchy',
-    './builtin/inspector',
-    './builtin/preferences',
-    './builtin/scene',
-    './builtin/ui-preview',
-    './builtin/package-manager',
-    './builtin/project-setting',
-    './builtin/engine',
-    './builtin/build',
-];
+const builtin = ps.join(__dirname, '../../app/builtin');
+fse.readdirSync(builtin).forEach((name) => {
+    const dir = ps.join(builtin, name);
+    const lessDir = ps.join(dir, './static/style');
+    if (!fse.existsSync(ps.join(lessDir, 'index.less'))) {
+        return;
+    }
 
-lessDirnames.forEach((path) => {
-    const searchPaths = path.split('/');
-    const name = searchPaths.pop();
     workflow.task(name, async function() {
-        const dir = ps.join(__dirname, '..', path);
-
-        const lessDir = ps.join(dir, './static/style');
         const cache = this.get(name) || {};
         let changed = false;
         workflow.recursive(lessDir, (file) => {
@@ -56,15 +44,16 @@ lessDirnames.forEach((path) => {
         });
         this.set(name, cache);
     });
+    
 });
 
 /////////////////////////////////////
 // 编译 theme 模块的 less 代码
 
 const DIR = {
-    theme: ps.join(__dirname, '../lib/theme'),
-    source: ps.join(__dirname, '../lib/theme/source'),
-    dist: ps.join(__dirname, '../lib/theme/dist'),
+    theme: ps.join(__dirname, '../../app/lib/theme'),
+    source: ps.join(__dirname, '../../app/lib/theme/source'),
+    dist: ps.join(__dirname, '../../app/lib/theme/dist'),
 };
 
 workflow.task('theme', async function() {
