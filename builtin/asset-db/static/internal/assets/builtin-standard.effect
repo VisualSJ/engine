@@ -15,6 +15,15 @@ CCEffect {
       pbrSampler:      { type: 'sampler2D', value: 'grey'               }
       emissiveSampler: { type: 'sampler2D', value: 'grey'               }
     }
+    planarShadow: {
+      switch: USE_PLANAR_SHADOW
+      vert: planar-shadow-vs:vert
+      frag: planar-shadow-fs:frag
+      depthStencilState: {
+        depthTest: true
+        depthWrite: false
+      }
+    }
   }
   techniques: [
     {
@@ -23,7 +32,7 @@ CCEffect {
         vert: standard-vs:vert
         frag: standard-fs:frag
         properties: $p1
-      }]
+      }, '$planarShadow']
     }
     {
       name: transparent
@@ -43,7 +52,7 @@ CCEffect {
           }]
         }
         properties: $p1
-      }]
+      }, '$planarShadow']
     }
   ]
 }
@@ -206,5 +215,28 @@ CCProgram standard-fs {
     finalColor = max(finalColor, vec3(pbrParams.g));
 
     return vec4(finalColor, baseColor.a);
+  }
+}
+
+CCProgram planar-shadow-vs {
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local>
+  #include <cc-shadow>
+
+  in vec3 a_position;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+    return cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
+  }
+}
+
+CCProgram planar-shadow-fs {
+  precision highp float;
+  #include <cc-shadow>
+
+  vec4 frag () {
+    return cc_shadowColor;
   }
 }

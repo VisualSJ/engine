@@ -168,12 +168,19 @@ const passParams = {
   CLAMP: gfx.GFXAddress.CLAMP,
   BORDER: gfx.GFXAddress.BORDER,
 
+  VIEWPORT: gfx.GFXDynamicState.VIEWPORT,
+  SCISSOR: gfx.GFXDynamicState.SCISSOR,
+  LINE_WIDTH: gfx.GFXDynamicState.LINE_WIDTH,
+  DEPTH_BIAS: gfx.GFXDynamicState.DEPTH_BIAS,
+  BLEND_CONSTANTS: gfx.GFXDynamicState.BLEND_CONSTANTS,
+  DEPTH_BOUNDS: gfx.GFXDynamicState.DEPTH_BOUNDS,
+  STENCIL_WRITE_MASK: gfx.GFXDynamicState.STENCIL_WRITE_MASK,
+  STENCIL_COMPARE_MASK: gfx.GFXDynamicState.STENCIL_COMPARE_MASK,
+
   TRUE: true,
   FALSE: false
 };
 Object.assign(passParams, RenderPassStage);
-
-const DynamicState = gfx.GFXDynamicState;
 
 const mappings = {
   typeParams,
@@ -183,7 +190,6 @@ const mappings = {
   passParams,
   RenderQueue,
   RenderPriority,
-  DynamicState,
 };
 
 module.exports = mappings;

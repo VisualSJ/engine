@@ -652,59 +652,43 @@ const mapPassParam = (() => {
         if (num !== undefined) obj[key] = num;
       } else if (Array.isArray(prop)) { // arrays:
         if (!prop.length) continue; // empty
-        if (typeof prop[0] === 'object') prop.forEach(generalMap); // nested props
-        else if (typeof prop[0] === 'number') obj[key] = // color array
+        switch (typeof prop[0]) {
+        case 'object': prop.forEach(generalMap); break; // nested props
+        case 'string': generalMap(prop); break; // string array
+        case 'number': obj[key] = // color array
           ((prop[0] * 255) << 24 | (prop[1] * 255) << 16 |
             (prop[2] * 255) << 8 | (prop[3] || 255) * 255) >>> 0;
+        }
       } else if (typeof prop === 'object') {
         generalMap(prop); // nested props
       }
     }
   };
-  const mapPriority = (() => {
-    const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;
-    const dfault = mappings.RenderPriority.DEFAULT;
-    const min = mappings.RenderPriority.MIN;
-    const max = mappings.RenderPriority.MAX;
-    return (str) => {
-      let res = -1;
-      const cap = priorityRE.exec(str);
-      res = cap ? mappings.RenderPriority[cap[1].toUpperCase()] + parseInt(cap[3])
-        * (cap[2] === '+' ? 1 : -1) : parseInt(str);
-      if (isNaN(res) || res < min || res > max) {
-        warn(`illegal pass priority: ${str}`); return dfault;
-      }
-      return res;
-    };
-  })();
-  const mapDynamics = (() => {
-    const seperator = /[\s|]+/;
-    return (str) => {
-      const arr = str.split(seperator);
-      for (let i = 0; i < arr.length; i++) {
-        const res = mappings.DynamicState[arr[i].toUpperCase()];
-        if (res === undefined) warn(`illegal dynamic state '${arr[i]}'`);
-        arr[i] = res;
-      }
-      return arr;
+  const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;
+  const dfault = mappings.RenderPriority.DEFAULT;
+  const min = mappings.RenderPriority.MIN;
+  const max = mappings.RenderPriority.MAX;
+  const mapPriority = (str) => {
+    let res = -1;
+    const cap = priorityRE.exec(str);
+    res = cap ? mappings.RenderPriority[cap[1].toUpperCase()] + parseInt(cap[3])
+      * (cap[2] === '+' ? 1 : -1) : parseInt(str);
+    if (isNaN(res) || res < min || res > max) {
+      warn(`illegal pass priority: ${str}`); return dfault;
     }
-  })();
+    return res;
+  };
+  const mapSwitch = (def, shader) => {
+    if (shader.defines.find((d) => d === def)) warn('don\'t use shader defines to controll passes');
+    return def;
+  };
   return (obj, shader) => {
     shaderName = 'type error';
     const tmp = {};
     // special treatments
-    if (obj.properties) {
-      tmp.properties = mapProperties(obj.properties, shader);
-      delete obj.properties;
-    }
-    if (obj.priority) {
-      tmp.priority = mapPriority(obj.priority);
-      delete obj.priority;
-    }
-    if (obj.dynamics) {
-      tmp.dynamics = mapDynamics(obj.dynamics);
-      delete obj.dynamics;
-    }
+    if (obj.properties) { tmp.properties = mapProperties(obj.properties, shader); delete obj.properties; }
+    if (obj.priority) { tmp.priority = mapPriority(obj.priority); delete obj.priority; }
+    if (obj.switch) { tmp.switch = mapSwitch(obj.switch, shader); delete obj.switch; }
     generalMap(obj); Object.assign(obj, tmp);
   };
 })();
