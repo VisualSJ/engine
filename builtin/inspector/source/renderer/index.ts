@@ -7,6 +7,7 @@ import { init } from './vm';
 
 import { changeCurveData, changeCurveState } from '../curve-editor/manager';
 import { changeGradintState, changeGrandintData, } from '../gradient-editor/manager';
+import { changeSpriteData, changeSpriteState, } from '../sprite-editor/manager';
 
 let panel: any = null;
 let vm: any = null;
@@ -130,6 +131,14 @@ export const messages = {
 
     'curve:change'(dump: any) {
         changeCurveData(dump);
+    },
+
+    'sprite:state'(bool: boolean) {
+        changeSpriteState(bool);
+    },
+
+    'sprite:change'(dump: any) {
+        changeSpriteData(dump);
     },
 };
 

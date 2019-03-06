@@ -30,6 +30,10 @@ module.exports = {
         fbx: {
             browse: 'browse',
         },
+
+        spriteFrame: {
+            edit: 'Edit',
+        },
     },
 
     gradient: {
@@ -38,5 +42,15 @@ module.exports = {
 
     curve_editor: {
         title: 'Curve Editor',
+    },
+
+    sprite_editor: {
+        title: 'Sprite Editor',
+        scale: 'Scale',
+        border: 'Border',
+        left: 'Left',
+        right: 'Right',
+        top: 'Top',
+        bottom: 'Bottom',
     },
 };

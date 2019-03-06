@@ -81,6 +81,7 @@ const map = {
         prefab: { type: 'icon', value: 'i-prefab' },
         'gltf-scene': { type: 'icon', value: 'i-prefab' },
         'gltf-embeded-image': { type: 'icon', value: 'i-image' },
+        'sprite-frame': { type: 'icon', value: 'i-image' },
         'gltf-material': { type: 'icon', value: 'i-material' },
         'gltf-skeleton': { type: 'icon', value: 'i-robot' },
         'gltf-mesh': { type: 'icon', value: 'i-color' },

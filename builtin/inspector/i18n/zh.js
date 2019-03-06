@@ -30,6 +30,10 @@ module.exports = {
         fbx: {
             browse: '浏览',
         },
+
+        spriteFrame: {
+            edit: '编辑',
+        },
     },
 
     gradient: {
@@ -38,5 +42,15 @@ module.exports = {
 
     curve_editor: {
         title: 'Curve 编辑器',
+    },
+
+    sprite_editor: {
+        title: 'Sprite 编辑器',
+        scale: 'Scale',
+        border: 'Border',
+        left: 'Left',
+        right: 'Right',
+        top: 'Top',
+        bottom: 'Bottom',
     },
 };

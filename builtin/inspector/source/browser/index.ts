@@ -65,6 +65,19 @@ export const messages = {
         return gradientData;
     },
 
+    /**
+     * 打开 sprite-editor
+     * @param data { uuid }
+     */
+    'open-sprite-editor'(data: any) {
+        Editor.Panel.open('inspector.sprite-editor');
+        Editor.Ipc.sendToPanel(
+            'inspector.sprite-editor',
+            'current-keys',
+            data
+        );
+    },
+
 };
 
 export function load() {

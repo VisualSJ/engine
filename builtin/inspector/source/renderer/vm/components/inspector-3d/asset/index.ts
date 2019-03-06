@@ -10,6 +10,7 @@ const importers: string[] = [
     'typescript',
     'texture',
     'texture-cube',
+    'sprite-frame',
     'material',
 ];
 
@@ -31,6 +32,7 @@ export const components = {
     // 'asset-typescript': require('./components/typescript'),
     'asset-texture': require('./components/texture'),
     'asset-texture-cube': require('./components/texture'),
+    'asset-sprite-frame': require('./components/sprite-frame'),
     'asset-material': require('./components/material/index'),
 };
 
@@ -60,6 +62,7 @@ export const methods = {
 
         vm.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.uuid);
         vm.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.uuid);
+
         vm.componentName = vm.getComponentName(vm.info);
 
         vm.$watch('meta', () => {

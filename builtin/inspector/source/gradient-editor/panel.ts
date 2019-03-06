@@ -26,7 +26,7 @@ export const template = readFileSync(
 export const fonts = [
     {
         name: 'inspector',
-        file: 'packages://inspector/static/iconfont.woff',
+        file: 'packages://inspector/static/style/imports/iconfont.woff',
     },
 ];
 

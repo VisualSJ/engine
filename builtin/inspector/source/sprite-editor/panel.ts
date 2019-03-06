@@ -4,7 +4,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const Vue = require('vue/dist/vue.js');
-const { T, getFitSize } = require('../../static/utils');
+const SVG = require('svg.js');
+const Chroma = require('chroma-js');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -24,553 +25,705 @@ export const template = readFileSync(
 export const fonts = [
     {
         name: 'inspector',
-        file: 'packages://inspector/static/iconfont.woff',
+        file: 'packages://inspector/static/style/imports/iconfont.woff',
     },
 ];
 
-export const $ = { content: '.sprite-editor' };
+export const $ = {
+    content: '.sprite-editor',
+};
 
 export const messages = {
-    'current-uuid'(uuid: string) {
-        vm && (vm.uuid = uuid);
+    'current-keys'(data: any) {
+        if (vm && data) {
+            vm.uuid = data.uuid;
+            vm.subAssetUuid = data.subAssetUuid;
+        }
     },
 };
 
 export const listeners = {
     resize() {
-        vm && vm.windowResizeListener();
+        vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+        vm.refreshScaleSlider();
     },
 };
 
 export async function ready() {
-    Editor.Ipc.sendToPackage(
-        'inspector',
-        'sprite-editor-state',
-        true
-    );
+
     // @ts-ignore
     panel = this;
 
     // 初始化 vue
     vm = new Vue({
         el: panel.$.content,
-
         data: {
-            image: null,
-            meta: null,
             uuid: '',
-            scale: 50,
-            minScale: 0,
-            maxScale: 100,
+            subAssetUuid: '',
+            svg: null,
+            lastBcr: null,
+            svgColor: '#5c5',
+            dotSize: 6,
+            borderLeft: 0,
+            borderRight: 0,
+            borderBottom: 0,
+            borderTop: 0,
+
             leftPos: 0,
             rightPos: 0,
             topPos: 0,
             bottomPos: 0,
-        },
 
-        async mounted() {
-            const uuid = await Editor.Ipc.requestToPackage(
-                'inspector',
-                'get-sprite-editor-uuid'
-            );
-            this._textureUuid = uuid.replace('@sprite-frame', '');
-            this.uuid = uuid;
+            startLeftPos: 0,
+            startRightPos: 0,
+            startTopPos: 0,
+            startBottomPos: 0,
+            meta: null,
+            scalingSize: null,
+
+            scale: 100,
+            minScale: 10,
+            maxScale: 1000,
+            dirty: false,
         },
         watch: {
-            uuid(this: any, newVal: string, oldVal: string) {
-                if (newVal !== oldVal) {
-                    this._textureUuid = newVal.replace(
-                        '@sprite-frame',
-                        ''
-                    );
-                    this.openSprite();
+            uuid() {
+                if (vm.uuid) {
+                    vm.openSprite(vm.uuid);
                 }
             },
-            scale(this: any, newVal: number, oldVal: number) {
-                if (this.enabled) {
-                    if (newVal > this.maxScale) {
-                        this.scale = this.maxScale;
-                    }
-                    if (newVal < this.minScale) {
-                        this.scale = this.minScale;
-                    }
-                    this.resize(
-                        (this.meta.userData.width * this.scale) / 100,
-                        (this.meta.userData.height * this.scale) / 100
-                    );
-                }
+            scale() {
+                vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+            },
+            leftPos() {
+                vm.leftPosChanged();
+            },
+            rightPos() {
+                vm.rightPosChanged();
+            },
+            topPos() {
+                vm.topPosChanged();
+            },
+            bottomPos() {
+                vm.bottomPosChanged();
             },
         },
-        computed: {
-            dynamicComponent(this: any) {
-                if (this.enabled) {
-                    return 'ui-slider';
-                }
-                return null;
-            },
-            enabled(this: any): boolean {
-                return [this.image, this.meta].some((item) => !!item);
-            },
-            leftZIndex(this: any) {
-                if (this.enabled) {
-                    if (
-                        this.leftPos + this.rightPos >=
-                        this.image.width &&
-                        this.leftPos === this.image.width
-                    ) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            topZIndex(this: any) {
-                if (this.enabled) {
-                    if (
-                        this.topPos + this.bottomPos >=
-                        this.image.height &&
-                        this.topPos === this.image.height
-                    ) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            isDirty(this: any) {
-                if (this.enabled) {
-                    const isLeftDirty =
-                        this.leftPos !==
-                        this.meta.userData.borderLeft;
-                    const isRightDirty =
-                        this.rightPos !==
-                        this.meta.userData.borderRight;
-                    const isTopDirty =
-                        this.topPos !== this.meta.userData.borderTop;
-                    const isBottomDirty =
-                        this.bottomPos !==
-                        this.meta.userData.borderBottom;
+        mounted() {
+            this.svg = SVG(this.$refs.svg);
+            this.svg.spof();
 
-                    return (
-                        isLeftDirty ||
-                        isRightDirty ||
-                        isTopDirty ||
-                        isBottomDirty
-                    );
-                }
-                return false;
-            },
+            this.refreshScaleSlider();
         },
         methods: {
-            T,
-
-            async openSprite(this: any) {
-                if (!this.uuid) {
+            t(key: string): string {
+                return Editor.I18n.t(`inspector.sprite_editor.${key}`);
+            },
+            resize(width: number, height: number) {
+                if (!vm.image && !vm.meta) {
                     return;
                 }
+                const bcr = vm.$root.$el.getBoundingClientRect();
+                const result = getFitSize(width, height, bcr.width, bcr.height);
 
-                const [texture, meta] = await Promise.all([
-                    Editor.Ipc.requestToPackage(
-                        'asset-db',
-                        'query-asset-meta',
-                        this._textureUuid
-                    ),
-                    Editor.Ipc.requestToPackage(
-                        'asset-db',
-                        'query-asset-meta',
-                        this.uuid
-                    ),
-                ]);
-
-                if (meta && texture) {
-                    if (meta.importer !== 'sprite-frame') {
-                        return;
-                    }
-                    this.meta = meta;
-                    this.refreshScaleSlider();
-
-                    let src = join(
-                        Editor.Project.path,
-                        'library',
-                        texture.uuid.substr(0, 2),
-                        texture.uuid
-                    );
-                    src += texture.files.filter(
-                        (file: string) => !file.includes('json')
-                    )[0];
-
-                    this.loadImage(src);
-                }
-            },
-
-            loadImage(this: any, src: string) {
-                this.image = new Image();
-                this.image.onload = () => {
-                    this.resize(
-                        (this.meta.userData.width * this.scale) / 100,
-                        (this.meta.userData.height * this.scale) / 100
-                    );
-                    this.loadSlider = true;
-                };
-                this.image.src = src;
-            },
-
-            resize(
-                this: any,
-                imageWidth: number,
-                imageHeight: number
-            ) {
-                const {
-                    width: boxWidth,
-                    height: boxHeight,
-                } = this.$refs.container.getBoundingClientRect();
-                const [width, height] = getFitSize(
-                    imageWidth,
-                    imageHeight,
-                    boxWidth,
-                    boxHeight
-                );
-
-                if (this.meta.userData.rotated) {
-                    this._scalingSize = {
-                        width: Math.ceil(height),
-                        height: Math.ceil(width),
+                if (vm.meta.rotated) {
+                    vm.scalingSize = {
+                        width: Math.ceil(result[1]),
+                        height: Math.ceil(result[0]),
                     };
                 }
 
-                this.$refs.canvas.width = Math.ceil(width);
-                this.$refs.handles.style.width = `${Math.ceil(width) +
-                    1}px`;
-                this.$refs.canvas.height = Math.ceil(height);
-                this.$refs.handles.style.height = `${Math.ceil(
-                    height
-                ) + 1}px`;
+                vm.$refs.canvas.width = Math.ceil(result[0]);
+                vm.$refs.canvas.height = Math.ceil(result[1]);
 
-                this.repaint();
+                vm.repaint();
             },
-
-            repaint(this: any) {
-                const canvas = this.$refs.canvas.getContext('2d');
-                const canvasWidth = this.$refs.canvas.width;
-                const canvasHeight = this.$refs.canvas.height;
-
-                let sWidth: number;
-                let sHeight: number;
-                let dx: number;
-                let dy: number;
-                let dWidth: number;
-                let dHeight: number;
-
-                canvas.imageSmoothingEnabled = false;
-                if (this.meta.userData.rotated) {
-                    const centerX = canvasWidth / 2;
-                    const centerY = canvasHeight / 2;
-
-                    canvas.translate(centerX, centerY);
-                    canvas.rotate((-90 * Math.PI) / 180);
-                    canvas.translate(-centerX, -centerY);
-
-                    dx = centerX - this._scalingSize.width / 2;
-                    dy = centerY - this._scalingSize.height / 2;
-                    sWidth = this.meta.userData.height;
-                    sHeight = this.meta.userData.width;
-                    dWidth = canvasHeight;
-                    dHeight = canvasWidth;
-                } else {
-                    dx = 0;
-                    dy = 0;
-                    sWidth = this.meta.userData.width;
-                    sHeight = this.meta.userData.height;
-                    dWidth = canvasWidth;
-                    dHeight = canvasHeight;
-                }
-
-                canvas.drawImage(
-                    this.image,
-                    this.meta.userData.trimX,
-                    this.meta.userData.trimY,
-                    sWidth,
-                    sHeight,
-                    dx,
-                    dy,
-                    dWidth,
-                    dHeight
-                );
+            refreshScaleSlider() {
+                // @ts-ignore
+                const vm = this;
+                // @ts-ignore
+                const $scale = vm.$refs.scale;
+                // @ts-ignore
+                $scale.min = vm.minScale;
+                // @ts-ignore
+                $scale.max = vm.maxScale;
+                // @ts-ignore
+                $scale.value = vm.scale;
             },
-
-            refreshScaleSlider(this: any) {
-                const {
-                    width,
-                    height,
-                } = this.$refs.container.getBoundingClientRect();
-                const {
-                    width: imageWidth,
-                    height: imageHeight,
-                } = this.meta.userData;
-
-                const { width: prevWidth, height: prevHeight } = this
-                    ._boundary || { width: 0, height: 0 };
-
-                if (
-                    prevWidth &&
-                    prevWidth === width &&
-                    prevHeight === height
-                ) {
+            scaleChange() {
+                if (!vm.image || !vm.meta) {
                     return;
                 }
-                let scale;
-                if (imageWidth > imageHeight) {
-                    scale = (width / imageWidth) * 100;
+
+                vm.scale = vm.$refs.scale.value;
+            },
+            async openSprite() {
+                const { userData } = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.subAssetUuid);
+                vm.meta = userData;
+                vm.leftPos = userData.borderLeft;
+                vm.rightPos = userData.borderRight;
+                vm.topPos = userData.borderTop;
+                vm.bottomPos = userData.borderBottom;
+
+                const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.uuid);
+                const key = Object.keys(info.library).find((key) => key !== '.json');
+                if (!key) {
+                    return '';
+                }
+
+                vm.image = new Image();
+                vm.image.src = info.library[key];
+                vm.image.onload = () => {
+                    vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+                };
+            },
+            repaint() {
+                const ctx = vm.$refs.canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+
+                const meta = vm.meta;
+                let canvasWidth = vm.$refs.canvas.width;
+                let canvasHeight = vm.$refs.canvas.height;
+                let xPos;
+                let yPos;
+                let trimWidth;
+                let trimHeight;
+                if (meta.rotated) {
+                    const tempXPos = canvasWidth / 2;
+                    const tempYPos = canvasHeight / 2;
+                    ctx.translate(tempXPos, tempYPos);
+                    ctx.rotate(-90 * Math.PI / 180);
+                    ctx.translate(-tempXPos, -tempYPos);
+
+                    xPos = canvasWidth / 2 - vm.scalingSize.width / 2;
+                    yPos = canvasHeight / 2 - vm.scalingSize.height / 2;
+                    trimWidth = meta.height;
+                    trimHeight = meta.width;
+                    canvasWidth = vm.$refs.canvas.height;
+                    canvasHeight = vm.$refs.canvas.width;
                 } else {
-                    scale = (height / imageHeight) * 100;
+                    xPos = 0;
+                    yPos = 0;
+                    trimWidth = meta.width;
+                    trimHeight = meta.height;
+                    canvasWidth = vm.$refs.canvas.width;
+                    canvasHeight = vm.$refs.canvas.height;
                 }
 
-                this.minScale = Math.ceil(scale / 5);
-                this.maxScale = Math.floor(scale);
-                this.scale = Math.ceil((scale + this.minScale) / 2);
-                this._boundary = { width, height };
+                ctx.drawImage(
+                    vm.image,
+                    meta.trimX, meta.trimY, trimWidth, trimHeight,
+                    xPos, yPos, canvasWidth, canvasHeight
+                );
+
+                vm.drawEditElements();
             },
-
-            onSliderChanged(this: any, event: any) {
-                if (this.enabled) {
-                    this.scale = event.target.value;
-                    const imageWidth =
-                        (this.meta.userData.width * this.scale) / 100;
-                    const imageHeight =
-                        (this.meta.userData.height * this.scale) /
-                        100;
-                    this.resize(imageWidth, imageHeight);
-                }
-            },
-
-            windowResizeListener(this: any) {
-                if (this.enabled) {
-                    this.refreshScaleSlider();
-                    const imageWidth =
-                        (this.meta.userData.width * this.scale) / 100;
-                    const imageHeight =
-                        (this.meta.userData.height * this.scale) /
-                        100;
-                    this.resize(imageWidth, imageHeight);
-                }
-            },
-
-            onMouseWheel(this: any, event: any) {
-                if (this.enabled) {
-                    event.stopPropagation();
-                    const { wheelDelta } = event;
-                    const scale =
-                        (this.scale / 100) *
-                        Math.pow(2, 0.002 * wheelDelta);
-
-                    this.scale = Math.ceil(scale * 100);
-                }
-            },
-
-            onMouseDown(this: any, event: any) {
-                if (
-                    this._dragTarget ||
-                    !event.target.classList.contains('handle')
-                ) {
+            drawEditElements() {
+                if (!vm.image) {
                     return;
                 }
-                this._dragTarget = event.target;
-                this._startX = event.clientX;
-                this._startY = event.clientY;
-                this._startLeftPos = this.leftPos;
-                this._startRightPos = this.rightPos;
-                this._startTopPos = this.topPos;
-                this._startBottomPos = this.bottomPos;
 
-                document.addEventListener(
-                    'mousemove',
-                    this.onMouseMove
-                );
-                document.addEventListener('mouseup', this.onMouseUp);
+                vm.svg.clear();
+                const bcr = vm.getCanvasRect();
+                vm.updateBorderPos(bcr);
+
+                // 4个边
+                vm.lineLeft = vm.drawLine(vm.borderLeft, bcr.bottom, vm.borderLeft, bcr.top, 'l');
+                vm.lineRight = vm.drawLine(vm.borderRight, bcr.bottom, vm.borderRight, bcr.top, 'r');
+                vm.lineTop = vm.drawLine(bcr.left, vm.borderTop, bcr.right, vm.borderTop, 't');
+                vm.lineBottom = vm.drawLine(bcr.left, vm.borderBottom, bcr.right, vm.borderBottom, 'b');
+
+                // 4个交点
+                vm.dotLB = vm.drawDot(vm.borderLeft, vm.borderBottom, 'lb');
+                vm.dotLT = vm.drawDot(vm.borderLeft, vm.borderTop, 'lt');
+                vm.dotRB = vm.drawDot(vm.borderRight, vm.borderBottom, 'rb');
+                vm.dotRT = vm.drawDot(vm.borderRight, vm.borderTop, 'rt');
+
+                // 4个边的中点
+                vm.dotL = vm.drawDot(vm.borderLeft, bcr.bottom - bcr.height / 2, 'l');
+                vm.dotR = vm.drawDot(vm.borderRight, bcr.bottom - bcr.height / 2, 'r');
+                vm.dotB = vm.drawDot(bcr.left + bcr.width / 2, vm.borderBottom, 'b');
+                vm.dotT = vm.drawDot(bcr.left + bcr.width / 2, vm.borderTop, 't');
             },
+            getCanvasRect() {
+                const ret: any = {};
+                ret.top = vm.$refs.canvas.offsetTop;
+                ret.left = vm.$refs.canvas.offsetLeft;
+                ret.bottom = vm.$refs.canvas.offsetTop + vm.$refs.canvas.height;
+                ret.right = vm.$refs.canvas.offsetLeft + vm.$refs.canvas.width;
+                ret.width = vm.$refs.canvas.width;
+                ret.height = vm.$refs.canvas.height;
 
-            onMouseMove(this: any, event: any) {
-                if (this._dragTarget) {
-                    const { target } = event;
-                    const scale = this.scale / 100;
-                    const deltaX =
-                        (event.clientX - this._startX) / scale;
-                    const deltaY =
-                        (event.clientY - this._startY) / scale;
+                return ret;
+            },
+            updateBorderPos(bcr: any) {
+                vm.borderLeft = bcr.left + vm.leftPos * (vm.scale / 100);
+                vm.borderRight = bcr.right - vm.rightPos * (vm.scale / 100);
+                vm.borderTop = bcr.top + vm.topPos * (vm.scale / 100);
+                vm.borderBottom = bcr.bottom - vm.bottomPos * (vm.scale / 100);
+            },
+            // @ts-ignore
+            drawLine(startX, startY, endX, endY, lineID) {
+                const start = { x: startX, y: startY };
+                const end = { x: endX, y: endY };
+                const line = lineTool(vm.svg, start, end, vm.svgColor, 'default', vm.svgCallbacks(lineID));
+                if (lineID === 'l' || lineID === 'r') {
+                    line.style('cursor', 'col-resize');
+                } else if (lineID === 't' || lineID === 'b') {
+                    line.style('cursor', 'row-resize');
+                }
+                return line;
+            },
+            // @ts-ignore
+            drawDot(posX, posY, dotID) {
+                const attr = { color: vm.svgColor };
+                // @ts-ignore
+                const theDot = circleTool(vm.svg, vm.dotSize, attr, attr, vm.svgCallbacks(dotID));
+                if (dotID === 'l' || dotID === 'r' || dotID === 't' || dotID === 'b') {
+                    theDot.style('cursor', 'pointer');
+                } else if (dotID === 'lb' || dotID === 'rt') {
+                    theDot.style('cursor', 'nesw-resize');
+                } else if (dotID === 'rb' || dotID === 'lt') {
+                    theDot.style('cursor', 'nwse-resize');
+                }
+                vm.moveDotTo(theDot, posX, posY);
+                return theDot;
+            },
+            // @ts-ignore
+            moveDotTo(dot, posX, posY) {
+                if (dot) {
+                    dot.move(posX, posY);
+                }
+            },
+            // @ts-ignore
+            svgCallbacks(svgId) {
+                const callbacks = {};
+                // @ts-ignore
+                callbacks.start = () => {
+                    vm.startLeftPos = vm.leftPos;
+                    vm.startRightPos = vm.rightPos;
+                    vm.startTopPos = vm.topPos;
+                    vm.startBottomPos = vm.bottomPos;
+                };
 
-                    const moveX =
-                        deltaX > 0
-                            ? Math.floor(deltaX)
-                            : Math.ceil(deltaX);
-                    const moveY =
-                        deltaY > 0
-                            ? Math.floor(deltaY)
-                            : Math.ceil(deltaY);
+                // @ts-ignore
+                callbacks.update = (dx, dy) => {
+                    vm.svgElementMoved(svgId, dx, dy);
+                };
 
-                    if (Math.abs(moveX) > 0) {
-                        if (
-                            this._dragTarget.classList.contains(
-                                'left'
-                            )
-                        ) {
-                            const newLeftValue =
-                                this._startLeftPos + moveX;
-                            this.leftPos = this.correctPosValue(
-                                newLeftValue,
-                                0,
-                                this.image.width - this.rightPos
-                            );
-                        }
+                return callbacks;
+            },
+            // @ts-ignore
+            svgElementMoved(id, dx, dy) {
+                let movedX = dx / (vm.scale / 100);
+                let movedY = dy / (vm.scale / 100);
+                if (movedX > 0) {
+                    movedX = Math.floor(movedX);
+                } else {
+                    movedX = Math.ceil(movedX);
+                }
 
-                        if (
-                            this._dragTarget.classList.contains(
-                                'right'
-                            )
-                        ) {
-                            const newRightValue =
-                                this._startRightPos - moveX;
-                            this.rightPos = this.correctPosValue(
-                                newRightValue,
-                                0,
-                                this.image.width - this.leftPos
-                            );
-                        }
+                if (movedY > 0) {
+                    movedY = Math.floor(movedY);
+                } else {
+                    movedY = Math.ceil(movedY);
+                }
+
+                if (Math.abs(movedX) > 0) {
+                    if (id.indexOf('l') >= 0) {
+                        const newLeftValue = vm.startLeftPos + movedX;
+                        vm.leftPos = vm.correctPosValue(newLeftValue, 0, vm.image.width - vm.rightPos);
                     }
-                    if (Math.abs(moveY) > 0) {
-                        if (
-                            this._dragTarget.classList.contains('top')
-                        ) {
-                            const newTopValue =
-                                this._startTopPos + moveY;
-                            this.topPos = this.correctPosValue(
-                                newTopValue,
-                                0,
-                                this.image.height - this.bottomPos
-                            );
-                        }
+                    if (id.indexOf('r') >= 0) {
+                        const newRightValue = vm.startRightPos - movedX;
+                        vm.rightPos = vm.correctPosValue(newRightValue, 0, vm.image.width - vm.leftPos);
+                    }
+                }
 
-                        if (
-                            this._dragTarget.classList.contains(
-                                'bottom'
-                            )
-                        ) {
-                            const newBottomValue =
-                                this._startBottomPos - moveY;
-                            this.bottomPos = this.correctPosValue(
-                                newBottomValue,
-                                0,
-                                this.image.height - this.topPos
-                            );
-                        }
+                if (Math.abs(movedY) > 0) {
+                    if (id.indexOf('t') >= 0) {
+                        const newTopValue = vm.startTopPos + movedY;
+                        vm.topPos = vm.correctPosValue(newTopValue, 0, vm.image.height - vm.bottomPos);
+                    }
+                    if (id.indexOf('b') >= 0) {
+                        const newBottomValue = vm.startBottomPos - movedY;
+                        vm.bottomPos = vm.correctPosValue(newBottomValue, 0, vm.image.height - vm.topPos);
                     }
                 }
             },
-
-            onMouseUp(this: any, event: any) {
-                document.removeEventListener(
-                    'mousemove',
-                    this.onMouseMove
-                );
-                document.removeEventListener(
-                    'mouseup',
-                    this.onMouseUp
-                );
-
-                this._dragTarget = false;
-            },
-
-            correctPosValue(value: number, min: number, max: number) {
-                if (value > max) {
-                    return max;
-                }
-                if (value < min) {
+            // @ts-ignore
+            correctPosValue(newValue, min, max) {
+                if (newValue < min) {
                     return min;
                 }
-                return value;
-            },
 
-            onInputConfirm(
-                this: any,
-                event: any,
-                min: number,
-                max: number
-            ) {
-                const { target } = event;
-                const path = target.getAttribute('path');
-                const val = this.correctPosValue(
-                    target.value,
-                    min,
-                    max
-                );
-                target.value = val;
-                this[path] = val;
-            },
-
-            async onApply(this: any) {
-                if (this.enabled) {
-                    const {
-                        borderLeft,
-                        borderRight,
-                        borderTop,
-                        borderBottom,
-                    } = this.meta.userData;
-
-                    const { userData } = this.meta;
-                    userData.borderLeft = this.leftPos;
-                    userData.borderRight = this.rightPos;
-                    userData.borderTop = this.topPos;
-                    userData.borderBottom = this.bottomPos;
-
-                    const meta = JSON.stringify(this.meta);
-                    let result = false;
-                    try {
-                        // todo asset-db error
-                        result = await Editor.Ipc.sendToPackage(
-                            'asset-db',
-                            'save-asset-meta',
-                            this.uuid,
-                            meta
-                        );
-                    } catch (err) {
-                        result = false;
-                    } finally {
-                        if (!result) {
-                            this.leftPos = borderLeft;
-                            this.rightPos = borderRight;
-                            this.topPos = borderTop;
-                            this.bottomPos = borderBottom;
-
-                            userData.borderLeft = borderLeft;
-                            userData.borderRight = borderRight;
-                            userData.borderTop = borderTop;
-                            userData.borderBottom = borderBottom;
-                        }
-                    }
+                if (newValue > max) {
+                    return max;
                 }
-            },
 
-            onRevert(this: any) {
-                if (this.enabled) {
-                    const {
-                        borderLeft,
-                        borderRight,
-                        borderTop,
-                        borderBottom,
-                    } = this.meta.userData;
-                    this.leftPos = borderLeft;
-                    this.rightPos = borderRight;
-                    this.topPos = borderTop;
-                    this.bottomPos = borderBottom;
+                return newValue;
+            },
+            checkState() {
+                const leftDirty = vm.leftPos !== vm.meta.borderLeft;
+                const rightDirty = vm.rightPos !== vm.meta.borderRight;
+                const topDirty = vm.topPos !== vm.meta.borderTop;
+                const bottomDirty = vm.bottomPos !== vm.meta.borderBottom;
+
+                vm.dirty = leftDirty || rightDirty || topDirty || bottomDirty;
+            },
+            leftPosChanged() {
+                if (!vm.image) {
+                    return;
                 }
+
+                const bcr = this.getCanvasRect();
+                this.updateBorderPos(bcr);
+
+                // move dots
+                this.moveDotTo(vm.dotL, vm.borderLeft, bcr.bottom - bcr.height / 2);
+                this.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
+                this.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
+
+                // move line left
+                if (vm.lineLeft) {
+                    vm.lineLeft.plot(vm.borderLeft, bcr.bottom, vm.borderLeft, bcr.top);
+                }
+
+                this.checkState();
+            },
+            rightPosChanged() {
+                if (!vm.image) {
+                    return;
+                }
+
+                const bcr = this.getCanvasRect();
+                this.updateBorderPos(bcr);
+
+                // move dots
+                this.moveDotTo(vm.dotR, vm.borderRight, bcr.bottom - bcr.height / 2);
+                this.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
+                this.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
+
+                // move line left
+                if (vm.lineRight) {
+                    vm.lineRight.plot(vm.borderRight, bcr.bottom, vm.borderRight, bcr.top);
+                }
+
+                this.checkState();
+            },
+            topPosChanged() {
+                if (!vm.image) {
+                    return;
+                }
+
+                const bcr = this.getCanvasRect();
+                this.updateBorderPos(bcr);
+
+                // move dots
+                this.moveDotTo(vm.dotT, bcr.left + bcr.width / 2, vm.borderTop);
+                this.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
+                this.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
+
+                // move line top
+                if (vm.lineTop) {
+                    vm.lineTop.plot(bcr.left, vm.borderTop, bcr.right, vm.borderTop);
+                }
+
+                this.checkState();
+            },
+            bottomPosChanged() {
+                if (!vm.image) {
+                    return;
+                }
+
+                const bcr = this.getCanvasRect();
+                this.updateBorderPos(bcr);
+
+                // move dots
+                this.moveDotTo(vm.dotB, bcr.left + bcr.width / 2, vm.borderBottom);
+                this.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
+                this.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
+
+                // move line bottom
+                if (vm.lineBottom) {
+                    vm.lineBottom.plot(bcr.left, vm.borderBottom, bcr.right, vm.borderBottom);
+                }
+
+                this.checkState();
+            },
+            positionChange(event: any, key: string) {
+                vm[key] = event.target.value;
             },
         },
     });
+
+    vm.uuid = 'e6663d9e-79e5-49ad-b3d1-7d01c120c1e1';
+    vm.subAssetUuid = 'e6663d9e-79e5-49ad-b3d1-7d01c120c1e1@a-1';
+
+    Editor.Ipc.sendToPanel('inspector', 'sprite:state', true);
 }
 
 export async function beforeClose() { }
 
 export async function close() {
-    Editor.Ipc.sendToPackage(
-        'inspector',
-        'sprite-editor-state',
-        false
-    );
+    Editor.Ipc.sendToPanel('inspector', 'sprite:state', false);
+}
+
+function getFitSize(imgWidth: number, imgHeight: number, boxWidth: number, boxHeight: number) {
+    let width = imgWidth;
+    let height = imgHeight;
+
+    if (imgWidth > boxWidth && imgHeight > boxHeight) {
+        // 图片宽高均大于容器
+        width = boxWidth;
+        height = (imgHeight * boxWidth) / imgWidth;
+        if (height > boxHeight) {
+            // 高度比例大于宽度比例
+            height = boxHeight;
+            width = (imgWidth * boxHeight) / imgHeight;
+        }
+    } else {
+        if (imgWidth > boxWidth) {
+            // 图片宽度大于容器宽度
+            width = boxWidth;
+            height = (imgHeight * boxWidth) / imgWidth;
+        } else if (imgHeight > boxHeight) {
+            // 图片高度大于容器高度
+            height = boxHeight;
+            width = (imgWidth * boxHeight) / imgHeight;
+        }
+    }
+    return [width, height];
+}
+
+// @ts-ignore
+function circleTool(svg, size, fill, stroke, cursor, callbacks) {
+    if (typeof cursor !== 'string') {
+        callbacks = cursor;
+        cursor = 'default';
+    }
+
+    const group = svg.group()
+        .style('cursor', cursor)
+        .fill(fill ? fill : 'none')
+        .stroke(stroke ? stroke : 'none');
+
+    const circle = group.circle().radius(size / 2);
+
+    // @ts-ignore
+    let bgCircle;
+    if (stroke) {
+        bgCircle = group.circle()
+            .stroke({ width: 8 })
+            .fill('none')
+            .style('stroke-opacity', 0)
+            .radius(size / 2);
+    }
+
+    let dragging = false;
+
+    group.style('pointer-events', 'bounding-box');
+
+    group.on('mouseover', () => {
+        if (fill) {
+            const lightColor = Chroma(fill.color).brighter().hex();
+            group.fill({ color: lightColor });
+        }
+
+        if (stroke) {
+            const lightColor = Chroma(stroke.color).brighter().hex();
+            group.stroke({ color: lightColor });
+        }
+
+    });
+
+    // @ts-ignore
+    group.on('mouseout', (event) => {
+        event.stopPropagation();
+
+        if (!dragging) {
+            if (fill) { group.fill(fill); }
+            if (stroke) { group.stroke(stroke); }
+        }
+    });
+
+    addMoveHandles(group, { cursor }, {
+        // @ts-ignore
+        start(x, y, event) {
+            dragging = true;
+
+            if (fill) {
+                const superLightColor = Chroma(fill.color).brighter().brighter().hex();
+                group.fill({ color: superLightColor });
+            }
+
+            if (stroke) {
+                const superLightColor = Chroma(stroke.color).brighter().brighter().hex();
+                group.stroke({ color: superLightColor });
+            }
+
+            if (callbacks.start) {
+                callbacks.start(x, y, event);
+            }
+        },
+
+        // @ts-ignore
+        update(dx, dy, event) {
+            if (callbacks.update) {
+                callbacks.update(dx, dy, event);
+            }
+        },
+
+        // @ts-ignore
+        end(event) {
+            dragging = false;
+
+            if (fill) { group.fill(fill); }
+            if (stroke) { group.stroke(stroke); }
+
+            if (callbacks.end) {
+                callbacks.end(event);
+            }
+        },
+    });
+
+    // @ts-ignore
+    group.radius = function(radius) {
+        circle.radius(radius);
+        // @ts-ignore
+        if (bgCircle) { bgCircle.radius(radius); }
+
+        return this;
+    };
+
+    // @ts-ignore
+    group.cx = function(x) {
+        return this.x(x);
+    };
+
+    // @ts-ignore
+    group.cy = function(y) {
+        return this.y(y);
+    };
+
+    return group;
+}
+
+// @ts-ignore
+function lineTool(svg, from, to, color, cursor, callbacks) {
+    const group = svg.group().style('cursor', cursor).stroke({ color });
+    const line = group.line(from.x, from.y, to.x, to.y)
+        .style('stroke-width', 1);
+    // used for hit test
+    const bgline = group.line(from.x, from.y, to.x, to.y)
+        .style('stroke-width', 8)
+        .style('stroke-opacity', 0);
+
+    let dragging = false;
+
+    // @ts-ignore
+    group.on('mouseover', () => {
+        const lightColor = Chroma(color).brighter().hex();
+        group.stroke({ color: lightColor });
+    });
+
+    // @ts-ignore
+    group.on('mouseout', (event) => {
+        event.stopPropagation();
+
+        if (!dragging) {
+            group.stroke({ color });
+        }
+    });
+
+    addMoveHandles(group, { cursor }, {
+        // @ts-ignore
+        start(x, y, event) {
+            dragging = true;
+
+            const superLightColor = Chroma(color).brighter().brighter().hex();
+            group.stroke({ color: superLightColor });
+
+            if (callbacks.start) {
+                callbacks.start(x, y, event);
+            }
+        },
+
+        // @ts-ignore
+        update(dx, dy, event) {
+            if (callbacks.update) {
+                callbacks.update(dx, dy, event);
+            }
+        },
+
+        // @ts-ignore
+        end(event) {
+            dragging = false;
+            group.stroke({ color });
+
+            if (callbacks.end) {
+                callbacks.end(event);
+            }
+        },
+    });
+
+    group.plot = function() {
+        line.plot.apply(line, arguments);
+        bgline.plot.apply(bgline, arguments);
+
+        return this;
+    };
+
+    return group;
+}
+// @ts-ignore
+function addMoveHandles(gizmo, opts, callbacks) {
+    // @ts-ignore
+    let pressx;
+    // @ts-ignore
+    let pressy;
+
+    if (arguments.length === 2) {
+        callbacks = opts;
+        opts = {};
+    }
+
+    // @ts-ignore
+    function mousemoveHandle(event) {
+        event.stopPropagation();
+        // @ts-ignore
+        const dx = event.clientX - pressx;
+        // @ts-ignore
+        const dy = event.clientY - pressy;
+        if (callbacks.update) {
+            callbacks.update.call(gizmo, dx, dy, event);
+        }
+    }
+
+    // @ts-ignore
+    function mouseupHandle(event) {
+        document.removeEventListener('mousemove', mousemoveHandle);
+        document.removeEventListener('mouseup', mouseupHandle);
+
+        if (callbacks.end) {
+            callbacks.end.call(gizmo, event);
+        }
+
+        event.stopPropagation();
+    }
+
+    // @ts-ignore
+    gizmo.on('mousedown', (event) => {
+        if (event.which === 1) {
+            pressx = event.clientX;
+            pressy = event.clientY;
+
+            document.addEventListener('mousemove', mousemoveHandle);
+            document.addEventListener('mouseup', mouseupHandle);
+
+            if (callbacks.start) {
+                callbacks.start.call(gizmo, event.offsetX, event.offsetY, event);
+            }
+        }
+        event.stopPropagation();
+    });
 }

@@ -1,151 +1,66 @@
 <div class="sprite-editor">
-    <div class="header flex-1">
-        <div class="flex flex-1">
-            <component v-if="dynamicComponent"
-                :is="dynamicComponent"
-                class="flex-1"
-                :min="minScale"
-                :max="maxScale"
-                :value="scale"
-                hide-num-input
-                @change.stop="onSliderChanged"
-                @confirm.stop="onSliderChanged"
-            ></component>
-            <ui-slider
-                v-else
-                class="flex-1" 
-                value="100" 
-                disabled
-                hide-num-input
-            ></ui-slider>
-        </div>
+    <div class="header">
+        <table class="table">
+            <tr>
+                <td class="td-r">{{t('scale')}}</td>
+                <td colspan="4">
+                    <ui-slider ref="scale" step="1"
+                        @change="scaleChange($event)"
+                    ></ui-slider>
+                </td>
+                <td class="td-c" rowspan="3">
+                    <ui-button class="tiny red transparent"
+                        :disabled="!dirty"
+                        @click="dirty && $emit('reset', $event)"
+                    >
+                        <i class="iconfont icon-close-b"></i>
+                    </ui-button>
 
-        <div class="btn-wrap">
-            <ui-button 
-                class="tiny red transparent"
-                :disabled="!isDirty"
-                @confirm.stop="onRevert"
-            >
-                <i class="iconfont icon-close-b"></i>
-            </ui-button>
-            <ui-button 
-                class="tiny green transparent"
-                :disabled="!isDirty"
-                @confirm.stop="onApply"
-            >
-                <i class="iconfont icon-check-b"></i>
-            </ui-button>
-        </div>
+                    <ui-button class="tiny green transparent"
+                        :disabled="!dirty"
+                        @click="dirty && $emit('apply', $event)"
+                    >
+                        <i class="iconfont icon-check-b"></i>
+                    </ui-button>
+                </td>
+            </tr>
+            <tr>
+                <td class="td-r td-top" rowspan="2">{{t('border')}}</td>
+                <td class="td-r">{{t('left')}}</td>
+                <td>
+                    <ui-num-input
+                        :value="leftPos"
+                        @change="positionChange($event,'leftPos')"
+                    ></ui-num-input>
+                </td>
+                <td class="td-r">{{t('right')}}</td>
+                <td>
+                    <ui-num-input
+                        :value="rightPos"
+                        @change="positionChange($event,'rightPos')"
+                    ></ui-num-input>
+                </td>
+            </tr>
+            <tr>
+                <td class="td-r">{{t('top')}}</td>
+                <td>
+                    <ui-num-input
+                        :value="topPos"
+                        @change="positionChange($event,'topPos')"
+                    ></ui-num-input>
+                </td>
+                <td class="td-r">{{t('bottom')}}</td>
+                <td>
+                    <ui-num-input
+                        :value="bottomPos"
+                        @change="positionChange($event,'bottomPos')"
+                    ></ui-num-input>
+                </td>
+            </tr>
+        </table>
     </div>
-
-    <div
-        class="sprite-container flex-1"
-        ref="container"
-        v-on:mousewheel="onMouseWheel"
-    >
-        <canvas ref="canvas" id="canvas"></canvas>
-        <div ref="handles" id="handles" @mousedown="onMouseDown" v-show="enabled">
-            <div
-                class="line handle top"
-                :class="{'top-index': topZIndex}"
-                :style="'transform: translateY('+ (topPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="line handle bottom"
-                :style="'transform: translateY('+ (-bottomPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="line handle left"
-                :class="{'left-index': leftZIndex}"
-                :style="'transform: translateX('+ (leftPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="line handle right"
-                :style="'transform: translateX('+ (-rightPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle top left top-left"
-                :class="{'left-index': leftZIndex, 'top-index': topZIndex}"
-                :style="'transform: translate('+  (leftPos * scale / 100) + 'px,' +  (topPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle left center left-center"
-                :class="{'left-index': leftZIndex}"
-                :style="'transform: translateX('+ (leftPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle left bottom left-bottom"
-                :class="{'left-index': leftZIndex}"
-                :style="'transform: translate('+  (leftPos * scale / 100) + 'px,' +  (-bottomPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle top center top-center"
-                :class="{'top-index': topZIndex}"
-                :style="'transform: translateY('+ (topPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle top right top-right"
-                :class="{'top-index': topZIndex}"
-                :style="'transform: translate('+  (-rightPos * scale / 100) + 'px,' +  (topPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle right center right-center"
-                :style="'transform: translateX('+ (-rightPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle right bottom right-bottom"
-                :style="'transform: translate('+  (-rightPos * scale / 100) + 'px,' +  (-bottomPos * scale / 100) + 'px)'"
-            ></div>
-            <div
-                class="dot handle bottom center bottom-center"
-                :style="'transform: translateY('+ (-bottomPos * scale / 100) + 'px)'"
-            ></div>
-        </div>
-    </div>
-
-    <div class="border-container">
-        <div class="title">{{ T('SPRITE_EDITOR', 'border') }}</div>
-        <div class="layout vertical">
-            <div class="layout horizontal center">
-                <div class="label flex-1">
-                    {{ T('SPRITE_EDITOR', 'left') }}
-                </div>
-                <ui-num-input
-                    class="flex-1"
-                    :value="leftPos"
-                    path="leftPos"
-                    @confirm.stop="onInputConfirm($event, 0, image.width - rightPos)"
-                ></ui-num-input>
-                <div class="label flex-1">
-                    {{ T('SPRITE_EDITOR', 'right') }}
-                </div>
-                <ui-num-input
-                    class="flex-1"
-                    :value="rightPos"
-                    path="rightPos"
-                    @confirm.stop="onInputConfirm($event, 0, image.width - leftPos)"
-                ></ui-num-input>
-            </div>
-            <div class="layout horizontal center">
-                <div class="label flex-1">
-                    {{ T('SPRITE_EDITOR', 'top') }}
-                </div>
-                <ui-num-input
-                    class="flex-1"
-                    :value="topPos"
-                    path="topPos"
-                    @confirm.stop="onInputConfirm($event, 0, image.height - bottomPos)"
-                ></ui-num-input>
-                <div class="label flex-1">
-                    {{ T('SPRITE_EDITOR', 'bottom') }}
-                </div>
-                <ui-num-input
-                    class="flex-1"
-                    :value="bottomPos"
-                    path="bottomPos"
-                    @confirm.stop="onInputConfirm($event, 0, image.height - topPos)"
-                ></ui-num-input>
-            </div>
-        </div>
+    <div class="content">
+        <canvas class="canvas" ref="canvas"></canvas>
+        <svg class="svg" ref="svg"></svg>
     </div>
 </div>
