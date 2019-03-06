@@ -197,8 +197,8 @@
       "__id__": 3
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -210,14 +210,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "45828f25-b50d-4c52-a591-e19491a62b8c@default_radio_button_on"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -225,6 +223,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -236,7 +235,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "bdyHFu4qlEI46zGDz1U82v",
+    "fileId": "773rqmtpxGU7YuFEKbka6c",
     "sync": false,
     "_synced": {
       "default": false,
@@ -271,8 +270,8 @@
       "__id__": 2
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -284,14 +283,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -299,6 +296,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -381,7 +379,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "e5dWWy9XJO6qLJ1wQLymEd",
+    "fileId": "c0OuTkopJCI6TB8KK/7SHO",
     "sync": false,
     "_synced": {
       "default": false,
@@ -521,8 +519,8 @@
       "__id__": 13
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -534,14 +532,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "45828f25-b50d-4c52-a591-e19491a62b8c@default_radio_button_on"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -549,6 +545,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -560,7 +557,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "abKXzaG7dAjpDavWErT55w",
+    "fileId": "b8TXAowphOObXEdoytYXWj",
     "sync": false,
     "_synced": {
       "default": false,
@@ -595,8 +592,8 @@
       "__id__": 12
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -608,14 +605,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -623,6 +618,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -694,7 +690,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "8cj1SNyTxL5Isg5C3MwGV9",
+    "fileId": "d4olGE2cVJYoomdLeMKyCx",
     "sync": false,
     "_synced": {
       "default": false,
@@ -834,8 +830,8 @@
       "__id__": 22
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -847,14 +843,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "45828f25-b50d-4c52-a591-e19491a62b8c@default_radio_button_on"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -862,6 +856,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -873,7 +868,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "5aNNZmm1tA6KAbMcCEADnQ",
+    "fileId": "c5rlIT5OZP6ZtHZgkIgsYT",
     "sync": false,
     "_synced": {
       "default": false,
@@ -908,8 +903,8 @@
       "__id__": 21
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -921,14 +916,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -936,6 +929,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -1007,7 +1001,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "06VRKAMYhO8ataPsS9Aspm",
+    "fileId": "47A14o0IVFOJsGkjYpTC2u",
     "sync": false,
     "_synced": {
       "default": false,
@@ -1022,7 +1016,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "b3hz511PBMyb/sKPAbK6iZ",
+    "fileId": "d7hNMCfZVPbJKkKLhJyJuM",
     "sync": false,
     "_synced": {
       "default": false,

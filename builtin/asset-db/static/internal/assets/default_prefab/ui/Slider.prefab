@@ -144,8 +144,8 @@
       "__id__": 2
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -157,14 +157,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off"
     },
     "_type": 0,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -172,6 +170,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -235,7 +234,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "b1NKFG9m9CE5t4EgqEUGhV",
+    "fileId": "c99I/lNulB7bHkE13WGbdB",
     "sync": false,
     "_synced": {
       "default": false,
@@ -270,8 +269,8 @@
       "__id__": 1
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -283,14 +282,12 @@
     "_sharedMaterial": {
       "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
     },
-    "_material": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
     "_spriteFrame": {
       "__uuid__": "28765e2f-040a-4c65-8e8c-f9d0bb79d863@default_scrollbar_bg"
     },
     "_type": 1,
     "_fillType": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -298,6 +295,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
+    "_isTrimmedMode": true,
     "_atlas": null,
     "_id": ""
   },
@@ -325,7 +323,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "9cer7N/RZBpZtfoGJsEto1",
+    "fileId": "338FzIbp1AD445tFsve9M7",
     "sync": false,
     "_synced": {
       "default": false,
