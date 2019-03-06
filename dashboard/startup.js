@@ -180,7 +180,7 @@ exports.listener = function() {
         const exePath = app.getPath('exe');
 
         // 拼接参数
-        const args = [ps.resolve()];
+        const args = [ps.join(__dirname, '../')];
         if (setting.dev) {
             args.push('--dev');
             args.push('--remote-debugging-port=9223');

@@ -45,7 +45,6 @@ Object.keys(panelMessage).forEach((name) => {
 export function load() {
     const protocols = {
         import: require('./protocol/import'),
-        'project-scripts': require('./protocol/project-scripts'),
     };
 
     Object.keys(protocols).forEach((name: string) => {

@@ -12,7 +12,7 @@ const configProfile: any = {
  * @param type
  */
 function getConfig(key: string, type: string = 'previewConfig') {
-    if (!Object.keys(DEFAULT_CONFIG).includes(type)) {
+    if (Object.keys(DEFAULT_CONFIG).indexOf(type) === -1) {
         console.warn(`查询类型无效(type=${type})`);
         return;
     }

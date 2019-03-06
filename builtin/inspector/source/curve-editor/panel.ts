@@ -165,7 +165,7 @@ export async function ready() {
              * @param keyFrames 关键帧数据
              * @param size canvas 尺寸
              */
-            drawThumb(father: Document, keyFrames: any) {
+            drawThumb(father: any, keyFrames: any) {
                 keyFrames.map((item: any, index: number) => {
                     let $canvas;
                     // @ts-ignore

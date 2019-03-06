@@ -81,6 +81,10 @@ export async function decodeNode(dump: INode, node?: any) {
             component = node.addComponent(componentDump.type);
         }
 
+        if (!componentDump.value) {
+            continue;
+        }
+
         for (const key in componentDump.value) {
             if (!(key in componentDump.value)) {
                 continue;
