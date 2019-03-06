@@ -226,14 +226,15 @@ export const methods = {
 
     editSprite() {
         // @ts-ignore
-        const data = this.meta.userData.imageUuidOrDatabaseUri;
+        const data = {
+            // @ts-ignore
+            subAssetUuid: this.meta.uuid,
+            // @ts-ignore
+            uuid: this.meta.userData.imageUuidOrDatabaseUri,
+        };
 
         Editor.Panel.open('inspector.sprite-editor');
-        // Editor.Ipc.sendToPanel(
-        //     'inspector.sprite-editor',
-        //     'current-uuid',
-        //     data
-        // );
+        Editor.Ipc.sendToPanel('inspector', 'sprite:change', data);
     },
 };
 

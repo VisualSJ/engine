@@ -18,11 +18,7 @@ export const messages = {
      */
     'open-curve-editor'(data: any) {
         Editor.Panel.open('inspector.curve-editor');
-        Editor.Ipc.sendToPanel(
-            'inspector.curve-editor',
-            'current-keys',
-            data
-        );
+        Editor.Ipc.sendToPanel('inspector', 'curve:change', data);
     },
 
     /**
@@ -71,11 +67,7 @@ export const messages = {
      */
     'open-sprite-editor'(data: any) {
         Editor.Panel.open('inspector.sprite-editor');
-        Editor.Ipc.sendToPanel(
-            'inspector.sprite-editor',
-            'current-keys',
-            data
-        );
+        Editor.Ipc.sendToPanel('inspector', 'sprite:change', data);
     },
 
 };

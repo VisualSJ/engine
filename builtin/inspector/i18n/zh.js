@@ -47,6 +47,9 @@ module.exports = {
     sprite_editor: {
         title: 'Sprite 编辑器',
         scale: 'Scale',
+        reset: '重置',
+        save: '保存',
+        saveError: '保存数据失败',
         border: 'Border',
         left: 'Left',
         right: 'Right',

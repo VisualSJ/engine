@@ -47,6 +47,9 @@ module.exports = {
     sprite_editor: {
         title: 'Sprite Editor',
         scale: 'Scale',
+        reset: 'Reset',
+        save: 'Save',
+        saveError: 'Failed to save.',
         border: 'Border',
         left: 'Left',
         right: 'Right',

@@ -5,7 +5,6 @@ import { join } from 'path';
 
 const Vue = require('vue/dist/vue.js');
 const SVG = require('svg.js');
-const Chroma = require('chroma-js');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -44,7 +43,7 @@ export const messages = {
 
 export const listeners = {
     resize() {
-        vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+        vm.resize();
         vm.refreshScaleSlider();
     },
 };
@@ -61,8 +60,9 @@ export async function ready() {
             uuid: '',
             subAssetUuid: '',
             svg: null,
-            lastBcr: null,
+            image: null,
             svgColor: '#5c5',
+            svgColorBright: '#8fef8f',
             dotSize: 6,
             borderLeft: 0,
             borderRight: 0,
@@ -84,7 +84,7 @@ export async function ready() {
             scale: 100,
             minScale: 10,
             maxScale: 1000,
-            dirty: false,
+            changed: false,
         },
         watch: {
             uuid() {
@@ -93,7 +93,7 @@ export async function ready() {
                 }
             },
             scale() {
-                vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+                vm.resize();
             },
             leftPos() {
                 vm.leftPosChanged();
@@ -118,10 +118,14 @@ export async function ready() {
             t(key: string): string {
                 return Editor.I18n.t(`inspector.sprite_editor.${key}`);
             },
-            resize(width: number, height: number) {
+            resize() {
                 if (!vm.image && !vm.meta) {
                     return;
                 }
+
+                const width = vm.meta.width * vm.scale / 100;
+                const height = vm.meta.height * vm.scale / 100;
+
                 const bcr = vm.$root.$el.getBoundingClientRect();
                 const result = getFitSize(width, height, bcr.width, bcr.height);
 
@@ -157,7 +161,9 @@ export async function ready() {
                 vm.scale = vm.$refs.scale.value;
             },
             async openSprite() {
-                const { userData } = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.subAssetUuid);
+                vm.subAssetMeta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.subAssetUuid);
+                const { userData } = vm.subAssetMeta;
+
                 vm.meta = userData;
                 vm.leftPos = userData.borderLeft;
                 vm.rightPos = userData.borderRight;
@@ -173,12 +179,17 @@ export async function ready() {
                 vm.image = new Image();
                 vm.image.src = info.library[key];
                 vm.image.onload = () => {
-                    vm.resize(vm.meta.width * vm.scale / 100, vm.meta.height * vm.scale / 100);
+                    vm.resize();
+
+                    // hack： flex 布局，定位会延迟一些
+                    setTimeout(() => {
+                        vm.resize();
+                    }, 200);
                 };
             },
             repaint() {
                 const ctx = vm.$refs.canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = false;
+                ctx.height = ctx.height; // 先清空画布
 
                 const meta = vm.meta;
                 let canvasWidth = vm.$refs.canvas.width;
@@ -363,45 +374,45 @@ export async function ready() {
                 return newValue;
             },
             checkState() {
-                const leftDirty = vm.leftPos !== vm.meta.borderLeft;
-                const rightDirty = vm.rightPos !== vm.meta.borderRight;
-                const topDirty = vm.topPos !== vm.meta.borderTop;
-                const bottomDirty = vm.bottomPos !== vm.meta.borderBottom;
+                const leftChanged = vm.leftPos !== vm.meta.borderLeft;
+                const rightChanged = vm.rightPos !== vm.meta.borderRight;
+                const topChanged = vm.topPos !== vm.meta.borderTop;
+                const bottomChanged = vm.bottomPos !== vm.meta.borderBottom;
 
-                vm.dirty = leftDirty || rightDirty || topDirty || bottomDirty;
+                vm.changed = leftChanged || rightChanged || topChanged || bottomChanged;
             },
             leftPosChanged() {
                 if (!vm.image) {
                     return;
                 }
 
-                const bcr = this.getCanvasRect();
-                this.updateBorderPos(bcr);
+                const bcr = vm.getCanvasRect();
+                vm.updateBorderPos(bcr);
 
                 // move dots
-                this.moveDotTo(vm.dotL, vm.borderLeft, bcr.bottom - bcr.height / 2);
-                this.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
-                this.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
+                vm.moveDotTo(vm.dotL, vm.borderLeft, bcr.bottom - bcr.height / 2);
+                vm.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
+                vm.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
 
                 // move line left
                 if (vm.lineLeft) {
                     vm.lineLeft.plot(vm.borderLeft, bcr.bottom, vm.borderLeft, bcr.top);
                 }
 
-                this.checkState();
+                vm.checkState();
             },
             rightPosChanged() {
                 if (!vm.image) {
                     return;
                 }
 
-                const bcr = this.getCanvasRect();
-                this.updateBorderPos(bcr);
+                const bcr = vm.getCanvasRect();
+                vm.updateBorderPos(bcr);
 
                 // move dots
-                this.moveDotTo(vm.dotR, vm.borderRight, bcr.bottom - bcr.height / 2);
-                this.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
-                this.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
+                vm.moveDotTo(vm.dotR, vm.borderRight, bcr.bottom - bcr.height / 2);
+                vm.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
+                vm.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
 
                 // move line left
                 if (vm.lineRight) {
@@ -415,49 +426,89 @@ export async function ready() {
                     return;
                 }
 
-                const bcr = this.getCanvasRect();
-                this.updateBorderPos(bcr);
+                const bcr = vm.getCanvasRect();
+                vm.updateBorderPos(bcr);
 
                 // move dots
-                this.moveDotTo(vm.dotT, bcr.left + bcr.width / 2, vm.borderTop);
-                this.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
-                this.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
+                vm.moveDotTo(vm.dotT, bcr.left + bcr.width / 2, vm.borderTop);
+                vm.moveDotTo(vm.dotLT, vm.borderLeft, vm.borderTop);
+                vm.moveDotTo(vm.dotRT, vm.borderRight, vm.borderTop);
 
                 // move line top
                 if (vm.lineTop) {
                     vm.lineTop.plot(bcr.left, vm.borderTop, bcr.right, vm.borderTop);
                 }
 
-                this.checkState();
+                vm.checkState();
             },
             bottomPosChanged() {
                 if (!vm.image) {
                     return;
                 }
 
-                const bcr = this.getCanvasRect();
-                this.updateBorderPos(bcr);
+                const bcr = vm.getCanvasRect();
+                vm.updateBorderPos(bcr);
 
                 // move dots
-                this.moveDotTo(vm.dotB, bcr.left + bcr.width / 2, vm.borderBottom);
-                this.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
-                this.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
+                vm.moveDotTo(vm.dotB, bcr.left + bcr.width / 2, vm.borderBottom);
+                vm.moveDotTo(vm.dotLB, vm.borderLeft, vm.borderBottom);
+                vm.moveDotTo(vm.dotRB, vm.borderRight, vm.borderBottom);
 
                 // move line bottom
                 if (vm.lineBottom) {
                     vm.lineBottom.plot(bcr.left, vm.borderBottom, bcr.right, vm.borderBottom);
                 }
 
-                this.checkState();
+                vm.checkState();
             },
             positionChange(event: any, key: string) {
                 vm[key] = event.target.value;
             },
+            reset() {
+                if (!vm.changed || !vm.image || !vm.meta) {
+                    return;
+                }
+
+                const meta = vm.meta;
+                vm.leftPos = meta.borderLeft;
+                vm.rightPos = meta.borderRight;
+                vm.topPos = meta.borderTop;
+                vm.bottomPos = meta.borderBottom;
+
+                vm.resize();
+                vm.checkState();
+            },
+            async save() {
+                if (!vm.changed || !vm.image || !vm.meta) {
+                    return;
+                }
+
+                const meta = vm.meta;
+                const beforeTPos = meta.borderTop;
+                const beforeBPos = meta.borderBottom;
+                const beforeLPos = meta.borderLeft;
+                const beforeRPos = meta.borderRight;
+
+                meta.borderTop = vm.topPos;
+                meta.borderBottom = vm.bottomPos;
+                meta.borderLeft = vm.leftPos;
+                meta.borderRight = vm.rightPos;
+
+                const str = JSON.stringify(vm.subAssetMeta);
+                const saved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', vm.subAssetUuid, str);
+
+                if (!saved) {
+                    console.error(vm.t('saveError'));
+                    meta.borderTop = beforeTPos;
+                    meta.borderBottom = beforeBPos;
+                    meta.borderLeft = beforeLPos;
+                    meta.borderRight = beforeRPos;
+                }
+
+                vm.checkState();
+            },
         },
     });
-
-    vm.uuid = 'e6663d9e-79e5-49ad-b3d1-7d01c120c1e1';
-    vm.subAssetUuid = 'e6663d9e-79e5-49ad-b3d1-7d01c120c1e1@a-1';
 
     Editor.Ipc.sendToPanel('inspector', 'sprite:state', true);
 }
@@ -525,13 +576,11 @@ function circleTool(svg, size, fill, stroke, cursor, callbacks) {
 
     group.on('mouseover', () => {
         if (fill) {
-            const lightColor = Chroma(fill.color).brighter().hex();
-            group.fill({ color: lightColor });
+            group.fill({ color: vm.svgColorBright });
         }
 
         if (stroke) {
-            const lightColor = Chroma(stroke.color).brighter().hex();
-            group.stroke({ color: lightColor });
+            group.stroke({ color: vm.svgColorBright });
         }
 
     });
@@ -552,13 +601,11 @@ function circleTool(svg, size, fill, stroke, cursor, callbacks) {
             dragging = true;
 
             if (fill) {
-                const superLightColor = Chroma(fill.color).brighter().brighter().hex();
-                group.fill({ color: superLightColor });
+                group.fill({ color: vm.svgColorBright });
             }
 
             if (stroke) {
-                const superLightColor = Chroma(stroke.color).brighter().brighter().hex();
-                group.stroke({ color: superLightColor });
+                group.stroke({ color: vm.svgColorBright });
             }
 
             if (callbacks.start) {
@@ -611,23 +658,19 @@ function circleTool(svg, size, fill, stroke, cursor, callbacks) {
 // @ts-ignore
 function lineTool(svg, from, to, color, cursor, callbacks) {
     const group = svg.group().style('cursor', cursor).stroke({ color });
-    const line = group.line(from.x, from.y, to.x, to.y)
-        .style('stroke-width', 1);
-    // used for hit test
+    const line = group.line(from.x, from.y, to.x, to.y).style('stroke-width', 1);
+
     const bgline = group.line(from.x, from.y, to.x, to.y)
         .style('stroke-width', 8)
         .style('stroke-opacity', 0);
 
     let dragging = false;
 
-    // @ts-ignore
     group.on('mouseover', () => {
-        const lightColor = Chroma(color).brighter().hex();
-        group.stroke({ color: lightColor });
+        group.stroke({ color: vm.svgColorBright });
     });
 
-    // @ts-ignore
-    group.on('mouseout', (event) => {
+    group.on('mouseout', (event: Event) => {
         event.stopPropagation();
 
         if (!dragging) {
@@ -636,27 +679,23 @@ function lineTool(svg, from, to, color, cursor, callbacks) {
     });
 
     addMoveHandles(group, { cursor }, {
-        // @ts-ignore
-        start(x, y, event) {
+        start(x: number, y: number, event: Event) {
             dragging = true;
 
-            const superLightColor = Chroma(color).brighter().brighter().hex();
-            group.stroke({ color: superLightColor });
+            group.stroke({ color: vm.svgColorBright });
 
             if (callbacks.start) {
                 callbacks.start(x, y, event);
             }
         },
 
-        // @ts-ignore
-        update(dx, dy, event) {
+        update(dx: number, dy: number, event: Event) {
             if (callbacks.update) {
                 callbacks.update(dx, dy, event);
             }
         },
 
-        // @ts-ignore
-        end(event) {
+        end(event: Event) {
             dragging = false;
             group.stroke({ color });
 
@@ -677,18 +716,15 @@ function lineTool(svg, from, to, color, cursor, callbacks) {
 }
 // @ts-ignore
 function addMoveHandles(gizmo, opts, callbacks) {
-    // @ts-ignore
-    let pressx;
-    // @ts-ignore
-    let pressy;
+    let pressx = 0;
+    let pressy = 0;
 
     if (arguments.length === 2) {
         callbacks = opts;
         opts = {};
     }
 
-    // @ts-ignore
-    function mousemoveHandle(event) {
+    function mousemoveHandle(event: Event) {
         event.stopPropagation();
         // @ts-ignore
         const dx = event.clientX - pressx;
@@ -699,8 +735,7 @@ function addMoveHandles(gizmo, opts, callbacks) {
         }
     }
 
-    // @ts-ignore
-    function mouseupHandle(event) {
+    function mouseupHandle(event: Event) {
         document.removeEventListener('mousemove', mousemoveHandle);
         document.removeEventListener('mouseup', mouseupHandle);
 
