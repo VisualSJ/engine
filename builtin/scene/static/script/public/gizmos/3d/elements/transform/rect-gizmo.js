@@ -10,22 +10,32 @@ let RectController = require('../controller/rectangle-controller');
 const TransformToolData = require('../../../utils/transform-tool-data');
 
 const HandleType = RectController.HandleType;
-let tempMat4 = cc.vmath.mat4.create();
-let tempVec2 = new cc.v2();
-const vec3 = cc.vmath.vec3;
 
+let tempVec2 = cc.v2();
+let tempVec3 = cc.v3();
+const { vec3, vec2, mat4}  = cc.vmath;
+let tempMat4 = mat4.create();
+let tempQuat = cc.quat();
+
+function boundsToRect(bounds) {
+    return cc.rect(
+        bounds[1].x,
+        bounds[1].y,
+        bounds[3].x - bounds[1].x,
+        bounds[3].y - bounds[1].y
+    );
+}
 class RectGizmo extends TransformGizmo {
     init() {
-        this._localScaleList = [];
-        this._offsetList = [];
-        this._center = cc.v2(0, 0);
-
         this._worldPosList = [];
         this._localPosList = [];
         this._sizeList = [];
         this._anchorList = [];
         this._rectList = [];
         this._validTarget = [];
+        this._tempRect = cc.rect();
+        this._editRect = cc.rect();
+        this._altKey = false;
 
         this.createController();
     }
@@ -49,7 +59,7 @@ class RectGizmo extends TransformGizmo {
         this._sizeList.length = 0;
         this._anchorList.length = 0;
         this._rectList.length = 0;
-        // 可能有不含uitransfromcomponent的node被选中
+        // 可能有不含uitransfromcomponent的node被选中，剔除掉
         this._validTarget.length = 0;
 
         for (let i = 0; i < this.target.length; i++) {
@@ -61,8 +71,13 @@ class RectGizmo extends TransformGizmo {
                 this._localPosList.push(node.getPosition());
                 this._sizeList.push(uiTransComp.contentSize.clone());
                 this._anchorList.push(uiTransComp.anchorPoint.clone());
+                this._rectList.push(NodeUtils.getWorldBounds(node));
             }
         }
+
+        let validNode = this._validTarget.map((target) => { return target.node; });
+        let bounds = this.getBounds(false, false, validNode);
+        this._tempRect = boundsToRect(bounds);
     }
 
     onControllerMouseMove() {
@@ -77,28 +92,57 @@ class RectGizmo extends TransformGizmo {
         }
     }
 
+    onGizmoKeyDown(event) {
+        this._altKey = event.altKey;
+    }
+
+    onGizmoKeyUp(event) {
+        this._altKey = event.altKey;
+    }
+
     handleAreaMove(delta) {
         for (let i = 0; i < this._validTarget.length; i++) {
             let node = this._validTarget[i].node;
-            let worldPos = this._worldPosList[i];
+            let localPos = this._localPosList[i];
 
-            NodeUtils.makeVec3InPrecision(delta, 3);
-            node.setWorldPosition(worldPos.add(delta));
+            let posDelta = delta.clone();
+            if (node.parent) {
+                node.parent.getWorldMatrix(tempMat4);
+                mat4.invert(tempMat4, tempMat4);
+                tempMat4.m12 = tempMat4.m13 = 0;
+                vec3.transformMat4(posDelta, posDelta, tempMat4);
+            }
+            NodeUtils.makeVec3InPrecision(posDelta, 3);
+            posDelta.z = 0;
+            node.setPosition(localPos.add(posDelta));
             Utils.broadcastMessage('scene:node-changed', node);
         }
     }
 
     handleAnchorMove(delta) {
+        // 不处理多UI选择的anchor编辑
+        if (this._validTarget.length > 1) {
+            return;
+        }
+
         let uiTransComp = this._validTarget[0];
         let node = uiTransComp.node;
         let size = this._sizeList[0];
         let oldAnchor = this._anchorList[0];
         let worldPos = this._worldPosList[0];
 
-        node.setWorldPosition(worldPos.add(delta));
+        let posDelta = delta.clone();
+        NodeUtils.makeVec3InPrecision(posDelta, 3);
+        node.setWorldPosition(worldPos.add(posDelta));
 
-        tempVec2.x = delta.x / size.width;
-        tempVec2.y = delta.y / size.height;
+        // 转换到局部坐标
+        node.getWorldMatrix(tempMat4);
+        mat4.invert(tempMat4, tempMat4);
+        tempMat4.m12 = tempMat4.m13 = 0;
+        vec3.transformMat4(posDelta, posDelta, tempMat4);
+
+        tempVec2.x = posDelta.x / size.width;
+        tempVec2.y = posDelta.y / size.height;
 
         tempVec2.addSelf(oldAnchor);
         uiTransComp.anchorPoint = tempVec2;
@@ -106,42 +150,173 @@ class RectGizmo extends TransformGizmo {
         Utils.broadcastMessage('scene:node-changed', node);
     }
 
-    modifyPosDeltaWithAnchor(type, posDelta, sizeDelta, anchor) {
+    modifyPosDeltaWithAnchor(type, posDelta, sizeDelta, anchor, keepCenter) {
         if (type === HandleType.Right ||
             type === HandleType.TopRight ||
             type === HandleType.BottomRight) {
+            if (keepCenter) {
+                sizeDelta.x /= (1 - anchor.x);
+            }
             posDelta.x = sizeDelta.x * anchor.x;
         } else {
+            if (keepCenter) {
+                sizeDelta.x /= anchor.x;
+            }
             posDelta.x = -sizeDelta.x * (1 - anchor.x);
         }
 
         if (type === HandleType.Bottom ||
             type === HandleType.BottomRight ||
             type === HandleType.BottomLeft) {
-            posDelta.y = -sizeDelta.y * anchor.y;
+            if (keepCenter) {
+                sizeDelta.y /= anchor.y;
+            }
+            posDelta.y = -sizeDelta.y * (1 - anchor.y);
         } else {
-            posDelta.y = sizeDelta.y * (1 - anchor.y);
+            if (keepCenter) {
+                sizeDelta.y /= (1 - anchor.y);
+            }
+            posDelta.y = sizeDelta.y * anchor.y;
         }
     }
 
-    handleOneTarget(type, delta) {
+    handleOneTargetSize(type, delta, keepCenter) {
         let size = this._sizeList[0];
 
         // delta中的符号做为size增加的方向
+        let posDelta = delta.clone();
         let sizeDelta = cc.v2(delta.x, delta.y);
         let localPos = this._localPosList[0];
-        let worldPos = this._worldPosList[0];
         let uiTransComp = this._validTarget[0];
         let node = uiTransComp.node;
         let anchor = this._anchorList[0];
 
-        this.modifyPosDeltaWithAnchor(type, delta, sizeDelta, anchor);
-        NodeUtils.makeVec3InPrecision(delta, 3);
-        node.setWorldPosition(worldPos.add(delta));
-        let width = EditorMath.toPrecision(size.width + sizeDelta.x, 3);
-        let height = EditorMath.toPrecision(size.height + sizeDelta.y, 3);
+        sizeDelta.x = EditorMath.toPrecision(sizeDelta.x, 3);
+        sizeDelta.y = EditorMath.toPrecision(sizeDelta.y, 3);
+        this.modifyPosDeltaWithAnchor(type, posDelta, sizeDelta, anchor, keepCenter);
+        // 转换到基于父结点的局部坐标系
+        if (node.parent) {
+            node.parent.getWorldMatrix(tempMat4);
+            mat4.invert(tempMat4, tempMat4);
+            tempMat4.m12 = tempMat4.m13 = 0;
+            vec3.transformMat4(posDelta, posDelta, tempMat4);
+        }
+
+        if (!keepCenter) {
+        // 乘上当前结点的旋转
+        let localRot = cc.quat();
+        node.getRotation(localRot);
+        vec3.transformQuat(posDelta, posDelta, localRot);
+        posDelta.z = 0;
+        node.setPosition(localPos.add(posDelta));
+        }
+
+        // contenSize 受到scale 影响,
+        let worldScale = cc.v3();
+        node.getWorldScale(worldScale);
+        sizeDelta.x = sizeDelta.x / worldScale.x;
+        sizeDelta.y = sizeDelta.y / worldScale.y;
+
+        let width = size.width + sizeDelta.x;
+        let height = size.height + sizeDelta.y;
         uiTransComp.contentSize = cc.size(width, height);
         Utils.broadcastMessage('scene:node-changed', node);
+    }
+
+    handleMultiTargetSize(type, delta) {
+        let oriRect = this._tempRect;
+
+        let sizeDelta = cc.v2(delta.x, delta.y);
+        let posDelta = delta.clone();
+        let anchor = cc.v2(0, 0);
+
+        sizeDelta.x = EditorMath.toPrecision(sizeDelta.x, 3);
+        sizeDelta.y = EditorMath.toPrecision(sizeDelta.y, 3);
+        this.modifyPosDeltaWithAnchor(type, posDelta, sizeDelta, anchor);
+
+        let rect = oriRect.clone();
+        rect.x = oriRect.x + posDelta.x;
+        rect.y = oriRect.y + posDelta.y;
+        rect.width = oriRect.width + sizeDelta.x;
+        rect.height = oriRect.height + sizeDelta.y;
+
+        this._editRect = rect;
+
+        for (let i = 0, l = this._validTarget.length; i < l; i++) {
+            let uiTransComp = this._validTarget[i];
+            let node = uiTransComp.node;
+            let worldPos = this._worldPosList[i];
+
+            let xPercent = (worldPos.x - oriRect.x) / oriRect.width;
+            let yPercent = (worldPos.y - oriRect.y) / oriRect.height;
+
+            let newPos = cc.v3(rect.x + xPercent * rect.width,
+                               rect.y + yPercent * rect.height,
+                               worldPos.z);
+            node.setWorldPosition(newPos);
+
+            let r = this._rectList[i];
+            let wPercent = r.width / oriRect.width;
+            let hPercent = r.height / oriRect.height;
+
+            let size = this._sizeList[i];
+            let sd = sizeDelta.clone();
+            sd.x = sd.x * wPercent;
+            sd.y = sd.y * hPercent;
+
+            // contenSize 受到scale 影响,
+            let worldScale = cc.v3();
+            node.getWorldScale(worldScale);
+            sd.x = sd.x / worldScale.x;
+            sd.y = sd.y / worldScale.y;
+
+            uiTransComp.contentSize = cc.size(size.width + sd.x, size.height + sd.y);
+
+            Utils.broadcastMessage('scene:node-changed', node);
+        }
+    }
+
+    getBounds(flipX, flipY, nodes) {
+        let minX = Number.MAX_VALUE;
+        let maxX = -Number.MAX_VALUE;
+        let minY = Number.MAX_VALUE;
+        let maxY = -Number.MAX_VALUE;
+
+        function calcBounds(p) {
+            if (p.x > maxX) { maxX = p.x; }
+            if (p.x < minX) { minX = p.x; }
+
+            if (p.y > maxY) { maxY = p.y; }
+            if (p.y < minY) { minY = p.y; }
+        }
+
+        nodes.forEach((node) => {
+            let uiTransComp = node.getComponent(cc.UITransformComponent);
+            if (uiTransComp) {
+                let ob = NodeUtils.getWorldOrientedBounds(node);
+
+                calcBounds(ob[0]);
+                calcBounds(ob[1]);
+                calcBounds(ob[2]);
+                calcBounds(ob[3]);
+            }
+        });
+
+        let temp;
+        if (flipX) {
+            temp = minX;
+            minX = maxX;
+            maxX = temp;
+        }
+
+        if (flipY) {
+            temp = minY;
+            minY = maxY;
+            maxY = temp;
+        }
+
+        // tl, bl, br, tr
+        return [cc.v2(minX, maxY), cc.v2(minX, minY), cc.v2(maxX, minY), cc.v2(maxX, maxY)];
     }
 
     updateDataFromController() {
@@ -155,20 +330,18 @@ class RectGizmo extends TransformGizmo {
             } else if (handleType === HandleType.Anchor) {
                 this.handleAnchorMove(deltaSize);
             } else {
-                this.handleOneTarget(handleType, deltaSize);
+                let keepCenter = this._altKey;
+                if (this.target.length > 1) {
+                    this.handleMultiTargetSize(handleType, deltaSize, keepCenter);
+                } else {
+                    this.handleOneTargetSize(handleType, deltaSize, keepCenter);
+                }
             }
 
         }
     }
 
     updateControllerTransform() {
-        let node = this.node;
-        let worldPos = NodeUtils.getWorldPosition3D(node);
-        let worldRot = NodeUtils.getWorldRotation3D(node);
-
-        this._controller.setPosition(worldPos);
-        this._controller.setRotation(worldRot);
-
         this.updateControllerData();
     }
 
@@ -179,8 +352,19 @@ class RectGizmo extends TransformGizmo {
         }
 
         this._controller.checkEdit();
-        for (let i = 0; i < this.target.length; i++) {
-            let node = this.target[i];
+
+        let length = this.target.length;
+        if (length === 1) {
+            let node = this.target[0];
+
+            let worldPos = NodeUtils.getWorldPosition3D(node);
+            let worldRot = NodeUtils.getWorldRotation3D(node);
+            let worldScale = NodeUtils.getWorldScale3D(node);
+
+            this._controller.setPosition(worldPos);
+            this._controller.setRotation(worldRot);
+            this._controller.setScale(worldScale);
+
             let uiTransComp = node.getComponent(cc.UITransformComponent);
             if (uiTransComp) {
                 let size = uiTransComp.contentSize;
@@ -189,7 +373,20 @@ class RectGizmo extends TransformGizmo {
                 center.x = (0.5 - anchor.x) * size.width;
                 center.y = (0.5 - anchor.y) * size.height;
                 this._controller.updateSize(center, cc.v2(size.width, size.height));
+            } else {
+                this._controller.hide();
             }
+        } else {
+            let flipX = false;
+            let flipY = false;
+
+            let bounds = this.getBounds(flipX, flipY, this.nodes);
+            let rect = boundsToRect(bounds);
+            let rectCenter = cc.v3(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
+            this._controller.setPosition(rectCenter);
+            this._controller.setRotation(cc.quat());
+            this._controller.setScale(cc.v3(1, 1, 1));
+            this._controller.updateSize(cc.v3(), cc.v2(rect.width, rect.height));
         }
     }
 

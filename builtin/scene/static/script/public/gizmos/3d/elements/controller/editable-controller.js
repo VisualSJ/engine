@@ -123,6 +123,7 @@ class EditableController extends ControllerBase {
     }
 
     adjustControllerSize() {
+        super.adjustControllerSize();
         this.adjustEditControllerSize();
     }
 

@@ -139,7 +139,7 @@ class RectangleController extends EditableController {
 
     initShape() {
         this.createShapeNode('RectangleController');
-        this._rectNode = ControllerUtils.rectangle(this._center, this._rotation, this._size, this._color);
+        this._rectNode = ControllerUtils.rectangle(this._center, cc.quat(), this._size, this._color);
         this._rectNode.parent = this.shape;
         this._rectMR = getModel(this._rectNode);
         EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
@@ -149,7 +149,7 @@ class RectangleController extends EditableController {
         this._center = center;
         this._size = size;
 
-        let rectData = ControllerShape.calcRectanglePoints(this._center, this._rotation, this._size);
+        let rectData = ControllerShape.calcRectanglePoints(this._center, cc.quat(), this._size);
 
         updateVBAttr(this._rectMR, AttributeName.POSITION, rectData.vertices);
 
@@ -211,7 +211,8 @@ class RectangleController extends EditableController {
             let deltaDist = 0;
 
             if (this.isBorder(event.axisName)) {
-                deltaDist = deltaPos.dot(axisDir);
+                vec3.transformQuat(tempVec3, axisDir, this._rotation);
+                deltaDist = deltaPos.dot(tempVec3);
                 if (this._curHandleType === RectHandleType.Left ||
                     this._curHandleType === RectHandleType.Right) {
                         this._deltaSize.x = deltaDist;
@@ -221,11 +222,15 @@ class RectangleController extends EditableController {
             } else if (this.isCorner(event.axisName)) {
                 tempVec3.x = axisDir.x;
                 tempVec3.y = 0;
+                tempVec3.z = 0;
+                vec3.transformQuat(tempVec3, tempVec3, this._rotation);
                 deltaDist = deltaPos.dot(tempVec3);
                 this._deltaSize.x = deltaDist;
 
                 tempVec3.x = 0;
                 tempVec3.y = axisDir.y;
+                tempVec3.z = 0;
+                vec3.transformQuat(tempVec3, tempVec3, this._rotation);
                 deltaDist = deltaPos.dot(tempVec3);
                 this._deltaSize.y = deltaDist;
             } else {
@@ -261,6 +266,7 @@ class RectangleController extends EditableController {
         this.resetAxisColor();
     }
 
+    // 返回局部坐标系下的宽高delta
     getDeltaSize() {
         this._deltaSize.z = 0;
         return this._deltaSize;

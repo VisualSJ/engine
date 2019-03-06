@@ -7,7 +7,7 @@ let tempVec3 = cc.v3();
 
 let Utils = {};
 
-// return [bl, tr, tr, br]
+// return [bl, tl, tr, br]
 Utils.getObbFromRect = function(mat, rect, out_bl, out_tl, out_tr, out_br) {
     let x = rect.x;
     let y = rect.y;
@@ -43,6 +43,20 @@ Utils.getWorldBounds = function(node, size, out) {
     let width = size.width;
     let height = size.height;
     let rect = new cc.Rect(0, 0, width, height);
+
+    let uiTransComp = node.getComponent(cc.UITransformComponent);
+    if (uiTransComp) {
+        size = uiTransComp.contentSize;
+        width = size.width;
+        height = size.height;
+        let anchor = uiTransComp.anchorPoint;
+
+        rect.x = -anchor.x * width;
+        rect.y = -anchor.y * height;
+        rect.width = width;
+        rect.height = height;
+    }
+
     node.getWorldMatrix(tempMatrix);
     rect.transformMat4(rect, tempMatrix);
 
@@ -62,12 +76,24 @@ Utils.getWorldOrientedBounds = function(node, size, out_bl, out_tl, out_tr, out_
     node.getWorldMatrix(tempMatrix);
     if (modelComp) {
         return Utils.getObbFromMeshRenderer(modelComp, tempMatrix);
-    }
-    else {
+    } else {
         size = size || cc.size(0, 0);
         let width = size.width;
         let height = size.height;
         let rect = new cc.Rect(0, 0, width, height);
+
+        let uiTransComp = node.getComponent(cc.UITransformComponent);
+        if (uiTransComp) {
+            size = uiTransComp.contentSize;
+            width = size.width;
+            height = size.height;
+            let anchor = uiTransComp.anchorPoint;
+
+            rect.x = -anchor.x * width;
+            rect.y = -anchor.y * height;
+            rect.width = width;
+            rect.height = height;
+        }
 
         let bounds = Utils.getObbFromRect(tempMatrix, rect, out_bl, out_tl, out_tr, out_br);
 

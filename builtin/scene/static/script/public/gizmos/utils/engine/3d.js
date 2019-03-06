@@ -137,6 +137,19 @@ class Engine3D extends EngineInterface {
         }
     }
 
+    updateBoundingBox(meshComp, minPos, maxPos) {
+        const model = meshComp.model;
+        if (!model) { return; }
+
+        model.createBoundingShape(minPos, maxPos);
+
+        const mesh = model.mesh;
+        if (mesh && mesh.struct) {
+            mesh.struct.minPosition = minPos;
+            mesh.struct.maxPosition = maxPos;
+        }
+    }
+
     getBoudingBox(component) {
         let boundingBox = null;
         if (component instanceof cc.ModelComponent) {
