@@ -465,7 +465,7 @@ export async function beforeClose() { }
 
 export async function close() {
     panel.staging();
-    Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
+    Editor.Selection.clear('asset');
     Editor.I18n.removeListener('switch', panel.switchLanguage);
 }
 

@@ -261,7 +261,7 @@ export const methods = {
         selects.push(last.uuid);
 
         vm.selects = selects;
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', selects);
+        Editor.Selection.select('asset', selects);
     },
 
     /**
@@ -275,10 +275,10 @@ export const methods = {
                 vm.intoView = vm.selects[vm.selects.length - 2];
             }
 
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+            Editor.Selection.unselect('asset', uuid);
         } else {
             vm.intoView = uuid;
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+            Editor.Selection.select('asset', uuid);
         }
     },
 
@@ -288,10 +288,10 @@ export const methods = {
      */
     ipcCtrlClick(uuid: string) {
         if (vm.selects.includes(uuid)) {
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', uuid);
+            Editor.Selection.unselect('asset', uuid);
         } else {
             vm.intoView = uuid;
-            Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+            Editor.Selection.select('asset', uuid);
         }
     },
 
@@ -304,8 +304,8 @@ export const methods = {
 
         vm.intoView = value;
 
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', value);
+        Editor.Selection.clear('asset');
+        Editor.Selection.select('asset', value);
     },
 
     /**
@@ -460,7 +460,7 @@ export const methods = {
         const tasks: Array<Promise<boolean>> = [];
         assets.forEach((asset: ItreeAsset) => {
             asset.state = 'loading';
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'asset', asset.uuid);
+            Editor.Selection.unselect('asset', asset.uuid);
             tasks.push(Editor.Ipc.requestToPackage('asset-db', 'delete-asset', asset.source));
         });
         Promise.all(tasks).then((results) => {

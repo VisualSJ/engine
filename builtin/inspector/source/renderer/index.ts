@@ -154,8 +154,8 @@ export async function ready() {
 
     vm = init(panel.$.content);
 
-    const type = await Editor.Ipc.requestToPackage('selection', 'query-last-select-type');
-    const uuid = await Editor.Ipc.requestToPackage('selection', 'query-last-select', type);
+    const type = Editor.Selection.getLastSelectedType();
+    const uuid = Editor.Selection.getLastSelected(type);
 
     vm.item.type = type;
     vm.item.uuid = uuid;

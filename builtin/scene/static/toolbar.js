@@ -249,7 +249,7 @@ exports.ready = async function() {
                 break;
             case 'f':
             case 'F':
-                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+                const uuids = Editor.Selection.getSelected('node');
                 if (uuids && uuids.length) {
                     Editor.Ipc.sendToPanel('scene', 'focus-camera', uuids);
                 }

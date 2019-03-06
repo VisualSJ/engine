@@ -408,7 +408,7 @@ export async function beforeClose() { }
 
 export async function close() {
     panel.staging();
-    Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+    Editor.Selection.clear('node');
     Editor.I18n.removeListener('switch', panel.switchLanguage);
 }
 

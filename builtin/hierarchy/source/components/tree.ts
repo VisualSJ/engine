@@ -170,9 +170,9 @@ export const methods = {
      * 全部选中
      */
     allSelect() {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        Editor.Selection.clear('node');
         for (const [top, node] of db.nodesMap) {
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', node.uuid);
+            Editor.Selection.select('node', node.uuid);
         }
     },
 
@@ -221,7 +221,7 @@ export const methods = {
                     this.ipcResetSelect(uuid);
                     return;
                 }
-                const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+                const uuids = Editor.Selection.getSelected('node');
                 if (uuids.length === 0) {
                     return;
                 }
@@ -247,9 +247,9 @@ export const methods = {
         } else { // event.ctrlKey || event.metaKey
             // @ts-ignore
             if (this.selects.includes(uuid)) {
-                Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+                Editor.Selection.unselect('node', uuid);
             } else {
-                Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+                Editor.Selection.select('node', uuid);
             }
         }
     },
@@ -259,8 +259,8 @@ export const methods = {
      * @param uuid
      */
     ipcResetSelect(uuid: string | string[]) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-        Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+        Editor.Selection.clear('node');
+        Editor.Selection.select('node', uuid);
     },
 
     /**
@@ -388,13 +388,13 @@ export const methods = {
                 return;
             }
 
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+            Editor.Selection.unselect('node', uuid);
             Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid });
         } else { // 如果该节点是被选中了，表明要删除所有选中项
             vm.selects.forEach((uuid: string) => {
                 const node = utils.getNodeFromTree(uuid);
                 if (node) {
-                    Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+                    Editor.Selection.unselect('node', uuid);
                     Editor.Ipc.sendToPanel('scene', 'remove-node', { uuid });
                 }
             });
@@ -469,7 +469,7 @@ export const methods = {
      */
     async shiftUpDown(direction: string) {
         // 同时按住了 shift 键
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+        const uuids = Editor.Selection.getSelected('node');
         if (uuids && uuids.length === 0) {
             return;
         }
@@ -495,7 +495,7 @@ export const methods = {
      * 空白处点击，取消选中
      */
     click(event: Event) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'node');
+        Editor.Selection.clear('node');
     },
 
     /**
@@ -503,11 +503,11 @@ export const methods = {
      */
     async multipleSelect(uuid: string | string[]) {
         if (Array.isArray(uuid)) {
-            Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+            Editor.Selection.clear('node');
+            Editor.Selection.select('node', uuid);
             return;
         }
-        const uuids = await Editor.Ipc.requestToPackage('selection', 'query-select', 'node');
+        const uuids = Editor.Selection.getSelected('node');
         if (uuids.length === 0) {
             return;
         }
@@ -527,8 +527,8 @@ export const methods = {
             selects.splice(selects.findIndex((id) => id === one.uuid), 1);
             selects.push(one.uuid);
 
-            Editor.Ipc.sendToPackage('selection', 'clear', 'node');
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', selects);
+            Editor.Selection.clear('node');
+            Editor.Selection.select('node', selects);
         }
     },
 

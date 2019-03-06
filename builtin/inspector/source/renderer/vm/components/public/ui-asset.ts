@@ -51,8 +51,8 @@ export const methods = {
      * @param uuid
      */
     _onDBClick(event: any, uuid: string) {
-        Editor.Ipc.sendToPackage('selection', 'clear', 'asset');
-        Editor.Ipc.sendToPackage('selection', 'select', 'asset', uuid);
+        Editor.Selection.clear('asset');
+        Editor.Selection.select('asset', uuid);
     },
 };
 

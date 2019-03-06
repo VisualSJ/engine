@@ -16,6 +16,7 @@ interface Editor {
     Theme: Theme;
     Dialog: Dialog;
     Utils: Utils;
+    Selection: Selection;
 }
 
 interface App {
@@ -132,6 +133,16 @@ interface mathUtils {
     sub: Function,
     mul: Function,
     div: Function,
+}
+
+interface Selection {
+    select: Function;
+    unselect: Function;
+    clear: Function;
+    hover: Function;
+    getLastSelectedType: Function;
+    getLastSelected: Function;
+    getSelected: Function;
 }
 
 declare const IPCEvent: IPCEvent;

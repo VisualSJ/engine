@@ -140,7 +140,7 @@ const messages = {
      */
     'select-nodes'(uuids) {
         uuids.forEach((uuid) => {
-            Editor.Ipc.sendToPackage('selection', 'select', 'node', uuid);
+            Editor.Selection.select('node', uuid);
         });
     },
 
@@ -150,7 +150,7 @@ const messages = {
      */
     'unselect-nodes'(uuids) {
         uuids.forEach((uuid) => {
-            Editor.Ipc.sendToPackage('selection', 'unselect', 'node', uuid);
+            Editor.Selection.unselect('node', uuid);
         });
     },
 
