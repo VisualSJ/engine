@@ -179,13 +179,15 @@ class SceneManager extends EventEmitter {
             const children = node._children.map(step).filter(Boolean);
 
             return {
-                name: node.name,
+                name: node.name || node.constructor.name,
                 active: node.active,
                 type: 'cc.' + node.constructor.name,
                 uuid: node._id,
                 children: children.length ? children : [],
                 prefab: !!node._prefab,
                 parent: (node.parent && node.parent.uuid) || '',
+                isScene: node.constructor.name === 'Scene',
+                readOnly: false, // TODO 暂时未使用到
             };
         };
 

@@ -28,7 +28,7 @@ export function encodeNode(node: any): INode {
 
     const data: INode = {
         active: encodeObject(node.active, { default: null }),
-        name: encodeObject(node.name, { default: null }),
+        name: encodeObject(node.name || node.constructor.name, { default: null }),
         position: encodeObject(node._lpos, { default: new cc.Vec3() }),
         rotation: encodeObject(node.eulerAngles, { default: new cc.Vec3() }),
         scale: encodeObject(node._lscale, { default: new cc.Vec3(1, 1, 1) }),

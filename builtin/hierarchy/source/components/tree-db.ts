@@ -28,22 +28,29 @@ export async function refresh() {
     }
 
     reset();
-    toNodesTree(arr);
+
+    if (!Array.isArray(arr)) {
+        nodesTree.children.push(arr);
+    } else {
+        nodesTree.children = arr;
+    }
+
+    toNodesTree();
 }
 
 /**
  * 重置数据
  */
 export function reset() {
-    nodesTree = null;
+    nodesTree = {
+        children: [],
+    };
 }
 
 /**
  * 形成一个合法的树形数据
  */
-function toNodesTree(arr: ItreeNode[]) {
-    nodesTree = arr;
-
+function toNodesTree() {
     function step(node: ItreeNode) {
         legealNodeAttr(node);
 
@@ -64,13 +71,15 @@ function toNodesTree(arr: ItreeNode[]) {
  */
 function legealNodeAttr(node: ItreeNode) {
     Object.assign(node, {
+        name: node.name || '(anonymous)',
         state: '',
         depth: 0,
         top: 0,
         left: 0,
+        isScene: node.isScene,
         isParent: false,
         parentUuid: '',
-        isPrefab: false,
+        isPrefab: node.prefab,
     });
     return node;
 }

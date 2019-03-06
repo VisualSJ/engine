@@ -662,7 +662,7 @@ export const methods = {
         // @ts-ignore 跨面板的取值
         data.uuid = event.dataTransfer.getData('value');
 
-        data.to = db.nodesTree.uuid; // cc.Scene 根节点
+        data.to = vm.getFirstScene(); // cc.Scene 根节点
         data.insert = 'inside';
         // @ts-ignore
         data.copy = event.ctrlKey;
@@ -1018,10 +1018,14 @@ export const methods = {
      * 以下是工具函数：
      */
     getFirstSelect() { // 获取第一个选中节点，没有选中项，返回根节点
-        if (!vm.selects[0] && db.nodesTree) {
-            return db.nodesTree.uuid; // node 节点
+        if (!vm.selects[0]) {
+            return vm.getFirstScene();
         }
         return vm.selects[0]; // 当前选中的节点
+    },
+
+    getFirstScene() {
+        return db.nodesTree.children[0].uuid; // 第一个 scene 场景的 uuid
     },
 
     /**

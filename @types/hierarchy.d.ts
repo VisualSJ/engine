@@ -27,6 +27,7 @@ declare interface ItreeNode {
     parent: string;
 
     // 以下是扩展的数据
+    isScene: boolean; // 是否是 scene 节点
     isPrefab: boolean; // 是否是 prefab
     isVisible: boolean; // 根据自身和父级的 active 调整状态
     readOnly: boolean; // 是否是只读

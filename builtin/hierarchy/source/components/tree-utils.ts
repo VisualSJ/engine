@@ -6,7 +6,7 @@ const db = require('./tree-db');
  * @param node
  */
 exports.canNotDeleteNode = (node: ItreeNode) => {
-    return !node || node.readOnly ? true : false;
+    return !node || node.readOnly || node.isScene ? true : false;
 };
 
 /**
@@ -14,7 +14,7 @@ exports.canNotDeleteNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotCreateNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node);
+    return !node || node.readOnly ? true : false;
 };
 
 /**

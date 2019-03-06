@@ -106,10 +106,6 @@ export const methods = {
         // 必要的，配合父级容器的点击事件
         event.stopPropagation();
 
-        if (node.readOnly) {
-            return;
-        }
-
         // @ts-ignore
         if (event.ctrlKey || event.metaKey || event.shiftKey) { // 多选
             // @ts-ignore
