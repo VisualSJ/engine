@@ -94,6 +94,7 @@ async function initManager(info) {
     manager.Selection = require('../selection');
     manager.Preview = require('../preview');
     manager.Component = require('../component');
+    manager.MinWindow = require('../min-window');
 
     // 创建编辑器使用的 camera
     manager.Camera.init();
@@ -103,6 +104,9 @@ async function initManager(info) {
 
     // 创建 gizmo
     manager.Selection.init();
+
+    // 监听物体选中情况
+    manager.MinWindow.init();
 }
 
 exports.engine = initEngine;

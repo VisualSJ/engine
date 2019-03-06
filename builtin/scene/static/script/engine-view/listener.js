@@ -41,6 +41,12 @@ const utils = {
         newEvent.uuid = value;
         return newEvent;
     },
+    createConfirmEvent(event) {
+        return {
+            path: event.target.getAttribute('path'),
+            value: event.target.value,
+        };
+    },
 };
 
 const dragSupportTypes = ['cc.Material', 'cc.Prefab', 'cc.Mesh'];
@@ -130,6 +136,14 @@ module.exports = function(elem) {
             module: 'Asset',
             handler: 'onDrop',
             params: [utils.creatDragEvent(event, bcr)],
+        });
+    });
+
+    elem.addEventListener('confirm', (event) => {
+        elem.ipc.forceSend('call-method', {
+            module: 'MinWindow',
+            handler: 'onConfirm',
+            params: [utils.createConfirmEvent(event)],
         });
     });
 };

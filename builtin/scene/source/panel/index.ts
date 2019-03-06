@@ -4,11 +4,9 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import { apply as messageApply, init as messageInit } from './message';
-
 window.customElements.define('engine-view', require('../../static/script/engine-view'));
 
 let panel: any = null;
-const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 export const style = readFileSync(join(__dirname, '../../dist/index.css'));
 
@@ -23,6 +21,14 @@ export const $ = {
     path: 'footer .path',
     version: 'footer .version',
 };
+
+/**
+ * 配置 scene 的 iconfont 图标
+ */
+export const fonts = [{
+    name: 'scene',
+    file: 'packages://scene/static/iconfont.woff',
+}];
 
 export const listeners = {
     /**
@@ -44,9 +50,6 @@ export async function ready() {
 
     // 初始化引擎管理器
     await panel.$.scene.init();
-
-    // 显示版本号
-    panel.$.version.innerHTML = 'Version: ' + panel.$.scene.version;
 }
 
 /**

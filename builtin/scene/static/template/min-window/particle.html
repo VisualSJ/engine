@@ -1,0 +1,22 @@
+<div class="container particle">
+    <div class="header">Particle Effect</div>
+    <div class="main">
+        <div class="control">
+            <ui-button path="play" class="transparent"><i class="iconfont icon-arrow-right"></i></ui-button>
+            <ui-button path="refresh" class="transparent" disabled><i class="iconfont icon-refresh-b"></i></ui-button>
+            <ui-button path="stop" class="transparent"><i class="iconfont icon-stop"></i></ui-button>
+        </div>
+        <div class="line">
+            <span class="name">Playback Speed</span>
+            <ui-num-input value="{{speed}}" path="simulationSpeed"></ui-num-input>
+        </div>
+        <div class="line">
+            <span class="name">Playback Time</span>
+            <ui-num-input value="{{time}}" path="_time"></ui-num-input>
+        </div>
+        <div class="line">
+            <span class="name">Particles</span>
+            <span>{{particle}}</span>
+        </div>
+    </div>
+</div>

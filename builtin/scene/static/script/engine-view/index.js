@@ -7,7 +7,9 @@ const HostIpc = require('../public/ipc/host');
 const initIPC = require('./ipc');
 const initListener = require('./listener');
 const tasks = require('./tasks');
-
+const template = require('art-template');
+const { readFileSync } = require('fs');
+const q = document.querySelector.bind(document);
 class View extends window.HTMLElement {
     constructor() {
         super();
@@ -18,6 +20,8 @@ class View extends window.HTMLElement {
 
         this.$scene = document.createElement('webview');
         this.depend = vDependence.create();
+
+        this.$minWindow = document.createElement('div');
 
         // 如果 webview 被注销了，需要通知
         this.$scene.addEventListener('destroyed', () => {
@@ -51,6 +55,15 @@ class View extends window.HTMLElement {
         this.$scene.setAttribute('style', 'pointer-events: none;');
         this.$scene.setAttribute('src', `packages://scene/static/template/${Editor.Project.type}-webview.html`);
         this.appendChild(this.$scene);
+
+        this.$minWindow.setAttribute('id', 'MinWindow');
+        this.appendChild(this.$minWindow);
+        this.$minWindow.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
+        });
+        this.$minWindow.addEventListener('mousewheel', (event) => {
+            event.stopPropagation();
+        });
 
         // 查询 asset-db 是否ready
         if (await this.depend.execute(tasks.assetDbReady[0])) {
@@ -102,6 +115,26 @@ class View extends window.HTMLElement {
             handler,
             params,
         });
+    }
+
+    /**
+     * 显示小窗口
+     * @param {*} info
+     */
+    showMinWindow(info) {
+        if (info.name === 'preview') {
+            // 显示预览窗口
+
+        } else {
+            const path = join(__dirname, `./../../template/min-window/${info.name}.html`);
+            const content = template.render(readFileSync(path, 'utf-8'), info);
+            this.$minWindow.innerHTML = content;
+        }
+    }
+
+    // 隐藏小窗口
+    hideMinWindow() {
+        this.$minWindow.innerHTML = '';
     }
 
     ///////////////////

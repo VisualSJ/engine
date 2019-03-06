@@ -165,6 +165,14 @@ const messages = {
     async 'save-asset'(uuid, content) {
         await Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
     },
+
+    'show-min-window'(info) {
+        this.showMinWindow(info);
+    },
+
+    'hide-min-window'() {
+        this.hideMinWindow();
+    },
 };
 
 module.exports = function(elem) {

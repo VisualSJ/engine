@@ -80,6 +80,9 @@ class Operation {
          * dragover
          * dragleave
          * drop
+         *
+         * 数据响应
+         * confirm
          */
         this._events = new Map();
 
