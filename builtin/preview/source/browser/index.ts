@@ -18,8 +18,8 @@ export const messages = {
     /**
      * 场景保存的时候发送的消息
      */
-    'scene:save'() {
-        if (getConfig('autoRefresh')) {
+    'scene-save'() {
+        if (getConfig('auto_refresh')) {
             emitReload();
         }
     },

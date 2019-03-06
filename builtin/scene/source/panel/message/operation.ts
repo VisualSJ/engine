@@ -59,7 +59,7 @@ export function apply(messages: any) {
         }
         const text = await $scene.forwarding('Scene', 'serialize');
         const uuid = profile.get('current-scene') || '';
-
+        Editor.Ipc.sendToAll('scene-save');
         if (uuid) {
             const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
             if (asset) {
