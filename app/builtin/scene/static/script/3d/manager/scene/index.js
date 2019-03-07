@@ -69,7 +69,7 @@ class SceneManager extends EventEmitter {
             }
         } else {
             const scene = new cc.Scene();
-            const light = new cc.Node('Light');
+            const light = new cc.Node('Main Light');
             const camera = new cc.Node('Camera');
             light.parent = scene;
             camera.parent = scene;

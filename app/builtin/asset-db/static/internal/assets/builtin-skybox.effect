@@ -46,16 +46,19 @@ CCProgram sky-fs {
   in vec3 viewDir;
 
   uniform samplerCube cubeMap;
-  #include <gamma-correction>
   #include <unpack>
+  #include <cc-global>
+  #include <gamma>
+  #include <post-process>
 
   vec4 frag () {
   #if USE_RGBE_CUBEMAP
       vec3 c = unpackRGBE(texture(cubeMap, viewDir));
-      c = linearToGammaSpaceRGB(c / (1.0 + c));
-      return vec4(c, 1.0);
+      c = linearToSRGB(c / (1.0 + c));
+      vec4 o = vec4(c, 1.0);
   #else
-      return texture(cubeMap, viewDir);
+      vec4 o = texture(cubeMap, viewDir);
   #endif
+    return PostProcess(o, cc_exposure.w);
   }
 }

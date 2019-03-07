@@ -30,7 +30,7 @@ describe('场景查询测试', () => {
         it('场景树节点数据', () => {
             uuid = dump_empty.children[0].uuid;
             expect(dump_empty.children.length).to.equal(2);
-            expect(dump_empty.children[0].name).to.equal('Light');
+            expect(dump_empty.children[0].name).to.equal('Main Light');
             expect(dump_empty.children[1].name).to.equal('Camera');
         });
     });
@@ -48,7 +48,7 @@ describe('场景查询测试', () => {
         const path = await Editor.Ipc.requestToPackage('scene', 'query-node-path', uuid);
 
         it('节点路径匹配', () => {
-            expect(path).to.equal('Light');
+            expect(path).to.equal('Main Light');
         });
     });
 

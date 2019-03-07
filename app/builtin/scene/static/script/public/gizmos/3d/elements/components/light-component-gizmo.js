@@ -3,7 +3,7 @@ const Utils = require('../../../utils');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let DirectionLightController = require('../controller/direction-light-controller');
-let PointLightController = require('../controller/sphere-controller');
+let SphereLightController = require('../controller/sphere-controller');
 let SpotLightController = require('../controller/cone-controller');
 let Gizmo = require('../gizmo-base');
 let ControllerUtils = require('../utils/controller-utils');
@@ -13,11 +13,11 @@ const MathUtil = External.EditorMath;
 class LightComponentGizmo extends Gizmo {
     init() {
         this.Direction = LightType.DIRECTIONAL;
-        this.Point = LightType.POINT;
+        this.Sphere = LightType.SPHERE;
         this.Spot = LightType.SPOT;
-        this._curLightType = this.Direction; // 0:direction, 1:point, 2:spot
+        this._curLightType = this.Direction; // 0:direction, 1:sphere, 2:spot
 
-        this._pointLightRange = 0;
+        this._sphereLightRange = 0;
         this._spotAngle = 0;
         this._spotLightHeight = 0;
         this._lightGizmoColor = new cc.Color(255, 255, 50);
@@ -46,15 +46,15 @@ class LightComponentGizmo extends Gizmo {
         this._lightController[this.Direction] = new DirectionLightController(LightGizmoRoot);
         this._lightController[this.Direction].setColor(this._lightGizmoColor);
 
-        // point light controller
-        let pointLightCtrl = new PointLightController(LightGizmoRoot);
-        pointLightCtrl.setColor(this._lightGizmoColor);
-        this._lightController[this.Point] = pointLightCtrl;
-        pointLightCtrl.onControllerMouseDown = this.onControllerMouseDown.bind(this);
-        pointLightCtrl.onControllerMouseMove = this.onControllerMouseMove.bind(this);
-        pointLightCtrl.onControllerMouseUp = this.onControllerMouseUp.bind(this);
-        pointLightCtrl.editable = true;
-        pointLightCtrl.hoverColor = this._lightCtrlHoverColor;
+        // sphere light controller
+        let sphereLightCtrl = new SphereLightController(LightGizmoRoot);
+        sphereLightCtrl.setColor(this._lightGizmoColor);
+        this._lightController[this.Sphere] = sphereLightCtrl;
+        sphereLightCtrl.onControllerMouseDown = this.onControllerMouseDown.bind(this);
+        sphereLightCtrl.onControllerMouseMove = this.onControllerMouseMove.bind(this);
+        sphereLightCtrl.onControllerMouseUp = this.onControllerMouseUp.bind(this);
+        sphereLightCtrl.editable = true;
+        sphereLightCtrl.hoverColor = this._lightCtrlHoverColor;
 
         let spotLightCtrl = new SpotLightController(LightGizmoRoot);
         this._lightController[this.Spot] = spotLightCtrl;
@@ -78,8 +78,8 @@ class LightComponentGizmo extends Gizmo {
         switch (this._curLightType) {
             case this.Direction:
                 break;
-            case this.Point:
-                this._pointLightRange = lightData.range;
+            case this.Sphere:
+                this._sphereLightRange = lightData.range;
                 break;
             case this.Spot:
                 this._spotLightHeight = lightData.range;
@@ -107,9 +107,9 @@ class LightComponentGizmo extends Gizmo {
             switch (this._curLightType) {
                 case this.Direction:
                     break;
-                case this.Point:
+                case this.Sphere:
                     let deltaRange = this._activeController.getDeltaRadius();
-                    let newRange = this._pointLightRange + deltaRange;
+                    let newRange = this._sphereLightRange + deltaRange;
                     newRange = MathUtil.toPrecision(newRange, 3);
                     newRange = Math.abs(newRange);
                     setLightData(this.target, {range: newRange});
@@ -156,7 +156,7 @@ class LightComponentGizmo extends Gizmo {
         let worldRot = cc.quat(0, 0, 0, 1);
         let worldPos = NodeUtils.getWorldPosition3D(node);
 
-        if (this._curLightType !== this.Point) {
+        if (this._curLightType !== this.Sphere) {
             worldRot = NodeUtils.getWorldRotation3D(node);
         }
 
@@ -193,7 +193,7 @@ class LightComponentGizmo extends Gizmo {
             switch (this._curLightType) {
                 case this.Direction:
                     break;
-                case this.Point:
+                case this.Sphere:
                     this._activeController.checkEdit();
                     this._activeController.radius = lightData.range;
                     break;

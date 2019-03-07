@@ -3,10 +3,6 @@
 export const template = `
 <div class="light-component">
     <ui-prop auto="true"
-        :value="value.value.isMainLight"
-    ></ui-prop>
-
-    <ui-prop auto="true"
         :value="value.value.type"
     ></ui-prop>
 
@@ -15,7 +11,20 @@ export const template = `
     ></ui-prop>
 
     <ui-prop auto="true"
+        :value="value.value.useColorTemperature"
+    ></ui-prop>
+
+    <ui-prop auto="true"
+        :value="value.value.colorTemperature"
+    ></ui-prop>
+
+    <ui-prop auto="true"
         :value="value.value.intensity"
+    ></ui-prop>
+
+    <ui-prop auto="true"
+        v-if="value.value.type.value > 0"
+        :value="value.value.size"
     ></ui-prop>
 
     <ui-prop auto="true"

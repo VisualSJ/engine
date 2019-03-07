@@ -26,7 +26,7 @@ module.exports = {
 
         newLightObject: 'Light',
         newLightDirectional: 'Directional Light',
-        newLightPoint: 'Point Light',
+        newLightSphere: 'Sphere Light',
         newLightSpot: 'Spot Light',
 
         newCameraObject: 'Camera',

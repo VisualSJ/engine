@@ -70,9 +70,10 @@
       "b": 255,
       "a": 255
     },
-    "_intensity": 1,
+    "_useColorTemperature": false,
+    "_colorTemperature": 6550,
+    "_intensity": 65000,
     "_range": 1,
-    "_spotAngle": 60,
     "_id": ""
   },
   {

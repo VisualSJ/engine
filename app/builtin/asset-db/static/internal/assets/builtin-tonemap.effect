@@ -31,7 +31,7 @@ CCEffect {
 }
 
 CCProgram tonemap-vs {
-  precision mediump float;
+  precision highp float;
   #include <common>
   #include <cc-global>
 
@@ -48,8 +48,11 @@ CCProgram tonemap-vs {
 }
 
 CCProgram tonemap-fs {
-  precision mediump float;
+  precision highp float;
+  #include <cc-global>
+  #include <common>
   #include <exposure>
+  #include <gamma>
   #include <aces>
 
   in vec2 v_uv;
@@ -57,7 +60,9 @@ CCProgram tonemap-fs {
 
   vec4 frag () {
     vec4 o = texture(u_texSampler, v_uv);
-    // o.rgb = ACESToneMap(o.rgb);
+    o.rgb *= cc_exposure.x * FP_SCALE_INV;
+    o.rgb = ACESToneMap(o.rgb);
+    o.rgb = LinearToSRGB(o.rgb);
     return o;
   }
 }

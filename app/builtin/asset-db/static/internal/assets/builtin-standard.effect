@@ -108,6 +108,7 @@ CCProgram standard-vs {
 CCProgram standard-fs {
   precision mediump float;
   #include <cc-global>
+  #include <cc-forward-lights>
   #include <common>
   #include <gamma>
   #include <lighting>
@@ -186,34 +187,77 @@ CCProgram standard-fs {
     float roughness = clamp(pbr.r, 0.04, 1.0);
     float metallic = clamp(pbr.g, 0.0, 1.0);
 
-    // calculate diffuse & specular
+    // Calculate diffuse & specular
     vec3 diffuse = baseColor.rgb * 0.96 * (1.0 - metallic);
     vec3 specular = mix(vec3(0.04), baseColor.rgb, metallic);
 
     vec3 V = normalize(cc_cameraPos.xyz - v_worldPos);
     vec3 L = normalize(-cc_mainLitDir.xyz);
     vec3 H = normalize(L+V);
-    float NV = clamp(dot(N, V), 0.0, 1.0);
-    float NL = clamp(dot(N, L), 0.0, 1.0);
-    float NH = clamp(dot(N, H), 0.0, 1.0);
+    float NV = max(abs(dot(N, V)), 0.001);
+    float NL = max(dot(N, L), 0.001);
+    float NH = max(dot(N, H), 0.0);
 
     specular = BRDFApprox(specular, roughness, NV);
 
     vec3 R = normalize(reflect(-V, N));
-    float RL = clamp(dot(R, L), 0.0, 1.0);
-    vec3 specularContrib = specular * CalcSpecular(roughness, RL, NH, H, N);
+    // float RL = max(dot(R, L), 0.0);
+    vec3 specularContrib = specular * CalcSpecular(roughness, NH, H, N);
 
     // Cook-Torrance Microfacet Specular BRDF
     vec3 diffuseContrib = diffuse / PI;
     vec3 finalColor = NL * cc_mainLitColor.rgb * cc_mainLitColor.w * (diffuseContrib + specularContrib);
 
+    // Calculate lighting
+    for (int i = 0; i < MAX_LIGHTS; i++) {
+      /*
+      // Diretional Lights
+      vec3 dL = normalize(-cc_dirLightDirection[i].xyz);
+      vec3 dH = normalize(dL+V);
+      float dNL = max(dot(N, dL), 0.001);
+      float dNH = max(dot(N, dH), 0.0);
+      vec3 dSpec = specular * CalcSpecular(roughness, dNH, dH, N);
+      finalColor += dNL * cc_dirLightColor[i].rgb * cc_dirLightColor[i].w * (diffuseContrib + dSpec);
+      */
+
+      // Sphere Lights
+      vec3 PLU = cc_sphereLitPos[i].xyz - v_worldPos;
+      vec3 PL = normalize(PLU);
+      vec3 PH = normalize(PL+V);
+      float PNL = max(dot(N, PL), 0.001);
+      float PNH = max(dot(N, PH), 0.0);
+      
+      float pDistSqr = dot(PLU, PLU);
+      float litRadius = cc_sphereLitSizeRange[i].x;
+			float litRadiusSqr = litRadius * litRadius;
+			float illum = PI * (litRadiusSqr / max(litRadiusSqr , pDistSqr));
+
+      float pInvSqrAttRadius = 1.0 / max(cc_sphereLitSizeRange[i].y, 0.01);
+      pInvSqrAttRadius *= pInvSqrAttRadius;
+      float pAtt = SmoothDistAtt(pDistSqr, pInvSqrAttRadius);
+      vec3 pSpec = specular * CalcSpecular(roughness, PNH, PH, N);
+      finalColor += PNL * cc_sphereLitColor[i].rgb * cc_sphereLitColor[i].w * illum * pAtt * (diffuseContrib + pSpec);
+
+      // Spot Lights
+      vec3 SLU = cc_spotLitPosSize[i].xyz - v_worldPos;
+      vec3 SL = normalize(SLU);
+      vec3 SH = normalize(SL+V);
+      float SNL = max(dot(N, SL), 0.001);
+      float SNH = max(dot(N, SH), 0.0);
+      float cosConeAngle = max(dot(-cc_spotLitDirRange[i].xyz, SL), 0.01);
+      float sInvSqrAttRadius = 1.0 / max(cc_spotLitDirRange[i].w, 0.01);
+      float sDistSqr = dot(SLU, SLU);
+      float sAtt = GetDistAtt(sDistSqr, sInvSqrAttRadius);
+      sAtt *= cosConeAngle;
+      vec3 sSpec = specular * CalcSpecular(roughness, SNH, SH, N);
+      finalColor += SNL * cc_spotLitColor[i].rgb * cc_spotLitColor[i].w * sAtt * (diffuseContrib + sSpec);
+    }
+
     float fAmb = dot(N, vec3(0.0, -1.0, 0.0)) * 0.5 + 0.5;
     vec3 ambDiff = mix(cc_ambientSky.rgb, cc_ambientGround.rgb, fAmb) * cc_ambientSky.w;
     finalColor += (ambDiff.rgb * diffuse);
-
-    finalColor = LinearToSRGB(finalColor);
-    finalColor = max(finalColor, vec3(pbrParams.g));
-
+    finalColor = max(finalColor, vec3(0.0));
+    finalColor *= FP_SCALE;
     return vec4(finalColor, baseColor.a);
   }
 }

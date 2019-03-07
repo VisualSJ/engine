@@ -43,7 +43,7 @@ class Engine2D extends EngineInterface {
 
         this.LightType = {
             DIRECTIONAL: cc.LightComponent.Type.DIRECTIONAL,
-            POINT: cc.LightComponent.Type.POINT,
+            SPHERE: cc.LightComponent.Type.SPHERE,
             SPOT: cc.LightComponent.Type.SPOT,
         };
     }

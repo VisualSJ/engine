@@ -26,7 +26,7 @@ module.exports = {
 
         newLightObject: '光线',
         newLightDirectional: '平行光',
-        newLightPoint: '点光',
+        newLightSphere: '球面光',
         newLightSpot: '聚光',
 
         newCameraObject: '摄像机',

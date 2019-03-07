@@ -10,3 +10,7 @@
 
 // common function
 #define saturate(a) clamp( a, 0.0, 1.0 )
+
+#define FP_MAX = 65504.0;
+#define FP_SCALE (1.0/1024.0);
+#define FP_SCALE_INV 1024.0;

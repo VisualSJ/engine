@@ -3,9 +3,11 @@
 
 float SmoothDistAtt(float distSqr, float invSqrAttRadius)
 {
-	float factor = distSqr * invSqrAttRadius ;
-	float smoothFactor = clamp(1.0 - factor * factor, 0.0, 1.0);
-	return smoothFactor * smoothFactor ;
+	float factor = distSqr * invSqrAttRadius;	// ^2
+	float factor2 = factor * factor;			// ^4
+	float factor3 = factor2 * factor2;			// ^8
+	float smoothFactor = clamp(1.0 - factor3 * factor3, 0.0, 1.0);
+	return smoothFactor * smoothFactor;
 }
 
 float GetDistAtt(float distSqr, float invSqrAttRadius)
@@ -15,9 +17,9 @@ float GetDistAtt(float distSqr, float invSqrAttRadius)
 	return attenuation;
 }
 
-float GetAngleAtt(vec3 normLit, vec3 litDir, float litAngleScale, float litAngleOffset)
+float GetAngleAtt(vec3 L, vec3 litDir, float litAngleScale, float litAngleOffset)
 {
-	float cd = dot(litDir, normLit);
+	float cd = dot(litDir, L);
 	float attenuation = clamp(cd * litAngleScale + litAngleOffset, 0.0, 1.0);
 	return (attenuation * attenuation);
 }
@@ -32,7 +34,7 @@ float GGXMobile(float roughness, float NoH, vec3 H, vec3 N)
 	return p * p;
 }
 
-float CalcSpecular(float roughness, float RoL, float NoH, vec3 H, vec3 N)
+float CalcSpecular(float roughness, float NoH, vec3 H, vec3 N)
 {
 	return (roughness*0.25 + 0.25) * GGXMobile(roughness, NoH, H, N);
 }
