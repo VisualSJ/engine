@@ -54,7 +54,7 @@ CCProgram sky-fs {
   vec4 frag () {
   #if USE_RGBE_CUBEMAP
       vec3 c = unpackRGBE(texture(cubeMap, viewDir));
-      c = linearToSRGB(c / (1.0 + c));
+      c = LinearToSRGB(c / (1.0 + c));
       vec4 o = vec4(c, 1.0);
   #else
       vec4 o = texture(cubeMap, viewDir);

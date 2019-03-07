@@ -20,3 +20,4 @@ app/lib/theme/**/dist
 
 # 可能出现的多余文件
 /builtin/*/source/**/*.js
+effects.js

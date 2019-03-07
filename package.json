@@ -16,6 +16,7 @@
     "clear": "node ./scripts/clear/build.js && node ./scripts/clear/modules.js",
     "clear:build": "node ./scripts/clear/build.js",
     "clear:modules": "node ./scripts/clear/modules.js",
+    "refresh": "touch app/builtin/asset-db/static/internal/assets/*",
     "publish": "node ./scripts/publish/index.js",
     "test": "mocha"
   },
@@ -29,6 +30,7 @@
     "@types/node": "^10.5.2",
     "chai": "^4.2.0",
     "electron": "4.0.4",
+    "fs-jetpack": "^2.2.2",
     "gulp": "^4.0.0",
     "spectron": "^5.0.0",
     "uglify-es": "^3.3.9",

@@ -4,9 +4,15 @@
   "_objFlags": 0,
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "0504e5ab-d2a3-4c79-bba0-2aed51da577e"
+    "__uuid__": "1baf0fc9-befa-459c-8bdd-af1a450a0319"
   },
-  "_techIdx": 0,
-  "_defines": [],
-  "_props": []
+  "_techIdx": "0",
+  "_defines": [
+    {},
+    {}
+  ],
+  "_props": [
+    {},
+    {}
+  ]
 }

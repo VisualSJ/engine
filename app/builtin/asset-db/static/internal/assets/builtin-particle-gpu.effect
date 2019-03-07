@@ -1,4 +1,4 @@
-CCEFFECT {
+CCEffect {
   techniques: [
     {
       passes: [
@@ -37,7 +37,7 @@ CCEFFECT {
 
 // TODO: soft particle
 
-CCPROGRAM particle-add-gpu-fs {
+CCProgram particle-add-gpu-fs {
   precision mediump float;
   uniform sampler2D mainTexture;
   uniform FragConstants {
