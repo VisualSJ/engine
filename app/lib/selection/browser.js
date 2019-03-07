@@ -71,7 +71,7 @@ class Selection extends EventEmitter {
         uuid.forEach((id) => {
 
             // 如果之前选中过这个元素，则应该移除之前的选中
-            for (const i = array.length - 1; i > 0; i--) {
+            for (let i = array.length - 1; i > 0; i--) {
                 const item = array[i];
                 if (item.id === id) {
                     array.splice(i, 1);
