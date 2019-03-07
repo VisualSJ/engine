@@ -257,7 +257,13 @@ CCProgram standard-fs {
     vec3 ambDiff = mix(cc_ambientSky.rgb, cc_ambientGround.rgb, fAmb) * cc_ambientSky.w;
     finalColor += (ambDiff.rgb * diffuse);
     finalColor = max(finalColor, vec3(0.0));
+
+  #if USE_HDR
     finalColor *= FP_SCALE;
+  #else
+    finalColor *= cc_exposure.x;
+    finalColor = LinearToSRGB(finalColor);
+  #endif
     return vec4(finalColor, baseColor.a);
   }
 }
