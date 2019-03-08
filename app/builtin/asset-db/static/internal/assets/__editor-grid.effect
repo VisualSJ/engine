@@ -42,7 +42,7 @@ CCEffect {
  */
 CCProgram grid-vs {
   precision mediump float;
-  #include <ccg-common>
+  #include <cc-global>
 
   in vec2 a_texCoord;
   in vec3 a_position;
@@ -52,14 +52,14 @@ CCProgram grid-vs {
   vec4 vert () {
     uv = a_texCoord;
     pos_w = a_position;
-    vec2 forward = vec2(ccg_matView[0][2], ccg_matView[2][2]);
+    vec2 forward = vec2(cc_matView[0][2], cc_matView[2][2]);
 
     // widen the line wrt. camera-plane distance
-    float dist = abs(ccg_cameraPos.y);
+    float dist = abs(cc_cameraPos.y);
     vec2 scale = vec2(1.0 - a_texCoord.y, a_texCoord.y);
     pos_w.xz += scale * vec2((a_texCoord.x * 2.0 - 1.0) * dist * 0.002);
 
-    vec4 pos = ccg_matViewProj * vec4(pos_w, 1.0);
+    vec4 pos = cc_matViewProj * vec4(pos_w, 1.0);
 	  pos.z += 0.0001; // nudge on depth to avoid z-fighting at origin
     return pos;
   }
@@ -67,7 +67,7 @@ CCProgram grid-vs {
 
 CCProgram grid-fs {
   precision mediump float;
-  #include <ccg-common>
+  #include <cc-global>
   #include <gamma>
   #include <post-process>
 
@@ -78,8 +78,8 @@ CCProgram grid-fs {
     // alpha wrt. UVs
     float alpha = sqrt(0.5 - abs(uv.x - 0.5));
     // fade out at grazing angles
-    float scale = abs(normalize(ccg_cameraPos.xyz - pos_w).y);
+    float scale = abs(normalize(cc_cameraPos.xyz - pos_w).y);
     if (scale < 0.5) alpha *= max(0.3, scale / 0.5);
-    return PostProcess(vec4(0.5, 0.5, 0.5, alpha), ccg_exposure.w);
+    return PostProcess(vec4(0.5, 0.5, 0.5, alpha), cc_exposure.w);
   }
 }

@@ -47,11 +47,11 @@ CCEffect {
 
 CCProgram unlit-vs {
   precision mediump float;
-  #include <ccg-common>
-  #include <ccl-common>
+  #include <cc-global>
+  #include <cc-local>
 
   #if CC_USE_SKINNING
-    #include <skinning>
+    #include <cc-skinning>
   #endif
 
   in vec3 a_position;
@@ -70,7 +70,7 @@ CCProgram unlit-vs {
       skinVertex(pos);
     #endif
 
-    pos = ccg_matViewProj * ccl_matWorld * pos;
+    pos = cc_matViewProj * cc_matWorld * pos;
 
     #if USE_TEXTURE
       uv0 = a_texCoord * tilingOffset.xy + tilingOffset.zw;
@@ -82,7 +82,7 @@ CCProgram unlit-vs {
 
 CCProgram unlit-fs {
   precision mediump float;
-  #include <ccg-common>
+  #include <cc-global>
   #include <gamma>
   #include <post-process>
 
@@ -108,6 +108,6 @@ CCProgram unlit-fs {
       o *= color;
     #endif
 
-    return PostProcess(o, ccg_exposure.w);
+    return PostProcess(o, cc_exposure.w);
   }
 }

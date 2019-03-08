@@ -439,7 +439,7 @@ const decorateBindings = (() => {
 })();
 
 const buildShader = (() => {
-  const builtinRE = /^cc(?:g|l)_\w+$/i;
+  const builtinRE = /^cc\w+$/i;
   const newlines = /(^\s*\n){2,}/gm;
   const clean = (code) => {
     // clean newlines

@@ -26,13 +26,13 @@ CCProgram sky-vs {
   precision mediump float;
   in vec3 a_position;
 
-  #include <ccg-common>
+  #include <cc-global>
 
   out vec3 viewDir;
 
   vec4 vert () {
-    mat4 matViewRotOnly = mat4(mat3(ccg_matView));
-    vec4 clipPos = ccg_matProj * matViewRotOnly * vec4(a_position, 1.0);
+    mat4 matViewRotOnly = mat4(mat3(cc_matView));
+    vec4 clipPos = cc_matProj * matViewRotOnly * vec4(a_position, 1.0);
     viewDir = a_position;
 
     vec4 pos = clipPos;
@@ -47,7 +47,7 @@ CCProgram sky-fs {
 
   uniform samplerCube cubeMap;
   #include <unpack>
-  #include <ccg-common>
+  #include <cc-global>
   #include <gamma>
   #include <post-process>
 
@@ -59,6 +59,6 @@ CCProgram sky-fs {
   #else
       vec4 o = texture(cubeMap, viewDir);
   #endif
-    return PostProcess(o, ccg_exposure.w);
+    return PostProcess(o, cc_exposure.w);
   }
 }

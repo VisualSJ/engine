@@ -71,12 +71,12 @@ CCProgram shared-ubos {
 
 CCProgram standard-vs {
   precision mediump float;
-  #include <ccg-common>
-  #include <ccl-common>
+  #include <cc-global>
+  #include <cc-local>
   #include <shared-ubos>
 
   #if CC_USE_SKINNING
-    #include <skinning>
+    #include <cc-skinning>
   #endif
 
   in vec3 a_position;
@@ -98,21 +98,21 @@ CCProgram standard-vs {
       skinVertex(pos, normal);
     #endif
 
-    v_worldPos = (ccl_matWorld * pos).xyz;
-    v_worldNormal = (ccl_matWorldIT * normal).xyz;
+    v_worldPos = (cc_matWorld * pos).xyz;
+    v_worldNormal = (cc_matWorldIT * normal).xyz;
 
     #if USE_ALBEDO_MAP || USE_NORMAL_MAP || USE_PBR_MAP || USE_EMISSIVE_MAP
       v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw;
     #endif
 
-    return ccg_matViewProj * ccl_matWorld * pos;
+    return cc_matViewProj * cc_matWorld * pos;
   }
 }
 
 CCProgram standard-fs {
   precision mediump float;
-  #include <ccg-common>
-  #include <ccl-forward-lights>
+  #include <cc-global>
+  #include <cc-forward-light>
   #include <common>
   #include <gamma>
   #include <lighting>
@@ -186,8 +186,8 @@ CCProgram standard-fs {
     vec3 diffuse = baseColor.rgb * 0.96 * (1.0 - metallic);
     vec3 specular = mix(vec3(0.04), baseColor.rgb, metallic);
 
-    vec3 V = normalize(ccg_cameraPos.xyz - v_worldPos);
-    vec3 L = normalize(-ccg_mainLitDir.xyz);
+    vec3 V = normalize(cc_cameraPos.xyz - v_worldPos);
+    vec3 L = normalize(-cc_mainLitDir.xyz);
     vec3 H = normalize(L+V);
     float NV = max(abs(dot(N, V)), 0.001);
     float NL = max(dot(N, L), 0.001);
@@ -201,7 +201,7 @@ CCProgram standard-fs {
 
     // Cook-Torrance Microfacet Specular BRDF
     vec3 diffuseContrib = diffuse / PI;
-    vec3 finalColor = NL * ccg_mainLitColor.rgb * ccg_mainLitColor.w * (diffuseContrib + specularContrib);
+    vec3 finalColor = NL * cc_mainLitColor.rgb * cc_mainLitColor.w * (diffuseContrib + specularContrib);
 
     // Calculate lighting
     for (int i = 0; i < MAX_LIGHTS; i++) {
@@ -216,47 +216,47 @@ CCProgram standard-fs {
       */
 
       // Sphere Lights
-      vec3 PLU = ccl_sphereLitPos[i].xyz - v_worldPos;
+      vec3 PLU = cc_sphereLitPos[i].xyz - v_worldPos;
       vec3 PL = normalize(PLU);
       vec3 PH = normalize(PL+V);
       float PNL = max(dot(N, PL), 0.001);
       float PNH = max(dot(N, PH), 0.0);
 
       float pDistSqr = dot(PLU, PLU);
-      float litRadius = ccl_sphereLitSizeRange[i].x;
+      float litRadius = cc_sphereLitSizeRange[i].x;
 			float litRadiusSqr = litRadius * litRadius;
 			float illum = PI * (litRadiusSqr / max(litRadiusSqr , pDistSqr));
 
-      float pInvSqrAttRadius = 1.0 / max(ccl_sphereLitSizeRange[i].y, 0.01);
+      float pInvSqrAttRadius = 1.0 / max(cc_sphereLitSizeRange[i].y, 0.01);
       pInvSqrAttRadius *= pInvSqrAttRadius;
       float pAtt = SmoothDistAtt(pDistSqr, pInvSqrAttRadius);
       vec3 pSpec = specular * CalcSpecular(roughness, PNH, PH, N);
-      finalColor += PNL * ccl_sphereLitColor[i].rgb * ccl_sphereLitColor[i].w * illum * pAtt * (diffuseContrib + pSpec);
+      finalColor += PNL * cc_sphereLitColor[i].rgb * cc_sphereLitColor[i].w * illum * pAtt * (diffuseContrib + pSpec);
 
       // Spot Lights
-      vec3 SLU = ccl_spotLitPosSize[i].xyz - v_worldPos;
+      vec3 SLU = cc_spotLitPosSize[i].xyz - v_worldPos;
       vec3 SL = normalize(SLU);
       vec3 SH = normalize(SL+V);
       float SNL = max(dot(N, SL), 0.001);
       float SNH = max(dot(N, SH), 0.0);
-      float cosConeAngle = max(dot(-ccl_spotLitDirRange[i].xyz, SL), 0.01);
-      float sInvSqrAttRadius = 1.0 / max(ccl_spotLitDirRange[i].w, 0.01);
+      float cosConeAngle = max(dot(-cc_spotLitDirRange[i].xyz, SL), 0.01);
+      float sInvSqrAttRadius = 1.0 / max(cc_spotLitDirRange[i].w, 0.01);
       float sDistSqr = dot(SLU, SLU);
       float sAtt = GetDistAtt(sDistSqr, sInvSqrAttRadius);
       sAtt *= cosConeAngle;
       vec3 sSpec = specular * CalcSpecular(roughness, SNH, SH, N);
-      finalColor += SNL * ccl_spotLitColor[i].rgb * ccl_spotLitColor[i].w * sAtt * (diffuseContrib + sSpec);
+      finalColor += SNL * cc_spotLitColor[i].rgb * cc_spotLitColor[i].w * sAtt * (diffuseContrib + sSpec);
     }
 
     float fAmb = dot(N, vec3(0.0, -1.0, 0.0)) * 0.5 + 0.5;
-    vec3 ambDiff = mix(ccg_ambientSky.rgb, ccg_ambientGround.rgb, fAmb) * ccg_ambientSky.w;
+    vec3 ambDiff = mix(cc_ambientSky.rgb, cc_ambientGround.rgb, fAmb) * cc_ambientSky.w;
     finalColor += (ambDiff.rgb * diffuse);
     finalColor = max(finalColor, vec3(0.0));
 
   #if USE_HDR
     finalColor *= FP_SCALE;
   #else
-    finalColor *= ccg_exposure.x;
+    finalColor *= cc_exposure.x;
     finalColor = LinearToSRGB(finalColor);
   #endif
     return vec4(finalColor, baseColor.a);
@@ -265,23 +265,23 @@ CCProgram standard-fs {
 
 CCProgram planar-shadow-vs {
   precision highp float;
-  #include <ccg-common>
-  #include <ccl-common>
-  #include <ccg-shadow>
+  #include <cc-global>
+  #include <cc-local>
+  #include <cc-shadow>
 
   in vec3 a_position;
 
   vec4 vert () {
     vec4 pos = vec4(a_position, 1);
-    return ccg_matViewProj * ccg_matLightPlaneProj * ccl_matWorld * pos;
+    return cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
   }
 }
 
 CCProgram planar-shadow-fs {
   precision highp float;
-  #include <ccg-shadow>
+  #include <cc-shadow>
 
   vec4 frag () {
-    return ccg_shadowColor;
+    return CCShadowColor;
   }
 }

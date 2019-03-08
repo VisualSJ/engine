@@ -30,7 +30,7 @@ CCEffect {
 
 CCProgram base-vs {
   precision mediump float;
-  #include <ccg-common>
+  #include <cc-global>
   in vec3 a_position;
 
   in vec4 a_color;
@@ -39,7 +39,7 @@ CCProgram base-vs {
   vec4 vert () {
     vec4 pos = vec4(a_position, 1);
 
-    pos = ccg_matViewProj * pos;
+    pos = cc_matViewProj * pos;
     color = a_color;
 
     return pos;
