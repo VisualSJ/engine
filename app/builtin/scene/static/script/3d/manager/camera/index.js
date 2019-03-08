@@ -109,56 +109,56 @@ sceneManager.on('open', (error, scene) => {
     // 设置 debug 摄像机
     // scene._renderScene.setDebugCamera(camera.instance);
 
-    // 更新光源
-    camera._lightNodes = utils.queryLightNodes([camera._light.node]);
-    camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
+    // // 更新光源
+    // camera._lightNodes = utils.queryLightNodes([camera._light.node]);
+    // camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
 
     // 摄像机对准到中心点
     camera.focus();
 });
 
 // 节点的 active 或者 comp 的 enable 修改的时候需要更新光源数据
-nodeManager.on('changed', (node) => {
-    let index = camera._lightNodes.indexOf(node);
-    if (index !== -1) {
-        let lightComp = node.getComponent(cc.LightComponent);
-        if (!lightComp) {
-            camera._lightNodes.splice(index, 1);
-        }
+// nodeManager.on('changed', (node) => {
+//     let index = camera._lightNodes.indexOf(node);
+//     if (index !== -1) {
+//         let lightComp = node.getComponent(cc.LightComponent);
+//         if (!lightComp) {
+//             camera._lightNodes.splice(index, 1);
+//         }
 
-        camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
-    }
-});
+//         camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
+//     }
+// });
 
 // 如果删除的节点带有灯光，需要更新摄像机使用的光源数据
-nodeManager.on('removed', (node) => {
-    let index = camera._lightNodes.indexOf(node);
-    if (index !== -1) {
-        camera._lightNodes.splice(index, 1);
-        camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
-    }
-});
+// nodeManager.on('removed', (node) => {
+//     let index = camera._lightNodes.indexOf(node);
+//     if (index !== -1) {
+//         camera._lightNodes.splice(index, 1);
+//         camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
+//     }
+// });
 
 // 如果节点增加了 light，需要更新摄像机使用的光源数据
-compManager.on('component-added', (comp, node) => {
-    if (!(comp instanceof cc.LightComponent)) {
-        return;
-    }
-    if (!camera._lightNodes.includes(node)) {
-        camera._lightNodes.push(node);
-    }
-    camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
-});
+// compManager.on('component-added', (comp, node) => {
+//     if (!(comp instanceof cc.LightComponent)) {
+//         return;
+//     }
+//     if (!camera._lightNodes.includes(node)) {
+//         camera._lightNodes.push(node);
+//     }
+//     camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
+// });
 
 // 如果节点删除，并且删除的节点带有 light，需要更新光源数据
-compManager.on('component-removed', (comp, node) => {
-    if (!(comp instanceof cc.LightComponent)) {
-        return;
-    }
+// compManager.on('component-removed', (comp, node) => {
+//     if (!(comp instanceof cc.LightComponent)) {
+//         return;
+//     }
 
-    let index = camera._lightNodes.indexOf(node);
-    if (index !== -1) {
-        camera._lightNodes.splice(index, 1);
-        camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
-    }
-});
+//     let index = camera._lightNodes.indexOf(node);
+//     if (index !== -1) {
+//         camera._lightNodes.splice(index, 1);
+//         camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
+//     }
+// });
