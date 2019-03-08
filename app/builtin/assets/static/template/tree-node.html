@@ -34,7 +34,7 @@
 
         <label class="name"
             :twinkle="twinkles[asset.uuid]" 
-            v-if="state!=='input'"
+            v-if="state!=='rename'"
         >{{asset.name}}</label>
 
         <div class="rename"
@@ -60,7 +60,7 @@
 
         <i class="readonly i-lock"
             :title="t('menu.readOnly')"
-            v-if="asset.readOnly"
+            v-if="!asset.isRoot && asset.readOnly"
         ></i>
     </ui-drag-item>
     <div class="tree-node"

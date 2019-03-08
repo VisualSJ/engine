@@ -15,6 +15,7 @@ declare interface IdragAsset {
 }
 
 declare interface IaddAsset {
+    uuid: string; // 在该资源上发起的新增, 可能等于或不等于 parentUuid
     type: string; // 类型 folder, js, ts, png 等
     ext: string; // 新文件的后缀，.js, .ts 等
     name: string; // 文件名称 带后缀

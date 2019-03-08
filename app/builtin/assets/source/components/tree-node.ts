@@ -47,7 +47,7 @@ export const computed = {
         // @ts-ignore
         if (asset.source && this.renameSource === asset.source) {
             // @ts-ignore 选中该节点
-            return 'input';
+            return 'rename';
             // @ts-ignore
         } else if (asset.source && this.addAsset.parentDir === asset.source) {
             // @ts-ignore 选中该节点
@@ -75,7 +75,7 @@ export const watch = {
         const asset = this.asset;
 
         // @ts-ignore
-        if (this.state === 'input') {
+        if (this.state === 'rename') {
             // @ts-ignore
             this.renameUuid = asset.uuid;
             // @ts-ignore
@@ -198,7 +198,7 @@ export const methods = {
      */
     rename(asset: ItreeAsset) {
         // 改变节点状态
-        asset.state = 'input';
+        asset.state = 'rename';
     },
     /**
      * 改变输入值时判断是否重名

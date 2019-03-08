@@ -322,14 +322,13 @@ export const methods = {
     /**
      * 创建资源前名称事前处理
      * @param json
-     * @param uuid 在该资源上发起的新增
      */
-    async addTo(json: IaddAsset, uuid: string) {
-        if (!uuid) {
-            uuid = this.getFirstSelect();
+    async addTo(json: IaddAsset) {
+        if (!json.uuid) {
+            json.uuid = this.getFirstSelect();
         }
 
-        const parent = utils.closestCanCreateAsset(uuid); // 自身或父级文件夹
+        const parent = utils.closestCanCreateAsset(json.uuid); // 自身或父级文件夹
         if (!parent) { // 没有可用的
             return;
         }
@@ -343,6 +342,7 @@ export const methods = {
         switch (json.type) {
             case 'folder': json.name = 'New Folder'; break;
             case 'scene': json.name = `New Scene.${json.type}`; break;
+            case 'file': json.name = 'New File'; break;
             default: json.name = `New File.${json.type}`; break;
         }
 
@@ -355,6 +355,7 @@ export const methods = {
             name: basename(url),
             ext: extname(url),
             parentDir: dirname(url),
+            parentUuid: parent.uuid,
         };
     },
 
@@ -366,7 +367,7 @@ export const methods = {
         vm.addAsset.parentDir = '';
 
         // 数据错误时取消
-        if (!json || !json.parentDir || !json.parentUuid || !json.name) {
+        if (!json || !json.parentDir || !json.parentUuid || !json.name || /\.$/.test(json.name)) {
             return;
         }
 
@@ -389,6 +390,7 @@ export const methods = {
         }
 
         const url = `${json.parentDir}/${json.name}`;
+
         await vm.ipcAdd(url, content);
         parent.state = '';
     },

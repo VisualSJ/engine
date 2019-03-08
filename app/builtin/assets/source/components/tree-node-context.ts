@@ -2,93 +2,18 @@
 import { join } from 'path';
 const { shell } = require('electron');
 const utils = require('./tree-utils');
+const {createMenu} = require('./panel-context');
 
-exports.menu = (self: any, asset: ItreeAsset) => {
+exports.menu = (vm: any, asset: ItreeAsset) => {
     Editor.Menu.popup({
         menu: [
             {
                 label: Editor.I18n.t('assets.menu.new'),
                 enabled: !utils.canNotCreateAsset(asset),
-                submenu: [
-                    {
-                        label: Editor.I18n.t('assets.menu.newFolder'),
-                        click() {
-                            self.$emit('addTo', { type: 'folder' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newJavaScript'),
-                        click() {
-                            self.$emit('addTo', { type: 'js' }, asset.uuid);
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newTypeScript'),
-                        click() {
-                            self.$emit('addTo', { type: 'ts' }, asset.uuid);
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                        click() {
-                            self.$emit('addTo', { type: 'coffee' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newScene'),
-                        click() {
-                            self.$emit('addTo', { type: 'scene' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newMaterials'),
-                        click() {
-                            self.$emit('addTo', { type: 'mtl' }, asset.uuid);
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newEffect'),
-                        click() {
-                            self.$emit('addTo', { type: 'effect' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                        click() {
-                            self.$emit('addTo', { type: 'anim' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                        click() {
-                            self.$emit('addTo', { type: 'pac' }, asset.uuid);
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                        click() {
-                            self.$emit('addTo', { type: 'labelatlas' }, asset.uuid);
-                        },
-                    },
-                ],
+                submenu: createMenu((addAsset: IaddAsset) => {
+                    addAsset.uuid = asset.uuid;
+                    vm.$emit('addTo', addAsset);
+                }),
             },
             {
                 type: 'separator',
@@ -97,14 +22,14 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                 label: Editor.I18n.t('assets.menu.copy'),
                 enabled: !utils.canNotCopyAsset(asset),
                 click() {
-                    self.$emit('copy', asset.uuid);
+                    vm.$emit('copy', asset.uuid);
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.paste'),
                 enabled: !utils.canNotPasteAsset(asset),
                 click() {
-                    self.$emit('paste', asset.uuid);
+                    vm.$emit('paste', asset.uuid);
                 },
             },
             {
@@ -114,14 +39,14 @@ exports.menu = (self: any, asset: ItreeAsset) => {
                 label: Editor.I18n.t('assets.menu.rename'),
                 enabled: !utils.canNotRenameAsset(asset),
                 click(event: Event) {
-                    self.rename(asset);
+                    vm.rename(asset);
                 },
             },
             {
                 label: Editor.I18n.t('assets.menu.delete'),
                 enabled: !utils.canNotDeleteAsset(asset),
                 click() {
-                    self.$emit('ipcDelete', asset.uuid);
+                    vm.$emit('ipcDelete', asset.uuid);
                 },
             },
             { type: 'separator' },

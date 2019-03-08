@@ -3,89 +3,100 @@ import { join } from 'path';
 const { shell } = require('electron');
 const db = require('./panel-db');
 
+exports.createMenu = (callback: any): any[] => {
+    return [
+        {
+            label: Editor.I18n.t('assets.menu.newFile'),
+            click() {
+                callback({ type: 'file' });
+            },
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newFolder'),
+            click() {
+                callback({ type: 'folder' });
+            },
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newJavaScript'),
+            click() {
+                callback({ type: 'js' });
+            },
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newTypeScript'),
+            click() {
+                callback({ type: 'ts' });
+            },
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newScene'),
+            click() {
+                callback({ type: 'scene' });
+            },
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newMaterial'),
+            click() {
+                callback({ type: 'mtl' });
+            },
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newPhysicsMaterial'),
+            click() {
+                callback({ type: 'pmtl' });
+            },
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newEffect'),
+            click() {
+                callback({ type: 'effect' });
+            },
+        },
+    ];
+};
+
+function panelMenu() {
+    return [
+        {
+            label: Editor.I18n.t('assets.menu.new'),
+            submenu: exports.createMenu((addAsset: IaddAsset) => {
+                db.vm.$refs.tree.addTo(addAsset);
+            }),
+        },
+    ];
+}
 exports.popupNew = (event: Event) => {
     Editor.Menu.popup({
         // @ts-ignore
         x: event.pageX,
         // @ts-ignore
         y: event.pageY,
-        menu: [
-            {
-                label: Editor.I18n.t('assets.menu.newFolder'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'folder' });
-                },
-            },
-            {
-                type: 'separator',
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newJavaScript'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'js' });
-                },
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newTypeScript'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'ts' });
-                },
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'coffee' });
-                },
-            },
-            {
-                type: 'separator',
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newScene'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'scene' });
-                },
-            },
-            {
-                type: 'separator',
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newMaterials'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'mtl' });
-                },
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newEffect'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'effect' });
-                },
-            },
-            {
-                type: 'separator',
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'anim' });
-                },
-            },
-            {
-                type: 'separator',
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'pac' });
-                },
-            },
-            {
-                label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                click() {
-                    db.vm.$refs.tree.addTo({ type: 'labelatlas' });
-                },
-            },
-        ],
+        menu: exports.createMenu((addAsset: IaddAsset) => {
+            db.vm.$refs.tree.addTo(addAsset);
+        }),
+    });
+};
+
+exports.popupContext = (event: Event) => {
+    Editor.Menu.popup({
+        // @ts-ignore
+        x: event.pageX,
+        // @ts-ignore
+        y: event.pageY,
+        menu: panelMenu(),
     });
 };
 
@@ -119,100 +130,6 @@ exports.popupSearchType = (event: Event) => {
                 click() {
                     db.vm.searchType = 'type';
                 },
-            },
-        ],
-    });
-};
-
-exports.popupContext = (event: Event) => {
-    Editor.Menu.popup({
-        // @ts-ignore
-        x: event.pageX,
-        // @ts-ignore
-        y: event.pageY,
-        menu: [
-            {
-                label: Editor.I18n.t('assets.menu.new'),
-                submenu: [
-                    {
-                        label: Editor.I18n.t('assets.menu.newFolder'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'folder' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newJavaScript'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'js' });
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newTypeScript'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'ts' });
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newCoffeeScript'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'coffee' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newScene'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'scene' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newMaterials'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'mtl' });
-                        },
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newEffect'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'effect' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newAnimationClip'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'anim' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newAutoAtlas'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'pac' });
-                        },
-                    },
-                    {
-                        type: 'separator',
-                    },
-                    {
-                        label: Editor.I18n.t('assets.menu.newLabelAtlas'),
-                        click() {
-                            db.vm.$refs.tree.addTo({ type: 'labelatlas' });
-                        },
-                    },
-                ],
             },
         ],
     });
