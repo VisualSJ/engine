@@ -6,6 +6,7 @@ const {promisify} = require('util');
 import {
     INode,
     IProperty,
+    IScene,
 } from './interface';
 
 import {

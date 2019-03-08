@@ -1,6 +1,6 @@
 'use strict';
 
-import { readTemplate, translationDump } from '../../../utils';
+import { readTemplate, translationDump, transSceneDump } from '../../../utils';
 
 export const template = readTemplate('inspector-3d/node/index.html');
 
@@ -15,6 +15,7 @@ export const props = [
 export const components = {
     'ui-prop': require('../../public/ui-prop'),
     comp: require('./comp'),
+    'scene-node': require('./scene'),
 };
 
 export const methods = {
@@ -39,7 +40,11 @@ export const methods = {
         }
 
         const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', vm.uuid);
-        vm.dump = translationDump(dump);
+        if (dump.isScene) {
+            vm.dump = transSceneDump(dump);
+        } else {
+            vm.dump = translationDump(dump);
+        }
     },
 
     async _onAddComponentMenu(event: any) {

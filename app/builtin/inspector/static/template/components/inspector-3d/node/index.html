@@ -1,8 +1,15 @@
 <div class="node">
-    <template
-        v-if="dump"
-    >
+    <scene-node
+        v-if="dump && dump.isScene"
+        :dump="dump"
 
+        :width="width"
+        :height="height"
+        :language="language"
+    ></scene-node>
+    <template
+        v-if="dump && !dump.isScene"
+    >
         <div class="header">
             <ui-prop empty="true"
                 :value="dump.active"

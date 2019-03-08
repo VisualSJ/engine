@@ -6,6 +6,7 @@ declare const Manager: any;
 import {
     INode,
     IProperty,
+    IScene,
 } from './interface';
 
 import {
@@ -59,6 +60,25 @@ export function encodeNode(node: any): INode {
     return data;
 }
 
+/**
+ * 编码一个场景数据
+ * @param scene
+ */
+export function encodeScene(scene: any): IScene {
+    const data: IScene = {
+        active: encodeObject(scene.active, { default: null }),
+        name: encodeObject(scene.name, { default: null }),
+        value: {},
+        isScene: true,
+    };
+    for (const name of Object.keys(scene._globals)) {
+        if (name === '__id__') {
+            continue;
+        }
+        data.value[name] = encodeObject(scene._globals[name], { default: null });
+    }
+    return data;
+}
 /**
  * 编码一个 component
  * @param component

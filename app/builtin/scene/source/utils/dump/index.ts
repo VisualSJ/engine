@@ -1,11 +1,11 @@
 'use strict';
 
 import {
-    INode, IProperty,
+    INode, IProperty, IScene,
 } from './interface';
 
 import {
-    encodeComponent, encodeNode,
+    encodeComponent, encodeNode, encodeScene
 } from './encode';
 
 import {
@@ -14,6 +14,9 @@ import {
 } from './decode';
 
 export function get(node: any) {
+    if (node.__classname__ === 'cc.Scene') {
+        return encodeScene(node);
+    }
     return encodeNode(node);
 }
 
@@ -21,7 +24,7 @@ export function getComponent(comp: any) {
     return encodeComponent(comp);
 }
 
-export async function set(dump: INode, node?: any) {
+export async function set(dump: any, node?: any) {
     return await decodeNode(dump, node);
 }
 

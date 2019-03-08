@@ -48,3 +48,10 @@ export interface INode {
     __type__: string;
     __prefab__?: any;
 }
+
+export interface IScene {
+    name: IProperty;
+    active: IProperty;
+    value: any;
+    isScene: boolean;
+}
