@@ -29,7 +29,7 @@ export function encodeNode(node: any): INode {
 
     const data: INode = {
         active: encodeObject(node.active, { default: null }),
-        name: encodeObject(node.name || node.constructor.name, { default: null }),
+        name: encodeObject(node.name || ctor.name, { default: null }),
         position: encodeObject(node._lpos, { default: new cc.Vec3() }),
         rotation: encodeObject(node.eulerAngles, { default: new cc.Vec3() }),
         scale: encodeObject(node._lscale, { default: new cc.Vec3(1, 1, 1) }),
@@ -65,9 +65,19 @@ export function encodeNode(node: any): INode {
  * @param scene
  */
 export function encodeScene(scene: any): IScene {
+    const ctor = scene.constructor;
+
     const data: IScene = {
         active: encodeObject(scene.active, { default: null }),
-        name: encodeObject(scene.name, { default: null }),
+        name: encodeObject(scene.name || ctor.name, { default: null }),
+        uuid: encodeObject(scene.uuid, { default: null }),
+        children: scene.children.map((child: any) => {
+            return encodeObject(child, {
+                ctor: cc.Node,
+            });
+        }),
+        parent: '',
+        __type__: getTypeName(ctor),
         value: {},
         isScene: true,
     };

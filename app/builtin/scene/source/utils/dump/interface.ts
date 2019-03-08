@@ -54,4 +54,9 @@ export interface IScene {
     active: IProperty;
     value: any;
     isScene: boolean;
+
+    uuid: IProperty;
+    children: any[];
+    parent: any;
+    __type__: string;
 }

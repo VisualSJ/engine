@@ -205,6 +205,10 @@ export const methods = {
      * @param node
      */
     renameSubmit(event: Event, node: ItreeNode) {
+        // @ts-ignore; 避免两次触发
+        if (this.state !== 'rename') {
+            return;
+        }
         // @ts-ignore
         const newName = this.$refs.renameInput.value.trim();
         // @ts-ignore
@@ -240,6 +244,10 @@ export const methods = {
      * @param event
      */
     addSubmit(event: Event) {
+        // @ts-ignore 避免两次触发
+        if (this.state !== 'add') {
+            return;
+        }
         // @ts-ignore
         const json: IaddNode = Object.assign({}, this.addNode);
         // @ts-ignore
