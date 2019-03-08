@@ -438,7 +438,19 @@ class GizmoManager {
         );
     }
 
+    check(nodes) {
+        // 过滤掉场景节点
+        let validNodes = nodes.filter((node) => {
+            return cc.Node.isNode(node);
+        });
+
+        return validNodes;
+    }
+
     edit(nodes) {
+
+        nodes = this.check(nodes);
+
         if (nodes.length === 0) {
             if (this._transformTool) {
                 this._transformTool.target = [];
