@@ -47,6 +47,7 @@ module.exports = {
         newUIEditBox: 'EditBox',
         newUILayout: 'Layout',
         newUIScrollView: 'ScrollView',
+        newUIMask: 'Mask',
 
         copy: 'Copy',
         paste: 'Paste',

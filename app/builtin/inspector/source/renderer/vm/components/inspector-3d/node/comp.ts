@@ -21,6 +21,7 @@ const componentMap: any = {
     'cc.SliderComponent': 'cc-slider-component',
     'cc.WidgetComponent': 'cc-widget-component',
     'cc.LightComponent': 'cc-light-component',
+    'cc.SpriteComponent': 'cc-sprite-component',
 };
 
 export const components: any = {
@@ -31,6 +32,7 @@ export const components: any = {
     'cc-slider-component': require('./components/slider'),
     'cc-widget-component': require('./components/widget'),
     'cc-light-component': require('./components/light'),
+    'cc-sprite-component': require('./components/sprite'),
 };
 
 export const methods = {

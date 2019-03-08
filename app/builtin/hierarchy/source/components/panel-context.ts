@@ -150,6 +150,12 @@ exports.createMenu = (callback: any): any[] => {
                         callback('c1baa707-78d6-4b89-8d5d-0b7fdf0c39bc');
                     },
                 },
+                {
+                    label: Editor.I18n.t('hierarchy.menu.newUIMask'),
+                    click() {
+                        callback('7fa63aed-f3e2-46a5-8a7c-c1a1adf6cea6');
+                    },
+                },
             ],
         },
         {
