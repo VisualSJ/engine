@@ -115,8 +115,8 @@ CCEffect {
 
 CCProgram gizmo-vs {
   precision mediump float;
-  #include <cc-local>
-  #include <cc-global>
+  #include <ccl-common>
+  #include <ccg-common>
 
   in vec3 a_position;
   in vec3 a_normal;
@@ -132,20 +132,20 @@ CCProgram gizmo-vs {
     vec4 normal = vec4(a_normal, 0);
 
     pos_l = a_position;
-    pos_w = (cc_matWorld * pos).xyz;
-    normal_w = (cc_matWorldIT * normal).xyz;
-    right = vec3(cc_matView[0][0], cc_matView[1][0], cc_matView[2][0]);
-    up = vec3(cc_matView[0][1], cc_matView[1][1], cc_matView[2][1]);
-    forward = vec3(cc_matView[0][2], cc_matView[1][2], cc_matView[2][2]);
+    pos_w = (ccl_matWorld * pos).xyz;
+    normal_w = (ccl_matWorldIT * normal).xyz;
+    right = vec3(ccg_matView[0][0], ccg_matView[1][0], ccg_matView[2][0]);
+    up = vec3(ccg_matView[0][1], ccg_matView[1][1], ccg_matView[2][1]);
+    forward = vec3(ccg_matView[0][2], ccg_matView[1][2], ccg_matView[2][2]);
 
-    return cc_matViewProj * cc_matWorld * pos;
+    return ccg_matViewProj * ccl_matWorld * pos;
   }
 }
 
 CCProgram gizmo-fs {
   precision mediump float;
   #include <rect-area-light>
-  #include <cc-global>
+  #include <ccg-common>
   #include <gamma>
   #include <post-process>
 
@@ -162,7 +162,7 @@ CCProgram gizmo-fs {
 
   vec4 frag () {
     vec3 N = normalize(normal_w);
-    vec3 V = normalize(cc_cameraPos.xyz - pos_w);
+    vec3 V = normalize(ccg_cameraPos.xyz - pos_w);
 
     // vec3 L = normalize(cross(forward, vec3(0, 1, 0)));
     // vec3 diffuse = color.rgb * (0.2 + max(0.0, dot(N, L)) * 0.8);
@@ -174,19 +174,19 @@ CCProgram gizmo-fs {
     points[2] = (forward * 3.0 - right - up) * 40.0;
     points[3] = (forward * 3.0 + right - up) * 40.0;
     vec3 diffuse = color.rgb * (0.2 + LTC_Evaluate(N, V, pos_l, mat3(1), points) * 0.8);
-    return PostProcess(vec4(diffuse, color.a), cc_exposure.w);
+    return PostProcess(vec4(diffuse, color.a), ccg_exposure.w);
   }
 }
 
 CCProgram line-vs {
   precision mediump float;
-  #include <cc-local>
-  #include <cc-global>
+  #include <ccl-common>
+  #include <ccg-common>
 
   in highp vec3 a_position;
 
   vec4 vert () {
-    vec4 pos = cc_matViewProj * cc_matWorld * vec4(a_position, 1);
+    vec4 pos = ccg_matViewProj * ccl_matWorld * vec4(a_position, 1);
     pos.z -= 0.0001;
     return pos;
   }
@@ -194,7 +194,7 @@ CCProgram line-vs {
 
 CCProgram line-fs {
   precision mediump float;
-  #include <cc-global>
+  #include <ccg-common>
   #include <gamma>
   #include <post-process>
 
@@ -203,9 +203,9 @@ CCProgram line-fs {
   };
 
   vec4 front() {
-    return PostProcess(color, cc_exposure.w);
+    return PostProcess(color, ccg_exposure.w);
   }
   vec4 back() {
-    return PostProcess(vec4(color.rgb, color.a * 0.2), cc_exposure.w);
+    return PostProcess(vec4(color.rgb, color.a * 0.2), ccg_exposure.w);
   }
 }

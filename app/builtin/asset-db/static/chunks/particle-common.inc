@@ -4,8 +4,8 @@ uniform Constants {
   vec4 frameTile_velLenScale;
 };
 
-#include <cc-global>
-#include <cc-local>
+#include <ccg-common>
+#include <ccl-common>
 
 out vec2 uv;
 out vec4 color;

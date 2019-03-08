@@ -439,7 +439,7 @@ const decorateBindings = (() => {
 })();
 
 const buildShader = (() => {
-  const builtinRE = /^cc\w+$/i;
+  const builtinRE = /^cc(?:g|l)_\w+$/i;
   const newlines = /(^\s*\n){2,}/gm;
   const clean = (code) => {
     // clean newlines
@@ -480,7 +480,7 @@ const buildShader = (() => {
     miscChecks(glsl1.frag, fEntry); glsl3.frag = frag;
 
     // filter out pipeline builtin params
-    const builtins = { blocks: [], textures: [] };
+    const builtins = { blocks: [], samplers: [] };
     blocks = blocks.filter((u) => {
       if (builtinRE.test(u.name)) {
         builtins.blocks.push(u.name);
@@ -489,7 +489,7 @@ const buildShader = (() => {
     });
     samplers = samplers.filter((u) => {
       if (builtinRE.test(u.name)) {
-        builtins.textures.push(u.name);
+        builtins.samplers.push(u.name);
         return false;
       } else return true;
     });

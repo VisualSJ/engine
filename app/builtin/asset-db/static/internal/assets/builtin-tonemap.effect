@@ -33,7 +33,7 @@ CCEffect {
 CCProgram tonemap-vs {
   precision highp float;
   #include <common>
-  #include <cc-global>
+  #include <ccg-common>
 
   in vec2 a_position;
   in vec2 a_texCoord;
@@ -41,7 +41,7 @@ CCProgram tonemap-vs {
 
   vec4 vert () {
     vec4 pos = vec4(a_position, 0, 1);
-    v_uv = a_texCoord * cc_screenScale.xy;
+    v_uv = a_texCoord * ccg_screenScale.xy;
 
     return pos;
   }
@@ -49,7 +49,7 @@ CCProgram tonemap-vs {
 
 CCProgram tonemap-fs {
   precision highp float;
-  #include <cc-global>
+  #include <ccg-common>
   #include <common>
   #include <exposure>
   #include <gamma>
@@ -61,7 +61,7 @@ CCProgram tonemap-fs {
   vec4 frag () {
     vec4 o = texture(u_texSampler, v_uv);
   #if USE_HDR
-    o.rgb *= cc_exposure.x * FP_SCALE_INV;
+    o.rgb *= ccg_exposure.x * FP_SCALE_INV;
     o.rgb = ACESToneMap(o.rgb);
     o.rgb = LinearToSRGB(o.rgb);
   #endif
