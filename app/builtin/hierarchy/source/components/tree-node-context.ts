@@ -13,8 +13,9 @@ exports.menu = (event: Event, vm: any, node: ItreeNode) => {
             {
                 label: Editor.I18n.t('hierarchy.menu.newNode'),
                 enabled: !utils.canNotCreateNode(node),
-                submenu: createMenu((assetUuid: string) => {
-                    vm.$emit('ipcAdd', { assetUuid }, node.uuid);
+                submenu: createMenu((addNode: IaddNode) => {
+                    addNode.parent = node.uuid;
+                    vm.$emit('addTo', addNode);
                 }),
             },
             {

@@ -2,6 +2,7 @@
 .publish
 .vscode
 .workflow
+.history
 
 # node 模块
 **/node_modules/

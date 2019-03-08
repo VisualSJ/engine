@@ -55,6 +55,8 @@ module.exports = {
         rename: 'Rename',
         duplicate: 'Duplicate',
         showUuid: 'Show Node UUID and PAth',
+
+        errorNewnameEmpty: 'The name cannot be empty',
     },
 
     operate: {

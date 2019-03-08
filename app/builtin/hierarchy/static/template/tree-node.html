@@ -1,48 +1,79 @@
-<ui-drag-item class="tree-node" type="node"
-    :draggable="draggable"
-    :state="state"
-    :active="selects.indexOf(node.uuid) !== -1"
-    :style="{ paddingLeft: node.left + 'px' }"
-    :class="{'parent':node.isParent}"
-    :expand="node.isExpand"
-    :isPrefab="node.isPrefab"
-    :visible="node.isVisible.toString()"
-    @mousedown="mouseDown($event, node)"
-    @click="click($event, node)"
-    @dblclick="dblclick($event, node)"
-    @dragstart="dragStart($event, node)" 
-    @dragover="dragOver($event, node)"
-    @dragleave="dragLeave($event, node)"
-    @drop="drop($event, node)"
->
-    <i class="arrow i-arrow-right"
-        v-if="node.isParent" 
-        @click.stop="toggle($event, node)"
-        @dblclick.stop
-    ></i>
-
-    <label class="name"
-        :twinkle="twinkles[node.uuid]" 
-        v-if="state!=='input'"
-    >{{node.name}}</label>
-
-    <input class="rename" ref='input'
-        v-else
-        :value="node.name"
-        @blur="renameSubmit($event, node)"
-        @keydown.stop
-        @keydown.enter="renameSubmit($event, node)"
-        @keydown.esc="renameCancel($event, node)"
+<div>
+    <ui-drag-item class="tree-node" type="cc.Node"
+        :draggable="draggable"
+        :state="state"
+        :active="selects.indexOf(node.uuid) !== -1"
+        :style="{ paddingLeft: node.left + 'px' }"
+        :class="{'parent':node.isParent}"
+        :expand="node.isExpand"
+        :isPrefab="node.isPrefab"
+        :isScene="node.isScene"
+        :visible="node.isVisible.toString()"
+        @mousedown="mouseDown($event, node)"
+        @click="click($event, node)"
+        @dblclick="dblclick($event, node)"
+        @dragstart="dragStart($event, node)" 
+        @dragover="dragOver($event, node)"
+        @dragleave="dragLeave($event, node)"
+        @drop="drop($event, node)"
     >
-    
-    <section class="loading"
-        v-if="state==='loading'"
+        <i class="arrow i-arrow-right"
+            v-if="node.isParent" 
+            @click.stop="toggle($event, node)"
+            @dblclick.stop
+        ></i>
+
+        <i class="scene i-json"
+            v-if="node.isScene" 
+        ></i>
+
+        <label class="name"
+            :twinkle="twinkles[node.uuid]" 
+            v-if="state!=='rename'"
+        >{{node.name}}</label>
+
+        <div class="rename"
+            v-else
+            :state="renameInputState"
+            :title="t('menu.' + renameInputState)"
+        >
+            <input ref='renameInput'
+                :value="renameValue"
+                @input="renameChange($event, node)"
+                @blur="renameSubmit($event, node)"
+                @keydown.stop
+                @keydown.enter="renameSubmit($event, node)"
+                @keydown.esc="renameCancel($event, node)"
+            >
+        </div>
+        
+        <section class="loading"
+            v-if="state==='loading'"
+        >
+            <ui-loading></ui-loading>
+        </section>
+        <!-- <i class="lock"
+            :class="{'i-lock':node.isLock, 'i-unlock':!node.isLock}"
+            :lock="node.isLock"
+            @click="lock(node)"
+        ></i> -->
+    </ui-drag-item>
+    <div class="tree-node"
+        :style="{ paddingLeft: (node.left + 14) + 'px' }"
+        v-if="state==='add'" 
     >
-        <ui-loading></ui-loading>
-    </section>
-    <!-- <i class="lock"
-        :class="{'i-lock':node.isLock, 'i-unlock':!node.isLock}"
-        :lock="node.isLock"
-        @click="lock(node)"
-    ></i> -->
-</ui-drag-item>
+        <div class="rename"
+            :state="addInputState"
+            :title="t('menu.' + addInputState)"
+        >
+            <input ref='addInput'
+                :value="addNode.name"
+                @input="addChange($event)"
+                @blur="addSubmit($event)"
+                @keydown.stop
+                @keydown.enter="addSubmit($event)"
+                @keydown.esc="addCancel($event)"
+            >
+        </div>
+    </div>
+</div>

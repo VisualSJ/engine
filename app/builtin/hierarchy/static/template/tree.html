@@ -5,14 +5,16 @@
     @drop="drop($event)"
     @click="click($event)"
 >
-    <tree-node type="cc.Node"
+    <tree-node
         v-for="(node,index) in nodes" 
         :key="index"
         :node="node"
         :selects="selects"
         :twinkles="twinkles"
         :renameUuid="renameUuid"
-        @ipcAdd="ipcAdd"
+        :addNode="addNode"
+        @addTo="addTo"
+        @addConfirm="addConfirm"
         @ipcDelete="ipcDelete"
         @copy="copy"
         @paste="paste"

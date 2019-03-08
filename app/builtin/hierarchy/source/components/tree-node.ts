@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const context = require('./tree-node-context');
+const utils = require('./tree-utils');
 
 export const name = 'tree-node';
 
@@ -16,10 +17,15 @@ export const props: string[] = [
     'selects',
     'twinkles',
     'renameUuid',
+    'addNode',
 ];
 
 export function data() {
-    return {};
+    return {
+        renameValue: '',
+        renameInputState: '',
+        addInputState: '',
+    };
 }
 
 export const computed = {
@@ -34,12 +40,11 @@ export const computed = {
 
         // @ts-ignore
         if (this.renameUuid === node.uuid) {
-            // @ts-ignore 选中该节点，即更新了属性检查器
-            this.$emit('ipcSingleSelect', node.uuid);
-
+            return 'rename';
             // @ts-ignore
-            this.inputFocus();
-            return 'input';
+        } else if (this.addNode.parent === node.uuid) {
+            // @ts-ignore 选中该节点
+            return 'add';
         }
 
         return node.state;
@@ -49,7 +54,7 @@ export const computed = {
         const node = this.node;
 
         // @ts-ignore
-        if (this.state !== '' || node.readOnly) {
+        if (this.state !== '' || utils.canNotDragNode(node)) {
             return 'false';
         }
 
@@ -63,25 +68,51 @@ export const watch = {
         const node = this.node;
 
         // @ts-ignore
-        if (this.state === 'input') {
+        if (this.state === 'rename') {
             // @ts-ignore
-            this.inputFocus();
+            this.renameValue = node.name;
+            // @ts-ignore
+            this.renameInputState = '';
+
+            // @ts-ignore
+            this.$nextTick(() => {
+                // @ts-ignore
+                this.$refs.renameInput.focus();
+                // @ts-ignore
+                this.$refs.renameInput.setSelectionRange(0, node.name.length);
+            });
+        }
+
+        // @ts-ignore
+        if (this.state === 'add') {
+            // @ts-ignore
+            const { name } = this.addNode;
+
+            // @ts-ignore
+            this.addInputState = '';
+
+            // @ts-ignore
+            this.$nextTick(() => {
+                // @ts-ignore
+                if (this.$refs.addInput) {
+                    // @ts-ignore
+                    this.$refs.addInput.focus();
+                    // @ts-ignore
+                    this.$refs.addInput.setSelectionRange(0, name.length);
+                }
+            });
         }
     },
 };
 
 export const methods = {
     /**
-     * rename 情况下 input 的获得焦点且选中文字
+     * 翻译
+     * @param {*} key
      */
-    inputFocus() {
+    t(key: string): string {
         // @ts-ignore
-        this.$nextTick(() => {
-            // @ts-ignore
-            this.$refs.input.focus();
-            // @ts-ignore
-            this.$refs.input.setSelectionRange(0, this.node.name.length);
-        });
+        return this.$parent.t(key);
     },
     /**
      * 右击菜单
@@ -151,7 +182,23 @@ export const methods = {
      */
     rename(node: ItreeNode) {
         // 改变节点状态
-        node.state = 'input';
+        node.state = 'rename';
+    },
+    /**
+     * 改变输入值时判断是否重名
+     */
+    renameChange(event: Event, node: ItreeNode) {
+
+        // @ts-ignore
+        this.renameValue = this.$refs.renameInput.value.trim();
+        let state = '';
+        // @ts-ignore
+        if (this.renameValue === '') {
+            state = 'errorNewnameEmpty';
+        }
+
+        // @ts-ignore
+        this.renameInputState = state;
     },
     /**
      * 提交重名命
@@ -159,20 +206,64 @@ export const methods = {
      */
     renameSubmit(event: Event, node: ItreeNode) {
         // @ts-ignore
-        const newName = this.$refs.input.value.trim();
-
+        const newName = this.$refs.renameInput.value.trim();
         // @ts-ignore
-        this.$emit('rename', node, newName);
+        this.$emit('rename', node.uuid, newName);
     },
     /**
      * 取消重名命
      * @param node
      */
     renameCancel(event: Event, node: ItreeNode) {
-        // @ts-ignore 需要这一步是因为 blur 也随即执行，需要保留原值阻止触发
-        this.$refs.input.value = node.name;
         // @ts-ignore
-        this.$emit('rename', node, node.name);
+        this.$emit('rename', node.uuid, '');
+    },
+    /**
+     * 改变输入值时判断是否重名
+     */
+    addChange(event: Event) {
+        // @ts-ignore
+        const {addNode} = this;
+        // @ts-ignore
+        addNode.name = this.$refs.addInput.value.trim();
+        let state = '';
+        // @ts-ignore
+        if (addNode.name === '') {
+            state = 'errorNewnameEmpty';
+        }
+
+        // @ts-ignore
+        this.addInputState = state;
+    },
+    /**
+     * 提交新增资源
+     * @param event
+     */
+    addSubmit(event: Event) {
+        // @ts-ignore
+        const json: IaddNode = Object.assign({}, this.addNode);
+        // @ts-ignore
+        const newName = this.$refs.addInput.value.trim();
+        // @ts-ignore
+        if (newName === '') {
+            // @ts-ignore
+            this.$emit('addConfirm', null);
+            return;
+        }
+
+        json.name = newName;
+        // @ts-ignore
+        json.parent = this.node.uuid;
+        // @ts-ignore
+        this.$emit('addConfirm', json);
+    },
+    /**
+     * 取消新增
+     * @param event
+     */
+    addCancel(event: Event) {
+        // @ts-ignore
+        this.$emit('addConfirm', null);
     },
     /**
      * 开始拖动

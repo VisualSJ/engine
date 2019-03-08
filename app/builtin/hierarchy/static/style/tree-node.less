@@ -12,6 +12,9 @@
             }
         }
     }
+    &[isScene] {
+        background-color: var(--item-hover-bg)!important;
+    }
     &[isPrefab] {
         color: #07d02b;
     }
@@ -52,6 +55,17 @@
         }
         &+.rename {
             margin-left: 0;
+        }
+    }
+    .scene {
+        height: 20px;
+        line-height: 20px;
+        width: 20px;
+        text-align: center;
+        cursor: pointer;
+        margin-left: -3px;
+        &+.name {
+            margin-left: 2px;
         }
     }
     >.lock {
@@ -98,14 +112,33 @@
         transform: scale(0.8);
     }
     .rename {
+        position: relative;
+        display: inline-block;
         font-size: 12px;
-        outline: none;
         border: 1px solid var(--panel-active-c);
-        color: var(--default-text-c);
-        background-color: transparent;
         padding-left: 4px;
         margin-left: 22px;
-        vertical-align: middle;
+        >input {
+            outline: none;
+            border: none;
+            background-color: transparent;
+            color: var(--default-text-c);
+            vertical-align: top;
+        }
+        &[state^="error"] {
+            border-color: var(--red-c);
+            &:after {
+                content: attr(title);
+                padding: 0 4px;
+                background-color: var(--red-c);
+                color: #fff;
+                position: absolute;
+                top: 20px;
+                left: -1px;
+                z-index: 1;
+                min-width: calc(100% - 6px);
+            }
+        }
     }
 }
 
@@ -122,9 +155,10 @@
         }
     }
     &[hoving] {
-        >.tree-node {
+        .tree-node {
             &[insert] {
-                color: var(--item-hover-c) !important;
+                color: var(--item-active-c) !important;
+                opacity: 0.75;
             }
         }
     }
@@ -135,11 +169,6 @@
         .tree-node[active="true"] {
             color: var(--item-active-c);
             background-color: var(--item-active-bg);
-        }
-    }
-    .tree[hoving] {
-        .tree-node[active="true"] {
-            opacity: 0.6;
         }
     }
 }

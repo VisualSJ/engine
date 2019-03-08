@@ -26,7 +26,8 @@ export function data() {
         twinkles: {}, // 需要闪烁的 uuid
         folds: {}, // 用于记录已展开的节点
         renameUuid: '', // 需要 rename 的节点的 url，只有一个
-        intoView: '', // 定位显示资源，uuid, 只有一个
+        addNode: {}, // 添加一个新节点前的数据，需要事前重命名
+        intoView: '', // 定位显示节点，uuid, 只有一个
         current: {}, // 当前选中项
         copiedUuids: [], // 用于存放已复制节点的 uuid
 
@@ -105,6 +106,14 @@ export function mounted() {
 }
 
 export const methods = {
+    /**
+     * 翻译
+     * @param {*} key
+     */
+    t(key: string): string {
+        // @ts-ignore
+        return this.$parent.t(key);
+    },
     /**
      * 清空数据，涉及 uuid 的都需要清空
      */
@@ -296,32 +305,64 @@ export const methods = {
     },
 
     /**
-     * ipc 发起创建节点
-     * @param uuid 父级节点
+     * 创建节点前名称事前处理
      * @param json
      */
-    async ipcAdd(json: IaddNode, uuid: string) {
-        if (!uuid) {
-            uuid = this.getFirstSelect();
+    async addTo(json: IaddNode) {
+        if (!json.parent) {
+            json.parent = this.getFirstSelect();
         }
 
-        const parent = utils.getNodeFromTree(uuid);
+        const parent = utils.getNodeFromTree(json.parent);
         if (utils.canNotCreateNode(parent)) {
             return;
         }
 
+        if (parent.isExpand === false) {
+            this.toggle(parent.uuid, true); // 重新展开父级节点
+        }
+
+        vm.addNode = json;
+    },
+
+    /**
+     * 新增资源，事前重命名后接收数据
+     */
+    async addConfirm(json: IaddNode | null) {
+        // 新增的输入框消失
+        vm.addNode.parent = '';
+
+        // 数据错误时取消
+        if (!json || !json.parent || !json.name) {
+            return;
+        }
+
+        const parent = utils.getNodeFromTree(json.parent);
+        if (utils.canNotCreateNode(parent)) { // 父级不可新建资源
+            return;
+        }
+
+        parent.state = 'loading';
+
+        await vm.ipcAdd(json);
+
+        parent.state = '';
+    },
+
+    /**
+     * ipc 发起创建节点
+     * @param uuid 父级节点
+     * @param json
+     */
+    async ipcAdd(json: IaddNode) {
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
-        // 发送创建节点
-        vm.renameUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', {
-            parent: uuid,
-            name: 'New Node',
-            assetUuid: json.assetUuid,
-        });
-        Editor.Ipc.sendToPackage('scene', 'unlink-prefab', vm.renameUuid);
+        const newUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', json);
 
-        parent.state = '';
+        if (newUuid) {
+            Editor.Ipc.sendToPackage('scene', 'unlink-prefab', newUuid);
+        }
     },
 
     /**
@@ -552,12 +593,14 @@ export const methods = {
     /**
      * 节点重名命
      * 这是异步的，只做发送
-     * @param node
+     * @param uuid
      * @param name
      */
-    async rename(node: ItreeNode, name = '') {
+    async rename(uuid: string, name = '') {
         // @ts-ignore 清空需要 rename 的节点
         this.renameUuid = '';
+
+        const node = utils.getNodeFromTree(uuid);
 
         if (utils.canNotRenameNode(node) || name === '' || name === node.name) {
             // name 存在且与之前的不一样才能重名命，否则还原状态
