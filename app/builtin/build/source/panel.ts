@@ -36,6 +36,10 @@ export const methods = {};
 export const messages = {
     // 更新当前构建进度
     'build:update-progress'(msg: string, rate: any, state: string) {
+        // 当前已经构建失败，其他构建进度不再显示
+        if (vm.state === 'failed' && state === 'building') {
+            return;
+        }
         vm.message = msg;
         vm.state = state ? state : '';
         if (rate) {
@@ -176,6 +180,10 @@ export async function ready() {
                 this.onCheckChange(key, event.target.value);
             },
 
+            /**
+             * 显示表单错误
+             * @param msg
+             */
             showError(msg: string) {
                 this.message = msg;
                 this.state = 'error';
@@ -288,7 +296,7 @@ export async function ready() {
 
             // 构建项目
             async _build() {
-                if (this.message && this.state) {
+                if (this.message && this.state === 'error') {
                     Editor.Dialog.show({
                         type: this.state,
                         message: this.message,
@@ -335,6 +343,11 @@ export async function ready() {
             async updateData() {
                 const data = await Editor.Ipc.requestToPackage('build', 'get-builder-setting', this.setting.platform);
                 this.data = data;
+            },
+
+            // 运行项目
+            runProject() {
+                this.$refs.children.preview();
             },
         },
         components: {

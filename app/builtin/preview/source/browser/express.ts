@@ -63,8 +63,8 @@ export async function start() {
             type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
             start_scene: getConfig('start_scene'),
-            design_width: getConfig('design_width'),
-            design_height: getConfig('design_height'),
+            designWidth: getConfig('design_width'),
+            designHeight: getConfig('design_height'),
         });
         if (!setting) {
             next(new ReqError(`构建 settings 出错`, 500));

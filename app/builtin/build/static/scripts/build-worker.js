@@ -1,7 +1,7 @@
 const editor = require('./editor'); // editor 要放在最前面
 const builder = require('./builder');
 
-const {initInfo, getModules, getCurrentScene} = require('./utils');
+const {initInfo, updateProgress} = require('./utils');
 const {join} = require('path');
 const buildTask = []; // 构建任务列表
 const BUILD_INFO = {
@@ -37,12 +37,17 @@ Worker.Ipc.on('build-worker:init', async (event, info) => {
 
 // 构建打包项目,允许当前有针对不同平台的打包任务，但在同一平台的打包在未完成之前不可新建打包任务
 Worker.Ipc.on('build-worker:build', async (event, options) => {
-    // 当前存在未完成的构建任务，则将新任务添加进入构建列表
     if (builder.state && builder.state < 100) {
-        buildTask.push(options);
+        // todo 当前存在未完成的构建任务，则将新任务添加进入构建列表
+        // buildTask.push(options);
         return;
     }
-    builder.build(options, BUILD_INFO);
+    try {
+        builder.build(options, BUILD_INFO);
+    } catch (error) {
+        console.log(error);
+        updateProgress(`build failed!`, 0, 'failed');
+    }
 });
 
 // 构建 setting 信息

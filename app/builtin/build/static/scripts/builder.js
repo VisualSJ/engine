@@ -72,7 +72,7 @@ class Builder {
         // 先清空文件夹
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
-        updateProgress('build setting...');
+        updateProgress('build setting...', 0, 'start');
 
         // 并发任务
         await Promise.all([
@@ -90,11 +90,15 @@ class Builder {
                     start_scene: options.start_scene,
                 }
             ),
-        ]);
+        ]).catch((error) => {
+            error.name = 'build-error';
+            console.error(error);
+            updateProgress(`build failed!`, 0, 'failed');
+        });
         await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
         await this.resolveOthers();
         let endTime = new Date().getTime();
-        updateProgress(`build sucess in ${endTime - startTime} ms`);
+        updateProgress(`build sucess in ${endTime - startTime} ms`, 0, 'success');
         requestToPackage('preview', 'set-build-path', this._paths.dest);
     }
 
@@ -631,7 +635,6 @@ class Builder {
         const { sceneJson, scenceAsset } = await getCurrentScene(options.start_scene);
         const setting = options;
         scenceAsset && (setting.launchScene = scenceAsset.source);
-
         // 预览模式下的 canvas 宽高要以实际场景中的 canvas 为准
         if (options.type !== 'build-release') {
             let info = sceneJson.find((item) => {

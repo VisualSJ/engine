@@ -245,7 +245,7 @@ class AssetBuilder {
         });
         if (this.MissingClass.hasMissingClass) {
             this.MissingClass.reportMissingClass(asset);
-            console.error(`Resources in ${asset.uuid} are missing ,please check again!`);
+            console.error(`build-error:Resources in ${asset.uuid} are missing ,please check again!`);
         }
         deseriAsset._uuid = asset.uuid;
         // 预览时只需找出依赖的资源，无需缓存 asset

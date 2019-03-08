@@ -11,7 +11,6 @@ ui-select {
 
 ui-prop {
     --left-width: 40%; // 内部嵌套 ui-prop 组件的 label 长度,如若不希望面板变宽时 label 变得越来越宽，可以给它指定一个固定值
-    --right-width: 60%; // 内部嵌套 ui-prop 组件的 ui 组件长度，不指定默认就是占满除了 label 以外的宽度
     --label-max-width: 200px;
     ui-button {
         line-height: 12px;
@@ -29,7 +28,7 @@ ui-prop > div[slot='content'] {
 }
 
 .build {
-    height: 100vh;
+    height: 100%;
     padding: 0 20px;
     display: flex;
     flex-direction: column;
@@ -65,13 +64,23 @@ ui-prop > div[slot='content'] {
         position: absolute;
         width: 100%;
     }
+
     .info {
         position: relative;
-        &.error {
-            color:#e06f71;
-        }
     }
 }
+.progress.failed {
+    border-color: #c1383a;
+    .bar {
+        background: #c1383a;
+    }
+}
+.progress.success {
+    .bar {
+        background: #7ab97a;
+    }
+}
+
 .container {
     overflow-y: auto;
     height: 80vh;

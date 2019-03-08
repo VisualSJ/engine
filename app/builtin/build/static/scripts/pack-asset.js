@@ -53,6 +53,9 @@ class AssetPacker {
     packTexture(hasName, uuids) {
         uuids.sort();
         let values = uuids.map(function(uuid) {
+            if (!buildResult.jsonCache[uuid]) {
+                throw new Error(`builderror: texture ${uuid} is not exit!`);
+            }
             return buildResult.jsonCache[uuid].content.base;
         });
         values = values.join('|');

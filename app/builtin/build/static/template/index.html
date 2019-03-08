@@ -104,16 +104,16 @@
         </div>
     </div>
     <footer>
-        <div class="progress">
+        <div :class="['progress', state]">
             <span class="bar" :style="{width: progressRate}"></span>
-            <div :class="['info', state]">{{ message ? message : 'progress' }}</div>
+            <div class="info" >{{ message ? message : 'progress' }}</div>
         </div>
         <div class="btn-group">
-            <ui-button class="green" @confirm.stop="onBuild" :disabled="state === 0 || state === 100">构建</ui-button>
+            <ui-button class="green" @confirm.stop="onBuild" :disabled="state === 'building'">构建</ui-button>
             <i class="iconfont i-arrow-right"></i>
             <ui-button class="green" v-if="needCompile">编译</ui-button>
             <i class="iconfont i-arrow-right" v-if="needCompile"></i>
-            <ui-button class="green">运行</ui-button>
+            <ui-button class="green" :disabled="state !== 'success'" @confirm.stop="runProject">运行</ui-button>
         </div>
     </footer>
 </div>
