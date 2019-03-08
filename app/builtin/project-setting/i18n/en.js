@@ -5,7 +5,8 @@ module.exports = {
     nav: {
         preview: 'Project Preview',
         groupList: 'Group List',
-        modules: 'modules',
+        modules: 'Modules',
+        graphics: 'Graphics',
     },
     preview: {
         start_scene: 'Preview Start Scene',

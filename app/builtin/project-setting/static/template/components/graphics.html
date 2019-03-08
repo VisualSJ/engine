@@ -1,0 +1,26 @@
+<div class="graphics">
+
+    <!-- 是否使用全局配置 -->
+    <ui-prop label="Use Global"
+        v-if="position === 'local'"
+    >
+        <ui-checkbox slot="content"
+            :value="settings.use_global"
+            @confirm="_onSettingsChanged($event, 'use_global')"
+        ></ui-checkbox>
+    </ui-prop>
+
+    <!-- 是否使用全局配置 -->
+    <ui-prop label="Render Pipeline"
+        :disabled="position === 'local' && settings.use_global"
+    >
+        <ui-select slot="content"
+            :value="settings.render_pipeline"
+            @confirm="_onSettingsChanged($event, 'render_pipeline')"
+        >
+            <option value="0">HDR</option>
+            <option value="1">LDR</option>
+        </ui-select>
+    </ui-prop>
+
+</div>

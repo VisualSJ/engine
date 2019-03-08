@@ -20,7 +20,12 @@ module.exports = new ProfileManager();
 
 // 注册 global profiles 协议
 if (ps.isAbsolute(setting.PATH.HOME)) {
-    let path = ps.join(setting.PATH.HOME, './profiles');
+    // 注册一个默认协议， default 没有 path，不需要储存到硬盘上
+    let path = ps.join(setting.PATH.HOME, './default-profiles');
+    fse.mkdirsSync(path);
+    profile.register('default', path);
+
+    path = ps.join(setting.PATH.HOME, './profiles');
     fse.mkdirsSync(path);
     profile.register('global', path);
 }
@@ -32,4 +37,8 @@ if (ps.isAbsolute(setting.PATH.PROJECT)) {
     profile.register('local', path);
 }
 
+// global 继承自 default
+profile.inherit('global', 'default');
+
+// local 继承自 global
 profile.inherit('local', 'global');

@@ -1,0 +1,143 @@
+<div class="preview">
+
+    <!-- 是否使用全局配置 -->
+    <ui-prop label="Use Global"
+        v-if="position === 'local'"
+    >
+        <ui-checkbox slot="content"
+            :value="settings.use_global"
+            @confirm="_onSettingsChanged($event, 'use_global')"
+        ></ui-checkbox>
+    </ui-prop>
+
+    <!-- 初始预览场景 -->
+    <ui-prop
+        :label="t('start_scene')"
+        :disabled="position === 'local' && settings.use_global"
+    >
+        <ui-select slot="content"
+            :value="settings.start_scene"
+            @confirm="_onSettingsChanged($event, 'start_scene')"
+        >
+            <option value="current_scene">{{t('current_scene')}}</option>
+            <option
+                v-for="scene in scenes"
+                :value="scene.uuid"
+            >{{scene.name}}</option>
+        </ui-select>
+    </ui-prop>
+
+    <!-- canvas 设置 -->
+    <ui-section expand
+        :header="t('section_canvas')"
+    >
+        <!-- 设计分辨率 -->
+        <ui-prop
+            :label="t('design_resolution')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <div slot="content">
+                <ui-prop type="int"
+                    :label="t('width')"
+                    :value="settings.design_width"
+                    @confirm="_onSettingsChanged($event, 'design_width')"
+                ></ui-prop>
+                <ui-prop type="int"
+                    :label="t('height')"
+                    :value="settings.design_height"
+                    @confirm="_onSettingsChanged($event, 'design_height')"
+                ></ui-prop>
+            </div>
+        </ui-prop>
+
+        <!-- 适配屏幕宽度 -->
+        <ui-prop
+            :label="t('fit_width')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <ui-checkbox slot="content"
+                :value="settings.fit_width"
+                @confirm="_onSettingsChanged($event, 'fit_width')"
+            ></ui-checkbox>
+        </ui-prop>
+
+        <!-- 适配屏幕高度 -->
+        <ui-prop
+            :label="t('fit_height')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <ui-checkbox slot="content"
+                :value="settings.fit_height"
+                @confirm="_onSettingsChanged($event, 'fit_height')"
+            ></ui-checkbox>
+        </ui-prop>
+    </ui-section>
+
+    <!-- 模拟器设置是否使用全局配置 -->
+    <!-- <ui-prop
+        :label="t('simulator_setting_type')"
+    >
+        <ui-select slot="content"
+            :value="settings.simulator_setting_type"
+        >
+            <option value="global">{{t('global')}}</option>
+            <option value="project">{{t('project')}}</option>
+        </ui-select>
+    </ui-prop> -->
+
+    <!-- 项目模拟器设置 -->
+    <ui-section expand
+        :header="t('simulator_device_orientation')"
+    >
+
+        <!-- 横竖屏设置 -->
+        <ui-prop
+            :label="t('simulator_device_orientation')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <ui-select slot="content"
+                :value="settings.simulator_device_orientation"
+                @confirm="_onSettingsChanged($event, 'simulator_device_orientation')"
+            >
+                <option value="vertical">{{t('vertical')}}</option>
+                <option value="horizontal">{{t('horizontal')}}</option>
+            </ui-select>
+        </ui-prop>
+
+        <!-- 分辨率设置 -->
+        <ui-prop
+            :label="t('simulator_resolution')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <ui-select slot="content"
+                :value="settings.simulator_resolution"
+                @confirm="_onSettingsChanged($event, 'simulator_resolution')"
+            >
+                <option
+                    v-for="(item, key) in devices"
+                    :value="key"
+                    :key="key"
+                >{{item.name}}</option>
+            </ui-select>
+        </ui-prop>
+
+        <!-- 模拟器自定义分辨率 -->
+        <ui-prop
+            :label="t('customize_resolution')"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <div slot="content">
+                <ui-prop type="int"
+                    :label="t('width')"
+                    :value="settings.simulator_width"
+                    @confirm="_onSettingsChanged($event, 'simulator_width')"
+                ></ui-prop>
+                <ui-prop type="int"
+                    :label="t('height')"
+                    :value="settings.simulator_height"
+                    @confirm="_onSettingsChanged($event, 'simulator_height')"
+                ></ui-prop>
+            </div>
+        </ui-prop>
+    </ui-section>
+</div>

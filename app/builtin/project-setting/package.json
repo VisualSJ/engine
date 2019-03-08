@@ -14,11 +14,11 @@
     "panel": {
         "title": "i18n:project-setting.title",
         "icon": "./static/icon.png",
-        "main": "./dist/panel.js",
-        "min-width": 400,
-        "min-height": 200,
-        "width": 700,
-        "height": 500
+        "main": "./dist/panel/index.js",
+        "min-width": 500,
+        "min-height": 400,
+        "width": 500,
+        "height": 600
     },
 
     "toolbar": {

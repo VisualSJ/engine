@@ -1,9 +1,37 @@
-<div class="project">
+<div class="project-settings">
+    <!-- 侧边栏 -->
     <div class="slider">
-        <div :active="tab === 'preview'" @click="tab = 'preview'">{{t('nav.preview')}}</div>
-        <div :active="tab === 'modules'" @click="tab = 'modules'">{{t('nav.modules')}}</div>
+        <div
+            :active="tab === 'preview'"
+            @click="tab = 'preview'"
+        >{{t('nav.preview')}}</div>
+        <div
+            :active="tab === 'modules'"
+            @click="tab = 'modules'"
+        >{{t('nav.modules')}}</div>
+        <div
+            :active="tab === 'graphics'"
+            @click="tab = 'graphics'"
+        >{{t('nav.graphics')}}</div>
     </div>
+
+    <!-- 内容区域 -->
     <section>
-        <component :is="tab" :data="data"></component>
+        <header>
+            <div>
+                <span
+                    :active="position === 'global'"
+                    @click="position = 'global'"
+                >global</span>
+                <span
+                    :active="position === 'local'"
+                    @click="position = 'local'"
+                >local</span>
+            </div>
+        </header>
+        <component
+            :is="tab"
+            :position="position"
+        ></component>
     </section>
 </div>
