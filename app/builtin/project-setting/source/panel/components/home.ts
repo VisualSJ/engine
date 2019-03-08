@@ -12,6 +12,7 @@ export const computed = {};
 export const components = {
     'preview': require('./preview'),
     'modules': require('./modules'),
+    'engine': require('./engine'),
     'graphics': require('./graphics'),
 };
 

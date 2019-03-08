@@ -6,6 +6,7 @@ module.exports = {
         preview: 'Project Preview',
         groupList: 'Group List',
         modules: 'Modules',
+        engine: 'Engine',
         graphics: 'Graphics',
     },
     preview: {

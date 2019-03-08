@@ -11,6 +11,7 @@ module.exports = {
 
     engine_directory_illegal: '引擎目录不合法，即将使用内置引擎启动。',
     engine_compile_failed: '编译引擎失败，即将使用内置引擎启动。',
+    engine_compile_crash: '无法编译内置引擎，编辑器无法启动，请检查内置引擎是否正确。',
 
     javascript_engine: 'Javascript 引擎',
     use_builtin_engine: '使用内置引擎',

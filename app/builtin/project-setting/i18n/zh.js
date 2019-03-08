@@ -6,6 +6,7 @@ module.exports = {
         preview: '项目预览',
         groupList: '分组管理',
         modules: '模块设置',
+        engine: '引擎设置',
         graphics: '图形设置',
     },
     preview: {

@@ -1,0 +1,33 @@
+<div class="engine">
+
+    <!-- 是否使用全局配置 -->
+    <ui-prop label="Use Global"
+        v-if="position === 'local'"
+    >
+        <ui-checkbox slot="content"
+            :value="settings.use_global"
+            @confirm="_onSettingsChanged($event, 'use_global')"
+        ></ui-checkbox>
+    </ui-prop>
+
+    <!-- javascript -->
+    <ui-section expand header="Javascript">
+        <ui-prop label="使用内置引擎"
+            :disabled="position === 'local' && settings.use_global"
+        >
+            <ui-checkbox slot="content"
+                :value="settings.javascript.builtin"
+                @confirm="_onSettingsChanged($event, 'javascript.builtin')"
+            ></ui-checkbox>
+        </ui-prop>
+        <ui-prop label="自定义引擎路径"
+            :disabled="(position === 'local' && settings.use_global) || settings.javascript.builtin"
+        >
+            <ui-input slot="content"
+                :value="settings.javascript.custom"
+                @confirm="_onSettingsChanged($event, 'javascript.custom')"
+            ></ui-input>
+        </ui-prop>
+    </ui-section>
+
+</div>

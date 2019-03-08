@@ -9,18 +9,36 @@ const profile = {
 };
 
 export const messages = {
+
+    /**
+     * 打开项目
+     */
     open() {
         Editor.Panel.open('project-setting');
     },
+
     /**
-     * 查询记录的项目设置信息
+     * 查询项目设置配置
      * @param {string} key
      */
-    'get-setting'(key: string) {
+    'get-config'(key: string) {
         if (profile.local.get(`${key.split('.')[0]}.use_local`)) {
             return profile.local.get(key);
         }
         return profile.global.get(key);
+    },
+
+    /**
+     * 设置项目信息配置
+     * @param key 
+     * @param value 
+     * @param type 
+     */
+    'set-config'(key: string, value: any, type: string = 'local') {
+        if (type !== 'local' && type !== 'global') {
+            return;
+        }
+        return profile[type].set(key, value);
     },
 };
 
