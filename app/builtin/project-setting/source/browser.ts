@@ -30,9 +30,9 @@ export const messages = {
 
     /**
      * 设置项目信息配置
-     * @param key 
-     * @param value 
-     * @param type 
+     * @param key
+     * @param value
+     * @param type
      */
     'set-config'(key: string, value: any, type: string = 'local') {
         if (type !== 'local' && type !== 'global') {

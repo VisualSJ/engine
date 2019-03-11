@@ -5,7 +5,7 @@
     },
     "rules": {
         "interface-name": false,
-        "max-line-length": [true, 120],
+        "max-line-length": [true, 150],
         "indent": [true, "spaces", 4],
         "whitespace": [
             true,
@@ -55,7 +55,7 @@
     "jsRules": {
         "max-line-length": [
             true,
-            120
+            150
         ],
         "indent": [true, "spaces", 4],
         "whitespace": [

@@ -72,7 +72,7 @@ class Builder {
         // 先清空文件夹
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
-        updateProgress('build setting...', 0, 'start');
+        updateProgress('begin build', 0, 'start');
 
         // 并发任务
         await Promise.all([
@@ -646,6 +646,10 @@ class Builder {
                 setting.designHeight = info._designResolution.height;
             }
         }
+
+        delete setting.start_scene;
+        const renderMode = await requestToPackage('project-setting', 'get-config', 'graphics.render_pipeline');
+        setting.renderPipiline = renderMode === 0 ? 'HDR' : 'LDR';
 
         let results = (await scriptBuilder.build(options.type)) || {scripts: [], jsList: []};
         setting.packedAssets = {};

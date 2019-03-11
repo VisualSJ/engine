@@ -328,7 +328,7 @@ export async function ready() {
                     }
                 });
                 data.scenes = scenes;
-                const excludedModules: any[] = [];
+                const excludedModules: any[] = await Editor.Ipc.requestToPackage('project-setting', 'get-config', 'modules.excluded') || [];
                 const options = Object.assign(data, this.$refs.children._data, {excludedModules});
                 options.embedWebDebugger =
                 (platform === 'web-mobile' || platform === 'fb-instant-games') && options.debug;
