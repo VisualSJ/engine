@@ -2,7 +2,7 @@
 #define MAX_LIGHTS 4
 
 #pragma builtin(local)
-uniform CCForwardLights {
+uniform CCForwardLight {
   vec4 cc_sphereLitPos[MAX_LIGHTS]; // xyz: pos
   vec4 cc_sphereLitSizeRange[MAX_LIGHTS]; // x: size, y: range
   vec4 cc_sphereLitColor[MAX_LIGHTS]; // xyz: color, w: intensity
