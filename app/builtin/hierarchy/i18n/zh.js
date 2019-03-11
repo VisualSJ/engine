@@ -54,7 +54,7 @@ module.exports = {
         delete: '删除',
         rename: '重命名',
         duplicate: '复制节点',
-        showUuid: '显示节点 UUID 和路径',
+        showUuid: '显示节点 UUID',
 
         errorNewnameEmpty: '名称不能为空',
     },

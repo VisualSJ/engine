@@ -54,7 +54,7 @@ module.exports = {
         delete: 'Delete',
         rename: 'Rename',
         duplicate: 'Duplicate',
-        showUuid: 'Show Node UUID and PAth',
+        showUuid: 'Show Node UUID',
 
         errorNewnameEmpty: 'The name cannot be empty',
     },

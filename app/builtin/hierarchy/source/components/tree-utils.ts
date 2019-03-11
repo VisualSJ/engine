@@ -46,7 +46,7 @@ exports.canNotDragNode = (node: ItreeNode) => {
  * @param node
  */
 exports.canNotPasteNode = (node: ItreeNode) => {
-    return exports.canNotDeleteNode(node) || exports.hasEmptyCopyNodes();
+    return !node || node.readOnly || exports.hasEmptyCopyNodes();
 };
 
 /**
