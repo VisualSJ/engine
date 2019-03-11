@@ -225,4 +225,13 @@ ControllerUtils.angle = function(from, to) {
     return Math.acos(dot) * MathUtil.R2D;
 };
 
+ControllerUtils.sphere = function(center, radius, color, opts = {}) {
+    let sphereNode = create3DNode('sphereNode');
+    addMeshToNode(sphereNode,
+        ControllerShape.sphere(center, radius, opts), opts);
+    setMeshColor(sphereNode, color);
+
+    return sphereNode;
+};
+
 module.exports = ControllerUtils;

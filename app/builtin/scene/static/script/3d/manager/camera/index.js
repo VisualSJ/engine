@@ -32,7 +32,7 @@ class Camera extends EventEmitter {
      * 初始化摄像机并挂到场景中
      */
     init() {
-        [ this._camera, this._light ] = utils.createCamera(cc.color(51, 51, 51, 255));
+        this._camera = utils.createCamera(cc.color(51, 51, 51, 255));
 
         this._controller2D.init(this._camera);
         this._controller3D.init(this._camera);
@@ -66,15 +66,15 @@ class Camera extends EventEmitter {
     }
 
     onMouseDown(event) {
-        this._controller.onMouseDown(event);
+        return this._controller.onMouseDown(event);
     }
 
     onMouseMove(event) {
-        this._controller.onMouseMove(event);
+        return this._controller.onMouseMove(event);
     }
 
     onMouseUp(event) {
-        this._controller.onMouseUp(event);
+        return this._controller.onMouseUp(event);
     }
 
     onMouseWheel(event) {

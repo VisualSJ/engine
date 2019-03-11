@@ -14,7 +14,6 @@ GizmoDefines.rect = require('./elements/transform/rect-gizmo');
 
 // component gizmos
 GizmoDefines.components = {};
-GizmoDefines.components['cc.LightComponent'] = require('./elements/components/light-component-gizmo');
 GizmoDefines.components['cc.ModelComponent'] = require('./elements/components/model-component-gizmo');
 GizmoDefines.components['cc.SkinningModelComponent'] = require('./elements/components/skinning-model-component-gizmo');
 GizmoDefines.components['cc.CameraComponent'] = require('./elements/components/camera-component-gizmo');
@@ -24,3 +23,11 @@ GizmoDefines.components['cc.BoxColliderComponent'] = require(
     './elements/components/colliders/box-collider-component-gizmo');
 GizmoDefines.components['cc.SphereColliderComponent'] = require(
     './elements/components/colliders/sphere-collider-component-gizmo');
+
+// light gizmos
+GizmoDefines.components['cc.DirectionalLightComponent'] = require(
+    './elements/components/light/directional-light-component-gizmo');
+GizmoDefines.components['cc.SphereLightComponent'] = require(
+    './elements/components/light/sphere-light-component-gizmo');
+GizmoDefines.components['cc.SpotLightComponent'] = require(
+    './elements/components/light/spot-light-component-gizmo');

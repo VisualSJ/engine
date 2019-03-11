@@ -76,8 +76,6 @@ class CameraControllerBase extends EventEmitter {
         this._destEye = vec3.clone(this._curEye);
     }
 
-
-
     /**
      * 根据传入的视线长度来更新当前场景视图的中心点
      * @param {*} viewDist

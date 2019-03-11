@@ -12,21 +12,21 @@ function bind(camera) {
      * 鼠标按下
      */
     operationManager.on('mousedown', (event) => {
-        camera.onMouseDown(event);
+        return camera.onMouseDown(event);
     });
 
     /**
      * 鼠标移动，如果在某个编辑模式下，发送 move 操作
      */
     operationManager.on('mousemove', (event) => {
-        camera.onMouseMove(event);
+        return camera.onMouseMove(event);
     });
 
     /**
      * 鼠标抬起，退出之前的编辑模式
      */
     operationManager.on('mouseup', (event) => {
-        camera.onMouseUp(event);
+        return camera.onMouseUp(event);
     });
 
     /**

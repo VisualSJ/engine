@@ -104,8 +104,7 @@ function createCamera(color) {
     let camera = node.addComponent(cc.CameraComponent);
     camera.far = 10000; camera.color = color;
     camera.targetDisplay = -2; // mainWindow
-    let light = node.addComponent(cc.LightComponent);
-    return [ camera, light ];
+    return camera;
 }
 
 /**
