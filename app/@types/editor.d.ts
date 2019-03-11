@@ -37,6 +37,7 @@ interface Project {
 }
 
 interface I18n {
+    language: string;
     t: Function;
     switch: Function;
     current: Function;
@@ -90,7 +91,9 @@ interface Ipc {
     requestToPanel: Function,
 }
 
-interface UI { }
+interface UI {
+    NumInput: any;
+}
 
 interface Logger {
     on: Function;

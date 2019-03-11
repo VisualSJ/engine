@@ -1,11 +1,10 @@
 {
     "name": "preferences",
-    "version": "0.0.1",
+    "version": "0.1.0",
 
     "menu": {
         "Cocos3d/i18n:preferences.title": {
-            "message": "open",
-            "icon": "./static/icon.png"
+            "message": "open"
         }
     },
 
@@ -14,10 +13,10 @@
     "panel": {
         "title": "i18n:preferences.title",
         "icon": "./static/icon.png",
-        "main": "./dist/panel.js",
+        "main": "./dist/panel/index.js",
         "min-width": 500,
-        "min-height": 560,
-        "width": 550,
+        "min-height": 400,
+        "width": 500,
         "height": 600
     }
 }

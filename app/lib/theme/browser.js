@@ -5,6 +5,7 @@ const ipc = require('@base/electron-base-ipc');
 const ps = require('path');
 const fs = require('fs');
 const window = require('./../windows'); // 不可删除
+
 /**
  * 皮肤管理器
  * 根据传入的文件夹，查找内部的 css 文件
@@ -51,6 +52,8 @@ class Theme extends EventEmitter {
 }
 
 module.exports = new Theme();
+
+module.exports.use('');
 
 ipc.on('editor3d-lib-theme:use', (event, path) => {
     module.exports.use(path);

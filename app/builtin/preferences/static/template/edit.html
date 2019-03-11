@@ -1,0 +1,52 @@
+<div class="edit">
+
+	<!-- 默认脚本编辑器 -->
+	<ui-prop
+		:label="t('script_editor')"
+	>
+		<div slot="content">
+			<ui-select
+				:value="settings.script_editor"
+				@confirm="_onEditorChanged($event, 'script_editor')"
+			>
+				<option value="">{{t('internal')}}</option>
+                <option 
+                	v-for="item in settings.script_editor_list"
+					:value="item.path"
+				>{{item.name}}</option>
+			</ui-select>
+			<ui-button
+				@confirm="_onBrowserApp($event, 'script_editor')"
+			>{{t('browse')}}</ui-button>
+			<ui-button
+				:disabled="!settings.script_editor"
+				@confirm="_onEditorRemoved($event, 'script_editor')"
+			>{{t('remove')}}</ui-button>
+		</div>
+	</ui-prop>
+
+	<!-- 默认图片编辑器 -->
+	<ui-prop
+		:label="t('picture_editor')"
+	>
+		<div slot="content">
+			<ui-select
+				:value="settings.picture_editor"
+				@confirm="_onEditorChanged($event, 'picture_editor')"
+			>
+				<option value="">{{t('internal')}}</option>
+				<option 
+					v-for="item in settings.picture_editor_list"
+					:value="item.path"
+				>{{item.name}}</option>
+			</ui-select>
+			<ui-button
+				@confirm="_onBrowserApp($event, 'picture_editor')"
+			>{{t('browse')}}</ui-button>
+			<ui-button
+				:disabled="!settings.picture_editor"
+				@confirm="_onEditorRemoved($event, 'picture_editor')"
+			>{{t('remove')}}</ui-button>
+		</div>
+	</ui-prop>
+</div>

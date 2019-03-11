@@ -70,9 +70,9 @@ function setSimulatorTemp() {
  * 获取模拟器的配置信息
  */
 async function getSimulatorConfig() {
-    let config = await Editor.Ipc.requestToPackage('project-setting', 'get-setting', 'preview');
+    let config = await Editor.Ipc.requestToPackage('project-setting', 'get-config', 'preview');
     if (config && config.simulatorSettingType === 'global') {
-        config = await Editor.Ipc.requestToPackage('preferences', 'get-setting', 'preview');
+        config = await Editor.Ipc.requestToPackage('preferences', 'get-config', 'preview');
     }
     return config;
 }

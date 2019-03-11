@@ -33,7 +33,7 @@ export const messages = {
      */
     async 'query-staging'() {
         if (!expand) {
-            const setting = await Editor.Ipc.requestToPackage('preferences', 'get-setting', 'general.node_tree');
+            const setting = await Editor.Ipc.requestToPackage('preferences', 'get-config', 'general.node_tree');
 
             switch (setting) {
                 case 'collapse_all': expand = 'false'; break;

@@ -1,9 +1,9 @@
 'use strict';
 
-const profile = Editor.Profile.load('profile://global/packages/preferences.json');
-const {app} = require('electron');
-
-let pkg: any = null;
+const profile = {
+    default: Editor.Profile.load('profile://default/packages/preferences.json'),
+    global: Editor.Profile.load('profile://global/packages/preferences.json'),
+};
 
 export const messages = {
     open() {
@@ -13,21 +13,16 @@ export const messages = {
      * 查询记录的项目设置信息
      * @param {string} key
      */
-    'get-setting'(key: string) {
-        return profile.get(key);
+    'get-config'(key: string) {
+        return profile.global.get(key);
     },
 
     /**
      * 设置项目设置
      * @param {string} key
      */
-    'set-setting'(key: string, value: any) {
-        profile.set(key, value);
-    },
-
-    // 保存设置信息
-    'save-setting'() {
-        profile.save();
+    'set-config'(key: string, value: any) {
+        profile.global.set(key, value);
     },
 
     /**
@@ -40,21 +35,13 @@ export const messages = {
 };
 
 export function load() {
-    // @ts-ignore
-    pkg = this;
+    profile.default.set('edit', {
+        script_editor_list: [],
+        script_editor: '',
 
-    // 应用皮肤
-    const theme = profile.get('general.theme') || '';
-    Editor.Theme.use(theme);
-    let lan = app.getLocale();
-    if (lan.indexOf('zh') >= 0) {
-        lan = 'zh';
-    } else {
-        lan = 'en';
-    }
-    // 应用语言
-    const language = profile.get('general.language') || lan;
-    Editor.I18n.switch(language);
+        picture_editor_list: [],
+        picture_editor: '',
+    });
 }
 
 export function unload() {}

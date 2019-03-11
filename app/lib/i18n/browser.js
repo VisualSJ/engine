@@ -1,8 +1,10 @@
 'use strict';
 
 const util = require('util');
+const { app } = require('electron');
 const i18n = require('@base/electron-i18n');
 const setting = require('@editor/setting');
+const ipc = require('@base/electron-base-ipc');
 const { EventEmitter } = require('events');
 const { join, basename } = require('path');
 const { existsSync, statSync, readdirSync, readJSONSync, outputJSONSync } = require('fs-extra');
@@ -19,8 +21,9 @@ let json;
 try {
     json = readJSONSync(file);
 } catch (error) {
+    const lan = app.getLocale();
     json = {
-        language: 'en',
+        language: lan.indexOf('zh') >= 0 ? 'zh' : 'en',
     };
 }
 
@@ -78,6 +81,12 @@ class I18n extends EventEmitter {
 }
 
 module.exports = new I18n();
+
+// 页面进程调用主进程的方法
+ipc.on('editor3d-lib-i18n:language', (event) => {
+    return json.language;
+});
+
 
 i18n.on('switch', (language) => {
     module.exports.emit('switch', language);

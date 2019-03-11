@@ -1,5 +1,6 @@
 # 临时文件
 .publish
+.develop
 .vscode
 .workflow
 .history
