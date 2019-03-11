@@ -19,6 +19,58 @@ import {
 // @ts-ignore
 import { get, set } from 'lodash';
 
+function decodeChild(children: any[], node: any) {
+    const dumpChildrenUuids: string[] = children.map((child: any) => child.value.uuid);
+    const nodeChildrenUuids: string[] = node.children.map((child: INode) => child.uuid);
+
+    /**
+     * 为了不影响两个数组共有的 uuids
+     * 移除在 node 且不在 dump 的 uuid
+     * 添加在 dump 且不在 node 的 uuid
+     */
+    nodeChildrenUuids.forEach((uuid: string) => {
+        // @ts-ignore
+        if (!dumpChildrenUuids.includes(uuid)) {
+            const child = Manager.Node.query(uuid);
+            // 重要：过滤隐藏节点
+            if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
+                return;
+            }
+            child.parent = null;
+        }
+    });
+
+    dumpChildrenUuids.forEach((uuid: string) => {
+        // @ts-ignore
+        if (!nodeChildrenUuids.includes(uuid)) {
+            const child = Manager.Node.query(uuid);
+            child.parent = node;
+        }
+    });
+}
+
+/**
+ * 解码一个场景 dump 数据
+ * @param dump
+ * @param scene
+ */
+export async function decodeScene(dump: IScene, scene?: any) {
+    if (!dump) {
+        return;
+    }
+    scene = scene || new cc.Scene();
+    scene.name = dump.name.value;
+    scene.active = dump.active.value;
+
+    dump.children && (decodeChild(dump.children, scene));
+
+    for (const key of Object.keys(dump._globals)) {
+        for (const itemName of Object.keys(dump._globals[key])) {
+            await decodePatch(`_globals.${key}.${name}`, dump._globals[key], scene);
+        }
+    }
+}
+
 /**
  * 解码一个 dump 数据
  * @param dump
@@ -29,7 +81,7 @@ export async function decodeNode(dump: INode, node?: any) {
         return;
     }
 
-    node = node || cc.Node();
+    node = node || new cc.Node();
 
     node.name = dump.name.value;
     node.active = dump.active.value;
@@ -44,35 +96,7 @@ export async function decodeNode(dump: INode, node?: any) {
         node.parent = null;
     }
 
-    if (dump.children) {
-        const dumpChildrenUuids: string[] = dump.children.map((child: any) => child.value.uuid);
-        const nodeChildrenUuids: string[] = node.children.map((child: INode) => child.uuid);
-
-        /**
-         * 为了不影响两个数组共有的 uuids
-         * 移除在 node 且不在 dump 的 uuid
-         * 添加在 dump 且不在 node 的 uuid
-         */
-        nodeChildrenUuids.forEach((uuid: string) => {
-            // @ts-ignore
-            if (!dumpChildrenUuids.includes(uuid)) {
-                const child = Manager.Node.query(uuid);
-                // 重要：过滤隐藏节点
-                if (child._objFlags & cc.Object.Flags.HideInHierarchy) {
-                    return;
-                }
-                child.parent = null;
-            }
-        });
-
-        dumpChildrenUuids.forEach((uuid: string) => {
-            // @ts-ignore
-            if (!nodeChildrenUuids.includes(uuid)) {
-                const child = Manager.Node.query(uuid);
-                child.parent = node;
-            }
-        });
-    }
+    dump.children && (decodeChild(dump.children, node));
 
     for (let i = 0; i < dump.__comps__.length; i++) {
         const componentDump = dump.__comps__[i];

@@ -199,14 +199,15 @@ export async function ready() {
                 this.mainCtx = this.$refs.mainCanvas.getContext('2d');
                 this.ctrlCxt = this.$refs.controlCanvas.getContext('2d');
                 // 更新画布的宽高
-                this.resizeCanvas([this.gridCtx.canvas, this.mainCtx.canvas, this.ctrlCxt.canvas]);
+                this.resizeCanvas([this.gridCtx.canvas, this.mainCtx.canvas, this.ctrlCxt.canvas],
+                    {w: panel.clientWidth, h: panel.clientHeight * 0.8});
             },
 
             // 重新调节 canvas 的宽高
-            resizeCanvas(canvasArr: any[],  size?: any) {
+            resizeCanvas(canvasArr: any[], size: any) {
                 for (const $canvas of canvasArr) {
-                    $canvas.width = size ? size.w : $canvas.offsetWidth;
-                    $canvas.height = size ? size.h : $canvas.offsetHeight;
+                    $canvas.width = size.w ;
+                    $canvas.height = size.h ;
                 }
             },
 

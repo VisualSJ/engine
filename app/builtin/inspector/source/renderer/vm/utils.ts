@@ -51,8 +51,8 @@ export function translationDump(dump: any) {
 export function transSceneDump(dump: any) {
     dump.active.name = 'Active';
     dump.name.name = 'Name';
-    for (const name of Object.keys(dump.value)) {
-        const item = dump.value[name];
+    for (const name of Object.keys(dump._globals)) {
+        const item = dump._globals[name];
         item.name = name;
         translate(item.value, `_globals.${name}`);
     }

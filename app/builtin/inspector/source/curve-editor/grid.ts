@@ -88,8 +88,8 @@ export default class Grid {
      * @param point
      */
     public tranToCanvas(point: any) {
-        const canvasPoint = this.tranToAxis(point);
-        return this.axisToCanvas(canvasPoint);
+        const axisPoint = this.tranToAxis(point);
+        return this.axisToCanvas(axisPoint);
     }
 
     /**

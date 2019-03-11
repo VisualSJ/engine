@@ -173,7 +173,7 @@ function onDragOver(event) {
         gizmoManager.clearAllGizmos();
         // 高亮显示节点
         lastHilightNode = resultNode;
-        gizmoManager.showNodeGizmo(resultNode);
+        gizmoManager.showNodeGizmoOfNode(resultNode);
     }
 }
 
@@ -207,12 +207,12 @@ async function onDrop(event) {
         const result = cc.geometry.intersect.ray_plane(ray, plane);
         const position = new cc.Vec3(0, 0, 0);
         cc.vmath.vec3.scaleAndAdd(position, ray.o, ray.d, result);
-        const uuid = nodeManger.createNodeFromAsset(null, event.uuid, {
+        const uuid = await nodeManger.createNodeFromAsset(null, event.uuid, {
             position,
             type: event.type,
         });
         const node = nodeManger.query(uuid);
-        gizmoManager.showNodeGizmo(node);
+        gizmoManager.showNodeGizmoOfNode(node);
     }
     lastHilightNode = null;
 }

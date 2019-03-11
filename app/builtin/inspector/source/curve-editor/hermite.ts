@@ -227,8 +227,8 @@ export default class Hermite {
 
     /**
      * 移动关键帧位置
-     * @param x
-     * @param mY
+     * @param x 要移动到的位置 x 坐标
+     * @param Y 要移动到的位置 y 坐标
      * @param index 关键帧索引
      */
     public moveKey(x: number, y: number, index: number) {
@@ -241,10 +241,11 @@ export default class Hermite {
             return;
         }
         const result = this.grid.canvasToAxis({x, y});
-        point.x = result.x;
-        point.x = clamp(point.x, 0, w);
-        point.y = result.y;
-        point.y = clamp(point.y, 0, h);
+
+        // 对超出边界的处理
+        point.x = clamp(result.x, 0, w);
+        point.y = clamp(result.y, 0, h);
+
         next && (this.hermiteArgs[index] = calcHermite(now.point, now.outTangent, next.point, next.inTangent));
         last &&
         (this.hermiteArgs[index - 1] = calcHermite(last.point, last.outTangent, now.point, now.inTangent));

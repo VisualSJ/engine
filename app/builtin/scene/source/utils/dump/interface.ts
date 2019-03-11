@@ -52,7 +52,7 @@ export interface INode {
 export interface IScene {
     name: IProperty;
     active: IProperty;
-    value: any;
+    _globals: any;
     isScene: boolean;
 
     uuid: IProperty;

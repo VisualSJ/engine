@@ -117,13 +117,16 @@ export default class CurveControl extends EventEmitter {
         const {radius} = this.ctrlConfig;
         this.canvas.addEventListener('mousedown', (event: any) => {
             let flag = false;
-            const {offsetX, offsetY, y} = event;
+            const {offsetX, offsetY} = event;
             // 判断是否在线上(取像素颜色判断)
-            const myImageData = this.cxt2D.getImageData(offsetX - PIXEL_RANGE / 2, offsetY,
+            const myImageData = this.cxt2D.getImageData(offsetX - PIXEL_RANGE / 2, offsetY - PIXEL_RANGE / 2,
                  PIXEL_RANGE, PIXEL_RANGE);
+
             // 先判断是否在关键帧控制点处（圆点需要加上原点半径）
             for (const info of this.ctrlKey) {
                 const {x, y} = info.point.canvas;
+
+                console.log(y, offsetY);
                 // 点击的点，在控制范围内
                 if (Math.abs(offsetX - x) < (CLICK_RANGE * 2 + radius) &&
                  Math.abs(offsetY - y) < (CLICK_RANGE * 2 + radius)) {
@@ -220,7 +223,7 @@ export default class CurveControl extends EventEmitter {
             if (!tanDrag && !curveDrag && !keyDrag) {
                 return;
             }
-            const {offsetX, offsetY, movementY, movementX} = event;
+            const {offsetX, offsetY, movementY} = event;
             if (tanDrag) {
                 this.changeType = 'tangent';
                 this.updateTan(offsetX, offsetY);
@@ -228,7 +231,7 @@ export default class CurveControl extends EventEmitter {
                 return;
             }
             if (keyDrag) {
-                this.moveKey(offsetX, offsetY, movementY, movementX);
+                this.moveKey(offsetX, offsetY);
                 this.emitChange();
                 return;
             }
@@ -252,10 +255,7 @@ export default class CurveControl extends EventEmitter {
      * @param x
      * @param y
      */
-    private moveKey(x: number, y: number, mx: number, my: number) {
-        if (mx === 0 || my === 0) {
-            return;
-        }
+    private moveKey(x: number, y: number) {
         this.changeType = 'keyframe';
         const {index} = this.ctrlPoints;
         // 因为 canvas 坐标系的不同，这里需要对移动的 y 值取负值

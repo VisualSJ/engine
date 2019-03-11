@@ -23,7 +23,7 @@ export const template = `
         </ui-prop>
     </div>
     <template
-        v-for="item in dump.value"
+        v-for="item in dump._globals"
     >
         <ui-section expand v-if="item.visible">
             <div class="header" slot="header">

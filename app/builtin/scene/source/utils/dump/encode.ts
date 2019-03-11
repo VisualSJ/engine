@@ -78,14 +78,14 @@ export function encodeScene(scene: any): IScene {
         }),
         parent: '',
         __type__: getTypeName(ctor),
-        value: {},
+        _globals: {},
         isScene: true,
     };
     for (const name of Object.keys(scene._globals)) {
         if (name === '__id__') {
             continue;
         }
-        data.value[name] = encodeObject(scene._globals[name], { default: null });
+        data._globals[name] = encodeObject(scene._globals[name], { default: null });
     }
     return data;
 }
