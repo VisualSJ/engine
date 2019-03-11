@@ -136,15 +136,14 @@ export async function ready() {
 
             dataChange(key: string, value: any) {
                 this.tabbar[key] = value;
-                Editor.Ipc.sendToPackage('console', 'set-setting', `tabbar.${key}`, value);
-                Editor.Ipc.sendToPackage('console', 'save-setting');
+                Editor.Ipc.sendToPackage('console', 'set-config', 'global', `tabbar.${key}`, value);
             },
 
             /**
              * 初始化数据
              */
             async ininData() {
-                const tabbar = await Editor.Ipc.requestToPackage('console', 'get-setting', 'tabbar');
+                const tabbar = await Editor.Ipc.requestToPackage('console', 'get-config', 'global', 'tabbar');
                 if (!tabbar) {
                     return;
                 }

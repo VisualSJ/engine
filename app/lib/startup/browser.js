@@ -10,7 +10,6 @@ const I18n = require('../i18n');
 const array = [
     'preferences',
     'engine',
-    'selection',
     'highlighter',
     'asset-db',
     'console',
