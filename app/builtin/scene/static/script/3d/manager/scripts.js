@@ -1,13 +1,17 @@
 'use stirct';
 
 const ipc = require('./ipc');
+const scene = require('./scene');
 const { extname, isAbsolute, resolve, basename, dirname} = require('path');
 const uuidUtils = require('../../utils/uuid');
 const model = require('module');
 const _ = require('lodash');
+
 const raw2library = {}; // 存储实际路径与 library 路径的索引 map,(路径默认带有扩展名)
 const library2raw = {};
+const uuid2raw = {};
 const scriptNames = new Set(); // 存储现有脚本名称
+
 let projectPath = '';
 function isNodeModulePath(path) {
     return path.replace(/\\/g, '/').indexOf('/node_modules/') !== -1;
@@ -56,6 +60,14 @@ function _loadScriptInEngin(uuid) {
     }
 }
 
+let reloadTimer = null;
+function reload() {
+    clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(() => {
+        scene.softReload();
+    }, 400);
+}
+
 async function init(project) {
     projectPath = project;
     const scripts = await ipc.send('query-scripts');
@@ -84,10 +96,15 @@ async function loadScript(uuid) {
     if (userData.isPlugin && !userData.loadPluginInEditor) {
         return;
     }
+
     raw2library[asset.file] =  asset.library['.js'];
     library2raw[asset.library['.js']] =  asset.file;
+    uuid2raw[uuid] = asset.file
+
     require(asset.file);
     _loadScriptInEngin(uuid);
+
+    reload();
 }
 
 /**
@@ -116,13 +133,17 @@ async function _loadScripts(scripts) {
         if (result === undefined) {
             throw new Error(`Script (${asset.source}) can't found in library, please check it`);
         }
+
         raw2library[asset.file] = result;
         library2raw[result] = asset.file;
+        uuid2raw[asset.uuid] = asset.file
     }
     for (const asset of scripts) {
         require(asset.file);
         console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
     }
+
+    reload();
 }
 
 /**
@@ -131,8 +152,9 @@ async function _loadScripts(scripts) {
  */
 async function removeScript(asset) {
     const name = basename(asset.file, extname(asset.file));
+
     // 未曾导入过的脚本，需要判断是否有重名
-    if (!raw2library[asset.file]) {
+    if (!uuid2raw[asset.uuid]) {
         if (scriptNames.has(name)) {
             console.error(`Load script(${asset.file}) failed! Script with the same name has exist, please replace a new name;`);
             return false;
@@ -140,16 +162,31 @@ async function removeScript(asset) {
         return true;
     }
     scriptNames.delete(name);
+
+    // 移除部分 map
     delete raw2library[asset.file];
     delete library2raw[asset.library['.js']];
+    delete uuid2raw[asset.uuid];
+
     // 移除 require 中的缓存
     delete require.cache[asset.library['.js']];
+
     // 移除引擎内的索引
     const sid = uuidUtils.compressUuid(asset.uuid);
     const ctor = cc.js._registeredClassIds[sid];
     if (ctor) {
         cc.js.unregisterClass(ctor);
     }
+
+    // 清除 menu 里面的缓存
+    for (let i = 0; i < cc._componentMenuItems.length; i++) {
+        const item = cc._componentMenuItems[i];
+        if (item && item.component === ctor) {
+            cc._componentMenuItems.splice(i, 1);
+            break;
+        }
+    }
+
     return true;
 }
 

@@ -24,6 +24,17 @@ export default class JavascriptImporter extends Importer {
     }
 
     /**
+     * 是否强制刷新
+     * @param asset 
+     */
+    async force(asset: Asset) {
+        if (this.assetDB) {
+            return !!this.assetDB.uuid2asset[asset.uuid];
+        }
+        return false;
+    }
+
+    /**
      * 实际导入流程
      * 需要自己控制是否生成、拷贝文件
      *
