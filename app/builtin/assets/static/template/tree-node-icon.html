@@ -1,5 +1,10 @@
+<i class="folder"
+    :class="asset.isRoot?'i-database':'i-folder'"
+    v-if="asset.isDirectory" 
+></i>
 <i class="icon"
     :class="type !== 'image'? value : type"
+    v-else
 >
     <!-- 显示图片的缩略图 -->
     <ui-loading class="i-loading"

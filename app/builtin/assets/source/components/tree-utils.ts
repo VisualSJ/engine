@@ -24,7 +24,7 @@ exports.canNotCreateAsset = (asset: ItreeAsset) => {
  * @param asset
  */
 exports.canNotCopyAsset = (asset: ItreeAsset) => {
-    return exports.canNotDeleteAsset(asset);
+    return !asset || asset.isRoot || asset.isSubAsset;
 };
 
 /**

@@ -5,6 +5,10 @@
     line-height: 20px;
     font-size: 12px;
     cursor: default;
+    &[isRoot] {
+        background-color: var(--item-hover-bg) !important;
+        border-bottom: 1px solid var(--panel-content-bg);
+    }
     &[state] {
         &:hover {
             background-color: var(--item-hover-bg);
@@ -42,6 +46,10 @@
         }
         &+.icon {
             margin-left: 0;
+        }
+        &+.loading {
+            left: -2px;
+            margin-right: 0;
         }
     }
     .icon {
@@ -93,8 +101,10 @@
         display: inline-block;
         position: relative;
         vertical-align: middle;
-        top: 1px;
-        left: -12px;
+        top: 0;
+        left: 0;
+        width: 14px;
+        margin-right: 2px;
         transform: scale(0.8);
     }
     .rename {

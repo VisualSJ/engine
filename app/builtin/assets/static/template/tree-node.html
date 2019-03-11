@@ -5,6 +5,7 @@
         :active="selects.indexOf(asset.uuid) !== -1" 
         :style="{ paddingLeft: asset.left + 'px' }"
         :class="{'parent':asset.isParent}"
+        :isRoot="asset.isRoot"
         :expand="asset.isExpand"
         :type="asset.type"
 
@@ -21,11 +22,11 @@
             @click.stop="toggle($event, asset)"
             @dblclick.stop
         ></i>
-        
-        <i class="folder"
-            :class="asset.isRoot?'i-database':'i-folder'"
-            v-if="asset.isDirectory" 
-        ></i>
+        <section class="loading"
+            v-if="state==='loading'"
+        >
+            <ui-loading></ui-loading>
+        </section>
         <tree-node-icon
             :asset="asset"
             :key="asset.uuid"
@@ -51,12 +52,6 @@
                 @keydown.esc="renameCancel($event)"
             >
         </div>
-        
-        <section class="loading"
-            v-if="state==='loading'"
-        >
-            <ui-loading></ui-loading>
-        </section>
 
         <i class="readonly i-lock"
             :title="t('menu.readOnly')"
