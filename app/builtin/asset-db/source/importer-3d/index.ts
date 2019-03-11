@@ -20,6 +20,7 @@ import JsonImporter from './importers/json';
 import MaterialImporter from './importers/material';
 import PrefabImporter from './importers/prefab';
 import SceneImporter from './importers/scene';
+import SpriteAtlasImporter from './importers/sprite-atlas';
 import SpriteFrameImporter from './importers/sprite-frame';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
@@ -94,4 +95,5 @@ export function register(database: AssetDB) {
     database.register(new AudioImporter(), ['.mp3', '.wav', '.ogg', '.aac', '.pcm', 'm4a']);
     database.register(new TTFFontImporter(), '.ttf');
     database.register(new BitmapImporter(), '.fnt');
+    database.register(new SpriteAtlasImporter(), '.plist');
 }
