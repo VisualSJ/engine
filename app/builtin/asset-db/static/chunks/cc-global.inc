@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
-#pragma globalData
+#pragma builtin(global)
 uniform CCGlobal {
   vec4 cc_time; // x
   vec4 cc_screenSize; // xy zw

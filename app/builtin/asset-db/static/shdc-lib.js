@@ -15,7 +15,7 @@ const ident = /[_a-zA-Z]\w*/;
 const extensionRE = /(?:GL_)?(\w+)/;
 const comparators = /^[<=>]+$/;
 const ifprocessor = /#(el)?if/;
-const rangePragma = /range\(([\d.,\s]+)\)\s(\w+)/;
+const labelRE = /(\w+)(?:\((.*)\))?/;
 const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
 const samplerRE = /sampler/;
@@ -157,6 +157,15 @@ const replacePlainDefines = (code) => {
   return code;
 };
 
+const parseCustomLabels = (arr, out = {}) => {
+  for (const str of arr) {
+    const labelCap = labelRE.exec(str);
+    if (labelCap) out[labelCap[1]] = HJSON.parse(labelCap[2] || 'true');
+    else warn(`illegal pragma label ${str}`);
+  }
+  return out;
+};
+
 /**
  * say we are extracting from this program:
  * ```
@@ -201,15 +210,24 @@ const extractDefines = (tokens, defines, cache) => {
       curDefs.pop(); save(t.line); continue;
     } else if (str[0] === '#else') { // just clear this level
       curDefs[curDefs.length - 1].length = 0; save(t.line); continue;
-    } else if (str[0] === '#pragma') { // pragma treatments
-      // custom numeric define ranges
-      if (str[1].startsWith('range')) {
-        let mc = rangePragma.exec(t.data);
-        if (!mc) continue;
-        let def = defines.find(d => d.name === mc[2]);
-        if (!def) defines.push(def = { name: mc[2] });
-        def.type = 'number';
-        def.range = JSON.parse(`[${mc[1]}]`);
+    } else if (str[0] === '#pragma') { // pragmas
+      if (str.length <= 1) { warn('empty pragma', t.line); continue; }
+      if (str[1] === 'define') { // define specifications
+        if (str.length <= 2) { warn('define pragma: missing info', t.line); continue; }
+        let def = defines.find(d => d.name === str[2]);
+        if (!def) defines.push(def = { name: str[2] });
+        const prop = parseCustomLabels(str.splice(3));
+        const keys = Object.keys(prop);
+        if (keys.length > 1) { warn('define pragma: multiple labels', t.line); continue; }
+        if (keys[0] === 'range') { // number range
+          def.type = 'number';
+          def.range = prop.range;
+        } else if (keys[0] === 'options') { // string options
+          def.type = 'string';
+          def.options = prop.options;
+        } else { warn(`define pragma: illegal label '${keys[0]}'`, t.line); continue; }
+      } else { // other specifications, save for the next pass
+        cache[t.line] = parseCustomLabels(str.splice(1));
       }
       continue;
     } else if (!ifprocessor.test(str[0])) continue;
@@ -220,7 +238,7 @@ const extractDefines = (tokens, defines, cache) => {
       if (id) { // is identifier
         let d = curDefs.reduce((acc, val) => acc.concat(val), defs.slice());
         df = defines.find(d => d.name === id[0]);
-        if (df) { if (d.length < df.defines.length) df.defines = d; }
+        if (df) { if (d.length < df.defines.length) df.defines = d; } // update path if shorter
         else defines.push(df = { name: id[0], type: 'boolean', defines: d });
         defs.push(id[0]);
       } else if (comparators.test(s)) df.type = 'number';
@@ -236,7 +254,7 @@ const extractParams = (() => {
     return cache[cache.lines[idx - 1]] || [];
   }
   // tokens (from ith): [ ..., ('highp', ' ',) 'vec4', ' ', 'color', ('[', '4', ']',) ... ]
-  const extractInfo = (tokens, i) => {
+  const extractInfo = (tokens, i, cache) => {
     let param = {};
     let offset = precision.exec(tokens[i].data) ? 2 : 0;
     param.name = tokens[i+offset+2].data;
@@ -269,18 +287,19 @@ const extractParams = (() => {
         continue;
       }
       // uniforms
+      param.tags = cache[t.line - 1]; // pass pragma tags further
       let idx = nextWord(tokens, i+2);
       if (tokens[idx].data !== '{') { // plain types
         if (!samplerRE.test(tokens[i+2].data))
           warn('none-sampler uniforms must be declared in blocks.', t.line);
         dest = samplers; type = 'sampler';
-        param = extractInfo(tokens, i+2);
+        Object.assign(param, extractInfo(tokens, i+2, cache));
         idx = nextSemicolon(tokens, idx);
       } else { // blocks
         param.name = tokens[i+2].data;
         param.members = []; type = 'block';
         while (tokens[idx = nextWord(tokens, idx)].data !== '}') {
-          const info = extractInfo(tokens, idx);
+          const info = extractInfo(tokens, idx, cache);
           info.size = mappings.sizeMap[info.type] * info.count;
           param.members.push(info);
           idx = nextSemicolon(tokens, idx);
@@ -441,15 +460,26 @@ const decorateBindings = (() => {
 const buildShader = (() => {
   const builtinRE = /^cc\w+$/i;
   const newlines = /(^\s*\n){2,}/gm;
+  const pragmas = /(?:#pragma\s+)(?!STDGL|optimize|debug).*$/gm;
   const clean = (code) => {
-    // clean newlines
-    let result = code.replace(newlines, '\n');
+    let result = code.replace(pragmas, ''); // strip our pragmas
+    result = result.replace(newlines, '\n'); // squash multiple newlines
     return result;
   };
   const clearFormat = (glsl) => { glsl.vert = clean(glsl.vert); glsl.frag = clean(glsl.frag); };
   const createCache = () => { return { lines: [] }; };
+  const filterFactory = (target, builtins) => (u) => {
+    if (!builtinRE.test(u.name)) return true;
+    const tags = u.tags; let type;
+    if (!tags || !tags.builtin) {
+      warn(`type not specified for builtin uniform '${u.name}', default to global`);
+      type = 'global';
+    } else {
+      type = tags.builtin; delete u.tags;
+    }
+    builtins[`${type}s`][target].push(u.name);
+  };
   return (vertName, fragName, chunks) => {
-
     let defines = [], blocks = [], samplers = [], dependencies = {};
     let cache = createCache(), tokens;
     const glsl3 = {}, glsl1 = {};
@@ -480,19 +510,9 @@ const buildShader = (() => {
     miscChecks(glsl1.frag, fEntry); glsl3.frag = frag;
 
     // filter out pipeline builtin params
-    const builtins = { blocks: [], samplers: [] };
-    blocks = blocks.filter((u) => {
-      if (builtinRE.test(u.name)) {
-        builtins.blocks.push(u.name);
-        return false;
-      } else return true;
-    });
-    samplers = samplers.filter((u) => {
-      if (builtinRE.test(u.name)) {
-        builtins.samplers.push(u.name);
-        return false;
-      } else return true;
-    });
+    const builtins = { globals: { blocks: [], samplers: [] }, locals: { blocks: [], samplers: [] } };
+    blocks = blocks.filter(filterFactory('blocks', builtins));
+    samplers = samplers.filter(filterFactory('samplers', builtins));
     vertInfo = vertInfo.filter((u) => !builtinRE.test(u.name));
     fragInfo = fragInfo.filter((u) => !builtinRE.test(u.name));
     // assign bindings

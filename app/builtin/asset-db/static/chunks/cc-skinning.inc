@@ -3,12 +3,14 @@
 in vec4 a_weights;
 in vec4 a_joints;
 
+#pragma builtin(local)
 uniform CCSkinning {
   mat4 cc_matJoint[128];
   vec4 cc_jointsTextureSize;
 };
 
 #if CC_USE_JOINTS_TEXTURE
+#pragma builtin(local)
 uniform sampler2D cc_jointsTexture;
 mat4 getBoneMatrix(const in float i) {
   float size = cc_jointsTextureSize.x;

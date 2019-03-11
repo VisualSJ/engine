@@ -1,7 +1,7 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 #define MAX_LIGHTS 4
 
-#pragma localData
+#pragma builtin(local)
 uniform CCForwardLights {
   vec4 cc_sphereLitPos[MAX_LIGHTS]; // xyz: pos
   vec4 cc_sphereLitSizeRange[MAX_LIGHTS]; // x: size, y: range
