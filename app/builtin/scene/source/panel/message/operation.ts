@@ -208,7 +208,10 @@ export function apply(messages: any) {
         }
 
         if (options.assetUuid) {
-            return await $scene.forwarding('Node', 'createNodeFromAsset', [options.parent, options.assetUuid]);
+            return await $scene.forwarding('Node', 'createNodeFromAsset', [options.parent, options.assetUuid, {
+                name: options.name,
+                type: 'cc.Prefab',
+            }]);
         }
 
         // 返回 uuid

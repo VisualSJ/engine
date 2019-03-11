@@ -323,10 +323,6 @@ class NodeManager extends EventEmitter {
 
         const node = new cc.Node();
 
-        if (name) {
-            node.name = name;
-        }
-
         // 一般情况下是 dumpdata
         if (dump) {
             if (typeof dump === 'string') {
@@ -357,6 +353,10 @@ class NodeManager extends EventEmitter {
             await dumpUtils.restoreNode(node, dump);
         }
 
+        if (name) {
+            node.name = name;
+        }
+
         this.emit('before-add', node);
         Manager.Ipc.forceSend('broadcast', 'scene:before-node-create', node.uuid);
         this.emit('before-change', parent);
@@ -379,7 +379,7 @@ class NodeManager extends EventEmitter {
      * 从一个资源创建对应的节点
      * @param {*} parentUuid
      * @param {*} assetUuid
-     * @param {*} options {type:资源类型,position:位置坐标(vect3)}
+     * @param {*} options { type: 资源类型, position: 位置坐标(vect3), name: 新的名字 }
      */
     async createNodeFromAsset(parentUuid, assetUuid, options) {
         if (!cc.director._scene) {
@@ -396,24 +396,32 @@ class NodeManager extends EventEmitter {
         try {
             const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
             let node;
-            // hack 兼容旧的没有传入 options 的写法，后续需要全部改成相同用法
-            if (!options || options.type === 'cc.Prefab') {
-                node = cc.instantiate(asset);
-            } else if (supportTypes.includes(options.type)) {
-                const {type, position} = options;
-                node = new cc.Node(asset.name);
+            const { name, type, position } = options;
+
+            if (supportTypes.includes(type)) {
                 switch (type) {
+                    case 'cc.Prefab':
+                        node = cc.instantiate(asset);
                     case 'cc.Mesh':
+                        node = new cc.Node(asset.name);
                         const model = node.addComponent(cc.ModelComponent);
                         model.mesh = asset;
                         break;
                 }
-                if (position) {
-                    node.setPosition(position);
-                }
-            } else {
+            }
+
+            if (!node) {
                 return;
             }
+
+            if (position) {
+                node.setPosition(position);
+            }
+
+            if (name) { // 使用创建时指定的名称
+                node.name = name;
+            }
+
             this.emit('before-add', node);
             Manager.Ipc.forceSend('broadcast', 'scene:before-node-create', node.uuid);
             this.emit('before-change', parent);
