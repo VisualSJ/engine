@@ -9,7 +9,7 @@ const importers: string[] = [
     'javascript',
     'typescript',
     'texture',
-    'texture-cube',
+    'erp-texture-cube',
     'sprite-frame',
     'material',
 ];
