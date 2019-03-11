@@ -104,7 +104,7 @@ class Dialog {
 
         return new Promise((resolve) => {
             dialog.showMessageBox(window, config, (button) => {
-                resolve([button]);
+                resolve(button);
             });
         });
     }

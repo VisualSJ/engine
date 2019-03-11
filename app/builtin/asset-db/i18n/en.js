@@ -6,6 +6,13 @@ module.exports = {
     },
     'debug-mode': 'Open Assets DevTools',
 
+    operate: {
+        dialogError: 'Error',
+        dialogWaining: 'Warning',
+        dialogQuestion: 'Confirm',
+        dialogInfo: 'Tips',
+    },
+
     createAsset: {
         fail: {
             unknown: 'Failed to create resource: unknown error',
@@ -15,6 +22,9 @@ module.exports = {
             toUrl: 'Failed to create resource: file path cannot be converted to url',
             uuid: 'Failed to create the resource: unable to identify uuid of the url',
             content: 'Failed to create the resource: file content format is not correct',
+        },
+        warn: {
+            overwrite: 'The same file already exists. Do you want to overwrite it?',
         },
     },
 

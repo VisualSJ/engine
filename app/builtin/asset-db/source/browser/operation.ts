@@ -51,9 +51,25 @@ export async function createAsset(url: string, content?: Buffer | string | null,
         return null;
     }
 
+    let overwrite = false;
     if (existsSync(file)) {
-        console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.exist')} \n${url}`);
-        return null;
+        if (option && !option.overwrite) {
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.exist')} \n${url}`);
+            return null;
+        }
+
+        overwrite = true;
+        const code = await Editor.Dialog.show({ // 覆盖前询问
+            type: 'question',
+            default: 0,
+            cancel: 1,
+            title: Editor.I18n.t('assets-db.operate.dialogQuestion'),
+            message: Editor.I18n.t('asset-db.createAsset.fail.exist'),
+        });
+
+        if (code === 1) {
+            return null;
+        }
     }
 
     if (content !== undefined && content !== null) { // content 存在
@@ -94,8 +110,12 @@ export async function createAsset(url: string, content?: Buffer | string | null,
         return null;
     }
 
-    // 等待 db 发出 add 消息
-    await awaitAsset('add', file);
+    if (overwrite) {
+        await awaitAsset('change', file);
+    } else {
+        // 等待 db 发出 add 消息
+        await awaitAsset('add', file);
+    }
 
     let newURL;
 

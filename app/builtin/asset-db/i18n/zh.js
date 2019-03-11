@@ -6,6 +6,13 @@ module.exports = {
     },
     'debug-mode': '打开资源调试工具',
 
+    operate: {
+        dialogError: '错误',
+        dialogWaining: '警告',
+        dialogQuestion: '确认',
+        dialogInfo: '提示',
+    },
+
     createAsset: {
         fail: {
             unknown: '创建资源失败: 未知错误',
@@ -15,6 +22,9 @@ module.exports = {
             toUrl: '创建资源失败: 文件路径无法转为 url',
             uuid: '创建资源失败: 无法识别 url 的 uuid ',
             content: '创建资源失败: 文件内容格式不正确 ',
+        },
+        warn: {
+            overwrite: '已存在相同的文件，是否覆盖？',
         },
     },
 

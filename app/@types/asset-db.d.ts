@@ -66,4 +66,5 @@ declare interface IRedirectInfo {
 
 declare interface ICreateOption {
     src?: string; // 源文件地址，如果传入 content 为空，则复制这个指向的文件
+    overwrite?: boolean; // 是否覆盖文件
 }

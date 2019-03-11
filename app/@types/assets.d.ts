@@ -24,6 +24,11 @@ declare interface IaddAsset {
     parentUuid?: string; // 所在的目录的 uuid
 }
 
+declare interface ICreateOption {
+    src?: string; // 源文件地址，如果传入 content 为空，则复制这个指向的文件
+    overwrite?: boolean; // 是否覆盖文件
+}
+
 declare interface ItreeAsset {
     name: string; // 文件名，包含后缀
     source: string;

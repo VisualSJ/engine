@@ -400,10 +400,18 @@ export const methods = {
      * @param url
      * @param content
      */
-    async ipcAdd(url: string, content: Buffer | string | null) {
+    async ipcAdd(url: string, content: Buffer | string | null, option?: ICreateOption) {
         utils.twinkle.sleep();
 
-        return await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content);
+        return await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content, option);
+    },
+
+    /**
+     * 更新树形节点
+     */
+    change(uuid: string) {
+        utils.twinkle.add(uuid, 'shrink');
+        vm.refresh();
     },
 
     /**
@@ -778,8 +786,12 @@ export const methods = {
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
             const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', json.from);
-            vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content);
-
+            const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, {overwrite: true});
+            if (!uuid) {
+                // 由于在 ipc generate-prefab-data 就预置了节点为 prefab 状态
+                // 现在新增失败，需要取消节点的 prefab 状态
+                await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', json.from);
+            }
         } else {
             if (!json.from) {
                 return;
