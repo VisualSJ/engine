@@ -290,6 +290,19 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
 
             data[info.key] = gradient;
+        } else if (dump.type === 'cc.ClickEvent') {
+            const events = [];
+            if (dump.value.length > 0) {
+                for (const item of dump.value) {
+                    const clickEvent = new ccType();
+                    clickEvent.component = item.value.component.value;
+                    clickEvent.customEventData = item.value.customEventData.value;
+                    clickEvent.handler = item.value.handler.value;
+                    clickEvent.target = item.value.target.value;
+                    events.push(clickEvent);
+                }
+            }
+            data[info.key] = events;
         } else if (typeof dump.value === 'object') {
             for (const childKey in dump.value) {
                 if (dump.value[childKey] === undefined) {

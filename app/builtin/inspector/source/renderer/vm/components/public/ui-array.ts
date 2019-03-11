@@ -11,7 +11,7 @@ export const template = `
         ></i>
     </div>
     <div class="content">
-        <ui-num-input path="length"
+        <ui-num-input path="length" min="0"
             :disabled="readonly"
             :value="value.length"
         ></ui-num-input>
@@ -23,7 +23,7 @@ export const template = `
         </span>
     </div>
     <div class="array"
-        v-if="unfold"
+        v-if="unfold && value.length > 0"
         @click="onDelete"
     >
         <template

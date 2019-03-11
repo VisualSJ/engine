@@ -61,29 +61,10 @@ export const template = `
             ></ui-prop>
         </template>
     </div>
-
-    <ui-prop empty="true" class="ui-array"
+    <ui-prop auto="true"
         :value="value.value.clickEvents"
+        :readonly="value.value.clickEvents.readonly"
     >
-        <div class="name">{{value.value.clickEvents.name}}</div>
-        <div class="content">
-            <ui-num-input path="length"
-                :value="value.value.clickEvents.value.length"
-            ></ui-num-input>
-        </div>
-        <div class="array">
-            <template
-                v-for="item in value.value.clickEvents.value"
-            >
-                <ui-prop empty="true"
-                    :value="item"
-                >
-                    <node-function class="ui-object"
-                        :value="item"
-                    ></node-function>
-                </ui-prop>
-            </template>
-        </div>
     </ui-prop>
 </div>
 `;
@@ -97,7 +78,6 @@ export const props = [
 
 export const components: any = {
     'ui-prop': require('../../../public/ui-prop'),
-    'node-function': require('./node-function'),
 };
 
 export const methods = {

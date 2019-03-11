@@ -444,6 +444,19 @@
         ></ui-depend>
     </template>
 
+    <!-- ClickEvent -->
+    <template
+        v-else-if="value.type === 'cc.ClickEvent'"
+    >
+        <ui-click-event
+            :readonly="value.readonly"
+            v-model="value.value"
+
+            :width="width"
+            :height="height"
+        ></ui-click-event>
+    </template>
+
     <!-- Object -->
     <template
         v-else

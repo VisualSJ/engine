@@ -37,6 +37,7 @@ export const components = {
     'ui-curve-range': require('./ui-curve-range'),
     'ui-gradient': require('./ui-gradient'),
     'ui-gradient-range': require('./ui-gradient-range'),
+    'ui-click-event': require('./ui-click-event'),
 };
 
 export const methods = {
@@ -75,7 +76,6 @@ export const methods = {
             value: dump.value,
         });
     },
-
     /**
      * 是否是某种类型的数据
      * @param type
