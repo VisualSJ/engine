@@ -376,7 +376,7 @@ export class GltfConverter {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
                 material._defines = [{ USE_ALBEDO_MAP: true }];
-                material._props = [{albedoSampler: textures[pbrMetallicRoughness.baseColorTexture.index]}];
+                material._props = [{albedoMap: textures[pbrMetallicRoughness.baseColorTexture.index]}];
             } else {
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
