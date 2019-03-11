@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-#define MAX_LIGHTS 4
+#define MAX_LIGHTS 2
 
 #pragma builtin(local)
 uniform CCForwardLight {

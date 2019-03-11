@@ -72,7 +72,7 @@
     "_useColorTemperature": false,
     "_colorTemperature": 6550,
     "_intensity": 10000,
-    "_size": 15,
+    "_size": 0.15,
     "_range": 1,
     "_id": ""
   },
