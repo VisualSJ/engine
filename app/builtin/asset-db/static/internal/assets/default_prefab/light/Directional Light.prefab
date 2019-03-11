@@ -55,14 +55,13 @@
     "_id": ""
   },
   {
-    "__type__": "cc.LightComponent",
-    "_name": "Directional Light<LightComponent>",
+    "__type__": "cc.DirectionalLightComponent",
+    "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 1
     },
     "_enabled": true,
-    "_type": 0,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -72,8 +71,7 @@
     },
     "_useColorTemperature": false,
     "_colorTemperature": 6550,
-    "_intensity": 65000,
-    "_range": 1,
+    "_intensity": 10000,
     "_id": ""
   },
   {
@@ -84,7 +82,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "a4dbHnZm5MOJiTKM2xwjVY",
+    "fileId": "aeyMch0nJBEbV/mk9CXYkW",
     "sync": false,
     "_synced": {
       "default": false,

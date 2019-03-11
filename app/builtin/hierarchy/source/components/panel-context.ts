@@ -239,7 +239,7 @@ exports.createMenu = (callback: any): any[] => {
                     label: Editor.I18n.t('hierarchy.menu.newLightSphere'),
                     click() {
                         callback({
-                            name: 'Point Light',
+                            name: 'Sphere Light',
                             assetUuid: '4182ee46-ffa0-4de2-b66b-c93cc6c7e9b8',
                         });
                     },
