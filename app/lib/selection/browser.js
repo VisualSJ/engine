@@ -19,20 +19,25 @@ class Selection extends EventEmitter {
      * @param {*} uuid
      */
     select(type, uuid) {
-        if (typeof type !== 'string' || typeof uuid !== 'string') {
+        if (typeof type !== 'string') {
             return;
         }
 
-        const array = this._cache[type] = this._cache[type] || [];
+        if (typeof uuid !== 'string' && !Array.isArray(uuid)) {
+            return;
+        }
+
         if (!Array.isArray(uuid)) {
             uuid = [uuid];
         }
 
+        const array = this._cache[type] = this._cache[type] || [];
+
         uuid.forEach((id) => {
             // 如果之前选中过这个元素，则应该移除之前的选中
-            for (const i = array.length - 1; i > 0; i--) {
+            for (let i = array.length - 1; i >= 0; i--) {
                 const item = array[i];
-                if (item.id === id) {
+                if (item && item.id === id) {
                     array.splice(i, 1);
                     // 一个对象只能选中一次，所以找到就可以停止了
                     break;
@@ -41,7 +46,8 @@ class Selection extends EventEmitter {
 
             // 将这一次的选中对象插入
             array.push({
-                id, time: Date.now(),
+                id,
+                time: Date.now(),
             });
 
             ipcManager.sendToAll('selection:select', type, id);
@@ -54,7 +60,11 @@ class Selection extends EventEmitter {
      * @param {*} uuid
      */
     unselect(type, uuid) {
-        if (typeof type !== 'string' || typeof uuid !== 'string') {
+        if (typeof type !== 'string') {
+            return;
+        }
+
+        if (typeof uuid !== 'string' && !Array.isArray(uuid)) {
             return;
         }
 
@@ -71,9 +81,9 @@ class Selection extends EventEmitter {
         uuid.forEach((id) => {
 
             // 如果之前选中过这个元素，则应该移除之前的选中
-            for (let i = array.length - 1; i > 0; i--) {
+            for (let i = array.length - 1; i >= 0; i--) {
                 const item = array[i];
-                if (item.id === id) {
+                if (item && item.id === id) {
                     array.splice(i, 1);
                     ipcManager.sendToAll('selection:unselect', type, id);
                     // 一个对象只能选中一次，所以找到就可以停止了
