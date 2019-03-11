@@ -52,18 +52,22 @@
       "y": 0,
       "z": 0
     },
-    "_id": "71f58954-20ef-41ac-a41a-f432e96dcedd"
+    "autoReleaseAssets": false,
+    "_globals": {
+      "__id__": 6
+    },
+    "_id": "f46876e4-e81b-4931-b493-6d367be385e7"
   },
   {
     "__type__": "cc.Node",
-    "_name": "Light",
+    "_name": "Main Light",
     "_objFlags": 0,
     "_parent": {
       "__id__": 1
     },
     "_children": [],
     "_active": true,
-    "_level": 0,
+    "_level": 1,
     "_components": [
       {
         "__id__": 3
@@ -96,17 +100,16 @@
       "y": 0,
       "z": 0
     },
-    "_id": "89jXRnlphPCIC1jSvp4T4z"
+    "_id": "c0y6F5f+pAvI805TdmxIjx"
   },
   {
-    "__type__": "cc.LightComponent",
+    "__type__": "cc.DirectionalLightComponent",
     "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 2
     },
     "_enabled": true,
-    "_type": 0,
     "_color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -114,19 +117,10 @@
       "b": 255,
       "a": 255
     },
-    "_intensity": 1,
-    "_range": 1,
-    "_spotAngle": 60,
-    "_spotExp": 1,
-    "_shadowType": 0,
-    "_shadowResolution": 1024,
-    "_shadowDarkness": 0.5,
-    "_shadowMinDepth": 1,
-    "_shadowMaxDepth": 1000,
-    "_shadowDepthScale": 250,
-    "_shadowFrustumSize": 50,
-    "_shadowBias": 0.0005,
-    "_id": "57ZZlBZXZPDIvdsJ5Xh9t2"
+    "_useColorTemperature": false,
+    "_colorTemperature": 6550,
+    "_intensity": 10000,
+    "_id": "597uMYCbhEtJQc0ffJlcgA"
   },
   {
     "__type__": "cc.Node",
@@ -203,7 +197,61 @@
       "width": 1,
       "height": 1
     },
+    "_screenScale": 1,
     "_targetDisplay": 0,
     "_id": "7dWQTpwS5LrIHnc1zAPUtf"
+  },
+  {
+    "__type__": "cc.SceneGlobals",
+    "ambient": {
+      "__id__": 7
+    },
+    "skybox": {
+      "__id__": 8
+    },
+    "planarShadow": {
+      "__id__": 9
+    }
+  },
+  {
+    "__type__": "cc.AmbientInfo",
+    "_skyColor": {
+      "__type__": "cc.Color",
+      "r": 51,
+      "g": 128,
+      "b": 204,
+      "a": 1
+    },
+    "_skyIllum": 1,
+    "_groundAlbedo": {
+      "__type__": "cc.Color",
+      "r": 51,
+      "g": 51,
+      "b": 51,
+      "a": 255
+    }
+  },
+  {
+    "__type__": "cc.SkyboxInfo",
+    "_cubemap": null,
+    "_isRGBE": false,
+    "_enabled": false
+  },
+  {
+    "__type__": "cc.PlanarShadowInfo",
+    "_normal": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    "_distance": 0,
+    "_shadowColor": {
+      "__type__": "cc.Color",
+      "r": 76,
+      "g": 76,
+      "b": 76,
+      "a": 255
+    }
   }
 ]
