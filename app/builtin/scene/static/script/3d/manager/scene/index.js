@@ -5,6 +5,7 @@ const { EventEmitter } = require('events');
 const utils = require('./utils');
 const ipc = require('../ipc');
 const nodeManager = require('../node');
+const { existsSync, readFileSync } = require('fs');
 
 let currentSceneUuid = '';
 let currentSceneData = null;
@@ -37,7 +38,6 @@ class SceneManager extends EventEmitter {
         this.emit('close');
 
         // cc.view.resizeWithBrowserSize(true);
-
         if (uuid) {
             try {
                 const info = await ipc.send('query-asset-info', uuid);
@@ -50,9 +50,21 @@ class SceneManager extends EventEmitter {
                 uuid = '';
             }
         }
+        if (!uuid) {
+            const fileUuid = await ipc.send('query-asset-uuid', 'db://internal/default_file_content/scene');
+            const fileInfo = await ipc.send('query-asset-info', fileUuid);
+            if (!existsSync(fileInfo.file)) {
+                console.error('Open scene failed: template file is not exist.');
+                return;
+            }
 
-        if (uuid) {
-            // 加载指定的 uuid
+            const fileContent = readFileSync(fileInfo.file);
+            await utils.loadSceneByJson(fileContent);
+
+            currentSceneData = this.serialize();
+            await nodeManager.init(cc.director._scene);
+            !this.ignore && this.emit('open', null, cc.director._scene);
+        } else {
             try {
                 await utils.loadSceneByUuid(uuid);
                 currentSceneData = this.serialize();
@@ -67,20 +79,6 @@ class SceneManager extends EventEmitter {
                 await nodeManager.init(cc.director._scene);
                 !this.ignore && this.emit('open', error, null);
             }
-        } else {
-            const scene = new cc.Scene();
-            const light = new cc.Node('Main Light');
-            const camera = new cc.Node('Camera');
-            light.parent = scene;
-            camera.parent = scene;
-
-            light.addComponent(cc.LightComponent);
-            camera.addComponent(cc.CameraComponent);
-            await utils.loadSceneByNode(scene);
-            currentSceneData = this.serialize();
-            // 爬取节点树上的所有节点数据
-            await nodeManager.init(cc.director._scene);
-            !this.ignore && this.emit('open', null, cc.director._scene);
         }
 
         if (currentSceneData) {

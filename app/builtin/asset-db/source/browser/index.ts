@@ -1,5 +1,6 @@
 'use strict';
 
+import { existsSync, readFileSync } from 'fs';
 import { getReady } from './state';
 
 import {

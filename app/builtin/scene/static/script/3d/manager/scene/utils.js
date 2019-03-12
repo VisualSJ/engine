@@ -45,6 +45,10 @@ exports.loadSceneByJson = async function loadSceneByJson(json) {
     return new Promise((resolve, reject) => {
 
         cc.AssetLibrary.loadJson(json, (error, scene) => {
+            if (scene instanceof cc.SceneAsset) {
+                scene = scene.scene;
+            }
+
             let timer = null;
             cc.director.runSceneImmediate(scene, (error) => {
                 clearTimeout(timer);

@@ -50,6 +50,8 @@ module.exports = {
         sureDelete: '确定删除资源文件吗？',
         renameFail: '重命名失败：已存在相同名称的文件',
         pasteFail_parent_into_child: '父级资源不能粘贴到其子集资源里',
+        refreshFail: '刷新 Assets 但返回了空数据',
+        readDefaultFileFail: 'Internal DB 里缺少该类型的默认文件',
     },
 
     deprecate: {

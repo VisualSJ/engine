@@ -47,9 +47,12 @@ module.exports = {
         dialogQuestion: 'Confirm',
         dialogInfo: 'Tips',
         refreshing: 'Now refreshing assets...',
+        assetDataError: 'Now refreshing assets...',
         sureDelete: 'Sure delete these assets?',
         renameFail: 'Rename Fail: The new file name already exists.',
         pasteFail_parent_into_child: 'subAsset cannot paste ancestry',
+        refreshFail: 'Refreshing assets data, but it return null.',
+        readDefaultFileFail: 'The default file for this type is missing in the internal DB.',
     },
 
     deprecate: {

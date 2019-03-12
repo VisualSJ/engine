@@ -99,10 +99,10 @@ const messages = {
 
     /**
      * 通过路径查询资源 uuid
-     * @param {string} path
+     * @param {string} url
      */
-    async 'query-asset-uuid'(path) {
-        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', path);
+    async 'query-asset-uuid'(url) {
+        return Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', url);
     },
 
     /**

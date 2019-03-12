@@ -156,7 +156,7 @@ export const methods = {
         vm.refreshing = false;
 
         if (!db.assetsTree) { // 容错处理，数据可能为空
-            console.error('Assets data can not be empty.');
+            console.error(vm.t('refreshFail'));
             return;
         }
 
@@ -381,16 +381,20 @@ export const methods = {
         let content = null; // 注意，文件夹的内容必须传 null 过去
 
         if (json.type !== 'folder') {
-            const filepath = join(__dirname, `../../static/filecontent/${json.type}`);
-            if (existsSync(filepath)) {
-                content = readFileSync(filepath, 'utf8');
-            } else {
-                content = '';
+            const fileUrl = `db://internal/default_file_content/${json.type}`;
+            const fileUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', fileUrl);
+            const fileInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', fileUuid);
+
+            if (!existsSync(fileInfo.file)) {
+                console.error(vm.t('readDefaultFileFail'));
+                parent.state = '';
+                return;
             }
+
+            content = readFileSync(fileInfo.file);
         }
 
         const url = `${json.parentDir}/${json.name}`;
-
         await vm.ipcAdd(url, content);
         parent.state = '';
     },
