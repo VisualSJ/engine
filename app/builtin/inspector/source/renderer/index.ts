@@ -101,12 +101,21 @@ export const messages = {
             vm.item.uuid = '';
         }
     },
+
     /**
      * 比对节点根据diff结果修改
      * @param {string} uuid
      */
     async 'scene:node-changed'(uuid: string) {
         vm.$refs.node && vm.$refs.node.refresh();
+    },
+
+    /**
+     * asset 资源更新刷新显示内容
+     * @param uuid
+     */
+    async 'asset-db:asset-change'(uuid: string) {
+        vm.$refs.asset && vm.$refs.asset.refresh();
     },
 
     /**

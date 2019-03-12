@@ -56,4 +56,10 @@ module.exports = {
         top: 'Top',
         bottom: 'Bottom',
     },
+
+    check_is_saved: {
+        message: '修改的数据尚未保存，是否保存修改？',
+        save: '保存',
+        abort: '丢弃',
+    },
 };

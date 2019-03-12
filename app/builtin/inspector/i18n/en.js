@@ -56,4 +56,10 @@ module.exports = {
         top: 'Top',
         bottom: 'Bottom',
     },
+
+    check_is_saved: {
+        message: 'The modified data has not been saved. Do you want to save it?',
+        save: 'Save',
+        abort: 'Abort',
+    },
 };

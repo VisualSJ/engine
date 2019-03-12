@@ -111,7 +111,7 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
 
-        if (vm.$refs.component.apply) {
+        if (vm.$refs.component && vm.$refs.component.apply) {
             const result = await vm.$refs.component.apply();
             if (result === false) {
                 vm.dirty = false;
@@ -146,6 +146,24 @@ export function data() {
         meta: null,
         componentName: null,
     };
+}
+
+export async function beforeDestroy() {
+    // @ts-ignore
+    if (this.dirty) {
+        const t = Editor.I18n.t;
+        // @ts-ignore
+        const result = await Editor.Dialog.show({
+            title: 'warn',
+            type: 'warn',
+            message: t('inspector.check_is_saved.message'),
+            buttons: [t('inspector.check_is_saved.abort'), t('inspector.check_is_saved.save')],
+        });
+        if (result !== 0) {
+            // @ts-ignore
+            this._onApply();
+        }
+    }
 }
 
 export async function mounted() {
