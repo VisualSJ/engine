@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.9",
+  "ver": "1.0.10",
   "importer": "image",
   "imported": true,
   "uuid": "afc47931-f066-46b0-90be-9fe61f213428",
@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "default_scrollbar_vertical": {
-      "ver": "1.0.3",
+      "ver": "1.0.1",
       "importer": "sprite-frame",
       "uuid": "afc47931-f066-46b0-90be-9fe61f213428@default_scrollbar_vertical",
       "imported": true,
@@ -32,10 +32,10 @@
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 15,
-        "height": 30,
-        "rawWidth": 15,
-        "rawHeight": 30,
+        "width": 80,
+        "height": 80,
+        "rawWidth": 80,
+        "rawHeight": 80,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,

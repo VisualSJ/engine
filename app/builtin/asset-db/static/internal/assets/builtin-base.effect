@@ -1,34 +1,23 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEffect {
-  techniques: [
-    {
-      passes: [
-        {
-          vert: base-vs:vert
-          frag: base-fs:frag
-          priority: max - 11
-          depthStencilState: {
-            depthTest: true
-            depthWrite: false
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one_minus_src_alpha
-                blendDstAlpha: one_minus_src_alpha
-                // blendColorMask: none
-              }
-            ]
-          }
-        }
-      ]
-    }
-  ]
-}
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: base-vs:vert
+      frag: base-fs:frag
+      priority: max - 11
+      depthStencilState:
+        depthTest: true
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+          // blendColorMask: none
+}%
 
-CCProgram base-vs {
+CCProgram base-vs %{
   precision mediump float;
   #include <cc-global>
   in vec3 a_position;
@@ -44,9 +33,9 @@ CCProgram base-vs {
 
     return pos;
   }
-}
+}%
 
-CCProgram base-fs {
+CCProgram base-fs %{
   precision mediump float;
   in vec4 color;
 
@@ -55,4 +44,4 @@ CCProgram base-fs {
     o *= color;
     return o;
   }
-}
+}%

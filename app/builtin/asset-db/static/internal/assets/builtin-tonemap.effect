@@ -1,36 +1,23 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEffect {
-  declarations: {
-    p1: {
-      u_texSampler: {
-        type: sampler2D
-        sampler: {
-          minFilter: linear
-          magFilter: linear
-          mipFilter: none
-        }
-      }
-    }
-  }
-  techniques: [
-    {
-      name: tonemap
-      passes: [
-        {
-          vert: tonemap-vs:vert
-          frag: tonemap-fs:frag
-          depthStencilState: {
-            depthTest: false
-            depthWrite: false
-          }
-          properties: $p1
-        }
-      ]
-    }
-  ]
-}
+CCEffect %{
+  techniques:
+  - name: tonemap
+    passes:
+    - vert: tonemap-vs:vert
+      frag: tonemap-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      properties:
+        u_texSampler:
+          type: sampler2D
+          sampler:
+            minFilter: linear
+            magFilter: linear
+            mipFilter: none
+}%
 
-CCProgram tonemap-vs {
+CCProgram tonemap-vs %{
   precision highp float;
   #include <common>
   #include <cc-global>
@@ -45,9 +32,9 @@ CCProgram tonemap-vs {
 
     return pos;
   }
-}
+}%
 
-CCProgram tonemap-fs {
+CCProgram tonemap-fs %{
   precision highp float;
   #include <cc-global>
   #include <common>
@@ -67,4 +54,4 @@ CCProgram tonemap-fs {
   #endif
     return o;
   }
-}
+}%

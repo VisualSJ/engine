@@ -1,119 +1,75 @@
-CCEffect {
-  declarations: {
-    p1: {
-      color: { type: 'color4', value: [1, 1, 1, 1] }
-    }
-  }
-  techniques: [
-    {
-      passes: [
-        {
-          vert: gizmo-vs:vert
-          frag: gizmo-fs:frag
-          priority: max - 10
-          rasterizerState: {
-            cullMode: none
-          }
-          depthStencilState: {
-            depthTest: false
-            depthWrite: false
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one_minus_src_alpha
-                blendDstAlpha: one_minus_src_alpha
-              }
-            ]
-          }
-          properties: $p1
-        }
-      ]
-    }
-    {
-      passes: [
-        {
-          vert: line-vs:vert
-          frag: line-fs:front
-          priority: max - 10
-          rasterizerState: {
-            cullMode: none
-          }
-          depthStencilState: {
-            depthTest: false
-            depthWrite: false
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one_minus_src_alpha
-                blendDstAlpha: one_minus_src_alpha
-              }
-            ]
-          }
-          properties: $p1
-        }
-      ]
-    }
-    {
-      passes: [
-        {
-          vert: line-vs:vert
-          frag: line-fs:front
-          priority: max - 10
-          rasterizerState: {
-            cullMode: none
-          }
-          depthStencilState: {
-            depthTest: true
-            depthWrite: false
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one_minus_src_alpha
-                blendDstAlpha: one_minus_src_alpha
-              }
-            ]
-          }
-          properties: $p1
-        }
-        {
-          vert: line-vs:vert
-          frag: line-fs:back
-          priority: max - 10
-          rasterizerState: {
-            cullMode: none
-          }
-          depthStencilState: {
-            depthTest: true
-            depthWrite: false
-            depthFunc: greater
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one
-                blendDstAlpha: one_minus_src_alpha
-              }
-            ]
-          }
-          properties: $p1
-        }
-      ]
-    }
-  ]
-}
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: gizmo-vs:vert
+      frag: gizmo-fs:frag
+      priority: max - 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: &props
+      - color: { type: color4, value: [1, 1, 1, 1] }
 
-CCProgram gizmo-vs {
+  - passes:
+    - vert: line-vs:vert
+      frag: line-fs:front
+      priority: max - 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+
+  - passes:
+    - vert: line-vs:vert
+      frag: line-fs:front
+      priority: max - 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: true
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+    - vert: line-vs:vert
+      frag: line-fs:back
+      priority: max - 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: true
+        depthWrite: false
+        depthFunc: greater
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+}%
+
+CCProgram gizmo-vs %{
   precision mediump float;
   #include <cc-local>
   #include <cc-global>
@@ -140,9 +96,9 @@ CCProgram gizmo-vs {
 
     return cc_matViewProj * cc_matWorld * pos;
   }
-}
+}%
 
-CCProgram gizmo-fs {
+CCProgram gizmo-fs %{
   precision mediump float;
   #include <rect-area-light>
   #include <cc-global>
@@ -176,9 +132,9 @@ CCProgram gizmo-fs {
     vec3 diffuse = color.rgb * (0.2 + LTC_Evaluate(N, V, pos_l, mat3(1), points) * 0.8);
     return PostProcess(vec4(diffuse, color.a), cc_exposure.w);
   }
-}
+}%
 
-CCProgram line-vs {
+CCProgram line-vs %{
   precision mediump float;
   #include <cc-local>
   #include <cc-global>
@@ -190,9 +146,9 @@ CCProgram line-vs {
     pos.z -= 0.0001;
     return pos;
   }
-}
+}%
 
-CCProgram line-fs {
+CCProgram line-fs %{
   precision mediump float;
   #include <cc-global>
   #include <gamma>
@@ -208,4 +164,4 @@ CCProgram line-fs {
   vec4 back() {
     return PostProcess(vec4(color.rgb, color.a * 0.2), cc_exposure.w);
   }
-}
+}%

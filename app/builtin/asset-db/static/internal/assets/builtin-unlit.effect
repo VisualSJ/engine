@@ -1,51 +1,31 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-CCEffect {
-  declarations: {
-    p1: {
-      color:        { type: 'color4',    value: [1, 1, 1, 1] }
-      tilingOffset: { type: 'vec4',      value: [1, 1, 0, 0] }
-      mainTexture:  { type: 'sampler2D', value: 'grey'       }
-    }
-  }
-  techniques: [
-    {
-      name: opaque
-      passes: [
-        {
-          vert: unlit-vs:vert
-          frag: unlit-fs:frag
-          properties: $p1
-        }
-      ]
-    }
-    {
-      name: transparent
-      passes: [
-        {
-          vert: unlit-vs:vert
-          frag: unlit-fs:frag
-          depthStencilState: {
-            depthTest: true
-            depthWrite: false
-          }
-          blendState: {
-            targets: [
-              {
-                blend: true
-                blendSrc: src_alpha
-                blendDst: one_minus_src_alpha
-                blendDstAlpha: one_minus_src_alpha
-              }
-            ]
-          }
-          properties: $p1
-        }
-      ]
-    }
-  ]
-}
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      properties: &props
+        color:        { type: color4,    value: [1, 1, 1, 1] }
+        tilingOffset: { type: vec4,      value: [1, 1, 0, 0] }
+        mainTexture:  { type: sampler2D, value: grey         }
+  - name: transparent
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: true
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+}%
 
-CCProgram unlit-vs {
+CCProgram unlit-vs %{
   precision mediump float;
   #include <cc-global>
   #include <cc-local>
@@ -78,9 +58,9 @@ CCProgram unlit-vs {
 
     return pos;
   }
-}
+}%
 
-CCProgram unlit-fs {
+CCProgram unlit-fs %{
   precision mediump float;
   #include <cc-global>
   #include <gamma>
@@ -110,4 +90,4 @@ CCProgram unlit-fs {
 
     return PostProcess(o, cc_exposure.w);
   }
-}
+}%

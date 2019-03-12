@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.9",
+  "ver": "1.0.10",
   "importer": "image",
   "imported": true,
   "uuid": "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca",
@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "default_sprite_splash": {
-      "ver": "1.0.3",
+      "ver": "1.0.1",
       "importer": "sprite-frame",
       "uuid": "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@default_sprite_splash",
       "imported": true,
@@ -32,10 +32,10 @@
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 2,
-        "height": 2,
-        "rawWidth": 2,
-        "rawHeight": 2,
+        "width": 80,
+        "height": 80,
+        "rawWidth": 80,
+        "rawHeight": 80,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,

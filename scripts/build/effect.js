@@ -11,7 +11,11 @@ Manager.AssetInfo = {};
 Manager.AssetInfo.engine = ps.join(editorRoot, 'resources/3d/engine'); // change here if using custom engines
 
 const shdcLib = require(ps.join(editorRoot, 'app/builtin/asset-db/static/shdc-lib'));
-shdcLib.addChunksCache(ps.join(editorRoot, 'app/builtin/asset-db/static/chunks'));
+const addChunks = (dir) => {
+  const files = fsJetpack.find(dir, { matching: ['**/*.inc'], recursive: false });
+  shdcLib.addChunksCache(files);
+}
+addChunks(ps.join(editorRoot, 'app/builtin/asset-db/static/chunks'));
 
 const indent = (str, num) => str.replace(/\n/g, '\n'+' '.repeat(num));
 const stringify = (o) => { return JSON.stringify(o).replace(/([,])/g, '$1 '); }
@@ -107,10 +111,10 @@ if (process.argv.length > 2) {
     const stats = getFileSystemInfo(file);
     if (!stats) continue;
     if (stats.isDirectory()) {
-      shdcLib.addChunksCache(file);
-      fsJetpack.find(file, { matching: ['**/*.effect'] }).forEach((f) => compile(f));
+      addChunks(file);
+      fsJetpack.find(file, { matching: ['**/*.effect'], recursive: false }).forEach((f) => compile(f));
     } else {
-      shdcLib.addChunksCache(ps.dirname(file));
+      addChunks(ps.dirname(file));
       compile(file);
     }
   }

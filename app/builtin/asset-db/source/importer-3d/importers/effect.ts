@@ -1,5 +1,6 @@
 import { Asset, Importer } from '@editor/asset-db';
 import { readFileSync } from 'fs-extra';
+import { find } from 'fs-jetpack';
 import { basename, extname, join } from 'path';
 
 const shdcLib = require('../../../static/shdc-lib');
@@ -7,7 +8,7 @@ const shdcLib = require('../../../static/shdc-lib');
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.7';
+        return '1.1.0';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -29,7 +30,7 @@ export default class EffectImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
-        shdcLib.addChunksCache(join(__dirname, '../../../static/chunks'));
+        shdcLib.addChunksCache(find(join(__dirname, '../../../static/chunks'), { matching: ['**/*.inc'] }));
         let updated = false;
         try {
             const ext = extname(asset.source);

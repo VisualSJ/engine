@@ -1,28 +1,19 @@
-CCEffect {
-  techniques: [
-    {
-      passes: [
-        {
-          vert: sky-vs:vert
-          frag: sky-fs:frag
-          priority: min + 10
-          rasterizerState: {
-            cullMode: none
-          }
-          depthStencilState: {
-            depthTest: true
-            depthWrite: false
-          }
-          properties: {
-            cubeMap: { type: 'samplerCube', value: 'default-cube' }
-          }
-        }
-      ]
-    }
-  ]
-}
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sky-vs:vert
+      frag: sky-fs:frag
+      priority: min + 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: true
+        depthWrite: false
+      properties:
+        cubeMap: { type: samplerCube, value: default-cube }
+}%
 
-CCProgram sky-vs {
+CCProgram sky-vs %{
   precision mediump float;
   in vec3 a_position;
 
@@ -39,9 +30,9 @@ CCProgram sky-vs {
     pos.z = clipPos.w * 0.99999;
     return pos;
   }
-}
+}%
 
-CCProgram sky-fs {
+CCProgram sky-fs %{
   precision mediump float;
   in vec3 viewDir;
 
@@ -61,4 +52,4 @@ CCProgram sky-fs {
   #endif
     return PostProcess(o, cc_exposure.w);
   }
-}
+}%
