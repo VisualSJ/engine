@@ -15,7 +15,7 @@ const ident = /[_a-zA-Z]\w*/;
 const extensionRE = /(?:GL_)?(\w+)/;
 const comparators = /^[<=>]+$/;
 const ifprocessor = /#(el)?if/;
-const labelRE = /(\w+)(?:\((.*)\))?/;
+const labelRE = /(\w+)\((.*?)\)/;
 const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
 const samplerRE = /sampler/;
@@ -158,10 +158,12 @@ const replacePlainDefines = (code) => {
 };
 
 const parseCustomLabels = (arr, out = {}) => {
-  for (const str of arr) {
-    const labelCap = labelRE.exec(str);
-    if (labelCap) out[labelCap[1]] = yaml.safeLoad(labelCap[2] || 'true');
-    else warn(`illegal pragma label ${str}`);
+  let str = arr.join(' ');
+  let labelCap = labelRE.exec(str);
+  while (labelCap) {
+    out[labelCap[1]] = yaml.safeLoad(labelCap[2] || 'true');
+    str = str.substring(labelCap.index + labelCap[0].length);
+    labelCap = labelRE.exec(str);
   }
   return out;
 };
@@ -469,7 +471,7 @@ const buildShader = (() => {
   const clearFormat = (glsl) => { glsl.vert = clean(glsl.vert); glsl.frag = clean(glsl.frag); };
   const createCache = () => { return { lines: [] }; };
   const filterFactory = (target, builtins) => (u) => {
-    if (!builtinRE.test(u.name)) return true;
+    if (!builtinRE.test(u.name)) { delete u.tags; return true; }
     const tags = u.tags; let type;
     if (!tags || !tags.builtin) {
       warn(`type not specified for builtin uniform '${u.name}', default to global`);
@@ -590,7 +592,7 @@ const parseEffect = (() => {
       if (cceffect.test(blockInfos[blockPos[i]])) {
         let effectCap = effectRE.exec(stripHashComments(str));
         if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
-        else {
+        else { // deep clone to decouple references
           try { effect = JSON.parse(JSON.stringify(yaml.safeLoad(effectCap[1]))); }
           catch (e) { warn(`parse YAML failed: ${e}`); }
           if (effect.name) effectName = effect.name;
