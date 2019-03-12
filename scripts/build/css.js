@@ -34,7 +34,7 @@ fse.readdirSync(builtin).forEach((name) => {
             }
         });
 
-        if (!changed) {
+        if (!changed && fse.existsSync(ps.join(dir, 'dist/index.css'))) {
             return false;
         }
 

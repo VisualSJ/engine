@@ -32,6 +32,7 @@
     "electron": "4.0.4",
     "fs-jetpack": "^2.2.2",
     "gulp": "^4.0.0",
+    "net-ping": "^1.2.3",
     "spectron": "^5.0.0",
     "uglify-es": "^3.3.9",
     "v-git": "0.0.3",

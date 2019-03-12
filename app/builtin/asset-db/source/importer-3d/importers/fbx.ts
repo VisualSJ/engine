@@ -1,5 +1,5 @@
 import { Asset } from '@editor/asset-db';
-import convert from 'fbx2gltf';
+import convert from '@editor/fbx2gltf';
 import * as fs from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import { basename, join, relative } from 'path';

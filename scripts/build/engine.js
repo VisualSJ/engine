@@ -53,16 +53,22 @@ workflow.task('npm-install', async function() {
     const dir = path.join(RESOURCE, '3d');
     const engine = path.join(dir, 'engine');
     const json = path.join(engine, 'package.json');
+
+    if (!fse.existsSync(json)) {
+        throw new Error('app 目录下没有找到 package.json 文件');
+    }
+
     const mtime = fse.statSync(json).mtime.getTime();
 
-    if (mtime === this.get('npm-install')) {
+    if (mtime === this.get('npm-install') && fse.existsSync(engine, 'node_modules')) {
         return false;
     }
-    this.set('npm-install', mtime);
+
     await workflow.bash(command, {
         params: ['install'],
         root: engine,
     });
+    this.set('npm-install', mtime);
 });
 
 // 检查是否需要构建引擎的 debug 信息以及引擎
