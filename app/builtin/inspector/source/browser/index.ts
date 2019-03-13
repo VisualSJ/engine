@@ -12,29 +12,6 @@ export const messages = {
         Editor.Panel.open('inspector');
     },
 
-    /**
-     * 打开 curve-editor
-     * @param {any} keyFrames
-     */
-    'open-curve-editor'(data: any) {
-        Editor.Panel.open('inspector.curve-editor');
-        Editor.Ipc.sendToPanel('inspector', 'curve:change', data);
-    },
-
-    /**
-     * 绘制缩略图
-     * @param ctx 绘图上下文
-     * @param data 绘图数据
-     */
-    'draw-curve'(ctx: any, data: any) {
-        Editor.Ipc.sendToPanel(
-            'inspector.curve-editor',
-            'draw-curve',
-            ctx,
-            data
-        );
-    },
-
     async 'open-gradient-editor'(data: any) {
         clearTimeout(pkg._closeGradientEditorTimer);
         if (!gradientEditorOpened) {
@@ -59,15 +36,6 @@ export const messages = {
 
     'get-gradient-data'() {
         return gradientData;
-    },
-
-    /**
-     * 打开 sprite-editor
-     * @param data { uuid }
-     */
-    'open-sprite-editor'(data: any) {
-        Editor.Panel.open('inspector.sprite-editor');
-        Editor.Ipc.sendToPanel('inspector', 'sprite:change', data);
     },
 
 };

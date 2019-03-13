@@ -35,8 +35,7 @@ export const $ = {
 export const messages = {
     'current-keys'(data: any) {
         if (vm && data) {
-            vm.uuid = data.uuid;
-            vm.subAssetUuid = data.subAssetUuid;
+            vm.userData = data.userData;
         }
     },
 };
@@ -57,8 +56,8 @@ export async function ready() {
     vm = new Vue({
         el: panel.$.content,
         data: {
-            uuid: '',
-            subAssetUuid: '',
+            userData: null,
+
             svg: null,
             image: null,
             svgColor: '#5c5',
@@ -69,6 +68,8 @@ export async function ready() {
             borderBottom: 0,
             borderTop: 0,
 
+            width: 0,
+            height: 0,
             leftPos: 0,
             rightPos: 0,
             topPos: 0,
@@ -78,8 +79,6 @@ export async function ready() {
             startRightPos: 0,
             startTopPos: 0,
             startBottomPos: 0,
-            meta: null,
-            scalingSize: null,
 
             scale: 100,
             minScale: 10,
@@ -87,9 +86,9 @@ export async function ready() {
             changed: false,
         },
         watch: {
-            uuid() {
-                if (vm.uuid) {
-                    vm.openSprite(vm.uuid);
+            userData() {
+                if (vm.userData.imageUuidOrDatabaseUri) {
+                    vm.openSprite();
                 }
             },
             scale() {
@@ -119,25 +118,15 @@ export async function ready() {
                 return Editor.I18n.t(`inspector.sprite_editor.${key}`);
             },
             resize() {
-                if (!vm.image && !vm.meta) {
+                if (!vm.image && !vm.userData) {
                     return;
                 }
 
-                const width = vm.meta.width * vm.scale / 100;
-                const height = vm.meta.height * vm.scale / 100;
+                const width = vm.userData.width * vm.scale / 100;
+                const height = vm.userData.height * vm.scale / 100;
 
-                const bcr = vm.$root.$el.getBoundingClientRect();
-                const result = getFitSize(width, height, bcr.width, bcr.height);
-
-                if (vm.meta.rotated) {
-                    vm.scalingSize = {
-                        width: Math.ceil(result[1]),
-                        height: Math.ceil(result[0]),
-                    };
-                }
-
-                vm.$refs.canvas.width = Math.ceil(result[0]);
-                vm.$refs.canvas.height = Math.ceil(result[1]);
+                vm.$refs.canvas.width = width;
+                vm.$refs.canvas.height = height;
 
                 vm.repaint();
             },
@@ -154,23 +143,21 @@ export async function ready() {
                 $scale.value = vm.scale;
             },
             scaleChange() {
-                if (!vm.image || !vm.meta) {
+                if (!vm.image || !vm.userData) {
                     return;
                 }
 
                 vm.scale = vm.$refs.scale.value;
             },
             async openSprite() {
-                vm.subAssetMeta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.subAssetUuid);
-                const { userData } = vm.subAssetMeta;
+                vm.width = vm.userData.width;
+                vm.height = vm.userData.height;
+                vm.leftPos = vm.userData.borderLeft;
+                vm.rightPos = vm.userData.borderRight;
+                vm.topPos = vm.userData.borderTop;
+                vm.bottomPos = vm.userData.borderBottom;
 
-                vm.meta = userData;
-                vm.leftPos = userData.borderLeft;
-                vm.rightPos = userData.borderRight;
-                vm.topPos = userData.borderTop;
-                vm.bottomPos = userData.borderBottom;
-
-                const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.uuid);
+                const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.userData.imageUuidOrDatabaseUri);
                 const key = Object.keys(info.library).find((key) => key !== '.json');
                 if (!key) {
                     return '';
@@ -179,8 +166,6 @@ export async function ready() {
                 vm.image = new Image();
                 vm.image.src = info.library[key];
                 vm.image.onload = () => {
-                    vm.resize();
-
                     // hack： flex 布局，定位会延迟一些
                     setTimeout(() => {
                         vm.resize();
@@ -191,38 +176,23 @@ export async function ready() {
                 const ctx = vm.$refs.canvas.getContext('2d');
                 ctx.height = ctx.height; // 先清空画布
 
-                const meta = vm.meta;
                 let canvasWidth = vm.$refs.canvas.width;
                 let canvasHeight = vm.$refs.canvas.height;
                 let xPos;
                 let yPos;
                 let trimWidth;
                 let trimHeight;
-                if (meta.rotated) {
-                    const tempXPos = canvasWidth / 2;
-                    const tempYPos = canvasHeight / 2;
-                    ctx.translate(tempXPos, tempYPos);
-                    ctx.rotate(-90 * Math.PI / 180);
-                    ctx.translate(-tempXPos, -tempYPos);
 
-                    xPos = canvasWidth / 2 - vm.scalingSize.width / 2;
-                    yPos = canvasHeight / 2 - vm.scalingSize.height / 2;
-                    trimWidth = meta.height;
-                    trimHeight = meta.width;
-                    canvasWidth = vm.$refs.canvas.height;
-                    canvasHeight = vm.$refs.canvas.width;
-                } else {
-                    xPos = 0;
-                    yPos = 0;
-                    trimWidth = meta.width;
-                    trimHeight = meta.height;
-                    canvasWidth = vm.$refs.canvas.width;
-                    canvasHeight = vm.$refs.canvas.height;
-                }
+                xPos = 0;
+                yPos = 0;
+                trimWidth = vm.userData.width;
+                trimHeight = vm.userData.height;
+                canvasWidth = vm.$refs.canvas.width;
+                canvasHeight = vm.$refs.canvas.height;
 
                 ctx.drawImage(
                     vm.image,
-                    meta.trimX, meta.trimY, trimWidth, trimHeight,
+                    vm.userData.trimX, vm.userData.trimY, trimWidth, trimHeight,
                     xPos, yPos, canvasWidth, canvasHeight
                 );
 
@@ -374,12 +344,15 @@ export async function ready() {
                 return newValue;
             },
             checkState() {
-                const leftChanged = vm.leftPos !== vm.meta.borderLeft;
-                const rightChanged = vm.rightPos !== vm.meta.borderRight;
-                const topChanged = vm.topPos !== vm.meta.borderTop;
-                const bottomChanged = vm.bottomPos !== vm.meta.borderBottom;
+                const leftChanged = vm.leftPos !== vm.userData.borderLeft;
+                const rightChanged = vm.rightPos !== vm.userData.borderRight;
+                const topChanged = vm.topPos !== vm.userData.borderTop;
+                const bottomChanged = vm.bottomPos !== vm.userData.borderBottom;
 
                 vm.changed = leftChanged || rightChanged || topChanged || bottomChanged;
+
+                // 同步数据
+                vm.save();
             },
             leftPosChanged() {
                 if (!vm.image) {
@@ -464,48 +437,13 @@ export async function ready() {
             positionChange(event: any, key: string) {
                 vm[key] = event.target.value;
             },
-            reset() {
-                if (!vm.changed || !vm.image || !vm.meta) {
-                    return;
-                }
-
-                const meta = vm.meta;
-                vm.leftPos = meta.borderLeft;
-                vm.rightPos = meta.borderRight;
-                vm.topPos = meta.borderTop;
-                vm.bottomPos = meta.borderBottom;
-
-                vm.resize();
-                vm.checkState();
-            },
-            async save() {
-                if (!vm.changed || !vm.image || !vm.meta) {
-                    return;
-                }
-
-                const meta = vm.meta;
-                const beforeTPos = meta.borderTop;
-                const beforeBPos = meta.borderBottom;
-                const beforeLPos = meta.borderLeft;
-                const beforeRPos = meta.borderRight;
-
-                meta.borderTop = vm.topPos;
-                meta.borderBottom = vm.bottomPos;
-                meta.borderLeft = vm.leftPos;
-                meta.borderRight = vm.rightPos;
-
-                const str = JSON.stringify(vm.subAssetMeta);
-                const saved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', vm.subAssetUuid, str);
-
-                if (!saved) {
-                    console.error(vm.t('saveError'));
-                    meta.borderTop = beforeTPos;
-                    meta.borderBottom = beforeBPos;
-                    meta.borderLeft = beforeLPos;
-                    meta.borderRight = beforeRPos;
-                }
-
-                vm.checkState();
+            save() {
+                Editor.Ipc.sendToPanel('inspector', 'sprite:change', {
+                    borderTop: vm.topPos,
+                    borderBottom: vm.bottomPos,
+                    borderLeft: vm.leftPos,
+                    borderRight: vm.rightPos,
+                });
             },
         },
     });
@@ -517,33 +455,6 @@ export async function beforeClose() { }
 
 export async function close() {
     Editor.Ipc.sendToPanel('inspector', 'sprite:state', false);
-}
-
-function getFitSize(imgWidth: number, imgHeight: number, boxWidth: number, boxHeight: number) {
-    let width = imgWidth;
-    let height = imgHeight;
-
-    if (imgWidth > boxWidth && imgHeight > boxHeight) {
-        // 图片宽高均大于容器
-        width = boxWidth;
-        height = (imgHeight * boxWidth) / imgWidth;
-        if (height > boxHeight) {
-            // 高度比例大于宽度比例
-            height = boxHeight;
-            width = (imgWidth * boxHeight) / imgHeight;
-        }
-    } else {
-        if (imgWidth > boxWidth) {
-            // 图片宽度大于容器宽度
-            width = boxWidth;
-            height = (imgHeight * boxWidth) / imgWidth;
-        } else if (imgHeight > boxHeight) {
-            // 图片高度大于容器高度
-            height = boxHeight;
-            width = (imgWidth * boxHeight) / imgHeight;
-        }
-    }
-    return [width, height];
 }
 
 // @ts-ignore

@@ -105,7 +105,9 @@ class NumInput extends Base {
     set max(val) {
         let value = isNaN(val) ? Infinity : val;
         this.$input.max = value;
-        this.setAttribute('max', value);
+        if (this.$input.max !== value) {
+            this.setAttribute('max', value);
+        }
     }
 
     get min() {
@@ -119,7 +121,9 @@ class NumInput extends Base {
     set min(val) {
         let value = isNaN(val) ? -Infinity : val;
         this.$input.min = value;
-        this.setAttribute('min', value);
+        if (this.$input.min !== value) {
+            this.setAttribute('min', value);
+        }
     }
 
     set preci(val) {
@@ -147,6 +151,8 @@ class NumInput extends Base {
             'step',
             'disabled',
             'readonly',
+            'max',
+            'min',
         ];
     }
 
@@ -157,7 +163,7 @@ class NumInput extends Base {
                     // 新值为 undefined 或 null 则不作处理
                     return;
                 }
-                let value ;
+                let value;
                 // 存在 preci 控制小数点位数
                 if (!(this.preci == null)) {
                     let rang = mathUtils.comPreci(this.value);
@@ -167,6 +173,7 @@ class NumInput extends Base {
                         value = parseFloat(newData);
                     }
                 }
+
                 // 小数点精度控制后和原来的一致，直接给 input 赋值
                 if (value.toString() === newData.toString()) {
                     newData = mathUtils.clamp(newData, this.min, this.max);
@@ -196,6 +203,16 @@ class NumInput extends Base {
                 break;
             case 'readonly':
                 this.$input.readOnly = newData !== null;
+                break;
+            case 'max':
+                this.max = newData;
+                const newVal = mathUtils.clamp(this.value, this.min, this.max);
+                this.$input.value = parseFloat(newVal);
+                break;
+            case 'min':
+                this.min = newData;
+                const newVal2 = mathUtils.clamp(this.value, this.min, this.max);
+                this.$input.value = parseFloat(newVal2);
                 break;
         }
     }
@@ -232,7 +249,7 @@ class NumInput extends Base {
                 return;
             }
             if (name === 'value') {
-                if (!(this.preci == null)) {
+                if (this.preci !== null) {
                     let rang = mathUtils.comPreci(value);
                     if (rang > this.preci) {
                         value = parseFloat(value).toFixed(this.preci);

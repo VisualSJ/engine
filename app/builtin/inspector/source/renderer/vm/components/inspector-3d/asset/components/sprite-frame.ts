@@ -1,5 +1,7 @@
 'use strict';
 
+import { close, open, update } from '../../../../../../sprite-editor/manager';
+
 export const template = `
 <section class="asset-texture">
     <div class="content"
@@ -138,29 +140,37 @@ export const template = `
             <ui-num-input slot="content"
                 :value="meta.userData.borderTop"
                 @change="_onChangeData($event, 'borderTop')"
+                :max="meta.userData.height - meta.userData.borderBottom"
+                :min="0"
             ></ui-num-input>
         </ui-prop>
         <ui-prop label="Border Bottom">
             <ui-num-input slot="content"
                 :value="meta.userData.borderBottom"
                 @change="_onChangeData($event, 'borderBottom')"
+                :max="meta.userData.height - meta.userData.borderTop"
+                :min="0"
             ></ui-num-input>
         </ui-prop>
         <ui-prop label="Border Left">
             <ui-num-input slot="content"
                 :value="meta.userData.borderLeft"
                 @change="_onChangeData($event, 'borderLeft')"
+                :max="meta.userData.width - meta.userData.borderRight"
+                :min="0"
             ></ui-num-input>
         </ui-prop>
         <ui-prop label="Border Right">
             <ui-num-input slot="content"
                 :value="meta.userData.borderRight"
+                :max="meta.userData.width - meta.userData.borderLeft"
+                :min="0"
                 @change="_onChangeData($event, 'borderRight')"
             ></ui-num-input>
         </ui-prop>
         <div align="center">
             <ui-button tabindex="0"
-                @click="editSprite"
+                @click="openSpriteEditor"
             >{{t('edit')}}</ui-button>
         </div>
     </div>
@@ -217,6 +227,7 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
         vm.$set(vm.meta.userData, key, event.target.value);
+        update();
     },
 
     isCustom(): boolean {
@@ -224,17 +235,16 @@ export const methods = {
         return this.meta.userData.trimType === 'custom';
     },
 
-    editSprite() {
-        // @ts-ignore
-        const data = {
-            // @ts-ignore
-            subAssetUuid: this.meta.uuid,
-            // @ts-ignore
-            uuid: this.meta.userData.imageUuidOrDatabaseUri,
-        };
+    openSpriteEditor() {
+        open(this);
+    },
 
-        Editor.Panel.open('inspector.sprite-editor');
-        Editor.Ipc.sendToPanel('inspector', 'sprite:change', data);
+    saveSpriteEditor(json: any) {
+        const keys = Object.keys(json);
+        for (const key of keys) {
+            // @ts-ignore
+            this.$set(this.meta.userData, key, json[key]);
+        }
     },
 };
 
@@ -254,6 +264,11 @@ export function data() {
 export function mounted() {
     // @ts-ignore
     this.refresh();
+}
+
+export function destroyed() {
+    // @ts-ignore
+    close(this);
 }
 
 // @ts-ignore
