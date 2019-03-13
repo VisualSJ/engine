@@ -121,7 +121,6 @@ export const methods = {
         vm.nodes = [];
         vm.selects = [];
         vm.twinkles = {};
-        vm.folds = {};
         vm.renameUuid = '';
         vm.intoView = '';
         vm.current = {};
