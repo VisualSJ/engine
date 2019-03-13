@@ -42,11 +42,15 @@ exports.webviewEngineInit = [
     {
         depends: ['asset-db-ready', 'query-engine-info', 'webview-ready'],
         async handle() {
-            await exports.$scene.ipc.forceSend('call-method', {
-                module: 'Startup',
-                handler: 'engine',
-                params: [exports.$scene.info],
-            });
+            try {
+                await exports.$scene.ipc.forceSend('call-method', {
+                    module: 'Startup',
+                    handler: 'engine',
+                    params: [exports.$scene.info],
+                });
+            } catch (error) {
+                console.error(error);
+            }
             exports.$scene.depend.finish('webview-engine-init');
         },
     },
@@ -57,11 +61,15 @@ exports.webviewManagerInit = [
     {
         depends: ['asset-db-ready', 'query-engine-info', 'webview-engine-init'],
         async handle() {
-            await exports.$scene.ipc.forceSend('call-method', {
-                module: 'Startup',
-                handler: 'manager',
-                params: [Object.assign(exports.$scene.info, {project: Editor.App.project})],
-            });
+            try {
+                await exports.$scene.ipc.forceSend('call-method', {
+                    module: 'Startup',
+                    handler: 'manager',
+                    params: [Object.assign(exports.$scene.info, {project: Editor.App.project})],
+                });
+            } catch (error) {
+                console.error(error);
+            }
             exports.$scene.depend.finish('webview-manager-init');
         },
     },

@@ -73,11 +73,19 @@ async function initManager(info) {
     manager.foregroundNode = foregroundNode;
     manager.backgroundNode = backgroundNode;
 
-    // 启动 effect 管理器，注册资源数据库内的 effect 资源
-    await require('../effects').init();
+    try {
+        // 启动 effect 管理器，注册资源数据库内的 effect 资源
+        await require('../effects').init();
+    } catch (error) {
+        console.error(error);
+    }
 
-    // 启动脚本管理器，注册资源数据库内的 effect 资源
-    await require('../scripts').init(info.project);
+    try {
+        // 启动脚本管理器，注册资源数据库内的 effect 资源
+        await require('../scripts').init(info.project);
+    } catch (error) {
+        console.error(error);
+    }
 
     // 给 Manager 挂上所有的管理器
     manager.Ipc = require('../ipc');

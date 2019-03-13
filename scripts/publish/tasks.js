@@ -25,12 +25,12 @@ let hours = time.getHours();
 if (hours < 10) {
     hours = `0${hours}`;
 }
-const ELECTRON = process.platform === 'win' ?
+const ELECTRON = process.platform === 'win32' ?
     ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}`) :
     ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}.app`);
 
 // 发布程序内的 app 目录
-const APP = process.platform === 'win' ?
+const APP = process.platform === 'win32' ?
     ps.join(ELECTRON, './resources/app') :
     ps.join(ELECTRON, './Contents/Resources/app');
 
@@ -60,7 +60,7 @@ exports.generateElectron = function() {
 exports.copyMacElectron = function() {
     // 从 node_modules 里面将 electron 复制出来
     this.log('复制 Electron 代码');
-    const source = process.platform === 'win' ?
+    const source = process.platform === 'win32' ?
         ps.join(__dirname, '../../node_modules/electron/dist') :
         ps.join(__dirname, '../../node_modules/electron/dist/Electron.app');
     fse.copySync(source, ELECTRON);
@@ -204,7 +204,8 @@ exports.replaceInfo = async function() {
         });
     } else {
         await new Promise((resolve) => {
-            rcedit(ps.join(ELECTRON, 'electron.exe'), {
+            fse.moveSync(ps.join(ELECTRON, 'electron.exe'), ps.join(ELECTRON, 'editor.exe'));
+            rcedit(ps.join(ELECTRON, 'editor.exe'), {
                 'product-version': pkg.version,
                 'icon': ps.join(__dirname, '../../static/editor.ico'),
             }, (error) => {
