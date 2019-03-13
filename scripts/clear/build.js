@@ -25,9 +25,9 @@ fse.readdirSync(builtin).forEach((name) => {
     });
 });
 
-const engine = ps.join(__dirname, '../../resources/3d/engine/bin/.cache');
 workflow.task('clear-engine-dev', async function() {
-    fse.removeSync(engine);
+    fse.removeSync(ps.join(__dirname, '../../resources/3d/engine/bin'));
+    fse.removeSync(ps.join(__dirname, '../../resources/3d/engine/dist'));
 });
 
 workflow.task('clear-workflow', async function() {

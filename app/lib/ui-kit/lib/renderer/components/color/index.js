@@ -96,7 +96,7 @@ class Color extends Base {
     }
 
     set value(value) {
-        let value = domUtils.getValidColor(val);
+        value = domUtils.getValidColor(val);
         $colorPicker.value = value;
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "editor-3d",
-  "version": "0.1.2-beta1",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,11 +28,12 @@
     "@types/babel-traverse": "^6.25.4",
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.5.2",
+    "asar": "^1.0.0",
     "chai": "^4.2.0",
     "electron": "4.0.4",
     "fs-jetpack": "^2.2.2",
     "gulp": "^4.0.0",
-    "net-ping": "^1.2.3",
+    "plist": "^3.0.1",
     "spectron": "^5.0.0",
     "uglify-es": "^3.3.9",
     "v-git": "0.0.3",

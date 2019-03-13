@@ -19,10 +19,16 @@ workflow.task('copy-files', tasks.copyFiles);
 workflow.task('copy-resources', tasks.copyResources);
 
 // 清空无用文件
-// workflow.task('clean-builtin', tasks.clearBuiltin);
+workflow.task('clean-builtin', tasks.clearBuiltin);
 
-// 压缩、打包代码
+// 压缩 js
 workflow.task('uglify-js', tasks.uglifyJs);
-// workflow.task('asar-pack', tasks.asar);
 
+// 替换 info.plist 内的数据
+workflow.task('replace-info', tasks.replaceInfo);
+
+// 打包 app.asar
+workflow.task('asar-pack', tasks.asar);
+
+// 开始打包
 workflow.run();

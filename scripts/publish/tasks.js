@@ -3,8 +3,9 @@
 const ps = require('path');
 const fse = require('fs-extra');
 const UglifyJS = require('uglify-es');
+const plist = require('plist');
 
-const pkg = require('../../package.json');
+const pkg = require('../../app/package.json');
 
 // 发布目录
 const DIRECTORY = ps.join(__dirname, '../../.publish');
@@ -69,11 +70,6 @@ exports.copyMacElectron = function() {
  * 复制需要打包的开发文件
  */
 exports.copyFiles = async function() {
-    // await this.bash('git', {
-    //     params: ['rev-parse', '--short', 'HEAD', '>', 'version.info'],
-    //     root: ps.join(__dirname, '../../'),
-    // });
-
     this.log('复制 app');
     const types = ps.join(__dirname, '../../app');
     fse.copySync(types, APP);
@@ -83,11 +79,11 @@ exports.copyFiles = async function() {
  * 复制内置引擎
  */
 exports.copyResources = function() {
-    this.log(`正在复制内置引擎`);
-    const types = ps.join(__dirname, '../../resources');
-    fse.copySync(types, ps.join(APP, 'resources'), {
+    this.log(`复制内置引擎`);
+    const dir = ps.join(__dirname, '../../resources');
+    fse.copySync(dir, ps.join(APP, '../resources'), {
         filter(name) {
-            return !name.includes('/.git/');
+            return name[0] !== '.';
         },
     });
 };
@@ -119,9 +115,7 @@ exports.uglifyJs = async function() {
     this.recursive(APP, (file) => {
         if (
             ps.extname(file) !== '.js' ||
-            file.indexOf('node_modules') !== -1 ||
-            file.indexOf('resources') !== -1 ||
-            file.indexOf('engine') !== -1
+            file.includes('node_modules')
         ) {
             return;
         }
@@ -130,7 +124,8 @@ exports.uglifyJs = async function() {
             const code = fse.readFileSync(file, 'utf8');
             const result = UglifyJS.minify(code);
             if (result.error) {
-                throw result.error;
+                console.error(`文件压缩失败: ${file}`);
+                console.error(result.error);
             }
             fse.outputFileSync(file, result.code);
         } catch (error) {
@@ -140,31 +135,78 @@ exports.uglifyJs = async function() {
     });
 };
 
+/**
+ * 将 app 打包成 asar
+ */
 exports.asar = async function() {
-    const asar = ps.join(__dirname, `../../node_modules/.bin/${cmd.asar}`);
+    // todo 开个子进程打包，因为 asar 会直接中断进程
+    const unpacks = [
+        'node_modules/@editor/fbx2gltf',
+        'node_modules/@editor/robotjs',
+    ];
 
-    this.log('打包 lib');
-    await this.bash(asar, {
-        root: APP,
-        params: ['pack', 'lib', 'lib.asar'],
+    const asar = require('asar');
+
+    await new Promise((resolve, reject) => {
+        asar.createPackageWithOptions(
+            APP, ps.join(APP, '../app.asar'), {
+                // key: '1213_the_wasted_time', 
+                unpack: '*.node',
+                unpackDir: `{${unpacks.join(',')}}`,
+            }, () => {
+                this.log('123')
+                resolve();
+            }
+        );
     });
-    fse.removeSync(ps.join(APP, 'lib'));
 
-    this.log('打包 dashboard');
-    await this.bash(asar, {
-        root: APP,
-        params: ['pack', 'dashboard', 'dashboard.asar'],
-    });
-    fse.removeSync(ps.join(APP, 'dashboard'));
+    fse.removeSync(APP);
+};
 
-    const builtin = ps.join(APP, './builtin');
-    const list = fse.readdirSync(builtin);
-    for (const name of list) {
-        this.log(`打包 builtin - ${name}`);
-        await this.bash(asar, {
-            root: builtin,
-            params: ['pack', 'name', `${name}.asar`],
+/**
+ * 将 info.plist 内的数据替换成编辑器数据
+ */
+exports.replaceInfo = async function() {
+    if (process.platform === 'darwin') {
+        const CONTENTS = ps.join(ELECTRON, 'Contents');
+
+        fse.removeSync(ps.join(APP, '../electron.icns'));
+        fse.copySync(ps.join(__dirname, '../../static/editor.icns'), ps.join(APP, '../editor.icns'));
+        
+
+        [
+            './Info.plist',
+            './Frameworks/Electron Helper.app/Contents/Info.plist',
+            './Frameworks/Electron Helper EH.app/Contents/Info.plist',
+            './Frameworks/Electron Helper NP.app/Contents/Info.plist'
+        ].forEach((file) => {
+            file = ps.join(CONTENTS, file);
+            let data = plist.parse(fse.readFileSync(file, 'utf8'));
+            data['CFBundleDisplayName'] = 'Editor3D';
+            data['CFBundleExecutable'] = 'Editor3D';
+            data['CFBundleName'] = 'Editor3D';
+            data['CFBundleIconFile'] = 'editor.icns';
+            data['CFBundleIdentifier'] = 'com.cocos.creator';
+            data['CFBundleShortVersionString'] = pkg.version;
+            data['CFBundleVersion'] = pkg.version;
+            data['NSAppTransportSecurity'] = { NSAllowsArbitraryLoads: true };
+            data = plist.build(data);
+            fse.outputFileSync(file, data);
         });
-        fse.removeSync(ps.join(builtin, name));
+
+        [
+            './MacOS/Electron',
+            './Frameworks/Electron Helper EH.app',
+            './Frameworks/Electron Helper NP.app',
+            './Frameworks/Electron Helper.app',
+            './Frameworks/CocosCreator Helper EH.app/Contents/MacOS/Electron Helper EH',
+            './Frameworks/CocosCreator Helper NP.app/Contents/MacOS/Electron Helper NP',
+            './Frameworks/CocosCreator Helper.app/Contents/MacOS/Electron Helper',
+        ].forEach((file) => {
+            const source = ps.join(CONTENTS, file);
+            fse.moveSync(source, source.replace(/Electron/, 'Editor3D'));
+        });
+    } else {
+
     }
 };
