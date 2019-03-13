@@ -40,7 +40,7 @@ workflow.task('npm-install', async function() {
 
     // 检查是否能连通服务器
     const network = await new Promise((resolve) => {
-        ping.sys.probe('192.168.52.110', function(isAlive){
+        ping.sys.probe('192.168.52.114', function(isAlive){
             resolve(isAlive);
         });
     });

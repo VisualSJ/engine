@@ -11,7 +11,7 @@ class Dialog {
     async openFile(options = {}) {
         return new Promise((resolve, reject) => {
             ipc.send('editor-lib-dialog:call', 'openFile', options)
-                .callback((error, files) => {
+                .callback((error, files = []) => {
                     if (error) {
                         return reject(error);
                     }
@@ -27,7 +27,7 @@ class Dialog {
     async openDirectory(options = {}) {
         return new Promise((resolve, reject) => {
             ipc.send('editor-lib-dialog:call', 'openDirectory', options)
-                .callback((error, files) => {
+                .callback((error, files = []) => {
                     if (error) {
                         return reject(error);
                     }
@@ -43,7 +43,7 @@ class Dialog {
     async saveFile(options = {}) {
         return new Promise((resolve, reject) => {
             ipc.send('editor-lib-dialog:call', 'saveFile', options)
-                .callback((error, files) => {
+                .callback((error, files = []) => {
                     if (error) {
                         return reject(error);
                     }
@@ -59,11 +59,12 @@ class Dialog {
     show(options = {}) {
         return new Promise((resolve, reject) => {
             ipc.send('editor-lib-dialog:call', 'show', options)
-                .callback((error, files) => {
+                .callback((error, button) => {
                     if (error) {
                         return reject(error);
                     }
-                    resolve(files);
+                    debugger;
+                    resolve(button);
                 });
         });
     }

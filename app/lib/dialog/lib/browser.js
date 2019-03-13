@@ -115,8 +115,8 @@ module.exports = new Dialog();
 ipc.on('editor-lib-dialog:call', async (event, func, options) => {
     try {
         const files = await module.exports[func](options, BrowserWindow.fromWebContents(event.sender));
-        event.reply(null, files || []);
+        event.reply(null, files);
     } catch (error) {
-        event.reply(error, []);
+        event.reply(error);
     }
 });
