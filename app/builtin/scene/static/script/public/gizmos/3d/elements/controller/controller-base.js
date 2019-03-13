@@ -15,10 +15,8 @@ let tempVec3 = cc.v3();
 
 class ControllerBase {
     constructor(rootNode) {
-        this._position = cc.v3(0, 0, 0);
-        this._rotation = cc.quat(0, 0, 0, 1);
-        this._scale = cc.v3(1, 1, 1);
         this._updated = false;
+        this._scale = cc.v3(1, 1, 1);
 
         // for 3d
         this.shape = null;
@@ -177,21 +175,25 @@ class ControllerBase {
     }
 
     setPosition(value) {
-        if (value instanceof cc.Vec3) {
-            this._position = value;
-        } else {
-            this._position = cc.v3(value.x, value.y, 0);
-        }
-        this.updateController();
+        this.shape.setPosition(value);
+        this.adjustControllerSize();
     }
 
     getPosition() {
-        return this._position;
+        let pos = cc.v3();
+        this.shape.getPosition(pos);
+        return pos;
     }
 
     setRotation(value) {
-        this._rotation = value;
-        this.updateController();
+        this.shape.setRotation(value);
+        this.adjustControllerSize();
+    }
+
+    getRotation() {
+        let rot = cc.quat();
+        this.shape.getRotation(rot);
+        return rot;
     }
 
     getScale() {
@@ -199,17 +201,10 @@ class ControllerBase {
     }
     setScale(value) {
         this._scale = value;
-        this.updateController();
+        this.adjustControllerSize();
     }
 
     updateController() {
-        this.updateController3D();
-    }
-
-    updateController3D() {
-        NodeUtils.setWorldPosition3D(this.shape, this._position);
-        NodeUtils.setWorldRotation3D(this.shape, this._rotation);
-
         this.adjustControllerSize();
     }
 
@@ -227,7 +222,7 @@ class ControllerBase {
         if (this.is2D) {
             scalar = 1 / this.scale2D;
         } else {
-            scalar = this.getCameraDistScalar(this._position);
+            scalar = this.getCameraDistScalar(this.getPosition());
         }
 
         return scalar;
@@ -308,9 +303,9 @@ class ControllerBase {
     }
 
     getAlignAxisMoveDistance(axisWorldDir, deltaPos) {
-        let endPos = vec3.add(tempVec3, this._position, axisWorldDir);
+        let endPos = vec3.add(tempVec3, this.getPosition(), axisWorldDir);
         let dirInScreen = this.worldPosToScreenPos(endPos);
-        let oriPosInScreen = this.worldPosToScreenPos(this._position);
+        let oriPosInScreen = this.worldPosToScreenPos(this.getPosition());
         vec2.sub(dirInScreen, dirInScreen, oriPosInScreen);
         vec2.normalize(dirInScreen, dirInScreen);
         //console.log(axisWorldDir, dirInScreen, deltaPos);

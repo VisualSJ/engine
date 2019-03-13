@@ -142,7 +142,7 @@ class EditableController extends ControllerBase {
                     }
 
                     this._editCtrlScales[this._axisDir] = scalar;
-                    node.setScale(cc.v3(scalar / this._scale.x, scalar / this._scale.y, scalar / this._scale.z));
+                    node.setWorldScale(cc.v3(scalar, scalar, scalar));
 
                     // face edit ctrl to camera
                     let cameraRot = cc.quat();

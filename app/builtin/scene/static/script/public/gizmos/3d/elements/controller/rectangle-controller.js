@@ -123,15 +123,15 @@ class RectangleController extends EditableController {
         let dir = this._axisDir[axisName];
         let baseScale = this._editCtrlScales[axisName];
         if (axisName === RectHandleType.Anchor) {
-            node.setScale(baseScale / this._scale.x, baseScale / this._scale.y, baseScale / this._scale.z);
-            node.setWorldPosition(this._position);
+            node.setScale(baseScale / this.getScale().x, baseScale / this.getScale().y, baseScale / this.getScale().z);
+            node.setWorldPosition(this.getPosition());
         } else {
             let offset = cc.v3();
             offset.x = dir.x * this._size.x / 2;
             offset.y = dir.y * this._size.y / 2;
 
             let pos = offset.add(this._center);
-            node.setScale(baseScale / this._scale.x, baseScale / this._scale.y, baseScale / this._scale.z);
+            node.setScale(baseScale / this.getScale().x, baseScale / this.getScale().y, baseScale / this.getScale().z);
             node.setPosition(pos.x, pos.y, pos.z);
         }
 
@@ -211,7 +211,7 @@ class RectangleController extends EditableController {
             let deltaDist = 0;
 
             if (this.isBorder(event.axisName)) {
-                vec3.transformQuat(tempVec3, axisDir, this._rotation);
+                vec3.transformQuat(tempVec3, axisDir, this.getRotation());
                 deltaDist = deltaPos.dot(tempVec3);
                 if (this._curHandleType === RectHandleType.Left ||
                     this._curHandleType === RectHandleType.Right) {
@@ -223,14 +223,14 @@ class RectangleController extends EditableController {
                 tempVec3.x = axisDir.x;
                 tempVec3.y = 0;
                 tempVec3.z = 0;
-                vec3.transformQuat(tempVec3, tempVec3, this._rotation);
+                vec3.transformQuat(tempVec3, tempVec3, this.getRotation());
                 deltaDist = deltaPos.dot(tempVec3);
                 this._deltaSize.x = deltaDist;
 
                 tempVec3.x = 0;
                 tempVec3.y = axisDir.y;
                 tempVec3.z = 0;
-                vec3.transformQuat(tempVec3, tempVec3, this._rotation);
+                vec3.transformQuat(tempVec3, tempVec3, this.getRotation());
                 deltaDist = deltaPos.dot(tempVec3);
                 this._deltaSize.y = deltaDist;
             } else {

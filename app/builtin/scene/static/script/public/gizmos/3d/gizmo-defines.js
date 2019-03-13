@@ -17,6 +17,7 @@ GizmoDefines.components = {};
 GizmoDefines.components['cc.ModelComponent'] = require('./elements/components/model-component-gizmo');
 GizmoDefines.components['cc.SkinningModelComponent'] = require('./elements/components/skinning-model-component-gizmo');
 GizmoDefines.components['cc.CameraComponent'] = require('./elements/components/camera-component-gizmo');
+GizmoDefines.components['cc.ParticleSystemComponent'] = require('./elements/components/particle-system-component-gizmo');
 
 // collider gizmos
 GizmoDefines.components['cc.BoxColliderComponent'] = require(

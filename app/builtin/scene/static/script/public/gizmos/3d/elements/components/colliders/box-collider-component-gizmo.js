@@ -4,7 +4,7 @@ const External = require('../../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let BoxController = require('../../controller/box-controller');
 let Gizmo = require('../../gizmo-base');
-const MathUtil = External.EditorMath;
+
 const vec3 = cc.vmath.vec3;
 let tempVec3 = cc.v3();
 
@@ -61,16 +61,6 @@ class BoxColliderComponentGizmo extends Gizmo {
 
     }
 
-    clampSize(inSize) {
-        inSize.x = Math.abs(inSize.x);
-        inSize.y = Math.abs(inSize.y);
-        inSize.z = Math.abs(inSize.z);
-
-        inSize.x = MathUtil.toPrecision(inSize.x, 3);
-        inSize.y = MathUtil.toPrecision(inSize.y, 3);
-        inSize.z = MathUtil.toPrecision(inSize.z, 3);
-    }
-
     updateDataFromController() {
 
         if (this._controller.updated) {
@@ -78,7 +68,7 @@ class BoxColliderComponentGizmo extends Gizmo {
             vec3.div(deltaSize, deltaSize, this._scale);
             vec3.scale(deltaSize, deltaSize, 2);
             let newSize = vec3.add(tempVec3, this._size, deltaSize);
-            this.clampSize(newSize);
+            Utils.clampSize(newSize);
             this.target.size = newSize;
 
             let node = this.node;

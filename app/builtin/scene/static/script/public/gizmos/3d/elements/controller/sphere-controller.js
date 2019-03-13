@@ -3,7 +3,8 @@
 let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { AttributeName, setNodeOpacity, getModel, updateVBAttr, setMeshColor } = require('../../../utils/engine');
+const { AttributeName, setNodeOpacity, getModel,
+    updateVBAttr, setMeshColor, getNodeOpacity} = require('../../../utils/engine');
 const Utils = require('../../../utils');
 const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
@@ -39,7 +40,10 @@ class SphereController extends EditableController {
         Object.keys(this._circleDataMap).forEach((key) => {
             let curData = this._circleDataMap[key];
             setMeshColor(curData.frontArcMR.node, color);
-            setMeshColor(curData.backArcMR.node, color);
+            let alpha = getNodeOpacity(curData.backArcMR.node);
+            let newColor = color.clone();
+            newColor.a = alpha;
+            setMeshColor(curData.backArcMR.node, newColor);
         });
 
         setMeshColor(this._borderCircle, color);
@@ -58,7 +62,7 @@ class SphereController extends EditableController {
         let backArcNode = ControllerUtils.arc(this._center, normalDir, fromDir,
             Math.PI * 2, this._radius, color);
         backArcNode.parent = this.shape;
-        setNodeOpacity(backArcNode, 70);
+        setNodeOpacity(backArcNode, 30);
 
         let axisData = {};
         axisData.frontArcMR = getModel(frontArcNode);
@@ -200,6 +204,7 @@ class SphereController extends EditableController {
     onMouseDown(event) {
         this._mouseDeltaPos = cc.v2(0, 0);
         this._curDistScalar = super.getDistScalar();
+        this._controlDir = cc.v3(0, 0, 0);
 
         if (this.onControllerMouseDown != null) {
             this.onControllerMouseDown();
@@ -211,6 +216,7 @@ class SphereController extends EditableController {
         this._mouseDeltaPos.y += event.moveDeltaY;
 
         let axisDir = this._axisDir[event.axisName];
+        this._controlDir = axisDir;
         this._deltaRadius = this.getAlignAxisMoveDistance(this.localToWorldDir(axisDir),
             this._mouseDeltaPos) * this._curDistScalar;
 
@@ -233,6 +239,10 @@ class SphereController extends EditableController {
 
     getDeltaRadius() {
         return this._deltaRadius;
+    }
+
+    getControlDir() {
+        return this._controlDir;
     }
 }
 

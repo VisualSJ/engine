@@ -99,7 +99,7 @@ class RotationController extends ControllerBase {
 
         this._circleBorderNode = circleBorderNode;
         this._circleBorderMR = getModel(circleBorderNode);
-        this._circleBorderNode.setWorldPosition(this._position);
+        this._circleBorderNode.setWorldPosition(this.getPosition());
 
         // for cut off
         // let cutoffNode = ControllerUtils.disc(cc.v3(), cameraNormal,
@@ -171,7 +171,7 @@ class RotationController extends ControllerBase {
             return;
         }
 
-        this._mouseDownRot = quat.clone(this._rotation);
+        this._mouseDownRot = quat.clone(this.getRotation());
         this._mouseDeltaPos = cc.v2(0, 0);
 
         // 计算旋转量参考坐标轴
@@ -183,27 +183,27 @@ class RotationController extends ControllerBase {
 
         if (this.is2D) {
             if (this.isHitOnAxisArrow(event.node, event.axisName)) {
-                vec3.transformQuat(hitDir, cc.v3(1, 0, 0), this._rotation);
+                vec3.transformQuat(hitDir, cc.v3(1, 0, 0), this.getRotation());
             } else {
-                vec3.sub(hitDir, hitPoint, this._position);
+                vec3.sub(hitDir, hitPoint, this.getPosition());
             }
 
             // 2D情况下rotation扇形指示器从自身x轴为起始方向
-            vec3.transformQuat(this._indicatorStartDir, cc.v3(1, 0, 0), this._rotation);
+            vec3.transformQuat(this._indicatorStartDir, cc.v3(1, 0, 0), this.getRotation());
             this._zDeltaAngle = 0;
         } else {
-            vec3.sub(hitDir, hitPoint, this._position);
+            vec3.sub(hitDir, hitPoint, this.getPosition());
             this._indicatorStartDir = hitDir;
         }
 
         vec3.normalize(hitDir, hitDir);
-        vec3.transformQuat(axisDir, axisDir, this._rotation);
+        vec3.transformQuat(axisDir, axisDir, this.getRotation());
         vec3.cross(crossDir, hitDir, axisDir);
         vec3.cross(hitDir, axisDir, crossDir);
 
         this._rotateAlignDir = crossDir;
         this._transformAxisDir = axisDir;
-        //vec3.add(this._rotateAlignDir, this._rotateAlignDir, this._position);
+        //vec3.add(this._rotateAlignDir, this._rotateAlignDir, this.getPosition());
 
         // show indicator
         this.updateRotationIndicator(this._transformAxisDir, this._indicatorStartDir, 0);
@@ -254,7 +254,7 @@ class RotationController extends ControllerBase {
         }
 
         this.updateRotationIndicator(this._transformAxisDir, this._indicatorStartDir, radian);
-        quat.mul(this._rotation, this._mouseDownRot, this._deltaRotation);
+        quat.mul(this.getRotation(), this._mouseDownRot, this._deltaRotation);
 
         if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);
@@ -360,7 +360,7 @@ class RotationController extends ControllerBase {
 
     updateRotationIndicator(normal, fromDir, radian) {
         let positions = ControllerShape.calcSectorPoints(
-            this._position, normal, fromDir, radian,
+            this.getPosition(), normal, fromDir, radian,
             this._baseRadius * this.getDistScalar(), 60);
 
         updateVBAttr(this._indicator.meshRenderer, AttributeName.POSITION, positions);
@@ -368,12 +368,12 @@ class RotationController extends ControllerBase {
 
     adjustControllerSize() {
         let scalar = this.getDistScalar();
-        let newScale = this._scale.mul(scalar);
+        let newScale = this.getScale().mul(scalar);
         this.shape.setScale(newScale);
 
         // update circle border
         this._circleBorderNode.setScale(newScale);
-        this._circleBorderNode.setWorldPosition(this._position);
+        this._circleBorderNode.setWorldPosition(this.getPosition());
         let cameraNode = EditorCamera._camera.node;
         let cameraRot = cameraNode.getWorldRotation(tempQuat);
         let cameraNormal = cc.v3();
@@ -386,7 +386,7 @@ class RotationController extends ControllerBase {
         //positions = ControllerShape.calcDiscPoints(cc.v3(), cameraNormal, this._baseRadius);
         //updateVBAttr(this._cutoffMR, AttributeName.POSITION, positions);
         this._cutoffNode.setScale(newScale);
-        this._cutoffNode.setWorldPosition(this._position);
+        this._cutoffNode.setWorldPosition(this.getPosition());
         this._cutoffNode.setWorldRotation(cameraRot);
 
         let localCamNormal = cc.v3();

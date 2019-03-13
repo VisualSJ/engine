@@ -1,4 +1,6 @@
 'use strict';
+const External = require('./external');
+const MathUtil = External.EditorMath;
 
 // 适配两个引擎的接口
 class UtilsInterface {
@@ -54,6 +56,16 @@ class UtilsInterface {
     }
 
     getSqrMagnitude(inVec3) {
+    }
+
+    clampSize(inSize, precision = 3) {
+        inSize.x = Math.abs(inSize.x);
+        inSize.y = Math.abs(inSize.y);
+        inSize.z = Math.abs(inSize.z);
+
+        inSize.x = MathUtil.toPrecision(inSize.x, precision);
+        inSize.y = MathUtil.toPrecision(inSize.y, precision);
+        inSize.z = MathUtil.toPrecision(inSize.z, precision);
     }
 }
 

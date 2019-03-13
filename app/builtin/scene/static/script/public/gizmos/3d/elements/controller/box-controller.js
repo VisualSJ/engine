@@ -46,7 +46,8 @@ class BoxController extends EditableController {
         vec3.scale(offset, offset, 0.5);
         let pos = offset.add(this._center);
         let baseScale = this._editCtrlScales[axisName];
-        node.setScale(baseScale / this._scale.x, baseScale / this._scale.y, baseScale / this._scale.z);
+        let curScale = this.getScale();
+        node.setScale(baseScale / curScale.x, baseScale / curScale.y, baseScale / curScale.z);
         node.setPosition(pos.x, pos.y, pos.z);
     }
 

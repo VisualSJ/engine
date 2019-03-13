@@ -96,7 +96,7 @@ class PositionController extends ControllerBase {
 
     onMouseDown(event) {
         this._deltaPosition = cc.v3(0, 0, 0);
-        this._mouseDownPos = this._position;
+        this._mouseDownPos = this.getPosition();
         this._mouseDeltaPos = cc.v2(0, 0);
         this._mouseDownAxis = event.axisName;
         this._curDistScalar = this.getDistScalar();
@@ -104,7 +104,7 @@ class PositionController extends ControllerBase {
         if (this._mouseDownAxis.length > 1) {
             this._isInPanDrag = true;
             this._dragPanPlane = this._axisDataMap[this._mouseDownAxis].panPlane;
-            this._dragPanPlane.setPosition(this._position);
+            this._dragPanPlane.setPosition(this.getPosition());
             this._dragPanPlane.active = true;
             this._mouseDownOnPlanePos = cc.v3();
             this.getPositionOnPanPlane(this._mouseDownOnPlanePos, event.x, event.y, this._dragPanPlane);
@@ -160,10 +160,10 @@ class PositionController extends ControllerBase {
                 vec3.add(this._deltaPosition, this._deltaPosition, tempDeltaPosition);
             }
 
-            vec3.transformQuat(this._deltaPosition, this._deltaPosition, this._rotation);
+            vec3.transformQuat(this._deltaPosition, this._deltaPosition, this.getRotation());
         }
 
-        this._position = this._mouseDownPos.add(this._deltaPosition);
+        this.setPosition(this._mouseDownPos.add(this._deltaPosition));
 
         if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);
