@@ -182,7 +182,26 @@ const passParams = {
 };
 Object.assign(passParams, RenderPassStage);
 
+// for structural type checking
+// an 'any' key will check all elements defined in that object
+// a key start with '$' means its essential, and can't be omitted
+const effectStructure = {
+  $techniques: [
+    {
+      $passes: [
+        {
+          depthStencilState: {},
+          rasterizerState: {},
+          blendState: { targets: [{}] },
+          properties: { any: {} }
+        }
+      ]
+    }
+  ]
+};
+
 const mappings = {
+  effectStructure,
   typeParams,
   invTypeParams,
   sizeMap,

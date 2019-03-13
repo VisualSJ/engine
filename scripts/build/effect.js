@@ -11,6 +11,7 @@ Manager.AssetInfo = {};
 Manager.AssetInfo.engine = ps.join(editorRoot, 'resources/3d/engine'); // change here if using custom engines
 
 const shdcLib = require(ps.join(editorRoot, 'app/builtin/asset-db/static/shdc-lib'));
+shdcLib.throwOn.warning = shdcLib.throwOn.error = false;
 const addChunks = (dir) => {
   const files = fsJetpack.find(dir, { matching: ['**/*.inc'], recursive: false });
   shdcLib.addChunksCache(files);

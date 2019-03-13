@@ -27,8 +27,10 @@ const layoutExtract = /layout\((.*?)\)(\s*)$/;
 const bindingExtract = /binding\s*=\s*(\d+)/;
 
 let effectName = '', shaderName = '';
-const warn = (msg, ln) => { console.warn(`${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg); }
-const error = (msg) => { console.error(`${effectName} - ${shaderName}: ${msg}`); }
+const formatMsg = (msg, ln) => `${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg;
+const throwOn = { error: true, warning: true };
+const warn = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); console.warn(formattedMsg); if (throwOn.warning) throw formattedMsg; }
+const error = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); console.error(formattedMsg); if (throwOn.error) throw formattedMsg; }
 
 const convertType = (t) => { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 
@@ -572,6 +574,21 @@ const parseEffect = (() => {
   const leadingSpace = /^[^\S\n]/gm; // \s without \n
   const tabs = /\t/g;
   const stripHashComments = (code) => code.replace(hashComments, '');
+  const structuralTypeCheck = (ref, cur, path = 'effect') => {
+    if (Array.isArray(ref)) {
+      if (!Array.isArray(cur)) { warn(`${path} must be an array`); return; }
+      for (let i = 0; i < cur.length; i++) structuralTypeCheck(ref[0], cur[i], path + `[${i}]`);
+    } else {
+      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be a object`); return; }
+      if (ref.any) for (const key of Object.keys(cur)) structuralTypeCheck(ref.any, cur[key], path + `.${key}`);
+      else for (const key of Object.keys(ref)) {
+        let testKey = key;
+        if (testKey[0] === '$') testKey = testKey.substring(1);
+        else if (!cur[testKey]) continue;
+        structuralTypeCheck(ref[key], cur[testKey], path + `.${testKey}`);
+      }
+    }
+  };
   return (name, content) => {
     shaderName = 'syntax error';
     content = stripComments(content).replace(tabs, ' '.repeat(tabAsSpaces));
@@ -598,6 +615,7 @@ const parseEffect = (() => {
           if (effect.name) effectName = effect.name;
           else effect.name = name;
           delete effect.temporaries;
+          structuralTypeCheck(mappings.effectStructure, effect);
         }
       } else {
         let programCap = programRE.exec(str);
@@ -622,7 +640,7 @@ const mapPassParam = (() => {
     if (!shader.blocks.some((b) => b.members.some(cb))) shader.samplers.some(cb);
     return res;
   };
-  const typeCheck = (value, type, givenType, shaderType) => {
+  const propTypeCheck = (value, type, givenType, shaderType) => {
     if (typeof type === 'string') return `unsupported type ${type}`;
     if (type !== shaderType && type !== mappings.typeParams[shaderType]) return 'incompatible with shader decl';
     if (givenType === 'string') {
@@ -647,7 +665,7 @@ const mapPassParam = (() => {
       // convert numbers to array
       if (givenType === 'number' || givenType === 'boolean') info.value = [info.value];
       // type check the given value
-      const msg = typeCheck(info.value, info.type, givenType, shaderType);
+      const msg = propTypeCheck(info.value, info.type, givenType, shaderType);
       if (msg) warn(`illegal property declaration ${p}: ${msg}`);
     }
     return props;
@@ -691,14 +709,14 @@ const mapPassParam = (() => {
     if (shader.defines.find((d) => d === def)) warn('don\'t use shader defines to controll passes');
     return def;
   };
-  return (obj, shader) => {
+  return (pass, shader) => {
     shaderName = 'type error';
     const tmp = {};
     // special treatments
-    if (obj.properties) { tmp.properties = mapProperties(obj.properties, shader); delete obj.properties; }
-    if (obj.priority) { tmp.priority = mapPriority(obj.priority); delete obj.priority; }
-    if (obj.switch) { tmp.switch = mapSwitch(obj.switch, shader); delete obj.switch; }
-    generalMap(obj); Object.assign(obj, tmp);
+    if (pass.properties) { tmp.properties = mapProperties(pass.properties, shader); delete pass.properties; }
+    if (pass.priority) { tmp.priority = mapPriority(pass.priority); delete pass.priority; }
+    if (pass.switch) { tmp.switch = mapSwitch(pass.switch, shader); delete pass.switch; }
+    generalMap(pass); Object.assign(pass, tmp);
   };
 })();
 
@@ -730,6 +748,7 @@ const buildEffect = (name, content) => {
 // ==================
 
 module.exports = {
+  throwOn,
   addChunksCache,
   buildEffect
 };
