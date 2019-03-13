@@ -61,8 +61,8 @@ export async function ready() {
             ctrlCxt: null, // 画笔
             dump: {
                 keyFrames: DEFAULT_KEYFRAMES[0],
-                multiplier: 1,
             },
+            multiplier: 1,
             // 坐标设置相关信息
             axis: {
                 piece: 10, // 横纵坐标的刻度切分数
@@ -113,6 +113,14 @@ export async function ready() {
                 this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
             },
 
+            onMulti(this: any, event: any) {
+                if (event.target.value !== 0) {
+                    this.grid.multiplier = event.target.value;
+                    this.dump.multiplier = event.target.value;
+                    Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
+                }
+            },
+
             /**
              * 响应 tools 点击事件
              * @param event
@@ -143,20 +151,20 @@ export async function ready() {
              * @param dump
              */
             checkAndUpdate(this: any, dump: any) {
-                if (!Array.isArray(dump.keyFrames) || dump.keyFrames.length < 1) {
+                if (!Array.isArray(dump.value.keyFrames) || dump.value.keyFrames.length < 1) {
                     !dump && (dump = {});
-                    // @ts-ignore
                     dump.keyFrames = DEFAULT_KEYFRAMES[0];
                 }
-                this.dump = dump;
-                // @ts-ignore
+                this.dump = dump.value;
+                this.dump.key = dump.key;
                 this.curveControl.update(this.dump.keyFrames);
                 if (typeof(dump.multiplier) !== 'number') {
-                    // @ts-ignore
-                    this.dump.multiplier = 0;
+                    this.dump.multiplier = 1;
                     return;
+                } else {
+                    this.dump.multiplier = dump.multiplier;
                 }
-                // TODO 更新 multiplier
+                this.grid.multiplier = this.dump.multiplier;
             },
 
             /**
@@ -238,6 +246,7 @@ export async function ready() {
                     axisMargin: AXIS_MARGIN,
                     lineWidth: 1,
                     axis: this.axis,
+                    multiplier: this.multiplier,
                 };
                 this.grid = new Grid(options);
                 this.grid.draw();

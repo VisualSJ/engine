@@ -24,24 +24,46 @@ export default class Grid {
     }
     public readonly location: any; // 原点坐标信息以及绘图范围
     public readonly step: any; // 存储横纵坐标参数递增值
-    public readonly space: number; // 存储数据递增对应的实际 canvas 像素值
 
     private axis: any;  // 存储传入的坐标信息 切割值，横纵坐标的数据范围
     private axesMargin: number; // 画布边距（无效绘图区域
     private _cxt2D: any; // 绘图上下文
     private canvas: any;
+    private _multiplier: any; // 递增倍数
+
+    set multiplier(value: number) {
+        if (value === 0) {
+            return;
+        }
+        this._multiplier = value;
+        const {x, y, h} = this.location;
+        const {stepY, spaceY} = this.step;
+        this.cxt2D.clearRect(0, 0, this.axesMargin, h + this.axesMargin);
+        // 绘制纵坐标刻度
+        let cellY = y + h;
+        let textY = 0;
+        while (cellY > x) {
+            this.cxt2D.fillText(textY, x / 2 - HALF_TEXT_WIDTH, cellY);
+            const step = Editor.Utils.Math.mul(stepY, this.multiplier);
+            textY = Editor.Utils.Math.add(textY, step);
+            cellY -= spaceY;
+        }
+    }
+
+    get multiplier() {
+        return this._multiplier;
+    }
 
     constructor(options: any) {
         this.cxt2D = options.context;
         this.axesMargin = options.axisMargin;
-        this.space = options.space;
         this.axis = options.axis;
+        this._multiplier = options.multiplier || 1;
         this.cxt2D.lineWidth = options.lineWidth;
         this.cxt2D.strokeStyle = options.color || '#333';
 
         // 计算需要绘制的网格范围
         this.location = this.computView();
-
         // 计算刻度范围
         this.step = this.computeStep();
     }
@@ -119,22 +141,19 @@ export default class Grid {
      * 绘制坐标轴
      */
     private drawAxis() {
-        this.cxt2D.save();
         this.cxt2D.lineWidth = 2;
         const {x, y, w, h} = this.location;
         const {stepX, stepY, spaceX, spaceY} = this.step;
         // 绘制范围矩形框
         this.cxt2D.strokeRect(x , y, w, h);
-        this.cxt2D.restore();
 
-        this.cxt2D.save();
         this.cxt2D.fillStyle = '#ccc';
         // 绘制横坐标刻度
         let cellX = x - HALF_TEXT_WIDTH;
         let textX = 0;
         while (cellX < x + w) {
             this.cxt2D.fillText(textX, cellX, y + h + x / 2);
-            textX = Editor.Utils.Math.add(textX, stepX);
+            textX = Editor.Utils.Math.add(textX, stepX * this.multiplier);
             cellX += spaceX;
         }
         // 绘制纵坐标刻度
@@ -142,10 +161,9 @@ export default class Grid {
         let textY = 0;
         while (cellY > x) {
             this.cxt2D.fillText(textY, x / 2 - HALF_TEXT_WIDTH, cellY);
-            textY = Editor.Utils.Math.add(textY, stepY);
+            textY = Editor.Utils.Math.add(textY, stepY * this.multiplier);
             cellY -= spaceY;
         }
-        this.cxt2D.restore();
     }
 
     /**

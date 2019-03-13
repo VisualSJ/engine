@@ -1,4 +1,5 @@
 <div class="curve-editor">
+    <ui-num-input class="multiplier" :value="dump.multiplier" @confirm="onMulti"></ui-num-input>
     <div class="canvas-wrap" v-on:mousewheel="onMouseWheel">
         <!-- 网格线/坐标轴层 -->
         <canvas ref="gridCanvas" class="canvas"></canvas>

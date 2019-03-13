@@ -361,7 +361,7 @@
     </template>
 
     <!-- Curve -->
-    <template
+    <!-- <template
         v-else-if="value.type === 'cc.AnimationCurve'"
     >
         <div class="name">
@@ -381,20 +381,30 @@
                 :height="height"
             ></ui-curve>
         </div>
-    </template>
+    </template> -->
 
     <!-- CurveRange -->
     <template
         v-else-if="value.type === 'cc.CurveRange'"
     >
-        <ui-curve-range
-            :readonly="value.readonly"
-            :name="getName(value.name)"
-            v-model="value.value"
+        <div class="name">
+            <span
+                :title="getName(value.name)"
+            >{{getName(value.name)}}</span>
+            <i class="iconfont icon-lock"
+                v-if="value.readonly"
+            ></i>
+        </div>
+        <div class="content">
+            <ui-curve-range
+                :readonly="value.readonly"
+                :name="getName(value.name)"
+                v-model="value.value"
 
-            :width="width"
-            :height="height"
-        ></ui-curve-range>
+                :width="width"
+                :height="height"
+            ></ui-curve-range>
+        </div>
     </template>
 
     <!-- Gradient -->

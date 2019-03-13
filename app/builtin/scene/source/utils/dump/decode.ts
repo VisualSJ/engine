@@ -275,6 +275,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
         ) {
             dump.value += '';
             data[info.key] = dump.value;
+        } else if (dump.type === 'cc.CurveRange') {
+            for (const key of Object.keys(dump.value)) {
+                const item = dump.value[key];
+                decodePatch(item.path, item, node);
+            }
         } else if (dump.type === 'cc.AnimationCurve') {
             const curve = new ccType();
             const keyFrameCtor = cc.js.getClassByName('cc.Keyframe');

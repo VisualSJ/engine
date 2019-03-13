@@ -42,7 +42,7 @@ const MathUtils = {
      */
     mul(arg1, arg2) {
         let {maxPow, num1, num2} = this._computMaxPow(arg1, arg2);
-        return num1 * num2 / maxPow;
+        return num1 * num2 / (maxPow * maxPow);
     },
 
     /**
