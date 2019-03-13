@@ -26,7 +26,7 @@ export function getComponent(comp: any) {
 }
 
 export async function set(dump: any, node?: any) {
-    if (dump.isScene) {
+    if (dump && dump.isScene) {
         return await decodeScene(dump, node);
     }
     return await decodeNode(dump, node);

@@ -40,11 +40,17 @@ export const methods = {
         }
 
         const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', vm.uuid);
+        if (!dump) {
+            vm.dump = null;
+            return;
+        }
+
         if (dump.isScene) {
             vm.dump = transSceneDump(dump);
         } else {
             vm.dump = translationDump(dump);
         }
+
     },
 
     async _onAddComponentMenu(event: any) {

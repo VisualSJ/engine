@@ -15,7 +15,7 @@ module.exports = {
         newNodeEmpty: '空节点',
 
         new3dObject: '3D 对象',
-        new3dCube: 'Cube 正方体',
+        new3dCube: 'Cube 立方体',
         new3dCylinder: 'Cylinder 圆柱体',
         new3dSphere: 'Sphere 球体',
         new3dCapsule: 'Capsule 胶囊',
