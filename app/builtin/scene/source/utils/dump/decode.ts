@@ -228,7 +228,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
                 const result: any = [];
                 for (let i = 0; i < dump.value.length; i++) {
                     const data = dump.value[i];
-                    if (!dump.value || !dump.value.uuid) {
+                    if (!dump.value || !data.value.uuid) {
                         result[i] = null;
                     } else {
                         result[i] = await promisify(cc.AssetLibrary.loadAsset)(data.value.uuid);

@@ -35,15 +35,18 @@ export const methods = {};
 
 export const messages = {
     // 更新当前构建进度
-    'build:update-progress'(msg: string, rate: any, state: string) {
+    'build:update-progress'(msg: string, rate: number, state: string) {
         // 当前已经构建失败，其他构建进度不再显示
         if (vm.state === 'failed' && state === 'building') {
             return;
         }
         vm.message = msg;
         vm.state = state ? state : '';
+        if (state === 'start') {
+            vm.rate = 0;
+        }
         if (rate) {
-            vm.rate += rate;
+            vm.rate += Number(rate);
         }
     },
     'asset-db:ready'() {

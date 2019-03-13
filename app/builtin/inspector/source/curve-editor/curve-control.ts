@@ -126,7 +126,6 @@ export default class CurveControl extends EventEmitter {
             for (const info of this.ctrlKey) {
                 const {x, y} = info.point.canvas;
 
-                console.log(y, offsetY);
                 // 点击的点，在控制范围内
                 if (Math.abs(offsetX - x) < (CLICK_RANGE * 2 + radius) &&
                  Math.abs(offsetY - y) < (CLICK_RANGE * 2 + radius)) {
@@ -223,30 +222,33 @@ export default class CurveControl extends EventEmitter {
             if (!tanDrag && !curveDrag && !keyDrag) {
                 return;
             }
-            const {offsetX, offsetY, movementY} = event;
-            if (tanDrag) {
-                this.changeType = 'tangent';
-                this.updateTan(offsetX, offsetY);
-                this.emitChange();
-                return;
-            }
-            if (keyDrag) {
-                this.moveKey(offsetX, offsetY);
-                this.emitChange();
-                return;
-            }
-            if (curveDrag && movementY !== 0) {
-                const flag = this.hermite.moveY(- movementY);
-                if (!flag) {
+            // 有一些由于点击造成的轻微移动
+            process.nextTick(() => {
+                const {offsetX, offsetY, movementY} = event;
+                if (tanDrag) {
+                    this.changeType = 'tangent';
+                    this.updateTan(offsetX, offsetY);
+                    this.emitChange();
                     return;
                 }
-                this.changeType = 'curve';
-                this.emitChange();
-                this.hermite.clear();
-                this.hermite.update();
-                this.resetCtrl();
-                this.lightCurve();
-            }
+                if (keyDrag) {
+                    this.moveKey(offsetX, offsetY);
+                    this.emitChange();
+                    return;
+                }
+                if (curveDrag && movementY !== 0) {
+                    const flag = this.hermite.moveY(- movementY);
+                    if (!flag) {
+                        return;
+                    }
+                    this.changeType = 'curve';
+                    this.emitChange();
+                    this.hermite.clear();
+                    this.hermite.update();
+                    this.resetCtrl();
+                    this.lightCurve();
+                }
+            });
         });
     }
 

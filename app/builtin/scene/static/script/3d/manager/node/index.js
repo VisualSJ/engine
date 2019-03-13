@@ -398,20 +398,19 @@ class NodeManager extends EventEmitter {
             let node;
             const { name, type, position } = options;
 
-            if (supportTypes.includes(type)) {
-                switch (type) {
-                    case 'cc.Prefab':
-                        node = cc.instantiate(asset);
-                    case 'cc.Mesh':
-                        node = new cc.Node(asset.name);
-                        const model = node.addComponent(cc.ModelComponent);
-                        model.mesh = asset;
-                        break;
-                }
+            if (!supportTypes.includes(type)) {
+                return;
             }
 
-            if (!node) {
-                return;
+            switch (type) {
+                case 'cc.Prefab':
+                    node = cc.instantiate(asset);
+                    break;
+                case 'cc.Mesh':
+                    node = new cc.Node(asset.name);
+                    const model = node.addComponent(cc.ModelComponent);
+                    model.mesh = asset;
+                    break;
             }
 
             if (position) {

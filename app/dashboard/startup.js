@@ -214,7 +214,7 @@ exports.listener = function() {
             projectMap.delete(path);
             if (projectMap.size <= 0) {
                 // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
-                global.dashboard && dashboard.show();
+                window && window.show();
                 app.dock && app.dock.show();
             }
         });

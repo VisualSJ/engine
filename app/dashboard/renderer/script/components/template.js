@@ -62,14 +62,15 @@ exports.methods = {
                 if (index === 0) {
                     // 复制文件夹
                     fse.copySync(template.path, path);
+                    updateProjectName(path);
                     project.open(path);
                 }
             });
             return;
         }
-
         // 复制文件夹
         fse.copySync(template.path, path);
+        updateProjectName(path);
 
         // 打开项目
         project.open(path);
@@ -120,6 +121,20 @@ exports.methods = {
         });
     },
 };
+
+/**
+ * 更新项目名称
+ * @param {*} path
+ */
+function updateProjectName(path) {
+    try {
+        const pkg = fse.readJSONSync(ps.join(path, 'package.json'));
+        pkg.name = ps.basename(path);
+        fse.outputJSONSync(ps.join(path, 'package.json'), pkg);
+    } catch (error) {
+        console.error(`Rename project failed! ${error.message}`);
+    }
+}
 
 exports.mounted = function() {
     this.updateList();

@@ -63,7 +63,7 @@ class Dialog {
                     if (error) {
                         return reject(error);
                     }
-                    resolve(files[0]);
+                    resolve(files);
                 });
         });
     }

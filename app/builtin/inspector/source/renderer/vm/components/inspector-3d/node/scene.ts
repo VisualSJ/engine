@@ -32,7 +32,7 @@ export const template = `
                 </div>
             </div>
             <ui-prop
-                v-for="obj in item.value"
+                v-for="(obj, key) in item.value" :key="key"
                     v-if="obj.visible"
                     auto="true"
                     :value="obj"

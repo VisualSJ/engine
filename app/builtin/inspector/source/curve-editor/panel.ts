@@ -252,7 +252,6 @@ export async function ready() {
                     Math.pow(2, 0.002 * wheelDelta);
 
                 this.scale = Math.ceil(scale * 100);
-                // console.log(this.scale);
             },
         },
     });

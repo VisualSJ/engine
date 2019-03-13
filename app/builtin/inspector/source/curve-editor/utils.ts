@@ -171,7 +171,6 @@ function calcHermite(point1: any, k1: number,  point2: any, k2: number) {
     // 返回一个三次函数
     return {a, b, c, d};
 }
-
 /**
  * 绘制曲线的简易函数
  * @param keyframes 关键帧数据
