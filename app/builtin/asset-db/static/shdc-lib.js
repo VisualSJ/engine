@@ -29,8 +29,8 @@ const bindingExtract = /binding\s*=\s*(\d+)/;
 let effectName = '', shaderName = '';
 const formatMsg = (msg, ln) => `${effectName} - ${shaderName}` + (ln ? ` - ${ln}: ` : ': ') + msg;
 const throwOn = { error: true, warning: true };
-const warn = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); console.warn(formattedMsg); if (throwOn.warning) throw formattedMsg; }
-const error = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); console.error(formattedMsg); if (throwOn.error) throw formattedMsg; }
+const warn = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); if (throwOn.warning) throw formattedMsg; else console.warn(formattedMsg); }
+const error = (msg, ln) => { const formattedMsg = formatMsg(msg, ln); if (throwOn.error) throw formattedMsg; else console.error(formattedMsg); }
 
 const convertType = (t) => { let tp = mappings.typeParams[t.toUpperCase()]; return tp === undefined ? t : tp; }
 
