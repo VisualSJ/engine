@@ -2,6 +2,7 @@
 
 const fse = require('fs-extra');
 const path = require('path');
+const ping = require('ping');
 
 const vWorkflow = require('v-workflow');
 
@@ -38,19 +39,16 @@ workflow.task('npm-install', async function() {
     let production = false;
 
     // 检查是否能连通服务器
-    // const ping = require ("net-ping");
-    // const session = ping.createSession();
-    // const network = await new Promise((resolve, reject) => {
-    //     session.pingHost('192.168.52.114', (error, target, sent, rcvd) => {
-    //         resolve(!error);
-    //     });
-    // });
-    const network = true;
+    const network = await new Promise((resolve) => {
+        ping.sys.probe('192.168.52.110', function(isAlive){
+            resolve(isAlive);
+        });
+    });
 
     // 如果联系不上服务器，尝试使用备份模块，如果没有备份模块，提示警告
     if (!network) {
         production = true;
-        console.warn('\n无法联通服务器，将尝试使用备份模块\n');
+        console.warn('\n无法联通内网服务器，将尝试使用备份模块\n');
 
         if (
             !fse.existsSync(path.join(PATH.temp, '@base')) ||

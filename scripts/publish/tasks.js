@@ -4,6 +4,7 @@ const ps = require('path');
 const fse = require('fs-extra');
 const UglifyJS = require('uglify-es');
 const plist = require('plist');
+const rcedit = require('rcedit');
 
 const pkg = require('../../app/package.json');
 
@@ -24,7 +25,9 @@ let hours = time.getHours();
 if (hours < 10) {
     hours = `0${hours}`;
 }
-const ELECTRON = ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}.app`);
+const ELECTRON = process.platform === 'win' ?
+    ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}`) :
+    ps.join(DIRECTORY, `${pkg.name}-v${pkg.version}-${process.platform}-${month}${date}${hours}.app`);
 
 // 发布程序内的 app 目录
 const APP = process.platform === 'win' ?
@@ -83,7 +86,7 @@ exports.copyResources = function() {
     const dir = ps.join(__dirname, '../../resources');
     fse.copySync(dir, ps.join(APP, '../resources'), {
         filter(name) {
-            return name[0] !== '.';
+            return !/(\\|\/)\./.test(name);
         },
     });
 };
@@ -126,8 +129,9 @@ exports.uglifyJs = async function() {
             if (result.error) {
                 console.error(`文件压缩失败: ${file}`);
                 console.error(result.error);
+            } else {
+                fse.outputFileSync(file, result.code);
             }
-            fse.outputFileSync(file, result.code);
         } catch (error) {
             console.error(`文件压缩失败: ${file}`);
             console.error(error);
@@ -154,7 +158,6 @@ exports.asar = async function() {
                 unpack: '*.node',
                 unpackDir: `{${unpacks.join(',')}}`,
             }, () => {
-                this.log('123')
                 resolve();
             }
         );
@@ -173,40 +176,40 @@ exports.replaceInfo = async function() {
         fse.removeSync(ps.join(APP, '../electron.icns'));
         fse.copySync(ps.join(__dirname, '../../static/editor.icns'), ps.join(APP, '../editor.icns'));
         
-
         [
             './Info.plist',
             './Frameworks/Electron Helper.app/Contents/Info.plist',
-            './Frameworks/Electron Helper EH.app/Contents/Info.plist',
-            './Frameworks/Electron Helper NP.app/Contents/Info.plist'
         ].forEach((file) => {
             file = ps.join(CONTENTS, file);
             let data = plist.parse(fse.readFileSync(file, 'utf8'));
-            data['CFBundleDisplayName'] = 'Editor3D';
-            data['CFBundleExecutable'] = 'Editor3D';
-            data['CFBundleName'] = 'Editor3D';
-            data['CFBundleIconFile'] = 'editor.icns';
-            data['CFBundleIdentifier'] = 'com.cocos.creator';
-            data['CFBundleShortVersionString'] = pkg.version;
-            data['CFBundleVersion'] = pkg.version;
+            'CFBundleDisplayName' in data && (data['CFBundleDisplayName'] = pkg.name);
+            'CFBundleExecutable' in data && (data['CFBundleExecutable'] = pkg.name);
+            'CFBundleName' in data && (data['CFBundleName'] = pkg.name);
+            'CFBundleIconFile' in data && (data['CFBundleIconFile'] = 'editor.icns');
+            'CFBundleIdentifier' in data && (data['CFBundleIdentifier'] = 'com.cocos.creator');
+            'CFBundleShortVersionString' in data && (data['CFBundleShortVersionString'] = pkg.version);
+            'CFBundleVersion' in data && (data['CFBundleVersion'] = pkg.version);
             data['NSAppTransportSecurity'] = { NSAllowsArbitraryLoads: true };
             data = plist.build(data);
             fse.outputFileSync(file, data);
         });
 
         [
-            './MacOS/Electron',
-            './Frameworks/Electron Helper EH.app',
-            './Frameworks/Electron Helper NP.app',
-            './Frameworks/Electron Helper.app',
-            './Frameworks/CocosCreator Helper EH.app/Contents/MacOS/Electron Helper EH',
-            './Frameworks/CocosCreator Helper NP.app/Contents/MacOS/Electron Helper NP',
-            './Frameworks/CocosCreator Helper.app/Contents/MacOS/Electron Helper',
+            `./MacOS/Electron`,
+            `./Frameworks/Electron Helper.app`,
+            `./Frameworks/${pkg.name} Helper.app/Contents/MacOS/Electron Helper`,
         ].forEach((file) => {
             const source = ps.join(CONTENTS, file);
-            fse.moveSync(source, source.replace(/Electron/, 'Editor3D'));
+            fse.moveSync(source, source.replace(/Electron/, pkg.name));
         });
     } else {
-
+        await new Promise((resolve) => {
+            rcedit(ps.join(ELECTRON, 'electron.exe'), {
+                'product-version': pkg.version,
+                'icon': ps.join(__dirname, '../../static/editor.ico'),
+            }, (error) => {
+                resolve();
+            });
+        });
     }
 };
