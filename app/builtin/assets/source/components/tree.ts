@@ -910,6 +910,13 @@ export const methods = {
     },
 
     /**
+     * 重新导入资源
+     */
+    reimport(uuid: string) {
+        Editor.Ipc.requestToPackage('asset-db', 'reimport-asset', uuid);
+    },
+
+    /**
      * 复制资源，平级
      */
     async duplicate() {

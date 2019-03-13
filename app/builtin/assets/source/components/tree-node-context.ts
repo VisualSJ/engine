@@ -61,6 +61,13 @@ exports.menu = (vm: any, asset: ItreeAsset) => {
                 type: 'separator',
             },
             {
+                label: Editor.I18n.t('assets.menu.reimport'),
+                enabled: !utils.canNotRevealInLibrary(asset),
+                click() {
+                    vm.$emit('reimport', asset.uuid);
+                },
+            },
+            {
                 label: Editor.I18n.t('assets.menu.revealInlibrary'),
                 enabled: !utils.canNotRevealInLibrary(asset),
                 click() {

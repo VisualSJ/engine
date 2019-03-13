@@ -24,7 +24,7 @@ module.exports = {
         newFolder: '文件夹',
         newJavaScript: 'JavaScript',
         newTypeScript: 'TypeScript',
-        newScene: 'Scene',
+        newScene: '场景文件',
         newMaterial: 'Material',
         newPhysicsMaterial: 'Physics Material',
         newEffect: 'Effect',
@@ -34,6 +34,7 @@ module.exports = {
         rename: '重命名',
         readOnly: '只读',
         revealInlibrary: '在 Library 中显示',
+        reimport: '重新导入资源',
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',
 

@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { getReady } from './state';
 
 import {
-    copyAsset, createAsset, deleteAsset, generateAvailableURL, moveAsset, saveAsset, saveAssetMeta
+    copyAsset, createAsset, deleteAsset, generateAvailableURL, moveAsset, reimportAsset, saveAsset, saveAssetMeta
 } from './operation';
 import { debug, forwarding, init, reload } from './worker';
 
@@ -185,6 +185,14 @@ module.exports = {
          */
         async 'save-asset-meta'(uuid: string, content: string) {
             return await saveAssetMeta(uuid, content);
+        },
+
+        /**
+         * 重新导入资源
+         * @param uuid 资源
+         */
+        async 'reimport-asset'(uuid: string) {
+            return await reimportAsset(uuid);
         },
 
     },

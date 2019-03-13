@@ -34,6 +34,7 @@ module.exports = {
         rename: 'Rename',
         readOnly: 'Read Only',
         revealInlibrary: 'Reveal In Library',
+        reimport: 'Reimport Asset',
         revealInExplorer: 'Reveal In Explorer',
         showUuid: 'Show Asset UUID and PATH',
 

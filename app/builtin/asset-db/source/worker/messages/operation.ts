@@ -36,3 +36,24 @@ ipcAddListener('asset-worker:save-asset-meta', async (event: any, uuid: string, 
         return event.reply(null, false);
     }
 });
+
+/**
+ * 重新导入资源
+ */
+ipcAddListener('asset-worker:reimport-asset', async (event: any, uuid: string) => {
+    if (!uuid) {
+        return event.reply(null, false);
+    }
+    const info = queryAsset(uuid);
+    if (!info) {
+        return event.reply(null, false);
+    }
+    try {
+        Manager.AssetWorker[info.name].reimport(info.asset.uuid);
+
+        return event.reply(null, true);
+    } catch (err) {
+        console.warn(err);
+        return event.reply(null, false);
+    }
+});

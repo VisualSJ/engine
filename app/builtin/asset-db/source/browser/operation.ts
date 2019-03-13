@@ -380,3 +380,11 @@ export async function deleteAsset(url: string): Promise<boolean> {
 
     return true;
 }
+
+/**
+ * 重新导入资源
+ * @param uuid
+ */
+export async function reimportAsset(uuid: string): Promise<boolean> {
+    return await forwarding('asset-worker:reimport-asset', uuid);
+}
