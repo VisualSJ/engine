@@ -22,9 +22,9 @@ export const template = `
                 @confirm="technique = $event.target.value"
             >
                 <option
-                    v-for="(item,index) in techniques"
+                    v-for="(item, index) in techniques"
                     :value="index"
-                >{{index}}</option>
+                >{{index + ' - ' + material.names[index]}}</option>
             </ui-select>
         </ui-prop>
     </div>
@@ -40,6 +40,16 @@ export const template = `
                     v-for="(pass,index) in passes"
                 >
                     <span>Pass {{index}}</span>
+                    <template
+                        v-if="pass.switch && pass.switch.name"
+                    >
+                        <span>(</span>
+                        <ui-checkbox    
+                            :value="pass.switch.value"
+                            @confirm="pass.switch.value = $event.target.value"
+                        >{{pass.switch.name}}</ui-checkbox>
+                        <span>)</span>
+                    </template>
                     <div>
                         <template
                             v-for="item in pass.childMap"
@@ -129,6 +139,7 @@ export const watch = {
                 return technique.map((data: any) => {
                     // 合并 data.defines 和 data.props
                     const tree = buildEffect(data.props, data.defines);
+                    tree.switch = data.switch;
                     return tree;
                 });
             });

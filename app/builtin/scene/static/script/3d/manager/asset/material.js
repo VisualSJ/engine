@@ -146,6 +146,10 @@ function encodeEffect(effect) {
             });
 
             return {
+                switch: {
+                    name: pass.switch,
+                    value: false,
+                },
                 props, defines,
             };
         });
@@ -167,6 +171,11 @@ async function decodeMaterial(dump) {
         const current = technique[i];
         material._props[i] = {};
         material._defines[i] = {};
+
+        // switch 信息最终是存放到 define 内
+        if (current.switch && current.switch.name && current.switch.value) {
+            material._defines[i][current.switch.name] = current.switch.value;
+        }
 
         for (let j = 0; j < current.defines.length; j++) {
             const define = current.defines[j];

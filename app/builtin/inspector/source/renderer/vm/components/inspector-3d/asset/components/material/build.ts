@@ -5,6 +5,7 @@ interface IPropItem {
     dump: any;
     type: string;
     childMap: {[index: string]: IPropItem};
+    switch?: string;
 }
 
 /**

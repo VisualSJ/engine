@@ -68,6 +68,10 @@ async function queryMaterial(uuid) {
         Object.keys(asset._defines[index] || {}).forEach((name) => {
             const item = pass.defines.find((t) => { return t.name === name; });
             if (!item) {
+                // pass 的 switch 数据也是放在 define 内，所以这里需要判断数据是否要给 switch
+                if (pass.switch.name === name) {
+                    pass.switch.value = asset._defines[index][name];
+                }
                 return;
             }
             const dump = dumpEncode.encodeObject(asset._defines[index][name], {});
@@ -90,6 +94,7 @@ async function queryMaterial(uuid) {
     return {
         effect: asset.effectName,
         technique: asset._techIdx,
+        names: effect.techniques.map(tech => tech.name),
         data,
     };
 }

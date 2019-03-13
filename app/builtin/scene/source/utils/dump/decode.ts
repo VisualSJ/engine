@@ -356,7 +356,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
 
     // 触发引擎内的 setter 更新部分数据
     data[info.key] = data[info.key];
-    set(node, info.search, data);
+    info.search && set(node, info.search, data);
     if (parentInfo && parentInfo.search) {
         const data = get(node, parentInfo.search);
         data[parentInfo.key] = data[parentInfo.key];

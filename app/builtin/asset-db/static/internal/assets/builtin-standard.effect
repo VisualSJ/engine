@@ -270,6 +270,6 @@ CCProgram planar-shadow-fs %{
   #include <cc-shadow>
 
   vec4 frag () {
-    return CCShadowColor;
+    return cc_shadowColor;
   }
 }%
