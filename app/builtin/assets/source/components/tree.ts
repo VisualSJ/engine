@@ -383,15 +383,17 @@ export const methods = {
         if (json.type !== 'folder') {
             const fileUrl = `db://internal/default_file_content/${json.type}`;
             const fileUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', fileUrl);
-            const fileInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', fileUuid);
-
-            if (!existsSync(fileInfo.file)) {
-                console.error(vm.t('readDefaultFileFail'));
-                parent.state = '';
-                return;
+            if (!fileUuid) {
+                content = '';
+            } else {
+                const fileInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', fileUuid);
+                if (!fileInfo || !existsSync(fileInfo.file)) {
+                    console.error(vm.t('readDefaultFileFail'));
+                    parent.state = '';
+                    return;
+                }
+                content = readFileSync(fileInfo.file);
             }
-
-            content = readFileSync(fileInfo.file);
         }
 
         const url = `${json.parentDir}/${json.name}`;

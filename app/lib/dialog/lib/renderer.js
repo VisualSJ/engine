@@ -63,7 +63,6 @@ class Dialog {
                     if (error) {
                         return reject(error);
                     }
-                    debugger;
                     resolve(button);
                 });
         });
