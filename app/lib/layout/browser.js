@@ -33,7 +33,7 @@ class Layout {
         }
         step(layout.layout);
 
-        // 尝试面板的 beforeClose 方法，看看面板允不允许关闭
+        // 尝试新布局内的所有面板的 beforeClose 方法，看允不允许关闭
         for (let i = 0; i < panels.length; i++) {
             const name = panels[i];
             const id = panel.getWindow(name);
@@ -44,6 +44,7 @@ class Layout {
             }
 
             // 将在主窗口内的面板移出数组
+            // 这部分面板只会触发 hide 事件
             if (id === this.mainID) {
                 panels.splice(i--, 1);
                 continue;

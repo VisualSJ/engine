@@ -100,7 +100,7 @@
         "@base/electron-windows": "1.0.2",
         "@base/electron-worker": "1.0.4",
         "@editor/asset-db": "1.1.8-beta2",
-        "@editor/dock": "1.0.1",
+        "@editor/dock": "1.0.2",
         "@editor/fbx2gltf": "0.9.7-9c16d3d",
         "@editor/gulp-rev-all": "^0.9.8-5f221a5",
         "@editor/package": "1.0.0",
