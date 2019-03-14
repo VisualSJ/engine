@@ -102,7 +102,6 @@ CCProgram gizmo-fs %{
   precision mediump float;
   #include <rect-area-light>
   #include <cc-global>
-  #include <gamma>
   #include <post-process>
 
   in vec3 normal_w;
@@ -130,7 +129,7 @@ CCProgram gizmo-fs %{
     points[2] = (forward * 3.0 - right - up) * 40.0;
     points[3] = (forward * 3.0 + right - up) * 40.0;
     vec3 diffuse = color.rgb * (0.2 + LTC_Evaluate(N, V, pos_l, mat3(1), points) * 0.8);
-    return PostProcess(vec4(diffuse, color.a), cc_exposure.w);
+    return PostProcess(vec4(diffuse, color.a), cc_exposure.w, cc_exposure.z);
   }
 }%
 
@@ -151,7 +150,6 @@ CCProgram line-vs %{
 CCProgram line-fs %{
   precision mediump float;
   #include <cc-global>
-  #include <gamma>
   #include <post-process>
 
   uniform Constant {
@@ -159,9 +157,9 @@ CCProgram line-fs %{
   };
 
   vec4 front() {
-    return PostProcess(color, cc_exposure.w);
+    return PostProcess(color, cc_exposure.w, cc_exposure.z);
   }
   vec4 back() {
-    return PostProcess(vec4(color.rgb, color.a * 0.2), cc_exposure.w);
+    return PostProcess(vec4(color.rgb, color.a * 0.2), cc_exposure.w, cc_exposure.z);
   }
 }%

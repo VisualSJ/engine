@@ -56,7 +56,6 @@ CCProgram grid-vs %{
 CCProgram grid-fs %{
   precision mediump float;
   #include <cc-global>
-  #include <gamma>
   #include <post-process>
 
   in vec2 uv;
@@ -68,6 +67,6 @@ CCProgram grid-fs %{
     // fade out at grazing angles
     float scale = abs(normalize(cc_cameraPos.xyz - pos_w).y);
     if (scale < 0.5) alpha *= max(0.3, scale / 0.5);
-    return PostProcess(vec4(0.5, 0.5, 0.5, alpha), cc_exposure.w);
+    return PostProcess(vec4(0.5, 0.5, 0.5, alpha), cc_exposure.w, cc_exposure.z);
   }
 }%
