@@ -44,6 +44,6 @@
     "v-workflow": "1.0.0"
   },
   "branch": {
-    "engine": "3d"
+    "engine": "3d-stable"
   }
 }
