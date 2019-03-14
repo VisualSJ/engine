@@ -3,7 +3,7 @@
 
 vec4 PostProcess(vec4 color, float scale, float isHDR)
 {
-#if USE_HDR
+#if CC_USE_HDR
 	color.rgb = mix(color.rgb, pow(color.rgb, vec3(2.2)) * scale, vec3(isHDR));
 #endif
 	return color;

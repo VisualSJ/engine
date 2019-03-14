@@ -47,7 +47,7 @@ CCProgram tonemap-fs %{
 
   vec4 frag () {
     vec4 o = texture(u_texSampler, v_uv);
-  #if USE_HDR
+  #if CC_USE_HDR
     o.rgb *= cc_exposure.x * FP_SCALE_INV;
     o.rgb = ACESToneMap(o.rgb);
     o.rgb = LinearToSRGB(o.rgb);
