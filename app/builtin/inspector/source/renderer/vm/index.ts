@@ -26,9 +26,47 @@ export function init(elem: HTMLElement) {
             width: 0,
             height: 0,
             language: 'default',
+            hasUpdate: true,
+            itemTempQue: [],
+        },
+        watch: {
+            hasUpdate() {
+                // @ts-ignore
+                const vm: any = this;
+                if (vm.hasUpdate && vm.itemTempQue.length > 0) {
+                    const item = vm.itemTempQue.shift();
+                    vm.update(item.type, item.uuid);
+                }
+            },
         },
 
         methods: {
+            async update(type: string, uuid: string) {
+                // @ts-ignore
+                const vm: any = this;
+                if (!vm.hasUpdate) {
+                    vm.itemTempQue.push({type, uuid});
+                    return;
+                }
+                vm.hasUpdate = false;
+                if (vm.item.type === 'asset' && vm.$refs.asset && vm.$refs.asset.dirty) {
+                    const t = Editor.I18n.t;
+                    // @ts-ignore
+                    const result = await Editor.Dialog.show({
+                        title: 'warn',
+                        type: 'warn',
+                        message: t('inspector.check_is_saved.message'),
+                        buttons: [t('inspector.check_is_saved.abort'), t('inspector.check_is_saved.save')],
+                    });
+                    if (result !== 0) {
+                        // @ts-ignore
+                        vm.$refs.asset._onApply();
+                    }
+                }
+                vm.hasUpdate = true;
+                vm.item.type = type;
+                vm.item.uuid = uuid;
+            },
             resize() {
                 // @ts-ignore
                 const rect = this.$el.getBoundingClientRect();
