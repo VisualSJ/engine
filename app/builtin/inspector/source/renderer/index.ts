@@ -86,8 +86,7 @@ export const messages = {
         if (!vm) {
             return;
         }
-        vm.item.type = type;
-        vm.item.uuid = uuid;
+        vm.update(type, uuid);
     },
 
     /**
@@ -97,8 +96,7 @@ export const messages = {
      */
     'selection:unselect'(type: string, uuid: string) {
         if (vm.item.type === type && vm.item.uuid === uuid) {
-            vm.item.type = '';
-            vm.item.uuid = '';
+            vm.update('', '');
         }
     },
 

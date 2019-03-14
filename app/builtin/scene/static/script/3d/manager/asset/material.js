@@ -39,6 +39,11 @@ function getDefaultValue(type, data) {
                 return data[0];
             }
             return 0;
+        case 'String':
+            if (data) {
+                return data[0];
+            }
+            return '';
         case 'cc.Vec2':
             if (data) {
                 return new cc.Vec2(data[0] || 0, data[1] || 0);
@@ -114,14 +119,30 @@ function encodeEffect(effect) {
                 }
 
                 const type = typeMap[define.type] || define.type;
-                const value = getDefaultValue(type);
+
+                // define 会有三种可能: Boolean Number String
+                let value;
+                switch(type) {
+                    case 'Number':
+                        value = define.range[0];
+                        break;
+                    case 'String':
+                        value = define.options[0];
+                        break;
+                    default:
+                        value = false;
+                }
                 const dump = dumpEncode.encodeObject(value, {
                     default: value,
                 });
+
+
                 defines.push({
                     name: define.name,
                     defines: define.defines,
                     type,
+                    options: define.options,
+                    range: define.range,
                     default: dump.value,
                     dump,
                 });
@@ -180,7 +201,8 @@ async function decodeMaterial(dump) {
         for (let j = 0; j < current.defines.length; j++) {
             const define = current.defines[j];
 
-            if (JSON.stringify(define.default) === JSON.stringify(define.dump.value)) {
+            // 如果两个数组为 0 | "0"，则需要直接判断
+            if (define.default == define.dump.value || JSON.stringify(define.default) === JSON.stringify(define.dump.value)) {
                 continue;
             }
             material._defines[i][define.name] = undefined;
@@ -190,7 +212,8 @@ async function decodeMaterial(dump) {
         for (let j = 0; j < current.props.length; j++) {
             const prop = current.props[j];
 
-            if (JSON.stringify(prop.default) === JSON.stringify(prop.dump.value)) {
+            // 如果两个数组为 0 | "0"，则需要直接判断
+            if (prop.default == prop.dump.value || JSON.stringify(prop.default) === JSON.stringify(prop.dump.value)) {
                 continue;
             }
             material._props[i][prop.name] = undefined;

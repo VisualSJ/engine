@@ -148,24 +148,6 @@ export function data() {
     };
 }
 
-export async function beforeDestroy() {
-    // @ts-ignore
-    if (this.dirty) {
-        const t = Editor.I18n.t;
-        // @ts-ignore
-        const result = await Editor.Dialog.show({
-            title: 'warn',
-            type: 'warn',
-            message: t('inspector.check_is_saved.message'),
-            buttons: [t('inspector.check_is_saved.abort'), t('inspector.check_is_saved.save')],
-        });
-        if (result !== 0) {
-            // @ts-ignore
-            this._onApply();
-        }
-    }
-}
-
 export async function mounted() {
     // @ts-ignore
     this.refresh();

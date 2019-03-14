@@ -268,7 +268,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
             dump.type === 'Number' ||
             dump.type === 'Enum'
         ) {
-            dump.value -= 0;
+            // ENUM 可能是字符串，所以不能强制转成数字
+            let t = dump.value - 0;
+            if (!isNaN(t)) {
+                dump.value = t;
+            }
             data[info.key] = dump.value;
         } else if (
             dump.type === 'String'

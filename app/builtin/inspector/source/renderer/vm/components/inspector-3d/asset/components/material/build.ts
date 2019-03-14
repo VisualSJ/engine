@@ -56,7 +56,29 @@ export function buildEffect(props: any[], defs: any[]) {
     }
 
     defs.forEach((item) => {
-        item.dump.type = 'ui.Depend';
+        switch(item.type) {
+            case 'Number':
+                item.dump.type = 'Enum';
+                item.dump.enumList = [];
+                for (let i = item.range[0]; i <= item.range[1]; i++) {
+                    item.dump.enumList.push({
+                        name: i,
+                        value: i,
+                    });
+                }
+                break;
+            case 'String':
+                item.dump.type = 'Enum';
+                item.dump.enumList = item.options.map((str: string) => {
+                    return {
+                        name: str,
+                        value: str,
+                    }
+                });
+                break;
+            default:
+                item.dump.type = 'ui.Depend';
+        }
         encode(item);
     });
     props.forEach(encode);
