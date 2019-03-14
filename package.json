@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./scripts/start.js",
-    "postinstall": "npm run build",
+    "postinstall": "npm run build && npm run checkout",
+    "checkout": "node ./scripts/checkout.js",
     "build": "node ./scripts/build/editor.js && node ./scripts/build/engine.js && node ./scripts/build/css.js && node ./scripts/build/js.js",
     "build:css": "node ./scripts/build/css.js",
     "build:effect": "node ./scripts/build/effect.js",
@@ -30,6 +31,7 @@
     "@types/node": "^10.5.2",
     "asar": "^1.0.0",
     "chai": "^4.2.0",
+    "chalk": "^2.4.2",
     "electron": "4.0.4",
     "fs-jetpack": "^2.2.2",
     "gulp": "^4.0.0",
@@ -40,5 +42,8 @@
     "uglify-es": "^3.3.9",
     "v-git": "0.0.3",
     "v-workflow": "1.0.0"
+  },
+  "branch": {
+    "engine": "3d"
   }
 }

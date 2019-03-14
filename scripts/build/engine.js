@@ -3,9 +3,9 @@
 const fse = require('fs-extra');
 const path = require('path');
 const vGit = require('v-git');
-
 const vWorkflow = require('v-workflow');
 
+const pkg = require('../../package.json');
 const RESOURCE = path.join(__dirname, '../../resources');
 
 const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -41,10 +41,10 @@ workflow.task('clone-engine', async function() {
     const repo = await vGit.init(engine);
 
     // 如果本地有 3d 分支，则切换到本地 3d 分支，没有的话创建 3d 分支
-    if (repo.branchList.indexOf('3d') === -1) {
-        await repo.createBranch('3d', 'origin/3d');
+    if (repo.branchList.indexOf(pkg.branch.engine) === -1) {
+        await repo.createBranch(pkg.branch.engine, `origin/${pkg.branch.engine}`);
     } else {
-        await repo.switchBranch('3d');
+        await repo.switchBranch(pkg.branch.engine);
     }
 });
 

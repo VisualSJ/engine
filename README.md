@@ -29,6 +29,15 @@ npm run build
 npm run build:engine
 ```
 
+## 切换引擎分支
+
+编辑器和引擎的分支一一对应，在 package.json 内，会有 branch 的对应关系。
+我们在切换编辑器分支之后，需要执行一次切换引擎分支的操作：
+
+```bash
+npm run checkout
+```
+
 ### 使用 electron 构建原生的 node 模块
 
 编辑器内使用的 nodejs 模块，可能会包含 c++ 等原生模块，而 electron 环境和本机环境有所不同，所以需要重新使用 electron 环境编译这些模块。
