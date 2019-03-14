@@ -39,7 +39,6 @@ CCProgram sky-fs %{
   uniform samplerCube cubeMap;
   #include <unpack>
   #include <cc-global>
-  #include <gamma>
   #include <post-process>
 
   vec4 frag () {
@@ -50,6 +49,6 @@ CCProgram sky-fs %{
   #else
       vec4 o = texture(cubeMap, viewDir);
   #endif
-    return PostProcess(o, cc_exposure.w);
+    return PostProcess(o, cc_exposure.w, cc_exposure.z);
   }
 }%

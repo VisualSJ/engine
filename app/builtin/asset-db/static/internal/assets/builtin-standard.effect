@@ -241,7 +241,7 @@ CCProgram standard-fs %{
 
     // finalColor = max(finalColor, vec3(0.0));
 
-  #if USE_HDR
+  #if CC_USE_HDR
     finalColor *= FP_SCALE;
   #else
     finalColor *= cc_exposure.x;
