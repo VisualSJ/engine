@@ -56,7 +56,7 @@ export default class TextureImporter extends Importer {
      */
     public async import(asset: VirtualAsset) {
         if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-            Object.assign(asset.userData, makeDefaultTexture2DAssetUserData());
+            asset.assignUserData(makeDefaultTexture2DAssetUserData(), true);
         }
 
         const userData = asset.userData as Texture2DAssetUserData;

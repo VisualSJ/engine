@@ -58,7 +58,7 @@ export default class SpriteFrameImporter extends TextureImporter {
             }
 
             if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-                Object.assign(asset.userData, makeDefaultSpriteFrameBaseAssetUserData());
+                asset.assignUserData(makeDefaultSpriteFrameBaseAssetUserData(), true);
             }
 
             if (asset.parent.meta.importer === 'image') {
