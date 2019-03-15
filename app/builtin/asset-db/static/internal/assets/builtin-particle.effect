@@ -52,7 +52,7 @@ CCEffect %{
   - name: add-smooth
     passes:
     - vert: particle-vs-legacy:lpvs_main
-      frag: no-tint-fs:smooth
+      frag: no-tint-fs:addSmooth
       rasterizerState: *r1
       depthStencilState: *d1
       blendState: *b2
@@ -108,7 +108,7 @@ CCProgram no-tint-fs %{
 
   uniform sampler2D mainTexture;
 
-  vec4 smooth () {
+  vec4 addSmooth () {
     vec4 col = color * texture(mainTexture, uv);
     col.rgb *= col.a;
     return PostProcess(col, cc_exposure.w, cc_exposure.z);
