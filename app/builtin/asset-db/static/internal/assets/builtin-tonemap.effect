@@ -9,12 +9,7 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        u_texSampler:
-          type: sampler2D
-          sampler:
-            minFilter: linear
-            magFilter: linear
-            mipFilter: none
+        u_texSampler: {}
 }%
 
 CCProgram tonemap-vs %{
