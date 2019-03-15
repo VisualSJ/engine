@@ -92,12 +92,47 @@ class Operation {
         });
     }
 
+    /**
+     * 锁定鼠标
+     */
     requestPointerLock() {
         ipcManager.send('lock-pointer', true);
     }
 
+    /**
+     * 退出锁定鼠标
+     */
     exitPointerLock() {
         ipcManager.send('lock-pointer', false);
+    }
+
+    /**
+     * 更改鼠标样式
+     * @param {*} type 
+     */
+    changePointer(type) {
+        const allow = [
+            '-webkit-grab', '-webkit-grabbing',
+            'zoom-in', 'zomm-out',
+
+            'n-resize', 's-resize', 'e-resize', 'w-resize',
+            'ne-resize', 'ew-resize', 'nw-resize', 'ns-resize', 'se-resize', 'sw-resize',
+            'nesw-resize', 'nwse-resize',
+            'col-resize', 'row-resize',
+
+            'text', 'vertical-text', 'context-menu',
+
+            'copy', 'move',  'none', 'default', 'pointer',
+
+            'inherit', 'initial',
+    
+            'alias', 'all-scroll', 'auto', 'cell', 'crosshair',
+            'no-drop', 'not-allowed', 'progress', 'unset', 'wait',
+        ].includes(type);
+        if (!allow) {
+            type = 'default';
+        }
+        ipcManager.send('change-pointer', type);
     }
 
     /**

@@ -154,6 +154,10 @@ const messages = {
         });
     },
 
+    /**
+     * 是否锁定鼠标
+     * @param {*} bool 
+     */
     'lock-pointer'(bool) {
         if (bool) {
             this.requestPointerLock();
@@ -162,14 +166,35 @@ const messages = {
         }
     },
 
+    /**
+     * 更改鼠标样式
+     * @param {*} type 
+     */
+    'change-pointer'(type) {
+        document.body.style.cursor = type;
+    },
+
+    /**
+     * 保存资源
+     * @param {*} uuid 
+     * @param {*} content 
+     */
     async 'save-asset'(uuid, content) {
         await Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
     },
 
+    /**
+     * 展示小窗口
+     * 例如：粒子控制窗口
+     * @param {*} info 
+     */
     'show-min-window'(info) {
         this.showMinWindow(info);
     },
 
+    /**
+     * 隐藏小窗口
+     */
     'hide-min-window'() {
         this.hideMinWindow();
     },
