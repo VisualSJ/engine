@@ -110,7 +110,7 @@ export default class SpriteAtlasImporter extends Importer {
           // asset.userData.redirect = atlasSubAsset.uuid;
           Object.assign(atlasSubAsset.userData, frameData);
           // @ts-ignore
-          spriteAtlas.spriteFrames[key] = Manager.serialize.asAsset(atlasSubAsset.uuid);
+          spriteAtlas.spriteFrames.set(key, Manager.serialize.asAsset(atlasSubAsset.uuid));
         }
 
         // @ts-ignore
