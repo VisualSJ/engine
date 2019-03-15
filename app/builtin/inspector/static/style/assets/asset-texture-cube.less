@@ -1,0 +1,57 @@
+.asset-texture-cube {
+    padding: 0 10px;
+    .ui-prop {
+        margin: 15px 0;
+    }
+    .texture-cube-preview {
+        height: 300px;
+        background: #333;
+        outline: 1px solid #222;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        .center {
+            position: relative;
+            width: calc(var(--size) * 4);
+            height: calc(var(--size) * 3);
+        }
+        .info {
+            position: absolute;
+            width: var(--size);
+            height: var(--size);
+            text-align: center;
+            line-height: var(--size);
+        }
+        canvas{
+            position: absolute;
+            background: #545252;
+        }
+        canvas[hovering] {
+            outline: 1px solid green;
+        }
+        .bottom {
+            top:0;
+            left: calc(var(--size) * 2);
+        }
+        .top {
+            top: calc(var(--size) * 2);
+            left: calc(var(--size) * 2);
+        }
+        .front {
+            top: var(--size);
+            left: calc(var(--size) * 2);
+        }
+        .back {
+            top: var(--size);
+            left: 0;
+        }
+        .left {
+            top: var(--size);
+            left: var(--size);
+        }
+        .right {
+            top: var(--size);
+            left: calc(var(--size)*3);
+        }
+    }
+}

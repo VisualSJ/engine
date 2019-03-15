@@ -16,6 +16,7 @@
                 v-if="state.db === 'ready' && item.type === 'asset' && item.uuid"
                 :uuid="item.uuid"
                 :language="language"
+                :width="width"
             ></asset-3d>
 
             <node-3d ref="node"

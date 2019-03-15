@@ -51,6 +51,12 @@ exports.createMenu = (callback: any): any[] => {
             },
         },
         {
+            label: Editor.I18n.t('assets.menu.newCubeMap'),
+            click() {
+                callback({ type: 'cubemap' });
+            },
+        },
+        {
             label: Editor.I18n.t('assets.menu.newPhysicsMaterial'),
             click() {
                 callback({ type: 'pmtl' });

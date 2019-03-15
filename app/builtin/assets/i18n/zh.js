@@ -24,6 +24,7 @@ module.exports = {
         newFolder: '文件夹',
         newJavaScript: 'JavaScript',
         newTypeScript: 'TypeScript',
+        newCubeMap: 'CubeMap',
         newScene: '场景文件',
         newMaterial: 'Material',
         newPhysicsMaterial: 'Physics Material',

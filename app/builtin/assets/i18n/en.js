@@ -24,6 +24,7 @@ module.exports = {
         newFolder: 'Folder',
         newJavaScript: 'JavaScript',
         newTypeScript: 'TypeScript',
+        newCubeMap: 'CubeMap',
         newScene: 'Scene',
         newMaterial: 'Material',
         newPhysicsMaterial: 'Physics Material',

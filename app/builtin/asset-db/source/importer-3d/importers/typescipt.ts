@@ -17,7 +17,7 @@ export default class ScriptImporter  extends Importer {
 
     // importer 的名字，用于指定 importer as 等
     get name() {
-        return 'typescipt';
+        return 'typescript';
     }
 
     // 引擎内对应的类型
@@ -38,11 +38,9 @@ export default class ScriptImporter  extends Importer {
         try {
             const target: any = await this.compile(asset);
             const header = `
-            'use strict';
-            cc._RF.push(module, '${uuidUtils.compressUuid(
-                asset.uuid
-            )}', '${asset.basename}');
-            // ${asset.basename}\n
+'use strict';
+cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
+// ${asset.basename}\n
             `;
             const footer = `\ncc._RF.pop();\n`;
 

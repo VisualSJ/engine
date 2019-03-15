@@ -9,7 +9,7 @@ const importers: string[] = [
     'javascript',
     'typescript',
     'texture',
-    'erp-texture-cube',
+    'texture-cube',
     'sprite-frame',
     'material',
 ];
@@ -19,6 +19,7 @@ export const template = readTemplate('inspector-3d/asset/index.html');
 export const props = [
     'uuid',
     'language',
+    'width',
 ];
 
 export const components = {
@@ -29,9 +30,9 @@ export const components = {
     'asset-fbx': require('./components/fbx'),
     'asset-image': require('./components/image'),
     'asset-javascript': require('./components/javascript'),
-    // 'asset-typescript': require('./components/typescript'),
+    'asset-typescript': require('./components/typescript'),
     'asset-texture': require('./components/texture'),
-    'asset-texture-cube': require('./components/texture'),
+    'asset-texture-cube': require('./components/texture-cube'),
     'asset-sprite-frame': require('./components/sprite-frame'),
     'asset-material': require('./components/material/index'),
 };
