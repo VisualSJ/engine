@@ -1,6 +1,7 @@
 'use strict';
 
 import { readTemplate } from '../../utils';
+import { emit } from '../../event';
 
 export const template = readTemplate('./public/prop.html');
 
@@ -55,6 +56,9 @@ export const methods = {
 
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
+
+        // 告诉 event bus 数据已经 commit
+        emit('commit');
 
         // @ts-ignore 数组的 langth
         const childPath = event.target.path;
