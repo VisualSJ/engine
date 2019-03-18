@@ -331,7 +331,7 @@ function _serializeField (self, val) {
                 }
             }
             else {
-                if (!val.isRealValid) {
+                if (!isRealValid(val)) {
                     return null;
                 }
             }
@@ -352,6 +352,11 @@ function _serializeField (self, val) {
     else /*function*/ {
         return null;
     }
+}
+
+function isRealValid (object) {
+    const RealDestroyed = CCObject.Flags.RealDestroyed !== undefined ? CCObject.Flags.RealDestroyed : (1 << 1);
+    return !(object._objFlags & RealDestroyed);
 }
 
 ///**

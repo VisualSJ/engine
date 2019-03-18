@@ -642,7 +642,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.5';
+        return '1.0.8';
     }
 
     // importer 的名字，用于指定 importer as 等

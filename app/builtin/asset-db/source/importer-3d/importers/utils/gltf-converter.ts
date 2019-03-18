@@ -372,11 +372,16 @@ export class GltfConverter {
         const material = new cc.Material();
         material.name = this._getGltfXXName(GltfAssetKind.Material, iGltfMaterial);
         material._effectAsset = effectGetter('db://internal/builtin-standard.effect');
+
+        const defines: { [x: string]: boolean; } = {};
+        const props: { [x: string]: any; } = {};
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                material._defines = [{ USE_ALBEDO_MAP: true }];
-                material._props = [{albedoMap: textures[pbrMetallicRoughness.baseColorTexture.index]}];
+                // tslint:disable-next-line:no-string-literal
+                defines['USE_ALBEDO_MAP'] = true;
+                // tslint:disable-next-line:no-string-literal
+                props['albedoMap'] = textures[pbrMetallicRoughness.baseColorTexture.index];
             } else {
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
@@ -387,8 +392,63 @@ export class GltfConverter {
                     // @ts-ignore
                     color = new cc.Color(255, 255, 255, 255);
                 }
-                material._props = [{albedo: color}];
+                // tslint:disable-next-line:no-string-literal
+                props['albedo'] = color;
             }
+        }
+
+        if (gltfMaterial.normalTexture) {
+            // tslint:disable-next-line:no-string-literal
+            defines['USE_NORMAL_MAP'] = true;
+            // tslint:disable-next-line:no-string-literal
+            props['normalMap'] = textures[gltfMaterial.normalTexture.index];
+        }
+
+        if (gltfMaterial.emissiveTexture) {
+            // tslint:disable-next-line:no-string-literal
+            defines['USE_EMISSIVE_MAP'] = true;
+            // tslint:disable-next-line:no-string-literal
+            props['emissiveMap'] = textures[gltfMaterial.emissiveTexture.index];
+        }
+
+        if (gltfMaterial.emissiveFactor) {
+            // @ts-ignore
+                // tslint:disable-next-line:no-string-literal
+            props['emissive'] = new cc.Color(
+                gltfMaterial.emissiveFactor[0] * 255,
+                gltfMaterial.emissiveFactor[1] * 255,
+                gltfMaterial.emissiveFactor[2] * 255,
+                255);
+        }
+
+        switch (gltfMaterial.alphaMode) {
+            case 'BLEND':
+                material._techIdx = 1; // Use transparent technique.
+                break;
+            case 'MASK':
+                const alphaCutoff = gltfMaterial.alphaCutoff === undefined ? 0.5 : gltfMaterial.alphaCutoff;
+                // tslint:disable-next-line:no-string-literal
+                defines['USE_ALPHA_TEST'] = true;
+                // @ts-ignore
+                // tslint:disable-next-line:no-string-literal
+                props['albedoScale'] = new cc.Vec4(1, 1, 1, alphaCutoff);
+                break;
+            case 'OPAQUE':
+            case undefined:
+                break;
+            default:
+                console.warn(
+                    `Alpha mode ${gltfMaterial.alphaMode} ` +
+                    `(for material named ${gltfMaterial.name}, gltf-index ${iGltfMaterial}) ` +
+                    `is not supported currently.`);
+                break;
+        }
+
+        if (Object.keys(defines).length !== 0) {
+            material._defines = [defines];
+        }
+        if (Object.keys(props).length !== 0) {
+            material._props = [props];
         }
 
         return material;
