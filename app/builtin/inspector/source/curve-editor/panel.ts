@@ -40,7 +40,7 @@ export const messages = {
 
 export const listeners = {
     resize() {
-        vm.reRender();
+        vm.rePaint();
     },
 };
 
@@ -96,7 +96,7 @@ export async function ready() {
         },
 
         async mounted() {
-            this.reRender();
+            this.init();
         },
 
         methods: {
@@ -105,7 +105,15 @@ export async function ready() {
             },
 
             // 重新绘制
-            reRender() {
+            rePaint() {
+                this.initCanvas();
+                // @ts-ignore
+                this.curveControl!.rePaint();
+                // @ts-ignore
+                this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
+            },
+
+            init() {
                 this.initCanvas();
                 this.drawGrid();
                 this.drawCurve();
@@ -151,6 +159,9 @@ export async function ready() {
              * @param dump
              */
             checkAndUpdate(this: any, dump: any) {
+                if (!dump) {
+                    return;
+                }
                 if (!Array.isArray(dump.value.keyFrames) || dump.value.keyFrames.length < 1) {
                     !dump && (dump = {});
                     dump.keyFrames = DEFAULT_KEYFRAMES[0];
@@ -232,7 +243,8 @@ export async function ready() {
                 });
                 this.curveControl.draw(this.dump.keyFrames);
                 this.curveControl.on('change', (data: any) => {
-                    this.dump = data;
+                    this.dump.keyFrames = data.keyFrames;
+                    this.dump.multiplier = data.multiplier;
                     Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
                 });
             },

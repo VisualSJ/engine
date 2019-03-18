@@ -23,12 +23,20 @@ export default class CurveControl extends EventEmitter {
     private grid: any; // 存储网格处理对象
     private hermite: any; // 存储网格处理对象
     private ctrlConfig: any; // 存储控制点配置
-
     private changeType: string = ''; // 标识改动对象
     private isShowCtrl: boolean = false; // 是否显示手柄
     private isShowPoint: boolean = false; // 是否显示点坐标
     private isShowAuxi: boolean = false; // 是否显示辅助线
     private isBindHandle: boolean = false; // 是否绑定事件
+
+    // 存储事件需要使用的 flags
+    private flags: any = {
+        flag: false,
+        tanDrag: false,
+        curveDrag: false,
+        keyDrag: false,
+    };
+
     // 关键帧控制点相关信息
     get ctrlKey() {
         return this.hermite.ctrlKey;
@@ -48,6 +56,15 @@ export default class CurveControl extends EventEmitter {
             curveConfig: options.curveConfig,
         });
 
+    }
+
+    /**
+     * 重绘
+     */
+    public rePaint() {
+        this.clear();
+        this.grid.rePaint();
+        this.hermite.rePaint();
     }
 
     /**
@@ -86,7 +103,7 @@ export default class CurveControl extends EventEmitter {
             this.cxt2D.stroke();
             this.cxt2D.fill();
         }
-        !this.isBindHandle && this.ctrlHandler();
+        !this.isBindHandle && this.bindHandler();
     }
 
     /**
@@ -109,74 +126,29 @@ export default class CurveControl extends EventEmitter {
     /**
      * canvas 事件处理（编辑操作）
      */
-    private ctrlHandler() {
+    private bindHandler() {
         this.isBindHandle = true;
-        let tanDrag = false;
-        let curveDrag = false;
-        let keyDrag = false;
+        this.canvas.addEventListener('mousedown', (event: any) => this.onMouseDown(event));
+        this.canvas.addEventListener('mousemove', (event: any) => this.onMouseMove(event));
+
+        document.addEventListener('mouseup', (event: any) => this.onMouseUp(event));
+    }
+
+    private onMouseDown(event: any) {
+        this.flags.flag = false;
         const {radius} = this.ctrlConfig;
-        this.canvas.addEventListener('mousedown', (event: any) => {
-            let flag = false;
-            const {offsetX, offsetY} = event;
-            // 判断是否在线上(取像素颜色判断)
-            const myImageData = this.cxt2D.getImageData(offsetX - PIXEL_RANGE / 2, offsetY - PIXEL_RANGE / 2,
-                 PIXEL_RANGE, PIXEL_RANGE);
+        const {offsetX, offsetY} = event;
+        // 判断是否在线上(取像素颜色判断)
+        const myImageData = this.cxt2D.getImageData(offsetX - PIXEL_RANGE / 2, offsetY - PIXEL_RANGE / 2,
+             PIXEL_RANGE, PIXEL_RANGE);
 
-            // 先判断是否在关键帧控制点处（圆点需要加上原点半径）
-            for (const info of this.ctrlKey) {
-                const {x, y} = info.point.canvas;
+        // 先判断是否在关键帧控制点处（圆点需要加上原点半径）
+        for (const info of this.ctrlKey) {
+            const {x, y} = info.point.canvas;
 
-                // 点击的点，在控制范围内
-                if (Math.abs(offsetX - x) < (CLICK_RANGE * 2 + radius) &&
-                 Math.abs(offsetY - y) < (CLICK_RANGE * 2 + radius)) {
-                    if (event.button === 2) {
-                        const that = this;
-                        Editor.Menu.popup({
-                            x: event.pageX,
-                            y: event.pageY,
-                            menu: [
-                                {
-                                    label: 'Delete Key',
-                                    click() {
-                                        that.delKeyFrame(info.index);
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-                    flag = true;
-                    keyDrag = true;
-                    this.canvas.style.cursor = 'move';
-                    this.showCtrl(info);
-                    this.showPoint(this.hermite.keyFrames[info.index], info.point.canvas);
-                    return;
-                }
-            }
-
-            // 判断是否在控制手柄上
-            if (this.isShowCtrl && this.ctrlPoints) {
-                for (const key of Object.keys(this.ctrlPoints)) {
-                    const info = this.ctrlPoints[key];
-                    if (!info.canvas || key === 'point') {
-                        continue;
-                    }
-                    const {x, y} = info.canvas;
-                    // 点击的点，在控制范围内（圆点需要加上原点半径）
-                    if (Math.abs(offsetX - x) < (CLICK_RANGE + radius)
-                    && Math.abs(offsetY - y) < (CLICK_RANGE + radius)) {
-                        tanDrag = true;
-                        flag = true;
-                        // 存储当前拖动手柄的左右方向
-                        this.ctrlPoints.type = key;
-                        return;
-                    }
-                }
-            }
-
-            // 判断是否在线上
-            if (myImageData.data.toString() !== UINT8_COLOR_DEFALT) {
-                flag = true;
+            // 点击的点，在控制范围内
+            if (Math.abs(offsetX - x) < (CLICK_RANGE * 2 + radius) &&
+             Math.abs(offsetY - y) < (CLICK_RANGE * 2 + radius)) {
                 if (event.button === 2) {
                     const that = this;
                     Editor.Menu.popup({
@@ -184,72 +156,120 @@ export default class CurveControl extends EventEmitter {
                         y: event.pageY,
                         menu: [
                             {
-                                label: 'Add Key',
+                                label: 'Delete Key',
                                 click() {
-                                    that.addKeyFrame(offsetX);
+                                    that.delKeyFrame(info.index);
                                 },
                             },
                         ],
                     });
-                } else {
-                    this.lightCurve();
-                    this.canvas.style.cursor = 'ns-resize';
-                    !(tanDrag || keyDrag) && (curveDrag = true);
+                    return;
                 }
-            }
-
-            if (flag) {
+                this.flags.flag = true;
+                this.flags.keyDrag = true;
+                this.canvas.style.cursor = 'move';
+                this.showCtrl(info);
+                this.showPoint(this.hermite.keyFrames[info.index], info.point.canvas);
                 return;
             }
-            // 不属于以上任何情况，恢复原来的辅助线效果
-            this.resetCtrl('hideCtrl');
-        });
+        }
 
-        this.canvas.addEventListener('mouseup', (event: any) => {
-            tanDrag = false;
-            curveDrag = false;
-            keyDrag = false;
-            this.isShowPoint = false;
-            this.canvas.style.cursor = 'default';
-            if (this.changeType) {
+        // 判断是否在控制手柄上
+        if (this.isShowCtrl && this.ctrlPoints) {
+            for (const key of Object.keys(this.ctrlPoints)) {
+                const info = this.ctrlPoints[key];
+                if (!info.canvas || key === 'point') {
+                    continue;
+                }
+                const {x, y} = info.canvas;
+                // 点击的点，在控制范围内（圆点需要加上原点半径）
+                if (Math.abs(offsetX - x) < (CLICK_RANGE + radius)
+                && Math.abs(offsetY - y) < (CLICK_RANGE + radius)) {
+                    this.flags.tanDrag = true;
+                    this.flags.flag = true;
+                    // 存储当前拖动手柄的左右方向
+                    this.ctrlPoints.type = key;
+                    return;
+                }
+            }
+        }
+
+        // 判断是否在线上
+        if (myImageData.data.toString() !== UINT8_COLOR_DEFALT) {
+            this.flags.flag = true;
+            if (event.button === 2) {
+                const that = this;
+                Editor.Menu.popup({
+                    x: event.pageX,
+                    y: event.pageY,
+                    menu: [
+                        {
+                            label: 'Add Key',
+                            click() {
+                                that.addKeyFrame(offsetX);
+                            },
+                        },
+                    ],
+                });
+            } else {
+                this.lightCurve();
+                this.canvas.style.cursor = 'ns-resize';
+                !(this.flags.tanDrag || this.flags.keyDrag) && (this.flags.curveDrag = true);
+            }
+        }
+
+        if (this.flags.flag) {
+            return;
+        }
+        // 不属于以上任何情况，恢复原来的辅助线效果
+        this.resetCtrl('hideCtrl');
+    }
+
+    private onMouseMove(event: any) {
+        const {curveDrag, tanDrag, keyDrag} = this.flags;
+        if (!tanDrag && !curveDrag && !keyDrag) {
+            return;
+        }
+        // 有一些由于点击造成的轻微移动
+        process.nextTick(() => {
+            const {offsetX, offsetY, movementY} = event;
+            if (tanDrag) {
+                this.changeType = 'tangent';
+                this.updateTan(offsetX, offsetY);
                 this.emitChange();
-                this.emitConfirm();
-                this.changeType = '';
-            }
-        });
-
-        this.canvas.addEventListener('mousemove', (event: any) => {
-            if (!tanDrag && !curveDrag && !keyDrag) {
                 return;
             }
-            // 有一些由于点击造成的轻微移动
-            process.nextTick(() => {
-                const {offsetX, offsetY, movementY} = event;
-                if (tanDrag) {
-                    this.changeType = 'tangent';
-                    this.updateTan(offsetX, offsetY);
-                    this.emitChange();
+            if (keyDrag) {
+                this.moveKey(offsetX, offsetY);
+                this.emitChange();
+                return;
+            }
+            if (curveDrag && movementY !== 0) {
+                const flag = this.hermite.moveY(- movementY);
+                if (!flag) {
                     return;
                 }
-                if (keyDrag) {
-                    this.moveKey(offsetX, offsetY);
-                    this.emitChange();
-                    return;
-                }
-                if (curveDrag && movementY !== 0) {
-                    const flag = this.hermite.moveY(- movementY);
-                    if (!flag) {
-                        return;
-                    }
-                    this.changeType = 'curve';
-                    this.emitChange();
-                    this.hermite.clear();
-                    this.hermite.update();
-                    this.resetCtrl();
-                    this.lightCurve();
-                }
-            });
+                this.changeType = 'curve';
+                this.emitChange();
+                this.hermite.clear();
+                this.hermite.update();
+                this.resetCtrl();
+                this.lightCurve();
+            }
         });
+    }
+
+    private onMouseUp(event: any) {
+        this.flags.tanDrag = false;
+        this.flags.curveDrag = false;
+        this.flags.keyDrag = false;
+        this.isShowPoint = false;
+        this.canvas.style.cursor = 'default';
+        if (this.changeType) {
+            this.emitChange();
+            this.emitConfirm();
+            this.changeType = '';
+        }
     }
 
     /**
@@ -446,14 +466,14 @@ export default class CurveControl extends EventEmitter {
     private emitConfirm() {
         this.emit('confirm', {
             keyFrames: Array.from(this.hermite.keyFrames),
-            multiplier: 1,
+            multiplier: this.grid.multiplier,
         });
     }
 
     private emitChange() {
         this.emit('change', {
             keyFrames: Array.from(this.hermite.keyFrames),
-            multiplier: 1,
+            multiplier: this.grid.multiplier,
         });
     }
 }
