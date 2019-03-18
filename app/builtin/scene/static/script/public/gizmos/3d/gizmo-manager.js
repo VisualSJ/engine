@@ -259,6 +259,10 @@ class GizmoManager {
     }
 
     showNodeGizmoOfNode(node) {
+        if (!node) {
+            return;
+        }
+
         // node gizmo,常驻的gizmo，只要Node在场景中是active的就会显示
         if (node.active) {
             let gizmoDef = null;
@@ -279,6 +283,10 @@ class GizmoManager {
     }
 
     showComponentGizmoOfNode(node) {
+        if (!node) {
+            return;
+        }
+
         let gizmoDef = null;
         let gizmoObj = null;
         // for component gizmo
@@ -602,6 +610,7 @@ class GizmoManager {
         }
     }
 
+    // 子节点被删除，父节点也会收到node change 消息
     onNodeChanged(node) {
         if (node != null) {
             node.emit('change');
@@ -611,9 +620,10 @@ class GizmoManager {
         // 先在这里统一处理，把Node的所有gizmo重置一遍。
         this.hideAllGizmoOfNode(node);
 
+        this.showNodeGizmoOfNode(node);
         let index = this._selection.indexOf(node.uuid);
         if (index !== -1) {
-            this.showAllGizmoOfNode(node);
+            this.showComponentGizmoOfNode(node);
         }
     }
 
@@ -629,6 +639,10 @@ class GizmoManager {
 
     onBeforeComponentRemove(comp) {
         this.destoryGizmo(comp.gizmo);
+    }
+
+    onResize() {
+        this._worldAxisController.onEditorCameraMoved();
     }
 }
 

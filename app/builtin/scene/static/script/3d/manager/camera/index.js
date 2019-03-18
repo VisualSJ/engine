@@ -5,6 +5,7 @@ const { EventEmitter } = require('events');
 const nodeManager = require('../node');
 const compManager = require('../component');
 const sceneManager = require('../scene');
+const operationMgr = require('../operation');
 
 const listener = require('./listener');
 const utils = require('./utils');
@@ -92,6 +93,10 @@ class Camera extends EventEmitter {
     onUpdate() {
         this._controller.onUpdate(event);
     }
+
+    onResize() {
+        this._controller.onResize();
+    }
 }
 
 const camera = module.exports = new Camera();
@@ -115,6 +120,10 @@ sceneManager.on('open', (error, scene) => {
 
     // 摄像机对准到中心点
     camera.focus();
+});
+
+operationMgr.on('resize', () => {
+    camera.onResize();
 });
 
 // 节点的 active 或者 comp 的 enable 修改的时候需要更新光源数据

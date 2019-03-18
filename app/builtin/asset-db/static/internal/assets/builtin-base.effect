@@ -38,10 +38,12 @@ CCProgram base-vs %{
 CCProgram base-fs %{
   precision mediump float;
   in vec4 color;
+  #include <cc-global>
+  #include <post-process>
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
     o *= color;
-    return o;
+    return PostProcess(o, cc_exposure.w, cc_exposure.z);
   }
 }%

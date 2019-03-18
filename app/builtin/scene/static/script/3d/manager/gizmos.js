@@ -6,6 +6,7 @@ const compMgr = require('./component');
 const EditorCamera = require('./camera');
 const CameraMoveMode = EditorCamera.CameraMoveMode;
 const gizmo = require('../../public/gizmos');
+const operationMgr = require('./operation');
 
 scene.on('open', (error, scene) => {
     gizmo.onSceneLoaded();
@@ -41,6 +42,10 @@ EditorCamera.controller.on('camera-move-mode', (mode) => {
 
 gizmo.TransformToolData.on('dimension-changed', (is2D) => {
     EditorCamera.is2D = is2D;
+});
+
+operationMgr.on('resize', () => {
+    gizmo.onResize();
 });
 
 module.exports = gizmo;
