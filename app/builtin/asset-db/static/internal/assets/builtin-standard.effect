@@ -84,7 +84,6 @@ CCProgram standard-vs %{
     out vec2 v_uv;
   #endif
 
-
   vec4 vert () {
     vec4 pos = vec4(a_position, 1.0);
     vec4 normal = vec4(a_normal, 0.0);
@@ -261,7 +260,7 @@ CCProgram standard-fs %{
     finalColor += (env.rgb * specular);
   #endif
 
-    // finalColor = max(finalColor, vec3(0.0));
+  // finalColor = max(finalColor, vec3(0.0));
 
   #if CC_USE_HDR
     finalColor *= FP_SCALE;
@@ -278,11 +277,19 @@ CCProgram planar-shadow-vs %{
   #include <cc-global>
   #include <cc-local>
   #include <cc-shadow>
+  #if CC_USE_SKINNING
+    #include <cc-skinning>
+  #endif
 
   in vec3 a_position;
 
   vec4 vert () {
     vec4 pos = vec4(a_position, 1);
+
+    #if CC_USE_SKINNING
+      skinVertex(pos);
+    #endif
+
     return cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
   }
 }%
