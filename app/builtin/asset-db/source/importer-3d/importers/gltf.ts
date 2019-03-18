@@ -2,10 +2,10 @@ import { Asset, Importer, queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl, 
 import { AssertionError } from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Animation, GlTf, Image, Material, Mesh, Skin } from '../../../../../@types/asset-db/glTF';
+import { Animation, GlTf, Image, Material, Mesh, Skin, Texture } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
-import { GltfConverter, GltfImageUriInfo, IGltfAssetTable,
-    isDataUri, isFilesystemPath, readGltf } from './utils/gltf-converter';
+import { GltfConverter, GltfImageUriInfo, GltfSubAsset,
+    IGltfAssetTable, isDataUri, isFilesystemPath, readGltf } from './utils/gltf-converter';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -28,6 +28,8 @@ interface IGltfUserData {
     assetTable: IGltfAssetTable;
 
     imageLocations: IImageLoctions;
+
+    dumpMaterials?: boolean;
 }
 
 function loadAssetSync(uuid: string) {
@@ -39,7 +41,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.10';
+        return '1.0.11';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -76,8 +78,7 @@ export default class GltfImporter extends Importer {
      */
     public async import(asset: Asset) {
         await asset.copyToLibrary(asset.extname, asset.source);
-        await this._importSubAssets(asset);
-        return true;
+        return await this._importSubAssets(asset);
     }
 
     protected async getGltfFilePath(asset: Asset) {
@@ -90,6 +91,8 @@ export default class GltfImporter extends Importer {
 
         // Fill the swap space for sub-assets' use
         await GltfImporter.fillGltfSwapSpace(asset, { gltfConverter });
+
+        const gltfFileBaseName = asset.basename;
 
         const userData = asset.userData as IGltfUserData;
         if (!userData.assetTable) {
@@ -128,17 +131,18 @@ export default class GltfImporter extends Importer {
             gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[],
             extension: string,
             importer: string,
-            preferedName?: string,
+            preferFileBaseName?: boolean,
             parentUserData?: any
         ): Promise<Array<string | null>> => {
             const result = new Array<string | null>(gltfSubAssets.length).fill(null);
             for (let index = 0; index < gltfSubAssets.length; ++index) {
-                const gltfSubAsset = gltfSubAssets[index];
-                const name = generateSubAssetName(
-                    asset,
-                    gltfSubAsset,
-                    _uniqueIndex(index, gltfSubAssets.length),
-                    extension, preferedName);
+                const name = makeUniqueSubAssetName(
+                    gltfFileBaseName,
+                    gltfSubAssets,
+                    index,
+                    extension, {
+                        preferFileBaseName,
+                    });
                 const subAsset = await asset.createSubAsset(name, importer);
                 if (parentUserData) {
                     parentUserData.redirect = subAsset.uuid;
@@ -179,10 +183,10 @@ export default class GltfImporter extends Importer {
             assetTable.textures = new Array(gltfConverter.gltf.textures.length).fill(null);
             for (let index = 0; index < gltfConverter.gltf.textures.length; ++index) {
                 const gltfTexture = gltfConverter.gltf.textures[index];
-                const name = generateSubAssetName(
-                    asset,
-                    gltfTexture,
-                    _uniqueIndex(index, gltfConverter.gltf.textures.length),
+                const name = makeUniqueSubAssetName(
+                    gltfFileBaseName,
+                    gltfConverter.gltf.textures,
+                    index,
                     '.texture');
                 const subAsset = await asset.createSubAsset(name, 'texture');
                 const textureUserdata = subAsset.userData as Texture2DAssetUserData;
@@ -212,7 +216,13 @@ export default class GltfImporter extends Importer {
 
         // Import materials
         if (gltfConverter.gltf.materials) {
-            assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, '.material', 'gltf-material');
+            if (!userData.dumpMaterials) {
+                assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, '.material', 'gltf-material');
+            } else {
+                if (!this._dumpMaterials(asset, assetTable, gltfConverter)) {
+                    return false;
+                }
+            }
         }
 
         // Import scenes
@@ -221,10 +231,12 @@ export default class GltfImporter extends Importer {
                 gltfConverter.gltf.scenes,
                 '.prefab',
                 'gltf-scene',
-                gltfConverter.gltf.scenes.length === 1 ? asset.basename : undefined,
+                true,
                 asset.userData
             );
         }
+
+        return true;
     }
 
     private async _importGltfImage(
@@ -232,10 +244,10 @@ export default class GltfImporter extends Importer {
         gltfConverter: GltfConverter, gltfImage: Image, index: number) {
 
         const createEmbededImageAsset = async () => {
-            const name = generateSubAssetName(
-                asset,
-                gltfImage,
-                _uniqueIndex(index, gltfConverter.gltf.images!.length),
+            const name = makeUniqueSubAssetName(
+                asset.basename,
+                gltfConverter.gltf.images!,
+                index,
                 '.image');
 
             const subAsset = await asset.createSubAsset(name, 'gltf-embeded-image');
@@ -283,29 +295,64 @@ export default class GltfImporter extends Importer {
             await createEmbededImageAsset();
         }
     }
+
+    private _dumpMaterials(asset: Asset, assetTable: IGltfAssetTable, gltfConverter: GltfConverter) {
+        const baseFolder = path.join(path.dirname(asset.source), `Materials_${asset.basename}`);
+        fs.ensureDirSync(baseFolder);
+        let reimportNeeded = false;
+        const gltfMaterialArray = gltfConverter.gltf.materials!;
+        const materials = gltfMaterialArray.map((gltfMaterial, index) => {
+            const destFileName = makeUniqueSubAssetName(asset.basename, gltfMaterialArray, index, '.mtl');
+            const destFilePath = path.join(baseFolder, destFileName);
+            if (!fs.existsSync(destFilePath)) {
+                const material = createMaterial(index, gltfConverter, assetTable);
+                const serialized = Manager.serialize(material);
+                fs.writeFileSync(destFilePath, serialized);
+            }
+            const url = queryUrlFromPath(destFilePath);
+            if (url) {
+                const uuid = queryUuidFromUrl(url);
+                if (typeof uuid === 'string') {
+                    return uuid;
+                }
+            }
+            reimportNeeded = true;
+            asset.rely(destFilePath);
+            return null;
+        });
+        if (reimportNeeded) {
+            return false;
+        } else {
+            assetTable.materials = materials;
+        }
+        return true;
+    }
 }
 
 function tryGetOriginalPath(image: Image, gltfConverter: GltfConverter): string | null {
     return image.uri || null;
 }
 
-function _uniqueIndex(index: number, length: number) {
-    return length === 1 ? -1 : index;
-}
-
-function generateSubAssetName(
-    gltfAsset: Asset,
-    subAsset: { name?: string },
+/**
+ * 为glTF子资源数组中的某个子资源生成一个在子资源数组中独一无二的名字，这个名字可用作EditorAsset的名称以及文件系统上的文件名。
+ * @param gltfFileBaseName glTF文件名，不含扩展名部分。
+ * @param assetsArray glTF子资源数组。
+ * @param index 该glTF子资源在glTF资源数组中的索引。
+ * @param extension 附加的扩展名。该扩展名将作为后缀附加到结果名字上。
+ * @param options.preferedFileBaseName 尽可能地使用glTF文件本身的名字而不是glTF子资源本身的名称来生成结果。
+ */
+function makeUniqueSubAssetName(
+    gltfFileBaseName: string,
+    assetsArray: GltfSubAsset[],
     index: number,
     extension: string,
-    preferedName?: string) {
-    let name = preferedName || subAsset.name;
-    if (!name) {
-        if (index < 0) {
-            name = gltfAsset.basename;
-        } else {
-            name = `${gltfAsset.basename}-${index}`;
-        }
+    options?: {
+        preferFileBaseName?: boolean,
+    }) {
+    const gltfAsset = assetsArray[index];
+    let base = gltfAsset.name;
+    if (typeof base !== 'string' || (options && options.preferFileBaseName)) {
+        base = index === 0 ? gltfFileBaseName : `${gltfFileBaseName}-${index}`;
     }
     return validateAssetName(name) + extension;
 }
@@ -675,16 +722,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
         const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
-        const textureTable = !assetTable.textures ? [] :
-            // @ts-ignore
-            assetTable.textures.map((textureUUID) => loadAssetSync(textureUUID));
-
-        // @ts-ignore
-        const material = gltfConverter.createMaterial(
-            asset.userData.gltfIndex as number, textureTable, (effectName) => {
-                const uuid = queryUuidFromUrl(effectName);
-                return loadAssetSync(uuid);
-            });
+        const material = createMaterial(asset.userData.gltfIndex as number, gltfConverter, assetTable);
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(material));
@@ -840,4 +878,18 @@ function generatePrefab(node: cc.Node) {
     const dump = getDumpableNode(node);
     prefab.data = dump;
     return prefab;
+}
+
+function createMaterial(index: number, gltfConverter: GltfConverter, assetTable: IGltfAssetTable) {
+    const textureTable = !assetTable.textures ? [] :
+    // @ts-ignore
+    assetTable.textures.map((textureUUID) => loadAssetSync(textureUUID));
+
+    // @ts-ignore
+    const material = gltfConverter.createMaterial(
+        index, textureTable, (effectName) => {
+            const uuid = queryUuidFromUrl(effectName);
+            return loadAssetSync(uuid);
+        });
+    return material;
 }

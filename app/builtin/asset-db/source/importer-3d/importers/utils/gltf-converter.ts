@@ -35,6 +35,8 @@ export interface IGltfAssetTable {
 // @ts-ignore
 export type AssetLoader = (uuid: string) => cc.Asset;
 
+export type GltfSubAsset = Node | Mesh | Texture | Skin | Animation | Image | Material | Scene;
+
 enum GltfAssetKind {
     Node,
     Mesh,
