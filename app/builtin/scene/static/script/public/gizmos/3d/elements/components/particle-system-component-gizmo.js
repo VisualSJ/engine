@@ -326,25 +326,29 @@ class ParticleSystemComponentGizmo extends Gizmo {
         }
     }
 
-    updateControllerTransform(shapeModule) {
-        let node = this.node;
-        let worldRot = cc.quat(0, 0, 0, 1);
-        let worldPos = NodeUtils.getWorldPosition3D(node);
+    updateControllerTransform() {
+        if (this.target && this.target.shapeModule) {
+            let shapeModule = this.target.shapeModule;
 
-        worldRot = NodeUtils.getWorldRotation3D(node);
-        let worldScale = NodeUtils.getWorldScale3D(node);
+            if (shapeModule.enable && this._pSGizmoRoot) {
+                let node = this.node;
+                let worldRot = cc.quat(0, 0, 0, 1);
+                let worldPos = NodeUtils.getWorldPosition3D(node);
 
-        this._pSGizmoRoot.setWorldPosition(worldPos);
-        this._pSGizmoRoot.setWorldRotation(worldRot);
-        this._pSGizmoRoot.setWorldScale(worldScale);
+                worldRot = NodeUtils.getWorldRotation3D(node);
+                let worldScale = NodeUtils.getWorldScale3D(node);
 
-        if (shapeModule) {
-            let shapeRot = shapeModule.rotation;
-            let rot = cc.quat();
-            quat.fromEuler(rot, shapeRot.x, shapeRot.y, shapeRot.z);
-            this._activeController.setPosition(shapeModule.position);
-            this._activeController.setRotation(rot);
-            this._activeController.setScale(shapeModule.scale);
+                this._pSGizmoRoot.setWorldPosition(worldPos);
+                this._pSGizmoRoot.setWorldRotation(worldRot);
+                this._pSGizmoRoot.setWorldScale(worldScale);
+
+                let shapeRot = shapeModule.rotation;
+                let rot = cc.quat();
+                quat.fromEuler(rot, shapeRot.x, shapeRot.y, shapeRot.z);
+                this._activeController.setPosition(shapeModule.position);
+                this._activeController.setRotation(rot);
+                this._activeController.setScale(shapeModule.scale);
+            }
         }
     }
 
@@ -387,7 +391,7 @@ class ParticleSystemComponentGizmo extends Gizmo {
             }
 
             this._activeController.show();
-            this.updateControllerTransform(shapeModule);
+            this.updateControllerTransform();
 
         } else {
             if (this._activeController) {
