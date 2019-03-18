@@ -276,6 +276,6 @@ CCProgram planar-shadow-fs %{
   #include <post-process>
 
   vec4 frag () {
-    return PostProcess(cc_shadowColor, cc_exposure.w);
+    return PostProcess(cc_shadowColor, cc_exposure.w, cc_exposure.z);
   }
 }%
