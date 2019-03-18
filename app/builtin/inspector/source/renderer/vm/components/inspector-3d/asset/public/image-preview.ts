@@ -45,7 +45,7 @@ export const methods = {
             vm._image.onload = () => {
                 vm._destroyed || vm.updateImage();
             };
-            vm._image.src = vm.imgSrc;
+            vm._image.src = vm.imgSrc + `?_t=${new Date().getTime()}`;
         }
     },
 
