@@ -2,7 +2,7 @@
 
 declare const cc: any;
 declare const Manager: any;
-const {promisify} = require('util');
+const { promisify } = require('util');
 import {
     INode,
     IProperty,
@@ -152,16 +152,19 @@ export async function decodePatch(path: string, dump: any, node: any) {
 
     // 获取需要修改的数据
     const data = info.search ? get(node, info.search) : node;
-    // 判断属性是否为 readonly,是则跳过还原步骤
-    let propertyConfig: any = Object.getOwnPropertyDescriptor(data, info.key);
-    if (propertyConfig === undefined) {
-        // 原型链上的判断
-        propertyConfig = cc.Class.attr(data, info.key);
-        if (!propertyConfig || !propertyConfig.hasSetter) {
+
+    if (Object.prototype.toString.call(data) === '[object Object]') { // 只对 json 格式处理，array 等其他数据放行
+        // 判断属性是否为 readonly,是则跳过还原步骤
+        let propertyConfig: any = Object.getOwnPropertyDescriptor(data, info.key);
+        if (propertyConfig === undefined) {
+            // 原型链上的判断
+            propertyConfig = cc.Class.attr(data, info.key);
+            if (!propertyConfig || !propertyConfig.hasSetter) {
+                return;
+            }
+        } else if (!propertyConfig.writable && !propertyConfig.set) {
             return;
         }
-    } else if (!propertyConfig.writable && !propertyConfig.set) {
-        return;
     }
 
     const parentData = parentInfo.search ? get(node, parentInfo.search) : node;
@@ -218,17 +221,19 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
         }
     } else if (dump.isArray) {
-        const array: IProperty[] = (dump.value || []);
-        await Promise.all(array.map(async (item: IProperty, index: number) => {
-            return await decodePatch(`${path}.${index}`, item, data);
-        }));
+        data[path].length = 0; // 重要：重置原数据
+        if (Array.isArray(dump.value)) {
+            await Promise.all(dump.value.map(async (item: IProperty, index: number) => {
+                return await decodePatch(`${path}.${index}`, item, data);
+            }));
+        }
     } else if (ccExtends.includes(assetType) || assetType === dump.type) {
         try {
             if (Array.isArray(dump.value)) {
                 const result: any = [];
                 for (let i = 0; i < dump.value.length; i++) {
                     const data = dump.value[i];
-                    if (!dump.value || !data.value.uuid) {
+                    if (!data || !data.value.uuid) {
                         result[i] = null;
                     } else {
                         result[i] = await promisify(cc.AssetLibrary.loadAsset)(data.value.uuid);
@@ -269,7 +274,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
             dump.type === 'Enum'
         ) {
             // ENUM 可能是字符串，所以不能强制转成数字
-            let t = dump.value - 0;
+            const t = dump.value - 0;
             if (!isNaN(t)) {
                 dump.value = t;
             }

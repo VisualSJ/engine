@@ -858,6 +858,7 @@ export const methods = {
                 return a.top - b.top;
             });
 
+            let i = 0; // 这是重要的微调参数，处理循环后新增的节点处于原节点下方
             for (const node of nodes) {
                 let parent = parentUuid;
                 if (!parentUuid) {
@@ -872,12 +873,16 @@ export const methods = {
                 // 移动到节点的下方
                 const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, node.uuid);
                 let target = toArr.length;
-                let offset = toIndex - toArr.length + 1;
+                let offset = toIndex - toArr.length + 1 + i;
                 if (parentUuid) { // 有子集循环的，原索引位置不必因为新增 +1 故在此 -1
                     target = toIndex;
                     offset = 0;
                 }
-                await db.moveNode(parent, target, offset);
+                if (offset !== 0) {
+                    await db.moveNode(parent, target, offset);
+                }
+
+                i += 1;
 
                 // 循环其子集
                 const children = dumpdata.children.map((child: any) => child.value.uuid);
@@ -964,6 +969,7 @@ export const methods = {
                     await db.moveNode(toParent.uuid, fromIndex, offset);
                 } else { // 跨级移动
                     if (json.insert === 'inside' && fromParent === toNode) { // 仍在原来的层级中
+                        await db.moveNode(fromParent.uuid, fromIndex, fromArr.length - 1 - fromIndex); // 移到尾部
                         return;
                     }
 
