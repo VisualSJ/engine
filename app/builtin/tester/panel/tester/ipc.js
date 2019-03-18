@@ -49,6 +49,6 @@ function get(message, index) {
 }
 
 exports.record = record;
-exports.receive = receive;
+exports._receive = receive;
 exports.count = count;
 exports.get = get;

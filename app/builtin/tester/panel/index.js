@@ -24,7 +24,7 @@ module.exports = {
 
     messages: {
         '*'(message, ...args) {
-            tester.Ipc.receive(message, ...args);
+            tester.Ipc._receive(message, ...args);
         },
     },
 

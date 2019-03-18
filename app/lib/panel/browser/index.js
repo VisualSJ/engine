@@ -20,7 +20,7 @@ class Panel {
      * 未打开的状态下，打开一个新窗口，并打开一个新布局，放入当前 panel
      * @param {string} name
      */
-    open(name) {
+    async open(name) {
         if (panel.focus(name)) {
             return;
         }
@@ -60,6 +60,28 @@ class Panel {
                 },
             });
         }
+
+        await new Promise((resolve) => {
+            let timer;
+            function wait(pn) {
+                if (pn === name) {
+                    clearTimeout(timer);
+                    panel.removeListener('ready', wait);
+                    resolve();
+                }
+            }
+            timer = setTimeout(() => {
+                panel.removeListener('ready', wait);
+                resolve();
+            }, 15000);
+            panel.on('ready', wait);
+        });
+
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 500);
+        });
     }
 
     /**
@@ -89,12 +111,14 @@ class Panel {
 module.exports = new Panel();
 
 // 页面发送的 panel close 操作请求
-ipc.on('editor-lib-panel:call', (event, func, ...args) => {
+ipc.on('editor-lib-panel:call', async (event, func, ...args) => {
     const handle = module.exports[func];
     if (!handle) {
         return;
     }
-    handle.call(module.exports, ...args);
+    await handle.call(module.exports, ...args);
+
+    event.reply(null);
 });
 
 // Hack 兼容处理 window 平台上的 undo redo 自上而下分发

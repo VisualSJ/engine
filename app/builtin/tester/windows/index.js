@@ -1,10 +1,10 @@
 'use strict';
 
 const ipc = require('@base/electron-base-ipc');
-const query = require('./element-query');
-const { mouse, keyboard } = require('./event-simulate');
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
+const mouse = require('./mouse');
+const board = require('./board');
+const element = require('./element');
 
 /**
  * 消息监听器
@@ -12,27 +12,34 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
  * @param {event} event
  * @param  {...any} operation array 操作步骤，需要拆分
  */
-async function messageListener(event, panel, operation) {
-    const rt = [];
+async function messageListener(event, panel, selector, operation, ...args) {
 
-    panel = query.panel(panel);
+    const $elem = element.query(panel, selector);
+    let result = null;
 
-    for (const step of operation) {
-        const data = await operating(panel, step);
-        rt.push(data);
+    switch(operation) {
+        case 'attr':
+            result = $elem.getAttribute(args[0]);
+            break;
+
+        case 'click':
+            await mouse.click($elem);
+            break;
+
+        case 'input':
+            await board.input($elem, args[0] || '');
+            break;
+
+        case 'enter':
+            await board.enter($elem);
+            break;
+
+        case 'esc':
+            await board.esc($elem);
+            break;
     }
 
-    event.reply(null, rt);
-}
-
-async function operating(panel, step) {
-    const element = panel.element(step.element);
-    // TODO 需要补充用户操作事件，含 await
-
-    const attrs = panel.attributes(element);
-    const position = panel.position(element);
-
-    return {attrs, position};
+    event.reply(null, result);
 }
 
 exports.load = function() {

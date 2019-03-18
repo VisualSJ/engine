@@ -13,6 +13,7 @@
 
     "main": "./browser/index.js",
     "windows": "./windows/index.js",
+
     "panel": {
         "title": "Tester",
         "main": "./panel/index.js",
@@ -20,6 +21,15 @@
         "min-height": 200,
         "width": 400,
         "height": 600
+    },
+
+    "panel.test": {
+        "title": "Tester test",
+        "main": "./panel/test.js",
+        "min-width": 200,
+        "min-height": 200,
+        "width": 200,
+        "height": 200
     },
 
     "author": "VisualSJ"

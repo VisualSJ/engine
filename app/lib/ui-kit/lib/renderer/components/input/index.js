@@ -159,10 +159,10 @@ class Input extends Base {
         $style.innerHTML = customStyle;
 
         // 绑定事件
-        this.$input.addEventListener('focus', this._onInputFocus);
-        this.$input.addEventListener('blur', this._onInputBlur);
-        this.$input.addEventListener('input', this._onInputChange);
-        this.$input.addEventListener('keydown', this._onInputKeyDown);
+        this.addEventListener('focus', this._onInputFocus);
+        this.addEventListener('blur', this._onInputBlur);
+        this.addEventListener('input', this._onInputChange);
+        this.addEventListener('keydown', this._onInputKeyDown);
         this.$clear.addEventListener('click', this._onClear, true);
     }
 
@@ -212,10 +212,10 @@ class Input extends Base {
      */
     _onInputFocus() {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.disabled || this.readOnly) {
             return;
         }
-        this.$root._staging = this.$root.value;
+        this._staging = this.value;
     }
 
     /**
@@ -223,14 +223,14 @@ class Input extends Base {
      */
     _onInputBlur() {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.disabled || this.readOnly) {
             return;
         }
-        if (this.$root._staging === this.value) {
+        if (this._staging === this.$input.value) {
             return;
         }
-        delete this.$root._staging;
-        this.$root.dispatch('confirm');
+        delete this._staging;
+        this.dispatch('confirm');
     }
 
     /**
@@ -238,11 +238,11 @@ class Input extends Base {
      */
     _onInputChange() {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.disabled || this.readOnly) {
             return;
         }
-        this.$root.value = this.value;
-        this.$root.dispatch('change');
+        this.value = this.$input.value;
+        this.dispatch('change');
     }
 
     /**
@@ -251,24 +251,24 @@ class Input extends Base {
      */
     _onInputKeyDown(event) {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.disabled || this.readOnly) {
             return;
         }
         switch (event.keyCode) {
             case 13: // 回车
-                if (this.$root._staging === this.value) { // 先判断值是否发生更改
+                if (this._staging === this.$input.value) { // 先判断值是否发生更改
                     break;
                 }
-                this.$root.dispatch('confirm');
-                this.$root._staging = this.$root.value;
+                this.dispatch('confirm');
+                this._staging = this.value;
                 break;
             case 27: // esc
-                if (this.$root._staging === this.value) { // 先判断值是否发生更改
+                if (this._staging === this.$input.value) { // 先判断值是否发生更改
                     break;
                 }
-                this.$root.value = this.$root._staging;
-                this.$root.dispatch('change');
-                this.$root.dispatch('cancel');
+                this.value = this._staging;
+                this.dispatch('change');
+                this.dispatch('cancel');
                 break;
         }
     }

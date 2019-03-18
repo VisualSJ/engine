@@ -10,8 +10,12 @@ class Panel {
      * 打开已经注册的指定 panel
      * @param {string} name
      */
-    open(name) {
-        ipc.send(`editor-lib-panel:call`, 'open', name);
+    async open(name) {
+        return new Promise((resolve) => {
+            ipc.send(`editor-lib-panel:call`, 'open', name).callback(() => {
+                resolve();
+            });
+        });
     }
 
     /**
