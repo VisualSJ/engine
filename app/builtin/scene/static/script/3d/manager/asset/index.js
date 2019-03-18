@@ -94,7 +94,7 @@ async function queryMaterial(uuid) {
     return {
         effect: asset.effectName,
         technique: asset._techIdx,
-        names: effect.techniques.map(tech => tech.name),
+        names: effect.techniques.map((tech) => tech.name),
         data,
     };
 }
@@ -190,17 +190,18 @@ async function onDrop(event) {
     const {resultNode, ray} = selection.getResultNode(event.x, event.y);
     // 放置的位置有节点
     if (resultNode) {
-        // 当前拖拽资源为材质
-        switch (event.type) {
+        const dump = {
+            type: event.type,
+            value: '',
+        };
+        switch (event.type) { // 对拖拽资源的处理
             case 'cc.Material':
-                const result = resultNode._components.find((comp) => {
+                const index = resultNode._components.findIndex((comp) => {
                     return comp.__classname__ === 'cc.ModelComponent';
                 });
-                if (!result) {
-                    return;
-                }
-                const material = await util.promisify(cc.AssetLibrary.loadAsset)(event.uuid);
-                material && (result.material = material);
+                const path = `__comps__.${index}.sharedMaterials.0`; // 默认修改模型材质数组里的第一个材质
+                dump.value = {uuid: event.uuid};
+                nodeManger.setProperty(resultNode.uuid, path, dump);
                 return;
         }
     }
