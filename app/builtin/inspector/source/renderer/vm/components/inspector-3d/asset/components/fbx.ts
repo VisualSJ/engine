@@ -9,8 +9,8 @@ export const template = `
         label="DumpMaterial"
     >
         <ui-checkbox slot="content"
-            :value="meta ? meta.userData.dumpMaterial : false"
-            @confirm="_onDataChanged($event, 'dumpMaterial')"
+            :value="meta ? meta.userData.dumpmaterials : false"
+            @confirm="_onDataChanged($event, 'dumpmaterials')"
         ></ui-checkbox>
     </ui-prop>
 

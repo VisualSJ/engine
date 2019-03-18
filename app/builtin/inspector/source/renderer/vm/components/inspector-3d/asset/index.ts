@@ -5,6 +5,7 @@ import { readTemplate } from '../../../utils';
 const importers: string[] = [
     'effect',
     'fbx',
+    'gltf',
     'image',
     'javascript',
     'typescript',
@@ -28,6 +29,7 @@ export const components = {
     'asset-directory': require('./components/directory'),
     'asset-effect': require('./components/effect'),
     'asset-fbx': require('./components/fbx'),
+    'asset-gltf': require('./components/gltf'),
     'asset-image': require('./components/image'),
     'asset-javascript': require('./components/javascript'),
     'asset-typescript': require('./components/typescript'),
