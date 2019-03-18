@@ -71,10 +71,10 @@
     },
     "_useColorTemperature": false,
     "_colorTemperature": 6550,
-    "_intensity": 10000,
-    "_size": 0.15,
-    "_range": 1,
-    "_spotAngle": 1.0471975511965976,
+    "_intensity": 3000,
+    "_size": 0.3,
+    "_range": 5,
+    "_spotAngle": 30.0,
     "_id": ""
   },
   {

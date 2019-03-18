@@ -1,12 +1,19 @@
 // Copyright (c) 2017-2019 Xiamen Yaji Software Co., Ltd.
 // reference: 'moving frostbite to pbr' & UE4 BRDF.usf
 
-float SmoothDistAtt(float distSqr, float invSqrAttRadius)
+float SmoothDistAtt2(float distSqr, float invSqrAttRadius)
 {
 	float factor = distSqr * invSqrAttRadius;	// ^2
 	float factor2 = factor * factor;			// ^4
 	float factor3 = factor2 * factor2;			// ^8
 	float smoothFactor = clamp(1.0 - factor3 * factor3, 0.0, 1.0);
+	return smoothFactor * smoothFactor;
+}
+
+float SmoothDistAtt(float distSqr, float invSqrAttRadius)
+{
+	float factor = distSqr * invSqrAttRadius;
+	float smoothFactor = clamp(1.0 - factor * factor, 0.0, 1.0);
 	return smoothFactor * smoothFactor;
 }
 

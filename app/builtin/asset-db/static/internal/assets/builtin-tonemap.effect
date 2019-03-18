@@ -1,5 +1,12 @@
 // Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 CCEffect %{
+  temporaries:
+    s1: &s1 {
+      minFilter: linear,
+      magFilter: linear,
+      addressU: clamp,
+      addressV: clamp,
+    }
   techniques:
   - name: tonemap
     passes:
@@ -9,7 +16,7 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        u_texSampler: {}
+        u_texSampler: { sampler: *s1 }
 }%
 
 CCProgram tonemap-vs %{

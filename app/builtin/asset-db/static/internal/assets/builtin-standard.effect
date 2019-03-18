@@ -1,6 +1,14 @@
 // Copyright (c) 2017-2019 Xiamen Yaji Software Co., Ltd.
 
 CCEffect %{
+  temporaries:
+    s1: &s1 {
+      minFilter: linear,
+      magFilter: linear,
+      mipFilter: linear,
+      addressU: wrap,
+      addressV: wrap,
+    }
   techniques:
   - name: opaque
     passes:
@@ -10,7 +18,7 @@ CCEffect %{
         tilingOffset:  { type: vec4,        value: [1.0, 1.0, 0.0, 0.0] }
         albedo:        { type: color4,      value: [1.0, 1.0, 1.0, 1.0] }
         albedoScale:   { type: vec4,        value: [1.0, 1.0, 1.0, 0.0] }
-        pbrParams:     { type: vec4,        value: [1.0, 0.2, 0.6, 1.0] }
+        pbrParams:     { type: vec4,        value: [0.2, 0.6, 1.0, 1.0] }
         pbrScale:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
         emissive:      { type: color4,      value: [1.0, 1.0, 1.0, 1.0] }
         emissiveScale: { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
@@ -49,8 +57,8 @@ CCProgram shared-ubos %{
     vec4 tilingOffset;
     vec4 albedo;
     vec4 albedoScale;   // rgb: albedo scale, a: cutoff,
-    vec4 pbrParams;     // g: roughness, b: metallic (follow CHANNEL defines)
-    vec4 pbrScale;      // g: roughness scale, b: metallic scale (follow CHANNEL defines)
+    vec4 pbrParams;     // r: roughness, g: metallic (follow CHANNEL defines)
+    vec4 pbrScale;      // r: roughness scale, g: metallic scale (follow CHANNEL defines)
     vec4 emissive;
     vec4 emissiveScale;
   };
@@ -128,8 +136,8 @@ CCProgram standard-fs %{
     uniform samplerCube envMap;
   #endif
 
-  #pragma define ROUGHNESS_CHANNEL options(['g', 'b', 'r', 'a'])
-  #pragma define METALLIC_CHANNEL  options(['b', 'r', 'g', 'a'])
+  #pragma define ROUGHNESS_CHANNEL options(['r', 'g', 'b', 'a'])
+  #pragma define METALLIC_CHANNEL  options(['g', 'r', 'b', 'a'])
 
   #if USE_NORMAL_MAP
     vec3 getNormal(vec3 pos, vec3 normal) {
@@ -205,30 +213,41 @@ CCProgram standard-fs %{
       float PNL = max(dot(N, PL), 0.001);
       float PNH = max(dot(N, PH), 0.0);
 
-      float pDistSqr = dot(PLU, PLU);
+      float distSqr = dot(PLU, PLU);
       float litRadius = cc_sphereLitSizeRange[i].x;
 			float litRadiusSqr = litRadius * litRadius;
-			float illum = PI * (litRadiusSqr / max(litRadiusSqr , pDistSqr));
+			float illum = PI * (litRadiusSqr / max(litRadiusSqr , distSqr));
+      float attRadiusSqrInv = 1.0 / max(cc_sphereLitSizeRange[i].y, 0.01);
+      attRadiusSqrInv *= attRadiusSqrInv;
+      float att = GetDistAtt(distSqr, attRadiusSqrInv);
+      vec3 lspec = specular * CalcSpecular(roughness, PNH, PH, N);
+      finalColor += PNL * cc_sphereLitColor[i].rgb * cc_sphereLitColor[i].w * illum * att * (diffuseContrib + lspec);
+    }
 
-      float pInvSqrAttRadius = 1.0 / max(cc_sphereLitSizeRange[i].y, 0.01);
-      pInvSqrAttRadius *= pInvSqrAttRadius;
-      float pAtt = SmoothDistAtt(pDistSqr, pInvSqrAttRadius);
-      vec3 pSpec = specular * CalcSpecular(roughness, PNH, PH, N);
-      finalColor += PNL * cc_sphereLitColor[i].rgb * cc_sphereLitColor[i].w * illum * pAtt * (diffuseContrib + pSpec);
-
+    for (int i = 0; i < MAX_LIGHTS; i++) {
       // Spot Lights
-      vec3 SLU = cc_spotLitPosSize[i].xyz - v_worldPos;
+      vec3 SLU = cc_spotLitPos[i].xyz - v_worldPos;
       vec3 SL = normalize(SLU);
       vec3 SH = normalize(SL+V);
       float SNL = max(dot(N, SL), 0.001);
       float SNH = max(dot(N, SH), 0.0);
-      float cosConeAngle = max(dot(-cc_spotLitDirRange[i].xyz, SL), 0.01);
-      float sInvSqrAttRadius = 1.0 / max(cc_spotLitDirRange[i].w, 0.01);
-      float sDistSqr = dot(SLU, SLU);
-      float sAtt = GetDistAtt(sDistSqr, sInvSqrAttRadius);
-      sAtt *= cosConeAngle;
-      vec3 sSpec = specular * CalcSpecular(roughness, SNH, SH, N);
-      finalColor += SNL * cc_spotLitColor[i].rgb * cc_spotLitColor[i].w * sAtt * (diffuseContrib + sSpec);
+
+      float distSqr = dot(SLU, SLU);
+      float litRadius = cc_spotLitSizeRangeAngle[i].x;
+			float litRadiusSqr = litRadius * litRadius;
+			float illum = PI * (litRadiusSqr / max(litRadiusSqr , distSqr));
+      float attRadiusSqrInv = 1.0 / max(cc_spotLitSizeRangeAngle[i].y, 0.01);
+      attRadiusSqrInv *= attRadiusSqrInv;
+
+      float cosInner = max(dot(-cc_spotLitDir[i].xyz, SL), 0.01);
+      float cosOuter = cc_spotLitSizeRangeAngle[i].z;
+      float litAngleScale = 1.0 / max(0.001, cosInner - cosOuter);
+      float litAngleOffset = -cosOuter * litAngleScale;
+      float att = GetDistAtt(distSqr, attRadiusSqrInv);
+      att *= GetAngleAtt(SL, -cc_spotLitDir[i].xyz, litAngleScale, litAngleOffset);
+
+      vec3 lspec = specular * CalcSpecular(roughness, SNH, SH, N);
+      finalColor += SNL * cc_spotLitColor[i].rgb * cc_spotLitColor[i].w * illum * att * (diffuseContrib + lspec);
     }
 
     float fAmb = dot(N, vec3(0.0, -1.0, 0.0)) * 0.5 + 0.5;
