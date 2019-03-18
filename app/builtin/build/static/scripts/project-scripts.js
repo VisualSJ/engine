@@ -21,14 +21,14 @@ async function sortScripts(scriptAssets) {
         if (userData.isPlugin &&
             (userData.isNative && userData.loadPluginInNative || userData.loadPluginInWeb)) {
             jsList.push(asset.url);
-            raw2library[asset.file] = asset.library['.js'];
-            library2raw[asset.library['.js']] = asset.file;
         } else {
+            asset.url = asset.url.replace(/\.ts$/, '.js');
             scripts.push({uuid: asset.uuid, file: asset.url});
-            raw2library[asset.file] = asset.library['.js'];
-            library2raw[asset.library['.js']] = asset.file;
         }
-        buildResult.script2uuid[asset.url] = asset.uuid;
+        raw2library[asset.file] = asset.library['.js'];
+        library2raw[asset.library['.js']] = asset.file;
+        buildResult.script2library[asset.url] = asset.library['.js'];
+        buildResult.script2raw[asset.url] = asset.file;
     }
     return {scripts, jsList};
 }

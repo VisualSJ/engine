@@ -16,7 +16,8 @@ class BuildResults {
         this.settings = null; // 构建生成的 setting 对象
         this.paths = null; // 构建需要的路径整理
         this.options = null; // 构建传入的配置信息
-        this.script2uuid = {}; // 脚本 asset 与 uuid 的映射表
+        this.script2library = {}; // 脚本 url 与 library 里文件的映射表
+        this.script2raw = {}; // 脚本 url 与 原始文件的映射表
         this.assetCache = {}; // uuid 与查找到的 asset 信息的缓存映射表
         this.uuidDepends = {}; // 资源 uuid 有对应依赖资源 uuid 数组的映射表
         this.jsonCache = {}; // 资源压缩序列化 json 数字据

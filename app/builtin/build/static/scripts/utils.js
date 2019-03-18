@@ -154,15 +154,13 @@ async function getScriptsCache(scripts) {
         // 所以这里使用 fileCache 来提前传入文件内容
         mpConfig.fileCache = {};
         for (let item of scripts) {
-            const rawPath = join(commonInfo.project, item.file);
-            const libraryPath = getLibraryPath(item.uuid, '.js');
-            mpConfig.fileCache[rawPath] = readFileSync(libraryPath, 'utf8');
+            const rawPath = buildResult.script2raw[item.file];
+            mpConfig.fileCache[rawPath] = readFileSync(buildResult.script2library[item.file], 'utf8');
         }
         let md = new Mdeps(mpConfig);
         md.pipe(JSONStream.stringify()).pipe(concat);
-        for (let path of scripts) {
-            let rawPath = join(commonInfo.project, path.file);
-            md.write({ file: rawPath });
+        for (let item of scripts) {
+            md.write({ file: buildResult.script2raw[item.file] });
         }
         md.end();
     });
@@ -171,7 +169,7 @@ async function getScriptsCache(scripts) {
 // 将绝对路径转换为 preview-script 路径下的
 function rawPathToAssetPath(path) {
     let mainPoint = path.replace(commonInfo.project, PREVIEW_PATH);
-    return mainPoint.split(sep).join('/');
+    return mainPoint.split(sep).join('/').replace(/\.ts$/, '.js');
 }
 
 // 去除 db:// 的路径

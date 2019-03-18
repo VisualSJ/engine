@@ -41,17 +41,16 @@ function getConfig(key: string, type: string = 'previewConfig') {
     }
 }
 
-function getLibraryPath(uuid: string, extname = '.json') {
-    return join(Editor.Project.path, 'library', uuid.substr(0, 2), uuid + extname);
-}
-
-async function getModules(path: string) {
-    const uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid',  `db://${path}`);
-    const libraryPath = getLibraryPath(uuid, '.js');
+/**
+ * 给预览脚本文件加上头尾
+ * @param url
+ * @param path
+ */
+async function getModules(url: string, path: string) {
     const HEADER = `(function() {
     "use strict";
     var __module = CC_EDITOR ? module : {exports:{}};
-    var __filename = 'preview-scripts/${path}';
+    var __filename = 'preview-scripts/${url}';
     var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} :
     function (request) {return cc.require(request, __filename);};
     function __define (exports, require, module) {
@@ -63,7 +62,7 @@ async function getModules(path: string) {
         __define(__module.exports, __require, __module);
     });
 }})();`;
-    const content = readFileSync(libraryPath, 'utf-8');
+    const content = readFileSync(path, 'utf-8');
     const reg = /cc._RF.push\s*\(\s*module,\s*([\'\"][^\'\"]+\s*[\'\"])\s*,\s*([\'\"][^\'\"]*[\'\"])\s*\)/;
     const rightContent = content.replace(reg, 'cc._RF.push(module, $1, $2, __filename)');
     return HEADER + rightContent + '\n' + FOOTER;

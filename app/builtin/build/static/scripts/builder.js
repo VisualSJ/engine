@@ -663,7 +663,10 @@ class Builder {
             return setting;
         }
         delete setting.type;
-        return `${WINDOW_HEADER} = ${JSON.stringify(setting)}`;
+        return {
+            content: `${WINDOW_HEADER} = ${JSON.stringify(setting)}`,
+            script2library: buildResult.script2library,
+        };
     }
 }
 

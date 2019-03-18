@@ -16,6 +16,7 @@ let port = 7456;
 let enginPath: string = '';
 
 let _buildMiddleware: any;
+let script2library: any = {}; // 存储构建时传递过来的当前脚本索引 map
 
 // 自定义错误类型
 class ReqError extends Error {
@@ -58,7 +59,7 @@ export async function start() {
 
     app.get('/setting.js', async (req: any, res: any, next: any) => {
         // 监听构建
-        const setting = await Editor.Ipc.requestToPackage('build', 'build-setting', {
+        const data = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
             type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
@@ -66,10 +67,11 @@ export async function start() {
             designWidth: getConfig('design_width'),
             designHeight: getConfig('design_height'),
         });
-        if (!setting) {
+        if (!(data && data.content)) {
             next(new ReqError(`构建 settings 出错`, 500));
         }
-        res.send(setting);
+        script2library = data.script2library;
+        res.send(data.content);
     });
 
     // 获取引擎基础文件
@@ -98,7 +100,11 @@ export async function start() {
         res.writeHead(200, {
             'Content-Type': 'text/javascript',
         });
-        const str = await getModules(req.params[0]);
+        const path = script2library[req.params[0]];
+        if (!path) {
+            next(new ReqError(`${req.params[0]} 脚本不存在`, 400));
+        }
+        const str = await getModules(req.params[0], path);
         if (!str) {
             next(new ReqError(`${req.params[0]} 脚本编译出错`, 500));
         }
