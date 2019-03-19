@@ -183,8 +183,8 @@ const passParams = {
 Object.assign(passParams, RenderPassStage);
 
 // for structural type checking
-// an 'any' key will check all elements defined in that object
-// a key start with '$' means its essential, and can't be omitted
+// an 'any' key will check against all elements defined in that object
+// a key start with '$' means its essential, and can't be undefined
 const effectStructure = {
   $techniques: [
     {

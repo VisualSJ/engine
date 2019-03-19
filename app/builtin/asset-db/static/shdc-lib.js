@@ -19,8 +19,8 @@ const labelRE = /(\w+)\((.*?)\)/;
 const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
 const samplerRE = /sampler/;
-const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+);/gm;
-const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+));/gm;
+const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+(?:\[[\d\s]+])?);/gm;
+const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+)(?:\[[\d\s]+])?);/gm;
 const texLookup = /texture(\w*)\s*\((\w+),/g;
 const layoutRE = /layout\(.*?\)/g;
 const layoutExtract = /layout\((.*?)\)(\s*)$/;
@@ -350,6 +350,13 @@ const wrapEntry = (() => {
 })();
 
 const miscChecks = (() => {
+  const dumpSource = (tokens) => {
+    let ln = 0;
+    return tokens.reduce((acc, cur) =>
+      cur.line > ln
+      ? acc + `\n${ln = cur.line}\t${cur.data.replace(/\n/g, '')}`
+      : acc + cur.data, '');
+  }
   return (code, entry) => {
     // precision declaration check
     const cap = precisionRE.exec(code);
@@ -358,13 +365,13 @@ const miscChecks = (() => {
         warn('precision declaration must come after extensions');
     } else warn('precision declaration not found.');
     // AST based checks
+    const tokens = tokenizer(code).filter((t) => t.type !== 'preprocessor');
     try {
-      const tokens = tokenizer(code).filter((t) => t.type !== 'preprocessor');
       const ast = parser(tokens);
       // entry function check
       if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
         error(`entry function '${entry}' not found.`);
-    } catch (e) { error(`parser failed: ${e}`); }
+    } catch (e) { error(`parser failed: ${e}\nsource: ${dumpSource(tokens)}`); }
   };
 })();
 
@@ -577,7 +584,7 @@ const parseEffect = (() => {
       if (!Array.isArray(cur)) { warn(`${path} must be an array`); return; }
       for (let i = 0; i < cur.length; i++) structuralTypeCheck(ref[0], cur[i], path + `[${i}]`);
     } else {
-      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be a object`); return; }
+      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be an object`); return; }
       if (ref.any) for (const key of Object.keys(cur)) structuralTypeCheck(ref.any, cur[key], path + `.${key}`);
       else for (const key of Object.keys(ref)) {
         let testKey = key;
