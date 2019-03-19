@@ -24,20 +24,20 @@ export const template = `
                 <option
                     v-for="(item, index) in techniques"
                     :value="index"
-                >{{index + ' - ' + material.names[index]}}</option>
+                >{{item.name ? index + ' - ' + item.name : index}}</option>
             </ui-select>
         </ui-prop>
     </div>
 
     <div class="content">
         <template
-            v-for="(passes,index) in techniques"
+            v-for="(item,index) in techniques"
         >
             <template
                 v-if="index == technique"
             >
                 <div class="pass"
-                    v-for="(pass,index) in passes"
+                    v-for="(pass,index) in item.passes"
                 >
                     <span>Pass {{index}}</span>
                     <template
@@ -88,9 +88,20 @@ export const methods = {
             return;
         }
 
-        vm.material = await Editor.Ipc.requestToPackage('scene', 'query-material', vm.info.uuid);
+        let material = await Editor.Ipc.requestToPackage('scene', 'query-material', vm.info.uuid);
+        if (material === null) {
+            console.warn('Material doesn\'t exist');
+            material = {
+                effect: '',
+                technique: 0,
+                data: [],
+            };
+        }
+
+        vm.material = material;
         vm.effect = vm.material.effect;
         vm.technique = vm.material.technique;
+        vm.data =  vm.material.data;
     },
 
     /**
@@ -108,7 +119,22 @@ export const methods = {
         vm.effects = Object.keys(effects);
     },
 
-    async reset() {},
+    async change() {
+        // @ts-ignore
+        const vm: any = this;
+
+        Editor.Ipc.requestToPackage('scene', 'preview-material', vm.info.uuid, {
+            effect: vm.effect,
+            technique: vm.technique,
+            data: vm.data,
+        });
+    },
+
+    async reset() {
+        // @ts-ignore
+        const vm: any = this;
+        Editor.Ipc.requestToPackage('scene', 'preview-material', vm.info.uuid, null);
+    },
 
     async apply() {
         // @ts-ignore
@@ -135,13 +161,16 @@ export const watch = {
 
         // 更新 techniques
         if (name === vm.material.effect) {
-            vm.techniques = vm.material.data.map((technique: any[]) => {
-                return technique.map((data: any) => {
-                    // 合并 data.defines 和 data.props
-                    const tree = buildEffect(data.props, data.defines);
-                    tree.switch = data.switch;
-                    return tree;
-                });
+            vm.techniques = vm.material.data.map((technique: any) => {
+                return {
+                    name: technique.name,
+                    passes: technique.passes.map((data: any) => {
+                        // 合并 data.defines 和 data.props
+                        const tree = buildEffect(data.props, data.defines);
+                        tree.switch = data.switch;
+                        return tree;
+                    })
+                };
             });
         } else {
             let array = await Editor.Ipc.requestToPackage('scene', 'query-effect', name);
@@ -149,12 +178,16 @@ export const watch = {
                 array = [];
             }
             vm.data = array;
-            vm.techniques = array.map((technique: any[]) => {
-                return technique.map((data: any) => {
-                    // 合并 data.defines 和 data.props
-                    const tree = buildEffect(data.props, data.defines);
-                    return tree;
-                });
+            vm.techniques = array.map((technique: any) => {
+                return {
+                    name: technique.name,
+                    passes: technique.passes.map((data: any) => {
+                        // 合并 data.defines 和 data.props
+                        const tree = buildEffect(data.props, data.defines);
+                        tree.switch = data.switch;
+                        return tree;
+                    }),
+                };
             });
         }
 
@@ -184,7 +217,11 @@ export const watch = {
 export function data() {
     return {
         effects: [], // 查询出来记录在案的所有 effect 列表
-        material: null, // 当前修改的 material 资源数据
+        material: {
+            effect: '',
+            technique: 0,
+            data: [],
+        }, // 当前修改的 material 资源数据
 
         effect: '', // 当前选中的 effect 名字
         technique: 0, // 当前选中的 technique 索引

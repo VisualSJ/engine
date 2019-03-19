@@ -296,6 +296,18 @@ export function apply(messages: any) {
         await $scene.forwarding('Scene', 'softReload');
     };
 
+    messages['preview-material'] = async (uuid: string, material: any) => {
+        if (!$scene) {
+            return null;
+        }
+        await $scene.forwarding('Asset', 'previewMaterial', [uuid, material]);
+    };
+
+
+    ///////////
+    // gizmo //
+    ///////////
+
     messages['change-gizmo-tool'] = async (name: string) => {
         if (!$scene) {
             return null;

@@ -17,13 +17,16 @@ const dumpEncode = require('../../../../../dist/utils/dump/encode');
  * @returns {{}}
  */
 function queryAllEffects() {
-    const effects = cc.EffectAsset.getAll();
-    // get uuid from prototype chain
-    Object.keys(effects).map((key) => {
-        effects[key].uuid = effects[key]._uuid;
-    });
-
-    return effects;
+    try {
+        const effects = cc.EffectAsset.getAll();
+        // get uuid from prototype chain
+        Object.keys(effects).map((key) => {
+            effects[key].uuid = effects[key]._uuid;
+        });
+        return effects;
+    } catch(error) {
+        return [];
+    }
 }
 
 /**
@@ -58,13 +61,17 @@ async function queryMaterial(uuid) {
 
     const effect = cc.EffectAsset.get(asset.effectName);
     if (!effect) {
-        return {};
+        return {
+            effect: '',
+            technique: 0,
+            data: [],
+        };
     }
     const data = material.encodeEffect(effect);
 
     // 将 asset 数据合并到 effect 内整理出的 data 内
     const tech = data[asset._techIdx];
-    tech.forEach((pass, index) => {
+    tech.passes.forEach((pass, index) => {
         Object.keys(asset._defines[index] || {}).forEach((name) => {
             const item = pass.defines.find((t) => { return t.name === name; });
             if (!item) {
@@ -94,20 +101,39 @@ async function queryMaterial(uuid) {
     return {
         effect: asset.effectName,
         technique: asset._techIdx,
-        names: effect.techniques.map((tech) => tech.name),
         data,
     };
 }
 
 /**
  * 传入一个发出的 material 数据以及对应的 uuid
- * 将所有的数据应用到 uuid 指向的 material 上
+ * 将所有的数据应用到 uuid 对应的的 material 资源上
  * @param {*} uuid
  * @param {*} data
  */
 async function applyMaterial(uuid, data) {
     const mtl = await material.decodeMaterial(data);
     await Manager.Ipc.send('save-asset', uuid, mtl);
+}
+
+/**
+ * 传入一个发出的 material 数据以及对应的 uuid
+ * 将所有的数据应用到 uuid 对应的 material 运行时数据上
+ * @param {*} uuid 
+ * @param {*} data 
+ */
+async function previewMaterial(uuid, data) {
+    if (data) {
+        const mtl = await material.decodeMaterial(data);
+        cc.AssetLibrary.loadJson(mtl, (error, asset) => {
+            asset._uuid = uuid;
+            cc.AssetLibrary.assetListener.invoke(uuid, asset);
+        });
+    } else {
+        cc.AssetLibrary.loadAsset(uuid, (error, asset) => {
+            cc.AssetLibrary.assetListener.invoke(uuid, asset);
+        });
+    }
 }
 
 function assetChange(uuid) {
@@ -228,6 +254,7 @@ module.exports = {
     queryEffect,
     queryMaterial,
     applyMaterial,
+    previewMaterial,
     assetChange,
     assetDelete,
     onDragOver,
