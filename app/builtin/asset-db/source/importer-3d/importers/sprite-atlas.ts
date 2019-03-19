@@ -108,9 +108,9 @@ export default class SpriteAtlasImporter extends Importer {
           const atlasSubAsset = await asset.createSubAsset(keyNoExt, 'sprite-frame');
           const frameData = this.fillFrameData(f, asset.userData.textureUuid);
           // asset.userData.redirect = atlasSubAsset.uuid;
-          Object.assign(atlasSubAsset.userData, frameData);
+          atlasSubAsset.assignUserData(frameData, true);
           // @ts-ignore
-          spriteAtlas.spriteFrames[key] = Manager.serialize.asAsset(atlasSubAsset.uuid);
+          spriteAtlas.spriteFrames.set(key, Manager.serialize.asAsset(atlasSubAsset.uuid));
         }
 
         // @ts-ignore

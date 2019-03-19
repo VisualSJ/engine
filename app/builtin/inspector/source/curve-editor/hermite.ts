@@ -44,6 +44,7 @@ export default class Hermite {
     private curveConfig: any;
     private _keyframes: any;
     private hermiteArgs: any;
+    private mult = 1; // 存储画布宽高比
 
     constructor(options: any) {
         this.grid = options.grid;
@@ -52,6 +53,17 @@ export default class Hermite {
         this.cxt2D = options.context;
         this.cxt2D.strokeStyle = options.curveConfig.strokeStyle;
         this.canvas = options.context.canvas;
+    }
+
+    public rePaint() {
+        this.clear();
+        this.cxt2D.strokeStyle = this.curveConfig.strokeStyle;
+        // 斜率由于之前做了当前坐标系的适配，需要先还原
+        for (const item of this._keyframes) {
+            item.outTangent = item.outTangent / this.mult;
+            item.inTangent = item.inTangent / this.mult;
+        }
+        this.draw(this._keyframes);
     }
 
     /**
@@ -68,7 +80,6 @@ export default class Hermite {
             console.error(error);
             return;
         }
-
         // 原始数据需要做一次坐标转换
         for (const item of this._keyframes) {
             const point = this.grid.tranToAxis(item);
@@ -77,6 +88,7 @@ export default class Hermite {
             item.inTangent *= h / w;
             item.point = point;
         }
+        this.mult = h / w;
         // 对保存的函数系数重置
         this.hermiteArgs = [];
         // 遍历坐标点，绘制曲线

@@ -22,14 +22,6 @@ export default class Grid {
     get cxt2D() {
         return this._cxt2D;
     }
-    public readonly location: any; // 原点坐标信息以及绘图范围
-    public readonly step: any; // 存储横纵坐标参数递增值
-
-    private axis: any;  // 存储传入的坐标信息 切割值，横纵坐标的数据范围
-    private axesMargin: number; // 画布边距（无效绘图区域
-    private _cxt2D: any; // 绘图上下文
-    private canvas: any;
-    private _multiplier: any; // 递增倍数
 
     set multiplier(value: number) {
         if (value === 0) {
@@ -53,6 +45,14 @@ export default class Grid {
     get multiplier() {
         return this._multiplier;
     }
+    public location: any; // 原点坐标信息以及绘图范围
+    public step: any; // 存储横纵坐标参数递增值
+
+    private axis: any;  // 存储传入的坐标信息 切割值，横纵坐标的数据范围
+    private axesMargin: number; // 画布边距（无效绘图区域
+    private _cxt2D: any; // 绘图上下文
+    private canvas: any;
+    private _multiplier: any; // 递增倍数
 
     constructor(options: any) {
         this.cxt2D = options.context;
@@ -81,6 +81,18 @@ export default class Grid {
 
         // 绘制坐标轴(要放置在网格绘制之后)
         this.drawAxis();
+    }
+
+    /**
+     * 重绘
+     */
+    public rePaint() {
+        // 计算需要绘制的网格范围
+        this.location = this.computView();
+        // 计算刻度范围
+        this.step = this.computeStep();
+        this.clear();
+        this.draw();
     }
 
     /**
@@ -135,6 +147,12 @@ export default class Grid {
             x: point.x + x,
             y: h - point.y + y,
         });
+    }
+
+    // 清空画布
+    private clear() {
+        const {x, y, w, h} = this.location;
+        this.cxt2D.clearRect(x, y, w, h);
     }
 
     /**

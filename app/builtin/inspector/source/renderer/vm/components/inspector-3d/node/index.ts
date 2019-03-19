@@ -1,6 +1,7 @@
 'use strict';
 
 import { readTemplate, translationDump, transSceneDump } from '../../../utils';
+import { on, off } from '../../../event';
 
 export const template = readTemplate('inspector-3d/node/index.html');
 
@@ -34,12 +35,20 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
 
+        const id = ++vm.num;
+
         if (!vm.uuid) {
             vm.dump = null;
             return;
         }
 
         const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', vm.uuid);
+
+        // 如果请求数据中途，又有数据更新（num 变化），则忽略这个数据
+        if (id !== vm.num) {
+            return;
+        }
+
         if (!dump) {
             vm.dump = null;
             return;
@@ -125,11 +134,25 @@ export const watch = {
 
 export function data() {
     return {
+        num: 0,
         dump: null,
     };
 }
 
 export function mounted() {
     // @ts-ignore
-    this.refresh();
+    const vm: any = this;
+
+    vm.refresh();
+
+    // 记录 commit 是因为需要过滤掉当前不需要的请求数据
+    // 如果正在请求数据，但这时候又 commit 了，则可以忽略到正在请求的数据
+    // 重新发起新的数据请求
+    on('commit', () => {
+        vm.num++;   
+    });
+}
+
+export function destroyed() {
+    off();
 }

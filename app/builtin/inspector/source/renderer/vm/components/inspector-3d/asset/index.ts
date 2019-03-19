@@ -87,6 +87,8 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
         vm.dirty = true;
+
+        vm.$refs.component.change && vm.$refs.component.change();
     },
 
     /**

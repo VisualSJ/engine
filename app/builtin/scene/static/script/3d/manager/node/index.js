@@ -187,7 +187,11 @@ class NodeManager extends EventEmitter {
             // 过滤掉类似 Foreground Background 的节点
             const children = data.filter((child) => !(child._objFlags & cc.Object.Flags.HideInHierarchy));
             const child = children[target];
-            child.setSiblingIndex(target + offset);
+
+            // 找出要移动的节点在没有过滤掉隐藏节点的场景中的位置
+            const index = data.indexOf(children[target + offset]);
+
+            child.setSiblingIndex(index);
         } else {
             const temp = data.splice(target, 1);
             data.splice(target + offset, 0, temp[0]);

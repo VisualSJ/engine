@@ -30,13 +30,11 @@ export const template = `
             :value="value.value.fillRange"
         ></ui-prop>
     </div>
-    <template
-        v-for="item in mianData"
-    >
-        <ui-prop auto="true"
-            :value="item"
-        ></ui-prop>
-    </template>
+    <ui-prop auto="true"
+        v-for="(item,index) in mainData"
+        :key="index"
+        :value="item"
+    ></ui-prop>
 </div>
 `;
 
@@ -68,6 +66,23 @@ export const methods = {
     },
 };
 
+const filters = ['fillCenter', 'fillRange', 'fillStart', 'fillType', 'type'];
+
+export const computed = {
+    mainData() {
+        const mainData: any = {};
+        // @ts-ignore
+        for (const name of Object.keys(this.value.value)) {
+            // @ts-ignore
+            const item = this.value.value[name];
+            if (filters.indexOf(name) === -1 && item.visible) {
+                mainData[name] = item;
+            }
+        }
+        return mainData;
+    },
+};
+
 export const watch = {
 
 };
@@ -78,19 +93,9 @@ export function data() {
             padding: '4px 8px',
             border: '1px dashed #777',
         },
-        mianData: {
 
-        },
     };
 }
-const filters = ['fillCenter', 'fillRange', 'fillStart', 'fillType', 'type'];
 export function mounted(this: any) {
-    const mianData: any = {};
-    for (const name of Object.keys(this.value.value)) {
-        const item = this.value.value[name];
-        if (filters.indexOf(name) === -1 && item.visible) {
-            mianData[name] = item;
-        }
-    }
-    this.mianData = mianData;
+
 }

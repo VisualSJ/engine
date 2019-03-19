@@ -17,13 +17,16 @@ const dumpEncode = require('../../../../../dist/utils/dump/encode');
  * @returns {{}}
  */
 function queryAllEffects() {
-    const effects = cc.EffectAsset.getAll();
-    // get uuid from prototype chain
-    Object.keys(effects).map((key) => {
-        effects[key].uuid = effects[key]._uuid;
-    });
-
-    return effects;
+    try {
+        const effects = cc.EffectAsset.getAll();
+        // get uuid from prototype chain
+        Object.keys(effects).map((key) => {
+            effects[key].uuid = effects[key]._uuid;
+        });
+        return effects;
+    } catch(error) {
+        return [];
+    }
 }
 
 /**
@@ -58,13 +61,17 @@ async function queryMaterial(uuid) {
 
     const effect = cc.EffectAsset.get(asset.effectName);
     if (!effect) {
-        return {};
+        return {
+            effect: '',
+            technique: 0,
+            data: [],
+        };
     }
     const data = material.encodeEffect(effect);
 
     // 将 asset 数据合并到 effect 内整理出的 data 内
     const tech = data[asset._techIdx];
-    tech.forEach((pass, index) => {
+    tech.passes.forEach((pass, index) => {
         Object.keys(asset._defines[index] || {}).forEach((name) => {
             const item = pass.defines.find((t) => { return t.name === name; });
             if (!item) {
@@ -94,20 +101,39 @@ async function queryMaterial(uuid) {
     return {
         effect: asset.effectName,
         technique: asset._techIdx,
-        names: effect.techniques.map(tech => tech.name),
         data,
     };
 }
 
 /**
  * 传入一个发出的 material 数据以及对应的 uuid
- * 将所有的数据应用到 uuid 指向的 material 上
+ * 将所有的数据应用到 uuid 对应的的 material 资源上
  * @param {*} uuid
  * @param {*} data
  */
 async function applyMaterial(uuid, data) {
     const mtl = await material.decodeMaterial(data);
     await Manager.Ipc.send('save-asset', uuid, mtl);
+}
+
+/**
+ * 传入一个发出的 material 数据以及对应的 uuid
+ * 将所有的数据应用到 uuid 对应的 material 运行时数据上
+ * @param {*} uuid 
+ * @param {*} data 
+ */
+async function previewMaterial(uuid, data) {
+    if (data) {
+        const mtl = await material.decodeMaterial(data);
+        cc.AssetLibrary.loadJson(mtl, (error, asset) => {
+            asset._uuid = uuid;
+            cc.AssetLibrary.assetListener.invoke(uuid, asset);
+        });
+    } else {
+        cc.AssetLibrary.loadAsset(uuid, (error, asset) => {
+            cc.AssetLibrary.assetListener.invoke(uuid, asset);
+        });
+    }
 }
 
 function assetChange(uuid) {
@@ -190,17 +216,18 @@ async function onDrop(event) {
     const {resultNode, ray} = selection.getResultNode(event.x, event.y);
     // 放置的位置有节点
     if (resultNode) {
-        // 当前拖拽资源为材质
-        switch (event.type) {
+        const dump = {
+            type: event.type,
+            value: '',
+        };
+        switch (event.type) { // 对拖拽资源的处理
             case 'cc.Material':
-                const result = resultNode._components.find((comp) => {
+                const index = resultNode._components.findIndex((comp) => {
                     return comp.__classname__ === 'cc.ModelComponent';
                 });
-                if (!result) {
-                    return;
-                }
-                const material = await util.promisify(cc.AssetLibrary.loadAsset)(event.uuid);
-                material && (result.material = material);
+                const path = `__comps__.${index}.sharedMaterials.0`; // 默认修改模型材质数组里的第一个材质
+                dump.value = {uuid: event.uuid};
+                nodeManger.setProperty(resultNode.uuid, path, dump);
                 return;
         }
     }
@@ -227,6 +254,7 @@ module.exports = {
     queryEffect,
     queryMaterial,
     applyMaterial,
+    previewMaterial,
     assetChange,
     assetDelete,
     onDragOver,

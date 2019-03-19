@@ -218,7 +218,10 @@ exports.createMenu = (callback: any): any[] => {
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUIMask'),
                     click() {
-                        callback('7fa63aed-f3e2-46a5-8a7c-c1a1adf6cea6');
+                        callback({
+                            name: 'New Mask',
+                            assetUuid: '7fa63aed-f3e2-46a5-8a7c-c1a1adf6cea6',
+                        });
                     },
                 },
             ],

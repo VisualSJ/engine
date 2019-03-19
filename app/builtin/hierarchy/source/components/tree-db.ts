@@ -70,7 +70,7 @@ function toNodesTree() {
  * @param node
  */
 function legealNodeAttr(node: ItreeNode) {
-    Object.assign(node, {
+    const defaultParams: any = {
         name: node.name || '(anonymous)',
         state: '',
         depth: 0,
@@ -80,7 +80,11 @@ function legealNodeAttr(node: ItreeNode) {
         isParent: false,
         parentUuid: '',
         isPrefab: node.prefab,
-    });
+    };
+    const keys = Object.keys(defaultParams);
+    for (const key of keys) {
+        vm.$set(node, key, defaultParams[key]);
+    }
     return node;
 }
 

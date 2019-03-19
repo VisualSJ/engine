@@ -105,7 +105,8 @@ const getDefines = (name, prog) => {
 function encodeEffect(effect) {
 
     return effect.techniques.map((tech) => {
-        return tech.passes.map((pass) => {
+
+        const passes = tech.passes.map((pass) => {
 
             const props = [];
             const defines = [];
@@ -174,6 +175,11 @@ function encodeEffect(effect) {
                 props, defines,
             };
         });
+
+        return {
+            name: tech.name,
+            passes,
+        };
     });
 }
 
@@ -188,8 +194,8 @@ async function decodeMaterial(dump) {
 
     const technique = dump.data[dump.technique];
 
-    for (let i = 0; i < technique.length; i++) {
-        const current = technique[i];
+    for (let i = 0; i < technique.passes.length; i++) {
+        const current = technique.passes[i];
         material._props[i] = {};
         material._defines[i] = {};
 

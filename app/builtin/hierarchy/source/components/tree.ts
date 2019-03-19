@@ -360,7 +360,7 @@ export const methods = {
         const newUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', json);
 
         if (newUuid) {
-            Editor.Ipc.sendToPackage('scene', 'unlink-prefab', newUuid);
+            return await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', newUuid);
         }
     },
 
@@ -858,6 +858,7 @@ export const methods = {
                 return a.top - b.top;
             });
 
+            let i = 0; // 这是重要的微调参数，处理循环后新增的节点处于原节点下方
             for (const node of nodes) {
                 let parent = parentUuid;
                 if (!parentUuid) {
@@ -872,12 +873,16 @@ export const methods = {
                 // 移动到节点的下方
                 const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, node.uuid);
                 let target = toArr.length;
-                let offset = toIndex - toArr.length + 1;
+                let offset = toIndex - toArr.length + 1 + i;
                 if (parentUuid) { // 有子集循环的，原索引位置不必因为新增 +1 故在此 -1
                     target = toIndex;
                     offset = 0;
                 }
-                await db.moveNode(parent, target, offset);
+                if (offset !== 0) {
+                    await db.moveNode(parent, target, offset);
+                }
+
+                i += 1;
 
                 // 循环其子集
                 const children = dumpdata.children.map((child: any) => child.value.uuid);
@@ -913,6 +918,14 @@ export const methods = {
         }
 
         const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
+
+        if (json.insert !== 'inside' && toNode.isScene) {
+            json.insert = 'inside';
+            vm.move(json);
+            return;
+        }
+
+        const toArrLength = toArr.length; // 固定数据，下面的代码带来的变动会使 toArr.length = 0
 
         // 多节点的移动，根据现有排序的顺序执行
         const groups: any[] = uuids.map((uuid: string) => {
@@ -955,7 +968,8 @@ export const methods = {
 
                     await db.moveNode(toParent.uuid, fromIndex, offset);
                 } else { // 跨级移动
-                    if (fromParent === toNode) { // 仍在原来的层级中
+                    if (json.insert === 'inside' && fromParent === toNode) { // 仍在原来的层级中
+                        await db.moveNode(fromParent.uuid, fromIndex, fromArr.length - 1 - fromIndex); // 移到尾部
                         return;
                     }
 
@@ -990,7 +1004,7 @@ export const methods = {
                             },
                         });
 
-                        offset = toIndex - toArr.length; // 目标索引减去自身索引
+                        offset = toIndex - toArrLength; // 目标索引减去自身索引
                         if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
                             offset += 1;
                         } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
@@ -998,7 +1012,7 @@ export const methods = {
                         }
 
                         // 在父级里平移
-                        await db.moveNode(toParent.uuid, toArr.length, offset);
+                        await db.moveNode(toParent.uuid, toArrLength, offset);
                     }
 
                     if (affectNode) {

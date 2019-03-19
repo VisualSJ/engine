@@ -190,7 +190,7 @@ export default class GltfImporter extends Importer {
                     '.texture');
                 const subAsset = await asset.createSubAsset(name, 'texture');
                 const textureUserdata = subAsset.userData as Texture2DAssetUserData;
-                Object.assign(textureUserdata, makeDefaultTexture2DAssetUserData());
+                subAsset.assignUserData(makeDefaultTexture2DAssetUserData(), true);
                 gltfConverter.getTextureParameters(gltfTexture, textureUserdata);
                 if (gltfTexture.source !== undefined) {
                     const image = assetTable.images![gltfTexture.source];

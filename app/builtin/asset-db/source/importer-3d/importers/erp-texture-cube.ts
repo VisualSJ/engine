@@ -49,7 +49,7 @@ export default class ERPTextureCubeImporter extends Importer {
      */
     public async import(asset: VirtualAsset) {
         if (Object.getOwnPropertyNames(asset.userData).length === 0) {
-            Object.assign(asset.userData, makeDefaultTextureCubeAssetUserData());
+            asset.assignUserData(makeDefaultTextureCubeAssetUserData(), true);
         }
 
         const userData = asset.userData as TextureCubeAssetUserData;

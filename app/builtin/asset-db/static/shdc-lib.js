@@ -565,10 +565,8 @@ const addChunksCache = (files) => {
 };
 
 const parseEffect = (() => {
-  const cceffect = /CCEffect/i;
-  const blockTypes = /CCEffect|CCProgram/gi;
-  const effectRE = /CCEffect\s*%{([^]+)}%/i;
-  const programRE = /CCProgram\s*([\w-]+)\s*%{([^]+)}%/i;
+  const effectRE = /CCEffect\s*%{([^]+?)(?:}%|%})/;
+  const programRE = /CCProgram\s*([\w-]+)\s*%{([^]+?)(?:}%|%})/;
   const hashComments = /#.*$/gm;
   const noIndent = /\n[^\s]/;
   const leadingSpace = /^[^\S\n]/gm; // \s without \n
@@ -592,40 +590,25 @@ const parseEffect = (() => {
   return (name, content) => {
     shaderName = 'syntax error';
     content = stripComments(content).replace(tabs, ' '.repeat(tabAsSpaces));
-    // code block split points
-    const blockInfos = {};
-    let blockCap = blockTypes.exec(content), effectCount = 0;
-    while (blockCap) {
-      blockInfos[blockCap.index] = blockCap[0];
-      if (cceffect.test(blockCap[0])) effectCount++;
-      blockCap = blockTypes.exec(content);
-    }
-    const blockPos = Object.keys(blockInfos);
-    if (effectCount !== 1) error('there must be exactly one CCEffect.');
     // process each block
     let effect = {}, templates = {};
-    for (let i = 0; i < blockPos.length; i++) {
-      const str = content.substring(blockPos[i], blockPos[i+1] || content.length);
-      if (cceffect.test(blockInfos[blockPos[i]])) {
-        let effectCap = effectRE.exec(stripHashComments(str));
-        if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
-        else { // deep clone to decouple references
-          try { effect = JSON.parse(JSON.stringify(yaml.safeLoad(effectCap[1]))); }
-          catch (e) { warn(`parse YAML failed: ${e}`); }
-          if (effect.name) effectName = effect.name;
-          else effect.name = name;
-          delete effect.temporaries;
-          structuralTypeCheck(mappings.effectStructure, effect);
-        }
-      } else {
-        let programCap = programRE.exec(str);
-        if (!programCap) error(`illegal program starting at ${blockPos[i]}`);
-        else {
-          let result = programCap[2];
-          while (!noIndent.test(result)) result = result.replace(leadingSpace, '');
-          templates[programCap[1]] = result;
-        }
-      }
+    let effectCap = effectRE.exec(stripHashComments(content));
+    if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
+    else { // deep clone to decouple references
+      try { effect = JSON.parse(JSON.stringify(yaml.safeLoad(effectCap[1]))); }
+      catch (e) { warn(`parse YAML failed: ${e}`); }
+      if (effect.name) effectName = effect.name;
+      else effect.name = name;
+      delete effect.temporaries;
+      structuralTypeCheck(mappings.effectStructure, effect);
+    }
+    let programCap = programRE.exec(content);
+    while (programCap) {
+      let result = programCap[2];
+      while (!noIndent.test(result)) result = result.replace(leadingSpace, '');
+      templates[programCap[1]] = result;
+      content = content.substring(programCap.index + programCap[0].length);
+      programCap = programRE.exec(content);
     }
     return { effect, templates };
   };

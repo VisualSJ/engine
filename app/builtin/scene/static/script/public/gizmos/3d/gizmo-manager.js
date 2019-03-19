@@ -318,6 +318,10 @@ class GizmoManager {
     }
 
     hideNodeGizmoOfNode(node) {
+        if (!node) {
+            return;
+        }
+
         if (node.gizmo) {
             this.destoryGizmo(node.gizmo);
             node.gizmo = null;
@@ -325,6 +329,10 @@ class GizmoManager {
     }
 
     hideComponentGizmoOfNode(node) {
+        if (!node) {
+            return;
+        }
+
         // for component gizmo
         node._components.forEach((component) => {
             if (component.gizmo) {

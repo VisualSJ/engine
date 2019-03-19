@@ -81,11 +81,10 @@ class Engine3D extends EngineInterface {
             }
         }
         const mtl = node.mtl = new cc.Material();
-        mtl.initialize({ effectName: '__editor-gizmo', technique });
-        let overrides = {};
-        if (opts.cullMode) { overrides.rasterizerState = { cullMode: opts.cullMode }; }
-        if (pm !== triangles) { overrides.primitive = pm; }
-        if (Object.keys(overrides).length) { mtl.overridePipelineStates(overrides); }
+        let states = {};
+        if (opts.cullMode) { states.rasterizerState = { cullMode: opts.cullMode }; }
+        if (pm !== triangles) { states.primitive = pm; }
+        mtl.initialize({ effectName: '__editor-gizmo', technique, states });
         if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }
         mtl.setProperty('color', node.modelColor);
         model.material = mtl;
