@@ -39,7 +39,6 @@ export const methods = {
     async refresh() {
         // @ts-ignore
         const vm: any = this;
-        debugger;
         vm.settings.use_global = await Editor.Ipc.requestToPackage('engine', 'get-config', 'local', `${Editor.Project.type}.use_global`);
         vm.settings.javascript.builtin = await Editor.Ipc.requestToPackage('engine', 'get-config', vm.position, `${Editor.Project.type}.javascript.builtin`);
         vm.settings.javascript.custom = await Editor.Ipc.requestToPackage('engine', 'get-config', vm.position, `${Editor.Project.type}.javascript.custom`);

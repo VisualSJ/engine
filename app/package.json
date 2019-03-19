@@ -92,7 +92,7 @@
         "xxhashjs": "^0.2.2"
     },
     "devDependencies": {
-        "@base/electron-base-ipc": "1.0.2",
+        "@base/electron-base-ipc": "1.0.3",
         "@base/electron-i18n": "1.0.1",
         "@base/electron-logger": "1.0.1",
         "@base/electron-menu": "1.0.1",

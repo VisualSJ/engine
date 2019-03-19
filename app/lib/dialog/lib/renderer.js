@@ -57,15 +57,7 @@ class Dialog {
      * @param {Object}} options
      */
     show(options = {}) {
-        return new Promise((resolve, reject) => {
-            ipc.send('editor-lib-dialog:call', 'show', options)
-                .callback((error, button) => {
-                    if (error) {
-                        return reject(error);
-                    }
-                    resolve(button);
-                });
-        });
+        return ipc.sendSync('editor-lib-dialog:call', 'show', options);
     }
 }
 

@@ -38,6 +38,33 @@ export const components = {
 
 export const methods = {
     /**
+     * 中断正在执行的操作
+     * 一般是选中器其他物体
+     */
+    break(uuid: string) {
+        // @ts-ignore
+        const vm: any = this;
+        uuid = uuid || vm.uuid;
+
+        if (!vm.dirty) {
+            return;
+        }
+        const result = Editor.Dialog.show({
+            title: 'warn',
+            type: 'warn',
+            message: Editor.I18n.t(`inspector.check_is_saved.message`),
+            buttons: [
+                Editor.I18n.t('inspector.check_is_saved.abort'),
+                Editor.I18n.t('inspector.check_is_saved.save'),
+            ],
+        });
+        
+        if (result === 1) {
+            vm._onApply(uuid);
+        }
+    },
+
+    /**
      * 获取当前资源需要使用哪种组件渲染
      */
     getComponentName(info: any) {
@@ -109,9 +136,10 @@ export const methods = {
     /**
      * 按下了 apply 按钮
      */
-    async _onApply() {
+    async _onApply(uuid: string) {
         // @ts-ignore
         const vm: any = this;
+        uuid = uuid || vm.uuid;
 
         if (vm.$refs.component && vm.$refs.component.apply) {
             const result = await vm.$refs.component.apply();
@@ -122,10 +150,7 @@ export const methods = {
         }
 
         const meta = JSON.stringify(vm.meta);
-        const save = await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', vm.uuid, meta);
-        // if (save) {
-        //     vm.refresh();
-        // }
+        await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', uuid, meta);
 
         vm.dirty = false;
         requestAnimationFrame(() => {
@@ -135,7 +160,9 @@ export const methods = {
 };
 
 export const watch = {
-    uuid() {
+    uuid(nData: string, oData: string) {
+        // @ts-ignore
+        this.break(oData);
         // @ts-ignore
         this.refresh();
     },

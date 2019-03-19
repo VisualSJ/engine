@@ -86,7 +86,10 @@ export const messages = {
         if (!vm) {
             return;
         }
-        vm.update(type, uuid);
+        // @ts-ignore
+        clearTimeout(this._unselectTimer);
+        vm.item.type = type;
+        vm.item.uuid = uuid;
     },
 
     /**
@@ -95,8 +98,19 @@ export const messages = {
      * @param uuid
      */
     'selection:unselect'(type: string, uuid: string) {
+        if (!vm) {
+            return;
+        }
+        // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
+        // @ts-ignore
+        clearTimeout(this._unselectTimer);
         if (vm.item.type === type && vm.item.uuid === uuid) {
-            vm.update('', '');
+            // @ts-ignore
+            this._unselectTimer = setTimeout(() => {
+                    vm.item.type = '';
+                    vm.item.uuid = '';
+            }, 200);
+        
         }
     },
 

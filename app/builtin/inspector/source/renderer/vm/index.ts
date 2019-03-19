@@ -13,6 +13,7 @@ export function init(elem: HTMLElement) {
             loading: false, // 是否显示菊花标记
             type: Editor.Project.type, // 当前项目的类型
 
+            // template 内使用
             state: {
                 db: 'close',
                 scene: 'close',
@@ -26,47 +27,24 @@ export function init(elem: HTMLElement) {
             width: 0,
             height: 0,
             language: 'default',
-            hasUpdate: true,
-            itemTempQue: [],
         },
         watch: {
-            hasUpdate() {
-                // @ts-ignore
-                const vm: any = this;
-                if (vm.hasUpdate && vm.itemTempQue.length > 0) {
-                    const item = vm.itemTempQue.shift();
-                    vm.update(item.type, item.uuid);
-                }
+            item: {
+                deep: true,
+                handler(item: any) {
+                    // @ts-ignore
+                    const vm: any = this;
+                    if (item.type === 'asset' && vm.$refs.node) {
+                        vm.$refs.node.break();
+                    }
+                    if (item.type === 'node' && vm.$refs.asset) {
+                        vm.$refs.asset.break();
+                    }
+                },
             },
         },
 
         methods: {
-            async update(type: string, uuid: string) {
-                // @ts-ignore
-                const vm: any = this;
-                if (!vm.hasUpdate) {
-                    vm.itemTempQue.push({type, uuid});
-                    return;
-                }
-                vm.hasUpdate = false;
-                if (vm.item.type === 'asset' && vm.$refs.asset && vm.$refs.asset.dirty) {
-                    const t = Editor.I18n.t;
-                    // @ts-ignore
-                    const result = await Editor.Dialog.show({
-                        title: 'warn',
-                        type: 'warn',
-                        message: t('inspector.check_is_saved.message'),
-                        buttons: [t('inspector.check_is_saved.abort'), t('inspector.check_is_saved.save')],
-                    });
-                    if (result !== 0) {
-                        // @ts-ignore
-                        vm.$refs.asset._onApply();
-                    }
-                }
-                vm.hasUpdate = true;
-                vm.item.type = type;
-                vm.item.uuid = uuid;
-            },
             resize() {
                 // @ts-ignore
                 const rect = this.$el.getBoundingClientRect();
@@ -75,6 +53,7 @@ export function init(elem: HTMLElement) {
                 // @ts-ignore
                 this.height = rect.height;
             },
+
             /**
              * 数据重置
              */
