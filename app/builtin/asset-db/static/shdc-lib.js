@@ -536,8 +536,9 @@ const buildShader = (() => {
     // glsl4.frag = decorateBindings(frag, blocks, samplers, fragInfo);
 
     clearFormat(glsl1); clearFormat(glsl3);
+    const hash = mappings.murmurhash2_32_gc(glsl3.vert + glsl3.frag, 666);
 
-    return { glsl3, glsl1, builtins, defines, blocks, samplers, dependencies };
+    return { hash, glsl3, glsl1, builtins, defines, blocks, samplers, dependencies };
   };
 })();
 
