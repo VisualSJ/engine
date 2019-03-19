@@ -2,10 +2,10 @@ import { Asset, Importer, queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl, 
 import { AssertionError } from 'assert';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Animation, GlTf, Image, Material, Mesh, Skin, Texture } from '../../../../../@types/asset-db/glTF';
+import { Animation, Image, Material, Mesh, Skin, Texture } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
-import { GltfConverter, GltfImageUriInfo, GltfSubAsset,
-    IGltfAssetTable, isDataUri, isFilesystemPath, readGltf } from './utils/gltf-converter';
+import { GltfAssetFinderKind, GltfConverter,
+    GltfSubAsset, IGltfAssetFinder, isDataUri, isFilesystemPath, readGltf } from './utils/gltf-converter';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -25,7 +25,7 @@ interface IImageLoctions {
 }
 
 interface IGltfUserData {
-    assetTable: IGltfAssetTable;
+    assetFinder: SerializedAssetFinder;
 
     imageLocations: IImageLoctions;
 
@@ -41,7 +41,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.11';
+        return '1.0.17';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -65,7 +65,7 @@ export default class GltfImporter extends Importer {
 
         const gltfFilePath: string = await importer.getGltfFilePath(asset);
         const { gltf, binaryBuffers } = await readGltf(gltfFilePath);
-        return new GltfConverter(gltf, binaryBuffers, gltfFilePath, loadAssetSync);
+        return new GltfConverter(gltf, binaryBuffers, gltfFilePath);
     }
 
     /**
@@ -95,9 +95,8 @@ export default class GltfImporter extends Importer {
         const gltfFileBaseName = asset.basename;
 
         const userData = asset.userData as IGltfUserData;
-        if (!userData.assetTable) {
-            userData.assetTable = {};
-        }
+
+        const gltfAssetFinder = new DefaultGltfAssetFinder(userData.assetFinder);
 
         // 手动数据迁移，要记得有了迁移机制之后这里要删掉
         if (userData.imageLocations) {
@@ -118,149 +117,114 @@ export default class GltfImporter extends Importer {
             userData.imageLocations = {};
         }
 
-        const assetTable = userData.assetTable;
-
-        /**
-         *
-         * @param gltfSubAssets Gltf assets to create
-         * @param extension Extension of sub-asset
-         * @param importer Importer used by sub-assets
-         * @return Sub-asset uuids foreach gltf sub-asset.
-         */
-        const createSubAssets = async (
-            gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[],
-            extension: string,
-            importer: string,
-            preferFileBaseName?: boolean,
-            parentUserData?: any
-        ): Promise<Array<string | null>> => {
-            const result = new Array<string | null>(gltfSubAssets.length).fill(null);
+        const importGltfAssetArray = async (
+            gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[] | Texture[],
+            finderKind: MyFinderKind,
+            importlet: Importlet,
+            extension: string
+            ) => {
+            gltfAssetFinder.allocate(finderKind, gltfSubAssets.length);
+            const assetNames = makeUniqueSubAssetNames(gltfFileBaseName, gltfSubAssets, finderKind, extension);
             for (let index = 0; index < gltfSubAssets.length; ++index) {
-                const name = makeUniqueSubAssetName(
-                    gltfFileBaseName,
-                    gltfSubAssets,
-                    index,
-                    extension, {
-                        preferFileBaseName,
-                    });
+                const name = assetNames[index];
+                const uuid = await importlet(gltfSubAssets[index], index, name);
+                if (uuid) {
+                    gltfAssetFinder.emplace(finderKind, index, uuid);
+                }
+            }
+        };
+
+        const useSubimporter = (importer: string, parentUserData?: any) => {
+            return async (gltfSubAsset: Mesh | Animation | Skin | Material, index: number, name: string) => {
                 const subAsset = await asset.createSubAsset(name, importer);
                 if (parentUserData) {
                     parentUserData.redirect = subAsset.uuid;
                 }
                 subAsset.userData.gltfIndex = index;
-                result[index] = subAsset.uuid;
-            }
-            return result;
+                return subAsset.uuid;
+            };
         };
 
-        // Import meshes
-        if (gltfConverter.gltf.meshes) {
-            assetTable.meshes = await createSubAssets(gltfConverter.gltf.meshes, '.mesh', 'gltf-mesh');
+        // 导入 glTF 网格。
+        const gltfMeshArray = gltfConverter.gltf.meshes;
+        if (gltfMeshArray) {
+            await importGltfAssetArray(gltfMeshArray, 'meshes', useSubimporter('gltf-mesh'), '.mesh');
         }
 
-        // Import animations
-        if (gltfConverter.gltf.animations) {
-            assetTable.animations = await createSubAssets(
-                gltfConverter.gltf.animations, '.animation', 'gltf-animation');
+        // 导入 glTF 动画。
+        const gltfAnimationArray = gltfConverter.gltf.animations;
+        if (gltfAnimationArray) {
+            await importGltfAssetArray(gltfAnimationArray, 'animations', useSubimporter('gltf-animation'), '.animation');
         }
 
-        // Import skeletons
-        if (gltfConverter.gltf.skins) {
-            assetTable.skeletons = await createSubAssets(gltfConverter.gltf.skins, '.skeleton', 'gltf-skeleton');
+        // 导入 glTF 皮肤。
+        const gltfSkinArray = gltfConverter.gltf.skins;
+        if (gltfSkinArray) {
+            await importGltfAssetArray(gltfSkinArray, 'skeletons', useSubimporter('gltf-skeleton'), '.skeleton');
         }
 
-        // Import images
-        if (gltfConverter.gltf.images) {
-            assetTable.images = new Array(gltfConverter.gltf.images.length).fill(null);
-            for (let index = 0; index < gltfConverter.gltf.images.length; ++index) {
-                const gltfImage = gltfConverter.gltf.images[index];
-                await this._importGltfImage(asset, userData, assetTable, gltfConverter, gltfImage, index);
+        // 导入 glTF 图像。
+        const gltfImageArray = gltfConverter.gltf.images;
+        if (gltfImageArray) {
+            gltfAssetFinder.allocateImages(gltfImageArray.length);
+            const imageNames = makeUniqueSubAssetNames(gltfFileBaseName, gltfImageArray, 'images', '.image');
+            for (let index = 0; index < gltfImageArray.length; ++index) {
+                const imageDetail = await this._importGltfImage(
+                    asset, userData, gltfConverter, gltfImageArray[index], index, imageNames[index]);
+                gltfAssetFinder.setImageDeteail(index, imageDetail);
             }
         }
 
-        // Import textures
-        if (gltfConverter.gltf.textures) {
-            assetTable.textures = new Array(gltfConverter.gltf.textures.length).fill(null);
-            for (let index = 0; index < gltfConverter.gltf.textures.length; ++index) {
-                const gltfTexture = gltfConverter.gltf.textures[index];
-                const name = makeUniqueSubAssetName(
-                    gltfFileBaseName,
-                    gltfConverter.gltf.textures,
-                    index,
-                    '.texture');
-                const subAsset = await asset.createSubAsset(name, 'texture');
-                const textureUserdata = subAsset.userData as Texture2DAssetUserData;
-                subAsset.assignUserData(makeDefaultTexture2DAssetUserData(), true);
-                gltfConverter.getTextureParameters(gltfTexture, textureUserdata);
-                if (gltfTexture.source !== undefined) {
-                    const image = assetTable.images![gltfTexture.source];
-                    if (image) {
-                        const userData = subAsset.userData as Texture2DAssetUserData;
-                        userData.isUuid = image.embeded;
-                        userData.imageUuidOrDatabaseUri = image.uuidOrDatabaseUri;
-                        if (!image.embeded) {
-                            const imagePath = queryPathFromUrl(userData.imageUuidOrDatabaseUri);
-                            if (!imagePath) {
-                                // @ts-ignore
-                                throw new AssertionError({
-                                    message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
-                                });
-                            }
-                            subAsset.rely(imagePath);
-                        }
-                    }
-                }
-                assetTable.textures[index] = subAsset.uuid;
-            }
+        // 导入 glTF 贴图。
+        const gltfTextureArray = gltfConverter.gltf.textures;
+        if (gltfTextureArray) {
+            const importlet = async (texture: Texture, index: number, name: string) => {
+                return await this._importGltfTexture(asset, gltfAssetFinder, gltfConverter, texture, name);
+            };
+            await importGltfAssetArray(gltfTextureArray, 'textures', importlet, '.texture');
         }
 
-        // Import materials
-        if (gltfConverter.gltf.materials) {
+        // 导入 glTF 材质。
+        const gltfMaterialArray = gltfConverter.gltf.materials;
+        if (gltfMaterialArray) {
+            let importlet: Importlet | undefined;
             if (!userData.dumpMaterials) {
-                assetTable.materials = await createSubAssets(gltfConverter.gltf.materials, '.material', 'gltf-material');
+                importlet = useSubimporter('gltf-material');
             } else {
-                if (!this._dumpMaterials(asset, assetTable, gltfConverter)) {
-                    return false;
-                }
+                importlet = async (material: Material, index: number, name: string) => {
+                    return await this._dumpMaterial(asset, gltfAssetFinder, gltfConverter, index, name);
+                };
             }
+            await importGltfAssetArray(gltfMaterialArray, 'materials', importlet, '.material');
         }
 
-        // Import scenes
-        if (gltfConverter.gltf.scenes) {
-            await createSubAssets(
-                gltfConverter.gltf.scenes,
-                '.prefab',
-                'gltf-scene',
-                true,
-                asset.userData
-            );
+        // 导入 glTF 场景。
+        const gltfSceneArray = gltfConverter.gltf.scenes;
+        if (gltfSceneArray) {
+            await importGltfAssetArray(gltfSceneArray, 'scenes', useSubimporter('gltf-scene', asset.userData), '.prefab');
         }
+
+        // 保存 AssetFinder。
+        userData.assetFinder = gltfAssetFinder.serialize();
 
         return true;
     }
 
     private async _importGltfImage(
-        asset: Asset, userData: IGltfUserData, assetTable: IGltfAssetTable,
-        gltfConverter: GltfConverter, gltfImage: Image, index: number) {
+        asset: Asset, userData: IGltfUserData,
+        gltfConverter: GltfConverter, gltfImage: Image, index: number, name: string) {
 
         const createEmbededImageAsset = async () => {
-            const name = makeUniqueSubAssetName(
-                asset.basename,
-                gltfConverter.gltf.images!,
-                index,
-                '.image');
-
             const subAsset = await asset.createSubAsset(name, 'gltf-embeded-image');
             subAsset.userData.gltfIndex = index;
-            assetTable.images![index] = {
+            return {
                 embeded: true,
                 uuidOrDatabaseUri: subAsset.uuid,
             };
         };
 
         if (gltfImage.bufferView !== undefined) {
-            await createEmbededImageAsset();
-            return;
+            return await createEmbededImageAsset();
         }
 
         const imageUrl = getFinalImageUrl(gltfImage, userData, gltfConverter, asset.source);
@@ -277,7 +241,7 @@ export default class GltfImporter extends Importer {
         }
 
         if (imageUrl === null) {
-            return;
+            return null;
         }
 
         const imageUriInfo = gltfConverter.getImageUriInfo(imageUrl);
@@ -287,82 +251,138 @@ export default class GltfImporter extends Importer {
         }
 
         if (imageDatabaseUri) {
-            assetTable.images![index] = {
+            return {
                 embeded: false,
                 uuidOrDatabaseUri: imageDatabaseUri,
             };
         } else {
-            await createEmbededImageAsset();
+            return await createEmbededImageAsset();
         }
     }
 
-    private _dumpMaterials(asset: Asset, assetTable: IGltfAssetTable, gltfConverter: GltfConverter) {
-        const baseFolder = path.join(path.dirname(asset.source), `Materials_${asset.basename}`);
-        fs.ensureDirSync(baseFolder);
-        let reimportNeeded = false;
-        const gltfMaterialArray = gltfConverter.gltf.materials!;
-        const materials = gltfMaterialArray.map((gltfMaterial, index) => {
-            const destFileName = makeUniqueSubAssetName(asset.basename, gltfMaterialArray, index, '.mtl');
-            const destFilePath = path.join(baseFolder, destFileName);
-            if (!fs.existsSync(destFilePath)) {
-                const material = createMaterial(index, gltfConverter, assetTable);
-                const serialized = Manager.serialize(material);
-                fs.writeFileSync(destFilePath, serialized);
-            }
-            const url = queryUrlFromPath(destFilePath);
-            if (url) {
-                const uuid = queryUuidFromUrl(url);
-                if (typeof uuid === 'string') {
-                    return uuid;
+    private async _importGltfTexture(
+        asset: Asset, assetFinder: DefaultGltfAssetFinder,
+        gltfConverter: GltfConverter, gltfTexture: Texture, name: string) {
+        const subAsset = await asset.createSubAsset(name, 'texture');
+        const textureUserdata = subAsset.userData as Texture2DAssetUserData;
+        Object.assign(textureUserdata, makeDefaultTexture2DAssetUserData());
+        gltfConverter.getTextureParameters(gltfTexture, textureUserdata);
+        if (gltfTexture.source !== undefined) {
+            const imageDetail = assetFinder.getImageDetail(gltfTexture.source);
+            if (imageDetail) {
+                const userData = subAsset.userData as Texture2DAssetUserData;
+                userData.isUuid = imageDetail.embeded;
+                userData.imageUuidOrDatabaseUri = imageDetail.uuidOrDatabaseUri;
+                if (!imageDetail.embeded) {
+                    const imagePath = queryPathFromUrl(userData.imageUuidOrDatabaseUri);
+                    if (!imagePath) {
+                        // @ts-ignore
+                        throw new AssertionError({
+                            message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
+                        });
+                    }
+                    subAsset.rely(imagePath);
                 }
             }
-            reimportNeeded = true;
-            asset.rely(destFilePath);
-            return null;
-        });
-        if (reimportNeeded) {
-            return false;
-        } else {
-            assetTable.materials = materials;
         }
-        return true;
+        return subAsset.uuid;
+    }
+
+    private async _dumpMaterial(asset: Asset, assetFinder: DefaultGltfAssetFinder, gltfConverter: GltfConverter, index: number, name: string) {
+        const baseFolder = path.join(path.dirname(asset.source), `Materials_${asset.basename}`);
+        fs.ensureDirSync(baseFolder);
+        const destFileName = name;
+        const destFilePath = path.join(baseFolder, destFileName);
+        if (!fs.existsSync(destFilePath)) {
+            const material = createMaterial(index, gltfConverter, assetFinder);
+            const serialized = Manager.serialize(material);
+            fs.writeFileSync(destFilePath, serialized);
+        }
+        const url = queryUrlFromPath(destFilePath);
+        if (url) {
+            const uuid = queryUuidFromUrl(url);
+            if (typeof uuid === 'string') {
+                return uuid;
+            }
+        }
+        asset.rely(destFilePath);
+        return null;
     }
 }
+
+type Importlet = (asset: Mesh | Animation | Skin | Material, index: number, name: string) => Promise<string | null>;
 
 function tryGetOriginalPath(image: Image, gltfConverter: GltfConverter): string | null {
     return image.uri || null;
 }
 
 /**
- * 为glTF子资源数组中的某个子资源生成一个在子资源数组中独一无二的名字，这个名字可用作EditorAsset的名称以及文件系统上的文件名。
+ * 为glTF子资源数组中的所有子资源生成在子资源数组中独一无二的名字，这个名字可用作EditorAsset的名称以及文件系统上的文件名。
  * @param gltfFileBaseName glTF文件名，不含扩展名部分。
  * @param assetsArray glTF子资源数组。
- * @param index 该glTF子资源在glTF资源数组中的索引。
  * @param extension 附加的扩展名。该扩展名将作为后缀附加到结果名字上。
  * @param options.preferedFileBaseName 尽可能地使用glTF文件本身的名字而不是glTF子资源本身的名称来生成结果。
  */
-function makeUniqueSubAssetName(
-    gltfFileBaseName: string,
-    assetsArray: GltfSubAsset[],
-    index: number,
-    extension: string,
-    options?: {
-        preferFileBaseName?: boolean,
-    }) {
-    const gltfAsset = assetsArray[index];
-    let base = gltfAsset.name;
-    if (typeof base !== 'string' || (options && options.preferFileBaseName)) {
-        base = index === 0 ? gltfFileBaseName : `${gltfFileBaseName}-${index}`;
+function makeUniqueSubAssetNames(gltfFileBaseName: string, assetsArray: GltfSubAsset[], finderKind: MyFinderKind | 'images', extension: string) {
+    const getBaseNameIfNoName = () => {
+        switch (finderKind) {
+        case 'animations':
+            return `UnnamedAnimation`;
+        case 'images':
+            return `UnnamedImage`;
+        case 'meshes':
+            return `UnnamedMesh`;
+        case 'materials':
+            return `UnnamedMaterial`;
+        case 'skeletons':
+            return `UnnamedSkeleton`;
+        case 'textures':
+            return `UnnamedTexture`;
+        default:
+            return `Unnamed`;
+        }
+    };
+
+    let names = assetsArray.map((asset) => {
+        let unchecked: string | undefined;
+        if (finderKind === 'scenes') {
+            unchecked = gltfFileBaseName;
+        } else if (typeof asset.name === 'string') {
+            unchecked = asset.name;
+        } else {
+            unchecked = getBaseNameIfNoName();
+        }
+        return validateAssetName(unchecked);
+    });
+
+    if (!isDifferWithEachOther(names)) {
+        let tail = '-';
+        while (true) {
+            if (names.every((name) => !name.endsWith(tail))) {
+                break;
+            }
+            tail += '-';
+        }
+        names = names.map((name, index) => name + `${tail}${(index)}`);
     }
-    return validateAssetName(name) + extension;
+
+    return names.map((name) => name + extension);
 }
 
-function validateAssetName(name: string | undefined) {
-    if (!name) {
-        return undefined;
-    } else {
-        return name.replace(/[ <>:'#\/\\|?*\x00-\x1F]/g, '-');
+function isDifferWithEachOther(values: string[]) {
+    if (values.length >= 2) {
+        const sorted = values.sort();
+        for (let i = 0; i < sorted.length - 1; ++i) {
+            if (sorted[i] === sorted[i + 1]) {
+                return false;
+            }
+        }
     }
+    return true;
+}
+
+function validateAssetName(name: string) {
+    return name.replace(/[ <>:'#\/\\|?*\x00-\x1F]/g, '-');
 }
 
 function getFinalImageUrl(
@@ -721,8 +741,11 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
-        const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
-        const material = createMaterial(asset.userData.gltfIndex as number, gltfConverter, assetTable);
+        const gltfUserData = asset.parent.userData as IGltfUserData;
+        const material = createMaterial(
+            asset.userData.gltfIndex as number,
+            gltfConverter,
+            new DefaultGltfAssetFinder(gltfUserData.assetFinder));
 
         // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(material));
@@ -734,7 +757,7 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
 export class GltfPrefabImporter extends GltfSubAssetImporter {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.3';
+        return '1.0.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -758,12 +781,13 @@ export class GltfPrefabImporter extends GltfSubAssetImporter {
 
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
-        const assetTable = asset.parent.userData.assetTable as IGltfAssetTable;
+        const gltfUserData = asset.parent.userData as IGltfUserData;
 
-        // @ts-ignore
-        const sceneNode = gltfConverter.createScene(asset.userData.gltfIndex as number, assetTable);
+        const sceneNode = gltfConverter.createScene(
+            asset.userData.gltfIndex as number,
+            new DefaultGltfAssetFinder(gltfUserData.assetFinder));
 
-        if (sceneNode.name === 'RootScene' || sceneNode.name === 'RootNode') {
+        if (sceneNode.name === 'RootScene' || sceneNode.name === 'RootNode' || sceneNode.name === 'Node-0') {
             const baseName = (asset.parent as Asset).basename;
             sceneNode.name = path.basename(baseName, '');
         }
@@ -880,16 +904,81 @@ function generatePrefab(node: cc.Node) {
     return prefab;
 }
 
-function createMaterial(index: number, gltfConverter: GltfConverter, assetTable: IGltfAssetTable) {
-    const textureTable = !assetTable.textures ? [] :
-    // @ts-ignore
-    assetTable.textures.map((textureUUID) => loadAssetSync(textureUUID));
-
+function createMaterial(index: number, gltfConverter: GltfConverter, assetFinder: IGltfAssetFinder) {
     // @ts-ignore
     const material = gltfConverter.createMaterial(
-        index, textureTable, (effectName) => {
+        index, assetFinder, (effectName) => {
             const uuid = queryUuidFromUrl(effectName);
             return loadAssetSync(uuid);
         });
     return material;
+}
+
+interface IImageDetail {
+    uuidOrDatabaseUri: string;
+    embeded: boolean;
+}
+
+interface SerializedAssetFinder {
+    meshes?: Array<string | null>;
+    animations?: Array<string | null>;
+    skeletons?: Array<string | null>;
+    images?: Array<IImageDetail | null>;
+    textures?: Array<string | null>;
+    materials?: Array<string | null>;
+    scenes?: Array<string | null>;
+}
+
+type MyFinderKind = GltfAssetFinderKind | 'scenes';
+
+interface FinderDataMap {
+    meshes: string;
+    animations: string;
+    skeletons: string;
+    images: IImageDetail;
+    textures: string;
+    materials: string;
+    scenes: string;
+}
+
+class DefaultGltfAssetFinder implements IGltfAssetFinder {
+    constructor(private _assetDetails: SerializedAssetFinder = {}) {
+    }
+
+    public serialize() {
+        return this._assetDetails;
+    }
+
+    public allocate(kind: MyFinderKind, size: number) {
+        this._assetDetails[kind] = new Array(size).fill(null);
+    }
+
+    public emplace(kind: MyFinderKind, index: number, uuid: string) {
+        this._assetDetails[kind]![index] = uuid;
+    }
+
+    public find(kind: MyFinderKind, index: number): string | null {
+        const uuids = this._assetDetails[kind];
+        if (uuids === undefined) {
+            return null;
+        }
+        const detail = uuids[index];
+        if (detail === null) {
+            return null;
+        } else {
+            return loadAssetSync(detail);
+        }
+    }
+
+    public allocateImages(size: number) {
+        this._assetDetails.images = new Array(size).fill(null);
+    }
+
+    public getImageDetail(index: number): IImageDetail | null {
+        return this._assetDetails.images![index];
+    }
+
+    public setImageDeteail(index: number, detail: IImageDetail | null) {
+        this._assetDetails.images![index] = detail;
+    }
 }

@@ -8,6 +8,9 @@ import { AttributeBaseType, AttributeType, IMeshStruct,
     IndexUnit, IPrimitive, IVertexAttribute, IVertexBundle } from '../mesh';
 import { Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
 
+// @ts-ignore
+type CCAsset = cc.Asset;
+
 export interface GltfImageUriInfo {
     isDataUri: boolean;
 }
@@ -20,16 +23,10 @@ export function isFilesystemPath(uriInfo: GltfImageUriInfo): uriInfo is GltfImag
     return !uriInfo.isDataUri;
 }
 
-export interface IGltfAssetTable {
-    meshes?: Array<string | null>;
-    animations?: Array<string | null>;
-    skeletons?: Array<string | null>;
-    images?: Array<{
-        uuidOrDatabaseUri: string,
-        embeded: boolean,
-    } | null>;
-    textures?: Array<string | null>;
-    materials?: Array<string | null>;
+export type GltfAssetFinderKind = 'meshes' | 'animations' | 'skeletons' | 'textures' | 'materials';
+
+export interface IGltfAssetFinder {
+    find(kind: GltfAssetFinderKind, index: number): CCAsset | null;
 }
 
 // @ts-ignore
@@ -54,8 +51,7 @@ export class GltfConverter {
     constructor(
         private _gltf: GlTf,
         private _buffers: Buffer[],
-        private _gltfFilePath: string,
-        private _assetLoader: AssetLoader) {
+        private _gltfFilePath: string) {
         this._nodePathTable = this._createNodePathTable();
     }
 
@@ -365,8 +361,7 @@ export class GltfConverter {
     // @ts-ignore
     public createMaterial(
         iGltfMaterial: number,
-        // @ts-ignore
-        textures: cc.Texture[],
+        gltfAssetFinder: IGltfAssetFinder,
         // @ts-ignore
         effectGetter: (name: string) => cc.EffectAsset) {
         const gltfMaterial = this._gltf.materials![iGltfMaterial];
@@ -383,7 +378,7 @@ export class GltfConverter {
                 // tslint:disable-next-line:no-string-literal
                 defines['USE_ALBEDO_MAP'] = true;
                 // tslint:disable-next-line:no-string-literal
-                props['albedoMap'] = textures[pbrMetallicRoughness.baseColorTexture.index];
+                props['albedoMap'] = gltfAssetFinder.find('textures', pbrMetallicRoughness.baseColorTexture.index);
             } else {
                 let color = null;
                 if (pbrMetallicRoughness.baseColorFactor) {
@@ -403,14 +398,14 @@ export class GltfConverter {
             // tslint:disable-next-line:no-string-literal
             defines['USE_NORMAL_MAP'] = true;
             // tslint:disable-next-line:no-string-literal
-            props['normalMap'] = textures[gltfMaterial.normalTexture.index];
+            props['normalMap'] = gltfAssetFinder.find('textures', gltfMaterial.normalTexture.index);
         }
 
         if (gltfMaterial.emissiveTexture) {
             // tslint:disable-next-line:no-string-literal
             defines['USE_EMISSIVE_MAP'] = true;
             // tslint:disable-next-line:no-string-literal
-            props['emissiveMap'] = textures[gltfMaterial.emissiveTexture.index];
+            props['emissiveMap'] = gltfAssetFinder.find('textures', gltfMaterial.emissiveTexture.index);
         }
 
         if (gltfMaterial.emissiveFactor) {
@@ -520,15 +515,15 @@ export class GltfConverter {
     }
 
     // @ts-ignore
-    public createScene(iGltfScene: number, gltfAssetsTable: IGltfAssetTable): cc.Node {
-        const sceneNode = this._getSceneNode(iGltfScene, gltfAssetsTable);
+    public createScene(iGltfScene: number, gltfAssetFinder: IGltfAssetFinder): cc.Node {
+        const sceneNode = this._getSceneNode(iGltfScene, gltfAssetFinder);
         if (this._gltf.animations !== undefined) {
             const animationComponent = sceneNode.addComponent('cc.AnimationComponent');
             this._gltf.animations.forEach((gltfAnimation, index) => {
-                const animationUUID = gltfAssetsTable.animations![index];
-                if (animationUUID) {
+                const animation = gltfAssetFinder.find('animations', index);
+                if (animation) {
                     const animationName = this._getGltfXXName(GltfAssetKind.Animation, index);
-                    animationComponent.addClip(animationName, this._assetLoader(animationUUID));
+                    animationComponent.addClip(animationName, animation);
                 }
             });
         }
@@ -600,7 +595,7 @@ export class GltfConverter {
         };
     }
 
-    private _getSceneNode(iGltfScene: number, gltfAssetsTable: IGltfAssetTable) {
+    private _getSceneNode(iGltfScene: number, gltfAssetFinder: IGltfAssetFinder) {
         const gltfScene = this._gltf.scenes![iGltfScene];
         const nodes = new Array(this._gltf.nodes!.length);
         // @ts-ignore
@@ -609,7 +604,7 @@ export class GltfConverter {
                 return nodes[index];
             }
             const gltfNode = this._gltf.nodes![index];
-            const node = this._createNode(index, gltfAssetsTable, root);
+            const node = this._createNode(index, gltfAssetFinder, root);
             nodes[index] = node;
             if (gltfNode.children !== undefined) {
                 gltfNode.children.forEach((childIndex) => {
@@ -641,7 +636,7 @@ export class GltfConverter {
     }
 
     // @ts-ignore
-    private _createNode(iGltfNode: number, gltfAssetsTable: IGltfAssetTable, root: cc.Node) {
+    private _createNode(iGltfNode: number, gltfAssetFinder: IGltfAssetFinder, root: cc.Node) {
         const gltfNode = this._gltf.nodes![iGltfNode];
         const node = this._createEmptyNode(iGltfNode);
         if (gltfNode.mesh !== undefined) {
@@ -650,24 +645,24 @@ export class GltfConverter {
                 modelComponent = node.addComponent('cc.ModelComponent');
             } else {
                 modelComponent = node.addComponent('cc.SkinningModelComponent');
-                const skeleton = gltfAssetsTable.skeletons![gltfNode.skin];
+                const skeleton = gltfAssetFinder.find('skeletons', gltfNode.skin);
                 if (skeleton) {
-                    modelComponent._skeleton = this._assetLoader(skeleton);
+                    modelComponent._skeleton = skeleton;
                 }
                 modelComponent._skinningRoot = root;
             }
-            const mesh = gltfAssetsTable.meshes![gltfNode.mesh];
+            const mesh = gltfAssetFinder.find('meshes', gltfNode.mesh);
             if (mesh) {
-                modelComponent._mesh = this._assetLoader(mesh);
+                modelComponent._mesh = mesh;
             }
             const gltfMesh = this.gltf.meshes![gltfNode.mesh];
             const materials = gltfMesh.primitives.map((gltfPrimitive) => {
                 if (gltfPrimitive.material === undefined) {
                     return null;
                 } else {
-                    const material = gltfAssetsTable.materials![gltfPrimitive.material];
+                    const material = gltfAssetFinder.find('materials', gltfPrimitive.material);
                     if (material) {
-                        return this._assetLoader(material);
+                        return material;
                     }
                 }
             });
