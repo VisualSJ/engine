@@ -139,7 +139,9 @@ export const methods = {
     async _onApply(uuid: string) {
         // @ts-ignore
         const vm: any = this;
-        uuid = uuid || vm.uuid;
+        if (typeof uuid !== 'string') {
+            uuid = vm.uuid;
+        }
 
         if (vm.$refs.component && vm.$refs.component.apply) {
             const result = await vm.$refs.component.apply();
