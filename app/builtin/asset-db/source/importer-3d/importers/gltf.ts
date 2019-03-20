@@ -5,7 +5,7 @@ import * as path from 'path';
 import { Animation, Image, Material, Mesh, Skin, Texture } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 import { GltfAssetFinderKind, GltfConverter,
-    GltfSubAsset, IGltfAssetFinder, isDataUri, isFilesystemPath, readGltf } from './utils/gltf-converter';
+    GltfSubAsset, IGltfAssetFinder, isDataUri, isFilesystemPath, NormalImportSetting, readGltf, TangentImportSetting } from './utils/gltf-converter';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -25,11 +25,27 @@ interface IImageLoctions {
 }
 
 interface IGltfUserData {
-    assetFinder: SerializedAssetFinder;
+    assetFinder?: SerializedAssetFinder;
 
     imageLocations: IImageLoctions;
 
-    dumpMaterials?: boolean;
+    // Meshe import settings
+    normals: NormalImportSetting;
+
+    // Tangent import settings;
+    tangents: TangentImportSetting;
+
+    // Material import settings
+    dumpMaterials: boolean;
+}
+
+function makeDefaultGltfUserData(): IGltfUserData {
+    return {
+        imageLocations: {},
+        normals: NormalImportSetting.optional,
+        tangents: TangentImportSetting.optional,
+        dumpMaterials: false,
+    };
 }
 
 function loadAssetSync(uuid: string) {
@@ -41,7 +57,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.17';
+        return '1.0.25';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -94,7 +110,8 @@ export default class GltfImporter extends Importer {
 
         const gltfFileBaseName = asset.basename;
 
-        const userData = asset.userData as IGltfUserData;
+        const userData = Object.keys(asset.userData).length === 0 ?
+            Object.assign(asset.userData, makeDefaultGltfUserData()) : asset.userData as IGltfUserData;
 
         const gltfAssetFinder = new DefaultGltfAssetFinder(userData.assetFinder);
 
@@ -371,7 +388,7 @@ function makeUniqueSubAssetNames(gltfFileBaseName: string, assetsArray: GltfSubA
 
 function isDifferWithEachOther(values: string[]) {
     if (values.length >= 2) {
-        const sorted = values.sort();
+        const sorted = values.slice().sort();
         for (let i = 0; i < sorted.length - 1; ++i) {
             if (sorted[i] === sorted[i + 1]) {
                 return false;
@@ -551,8 +568,10 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         // Fetch the gltf convert associated with parent (gltf)asset
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
+        const parentUserData = asset.parent.userData as IGltfUserData;
+
         // Create the mesh asset
-        const mesh = gltfConverter.createMesh(asset.userData.gltfIndex as number);
+        const mesh = gltfConverter.createMesh(asset.userData.gltfIndex as number, parentUserData);
         mesh._setRawAsset('.bin');
 
         // Save the mesh asset into library
@@ -957,7 +976,7 @@ class DefaultGltfAssetFinder implements IGltfAssetFinder {
         this._assetDetails[kind]![index] = uuid;
     }
 
-    public find(kind: MyFinderKind, index: number): string | null {
+    public find<T extends cc.Asset>(kind: MyFinderKind, index: number): T | null {
         const uuids = this._assetDetails[kind];
         if (uuids === undefined) {
             return null;
