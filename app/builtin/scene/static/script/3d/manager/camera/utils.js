@@ -87,10 +87,12 @@ function createGrid(w, l) {
     node.parent = Manager.backgroundNode;
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(grid(w, l, w, l));
+    const cb = model.onEnable.bind(model);
+    model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
     let mtl = new cc.Material();
     mtl.initialize({ effectName: '__editor-grid' });
     model.material = mtl;
-    return node;
+    return model;
 }
 
 /**

@@ -1,93 +1,78 @@
 'use strict';
 
 const { ipcRenderer } = require('electron');
-
-const NodeManager = require('../node');
 const Scene = require('../scene');
-
-let props = [
-    '_lights',
-    '_models',
-    '_cameras',
-];
 
 class Preview {
 
     constructor() {
 
-        this.width = 1;
-        this.height = 1;
-        this.rt = new cc.RenderTexture();
-        this.rt.initWithSize(this.width, this.height, 'D24S8');
+        this.device = cc.director.root.device;
+        this.width = this.device.width;
+        this.height = this.device.height;
         this.data = Buffer.alloc(this.width * this.height * 4);
 
-        cc.director.root.createWindow({
+        this.window = cc.director.root.createWindow({
             title: 'Editor Game',
-            width: cc.director.root.device.width,
-            height: cc.director.root.device.height,
+            width: this.width,
+            height: this.height,
             colorFmt: cc.GFXFormat.RGBA32F,
             depthStencilFmt: cc.GFXFormat.D24S8,
         });
-        // this.scene = new cc.renderer.Scene();
-        // NodeManager.on('changed', this.extractActualScene.bind(this));
-        // Scene.on('open', this.extractActualScene.bind(this));
+        this.regions = [new cc.GFXBufferTextureCopy()];
+        this.regions[0].texExtent.width = this.width;
+        this.regions[0].texExtent.height = this.height;
+        this.regions[0].texExtent.depth = 1;
+        this.scene = null;
+        Scene.on('open', this.patchSceneCameras.bind(this));
+        Scene.on('reload', this.patchSceneCameras.bind(this));
     }
 
-    extractActualScene(err, scene) {
-        const internal = scene._renderScene;
-        const preview = this.scene;
-
-        // sync with current scene
-        props.forEach((p) => {
-            const iList = internal[p];
-            const pList = preview[p];
-            pList.reset();
-            for (let i = 0; i < iList.length; i++) {
-                const data = iList.data[i];
-                if (cc.Layers.check(data.getNode().layer, cc.Layers.All)) {
-                    pList.push(data);
-                }
-            }
-        });
-
-        // override camera fbos
-        let cams = preview._cameras;
-        for (let i = 0; i < cams.length; i++) {
-            let cam = cams.data[i];
-            cam.setFramebuffer(this.rt._framebuffer);
+    patchSceneCameras(err, scene) {
+        this.scene = scene.renderScene;
+        const cameras = this.scene.cameras;
+        for (const camera of cameras) {
+            if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
+            camera.view.visibility = 1;
         }
     }
 
     queryCameraList() {
         const array = [];
-        // const length = this.scene.getCameraCount();
-        // for (let i = 0; i < length; i++) {
-        //     const camera = this.scene.getCamera(i);
-        //     array.push({
-        //         index: i,
-        //         name: camera._node.name,
-        //         uuid: camera._node.uuid,
-        //     });
-        // }
+        if (!this.scene) return array;
+        const cameras = this.scene.cameras;
+        for (let i = 0; i < cameras.length; i++) {
+            const camera = cameras[i];
+            if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
+            array.push({
+                index: i,
+                name: camera._node.name,
+                uuid: camera._node.uuid,
+            });
+        }
         return array;
     }
 
-    resize(width, height) {
+    resize(width, height, camera) {
         if (width === this.width && height === this.height) { return; }
         this.width = width;
         this.height = height;
-        this.rt.updateSize(this.width, this.height);
+        this.window.resize(width, height);
+        camera.resize(width, height);
         this.data = Buffer.alloc(this.width * this.height * 4);
     }
 
     getImageData(cameraIndex, width, height) {
-        // const camera = this.scene.getCamera(cameraIndex);
-        // if (camera && this.scene.getDebugCamera() !== camera) {
-        //     this.scene.setDebugCamera(camera);
-        // }
-        // this.resize(width, height);
-        // cc.director.root.pipeline.render(this.scene);
-        this.rt.readPixels(this.data);
+        if (!this.scene) return this.data;
+        cameraIndex = parseInt(cameraIndex);
+        if (isNaN(cameraIndex)) cameraIndex = 0;
+        const camera = this.scene.cameras[cameraIndex];
+        if (!camera) return this.data;
+        this.resize(width, height, camera);
+        cc.director.root.pipeline.render(camera.view);
+        this.regions[0].texExtent.width = width;
+        this.regions[0].texExtent.height = height;
+        this.device.copyFramebufferToBuffer(this.window.framebuffer, this.data.buffer, this.regions);
         return this.data;
     }
 }

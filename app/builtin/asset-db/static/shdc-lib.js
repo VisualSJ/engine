@@ -497,10 +497,10 @@ const buildShader = (() => {
 
     shaderName = vertName;
     let [ vert, vEntry ] = getChunkByName(vertName, chunks, true);
+    vert = wrapEntry(vert, vEntry, true);
     vert = unwindIncludes(vert, chunks);
     vert = expandStructMacro(vert);
     vert = replacePlainDefines(vert);
-    vert = wrapEntry(vert, vEntry, true);
     tokens = tokenizer(vert);
     extractDefines(tokens, defines, cache);
     let vertInfo = extractParams(tokens, cache, blocks, samplers, dependencies);
@@ -510,10 +510,10 @@ const buildShader = (() => {
     shaderName = fragName;
     cache = createCache();
     let [ frag, fEntry ] = getChunkByName(fragName, chunks);
+    frag = wrapEntry(frag, fEntry);
     frag = unwindIncludes(frag, chunks);
     frag = expandStructMacro(frag);
     frag = replacePlainDefines(frag);
-    frag = wrapEntry(frag, fEntry);
     tokens = tokenizer(frag);
     extractDefines(tokens, defines, cache);
     let fragInfo = extractParams(tokens, cache, blocks, samplers, dependencies);

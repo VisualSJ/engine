@@ -9,7 +9,7 @@ class CameraController3D extends CameraControllerBase {
         super.init(camera);
 
         this._grid = utils.createGrid(50, 50);
-        this._grid.active = false;
+        this._grid.enabled = false;
 
         this._lastPos = cc.v3();
         this._lastRot = cc.quat();
@@ -17,12 +17,12 @@ class CameraController3D extends CameraControllerBase {
 
     set active(value) {
         if (value) {
-            this._grid.active = true;
+            this._grid.enabled = true;
             this._camera.projection = 1;
             this.node.setWorldPosition(this._lastPos);
             this.node.setWorldRotation(this._lastRot);
         } else {
-            this._grid.active = false;
+            this._grid.enabled = false;
             this.node.getWorldPosition(this._lastPos);
             this.node.getWorldRotation(this._lastRot);
             clearTimeout(exitPanModeTimer);

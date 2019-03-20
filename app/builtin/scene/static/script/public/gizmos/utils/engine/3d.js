@@ -71,6 +71,8 @@ class Engine3D extends EngineInterface {
     addMeshToNode(node, mesh, opts = {}) {
         let model = node.addComponent(cc.ModelComponent);
         model.mesh = mesh;
+        const cb = model.onEnable.bind(model);
+        model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
         let technique = 0;
         let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
         if (opts.unlit) {
