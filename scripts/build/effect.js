@@ -74,7 +74,8 @@ const stringifyEffect = (() => {
 const addEssential = (() => {
   // empty array will keep all techs
   const essentialList = {
-    'builtin-tonemap': [0],
+    'builtin-smaa': [],
+    'builtin-tonemap': [],
     'builtin-standard': [0],
     'builtin-unlit': [0],
     'builtin-skybox': [],
