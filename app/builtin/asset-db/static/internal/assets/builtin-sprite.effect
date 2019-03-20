@@ -43,9 +43,8 @@ CCProgram sprite-vs %{
 
 CCProgram sprite-fs %{
   precision mediump float;
-  #include <cc-global>
   #include <post-process>
-  
+
   in vec2 uv0;
   in vec4 color;
 
@@ -56,6 +55,6 @@ CCProgram sprite-fs %{
 
     o *= texture(mainTexture, uv0);
     o *= color;
-    return PostProcess(o, cc_exposure.w, cc_exposure.z);
+    return PostProcess(o);
   }
 }%

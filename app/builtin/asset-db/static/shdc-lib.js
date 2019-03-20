@@ -649,7 +649,7 @@ const mapPassParam = (() => {
         if (!info.type) warn(`illegal property type for '${p}'`);
       }
       // sampler specification
-      if (info.sampler) generalMap(info.sampler);
+      if (info.sampler) { info.sampler = mapSampler(generalMap(info.sampler)); }
       // default values
       if (info.value === undefined) continue;
       const givenType = typeof info.value;
@@ -680,7 +680,22 @@ const mapPassParam = (() => {
       } else if (typeof prop === 'object') {
         generalMap(prop); // nested props
       }
+    } return obj;
+  };
+  const mapSampler = (obj) => {
+    const out = [];
+    for (const key of Object.keys(obj)) {
+      const value = obj[key], offset = mappings.SamplerInfoIndex[key];
+      if (value === undefined || offset === undefined) warn(`illegal sampler info ${key}`);
+      if (key === 'borderColor') {
+        out[offset]   = value.r;
+        out[offset+1] = value.g;
+        out[offset+2] = value.b;
+        out[offset+3] = value.a;
+      }
+      else out[offset] = value;
     }
+    return out;
   };
   const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;
   const dfault = mappings.RenderPriority.DEFAULT;

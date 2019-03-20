@@ -71,8 +71,6 @@ CCEffect %{
 
 CCProgram tinted-fs %{
   precision mediump float;
-
-  #include <cc-global>
   #include <post-process>
 
   in vec2 uv;
@@ -85,7 +83,7 @@ CCProgram tinted-fs %{
 
   vec4 add () {
     vec4 col = 2.0 * color * tintColor * texture(mainTexture, uv);
-    return PostProcess(col, cc_exposure.w, cc_exposure.z);
+    return PostProcess(col);
   }
 
   vec4 multiply () {
@@ -93,14 +91,12 @@ CCProgram tinted-fs %{
     vec4 texColor = texture(mainTexture, uv);
     col.rgb = tintColor.rgb * texColor.rgb * color.rgb * vec3(2.0);
     col.a = (1.0 - texColor.a) * (tintColor.a * color.a * 2.0);
-    return PostProcess(col, cc_exposure.w, cc_exposure.z);
+    return PostProcess(col);
   }
 }%
 
 CCProgram no-tint-fs %{
   precision mediump float;
-
-  #include <cc-global>
   #include <post-process>
 
   in vec2 uv;
@@ -111,11 +107,11 @@ CCProgram no-tint-fs %{
   vec4 addSmooth () {
     vec4 col = color * texture(mainTexture, uv);
     col.rgb *= col.a;
-    return PostProcess(col, cc_exposure.w, cc_exposure.z);
+    return PostProcess(col);
   }
 
   vec4 premultiplied () {
     vec4 col = color * texture(mainTexture, uv) * color.a;
-    return PostProcess(col, cc_exposure.w, cc_exposure.z);
+    return PostProcess(col);
   }
 }%

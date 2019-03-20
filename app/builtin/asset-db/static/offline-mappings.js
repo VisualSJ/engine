@@ -6,6 +6,7 @@ const gfx = require(ps.join(src, 'gfx/define'));
 const { RenderQueue } = require(ps.join(src, 'renderer/core/constants'));
 const { RenderPassStage, RenderPriority } = require(ps.join(src, 'pipeline/define'));
 const { murmurhash2_32_gc } = require(ps.join(src, 'core/utils/murmurhash2_gc'));
+const { SamplerInfoIndex } = require(ps.join(src, 'renderer/core/sampler-lib'));
 
 const typeParams = {
   BOOL: gfx.GFXType.BOOL,
@@ -201,26 +202,9 @@ const effectStructure = {
   ]
 };
 
-// we sort sampler infos into an array
-// so it would be faster to hash at runtime
-const samplerIndex = {
-  minFilter: 0,
-  magFilter: 1,
-  mipFilter: 2,
-  addressU: 3,
-  addressV: 4,
-  addressW: 5,
-  maxAnisotropy: 6,
-  cmpFunc: 7,
-  borderColor: { r: 8, g: 9, b: 10, a: 11 },
-  minLOD: 12,
-  maxLOD: 13,
-  mipLODBias: 14,
-};
-
 const mappings = {
   murmurhash2_32_gc,
-  samplerIndex,
+  SamplerInfoIndex,
   effectStructure,
   typeParams,
   invTypeParams,
