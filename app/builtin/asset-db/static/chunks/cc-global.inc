@@ -5,6 +5,7 @@ uniform CCGlobal {
   vec4 cc_time; // x
   vec4 cc_screenSize; // xy zw
   vec4 cc_screenScale; //
+  vec4 cc_nativeSize; //
   mat4 cc_matView;
   mat4 cc_matViewInv;
   mat4 cc_matProj;

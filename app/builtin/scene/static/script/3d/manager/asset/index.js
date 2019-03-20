@@ -145,6 +145,7 @@ function assetDelete(uuid) {
 }
 
 function onSceneLoaded() {
+    assetLibrary.assetListener.clear();
     // iterate all component
     nodeMgr.queryUuids().forEach((uuid) => {
         const node = nodeMgr.query(uuid);
@@ -156,6 +157,10 @@ function onSceneLoaded() {
 }
 
 sceneMgr.on('open', (error, scene) => {
+    onSceneLoaded();
+});
+
+sceneMgr.on('reload', (error, scene) => {
     onSceneLoaded();
 });
 

@@ -8,7 +8,7 @@ const shdcLib = require('../../../static/shdc-lib');
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.1.0';
+        return '1.1.2';
     }
 
     // importer 的名字，用于指定 importer as 等

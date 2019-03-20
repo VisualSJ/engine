@@ -13,7 +13,7 @@ Manager.AssetInfo.engine = ps.join(editorRoot, 'resources/3d/engine'); // change
 const shdcLib = require(ps.join(editorRoot, 'app/builtin/asset-db/static/shdc-lib'));
 shdcLib.throwOn.warning = shdcLib.throwOn.error = false;
 const addChunks = (dir) => {
-  const files = fsJetpack.find(dir, { matching: ['**/*.inc'], recursive: false });
+  const files = fsJetpack.find(dir, { matching: '*.inc', recursive: false });
   shdcLib.addChunksCache(files);
 }
 addChunks(ps.join(editorRoot, 'app/builtin/asset-db/static/chunks'));
@@ -32,7 +32,7 @@ const stringifyEffect = (() => {
   const stringifyBlock = (u) => `{"name": "${u.name}", "size": ${u.size}, "defines": ${stringify(u.defines)}, "binding": ${u.binding}, "members": ${stringifyArray(u.members)}}`;
   const stringifyShader = (shader) => {
     let code = '';
-    let { name, glsl3, glsl1, builtins, defines, blocks, samplers, dependencies } = shader;
+    let { name, hash, glsl3, glsl1, builtins, defines, blocks, samplers, dependencies } = shader;
 
     // comment any of the following lines to keep shaders readable
     glsl1.vert = glsl1.vert.replace(newlines, '\\n');
@@ -42,6 +42,7 @@ const stringifyEffect = (() => {
 
     code += '{\n';
     code += `  "name": "${name}",\n`;
+    code += `  "hash": ${hash},\n`;
     code += '  "glsl3": {\n';
     code += `    "vert": \`${glsl3.vert}\`,\n`;
     code += `    "frag": \`${glsl3.frag}\`\n`;
@@ -73,11 +74,13 @@ const stringifyEffect = (() => {
 const addEssential = (() => {
   // empty array will keep all techs
   const essentialList = {
-    'builtin-tonemap': [0],
+    'builtin-smaa': [],
+    'builtin-tonemap': [],
     'builtin-standard': [0],
     'builtin-unlit': [0],
     'builtin-skybox': [],
     'builtin-sprite': [],
+    'builtin-base': [],
     'builtin-particle': [0],
   };
   return (essentials, name, effect) => {
@@ -104,7 +107,7 @@ if (process.argv.length > 2) {
     const name = ps.basename(file, '.effect');
     const content = fs.readFileSync(file, { encoding: 'utf8' });
     const effect = shdcLib.buildEffect(name, content);
-    fs.writeFileSync(`${name}.js`, `export default ${stringifyEffect(effect)};\n`, { encoding: 'utf8' });
+    fs.writeFileSync(ps.join(ps.dirname(file), `${name}.js`), `export default ${stringifyEffect(effect)};\n`, { encoding: 'utf8' });
     console.log(`${name}.js saved.`)
   }
   for (let i = 2; i < process.argv.length; i++)  {
@@ -113,9 +116,9 @@ if (process.argv.length > 2) {
     if (!stats) continue;
     if (stats.isDirectory()) {
       addChunks(file);
-      fsJetpack.find(file, { matching: ['**/*.effect'], recursive: false }).forEach((f) => compile(f));
+      fsJetpack.find(file, { matching: '*.effect', recursive: false }).forEach((f) => compile(f));
     } else {
-      addChunks(ps.dirname(file));
+      // addChunks(ps.dirname(file));
       compile(file);
     }
   }
@@ -123,7 +126,7 @@ if (process.argv.length > 2) {
 }
 
 const path = ps.join(editorRoot, 'app/builtin/asset-db/static/internal/assets');
-const files = fsJetpack.find(path, { matching: ['**/*.effect'] });
+const files = fsJetpack.find(path, { matching: '**/*.effect' });
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 
 let all = [], essentials = [];

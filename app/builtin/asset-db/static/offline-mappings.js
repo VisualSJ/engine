@@ -5,6 +5,8 @@ const src = ps.join(Manager.AssetInfo.engine, 'bin/.cache/dev/cocos/');
 const gfx = require(ps.join(src, 'gfx/define'));
 const { RenderQueue } = require(ps.join(src, 'renderer/core/constants'));
 const { RenderPassStage, RenderPriority } = require(ps.join(src, 'pipeline/define'));
+const { murmurhash2_32_gc } = require(ps.join(src, 'core/utils/murmurhash2_gc'));
+const { SamplerInfoIndex } = require(ps.join(src, 'renderer/core/sampler-lib'));
 
 const typeParams = {
   BOOL: gfx.GFXType.BOOL,
@@ -183,8 +185,8 @@ const passParams = {
 Object.assign(passParams, RenderPassStage);
 
 // for structural type checking
-// an 'any' key will check all elements defined in that object
-// a key start with '$' means its essential, and can't be omitted
+// an 'any' key will check against all elements defined in that object
+// a key start with '$' means its essential, and can't be undefined
 const effectStructure = {
   $techniques: [
     {
@@ -201,6 +203,8 @@ const effectStructure = {
 };
 
 const mappings = {
+  murmurhash2_32_gc,
+  SamplerInfoIndex,
   effectStructure,
   typeParams,
   invTypeParams,

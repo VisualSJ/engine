@@ -62,7 +62,6 @@ CCProgram unlit-vs %{
 
 CCProgram unlit-fs %{
   precision mediump float;
-  #include <cc-global>
   #include <post-process>
 
   #if USE_TEXTURE
@@ -87,6 +86,6 @@ CCProgram unlit-fs %{
       o *= color;
     #endif
 
-    return PostProcess(o, cc_exposure.w, cc_exposure.z);
+    return PostProcess(o);
   }
 }%

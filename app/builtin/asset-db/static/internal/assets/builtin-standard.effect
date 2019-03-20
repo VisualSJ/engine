@@ -34,6 +34,12 @@ CCEffect %{
       depthStencilState:
         depthTest: true
         depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
 
   - name: transparent
     passes:
@@ -297,11 +303,9 @@ CCProgram planar-shadow-vs %{
 CCProgram planar-shadow-fs %{
   precision highp float;
   #include <cc-shadow>
-  #include <cc-global>
-  #include <gamma>
   #include <post-process>
 
   vec4 frag () {
-    return PostProcess(cc_shadowColor, cc_exposure.w, cc_exposure.z);
+    return PostProcess(cc_shadowColor);
   }
 }%

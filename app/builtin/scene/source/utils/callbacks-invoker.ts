@@ -177,6 +177,12 @@ class CallbacksHandler {
             }
         }
     }
+
+    public clear() {
+        Object.keys(this._callbackTable).forEach((key) => {
+            this.removeAll(key);
+        });
+    }
 }
 /**
  * !#en The callbacks invoker to handle and invoke callbacks by key.

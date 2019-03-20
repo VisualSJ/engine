@@ -19,8 +19,8 @@ const labelRE = /(\w+)\((.*?)\)/;
 const precision = /(low|medium|high)p/;
 const arithmetics = /^[\d\+\-*/%\s]+$/;
 const samplerRE = /sampler/;
-const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+);/gm;
-const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+));/gm;
+const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+(?:\[[\d\s]+])?);/gm;
+const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+)(?:\[[\d\s]+])?);/gm;
 const texLookup = /texture(\w*)\s*\((\w+),/g;
 const layoutRE = /layout\(.*?\)/g;
 const layoutExtract = /layout\((.*?)\)(\s*)$/;
@@ -350,6 +350,13 @@ const wrapEntry = (() => {
 })();
 
 const miscChecks = (() => {
+  const dumpSource = (tokens) => {
+    let ln = 0;
+    return tokens.reduce((acc, cur) =>
+      cur.line > ln
+      ? acc + `\n${ln = cur.line}\t${cur.data.replace(/\n/g, '')}`
+      : acc + cur.data, '');
+  }
   return (code, entry) => {
     // precision declaration check
     const cap = precisionRE.exec(code);
@@ -358,13 +365,13 @@ const miscChecks = (() => {
         warn('precision declaration must come after extensions');
     } else warn('precision declaration not found.');
     // AST based checks
+    const tokens = tokenizer(code).filter((t) => t.type !== 'preprocessor');
     try {
-      const tokens = tokenizer(code).filter((t) => t.type !== 'preprocessor');
       const ast = parser(tokens);
       // entry function check
       if (!ast.scope[entry] || ast.scope[entry].parent.type !== 'function')
         error(`entry function '${entry}' not found.`);
-    } catch (e) { error(`parser failed: ${e}`); }
+    } catch (e) { error(`parser failed: ${e}\nsource: ${dumpSource(tokens)}`); }
   };
 })();
 
@@ -529,8 +536,9 @@ const buildShader = (() => {
     // glsl4.frag = decorateBindings(frag, blocks, samplers, fragInfo);
 
     clearFormat(glsl1); clearFormat(glsl3);
+    const hash = mappings.murmurhash2_32_gc(glsl3.vert + glsl3.frag, 666);
 
-    return { glsl3, glsl1, builtins, defines, blocks, samplers, dependencies };
+    return { hash, glsl3, glsl1, builtins, defines, blocks, samplers, dependencies };
   };
 })();
 
@@ -577,7 +585,7 @@ const parseEffect = (() => {
       if (!Array.isArray(cur)) { warn(`${path} must be an array`); return; }
       for (let i = 0; i < cur.length; i++) structuralTypeCheck(ref[0], cur[i], path + `[${i}]`);
     } else {
-      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be a object`); return; }
+      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be an object`); return; }
       if (ref.any) for (const key of Object.keys(cur)) structuralTypeCheck(ref.any, cur[key], path + `.${key}`);
       else for (const key of Object.keys(ref)) {
         let testKey = key;
@@ -641,7 +649,7 @@ const mapPassParam = (() => {
         if (!info.type) warn(`illegal property type for '${p}'`);
       }
       // sampler specification
-      if (info.sampler) generalMap(info.sampler);
+      if (info.sampler) { info.sampler = mapSampler(generalMap(info.sampler)); }
       // default values
       if (info.value === undefined) continue;
       const givenType = typeof info.value;
@@ -672,7 +680,22 @@ const mapPassParam = (() => {
       } else if (typeof prop === 'object') {
         generalMap(prop); // nested props
       }
+    } return obj;
+  };
+  const mapSampler = (obj) => {
+    const out = [];
+    for (const key of Object.keys(obj)) {
+      const value = obj[key], offset = mappings.SamplerInfoIndex[key];
+      if (value === undefined || offset === undefined) warn(`illegal sampler info ${key}`);
+      if (key === 'borderColor') {
+        out[offset]   = value.r;
+        out[offset+1] = value.g;
+        out[offset+2] = value.b;
+        out[offset+3] = value.a;
+      }
+      else out[offset] = value;
     }
+    return out;
   };
   const priorityRE = /^(\w+)\s*([+-])\s*([\dxabcdef]+)$/i;
   const dfault = mappings.RenderPriority.DEFAULT;

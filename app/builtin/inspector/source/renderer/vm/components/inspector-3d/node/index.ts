@@ -21,6 +21,12 @@ export const components = {
 
 export const methods = {
     /**
+     * 中断正在执行的操作
+     * 一般是选中器其他物体
+     */
+    break() {},
+
+    /**
      * 翻译
      * @param {*} key
      */
