@@ -57,7 +57,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.25';
+        return '1.0.26';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -212,7 +212,7 @@ export default class GltfImporter extends Importer {
                     return await this._dumpMaterial(asset, gltfAssetFinder, gltfConverter, index, name);
                 };
             }
-            await importGltfAssetArray(gltfMaterialArray, 'materials', importlet, '.material');
+            await importGltfAssetArray(gltfMaterialArray, 'materials', importlet, userData.dumpMaterials ? '.mtl' : '.material');
         }
 
         // 导入 glTF 场景。

@@ -7,8 +7,8 @@ export const template = `
         label="DumpMaterial"
     >
         <ui-checkbox slot="content"
-            :value="meta ? meta.userData.dumpmaterials : false"
-            @confirm="_onDataChanged($event, 'dumpmaterials')"
+            :value="meta ? meta.userData.dumpMaterials : false"
+            @confirm="_onDataChanged($event, 'dumpMaterials')"
         ></ui-checkbox>
     </ui-prop>
 </section>
