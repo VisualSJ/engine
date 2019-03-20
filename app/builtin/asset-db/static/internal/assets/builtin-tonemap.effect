@@ -33,7 +33,7 @@ CCProgram tonemap-vs %{
   vec4 vert () {
     vec4 pos = vec4(a_position, 0, 1);
     v_uv = a_texCoord * cc_screenScale.xy;
-    v_offset = v_uv.xyxy + cc_nativeSize.xyxy * vec4(1.0, 0.0, 0.0, 1.0);
+    v_offset = v_uv.xyxy + cc_nativeSize.zwzw * vec4(1.0, 0.0, 0.0, -1.0);
 
     return pos;
   }
@@ -61,8 +61,9 @@ CCProgram tonemap-fs %{
     return color;
   }
 
+  #define CC_USE_SMAA 1
   vec4 frag () {
-  #if USE_SMAA
+  #if CC_USE_SMAA
     // Fetch the blending weights for current pixel:
     vec4 a;
     a.rb = texture(u_blendTexSampler, v_uv).rb; // Bottom / Left
