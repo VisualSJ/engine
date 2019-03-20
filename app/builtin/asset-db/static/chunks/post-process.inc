@@ -1,5 +1,4 @@
 // Copyright (c) 2017-2019 Xiamen Yaji Software Co., Ltd.
-// reference: 'moving frostbite to pbr' & UE4 BRDF.usf
 
 #include <cc-global>
 

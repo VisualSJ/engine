@@ -218,6 +218,6 @@ CCProgram sprite-fs %{
 
     o *= texture(mainTexture, uv0);
     o *= color;
-    return PostProcess(o, cc_exposure.w, cc_exposure.z);
+    return PostProcess(o);
   }
 }%
