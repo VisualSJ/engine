@@ -23,6 +23,9 @@ class EngineInterface {
     getNodeOpacity(node) {
     }
 
+    setMeshTexture(node, texture) {
+    }
+
     getRaycastResults(rootNode, x, y) {
     }
 

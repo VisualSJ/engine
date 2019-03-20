@@ -229,7 +229,14 @@ ControllerShape.calcQuadData = function(center, width, height) {
     let minPos = center.add(cc.v3(-hw, -hh, -1));
     let maxPos = center.add(cc.v3(hw, hh, 1));
 
-    return {vertices: points, indices: indices, minPos: minPos, maxPos: maxPos};
+    let uvs = [
+        cc.v2(0, 1),
+        cc.v2(0, 0),
+        cc.v2(1, 0),
+        cc.v2(1, 1),
+    ];
+
+    return {vertices: points, indices: indices, minPos: minPos, maxPos: maxPos, uvs};
 };
 
 ControllerShape.quad = function(center, width, height) {
@@ -241,6 +248,7 @@ ControllerShape.quad = function(center, width, height) {
         indices: quadData.indices,
         minPos: quadData.minPos,
         maxPos: quadData.maxPos,
+        uvs: quadData.uvs,
         doubleSided: true,
     });
 };

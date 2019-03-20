@@ -1,0 +1,38 @@
+{
+  "ver": "1.0.10",
+  "importer": "image",
+  "imported": true,
+  "uuid": "bd373594-df84-486d-a34a-19d09ddaa973",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "camera": {
+      "ver": "1.0.15",
+      "importer": "texture",
+      "uuid": "bd373594-df84-486d-a34a-19d09ddaa973@camera",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "anisotropy": 1,
+        "generateMipmap": false,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "bd373594-df84-486d-a34a-19d09ddaa973"
+      }
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "redirect": "bd373594-df84-486d-a34a-19d09ddaa973@camera",
+    "flipVertical": true
+  }
+}

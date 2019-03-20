@@ -1,0 +1,37 @@
+{
+  "ver": "1.0.10",
+  "importer": "image",
+  "imported": true,
+  "uuid": "9cb543ba-d152-4809-8a44-8e7bd5712123",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "directional-light": {
+      "ver": "1.0.15",
+      "importer": "texture",
+      "uuid": "9cb543ba-d152-4809-8a44-8e7bd5712123@directional-light",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "anisotropy": 1,
+        "generateMipmap": false,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "9cb543ba-d152-4809-8a44-8e7bd5712123"
+      }
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "redirect": "9cb543ba-d152-4809-8a44-8e7bd5712123@directional-light"
+  }
+}

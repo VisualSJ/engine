@@ -1,0 +1,37 @@
+{
+  "ver": "1.0.10",
+  "importer": "image",
+  "imported": true,
+  "uuid": "c78f78a5-3553-4d1f-ad3b-177fe55af68b",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "sphere-light": {
+      "ver": "1.0.15",
+      "importer": "texture",
+      "uuid": "c78f78a5-3553-4d1f-ad3b-177fe55af68b@sphere-light",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "anisotropy": 1,
+        "generateMipmap": false,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "c78f78a5-3553-4d1f-ad3b-177fe55af68b"
+      }
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "redirect": "c78f78a5-3553-4d1f-ad3b-177fe55af68b@sphere-light"
+  }
+}

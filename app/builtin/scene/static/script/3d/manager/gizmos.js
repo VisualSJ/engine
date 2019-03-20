@@ -20,6 +20,10 @@ nodeMgr.on('changed', (node) => {
     gizmo.onNodeChanged(node);
 });
 
+nodeMgr.on('added', (node) => {
+    gizmo.onNodeAdded(node);
+});
+
 nodeMgr.on('removed', (node) => {
     gizmo.onNodeRemoved(node);
 });

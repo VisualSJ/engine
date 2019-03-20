@@ -67,6 +67,13 @@ class UtilsInterface {
         inSize.y = MathUtil.toPrecision(inSize.y, precision);
         inSize.z = MathUtil.toPrecision(inSize.z, precision);
     }
+
+    /**
+     * 选中某个节点
+     * @param {*} uuid
+     */
+    select(uuid) {
+    }
 }
 
 module.exports = UtilsInterface;

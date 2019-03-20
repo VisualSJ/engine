@@ -1,0 +1,38 @@
+{
+  "ver": "1.0.10",
+  "importer": "image",
+  "imported": true,
+  "uuid": "191b676f-175b-41fa-8283-ac539875bfd8",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "spot-light": {
+      "ver": "1.0.15",
+      "importer": "texture",
+      "uuid": "191b676f-175b-41fa-8283-ac539875bfd8@spot-light",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "anisotropy": 1,
+        "generateMipmap": false,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "191b676f-175b-41fa-8283-ac539875bfd8"
+      }
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "redirect": "191b676f-175b-41fa-8283-ac539875bfd8@spot-light",
+    "flipVertical": true
+  }
+}

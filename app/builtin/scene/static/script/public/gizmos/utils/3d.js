@@ -1,6 +1,7 @@
 'use strict';
 const UtilsInterface = require('./utils-interface');
 const operationManager = require('../../operation');
+const selection = require('../../selection');
 
 class Utils3D extends UtilsInterface {
     constructor() {
@@ -40,6 +41,11 @@ class Utils3D extends UtilsInterface {
 
     getSqrMagnitude(inVec3) {
         return cc.vmath.vec3.sqrMag(inVec3);
+    }
+
+    select(uuid) {
+        selection.clear();
+        selection.select(uuid);
     }
 }
 

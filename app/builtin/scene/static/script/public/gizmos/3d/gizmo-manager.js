@@ -635,6 +635,12 @@ class GizmoManager {
         }
     }
 
+    onNodeAdded(node) {
+        if (node != null) {
+            this.showAllGizmoOfNode(node);
+        }
+    }
+
     onNodeRemoved(node) {
         if (node != null) {
             this.hideAllGizmoOfNode(node);

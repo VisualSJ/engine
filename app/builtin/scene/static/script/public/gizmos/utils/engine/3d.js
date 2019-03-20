@@ -75,6 +75,8 @@ class Engine3D extends EngineInterface {
         let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
         if (opts.unlit) {
             technique = 1;
+        } else if (opts.texture) {
+            technique = 3;
         } else {
             if (pm < triangles) {
                 technique = opts.noDepthTestForLines ? 1 : 2; // unlit
@@ -84,6 +86,7 @@ class Engine3D extends EngineInterface {
         let states = {};
         if (opts.cullMode) { states.rasterizerState = { cullMode: opts.cullMode }; }
         if (pm !== triangles) { states.primitive = pm; }
+
         mtl.initialize({ effectName: '__editor-gizmo', technique, states });
         if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }
         mtl.setProperty('color', node.modelColor);
@@ -106,6 +109,12 @@ class Engine3D extends EngineInterface {
 
     getNodeOpacity(node) {
         return node.modelColor.a;
+    }
+
+    setMeshTexture(node, texture) {
+        if (node && node.mtl) {
+            node.mtl.setProperty('mainTexture', texture);
+        }
     }
 
     getRaycastResults(rootNode, x, y) {

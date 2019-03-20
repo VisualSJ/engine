@@ -37,7 +37,7 @@ nodeManager.on('removed', (node) => {
     if (node._prefab && node._prefab.root === node) {
         return;
     }
-    unlink(node);
+//    unlink(node);
 });
 
 /**

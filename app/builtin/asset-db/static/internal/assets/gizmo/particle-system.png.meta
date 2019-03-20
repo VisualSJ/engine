@@ -1,0 +1,38 @@
+{
+  "ver": "1.0.10",
+  "importer": "image",
+  "imported": true,
+  "uuid": "55052bc6-9909-43c1-b2fc-8818060fb069",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "particle-system": {
+      "ver": "1.0.15",
+      "importer": "texture",
+      "uuid": "55052bc6-9909-43c1-b2fc-8818060fb069@particle-system",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "anisotropy": 1,
+        "generateMipmap": false,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "55052bc6-9909-43c1-b2fc-8818060fb069"
+      }
+    }
+  },
+  "userData": {
+    "type": "texture",
+    "redirect": "55052bc6-9909-43c1-b2fc-8818060fb069@particle-system",
+    "flipVertical": true
+  }
+}
