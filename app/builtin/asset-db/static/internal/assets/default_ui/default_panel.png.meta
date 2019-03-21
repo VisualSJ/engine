@@ -36,12 +36,13 @@
         "height": 20,
         "rawWidth": 20,
         "rawHeight": 20,
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0,
+        "borderTop": 8,
+        "borderBottom": 8,
+        "borderLeft": 8,
+        "borderRight": 8,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "b730527c-3233-41c2-aaf7-7cdab58f9749"
+        "imageUuidOrDatabaseUri": "b730527c-3233-41c2-aaf7-7cdab58f9749",
+        "atlasUuid": ""
       }
     }
   },

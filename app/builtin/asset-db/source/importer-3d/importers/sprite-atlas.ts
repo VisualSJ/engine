@@ -16,6 +16,7 @@ export interface IAtlas {
   atlasTextureName: string;
   textureUuid: string | null;
   frames: SpriteFrameBaseAssetUserData[];
+  uuid: string;
 }
 
 interface IMetadata {
@@ -73,6 +74,7 @@ export default class SpriteAtlasImporter extends Importer {
       userData.atlasTextureName = data.metadata.realTextureFileName;
       // @ts-ignore
       userData.size = this._stringConvertSizeOrVec(data.metadata.size);
+      userData.uuid = asset.uuid;
 
       // 标记依赖资源
       if (this.assetDB) {
@@ -87,7 +89,7 @@ export default class SpriteAtlasImporter extends Importer {
           return false;
         }
 
-        userData.textureUuid = this.assetDB.pathToUuid(texturePath);
+        userData.textureUuid = uuid;
       }
 
       // 如果依赖的资源已经导入完成了，则生成对应的数据
@@ -106,11 +108,14 @@ export default class SpriteAtlasImporter extends Importer {
           // @ts-ignore
           const f = (data.frames[key]) as IFrame;
           const atlasSubAsset = await asset.createSubAsset(keyNoExt, 'sprite-frame');
-          const frameData = this.fillFrameData(f, asset.userData.textureUuid);
+          const frameData = this.fillFrameData(f, userData);
           // asset.userData.redirect = atlasSubAsset.uuid;
           atlasSubAsset.assignUserData(frameData, true);
+          const arr = key.split('.');
+          arr.pop();
+          const format =  arr.join('.');
           // @ts-ignore
-          spriteAtlas.spriteFrames.set(key, Manager.serialize.asAsset(atlasSubAsset.uuid));
+          spriteAtlas.spriteFrames[format] = Manager.serialize.asAsset(atlasSubAsset.uuid);
         }
 
         // @ts-ignore
@@ -122,8 +127,8 @@ export default class SpriteAtlasImporter extends Importer {
     return updated;
   }
 
-  private fillFrameData(frame: IFrame, textureUuid: string) {
-    const frameData = makeDefaultSpriteFrameAssetUserDataFromImageUuid(textureUuid);
+  private fillFrameData(frame: IFrame, userData: IAtlas) {
+    const frameData = makeDefaultSpriteFrameAssetUserDataFromImageUuid(userData.textureUuid!, userData.uuid);
     frameData.rotated = frame.textureRotated;
     const orginSize = this._stringConvertSizeOrVec(frame.spriteSourceSize);
     frameData.rawWidth = orginSize.width;
