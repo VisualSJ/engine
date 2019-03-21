@@ -13,17 +13,6 @@ export const template = `
                 @change="_onChangeData($event, 'anisotropy')"
             ></ui-num-input>
         </ui-prop>
-        <ui-prop label="Mag Filter">
-            <ui-select slot="content"
-                :value="meta.userData.magfilter"
-                @change="_onChangeData($event, 'magfilter')"
-            >
-                <option
-                    v-for="item in ['nearest' , 'linear']"
-                    :value="item"
-                >{{item}}</option>
-            </ui-select>
-        </ui-prop>
         <ui-prop label="Min Filter">
             <ui-select slot="content"
                 :value="meta.userData.minfilter"
@@ -35,11 +24,27 @@ export const template = `
                 >{{item}}</option>
             </ui-select>
         </ui-prop>
-        <ui-prop label="Premultiply Alpha">
-            <ui-checkbox slot="content"
-                :value="meta.userData.premultiplyAlpha"
-                @change="_onChangeData($event, 'premultiplyAlpha')"
-            ></ui-checkbox>
+        <ui-prop label="Mag Filter">
+            <ui-select slot="content"
+                :value="meta.userData.magfilter"
+                @change="_onChangeData($event, 'magfilter')"
+            >
+                <option
+                    v-for="item in ['nearest' , 'linear']"
+                    :value="item"
+                >{{item}}</option>
+            </ui-select>
+        </ui-prop>
+        <ui-prop label="Mip Filter">
+            <ui-select slot="content"
+                :value="meta.userData.mipfilter"
+                @change="_onChangeData($event, 'mipfilter')"
+            >
+                <option
+                    v-for="item in ['none', 'nearest' , 'linear']"
+                    :value="item"
+                >{{item}}</option>
+            </ui-select>
         </ui-prop>
         <ui-prop label="Wrap Mode S">
             <ui-select slot="content"
@@ -62,12 +67,6 @@ export const template = `
                     :value="item"
                 >{{item}}</option>
             </ui-select>
-        </ui-prop>
-        <ui-prop label="Generate Mipmap">
-            <ui-checkbox slot="content"
-                :value="meta.userData.generateMipmap"
-                @change="_onChangeData($event, 'generateMipmap')"
-            ></ui-checkbox>
         </ui-prop>
         <ui-prop label="Rotated">
             <ui-checkbox slot="content"

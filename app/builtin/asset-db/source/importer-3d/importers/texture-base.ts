@@ -2,16 +2,28 @@
 
 export type WrapMode = 'repeat' | 'clamp-to-edge' | 'mirrored-repeat';
 
-export type Filter = 'nearest' | 'linear';
+export type Filter = 'none' | 'nearest' | 'linear';
 
 export interface TextureBaseAssetUserData {
     wrapModeS: WrapMode;
     wrapModeT: WrapMode;
     minfilter: Filter;
     magfilter: Filter;
+    mipfilter: Filter;
     premultiplyAlpha: boolean;
     anisotropy: number;
-    generateMipmap: boolean;
+}
+
+export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData {
+    return {
+        wrapModeS: 'clamp-to-edge',
+        wrapModeT: 'clamp-to-edge',
+        minfilter: 'linear',
+        magfilter: 'linear',
+        mipfilter: 'none',
+        premultiplyAlpha: false,
+        anisotropy: 1,
+    };
 }
 
 export interface SpriteFrameBaseAssetUserData extends TextureBaseAssetUserData {
@@ -32,16 +44,24 @@ export interface SpriteFrameBaseAssetUserData extends TextureBaseAssetUserData {
     borderRight: number;
 }
 
-export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData {
-    return {
-        wrapModeS: 'clamp-to-edge',
-        wrapModeT: 'clamp-to-edge',
-        minfilter: 'linear',
-        magfilter: 'linear',
-        premultiplyAlpha: false,
-        anisotropy: 1,
-        generateMipmap: false,
-    };
+export function makeDefaultSpriteFrameBaseAssetUserData(): SpriteFrameBaseAssetUserData {
+    const res = makeDefaultTextureBaseAssetUserData() as SpriteFrameBaseAssetUserData;
+    res.trimType = 'auto';
+    res.trimThreshold = 1;
+    res.rotated = false;
+    res.offsetX = 0;
+    res.offsetY = 0;
+    res.trimX = 0;
+    res.trimY = 0;
+    res.width = 80;
+    res.height = 80;
+    res.rawWidth = 80;
+    res.rawHeight = 80;
+    res.borderTop = 0;
+    res.borderBottom = 0;
+    res.borderLeft = 0;
+    res.borderRight = 0;
+    return res;
 }
 
 // @ts-ignore
@@ -62,38 +82,13 @@ export function applyTextureBaseAssetUserData(userData: TextureBaseAssetUserData
             case 'nearest': return cc.TextureBase.Filter.NEAREST;
             // @ts-ignore
             case 'linear': return cc.TextureBase.Filter.LINEAR;
+            // @ts-ignore
+            case 'none': return cc.TextureBase.Filter.NONE;
         }
     };
     texture.setWrapMode(getWrapMode(userData.wrapModeS), getWrapMode(userData.wrapModeT));
     texture.setFilters(getFilter(userData.minfilter), getFilter(userData.magfilter));
+    texture.setMipFilter(getFilter(userData.mipfilter));
     texture.setPremultiplyAlpha(userData.premultiplyAlpha);
     texture.setAnisotropy(userData.anisotropy);
-    texture.setGenMipmap(userData.generateMipmap);
-}
-
-export function makeDefaultSpriteFrameBaseAssetUserData(): SpriteFrameBaseAssetUserData {
-    return {
-        wrapModeS: 'clamp-to-edge',
-        wrapModeT: 'clamp-to-edge',
-        minfilter: 'linear',
-        magfilter: 'linear',
-        premultiplyAlpha: false,
-        generateMipmap: false,
-        anisotropy: 1,
-        trimType: 'auto',
-        trimThreshold: 1,
-        rotated: false,
-        offsetX: 0,
-        offsetY: 0,
-        trimX: 0,
-        trimY: 0,
-        width: 80,
-        height: 80,
-        rawWidth: 80,
-        rawHeight: 80,
-        borderTop: 0,
-        borderBottom: 0,
-        borderLeft: 0,
-        borderRight: 0,
-    };
 }

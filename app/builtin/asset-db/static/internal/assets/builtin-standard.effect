@@ -34,6 +34,9 @@ CCEffect %{
       depthStencilState:
         depthTest: true
         depthWrite: false
+        stencilTestFront: true
+        stencilFuncFront: greater
+        stencilPassOpFront: incr
       blendState:
         targets:
         - blend: true
@@ -279,7 +282,7 @@ CCProgram standard-fs %{
 }%
 
 CCProgram planar-shadow-vs %{
-  precision highp float;
+  precision mediump float;
   #include <cc-global>
   #include <cc-local>
   #include <cc-shadow>
@@ -296,12 +299,14 @@ CCProgram planar-shadow-vs %{
       skinVertex(pos);
     #endif
 
-    return cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
+    pos = cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
+    pos.z -= 0.0001;
+    return pos;
   }
 }%
 
 CCProgram planar-shadow-fs %{
-  precision highp float;
+  precision mediump float;
   #include <cc-shadow>
   #include <post-process>
 
