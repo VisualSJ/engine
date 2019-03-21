@@ -239,7 +239,7 @@ CCProgram smaa-blend-fs %{
         coords.x = SMAASearchXRight(v_offsets[0].zw, v_offsets[2].y);
         d.y = coords.x;
         d = d / cc_nativeSize.z - v_pixCoord.x;
-        vec2 sqrt_d = sqrt( abs( d ) );
+        vec2 sqrt_d = sqrt(abs(d));
         coords.y -= 1.0 * cc_nativeSize.w;
         float e2 = texture(u_edgeTexSampler, coords + vec2(cc_nativeSize.z, 0.0)).r;
         weights.rg = SMAAArea(sqrt_d, e1, e2);
@@ -252,11 +252,12 @@ CCProgram smaa-blend-fs %{
         coords.y = SMAASearchYDown(v_offsets[1].zw, v_offsets[2].w);
         d.y = coords.y;
         d = d / cc_nativeSize.w - v_pixCoord.y;
-        vec2 sqrt_d = sqrt( abs( d ) );
+        vec2 sqrt_d = sqrt(abs(d));
         coords.y -= 1.0 * cc_nativeSize.w;
         float e2 = texture(u_edgeTexSampler, coords + vec2(0.0, cc_nativeSize.w)).g;
         weights.ba = SMAAArea(sqrt_d, e1, e2);
     }
+
     return weights;
   }
 }%

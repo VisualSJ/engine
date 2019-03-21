@@ -55,6 +55,6 @@ CCProgram sprite-fs %{
 
     o *= texture(mainTexture, uv0);
     o *= color;
-    return PostProcess(o);
+    return o;
   }
 }%
