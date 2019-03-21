@@ -11,6 +11,35 @@ export const template = `
             @confirm="_onDataChanged($event, 'dumpMaterials')"
         ></ui-checkbox>
     </ui-prop>
+
+    <ui-prop class="type"
+        label="Normals"
+    >
+        <ui-select slot="content"
+            :value="meta ? meta.userData.normals : 0"
+            @confirm="_onDataChanged($event, 'normals')"
+        >
+            <option value="0">Optional</option>
+            <option value="1">Exclude</option>
+            <option value="2">Require</option>
+            <option value="3">recalculate</option>
+        </ui-select>
+    </ui-prop>
+
+    <ui-prop class="type"
+        label="Tangents"
+    >
+        <ui-select slot="content"
+            :value="meta ? meta.userData.tangents : 0"
+            @confirm="_onDataChanged($event, 'tangents')"
+        >
+            <option value="0">Optional</option>
+            <option value="1">Exclude</option>
+            <option value="2">Require</option>
+            <option value="3">recalculate</option>
+        </ui-select>
+    </ui-prop>
+
 </section>
 `;
 

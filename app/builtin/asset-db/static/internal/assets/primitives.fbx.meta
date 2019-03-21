@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.268",
+  "ver": "1.0.368",
   "importer": "fbx",
   "uuid": "1263d74c-8167-4928-91a6-4e2672411f47",
   "files": [
@@ -180,7 +180,9 @@
       "scenes": [
         "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab"
       ]
-    }
+    },
+    "normals": 0,
+    "tangents": 1
   },
   "imported": true
 }
