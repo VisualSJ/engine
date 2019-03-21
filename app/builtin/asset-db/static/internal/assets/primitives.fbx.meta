@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.108",
+  "ver": "1.0.268",
   "importer": "fbx",
   "uuid": "1263d74c-8167-4928-91a6-4e2672411f47",
   "files": [
@@ -119,7 +119,7 @@
       }
     },
     "DefaultMaterial.material": {
-      "ver": "1.0.5",
+      "ver": "1.0.8",
       "importer": "gltf-material",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material",
       "imported": true,
@@ -132,7 +132,7 @@
       }
     },
     "primitives.prefab": {
-      "ver": "1.0.3",
+      "ver": "1.0.4",
       "importer": "gltf-scene",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
       "imported": true,
@@ -162,7 +162,25 @@
       ]
     },
     "imageLocations": {},
-    "redirect": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab"
+    "redirect": "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab",
+    "assetFinder": {
+      "meshes": [
+        "1263d74c-8167-4928-91a6-4e2672411f47@capsule.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@plane.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@cone.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@torus.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@sphere.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@quad.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@cylinder.mesh",
+        "1263d74c-8167-4928-91a6-4e2672411f47@box.mesh"
+      ],
+      "materials": [
+        "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material"
+      ],
+      "scenes": [
+        "1263d74c-8167-4928-91a6-4e2672411f47@primitives.prefab"
+      ]
+    }
   },
   "imported": true
 }

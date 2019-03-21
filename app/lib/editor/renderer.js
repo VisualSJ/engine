@@ -3,6 +3,8 @@
 const { remote } = require('electron');
 const setting = require('@editor/setting');
 
+exports.Startup = require('../startup');
+
 // 本地化翻译组件需要先加载，其他组件才能够获取数据
 exports.I18n = require('../i18n');
 exports.Task = require('../task');

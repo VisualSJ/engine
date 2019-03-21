@@ -35,10 +35,10 @@ i18n.on('switch', () => {
 platform[process.platform]();
 
 // 插件启动的时候，主动去获取 menu 配置，并注册到菜单栏上
-packageManager.on('enable', (path, info) => {
-    utils.registerMenu(info);
+packageManager.on('enable', (data) => {
+    utils.registerMenu(data);
 });
 
-packageManager.on('disable', (path, info) => {
-    utils.unregisterMenu(info);
+packageManager.on('disable', (data) => {
+    utils.unregisterMenu(data);
 });

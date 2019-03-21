@@ -56,15 +56,12 @@ new Vue({
         right: [],
     },
 
-    mounted() {
-        let list = Editor.Package.getPackages({
-            autoEnable: true,
-        });
-
-        list.forEach((data) => {
+    methods: {
+        attach(data) {
             if (!data.info.toolbar) {
                 return;
             }
+
 
             let toolbars = data.info.toolbar;
 
@@ -79,6 +76,22 @@ new Vue({
                 }
                 array.push(join(data.path, toolbar.file));
             });
-        });
+        },
+
+        detach(data) {
+            if (!data.info.toolbar) {
+                return;
+            }
+
+            // todo 需要删除之前插入的模版
+        },
+    },
+
+    mounted() {
+        let list = Editor.Package.getPackages();
+        list.forEach(this.attach);
+
+        Editor.Package.on('enable', this.attach);
+        Editor.Package.on('disable', this.detach);
     },
 });

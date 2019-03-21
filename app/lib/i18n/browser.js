@@ -94,9 +94,9 @@ i18n.on('switch', (language) => {
     save();
 });
 
-// 启动插件的时候，主动去查询内部的 i18n 文件夹，并注册到自己内部
-packageManager.on('before-enable', (path, info) => {
-    const dir = join(path, 'i18n');
+// 插件注册的时候，主动去查询内部的 i18n 文件夹，并注册到自己内部
+packageManager.on('register', (info) => {
+    const dir = join(info.path, 'i18n');
 
     // i18n 文件夹不存在，说明插件没有本地化配置
     if (!existsSync(dir)) {
@@ -114,7 +114,7 @@ packageManager.on('before-enable', (path, info) => {
         let languageFile = join(dir, language);
         let data = require(languageFile);
         let json = {};
-        json[info.info.name] = data;
+        json[info.name] = data;
         i18n.register(json, basename(language, '.js'));
     });
 });

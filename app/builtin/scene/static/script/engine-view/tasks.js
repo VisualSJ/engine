@@ -4,6 +4,20 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 exports.$scene = null;
 
+/**
+ * 编辑器是否就绪
+ */
+exports.editorInit = [
+    'editor-init',
+    {
+        depends: [],
+        async handle() {},
+    },
+];
+
+/**
+ * Asset DB 准备就绪
+ */
 exports.assetDbReady = [
     'asset-db-ready',
     {
@@ -14,6 +28,9 @@ exports.assetDbReady = [
     },
 ];
 
+/**
+ * 是否已经查询到了引擎的信息
+ */
 exports.queryEngineInfo = [
     'query-engine-info',
     {
@@ -24,6 +41,9 @@ exports.queryEngineInfo = [
     },
 ];
 
+/**
+ * 场景运行的 webview 已经准备就绪
+ */
 exports.webviewReady = [
     'webview-ready',
     {
@@ -37,6 +57,9 @@ exports.webviewReady = [
     },
 ];
 
+/**
+ * 场景内的引擎初始化完成
+ */
 exports.webviewEngineInit = [
     'webview-engine-init',
     {
@@ -56,6 +79,9 @@ exports.webviewEngineInit = [
     },
 ];
 
+/**
+ * 场景内的各个管理器初始化完成
+ */
 exports.webviewManagerInit = [
     'webview-manager-init',
     {
@@ -75,6 +101,9 @@ exports.webviewManagerInit = [
     },
 ];
 
+/**
+ * 场景内的 ipc 队列机制初始化完成
+ */
 exports.webviewIpcReady = [
     'webview-ipc-ready',
     {
@@ -92,10 +121,13 @@ exports.webviewIpcReady = [
     },
 ];
 
+/**
+ * 是否已经自动打开过场景
+ */
 exports.autoOpenScene = [
     'auto-open-scene',
     {
-        depends: ['webview-manager-init'],
+        depends: ['editor-init', 'webview-manager-init'],
         async handle() {
             const uuid = profile.get('current-scene');
             await exports.$scene.forwarding('Scene', 'open', [uuid]);

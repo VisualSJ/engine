@@ -31,6 +31,7 @@ class View extends window.HTMLElement {
         // 封装的 webview 通讯模块
         this.ipc = new HostIpc(this.$scene);
 
+        this.depend.add(...tasks.editorInit);
         this.depend.add(...tasks.assetDbReady);
         this.depend.add(...tasks.queryEngineInfo);
         this.depend.add(...tasks.webviewReady);
@@ -65,7 +66,16 @@ class View extends window.HTMLElement {
             event.stopPropagation();
         });
 
-        // 查询 asset-db 是否ready
+        // 查询编辑器是否 ready
+        if (Editor.Startup.ready.package) {
+            this.depend.finish(tasks.editorInit[0]);
+        } else {
+            Editor.Startup.once('package-ready', () => {
+                this.depend.finish(tasks.editorInit[0]);
+            });
+        }
+
+        // 查询 asset-db 是否 ready
         if (await this.depend.execute(tasks.assetDbReady[0])) {
             this.depend.finish(tasks.assetDbReady[0]);
         }

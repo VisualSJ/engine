@@ -32,7 +32,7 @@ function registerMenu(data) {
             accelerator: options.accelerator,
             group: options.group || 'default',
             click() {
-                packageManager.send(data.pkg.name, options.message, ...(options.params || []));
+                packageManager.send(data.name, options.message, ...(options.params || []));
             },
         });
     });

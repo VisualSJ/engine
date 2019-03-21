@@ -9,6 +9,8 @@ Object.keys(setting.args).forEach((key) => {
 });
 console.log(' ');
 
+exports.Startup = require('../startup');
+
 exports.Task = require('../task');
 exports.Profile = require('../profile');
 exports.Theme = require('../theme');

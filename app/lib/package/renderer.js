@@ -1,8 +1,8 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { join } = require('path');
 const ipc = require('@base/electron-base-ipc');
+const packageManager = require('@editor/package');
 
 class PackageManager extends EventEmitter {
 
@@ -22,44 +22,25 @@ ipc.on('editor3d-lib-package:emit', (event, name, ...args) => {
     module.exports.emit(name, ...args);
 });
 
+////////////////
+// 转发时间消息 //
+
+// 注册 package 的时候输出日志
+packageManager.on('register', (data) => {
+    module.exports.emit('register', data);
+});
+
+// 反注册 package 的时候输出日志
+packageManager.on('unregister', (data) => {
+    module.exports.emit('unregister', data);
+});
+
 // 插件启动的时候，执行插件内注入到窗口代码的 load 代码
-module.exports.on('enable', (path, data) => {
-    if (data.info.windows) {
-        try {
-            require(join(data.path, data.info.windows)).load();
-        } catch (error) {
-            console.error(`Plug-in(${data.info.name}) execution error: [windows].load code failed to execute.`);
-            console.error(error);
-        }
-    }
+packageManager.on('enable', (data) => {
+    module.exports.emit('enable', data);
 });
 
 // 插件关闭的时候，执行插件内注入到窗口代码的 unload 代码
-module.exports.on('disable', (path, data) => {
-    if (data.info.windows) {
-        try {
-            require(join(data.path, data.info.windows)).unload();
-        } catch (error) {
-            console.error(`Plug-in(${data.info.name}) execution error: [windows].unload code failed to execute.`);
-            console.error(error);
-        }
-    }
+packageManager.on('disable', (data) => {
+    module.exports.emit('disable', data);
 });
-
-const list = module.exports.getPackages({
-    enable: true,
-});
-
-// HACK: todo remove
-setTimeout(() => {
-    list.forEach((data) => {
-        if (data.info.windows) {
-            try {
-                require(join(data.path, data.info.windows)).load();
-            } catch (error) {
-                console.error(`Plug-in(${data.info.name}) execution error: [windows].load code failed to execute.`);
-                console.error(error);
-            }
-        }
-    });
-}, 200);
