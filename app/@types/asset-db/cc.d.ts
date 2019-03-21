@@ -29,6 +29,12 @@ declare namespace cc {
     }
 
     export namespace vmath {
+        export class vec2 {
+            x: number;
+            y: number;
+            constructor(x?: number, y?: number);
+            static set(out: vec2, x: number, y: number): vec2;
+        }
         export class vec3 {
             x: number;
             y: number;
@@ -40,6 +46,8 @@ declare namespace cc {
             static min(out: vec3, a: vec3, b: vec3): vec3;
             static subtract(out: vec3, a: vec3, b: vec3): vec3;
             static cross(out: vec3, a: vec3, b: vec3): vec3;
+            static dot(a: vec3, b: vec3): number;
+            static scale(out: vec3, a: vec3, b: number): vec3;
         }
         export class quat {
             x: number;
@@ -55,15 +63,26 @@ declare namespace cc {
         node: Node;
     }
 
-    export class Node {
+    export namespace Component {
+        export class EventHandler {
+            target: any;
+        }
+    }
+
+    export class _BaseNode {
         _components: Component[];
         _prefab: any;
         _id: any;
         name: string;
         uuid: string;
-        parent: Node | null;
+        parent: this | null;
+        children: this[];
         constructor(name?: string);
         addComponent<T extends Component>(componentConstructor: Constructor<T>): T;
+        isChildOf(node: this): boolean;
+    }
+
+    export class Node extends _BaseNode {
         setPosition(position: vmath.vec3): void;
         setPosition(x: number, y: number, z: number): void;
         setRotation(rotation: vmath.quat): void;
@@ -71,6 +90,18 @@ declare namespace cc {
         setScale(scale: vmath.vec3): void;
         setScale(x: number, y: number, z: number): void;
     }
+
+    export class Prefab {
+        data: Node;
+    }
+
+    export class _PrefabInfo {
+        asset: Prefab;
+        root: Node;
+        fileId: string;
+    }
+
+    function isValid(value: any): boolean;
 
     export class ModelComponent extends Component {
         _mesh: Mesh;
@@ -284,15 +315,24 @@ declare namespace cc {
         doubleSided?: boolean;
     }
 
-    export class Mesh extends Asset {
-        data: ArrayBuffer | SharedArrayBuffer;
+    export class RawAsset extends Asset {
         _setRawAsset(x: string): void;
+    }
+
+    export class Mesh extends RawAsset {
+        data: ArrayBuffer | SharedArrayBuffer;
         assign(struct: IMeshStruct, data: ArrayBuffer | SharedArrayBuffer): void;
+    }
+
+    export class ImageAsset extends RawAsset {
+
     }
 
     export class EffectAsset extends Asset {
 
     }
+
+    export interface IDefineMap { [name: string]: number | boolean | string; }
 
     export class Material extends Asset {
         _effectAsset: EffectAsset;

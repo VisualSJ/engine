@@ -19,7 +19,8 @@
       "../../@types/asset-db/parse-data-url",
       "../../@types/asset-db/image-data-uri",
       "../../@types/asset-db/babel-core",
-      "../../@types/asset-db/cc"
+      "../../@types/asset-db/cc",
+      "../../@types/asset-db/gltf-validator"
     ],
     "esModuleInterop": true
   }

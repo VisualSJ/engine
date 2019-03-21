@@ -1,3 +1,4 @@
+import { AssertionError } from 'assert';
 import * as fs from 'fs-extra';
 import * as imageDataUri from 'image-data-uri';
 import parseDataUrl from 'parse-data-url';
@@ -43,19 +44,19 @@ enum GltfAssetKind {
 
 export enum NormalImportSetting {
     /**
-     * 不在导出的网格中包含法线信息。
-     */
-    exclude,
-
-    /**
      * 如果模型文件中包含法线信息则导出法线，否则不导出法线。
      */
     optional,
 
     /**
+     * 不在导出的网格中包含法线信息。
+     */
+    exclude,
+
+    /**
      * 如果模型文件中包含法线信息则导出法线，否则重新计算并导出法线。
      */
-    remedy,
+    require,
 
     /**
      * 不管模型文件中是否包含法线信息，直接重新计算并导出法线。
@@ -77,7 +78,7 @@ export enum TangentImportSetting {
     /**
      * 如果模型文件中包含正切信息则导出正切，否则重新计算并导出正切。
      */
-    remedy,
+    require,
 
     /**
      * 不管模型文件中是否包含正切信息，直接重新计算并导出正切。
@@ -143,7 +144,7 @@ const enum GltfAnimationChannelTargetPath {
     weights = 'weights',
 }
 
-const enum GltfSemantic {
+const enum GltfSemanticName {
     // float
     // vec3
     POSITION = 'POSITION',
@@ -185,6 +186,35 @@ type AccessorStorage = Int8Array | Uint8Array | Int16Array | Uint16Array | Uint3
 export interface IMeshOptions {
     normals: NormalImportSetting;
     tangents: TangentImportSetting;
+}
+
+export interface IGltfSemantic {
+    name: string;
+    baseType: number;
+    type: string;
+}
+
+const GltfSemantics = {
+    normal: {
+        name: GltfSemanticName.NORMAL,
+        baseType: GltfAccessorComponentType.FLOAT,
+        type: GltfAccessorType.VEC3,
+    } as IGltfSemantic,
+
+    tangent: {
+        name: GltfSemanticName.NORMAL,
+        baseType: GltfAccessorComponentType.FLOAT,
+        type: GltfAccessorType.VEC3,
+    } as IGltfSemantic,
+};
+
+interface IPrimitiveViewer {
+    getVertexCount(): number;
+    getPositions(): Float32Array;
+    getFaces(): AccessorStorage;
+    getFaceCount(): number;
+    getNormals(): Float32Array;
+    getUVs(): AccessorStorage;
 }
 
 export class GltfConverter {
@@ -439,14 +469,12 @@ export class GltfConverter {
         material.name = this._getGltfXXName(GltfAssetKind.Material, iGltfMaterial);
         material._effectAsset = effectGetter('db://internal/builtin-standard.effect');
 
-        const defines: { [x: string]: boolean; } = {};
-        const props: { [x: string]: any; } = {};
+        const defines: cc.IDefineMap = {};
+        const props: Record<string, any> = {};
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
             if (pbrMetallicRoughness.baseColorTexture) {
-                // tslint:disable-next-line:no-string-literal
                 defines['USE_ALBEDO_MAP'] = true;
-                // tslint:disable-next-line:no-string-literal
                 props['albedoMap'] = gltfAssetFinder.find('textures', pbrMetallicRoughness.baseColorTexture.index);
             } else {
                 let color = null;
@@ -458,28 +486,21 @@ export class GltfConverter {
 
                     color = new cc.Color(255, 255, 255, 255);
                 }
-                // tslint:disable-next-line:no-string-literal
                 props['albedo'] = color;
             }
         }
 
         if (gltfMaterial.normalTexture) {
-            // tslint:disable-next-line:no-string-literal
             defines['USE_NORMAL_MAP'] = true;
-            // tslint:disable-next-line:no-string-literal
             props['normalMap'] = gltfAssetFinder.find('textures', gltfMaterial.normalTexture.index);
         }
 
         if (gltfMaterial.emissiveTexture) {
-            // tslint:disable-next-line:no-string-literal
             defines['USE_EMISSIVE_MAP'] = true;
-            // tslint:disable-next-line:no-string-literal
             props['emissiveMap'] = gltfAssetFinder.find('textures', gltfMaterial.emissiveTexture.index);
         }
 
         if (gltfMaterial.emissiveFactor) {
-
-                // tslint:disable-next-line:no-string-literal
             props['emissive'] = new cc.Color(
                 gltfMaterial.emissiveFactor[0] * 255,
                 gltfMaterial.emissiveFactor[1] * 255,
@@ -493,10 +514,7 @@ export class GltfConverter {
                 break;
             case 'MASK':
                 const alphaCutoff = gltfMaterial.alphaCutoff === undefined ? 0.5 : gltfMaterial.alphaCutoff;
-                // tslint:disable-next-line:no-string-literal
                 defines['USE_ALPHA_TEST'] = true;
-
-                // tslint:disable-next-line:no-string-literal
                 props['albedoScale'] = new cc.Vec4(1, 1, 1, alphaCutoff);
                 break;
             case 'OPAQUE':
@@ -621,52 +639,54 @@ export class GltfConverter {
 
         // 统计出所有需要导出的属性，并计算它们在顶点缓冲区中的偏移以及整个顶点缓冲区的容量。
         let vertexBufferStride = 0;
-        let verticesCount = 0;
-        let recalcNormal = options.normals === NormalImportSetting.recalculate;
-        let normalOffset = -1;
-        let recalcTangent = options.tangents === TangentImportSetting.recalculate;
-        let tangentOffset = -1;
+        let vertexCount = 0;
+        let recalcNormal = options.normals === NormalImportSetting.recalculate || options.normals === NormalImportSetting.require;
+        let recalcTangent = options.tangents === TangentImportSetting.recalculate || options.tangents === TangentImportSetting.require;
         const exportingAttributes: Array<{
             name: string;
             byteLength: number;
         }> = [];
         for (const attributeName of attributeNames) {
             if (attributeName === 'NORMAL') {
-                if (options.normals === NormalImportSetting.exclude) {
+                if (options.normals === NormalImportSetting.exclude ||
+                    options.normals === NormalImportSetting.recalculate) {
                     continue;
-                } else if (options.normals === NormalImportSetting.remedy) {
-                    normalOffset = vertexBufferStride;
-                    recalcNormal = true;
+                } else if (options.normals === NormalImportSetting.require) {
+                    recalcNormal = false;
                 }
             } else if (attributeName === 'TANGENT') {
-                if (options.tangents === TangentImportSetting.exclude) {
+                if (options.tangents === TangentImportSetting.exclude ||
+                    options.tangents === TangentImportSetting.recalculate) {
                     continue;
-                } else if (options.tangents === TangentImportSetting.remedy) {
-                    tangentOffset = vertexBufferStride;
-                    recalcTangent = true;
+                } else if (options.tangents === TangentImportSetting.require) {
+                    recalcTangent = false;
                 }
             }
             const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
             const attributeByteLength = this._getBytesPerAttribute(attributeAccessor);
             vertexBufferStride += attributeByteLength;
-            verticesCount = Math.max(verticesCount, attributeAccessor.count);
+            // Validator: MESH_PRIMITIVE_UNEQUAL_ACCESSOR_COUNT
+            vertexCount = attributeAccessor.count;
             exportingAttributes.push({
                 name: attributeName,
                 byteLength: attributeByteLength,
             });
         }
 
-        if (recalcNormal && normalOffset > 0) {
+        let normalOffset = -1;
+        if (recalcNormal) {
             normalOffset = vertexBufferStride;
             vertexBufferStride += 4 * 3;
         }
-        if (recalcTangent && tangentOffset > 0) {
+
+        let tangentOffset = -1;
+        if (recalcTangent) {
             tangentOffset = vertexBufferStride;
-            vertexBufferStride += 4 * 3;
+            vertexBufferStride += 4 * 4;
         }
 
         // 创建顶点缓冲区。
-        const vertexBuffer = new ArrayBuffer(vertexBufferStride * verticesCount);
+        const vertexBuffer = new ArrayBuffer(vertexBufferStride * vertexCount);
 
         // 写入属性。
         let currentByteOffset = 0;
@@ -680,7 +700,7 @@ export class GltfConverter {
             this._readAccessor(attributeAccessor, dataView, vertexBufferStride);
             currentByteOffset += exportingAttribute.byteLength;
 
-            if (attributeName === GltfSemantic.POSITION) {
+            if (attributeName === GltfSemanticName.POSITION) {
                 if (attributeAccessor.min) {
                     cc.vmath.vec3.min(minPosition, minPosition, new cc.vmath.vec3(
                         attributeAccessor.min[0], attributeAccessor.min[1], attributeAccessor.min[2]));
@@ -727,18 +747,72 @@ export class GltfConverter {
         }
 
         // 写入我们需要手动计算的属性
+        const writeFloatAttrib = (nComponent: number, offset: number, count: number, input: Float32Array) => {
+            const dataView = new DataView(vertexBuffer, offset);
+            for (let iVertex = 0; iVertex < count; ++iVertex) {
+                for (let i = 0; i < nComponent; ++i) {
+                    const v = input[iVertex * nComponent + i];
+                    dataView.setFloat32(iVertex * vertexBufferStride + i * 4, v, DataViewUseLittleEndian);
+                }
+            }
+        };
 
+        const appendVertexStreamF = (semantic: IGltfSemantic, offset: number, data: Float32Array) => {
+            const nComponent = this._getComponentsPerAttribute(semantic.type);
+            const dataView = new DataView(vertexBuffer, offset);
+            for (let iVertex = 0; iVertex < vertexCount; ++iVertex) {
+                for (let i = 0; i < nComponent; ++i) {
+                    const v = data[iVertex * nComponent + i];
+                    dataView.setFloat32(iVertex * vertexBufferStride + i * 4, v, DataViewUseLittleEndian);
+                }
+            }
+            formats.push({
+                name: this._getGfxAttributeName(semantic.name),
+                baseType: this._getAttributeBaseType(GltfAccessorComponentType.FLOAT),
+                type: this._getAttributeType(semantic.type),
+                normalize: false,
+            });
+        };
+
+        let primitiveViewer: IPrimitiveViewer | undefined;
+        const getPrimitiveViewer = () => {
+            if (primitiveViewer === undefined) {
+                primitiveViewer = this._makePrimitiveViewer(gltfPrimitive);
+            }
+            return primitiveViewer;
+        };
+
+        let normals: Float32Array | undefined;
         if (normalOffset >= 0) {
             // 计算法线
+            normals = calculateNormals(getPrimitiveViewer());
+            appendVertexStreamF(GltfSemantics.normal, normalOffset, normals);
+            // // 验证。
+            // if (Reflect.has(gltfPrimitive.attributes, GltfSemanticName.NORMAL)) {
+            //     const embeddedNormalAccessor = this._gltf.accessors![gltfPrimitive.attributes[GltfSemanticName.NORMAL]];
+            //     const embeddedNormals = this._readAccessorIntoArray(embeddedNormalAccessor);
+            //     // return embeddedNormals as Float32Array;
+            //     for (let i = 0; i < Math.min(normals.length, embeddedNormals.length); ++i) {
+            //         if (embeddedNormals[i] !== normals[i]) {
+            //             const an = normals[i];
+            //             const bn = embeddedNormals[i];
+            //             if (Math.abs(an - bn) > 0.01) {
+            //                 // debugger;
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         if (tangentOffset >= 0) {
             // 计算正切
+            const tangents = calculateTangents(getPrimitiveViewer(), normals);
+            appendVertexStreamF(GltfSemantics.tangent, tangentOffset, tangents);
         }
 
         return {
             vertexBuffer,
-            verticesCount,
+            verticesCount: vertexCount,
             formats,
             posBuffer,
             posBufferAlign,
@@ -757,76 +831,71 @@ export class GltfConverter {
         }
     }
 
-    private _calculateNormals(gltfPrimitive: MeshPrimitive) {
-        // 前提条件：必须包含位置信息；必须是三角形网格。
-        const iPositionAccessor = gltfPrimitive.attributes[GltfSemantic.POSITION];
-        if (iPositionAccessor === undefined) {
-            throw new Error(`Normals calculation needs position informations.`);
-        }
+    private _makePrimitiveViewer(gltfPrimitive: MeshPrimitive): IPrimitiveViewer {
         const primitiveMode = gltfPrimitive.mode === undefined ? GltfPrimitiveMode.__DEFAULT : gltfPrimitive.mode;
         if (primitiveMode !== GltfPrimitiveMode.TRIANGLES) {
             throw new Error(`Normals calculation needs triangle primitive.`);
         }
 
-        const positionAccessor = this._gltf.accessors![iPositionAccessor];
-        const vertexCount = positionAccessor.count;
-        const positions = new Float32Array(
-            this._getComponentsPerAttribute(positionAccessor.type) * vertexCount);
-        this._readAccessor(positionAccessor, createDataViewFromTypedArray(positions));
+        let vertexCount = 0;
+        const attributeNames = Object.keys(gltfPrimitive.attributes);
+        if (attributeNames.length !== 0) {
+            vertexCount = this._gltf.accessors![gltfPrimitive.attributes[attributeNames[0]]].count;
+        }
 
-        let indices: number[] | AccessorStorage;
+        let faces: AccessorStorage;
         if (gltfPrimitive.indices === undefined) {
-            indices = new Array(vertexCount);
-            for (let i = 0; i < indices.length; ++i) {
-                indices[i] = i;
+            faces = new Float32Array(vertexCount);
+            for (let i = 0; i < faces.length; ++i) {
+                faces[i] = i;
             }
         } else {
             const indicesAccessor = this._gltf.accessors![gltfPrimitive.indices];
-            indices = new (this._getAttributeBaseTypeStorage(indicesAccessor.componentType))(indicesAccessor.count);
-            this._readAccessor(indicesAccessor, createDataViewFromTypedArray(indices));
+            faces = this._readAccessorIntoArray(indicesAccessor);
         }
+        const nFaces = Math.floor(faces.length / 3);
 
-        const normals = new Float32Array(3 * vertexCount);
-        const nFaces = Math.floor(indices.length / 3);
-        const a = new cc.vmath.vec3();
-        const b = new cc.vmath.vec3();
-        const c = new cc.vmath.vec3();
-        const u = new cc.vmath.vec3();
-        const v = new cc.vmath.vec3();
-        const n = new cc.vmath.vec3();
-        const getPosition = (iVertex: number, out: cc.vmath.vec3) => {
-            cc.vmath.vec3.set(out, positions[iVertex * 3 + 0], positions[iVertex * 3 + 1], positions[iVertex * 3 + 2]);
+        const cachedAttributes = new Map<string, AccessorStorage>();
+        const getAttributes = (name: string) => {
+            let result = cachedAttributes.get(name);
+            if (result === undefined) {
+                if (!Reflect.has(gltfPrimitive.attributes, name)) {
+                    throw new Error(`Tangent calculation needs ${name}.`);
+                }
+                result = this._readAccessorIntoArray(this._gltf.accessors![gltfPrimitive.attributes[name]]);
+                cachedAttributes.set(name, result);
+            }
+            return result;
         };
-        const addFaceNormal = (iVertex: number, normal: cc.vmath.vec3) => {
-            normals[iVertex * 3 + 0] += normal.x;
-            normals[iVertex * 3 + 1] += normal.y;
-            normals[iVertex * 3 + 2] += normal.z;
+
+        const getVertexCount = () => vertexCount;
+        const getFaces = () => faces;
+        const getFaceCount = () => nFaces;
+        const getPositions = () => {
+            return getAttributes(GltfSemanticName.POSITION) as Float32Array;
         };
-        for (let iFace = 0; iFace < nFaces; ++iFace) {
-            const ia = indices[iFace * 3 + 0];
-            const ib = indices[iFace * 3 + 1];
-            const ic = indices[iFace * 3 + 2];
-            getPosition(ia, a);
-            getPosition(ib, b);
-            getPosition(ic, c);
+        const getNormals = () => {
+            return getAttributes(GltfSemanticName.NORMAL) as Float32Array;
+        };
+        const getUVs = () => {
+            return getAttributes(GltfSemanticName.TEXCOORD_0);
+        };
 
-            // Calculate normal of triangle [a, b, c].
-            cc.vmath.vec3.subtract(u, b, a);
-            cc.vmath.vec3.subtract(v, c, a);
-            cc.vmath.vec3.cross(n, u, v);
+        return {
+            getVertexCount,
+            getPositions,
+            getFaces,
+            getFaceCount,
+            getNormals,
+            getUVs,
+        };
+    }
 
-            addFaceNormal(ia, n);
-            addFaceNormal(ib, n);
-            addFaceNormal(ic, n);
-        }
-        for (let iVertex = 0; iVertex < vertexCount; ++iVertex) {
-            cc.vmath.vec3.set(n, normals[iVertex * 3 + 0], normals[iVertex * 3 + 1], normals[iVertex * 3 + 2]);
-            cc.vmath.vec3.normalize(n, n);
-            normals[iVertex * 3 + 0] = n.x;
-            normals[iVertex * 3 + 1] = n.y;
-            normals[iVertex * 3 + 2] = n.z;
-        }
-        return normals;
+    private _readAccessorIntoArray(gltfAccessor: Accessor) {
+        const storageConstructor = this._getAttributeBaseTypeStorage(gltfAccessor.componentType);
+        const result = new storageConstructor(gltfAccessor.count * this._getComponentsPerAttribute(gltfAccessor.type));
+        this._readAccessor(gltfAccessor, createDataViewFromTypedArray(result));
+        return result;
     }
 
     private _readImageByDataUri(dataUri: string) {
@@ -1149,16 +1218,16 @@ export class GltfConverter {
 
     private _getGfxAttributeName(name: string) {
         switch (name) {
-            case GltfSemantic.POSITION: return cc.GFXAttributeName.ATTR_POSITION;
-            case GltfSemantic.NORMAL: return cc.GFXAttributeName.ATTR_NORMAL;
-            case GltfSemantic.TANGENT: return cc.GFXAttributeName.ATTR_TANGENT;
-            case GltfSemantic.COLOR_0: return cc.GFXAttributeName.ATTR_COLOR;
-            case GltfSemantic.TEXCOORD_0: return cc.GFXAttributeName.ATTR_TEX_COORD;
-            case GltfSemantic.TEXCOORD_1: return cc.GFXAttributeName.ATTR_TEX_COORD1;
+            case GltfSemanticName.POSITION: return cc.GFXAttributeName.ATTR_POSITION;
+            case GltfSemanticName.NORMAL: return cc.GFXAttributeName.ATTR_NORMAL;
+            case GltfSemanticName.TANGENT: return cc.GFXAttributeName.ATTR_TANGENT;
+            case GltfSemanticName.COLOR_0: return cc.GFXAttributeName.ATTR_COLOR;
+            case GltfSemanticName.TEXCOORD_0: return cc.GFXAttributeName.ATTR_TEX_COORD;
+            case GltfSemanticName.TEXCOORD_1: return cc.GFXAttributeName.ATTR_TEX_COORD1;
             case 'TEXCOORD_2': return cc.GFXAttributeName.ATTR_TEX_COORD2;
             case 'TEXCOORD_3': return cc.GFXAttributeName.ATTR_TEX_COORD3;
-            case GltfSemantic.JOINTS_0: return cc.GFXAttributeName.ATTR_JOINTS;
-            case GltfSemantic.WEIGHTS_0: return cc.GFXAttributeName.ATTR_WEIGHTS;
+            case GltfSemanticName.JOINTS_0: return cc.GFXAttributeName.ATTR_JOINTS;
+            case GltfSemanticName.WEIGHTS_0: return cc.GFXAttributeName.ATTR_WEIGHTS;
             default:
                 throw new Error(`Unrecognized attribute type: ${name}`);
         }
@@ -1168,29 +1237,27 @@ export class GltfConverter {
         switch (componentType) {
             case GltfAccessorComponentType.BYTE: return (buffer, offset) => buffer.getInt8(offset);
             case GltfAccessorComponentType.UNSIGNED_BYTE: return (buffer, offset) => buffer.getUint8(offset);
-            case GltfAccessorComponentType.SHORT: return (buffer, offset) => buffer.getInt16(offset, true);
-            case GltfAccessorComponentType.UNSIGNED_SHORT: return (buffer, offset) => buffer.getUint16(offset, true);
-            case GltfAccessorComponentType.UNSIGNED_INT: return (buffer, offset) => buffer.getUint32(offset, true);
-            case GltfAccessorComponentType.FLOAT: return (buffer, offset) => buffer.getFloat32(offset, true);
+            case GltfAccessorComponentType.SHORT: return (buffer, offset) => buffer.getInt16(offset, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.UNSIGNED_SHORT: return (buffer, offset) => buffer.getUint16(offset, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.UNSIGNED_INT: return (buffer, offset) => buffer.getUint32(offset, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.FLOAT: return (buffer, offset) => buffer.getFloat32(offset, DataViewUseLittleEndian);
             default:
                 throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
 
-    // tslint:disable: max-line-length
     private _getComponentWriter(componentType: number): (buffer: DataView, offset: number, value: number) => void {
         switch (componentType) {
             case GltfAccessorComponentType.BYTE: return (buffer, offset, value) => buffer.setInt8(offset, value);
             case GltfAccessorComponentType.UNSIGNED_BYTE: return (buffer, offset, value) => buffer.setUint8(offset, value);
-            case GltfAccessorComponentType.SHORT: return (buffer, offset, value) => buffer.setInt16(offset, value, true);
-            case GltfAccessorComponentType.UNSIGNED_SHORT: return (buffer, offset, value) => buffer.setUint16(offset, value, true);
-            case GltfAccessorComponentType.UNSIGNED_INT: return (buffer, offset, value) => buffer.setUint32(offset, value, true);
-            case GltfAccessorComponentType.FLOAT: return (buffer, offset, value) => buffer.setFloat32(offset, value, true);
+            case GltfAccessorComponentType.SHORT: return (buffer, offset, value) => buffer.setInt16(offset, value, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.UNSIGNED_SHORT: return (buffer, offset, value) => buffer.setUint16(offset, value, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.UNSIGNED_INT: return (buffer, offset, value) => buffer.setUint32(offset, value, DataViewUseLittleEndian);
+            case GltfAccessorComponentType.FLOAT: return (buffer, offset, value) => buffer.setFloat32(offset, value, DataViewUseLittleEndian);
             default:
                 throw new Error(`Unrecognized component type: ${componentType}`);
         }
     }
-    // tslint:enable: max-line-length
 
     private _getGltfXXName(assetKind: GltfAssetKind, index: number) {
         const assetsArrayName: {
@@ -1216,6 +1283,158 @@ export class GltfConverter {
             return `${GltfAssetKind[assetKind]}-${index}`;
         }
     }
+}
+
+function calculateNormals(gltfPrimitiveViewer: IPrimitiveViewer): Float32Array {
+    const vertexCount = gltfPrimitiveViewer.getVertexCount();
+    const positions = gltfPrimitiveViewer.getPositions();
+    const indices = gltfPrimitiveViewer.getFaces();
+    const nFaces = gltfPrimitiveViewer.getFaceCount();
+    const normals = new Float32Array(3 * vertexCount);
+    const a = new cc.vmath.vec3();
+    const b = new cc.vmath.vec3();
+    const c = new cc.vmath.vec3();
+    const u = new cc.vmath.vec3();
+    const v = new cc.vmath.vec3();
+    const n = new cc.vmath.vec3();
+    const getPosition = (iVertex: number, out: cc.vmath.vec3) => {
+        cc.vmath.vec3.set(out, positions[iVertex * 3 + 0], positions[iVertex * 3 + 1], positions[iVertex * 3 + 2]);
+    };
+    const addFaceNormal = (iVertex: number, normal: cc.vmath.vec3) => {
+        normals[iVertex * 3 + 0] += normal.x;
+        normals[iVertex * 3 + 1] += normal.y;
+        normals[iVertex * 3 + 2] += normal.z;
+    };
+    for (let iFace = 0; iFace < nFaces; ++iFace) {
+        const ia = indices[iFace * 3 + 0];
+        const ib = indices[iFace * 3 + 1];
+        const ic = indices[iFace * 3 + 2];
+        getPosition(ia, a);
+        getPosition(ib, b);
+        getPosition(ic, c);
+
+        // Calculate normal of triangle [a, b, c].
+        cc.vmath.vec3.subtract(u, b, a);
+        cc.vmath.vec3.subtract(v, c, a);
+        cc.vmath.vec3.cross(n, u, v);
+
+        addFaceNormal(ia, n);
+        addFaceNormal(ib, n);
+        addFaceNormal(ic, n);
+    }
+    for (let iVertex = 0; iVertex < vertexCount; ++iVertex) {
+        cc.vmath.vec3.set(n, normals[iVertex * 3 + 0], normals[iVertex * 3 + 1], normals[iVertex * 3 + 2]);
+        cc.vmath.vec3.normalize(n, n);
+        normals[iVertex * 3 + 0] = n.x;
+        normals[iVertex * 3 + 1] = n.y;
+        normals[iVertex * 3 + 2] = n.z;
+    }
+
+    return normals;
+}
+
+function calculateTangents(gltfPrimitiveViewer: IPrimitiveViewer, overrideNormals?: Float32Array): Float32Array {
+    /// http://www.terathon.com/code/tangent.html
+    const vertexCount = gltfPrimitiveViewer.getVertexCount();
+    const positions = gltfPrimitiveViewer.getPositions();
+    const indices = gltfPrimitiveViewer.getFaces();
+    const nFaces = gltfPrimitiveViewer.getFaceCount();
+    const normals = overrideNormals ? overrideNormals : gltfPrimitiveViewer.getNormals();
+    const uvs = gltfPrimitiveViewer.getUVs();
+    const tangents = new Float32Array(4 * vertexCount);
+    const tan1 = new Float32Array(3 * vertexCount);
+    const tan2 = new Float32Array(3 * vertexCount);
+    const v1 = new cc.vmath.vec3();
+    const v2 = new cc.vmath.vec3();
+    const v3 = new cc.vmath.vec3();
+    const w1 = new cc.vmath.vec2();
+    const w2 = new cc.vmath.vec2();
+    const w3 = new cc.vmath.vec2();
+    const sdir = new cc.vmath.vec3();
+    const tdir = new cc.vmath.vec3();
+    const n = new cc.vmath.vec3();
+    const t = new cc.vmath.vec3();
+    const getPosition = (iVertex: number, out: cc.vmath.vec3) => {
+        cc.vmath.vec3.set(out, positions[iVertex * 3 + 0], positions[iVertex * 3 + 1], positions[iVertex * 3 + 2]);
+    };
+    const getUV = (iVertex: number, out: cc.vmath.vec2) => {
+        cc.vmath.vec2.set(out, uvs[iVertex * 2 + 0], uvs[iVertex * 2 + 1]);
+    };
+    const addTan = (tans: Float32Array, iVertex: number, val: cc.vmath.vec3) => {
+        tans[iVertex * 3 + 0] += val.x;
+        tans[iVertex * 3 + 1] += val.y;
+        tans[iVertex * 3 + 2] += val.z;
+    };
+    for (let iFace = 0; iFace < nFaces; ++iFace) {
+        const i1 = indices[iFace * 3 + 0];
+        const i2 = indices[iFace * 3 + 1];
+        const i3 = indices[iFace * 3 + 2];
+
+        getPosition(i1, v1);
+        getPosition(i2, v2);
+        getPosition(i3, v3);
+
+        getUV(i1, w1);
+        getUV(i2, w2);
+        getUV(i3, w3);
+
+        const x1 = v2.x - v1.x;
+        const x2 = v3.x - v1.x;
+        const y1 = v2.y - v1.y;
+        const y2 = v3.y - v1.y;
+        const z1 = v2.z - v1.z;
+        const z2 = v3.z - v1.z;
+
+        const s1 = w2.x - w1.x;
+        const s2 = w3.x - w1.x;
+        const t1 = w2.y - w1.y;
+        const t2 = w3.y - w1.y;
+
+        const r = 1.0 / (s1 * t2 - s2 * t1);
+        cc.vmath.vec3.set(sdir,
+            (t2 * x1 - t1 * x2) * r,
+            (t2 * y1 - t1 * y2) * r,
+            (t2 * z1 - t1 * z2) * r);
+        cc.vmath.vec3.set(tdir,
+            (s1 * x2 - s2 * x1) * r,
+            (s1 * y2 - s2 * y1) * r,
+            (s1 * z2 - s2 * z1) * r);
+
+        addTan(tan1, i1, sdir);
+        addTan(tan1, i2, sdir);
+        addTan(tan1, i3, sdir);
+
+        addTan(tan2, i1, tdir);
+        addTan(tan2, i2, tdir);
+        addTan(tan2, i3, tdir);
+    }
+    const tan2v = new cc.vmath.vec3();
+    const vv = new cc.vmath.vec3();
+    for (let iVertex = 0; iVertex < vertexCount; ++iVertex) {
+        // Gram-Schmidt orthogonalize
+        // tangent[a] = (t - n * Dot(n, t)).Normalize();
+        // Calculate handedness
+        // tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+        cc.vmath.vec3.set(n, normals[iVertex * 3 + 0], normals[iVertex * 3 + 1], normals[iVertex * 3 + 2]);
+        cc.vmath.vec3.set(t, tan1[iVertex * 3 + 0], tan1[iVertex * 3 + 1], tan1[iVertex * 3 + 2]);
+        cc.vmath.vec3.set(tan2v, tan2[iVertex * 3 + 0], tan2[iVertex * 3 + 1], tan2[iVertex * 3 + 2]);
+
+        cc.vmath.vec3.normalize(vv,
+            cc.vmath.vec3.subtract(vv,
+                t, cc.vmath.vec3.scale(vv,
+                    n, cc.vmath.vec3.dot(
+                        n, t))));
+        tangents[4 * iVertex + 0] = vv.x;
+        tangents[4 * iVertex + 1] = vv.y;
+        tangents[4 * iVertex + 2] = vv.z;
+
+        const sign = cc.vmath.vec3.dot(
+            cc.vmath.vec3.cross(
+                vv, n, t), tan2v) < 0 ? -1 : 1;
+        tangents[4 * iVertex + 3] = sign;
+    }
+
+    return tangents;
 }
 
 export async function readGltf(gltfFilePath: string) {
@@ -1366,3 +1585,5 @@ function createDataViewFromBuffer(buffer: Buffer, offset: number = 0) {
 function createDataViewFromTypedArray(typedArray: ArrayBufferView, offset: number = 0) {
     return new DataView(typedArray.buffer, typedArray.byteOffset + offset);
 }
+
+const DataViewUseLittleEndian = true;

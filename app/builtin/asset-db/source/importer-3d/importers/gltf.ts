@@ -1,6 +1,7 @@
 import { Asset, Importer, queryPathFromUrl, queryUrlFromPath, queryUuidFromUrl, VirtualAsset } from '@editor/asset-db';
 import { AssertionError } from 'assert';
 import * as fs from 'fs-extra';
+import gltfValidator, { Severity } from 'gltf-validator';
 import * as path from 'path';
 import { Animation, Image, Material, Mesh, Skin, Texture } from '../../../../../@types/asset-db/glTF';
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
@@ -57,7 +58,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.26';
+        return '1.0.36';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -80,6 +81,44 @@ export default class GltfImporter extends Importer {
         }
 
         const gltfFilePath: string = await importer.getGltfFilePath(asset);
+
+        // Validate.
+        const report = await gltfValidator.validateBytes(fs.readFileSync(gltfFilePath), {
+            uri: gltfFilePath,
+            ignoredIssues: [
+            ],
+            severityOverrides: {
+                NON_RELATIVE_URI: Severity.Information,
+                UNDECLARED_EXTENSION: Severity.Warning,
+            },
+        });
+        const strintfyMessages = (severity: number) => {
+            return JSON.stringify(
+                report.issues.messages.filter((message) => message.severity === severity),
+                undefined, 2);
+        };
+        if (report.issues.numErrors !== 0) {
+            console.error(
+                `File ${asset.source} contains errors, ` +
+                `this may cause problem unexpectly, ` +
+                `please fix them: ` +
+                `\n` +
+                `${strintfyMessages(Severity.Error)}\n`);
+        } else if (report.issues.numWarnings !== 0) {
+            console.warn(
+                `File ${asset.source} contains warnings, ` +
+                `the result may be not what you want, ` +
+                `please fix them if possible: ` +
+                `\n` +
+                `${strintfyMessages(Severity.Warning)}\n`);
+        } else if (report.issues.numHints !== 0 || report.issues.numInfos !== 0) {
+            console.log(
+                `Logs from ${asset.source}:` +
+                `\n` +
+                `${strintfyMessages(Severity.Information)}\n`);
+        }
+
+        // Create.
         const { gltf, binaryBuffers } = await readGltf(gltfFilePath);
         return new GltfConverter(gltf, binaryBuffers, gltfFilePath);
     }
@@ -112,27 +151,17 @@ export default class GltfImporter extends Importer {
 
         const userData = Object.keys(asset.userData).length === 0 ?
             Object.assign(asset.userData, makeDefaultGltfUserData()) : asset.userData as IGltfUserData;
-
-        const gltfAssetFinder = new DefaultGltfAssetFinder(userData.assetFinder);
-
-        // 手动数据迁移，要记得有了迁移机制之后这里要删掉
-        if (userData.imageLocations) {
-            for (const key in userData.imageLocations) {
-                if (key in userData.imageLocations) {
-                    const value = userData.imageLocations[key];
-                    if (typeof value === 'string' || value === null) {
-                        const newValue: IImageLocation = {
-                            targetDatabaseUrl: value,
-                        };
-                        userData.imageLocations[key] = newValue;
-                    }
-                }
-            }
-        }
-
         if (!userData.imageLocations) {
             userData.imageLocations = {};
         }
+        if (!Reflect.has(userData, 'normals')) {
+            userData.normals = NormalImportSetting.optional;
+        }
+        if (!Reflect.has(userData, 'tangents')) {
+            userData.tangents = TangentImportSetting.optional;
+        }
+
+        const gltfAssetFinder = new DefaultGltfAssetFinder(userData.assetFinder);
 
         const importGltfAssetArray = async (
             gltfSubAssets: Mesh[] | Animation[] | Skin[] | Material[] | Texture[],
@@ -293,7 +322,6 @@ export default class GltfImporter extends Importer {
                 if (!imageDetail.embeded) {
                     const imagePath = queryPathFromUrl(userData.imageUuidOrDatabaseUri);
                     if (!imagePath) {
-                        // @ts-ignore
                         throw new AssertionError({
                             message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
                         });
@@ -571,11 +599,15 @@ export class GltfMeshImporter extends GltfSubAssetImporter {
         const parentUserData = asset.parent.userData as IGltfUserData;
 
         // Create the mesh asset
-        const mesh = gltfConverter.createMesh(asset.userData.gltfIndex as number, parentUserData);
+        const mesh = gltfConverter.createMesh(asset.userData.gltfIndex as number, {
+            // normals: NormalImportSetting.recalculate,
+            normals: parentUserData.normals,
+            // tangents: TangentImportSetting.recalculate,
+            tangents: parentUserData.tangents,
+        });
         mesh._setRawAsset('.bin');
 
         // Save the mesh asset into library
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(mesh));
         await asset.saveToLibrary('.bin', Buffer.from(mesh.data));
 
@@ -621,7 +653,6 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
         const animationClip = gltfConverter.createAnimation(asset.userData.gltfIndex as number);
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(animationClip));
 
         return true;
@@ -666,7 +697,6 @@ export class GltfSkeletonImporter extends GltfSubAssetImporter {
 
         const skeleton = gltfConverter.createSkeleton(asset.userData.gltfIndex as number);
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(skeleton));
 
         return true;
@@ -709,7 +739,6 @@ export class GltfImageImporter extends GltfSubAssetImporter {
 
         const gltfImage = gltfConverter.gltf.images![imageIndex];
 
-        // @ts-ignore
         const imageAsset = new cc.ImageAsset();
         const image = gltfConverter.readImage(gltfImage);
         if (image) {
@@ -717,7 +746,6 @@ export class GltfImageImporter extends GltfSubAssetImporter {
             await asset.saveToLibrary(image.extName, image.imageData);
         }
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(imageAsset));
 
         return true;
@@ -766,7 +794,6 @@ export class GltfMaterialImporter extends GltfSubAssetImporter {
             gltfConverter,
             new DefaultGltfAssetFinder(gltfUserData.assetFinder));
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(material));
 
         return true;
@@ -813,22 +840,18 @@ export class GltfPrefabImporter extends GltfSubAssetImporter {
 
         const prefab = generatePrefab(sceneNode);
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(prefab));
 
         return true;
     }
 }
 
-// @ts-ignore
 function walkNode(node: cc.Node, fx: (node: cc.Node) => void) {
     fx(node);
-    // @ts-ignore
     node.children.forEach((childNode: cc.Node) => walkNode(childNode, fx));
 }
 
-// @ts-ignore
-function visitObjTypeReferences(node: cc.Node, visitor) {
+function visitObjTypeReferences(node: cc.Node, visitor: any) {
     const parseFireClass = (obj: any, klass?: any) => {
         klass = klass || obj.constructor;
         const props = klass.__values__;
@@ -837,12 +860,10 @@ function visitObjTypeReferences(node: cc.Node, visitor) {
             if (value && typeof value === 'object') {
                 if (Array.isArray(value)) {
                     for (let i = 0; i < value.length; i++) {
-                        // @ts-ignore
                         if (cc.isValid(value)) {
                             visitor(value, '' + i, value[i]);
                         }
                     }
-                    // @ts-ignore
                 } else if (cc.isValid(value)) {
                     visitor(obj, key, value);
                 }
@@ -855,10 +876,8 @@ function visitObjTypeReferences(node: cc.Node, visitor) {
     }
 }
 
-// @ts-ignore
 function getDumpableNode(node: cc.Node, quiet?: boolean) {
     // deep clone, since we dont want the given node changed by codes below
-    // @ts-ignore
     // node = cc.instantiate(node);
 
     walkNode(node, (item) => {
@@ -866,15 +885,12 @@ function getDumpableNode(node: cc.Node, quiet?: boolean) {
         visitObjTypeReferences(item, (obj: any, key: any, val: any) => {
             let shouldStrip = false;
             let targetName;
-            // @ts-ignore
             if (val instanceof cc.Component.EventHandler) {
                 val = val.target;
             }
-            // @ts-ignore
             if (val instanceof cc.Component) {
                 val = val.node;
             }
-            // @ts-ignore
             if (val instanceof cc._BaseNode) {
                 if (!val.isChildOf(node)) {
                     shouldStrip = true;
@@ -905,12 +921,9 @@ function getDumpableNode(node: cc.Node, quiet?: boolean) {
     return node;
 }
 
-// @ts-ignore
 function generatePrefab(node: cc.Node) {
-    // @ts-ignore
     const prefab = new cc.Prefab();
     walkNode(node, (childNode) => {
-        // @ts-ignore
         const info = new cc._PrefabInfo();
         info.asset = prefab;
         info.root = node;
@@ -924,7 +937,6 @@ function generatePrefab(node: cc.Node) {
 }
 
 function createMaterial(index: number, gltfConverter: GltfConverter, assetFinder: IGltfAssetFinder) {
-    // @ts-ignore
     const material = gltfConverter.createMaterial(
         index, assetFinder, (effectName) => {
             const uuid = queryUuidFromUrl(effectName);
