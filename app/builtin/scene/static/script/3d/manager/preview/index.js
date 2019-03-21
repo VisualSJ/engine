@@ -16,8 +16,8 @@ class Preview {
             title: 'Editor Game',
             width: this.width,
             height: this.height,
-            colorFmt: cc.GFXFormat.RGBA32F,
-            depthStencilFmt: cc.GFXFormat.D24S8,
+            colorFmt: this.device.colorFormat,
+            depthStencilFmt: this.device.depthStencilFormat,
         });
         this.regions = [new cc.GFXBufferTextureCopy()];
         this.regions[0].texExtent.width = this.width;
@@ -34,6 +34,7 @@ class Preview {
         for (const camera of cameras) {
             if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
             camera.view.visibility = 1;
+            camera.view.createRenderTarget({ width: this.width, height: this.height });
         }
     }
 
@@ -54,11 +55,14 @@ class Preview {
     }
 
     resize(width, height, camera) {
-        if (width === this.width && height === this.height) { return; }
+        if (!width || !height || width === this.width && height === this.height) { return; }
         this.width = width;
         this.height = height;
+        this.regions[0].texExtent.width = width;
+        this.regions[0].texExtent.height = height;
         this.window.resize(width, height);
         camera.resize(width, height);
+        camera.view.createRenderTarget({ width, height });
         this.data = Buffer.alloc(this.width * this.height * 4);
     }
 
@@ -70,9 +74,7 @@ class Preview {
         if (!camera) return this.data;
         this.resize(width, height, camera);
         cc.director.root.pipeline.render(camera.view);
-        this.regions[0].texExtent.width = width;
-        this.regions[0].texExtent.height = height;
-        this.device.copyFramebufferToBuffer(this.window.framebuffer, this.data.buffer, this.regions);
+        this.device.copyFramebufferToBuffer(camera.view.framebuffer, this.data.buffer, this.regions);
         return this.data;
     }
 }

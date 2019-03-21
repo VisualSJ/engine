@@ -44,7 +44,7 @@ export const template = `
                         v-if="pass.switch && pass.switch.name"
                     >
                         <span>(</span>
-                        <ui-checkbox    
+                        <ui-checkbox
                             :value="pass.switch.value"
                             @confirm="pass.switch.value = $event.target.value"
                         >{{pass.switch.name}}</ui-checkbox>

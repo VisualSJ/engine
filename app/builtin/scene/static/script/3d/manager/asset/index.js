@@ -119,8 +119,8 @@ async function applyMaterial(uuid, data) {
 /**
  * 传入一个发出的 material 数据以及对应的 uuid
  * 将所有的数据应用到 uuid 对应的 material 运行时数据上
- * @param {*} uuid 
- * @param {*} data 
+ * @param {*} uuid
+ * @param {*} data
  */
 async function previewMaterial(uuid, data) {
     if (data) {
