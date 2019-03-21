@@ -103,7 +103,7 @@ function createCamera(color) {
     let node = new cc.Node('Editor Camera');
     node.layer = cc.Layers.Editor | cc.Layers.IgnoreRaycast;
     node.parent = Manager.backgroundNode;
-    let camera = node.addComponent(cc.CameraComponent);
+    let camera = node.addComponent('cc.EditorCameraComponent');
     camera.far = 10000; camera.color = color;
     camera.targetDisplay = -2; // mainWindow
     return camera;
