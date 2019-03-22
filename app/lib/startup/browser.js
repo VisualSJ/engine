@@ -20,7 +20,7 @@ const array = [
     'inspector',
     'hierarchy',
     'ui-preview',
-    'package-manager',
+    'packager',
     'project-setting',
     'preview',
     'build',

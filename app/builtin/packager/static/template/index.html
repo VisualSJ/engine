@@ -1,0 +1,43 @@
+<div class="packager">
+    <header class="header">
+        <div class="tabs">
+            <div class="tab"
+                v-for="tab in tabs"
+                :key="tab"
+                :active="active === tab"
+                @click="active = tab"
+            >{{t(tab)}}</div>
+        </div>
+        <div class="search">
+            <ui-input ref="search" show-clear
+                :placeholder="t('search')" 
+                @change="doSearch"
+            ></ui-input>
+        </div>
+    </header>
+    <section class="operate"
+        v-if="active !== 'internal'"
+    >
+        <div class="btn" @click="addPackage">
+            <i class="icon i-add"></i>
+            <span>{{active === 'project' ? t('addProject') : t('addGlobal')}}</span>
+        </div>
+        <div class="btn" @click="importPackage">
+            <i class="icon i-open"></i>
+            <span>{{active === 'project' ? t('importProject') : t('importGlobal')}}</span>
+        </div>
+    </section>
+    <main class="content">
+        <pkg-node 
+            v-for="(pkg, index) in packagesMap"
+            v-if="pkg.type === active"
+            :key="index"
+            :pkg="pkg" 
+        ></pkg-node>
+    </main>
+    <div class="loading center" 
+        v-if="!ready"
+    >
+        <ui-loading></ui-loading>
+    </div>
+</div>

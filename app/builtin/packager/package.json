@@ -1,0 +1,21 @@
+{
+    "name": "packager",
+    "version": "0.0.1",
+    "description": "packages manager",
+    "menu": {
+        "i18n:menu.expansion/i18n:packager.title": {
+            "message": "open",
+            "icon": "./static/icon.png"
+        }
+    },
+    "main": "./dist/browser.js",
+    "panel": {
+        "title": "i18n:packager.title",
+        "main": "./dist/panel.js",
+        "icon": "./static/icon.png",
+        "min-width": 400,
+        "min-height": 400,
+        "width": 600,
+        "height": 700
+    }
+}

@@ -1,0 +1,166 @@
+@import './icon';
+:host {
+    position: relative;
+    display: flex;
+    >.packager {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        >.header {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+            box-sizing: border-box;
+            padding: 16px;
+            overflow: hidden;
+            font-size: 12px;
+            background-color: var(--panel-header-bg);
+            white-space: nowrap;
+            box-shadow: 0 0 8px 2px var(--panel-content-shadow);
+            >.tabs {
+                display: flex;
+                flex-grow: 0;
+                margin-right: 16px;
+                >.tab {
+                    line-height: 22px;
+                    padding: 0 7vw;
+                    text-align: center;
+                    border-radius: var(--border-radius-n);
+                    background-color: var(--panel-header-bg);
+                    cursor: pointer;
+                    &:hover {
+                        color: var(--panel-active-c);
+                    }
+                    &[active] {
+                        background-color: var(--item-active-bg);
+                        color: var(--item-active-c) !important;
+                        cursor: default;
+                    }
+                }
+            }
+            >.search {
+                flex-grow: 1;
+                ui-input {
+                    width: 100%;
+                }
+                .icon {
+                    margin: 0 5px;
+                    cursor: pointer;
+                    &:hover {
+                        color: white;
+                    }
+                }
+            }
+        }
+        >.operate {
+            display: flex;
+            flex-direction: row;
+            box-shadow: 0 0 8px 2px var(--panel-content-shadow);
+            >.btn {
+                flex: 1;
+                text-align: center;
+                padding: 12px 0;
+                cursor: pointer;
+                border-left: 1px solid var(--panel-content-shadow);
+                &:hover {
+                    color: var(--item-active-c);
+                    background-color: var(--panel-content-bg);
+                }
+                .icon {
+                    margin-right: 5px;
+                }
+                &:first-child {
+                    border-left: none;
+                }
+            }
+        }
+        >.content {
+            flex: 1;
+            position: relative;
+            padding: 16px 16px 0 16px;
+            overflow-y: auto;
+            .pkg-node {
+                background-color: var(--panel-content-bg);
+                font-size: 12px;
+                line-height: 1.7;
+                margin-bottom: 16px;
+                padding: 16px 32px;
+                border-radius: var(--border-radius-n, 4px);
+                position: relative;
+                transition: box-shadow 0.5s;
+                &.disabled {
+                    opacity: 0.6;
+                }
+                &:hover {
+                    box-shadow: 0 0 8px 2px var(--panel-content-shadow);
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    line-height: 30px;
+                    .version {
+                        flex: 1;
+                        .title {
+                            font-size: 1.8em;
+                            color: var(--item-active-c);
+                            padding-right: 16px;
+                        }
+                        .content {
+                            font-size: 1.2em;
+                        }
+                    }
+                    .state {
+                        flex: 1;
+                        text-align: right;
+                        .title {
+                            opacity: 0.7;
+                        }
+                    }
+                }
+                .author {
+                    line-height: 30px;
+                    .title {
+                        opacity: 0.7;
+                    }
+                }
+                .description {
+                    .title {
+                        opacity: 0.7;
+                    }
+                }
+                .control {
+                    margin-top: 16px;
+                    text-align: right;
+                    ui-button {
+                        margin-left: 16px;
+                        padding: 0px 12px;
+                    }
+                }
+            }
+        }
+        >.loading {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            &.center {
+                margin: auto;
+            }
+            ui-loading {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                width: 18px;
+                height: 18px;
+            }
+        }
+    }
+}

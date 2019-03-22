@@ -1,0 +1,42 @@
+<div class="pkg-node">
+    <header class="header">
+        <div class="version">
+            <span class="title">{{pkg.info.name}}</span>
+            <span class="content">{{pkg.info.version}}</span>
+        </div>
+        <div class="state">
+            <span class="title">{{t('state')}}</span>
+            <span class="content">{{pkg.invalid ? t('invalid') : pkg.enable ? t('enabled') : t('disabled')}}</span>
+        </div>
+    </header>
+    <div class="author">
+        <span class="title">{{t('author')}}</span>
+        <span class="content">{{pkg.info.author ? pkg.info.author : 'Cocos'}}</span>
+    </div>
+    <div class="description">
+        <span class="content">{{pkg.info.description}}</span>
+    </div>
+    <div class="control" 
+        v-if="pkg.type !== 'internal'"
+    >
+        <ui-button 
+            @click="openFolder()"
+        >
+            {{t('openFolder')}}
+        </ui-button>    
+        <ui-button 
+            v-if="!pkg.invalid" 
+            :class="pkg.enable?'yellow':'green'" 
+            @click="toggleEnable()"
+        >
+            {{pkg.enable?t('disable'):t('enable')}}
+        </ui-button>
+        <ui-button class="red"
+            v-if="pkg.type !== 'internal'" 
+            @click="remove()"
+        >
+            {{t('remove')}}
+        </ui-button>
+    </div>
+</div>
+</div>
