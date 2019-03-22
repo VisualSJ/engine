@@ -141,6 +141,20 @@ export async function ready() {
                 $scale.max = vm.maxScale;
                 // @ts-ignore
                 $scale.value = vm.scale;
+
+                // @ts-ignore
+                vm.$refs.content.onmousewheel = (wheelEvent) => {
+                    let deltaY = 10;
+                    if (wheelEvent.deltaY < 0) {
+                        deltaY = -10;
+                    }
+
+                    $scale.value += deltaY;
+                    // @ts-ignore
+                    vm.scale = $scale.value;
+
+                    wheelEvent.preventDefault();
+                };
             },
             scaleChange() {
                 if (!vm.image || !vm.userData) {

@@ -69,19 +69,19 @@ export const template = `
             </ui-select>
         </ui-prop>
         <ui-prop label="Rotated">
-            <ui-checkbox slot="content"
+            <ui-checkbox slot="content" disabled
                 :value="meta.userData.rotated"
                 @change="_onChangeData($event, 'rotated')"
             ></ui-checkbox>
         </ui-prop>
         <ui-prop label="Offset X">
-            <ui-num-input slot="content"
+            <ui-num-input slot="content" disabled
                 :value="meta.userData.offsetX"
                 @change="_onChangeData($event, 'offsetX')"
             ></ui-num-input>
         </ui-prop>
         <ui-prop label="Offset Y">
-            <ui-num-input slot="content"
+            <ui-num-input slot="content" disabled
                 :value="meta.userData.offsetY"
                 @change="_onChangeData($event, 'offsetY')"
             ></ui-num-input>
