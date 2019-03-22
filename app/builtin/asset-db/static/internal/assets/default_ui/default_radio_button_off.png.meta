@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "default_radio_button_off": {
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "importer": "sprite-frame",
       "uuid": "f12a23c4-b924-4322-a260-3d982428f1e8@default_radio_button_off",
       "imported": true,
@@ -36,12 +36,13 @@
         "height": 26,
         "rawWidth": 32,
         "rawHeight": 32,
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0,
+        "borderTop": 13,
+        "borderBottom": 13,
+        "borderLeft": 13,
+        "borderRight": 13,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "f12a23c4-b924-4322-a260-3d982428f1e8"
+        "imageUuidOrDatabaseUri": "f12a23c4-b924-4322-a260-3d982428f1e8",
+        "atlasUuid": ""
       }
     }
   },

@@ -88,7 +88,7 @@ export default class ImageImporter extends Importer {
                 // sprite2DSubAsset.assignUserData(makeDefaultTexture2DAssetUserDataFromImageUuid(asset.uuid));
                 const textureSpriteFrameSubAsset = await asset.createSubAsset(asset.basename, 'sprite-frame');
                 asset.userData.redirect = textureSpriteFrameSubAsset.uuid;
-                textureSpriteFrameSubAsset.assignUserData(makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid));
+                textureSpriteFrameSubAsset.assignUserData(makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid, ''));
                 break;
         }
 

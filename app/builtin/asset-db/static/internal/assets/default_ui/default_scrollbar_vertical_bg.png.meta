@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "default_scrollbar_vertical_bg": {
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "importer": "sprite-frame",
       "uuid": "ffb88a8f-af62-48f4-8f1d-3cb606443a43@default_scrollbar_vertical_bg",
       "imported": true,
@@ -36,12 +36,13 @@
         "height": 30,
         "rawWidth": 15,
         "rawHeight": 30,
-        "borderTop": 0,
-        "borderBottom": 0,
-        "borderLeft": 0,
-        "borderRight": 0,
+        "borderTop": 10,
+        "borderBottom": 10,
+        "borderLeft": 4,
+        "borderRight": 4,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "ffb88a8f-af62-48f4-8f1d-3cb606443a43"
+        "imageUuidOrDatabaseUri": "ffb88a8f-af62-48f4-8f1d-3cb606443a43",
+        "atlasUuid": ""
       }
     }
   },

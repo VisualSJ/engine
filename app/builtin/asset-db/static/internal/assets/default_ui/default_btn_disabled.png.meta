@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "default_btn_disabled": {
-      "ver": "1.0.1",
+      "ver": "1.0.2",
       "importer": "sprite-frame",
       "uuid": "951249e0-9f16-456d-8b85-a6ca954da16b@default_btn_disabled",
       "imported": true,
@@ -41,7 +41,8 @@
         "borderLeft": 0,
         "borderRight": 0,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "951249e0-9f16-456d-8b85-a6ca954da16b"
+        "imageUuidOrDatabaseUri": "951249e0-9f16-456d-8b85-a6ca954da16b",
+        "atlasUuid": ""
       }
     }
   },

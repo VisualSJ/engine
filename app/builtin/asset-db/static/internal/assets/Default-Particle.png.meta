@@ -9,7 +9,7 @@
   ],
   "subMetas": {
     "Default-Particle": {
-      "ver": "1.0.15",
+      "ver": "1.0.16",
       "importer": "texture",
       "uuid": "b5b27ab1-e740-4398-b407-848fc2b2c897@Default-Particle",
       "imported": true,
@@ -26,7 +26,8 @@
         "anisotropy": 1,
         "generateMipmap": false,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "b5b27ab1-e740-4398-b407-848fc2b2c897"
+        "imageUuidOrDatabaseUri": "b5b27ab1-e740-4398-b407-848fc2b2c897",
+        "mipfilter": "none"
       }
     }
   },
