@@ -1,12 +1,11 @@
 'use strict';
 
-import { existsSync, readFileSync } from 'fs';
-import { getReady } from './state';
+const { getWorker } = require('./worker/tasks');
 
 import {
     copyAsset, createAsset, deleteAsset, generateAvailableURL, moveAsset, reimportAsset, saveAsset, saveAssetMeta
 } from './operation';
-import { debug, forwarding, init, reload } from './worker';
+import { debug, forwarding, init, reload } from './worker/index';
 
 const worker = require('@base/electron-worker');
 
@@ -53,7 +52,7 @@ module.exports = {
          * DB 是否启动完毕
          */
         async 'query-ready'() {
-            return getReady();
+            return !!getWorker();
         },
 
         /**

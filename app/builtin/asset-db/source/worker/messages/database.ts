@@ -68,6 +68,7 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
     ipcSend('asset-worker:ready', info.name);
 
     console.log(`The '${info.name}' database is started: ${new Date().getTime() - date}ms`);
+    event.reply(null);
 });
 
 /**

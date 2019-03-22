@@ -1,6 +1,7 @@
 declare const Editor: Editor;
 
 interface Editor {
+    dev: boolean;
     App: App;
     Task: Task;
     Project: Project;

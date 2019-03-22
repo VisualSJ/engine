@@ -4,7 +4,7 @@ import { copy, ensureDir, existsSync, outputFile } from 'fs-extra';
 import { dirname, extname, join } from 'path';
 
 import { getName, moveFile, removeFile } from './utils';
-import { awaitAsset, forwarding } from './worker';
+import { awaitAsset, forwarding } from './worker/index';
 
 /**
  * 生成可用的 url

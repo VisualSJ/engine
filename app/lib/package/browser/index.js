@@ -57,7 +57,7 @@ class PackageManager extends EventEmitter {
             if ('invalid' in options && options.invalid !== pkg.invalid) {
                 return;
             }
-            return {
+            list.push({
                 name: pkg.name,
                 version: pkg.version,
                 debug: pkg.debug,
@@ -67,7 +67,7 @@ class PackageManager extends EventEmitter {
                 invalid: pkg.invalid,
 
                 info: pkg.options,
-            };
+            });
         });
         return list;
     }

@@ -58,10 +58,9 @@ new Vue({
 
     methods: {
         attach(data) {
-            if (!data.info.toolbar) {
+            if (!data.enable || !data.info.toolbar) {
                 return;
             }
-
 
             let toolbars = data.info.toolbar;
 
