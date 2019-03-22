@@ -1343,12 +1343,12 @@ function calculateTangents(gltfPrimitiveViewer: IPrimitiveViewer, overrideNormal
     const tangents = new Float32Array(4 * vertexCount);
     const tan1 = new Float32Array(3 * vertexCount);
     const tan2 = new Float32Array(3 * vertexCount);
+    const v0 = new cc.vmath.vec3();
     const v1 = new cc.vmath.vec3();
     const v2 = new cc.vmath.vec3();
-    const v3 = new cc.vmath.vec3();
-    const w1 = new cc.vmath.vec2();
-    const w2 = new cc.vmath.vec2();
-    const w3 = new cc.vmath.vec2();
+    const uv0 = new cc.vmath.vec2();
+    const uv1 = new cc.vmath.vec2();
+    const uv2 = new cc.vmath.vec2();
     const sdir = new cc.vmath.vec3();
     const tdir = new cc.vmath.vec3();
     const n = new cc.vmath.vec3();
@@ -1365,47 +1365,53 @@ function calculateTangents(gltfPrimitiveViewer: IPrimitiveViewer, overrideNormal
         tans[iVertex * 3 + 2] += val.z;
     };
     for (let iFace = 0; iFace < nFaces; ++iFace) {
-        const i1 = indices[iFace * 3 + 0];
-        const i2 = indices[iFace * 3 + 1];
-        const i3 = indices[iFace * 3 + 2];
+        const i0 = indices[iFace * 3 + 0];
+        const i1 = indices[iFace * 3 + 1];
+        const i2 = indices[iFace * 3 + 2];
 
+        getPosition(i0, v0);
         getPosition(i1, v1);
         getPosition(i2, v2);
-        getPosition(i3, v3);
 
-        getUV(i1, w1);
-        getUV(i2, w2);
-        getUV(i3, w3);
+        getUV(i0, uv0);
+        getUV(i1, uv1);
+        getUV(i2, uv2);
 
-        const x1 = v2.x - v1.x;
-        const x2 = v3.x - v1.x;
-        const y1 = v2.y - v1.y;
-        const y2 = v3.y - v1.y;
-        const z1 = v2.z - v1.z;
-        const z2 = v3.z - v1.z;
+        const x1 = v1.x - v0.x;
+        const x2 = v2.x - v0.x;
+        const y1 = v1.y - v0.y;
+        const y2 = v2.y - v0.y;
+        const z1 = v1.z - v0.z;
+        const z2 = v2.z - v0.z;
 
-        const s1 = w2.x - w1.x;
-        const s2 = w3.x - w1.x;
-        const t1 = w2.y - w1.y;
-        const t2 = w3.y - w1.y;
+        const s1 = uv1.x - uv0.x;
+        const s2 = uv2.x - uv0.x;
+        const t1 = uv1.y - uv0.y;
+        const t2 = uv2.y - uv0.y;
 
-        const r = 1.0 / (s1 * t2 - s2 * t1);
-        cc.vmath.vec3.set(sdir,
-            (t2 * x1 - t1 * x2) * r,
-            (t2 * y1 - t1 * y2) * r,
-            (t2 * z1 - t1 * z2) * r);
-        cc.vmath.vec3.set(tdir,
-            (s1 * x2 - s2 * x1) * r,
-            (s1 * y2 - s2 * y1) * r,
-            (s1 * z2 - s2 * z1) * r);
+        const div = (s1 * t2 - s2 * t1);
+        if (div !== 0.0) {
+            const r = 1.0 / div;
+            cc.vmath.vec3.set(sdir,
+                (t2 * x1 - t1 * x2) * r,
+                (t2 * y1 - t1 * y2) * r,
+                (t2 * z1 - t1 * z2) * r);
+            cc.vmath.vec3.set(tdir,
+                (s1 * x2 - s2 * x1) * r,
+                (s1 * y2 - s2 * y1) * r,
+                (s1 * z2 - s2 * z1) * r);
+        } else {
+            cc.vmath.vec3.set(sdir, 1.0, 0.0, 0.0);
+            cc.vmath.vec3.set(tdir, 0.0, 1.0, 0.0);
+        }
 
+        addTan(tan1, i0, sdir);
         addTan(tan1, i1, sdir);
         addTan(tan1, i2, sdir);
-        addTan(tan1, i3, sdir);
 
+        addTan(tan2, i0, tdir);
         addTan(tan2, i1, tdir);
         addTan(tan2, i2, tdir);
-        addTan(tan2, i3, tdir);
     }
     const tan2v = new cc.vmath.vec3();
     const vv = new cc.vmath.vec3();
