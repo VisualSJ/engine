@@ -12,6 +12,7 @@ export const template = `
     </div>
     <div class="content">
         <ui-checkbox
+            :readonly="readonly"
             :value="value"
             @confirm="$emit('input', !value)"
         ></ui-checkbox>
@@ -24,6 +25,7 @@ export const template = `
             v-for="item in children"
         >
             <ui-prop auto="true"
+                :readonly="readonly"
                 :value="item.dump"
 
                 :width="width"

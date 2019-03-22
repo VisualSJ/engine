@@ -7,6 +7,7 @@ export const template = `
     <div class="header">
         <ui-prop label="Effect">
             <ui-select slot="content"
+                :readonly="!info.file"
                 :value="effect"
                 @confirm="effect = $event.target.value"
             >
@@ -18,6 +19,7 @@ export const template = `
         </ui-prop>
         <ui-prop label="Technique">
             <ui-select slot="content"
+                :readonly="!info.file"
                 :value="technique"
                 @confirm="technique = $event.target.value"
             >
@@ -39,12 +41,15 @@ export const template = `
                 <div class="pass"
                     v-for="(pass,index) in item.passes"
                 >
-                    <span>Pass {{index}}</span>
+                    <span
+                        :readonly="!info.file"
+                    >Pass {{index}}</span>
                     <template
                         v-if="pass.switch && pass.switch.name"
                     >
                         <span>(</span>
                         <ui-checkbox
+                            :readonly="!info.file"
                             :value="pass.switch.value"
                             @confirm="pass.switch.value = $event.target.value"
                         >{{pass.switch.name}}</ui-checkbox>
@@ -55,6 +60,7 @@ export const template = `
                             v-for="item in pass.childMap"
                         >
                             <asset-prop auto="true"
+                                :readonly="!info.file"
                                 :value="item.dump"
                             ></asset-prop>
                         </template>

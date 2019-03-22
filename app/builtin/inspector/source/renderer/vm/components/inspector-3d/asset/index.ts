@@ -13,6 +13,7 @@ const importers: string[] = [
     'texture-cube',
     'sprite-frame',
     'material',
+    'gltf-material',
 ];
 
 export const template = readTemplate('inspector-3d/asset/index.html');
@@ -37,6 +38,7 @@ export const components = {
     'asset-texture-cube': require('./components/texture-cube'),
     'asset-sprite-frame': require('./components/sprite-frame'),
     'asset-material': require('./components/material/index'),
+    'asset-gltf-material': require('./components/material/index'),
 };
 
 export const methods = {

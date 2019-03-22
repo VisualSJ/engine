@@ -194,6 +194,8 @@ async function decodeMaterial(dump) {
 
     const technique = dump.data[dump.technique];
 
+    const tasks = [];
+
     for (let i = 0; i < technique.passes.length; i++) {
         const current = technique.passes[i];
         material._props[i] = {};
@@ -212,7 +214,9 @@ async function decodeMaterial(dump) {
                 continue;
             }
             material._defines[i][define.name] = undefined;
-            await dumpDecode.decodePatch(`${define.name}`, define.dump, material._defines[i]);
+            (function(name, dump, obj) {
+                tasks.push(dumpDecode.decodePatch(`${name}`, dump, obj));
+            })(define.name, define.dump, material._defines[i]);
         }
 
         for (let j = 0; j < current.props.length; j++) {
@@ -223,10 +227,14 @@ async function decodeMaterial(dump) {
                 continue;
             }
             material._props[i][prop.name] = undefined;
-            await dumpDecode.decodePatch(`${prop.name}`, prop.dump, material._props[i]);
+            (function(name, dump, obj) {
+                tasks.push(dumpDecode.decodePatch(`${name}`, dump, obj));
+            })(prop.name, prop.dump, material._props[i]);
         }
-
     }
+
+    // 并行设置属性
+    await Promise.all(tasks);
 
     return Manager.Utils.serialize(material);
 }

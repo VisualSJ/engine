@@ -10,6 +10,7 @@ export const props = [
     'height',
 
     'auto', // 是否自动渲染
+    'readonly',
     'empty',
     'value',
 ];

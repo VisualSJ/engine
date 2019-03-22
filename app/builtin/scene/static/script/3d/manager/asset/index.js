@@ -116,6 +116,7 @@ async function applyMaterial(uuid, data) {
     await Manager.Ipc.send('save-asset', uuid, mtl);
 }
 
+const _previewLocker = {};
 /**
  * 传入一个发出的 material 数据以及对应的 uuid
  * 将所有的数据应用到 uuid 对应的 material 运行时数据上
@@ -123,17 +124,34 @@ async function applyMaterial(uuid, data) {
  * @param {*} data
  */
 async function previewMaterial(uuid, data) {
-    if (data) {
-        const mtl = await material.decodeMaterial(data);
-        cc.AssetLibrary.loadJson(mtl, (error, asset) => {
+    // 如果之前正在更新这个 material，则放到缓存内
+    if (_previewLocker[uuid] !== undefined) {
+        _previewLocker[uuid] = { uuid, data };
+        return;
+    }
+
+    // 记录当前正在更新这个 material
+    _previewLocker[uuid] = null;
+    try {
+        if (data) {
+            const mtl = await material.decodeMaterial(data);
+            const asset = await util.promisify(cc.AssetLibrary.loadJson)(mtl);
             asset._uuid = uuid;
             cc.AssetLibrary.assetListener.invoke(uuid, asset);
-        });
-    } else {
-        cc.AssetLibrary.loadAsset(uuid, (error, asset) => {
+        } else {
+            const asset = await util.promisify(cc.AssetLibrary.loadAsset)(uuid);
             cc.AssetLibrary.assetListener.invoke(uuid, asset);
-        });
+        }
+    } catch (error) {
+        console.error(error);
     }
+
+    // 更新结束后，查看是否中途有更新请求，如果有的话
+    if (_previewLocker[uuid] !== null) {
+        const info = _previewLocker[uuid];
+        process.nextTick(previewMaterial(info.uuid, info.data));
+    }
+    delete _previewLocker[uuid];
 }
 
 function assetChange(uuid) {

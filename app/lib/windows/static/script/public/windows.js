@@ -10,7 +10,7 @@ const name2module = {};
  * @param {*} data 
  */
 function attach(data) {
-    if (!data.enbale || !data.info.windows) {
+    if (!data.enable || !data.info.windows) {
         return;
     }
     try {

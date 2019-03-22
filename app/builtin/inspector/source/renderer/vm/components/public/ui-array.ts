@@ -12,6 +12,7 @@ export const template = `
     </div>
     <div class="content">
         <ui-num-input path="length" min="0"
+            :readonly="readonly"
             :disabled="readonly"
             :value="value.length"
         ></ui-num-input>
@@ -38,6 +39,7 @@ export const template = `
                 :index = 'index'
             >
                 <ui-prop auto="true"
+                    :readonly="readonly"
                     :value="item"
                     :label="index"
                 ></ui-prop>
