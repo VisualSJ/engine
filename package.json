@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./scripts/start.js",
-    "postinstall": "npm run build && npm run checkout",
+    "postinstall": "npm run build",
     "checkout": "node ./scripts/checkout.js",
     "build": "node ./scripts/build/editor.js && node ./scripts/build/engine.js && node ./scripts/build/css.js && node ./scripts/build/js.js",
     "build:css": "node ./scripts/build/css.js",

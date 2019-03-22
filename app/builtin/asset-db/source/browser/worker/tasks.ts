@@ -162,7 +162,7 @@ depend.add('worker-init', {
 
 // 初始化 worker 内的 engine
 depend.add('worker-engine', {
-    depends: ['editor-init', 'engine-info', 'worker-init'],
+    depends: ['engine-info', 'worker-init'],
     async handle() {
         await databaseWorker.send('asset-worker:init', {
             engine: engineInfo.path,
@@ -222,7 +222,7 @@ depend.add('package-db-startup', {
 // DB 插件是否准备就绪
 depend.add('asset-db-ready', {
     depends: [
-        'builtin-db-startup',
+        'package-db-startup',
     ],
     async handle() {
         ready = true;
