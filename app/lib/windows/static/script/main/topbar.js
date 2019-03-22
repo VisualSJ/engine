@@ -1,6 +1,7 @@
 'use stirct';
 
 const Vue = require('vue/dist/vue');
+const Package = require('../../../../package');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -87,10 +88,12 @@ new Vue({
     },
 
     mounted() {
-        let list = Editor.Package.getPackages();
-        list.forEach(this.attach);
-
-        Editor.Package.on('enable', this.attach);
-        Editor.Package.on('disable', this.detach);
+        requestAnimationFrame(() => {
+            let list = Package.getPackages();
+            list.forEach(this.attach);
+    
+            Package.on('enable', this.attach);
+            Package.on('disable', this.detach);
+        });
     },
 });

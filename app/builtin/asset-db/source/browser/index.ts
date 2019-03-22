@@ -1,6 +1,6 @@
 'use strict';
 
-const { getWorker } = require('./worker/tasks');
+const { getWorker, isReady } = require('./worker/tasks');
 
 import {
     copyAsset, createAsset, deleteAsset, generateAvailableURL, moveAsset, reimportAsset, saveAsset, saveAssetMeta
@@ -52,7 +52,7 @@ module.exports = {
          * DB 是否启动完毕
          */
         async 'query-ready'() {
-            return !!getWorker();
+            return isReady();
         },
 
         /**

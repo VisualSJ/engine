@@ -20,6 +20,10 @@ export function getWorker() {
     return databaseWorker;
 }
 
+export function isReady() {
+    return ready;
+}
+
 export async function waitAsset(type: string, path: string) {
     return new Promise((resolve) => {
         awaitHandler[type][path] = awaitHandler[type][path] || [];

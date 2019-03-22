@@ -1,6 +1,7 @@
 'use strict';
 
 const { join } = require('path');
+const Package = require('../../../../package');
 
 const name2module = {};
 
@@ -38,13 +39,12 @@ function detach(data) {
     } finally {
         delete name2module[data.name]
     }
-
 }
 
 // 循环当前已经打开的插件
-const list = Editor.Package.getPackages();
+const list = Package.getPackages();
 list.forEach(attach);
 
 // 监听正在打开的插件
-Editor.Package.on('enable', attach);
-Editor.Package.on('disable', detach);
+Package.on('enable', attach);
+Package.on('disable', detach);
