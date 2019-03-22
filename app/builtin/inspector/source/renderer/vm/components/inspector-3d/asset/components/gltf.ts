@@ -81,6 +81,8 @@ export const methods = {
 
 export const watch = {};
 
-export function data() {}
+export function data() {
+    return {};
+}
 
 export function mounted() {}
