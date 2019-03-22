@@ -36,7 +36,7 @@ export const template = `
             <option value="0">Optional</option>
             <option value="1">Exclude</option>
             <option value="2">Require</option>
-            <option value="3">recalculate</option>
+            <option value="3">Recalculate</option>
         </ui-select>
     </ui-prop>
 
