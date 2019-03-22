@@ -66,6 +66,10 @@ class Camera extends EventEmitter {
         this._controller.focus(nodes);
     }
 
+    copyCameraDataToNodes(nodes) {
+        this._controller.copyCameraDataToNodes(nodes);
+    }
+
     onMouseDown(event) {
         return this._controller.onMouseDown(event);
     }

@@ -254,7 +254,9 @@ class RotationController extends ControllerBase {
         }
 
         this.updateRotationIndicator(this._transformAxisDir, this._indicatorStartDir, radian);
-        quat.mul(this.getRotation(), this._mouseDownRot, this._deltaRotation);
+        let rot = this.getRotation();
+        quat.mul(rot, this._mouseDownRot, this._deltaRotation);
+        this.setRotation(rot);
 
         if (this.onControllerMouseMove != null) {
             this.onControllerMouseMove(event);

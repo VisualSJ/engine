@@ -6,7 +6,7 @@ const utils = require('./utils');
 const tween = require('./tween');
 
 let exitPanModeTimer = null;
-const { vec3, quat } = cc.vmath;
+const { vec3, quat, mat4 } = cc.vmath;
 const CameraMoveMode = utils.CameraMoveMode;
 
 class CameraController3D extends CameraControllerBase {
@@ -255,6 +255,49 @@ class CameraController3D extends CameraControllerBase {
         tween.rotation(startRotation, this.homeRot, 300).step((rotation) => {
             this.node.setRotation(rotation);
         });
+    }
+
+    copyCameraDataToNodes(nodes) {
+        if (nodes && nodes.length > 0) {
+            nodes = nodes.map((id) => nodeManager.query(id));
+            let baseNode = nodes[0];
+            let oldBaseWorldMatrixInv = baseNode.getWorldRT();
+            mat4.invert(oldBaseWorldMatrixInv, oldBaseWorldMatrixInv);
+            let oldBaseRotInv = baseNode.getWorldRotation();
+            quat.invert(oldBaseRotInv, oldBaseRotInv);
+
+            let cameraPos = this.node.getWorldPosition();
+            let cameraRot = this.node.getWorldRotation();
+            let newBaseMatrix = this.node.getWorldRT();
+
+            Manager.History.snapshot();
+
+            baseNode.setWorldPosition(cameraPos);
+            baseNode.setWorldRotation(cameraRot);
+            this.broadcastNodeChanged(baseNode);
+
+            if (nodes.length > 1) {
+                for (let i = 1; i < nodes.length; i++) {
+                    let node = nodes[i];
+                    let pos = node.getWorldPosition();
+                    let rot = node.getWorldRotation();
+
+                    vec3.transformMat4(pos, pos, oldBaseWorldMatrixInv);
+                    quat.mul(rot, oldBaseRotInv, rot);
+
+                    vec3.transformMat4(pos, pos, newBaseMatrix);
+                    node.setWorldPosition(pos);
+                    quat.mul(rot, cameraRot, rot);
+                    node.setWorldRotation(rot);
+                    this.broadcastNodeChanged(node);
+                }
+            }
+        }
+    }
+
+    broadcastNodeChanged(node) {
+        Manager.Node.emit('changed', node);
+        Manager.Ipc.send('broadcast', 'scene:node-changed', node.uuid);
     }
 
     onMouseDown(event) {

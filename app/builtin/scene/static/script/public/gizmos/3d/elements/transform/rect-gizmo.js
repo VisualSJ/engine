@@ -47,6 +47,8 @@ class RectGizmo extends TransformGizmo {
     createController() {
         this._controller = new RectController(this.getGizmoRoot());
         this._controller.editable = true;
+        this._controller.setColor(new cc.Color(0, 153, 255));
+        this._controller.setEditCtrlColor(new cc.Color(0, 153, 255));
 
         this._controller.onControllerMouseDown = this.onControllerMouseDown.bind(this);
         this._controller.onControllerMouseMove = this.onControllerMouseMove.bind(this);

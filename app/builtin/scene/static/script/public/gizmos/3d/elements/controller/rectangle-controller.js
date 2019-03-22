@@ -139,7 +139,7 @@ class RectangleController extends EditableController {
 
     initShape() {
         this.createShapeNode('RectangleController');
-        this._rectNode = ControllerUtils.rectangle(this._center, cc.quat(), this._size, this._color);
+        this._rectNode = ControllerUtils.rectangle(this._center, cc.quat(), this._size, this._color, {unlit: true});
         this._rectNode.parent = this.shape;
         this._rectMR = getModel(this._rectNode);
         EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);

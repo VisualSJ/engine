@@ -15,6 +15,8 @@ class CameraControllerBase extends EventEmitter {
 
     focus(nodes) {}
 
+    copyCameraDataToNodes(nodes) {}
+
     onMouseDown(event) {}
 
     onMouseMove(event) {}

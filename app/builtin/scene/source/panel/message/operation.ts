@@ -348,4 +348,14 @@ export function apply(messages: any) {
     messages['apply-material'] = async (uuid: string, materialDump: any) => {
         await $scene.forwarding('Asset', 'applyMaterial', [uuid, materialDump]);
     };
+
+    messages['copy-camera-data-to-nodes'] = async (uuids: string[] | null) => {
+        if (!$scene) {
+            return null;
+        }
+        if (uuids) {
+            await $scene.forwarding('Camera', 'copyCameraDataToNodes', [uuids]);
+        }
+    };
+
 }

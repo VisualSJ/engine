@@ -11,14 +11,38 @@ selection.init = function() {
         }
         const {resultNode} = this.getResultNode(data.x, data.y);
         if (resultNode && resultNode.uuid) {
-            selection.clear();
-            selection.select(resultNode.uuid);
+            if (!this.ctrlKey && !this.shiftKey) {
+                selection.clear();
+            }
+
+            if (this.ctrlKey) {
+                if (selection.isSelect(resultNode.uuid)) {
+                    selection.unselect(resultNode.uuid);
+                } else {
+                    selection.select(resultNode.uuid);
+                }
+            } else {
+                selection.select(resultNode.uuid);
+            }
+
         } else {
             // 等事件处理顺序完善后再开启这个功能
             if (data.leftButton) {  //左键没选中东西则取消当前所选
-                selection.clear();
+                if (!this.ctrlKey && !this.shiftKey) {
+                    selection.clear();
+                }
             }
         }
+    });
+
+    operationManager.on('keydown', (event) => {
+        this.ctrlKey = event.ctrlKey;
+        this.shiftKey = event.shiftKey;
+    });
+
+    operationManager.on('keyup', (event) => {
+        this.ctrlKey = event.ctrlKey;
+        this.shiftKey = event.shiftKey;
     });
 };
 

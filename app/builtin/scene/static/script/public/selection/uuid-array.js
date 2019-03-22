@@ -31,6 +31,10 @@ class UuidArray {
     clear() {
         this.uuids = [];
     }
+
+    indexOf(uuid) {
+        return this.uuids.indexOf(uuid);
+    }
 }
 
 module.exports = UuidArray;

@@ -89,6 +89,9 @@ class Engine3D extends EngineInterface {
         let states = {};
         if (opts.cullMode) { states.rasterizerState = { cullMode: opts.cullMode }; }
         if (pm !== triangles) { states.primitive = pm; }
+        if (opts.priority) {
+            states.priority = opts.priority;
+        }
 
         mtl.initialize({ effectName: '__editor-gizmo', technique, states });
         if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }

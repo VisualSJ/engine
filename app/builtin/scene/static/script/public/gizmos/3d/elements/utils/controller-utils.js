@@ -206,10 +206,10 @@ ControllerUtils.frustum = function(fov, aspect, near, far, color) {
     return frustumNode;
 };
 
-ControllerUtils.rectangle = function(center, rotation, size, color) {
+ControllerUtils.rectangle = function(center, rotation, size, color, opts = {}) {
     let rectangleNode = create3DNode('rectangleNode');
     addMeshToNode(rectangleNode,
-        ControllerShape.rectangle(center, rotation, size));
+        ControllerShape.rectangle(center, rotation, size), opts);
     setMeshColor(rectangleNode, color);
 
     return rectangleNode;

@@ -226,33 +226,44 @@ exports.ready = async function() {
             return;
         }
 
-        if (event.ctrlKey || event.metaKey || event.alyKey) {
-            return;
-        }
+        if (event.ctrlKey || event.metaKey || event.alyKey || event.shiftKey) {
+            switch (event.key) {
+                case 'f':
+                case 'F':
+                    if (event.ctrlKey && event.shiftKey) {
+                        const uuids = Editor.Selection.getSelected('node');
+                        if (uuids && uuids.length) {
+                            Editor.Ipc.sendToPanel('scene', 'copy-camera-data-to-nodes', uuids);
+                        }
+                    }
+                    break;
+            }
 
-        switch (event.key) {
-            case 'w':
-            case 'W':
-                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'position');
-                break;
-            case 'e':
-            case 'E':
-                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rotation');
-                break;
-            case 'r':
-            case 'R':
-                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'scale');
-                break;
-            case 't':
-            case 'T':
-                Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rect');
-                break;
-            case 'f':
-            case 'F':
-                const uuids = Editor.Selection.getSelected('node');
-                if (uuids && uuids.length) {
-                    Editor.Ipc.sendToPanel('scene', 'focus-camera', uuids);
-                }
+        } else {
+            switch (event.key) {
+                case 'w':
+                case 'W':
+                    Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'position');
+                    break;
+                case 'e':
+                case 'E':
+                    Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rotation');
+                    break;
+                case 'r':
+                case 'R':
+                    Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'scale');
+                    break;
+                case 't':
+                case 'T':
+                    Editor.Ipc.sendToPanel('scene', 'change-gizmo-tool', 'rect');
+                    break;
+                case 'f':
+                case 'F':
+                    const uuids = Editor.Selection.getSelected('node');
+                    if (uuids && uuids.length) {
+                        Editor.Ipc.sendToPanel('scene', 'focus-camera', uuids);
+                    }
+            }
         }
     });
 };

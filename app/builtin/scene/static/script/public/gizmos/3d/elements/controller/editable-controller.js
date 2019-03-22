@@ -18,12 +18,15 @@ class EditableController extends ControllerBase {
         this._defaultEditCtrlSize = 5;
         this._hoverColor = cc.Color.GREEN;
         this._editCtrlScales = {};
+        this._editCtrlColor = cc.Color.WHITE;
 
         EditorCamera._camera.node.on('transform-changed', this.onEditorCameraMoved, this);
     }
 
     get editable() { return this._editable; }
-    set editable(value) { this._editable = value; }
+    set editable(value) {
+        this._editable = value;
+    }
 
     get edit() { return this._edit; }
     set edit(value) {
@@ -52,14 +55,19 @@ class EditableController extends ControllerBase {
 
     setEditCtrlColor(color) {
         // set edit controller color
-        if (this.editable && this.edit) {
-            Object.keys(this._axisDir).forEach((key) => {
-                let axisData = this._axisDataMap[key];
-                if (axisData) {
-                    let node = axisData.topNode;
-                    setMeshColor(node, color);
-                }
-            });
+        if (this.editable) {
+            if (this._editControllerShape) {
+                Object.keys(this._axisDir).forEach((key) => {
+                    let axisData = this._axisDataMap[key];
+                    if (axisData) {
+                        let node = axisData.topNode;
+                        setMeshColor(node, color);
+                        axisData.oriColors = [color];
+                    }
+                });
+            }
+
+            this._editCtrlColor = color;
         }
     }
 
@@ -71,7 +79,8 @@ class EditableController extends ControllerBase {
 
     createEditController(axisName, color) {
         let ctrlSize = this._defaultEditCtrlSize;
-        let editCtrlNode = ControllerUtils.quad(cc.v3(), ctrlSize, ctrlSize, color, {unlit : true});
+        let editCtrlNode = ControllerUtils.quad(cc.v3(), ctrlSize, ctrlSize,
+            color, {unlit : true, priority: 255 });
         editCtrlNode.name = axisName;
         editCtrlNode.parent = this._editControllerShape;
         this._editCtrlScales[axisName] = cc.v3(1, 1, 1);
@@ -84,7 +93,7 @@ class EditableController extends ControllerBase {
             this.createEditControllerShape();
 
             Object.keys(this._axisDir).forEach((key) => {
-                this.createEditController(key, this._color);
+                this.createEditController(key, this._editCtrlColor);
             });
 
             if (this.onInitEditController) {
