@@ -135,8 +135,21 @@ export async function ready() {
             },
         },
     });
+
+    // 注册事件
+    Editor.Package.on('register', () => {
+        Editor.Ipc.sendToPanel('packager', 'packages:update');
+    });
+
+    Editor.Package.on('unregister', () => {
+        Editor.Ipc.sendToPanel('packager', 'packages:update');
+    });
+
 }
 
 export async function beforeClose() { }
 
-export async function close() { }
+export async function close() {
+    // TODO 需要处理下解绑事件
+
+}

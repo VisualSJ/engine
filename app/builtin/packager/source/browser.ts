@@ -63,13 +63,6 @@ export function load() {
     // @ts-ignore
     pkg = this;
 
-    Editor.Package.on('register', () => {
-        Editor.Ipc.sendToPanel('packager', 'packages:update');
-    });
-
-    Editor.Package.on('unregister', () => {
-        Editor.Ipc.sendToPanel('packager', 'packages:update');
-    });
 }
 
 export function unload() { }
