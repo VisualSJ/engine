@@ -202,9 +202,9 @@ const GltfSemantics = {
     } as IGltfSemantic,
 
     tangent: {
-        name: GltfSemanticName.NORMAL,
+        name: GltfSemanticName.TANGENT,
         baseType: GltfAccessorComponentType.FLOAT,
-        type: GltfAccessorType.VEC3,
+        type: GltfAccessorType.VEC4,
     } as IGltfSemantic,
 };
 
