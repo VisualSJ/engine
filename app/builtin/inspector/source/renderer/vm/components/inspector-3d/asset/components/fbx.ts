@@ -19,7 +19,7 @@ export const template = `
     >
         <ui-select slot="content"
             :value="meta ? meta.userData.normals : 0"
-            @confirm="_onDataChanged($event, 'normals')"
+            @confirm="_onDataChanged($event, 'normals', 'number')"
         >
             <option value="0">Optional</option>
             <option value="1">Exclude</option>
@@ -33,7 +33,7 @@ export const template = `
     >
         <ui-select slot="content"
             :value="meta ? meta.userData.tangents : 0"
-            @confirm="_onDataChanged($event, 'tangents')"
+            @confirm="_onDataChanged($event, 'tangents', 'number')"
         >
             <option value="0">Optional</option>
             <option value="1">Exclude</option>
@@ -86,10 +86,19 @@ export const methods = {
     /**
      * 更改图片的导入类型
      */
-    _onDataChanged(event: any, key: string) {
+    _onDataChanged(event: any, key: string, type?: string) {
         // @ts-ignore
         const vm: any = this;
-        vm.meta.userData[key] = event.target.value;
+
+        let value = event.target.value;
+
+        switch (type) {
+            case 'number':
+                value -= 0;
+                break;
+        }
+
+        vm.meta.userData[key] = value;
     },
 
     /**
