@@ -12,7 +12,7 @@ scene 编辑器在执行一些操作的过程中会广播出对应的操作，�
 
 场景关闭的时候广播的消息
 
-### scene:node-created
+### scene:node-added
 
 场景内创建节点的时候广播的消息
 

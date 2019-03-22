@@ -161,7 +161,7 @@ async function createNode(uuid, name = 'New Node', dump) {
     await add(node);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-created', node._id);
+    Manager.Ipc.send('broadcast', 'scene:node-added', node._id);
     Manager.Ipc.send('broadcast', 'scene:node-changed', node._parent._id);
 
     return node._id;
@@ -471,5 +471,5 @@ module.exports = {
     // 查询一个节点所有组件的方法列表
     queryComponentFunctionOfNode,
     // 执行组件方法
-    excuteComponentMethod
+    excuteComponentMethod,
 };
