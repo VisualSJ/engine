@@ -473,7 +473,7 @@ export class GltfConverter {
         const props: Record<string, any> = {};
         if (gltfMaterial.pbrMetallicRoughness) {
             const pbrMetallicRoughness = gltfMaterial.pbrMetallicRoughness;
-            if (pbrMetallicRoughness.baseColorTexture) {
+            if (pbrMetallicRoughness.baseColorTexture !== undefined) {
                 defines['USE_ALBEDO_MAP'] = true;
                 props['albedoMap'] = gltfAssetFinder.find('textures', pbrMetallicRoughness.baseColorTexture.index);
             } else {
@@ -488,19 +488,29 @@ export class GltfConverter {
                 }
                 props['albedo'] = color;
             }
+            if (pbrMetallicRoughness.metallicRoughnessTexture !== undefined) {
+                defines['USE_PBR_MAP'] = true;
+                // The metalness values are sampled from the B channel.
+                // The roughness values are sampled from the G channel.
+                // These values are linear. If other channels are present (R or A),
+                // they are ignored for metallic-roughness calculations.
+                defines['METALLIC_CHANNEL'] = 'b';
+                defines['ROUGHNESS_CHANNEL'] = 'g';
+                props['pbrMap'] = gltfAssetFinder.find('textures', pbrMetallicRoughness.metallicRoughnessTexture.index);
+            }
         }
 
-        if (gltfMaterial.normalTexture) {
+        if (gltfMaterial.normalTexture !== undefined) {
             defines['USE_NORMAL_MAP'] = true;
             props['normalMap'] = gltfAssetFinder.find('textures', gltfMaterial.normalTexture.index);
         }
 
-        if (gltfMaterial.emissiveTexture) {
+        if (gltfMaterial.emissiveTexture !== undefined) {
             defines['USE_EMISSIVE_MAP'] = true;
             props['emissiveMap'] = gltfAssetFinder.find('textures', gltfMaterial.emissiveTexture.index);
         }
 
-        if (gltfMaterial.emissiveFactor) {
+        if (gltfMaterial.emissiveFactor !== undefined) {
             props['emissive'] = new cc.Color(
                 gltfMaterial.emissiveFactor[0] * 255,
                 gltfMaterial.emissiveFactor[1] * 255,
@@ -745,17 +755,6 @@ export class GltfConverter {
                 normalize: false,
             });
         }
-
-        // 写入我们需要手动计算的属性
-        const writeFloatAttrib = (nComponent: number, offset: number, count: number, input: Float32Array) => {
-            const dataView = new DataView(vertexBuffer, offset);
-            for (let iVertex = 0; iVertex < count; ++iVertex) {
-                for (let i = 0; i < nComponent; ++i) {
-                    const v = input[iVertex * nComponent + i];
-                    dataView.setFloat32(iVertex * vertexBufferStride + i * 4, v, DataViewUseLittleEndian);
-                }
-            }
-        };
 
         const appendVertexStreamF = (semantic: IGltfSemantic, offset: number, data: Float32Array) => {
             const nComponent = this._getComponentsPerAttribute(semantic.type);
