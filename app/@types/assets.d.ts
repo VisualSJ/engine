@@ -6,7 +6,7 @@ declare interface IdragAsset {
      * 外部节点的情况包括节点可能的所有类型，
      * 是否接受该类型需要在 drop 中明确判断
      */
-    type: string; 
+    type: string;
     from?: string; // 被拖动的节点 uuid
     to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
@@ -63,4 +63,16 @@ declare interface ItreeAsset {
     height: number; // 整个节点包括children的高度
     children: ItreeAsset[];
 
+}
+
+declare interface IOpenAssetRule { // 一种类型的规则配置
+    defaultExec: string, // 默认对应偏好面板上的 edit 配置的 script_editor 或 picture_editor
+    execPath: string, // 程序的路径
+    args: string, // 备用的 cmd 命令行使用的参数
+}
+
+declare interface IOpenAsset { 
+    ext: string, // 文件后缀或后缀的类型 如 '.mtl', 'image'
+    file: string, // 文件的磁盘路径'
+    uuid: string,
 }

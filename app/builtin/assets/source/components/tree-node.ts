@@ -2,7 +2,7 @@
 import { readFileSync } from 'fs';
 import { basename, dirname, join } from 'path';
 
-const open = require('./tree-node-open');
+const { openAsset } = require('./tree-node-open');
 const context = require('./tree-node-context');
 const utils = require('./tree-utils');
 
@@ -132,14 +132,10 @@ export const methods = {
      * @param uuid
      */
     async open(event: Event, asset: ItreeAsset) {
-        const { fileExt } = asset;
-
         if (asset.isDirectory) {
             this.toggle(event, asset);
         } else {
-            if (open[fileExt]) {
-                open[fileExt](asset);
-            }
+            openAsset(asset);
         }
     },
     /**
@@ -205,7 +201,7 @@ export const methods = {
      */
     renameChange(event: Event) {
         // @ts-ignore
-        const {asset} = this;
+        const { asset } = this;
         const parentAsset = utils.getAssetFromTree(asset.parentUuid);
         // @ts-ignore
         const filenames = parentAsset.children.map((one) => one.name).filter((name) => name !== asset.name);
@@ -248,7 +244,7 @@ export const methods = {
      */
     addChange(event: Event) {
         // @ts-ignore
-        const {asset, addAsset} = this;
+        const { asset, addAsset } = this;
         // @ts-ignore
         const filenames = asset.children ? asset.children.map((one) => one.name) : [];
 

@@ -6,7 +6,7 @@
     font-size: 12px;
     cursor: default;
     &[isRoot] {
-        background-color: var(--item-hover-bg) !important;
+        background-color: var(--item-hover-bg);
         border-bottom: 1px solid var(--panel-content-bg);
     }
     &[state] {
@@ -20,7 +20,10 @@
         }
     }
     &[active="true"] {
-        background-color: var(--item-hover-bg);
+        background-color: var(--item-active-blur-bg);
+        &:hover{
+            background-color: var(--item-active-blur-bg);
+        }
     }
     &[state="rename"] {
         background-color: transparent !important;

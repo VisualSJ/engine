@@ -13,16 +13,19 @@
         }
     }
     &[isScene] {
-        background-color: var(--item-hover-bg)!important;
+        background-color: var(--item-hover-bg);
         border-bottom: 1px solid var(--panel-content-bg);
     }
     &[isPrefab] {
         color: #07d02b;
     }
     &[active="true"] {
-        background-color: var(--item-hover-bg);
+        background-color: var(--item-active-blur-bg);
         transition: 0.3s opacity ease;
-        transition-delay: 0.3s
+        transition-delay: 0.3s;
+        &:hover{
+            background-color: var(--item-active-blur-bg);
+        }
     }
     &[state="rename"] {
         background-color: transparent !important;

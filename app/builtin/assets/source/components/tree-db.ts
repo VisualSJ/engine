@@ -352,7 +352,14 @@ function addHeight(add: number) {
  */
 function calcDirectoryHeight() {
     for (const [top, parent] of assetsMap) {
+
         if (parent.isExpand && parent.children && parent.children.length > 0) {
+            // 重要 hack：避免 customSetter 被 vue 的 setter 优先 return 掉，而不触发 customSetter
+            if (parent.isRoot && parent.height === parent.children.length) {
+                parent._height += assetHeight * parent.children.length;
+                continue;
+            }
+
             parent.height = parent.children.length; // 实际计算在内部的 setter 函数
         } else {
             parent.height = 0;

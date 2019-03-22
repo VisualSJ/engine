@@ -13,6 +13,7 @@
     "--item-hover-bg": "#444",
     "--item-active-c": "#fff",
     "--item-active-bg": "#059",
+    "--item-active-blur-bg": "#004073",
 
     "--focus-c": "#fd942b",
     "--hover-c": "#d1d1d1",

@@ -64,7 +64,7 @@ export async function createAsset(url: string, content?: Buffer | string | null,
             default: 0,
             cancel: 1,
             title: Editor.I18n.t('assets-db.operate.dialogQuestion'),
-            message: Editor.I18n.t('asset-db.createAsset.fail.exist'),
+            message: Editor.I18n.t('asset-db.createAsset.warn.overwrite'),
         });
 
         if (code === 1) {
