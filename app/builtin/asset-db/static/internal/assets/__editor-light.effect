@@ -1,0 +1,56 @@
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: light-vs:vert
+      frag: light-fs:frag
+      priority: max - 10
+      rasterizerState:
+        cullMode: none
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: false
+      properties: &props
+        color: { type: color4, value: [1, 1, 1, 1] }
+        intensitySize: { type: vec4, value: [1, 1, 1, 1] }
+}%
+
+CCProgram light-vs %{
+  precision mediump float;
+  #include <cc-global>
+  #include <common>
+  #include <gamma>
+
+  in vec3 a_position;
+  out vec3 v_color;
+
+  uniform Constant {
+    vec4 color;
+    vec4 intensitySize; // x: intensity, y: size
+  };
+
+  vec4 vert () {
+    v_color = color.rgb * intensitySize.x;
+
+  #if CC_USE_HDR
+    v_color *= FP_SCALE;
+  #else
+    v_color *= cc_exposure.x;
+    v_color = LinearToSRGB(v_color);
+  #endif
+
+    return cc_matViewProj * cc_matWorld * vec4(a_position * intensitySize.y, 1.0);
+  }
+}%
+
+CCProgram light-fs %{
+  precision mediump float;
+
+  in vec3 v_color;
+
+  vec4 frag () {
+    return vec4(v_color, 1.0);
+  }
+}%

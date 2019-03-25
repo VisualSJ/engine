@@ -277,10 +277,7 @@ CCProgram standard-fs %{
 
   #if USE_EMISSIVE_MAP
     vec3 emissiveColor = texture(emissiveMap, v_uv).rgb;
-	  emissiveColor = SRGBToLinear(emissiveColor);
-  #if CC_USE_HDR
-    emissiveColor /= cc_exposure.x;
-  #endif
+	  emissiveColor = SRGBToLinear(emissiveColor) / cc_exposure.x;
     finalColor += emissiveColor * emissive.rgb * emissiveScale.xyz;
   #endif
 
