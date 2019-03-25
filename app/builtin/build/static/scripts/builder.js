@@ -1,29 +1,31 @@
 const { join, basename , extname, dirname, resolve, relative} = require('path');
-const { getCurrentScene, updateProgress,
-     requestToPackage, computeArgs, getMd5Map, appendHashToFileSuffix} = require('./utils');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
 const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
+
 const minify = require('html-minifier').minify;
 const CleanCSS = require('clean-css');
-const buildResult = require('./build-result');
-const platfomConfig = require('./platforms-config');
-const WINDOW_HEADER = 'window._CCSettings';
-const assetBuilder = require('./build-asset');
-const assetPacker = require('./pack-asset');
-const scriptBuilder = require('./build-script');
 const { spawn } = require('child_process');
 const RevAll = require('@editor/gulp-rev-all');
 const RevDel = require('gulp-rev-delete-original');
 const gulp = require('gulp');
 const template = require('art-template');
+const globby = require('globby'); // 路径匹配获取文件路径
 
+const buildResult = require('./build-result');
+const platfomConfig = require('./platforms-config');
+const assetBuilder = require('./build-asset');
+const assetPacker = require('./pack-asset');
+const scriptBuilder = require('./build-script');
+const { getCurrentScene, updateProgress,
+    requestToPackage, computeArgs, getMd5Map, appendHashToFileSuffix, contains} = require('./utils');
+
+const WINDOW_HEADER = 'window._CCSettings';
 const HASH_LEN = 5;
 const static_resource = [
     // 需要拷贝的静态资源整理
     'splash.png',
     'style-desktop.css',
 ];
-
 class Builder {
     constructor() {
         this._paths = null;
@@ -45,6 +47,7 @@ class Builder {
             isQQPlay,
             nativeRenderer,
             isNativePlatform: platformInfo.isNative,
+            isWeChatSubdomain,
         });
 
         this.isJSB = platformInfo.isNative;
@@ -77,9 +80,8 @@ class Builder {
         // 并发任务
         await Promise.all([
             this._buildEngine(), // 构建切割引擎 15%
-            this._buildHtml(), // 构建拷贝模板 index.html 文件 5%
+            this._buildHtml(), // 构建拷贝模板 index.html 文件 10%
             this._buildMain(), // 构建拷贝模板 main.js 文件 5%
-            this._resolveStatic(), // 其他静态资源拷贝 5%
             this.buildSetting(
                 {
                     // 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
@@ -227,8 +229,135 @@ class Builder {
     }
 
     // 构建基础 index.html 模板部分的代码 5%
-    _buildHtml() {
+    async _buildHtml() {
         updateProgress('build index html...');
+        switch (this._options.platform) {
+            case 'web-mobile':
+            case 'web-desk':
+                this._buildWebTemplate();
+                this._resolveStatic();
+                break;
+            case 'wechat-game':
+                await this._buildWeChatTemplate();
+                break;
+            case 'wechat-game-subcontext':
+                await this._buildWeChatTemplate(true);
+                break;
+        }
+        updateProgress('build index html success', 10);
+    }
+
+    /**
+     * 构建拷贝微信小游戏相关资源
+     */
+    async _buildWeChatTemplate(isSubContext = false) {
+        const weappAdapterDir = join(__dirname, './../build-templates/weapp-adapter/wechat-game/libs/weapp-adapter/');
+        const template_wechatgame = await globby(join(__dirname, './../build-templates/weapp-adapter/wechat-game/**/*'), { nodir: true });
+        const opts = this._options;
+        await Promise.all(template_wechatgame.map((path) => {
+            var name = basename(path);
+            var isInWeappAdapterFolder = window.Utils.Path.contains(weappAdapterDir, path);
+            let contents = readFileSync(path, 'utf-8');
+            const rel = relative(join(__dirname, './../build-templates/weapp-adapter/wechat-game/'), path);
+            const dest = join(this._paths.dest, rel);
+            if (isSubContext && (name === 'game.js' || name === 'game.json' || name === 'project.config.json') ||
+            !isSubContext && name === 'sub-context-adapter.js') {
+                this._buildSubContext(dest, contents, name);
+                return;
+            }
+            if (name === 'game.js') {
+                    contents = template.render(contents, {
+                        REMOTE_SERVER_ROOT: opts.remote_server_root,
+                    });
+            } else if (name === 'game.json') {
+                contents = JSON.parse(contents);
+                contents.deviceOrientation = opts.orientation;
+                if (opts.subContext && !opts.isWeChatSubdomain) {
+                    contents.openDataContext = opts.subContext;
+                } else {
+                    delete contents.openDataContext;
+                }
+
+                // todo 关于微信子包的处理
+                // if (subpackages) {
+                //     contents.subpackages = [];
+                //     for (const key of Object.keys(subpackages)) {
+                //         contents.subpackages.push({
+                //             name: key,
+                //             root: subpackages[key].path,
+                //         });
+                //     }
+                // }
+                contents = JSON.stringify(contents);
+            } else if (name === 'project.config.json') {
+                contents = JSON.parse(contents);
+                contents.appid = opts.appid || 'wx6ac3f5090a6b99c5';
+                contents.projectname = opts.name;
+                contents = JSON.stringify(contents);
+            } else if (extname(name) === '.js' && isInWeappAdapterFolder && name !== 'sub-context-adapter.js') {
+                let result;
+                try {
+                    const Babel = require('@babel/core');
+                    result = Babel.transform(contents, {
+                    ast: false,
+                    highlightCode: false,
+                    sourceMaps: false,
+                    compact: false,
+                    filename: path, // search path for babelrc
+                    presets: [
+                        [require('@babel/preset-env'),
+                        {
+                            modules: false,
+                        }],
+                    ],
+                    plugins: [
+                        // make sure that legacy comes before class-properties.
+                        [
+                            require('@babel/plugin-proposal-decorators'),
+                            { legacy: true },
+                        ],
+                        [
+                            require('@babel/plugin-proposal-class-properties'),
+                            { loose: true },
+                        ],
+                        'babel-plugin-transform-export-extensions',
+                        'add-module-exports',
+                        '@babel/plugin-proposal-export-default-from',
+                    ],
+                    });
+                } catch (err) {
+                    err.stack = `Compile ${name} error: ${err.stack}`;
+                    throw err;
+                }
+                contents = result.code;
+            }
+            outputFileSync(dest , contents, 'utf-8');
+        })).catch((err) => {
+            err.stack = `BuildWeChatTemplate error: ${err.stack}`;
+            console.error(err);
+        });
+
+    }
+
+    _buildSubContext(dest, contents, name) {
+        switch (name) {
+            case 'game.js':
+                contents = template.render(contents, {
+                    SUBCONTEXT_ROOT: this._options.name,
+                });
+                dest = dest.replace(name, 'index.js');
+                outputFileSync(dest , contents, 'utf-8');
+                break;
+            case 'sub-context-adapter.js':
+                outputFileSync(dest , contents, 'utf-8');
+                break;
+        }
+    }
+
+    /**
+     * 构建 web 平台的模板文件
+     */
+    _buildWebTemplate() {
         let options = this._options;
         const data = {
             project: options.name || basename(options.project),
@@ -257,7 +386,6 @@ class Builder {
             });
         }
         outputFileSync(join(this._paths.dest, 'index.html'), content);
-        updateProgress('build index html success', 5);
     }
 
     // 构建基础 main.js 模板部分的代码
@@ -268,7 +396,6 @@ class Builder {
         // qqplay set REMOTE_SERVER_ROOT value
         let isQQPlay = options.platform === 'qqplay';
         const data = {
-            includeAnySDK: !!options.includeAnySDK,
             renderMode: !!options.renderMode,
             isWeChatGame: !!options.isWeChatGame,
             isWeChatSubdomain: !!options.isWeChatSubdomain,
@@ -290,7 +417,7 @@ class Builder {
     // 构建引擎模块
     async _buildEngine() {
         updateProgress('build engine...');
-        let { sourceMaps, excludedModules, enginVersion, nativeRenderer } = this._options;
+        let { sourceMaps, excludedModules, enginVersion, nativeRenderer, platform } = this._options;
         let { dest, jsCacheExcludes, engine, jsCache } = this._paths;
         let buildDest = join(this._paths.jsCacheDir, this._options.platform, basename(jsCache));
         ensureDirSync(dirname(buildDest));
@@ -334,6 +461,17 @@ class Builder {
                         return;
                     }
                 });
+            });
+        }
+        if (platform === 'wechatgame-subcontext') {
+            modules.forEach((module) => {
+                if (module.name === 'WebGL Renderer' || (module.dependencies && module.dependencies.indexOf('WebGL Renderer') !== -1)) {
+                    if (module.entries) {
+                        module.entries.forEach(function(file) {
+                            excludes.push(join(this._paths.engine, file));
+                        });
+                    }
+                }
             });
         }
         console.time('buildCocosJs');
@@ -416,7 +554,7 @@ class Builder {
             enginUtil: config.utils,
             project: config.project,
         };
-        ensureDirSync(paths.jsCacheDir);
+        // ensureDirSync(paths.jsCacheDir);
         // hack
         this._options.cocosJsName = `cocos${this._type}-js${debug ? '' : '.min'}.js`;
         Object.assign(paths, {
