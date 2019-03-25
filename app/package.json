@@ -10,8 +10,6 @@
         "@babel/core": "^7.1.6",
         "@babel/plugin-proposal-decorators": "^7.0.0",
         "@babel/plugin-proposal-export-default-from": "^7.0.0",
-        "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
-        "@babel/plugin-proposal-npm": "^7.0.0",
         "@babel/preset-env": "^7.1.6",
         "@babel/preset-typescript": "^7.1.0",
         "@robertlong/fbx2gltf": "^0.11.0",
