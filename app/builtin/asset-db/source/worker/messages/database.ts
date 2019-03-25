@@ -5,7 +5,7 @@ import { join } from 'path';
 
 import { AssetDB } from '@editor/asset-db';
 import { ipcAddListener, ipcSend } from '../ipc';
-import { queryAsset, tranAssetInfo } from '../utils';
+import { tranAssetInfo } from '../utils';
 
 /**
  * 宿主进程将启动参数发送过来
@@ -39,8 +39,6 @@ ipcAddListener('asset-worker:init', (event: any, info: IAssetWorkerInfo) => {
 ipcAddListener('asset-worker:startup-database', async (event: any, info: any) => {
     const date = new Date().getTime();
     console.log(`Start the '${info.name}' database...`);
-
-    info.level = 4;
 
     // 保证文件夹存在
     ensureDirSync(info.target);

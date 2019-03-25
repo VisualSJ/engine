@@ -1,0 +1,32 @@
+.extension {
+    display: flex;
+    flex: 1;
+
+    & > .slider {
+        display: flex;
+        overflow: auto;
+        width: 120px;
+
+        & > .content {
+            flex: 1;
+            border-right: 1px solid var(--border-dark-c, #999);
+            // box-shadow: 0px 0px 5px #767676;
+
+            & > div {
+                text-align: center;
+                padding: 15px 20px;
+                cursor: pointer;
+                &[active] {
+                    background: #999;
+                    color: #333;
+                    cursor: default;
+                }
+            }
+        }
+    }
+
+    & > .content {
+        padding: 20px;
+        flex: 1;
+    }
+}

@@ -21,6 +21,7 @@ declare interface IAssetDBConfig {
     temp: string;
     visible: boolean;
     readOnly: boolean;
+    level: number;
 }
 
 declare interface IAssetWorkerInfo {

@@ -1,5 +1,7 @@
 <div class="preferences">
-    <div class="slider">
+    <div class="slider"
+        :tab="tab"
+    >
         <div
             :active="tab === 'general'"
             @click="tab = 'general'"
@@ -8,6 +10,10 @@
             :active="tab === 'edit'"
             @click="tab = 'edit'"
         >{{t('nav.edit', language)}}</div>
+        <div
+            :active="tab === 'extension'"
+            @click="tab = 'extension'"
+        >{{t('nav.extension', language)}}</div>
     </div>
     <section>
         <general
@@ -18,5 +24,9 @@
             v-if="tab === 'edit'"
             :language="language"
         ></edit>
+        <extension
+            v-if="tab === 'extension'"
+            :language="language"
+        ></extension>
     </section>
 </div>

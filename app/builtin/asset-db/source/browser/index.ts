@@ -1,5 +1,7 @@
 'use strict';
 
+const defaultProfile = Editor.Profile.load('profile://default/packages/asset-db.json');
+
 const { getWorker, isReady } = require('./worker/tasks');
 
 import {
@@ -201,6 +203,11 @@ module.exports = {
      * 打开一个新的资源数据库
      */
     async load() {
+        // 默认配置
+        defaultProfile.set('log', {
+            level: 3,
+        });
+
         Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
         await init();
     },

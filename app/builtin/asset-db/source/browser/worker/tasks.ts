@@ -2,6 +2,8 @@
 
 import { join } from 'path';
 
+const profile = Editor.Profile.load('profile://global/packages/asset-db.json');
+
 const windows = require('@base/electron-windows');
 const worker = require('@base/electron-worker');
 const vDependence = require('v-dependence');
@@ -62,6 +64,11 @@ async function startDatabase(config: IAssetDBConfig) {
     }
     if (typeof config.readOnly !== 'boolean') {
         config.readOnly = false;
+    }
+
+    config.level = profile.get('log.level');
+    if (typeof config.level !== 'number' || config.level <= 0 || config.level > 4) {
+        config.level = 3;
     }
 
     await databaseWorker.send('asset-worker:startup-database', config);

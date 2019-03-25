@@ -13,6 +13,7 @@ export const computed = {};
 export const components = {
     'general': require('./general'),
     'edit': require('./edit'),
+    'extension': require('./extension'),
 };
 
 export const methods = {

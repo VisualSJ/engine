@@ -1,0 +1,14 @@
+<div class="extension">
+
+    <div class="slider">
+        <div class="content">
+
+            <div
+                v-for="item in list"
+                :active="item.name === active"
+            >{{item.name}}</div>
+        </div>
+    </div>
+
+    <div class="content" ref="settings"></div>
+</div>

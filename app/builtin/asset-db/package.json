@@ -10,5 +10,7 @@
 
     "main": "./dist/browser/index.js",
     "dependencies": {},
-    "description": "A aseet-db"
+    "description": "A aseet-db",
+
+    "preferences": "./static/preferences.js"
 }

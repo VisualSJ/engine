@@ -5,6 +5,7 @@ module.exports = {
     nav: {
         general: 'Gneneral',
         edit: 'Data Editor',
+        extension: 'Extension',
     },
     general: {
         language: 'Language',

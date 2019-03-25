@@ -5,6 +5,7 @@ module.exports = {
     nav: {
         general: '通用设置',
         edit: '数据编辑',
+        extension: '扩展',
     },
     general: {
         language: '编辑器语言',
