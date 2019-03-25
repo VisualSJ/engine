@@ -66,9 +66,9 @@ class EditableController extends ControllerBase {
                     }
                 });
             }
-
-            this._editCtrlColor = color;
         }
+
+        this._editCtrlColor = color;
     }
 
     hideEditController() {

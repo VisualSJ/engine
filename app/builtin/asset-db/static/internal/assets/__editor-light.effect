@@ -19,6 +19,7 @@ CCEffect %{
 
 CCProgram light-vs %{
   precision mediump float;
+  #include <cc-local>
   #include <cc-global>
   #include <common>
   #include <gamma>

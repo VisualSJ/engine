@@ -74,17 +74,23 @@ class Engine3D extends EngineInterface {
         model.mesh = mesh;
         const cb = model.onEnable.bind(model);
         model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
-        let technique = 0;
         let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
-        if (opts.unlit) {
-            technique = 1;
-        } else if (opts.texture) {
-            technique = 3;
+        let technique = 0;
+        let effectName = '__editor-gizmo';
+        if (opts.effectName) {
+            effectName = opts.effectName;
         } else {
-            if (pm < triangles) {
-                technique = opts.noDepthTestForLines ? 1 : 2; // unlit
+            if (opts.unlit) {
+                technique = 1;
+            } else if (opts.texture) {
+                technique = 3;
+            } else {
+                if (pm < triangles) {
+                    technique = opts.noDepthTestForLines ? 1 : 2; // unlit
+                }
             }
         }
+
         const mtl = node.mtl = new cc.Material();
         let states = {};
         if (opts.cullMode) { states.rasterizerState = { cullMode: opts.cullMode }; }
@@ -93,7 +99,7 @@ class Engine3D extends EngineInterface {
             states.priority = opts.priority;
         }
 
-        mtl.initialize({ effectName: '__editor-gizmo', technique, states });
+        mtl.initialize({ effectName, technique, states });
         if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }
         mtl.setProperty('color', node.modelColor);
         model.material = mtl;
@@ -120,6 +126,12 @@ class Engine3D extends EngineInterface {
     setMeshTexture(node, texture) {
         if (node && node.mtl) {
             node.mtl.setProperty('mainTexture', texture);
+        }
+    }
+
+    setMaterialProperty(node, propName, value) {
+        if (node && node.mtl) {
+            node.mtl.setProperty(propName, value);
         }
     }
 

@@ -5,7 +5,7 @@ const NodeUtils = External.NodeUtils;
 let SpotLightController = require('../../controller/cone-controller');
 let Gizmo = require('../../gizmo-base');
 let ControllerUtils = require('../../utils/controller-utils');
-const { create3DNode, setMeshColor} = require('../../../../utils/engine');
+const { create3DNode, setMaterialProperty} = require('../../../../utils/engine');
 const MathUtil = External.EditorMath;
 
 class SpotLightComponentGizmo extends Gizmo {
@@ -47,7 +47,7 @@ class SpotLightComponentGizmo extends Gizmo {
         this._controller.editable = true;
         this._controller.hoverColor = this._lightCtrlHoverColor;
 
-        this._sizeSphere = ControllerUtils.sphere(cc.v3(), this._baseSize, this._lightGizmoColor);
+        this._sizeSphere = ControllerUtils.sphere(cc.v3(), this._baseSize, this._lightGizmoColor, {effectName: '__editor-light'});
         this._sizeSphere.parent = SpotLightGizmoRoot;
     }
 
@@ -135,11 +135,23 @@ class SpotLightComponentGizmo extends Gizmo {
         }
 
         this._controller.checkEdit();
-        let radius = this.getConeRadius(this.target.spotAngle, this.target.range);
-        this._controller.updateSize(cc.v3(), radius, this.target.range);
-        let scale = this.target.size / this._baseSize;
-        this._sizeSphere.setScale(cc.v3(scale, scale, scale));
-        setMeshColor(this._sizeSphere, this.target.color);
+        let lightComp = this.target;
+        let radius = this.getConeRadius(lightComp.spotAngle, lightComp.range);
+        this._controller.updateSize(cc.v3(), radius, lightComp.range);
+
+        let color = lightComp.color.clone();
+        if (lightComp.useColorTemperature) {
+            let colorTemperatureRGB = lightComp._light.colorTemperatureRGB;
+            color.r *= colorTemperatureRGB.r;
+            color.g *= colorTemperatureRGB.g;
+            color.b *= colorTemperatureRGB.b;
+        }
+
+        let intensitySize = cc.v4();
+        intensitySize.x = lightComp.luminance * cc.director.root.pipeline.lightMeterScale;
+        intensitySize.y = lightComp.size;
+        setMaterialProperty(this._sizeSphere, 'color', color);
+        setMaterialProperty(this._sizeSphere, 'intensitySize', intensitySize);
 
         this.updateControllerTransform();
     }

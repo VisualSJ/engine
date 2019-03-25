@@ -26,6 +26,9 @@ class EngineInterface {
     setMeshTexture(node, texture) {
     }
 
+    setMaterialProperty(node, propName, value) {
+    }
+
     getRaycastResults(rootNode, x, y) {
     }
 
