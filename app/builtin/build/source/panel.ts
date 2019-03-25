@@ -356,8 +356,6 @@ export async function ready() {
         components: {
             'web-desktop' : require('./components/web-desktop'),
             'web-mobile' : require('./components/web-mobile'),
-            'wechat-game' : require('./components/wechat-game'),
-            'wechat-game-subcontext' : require('./components/wechat-game-subcontext'),
         },
         created() {
             this.initData();

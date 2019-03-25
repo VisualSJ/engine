@@ -117,16 +117,11 @@ interface Dialog {
 interface Utils {
     path:string,
     File: fileUtils,
-    Path: pathUtils,
     Uuid: uuidUtils,
     Math: mathUtils,
 }
 interface fileUtils {
     getName:Function
-}
-interface pathUtils {
-    basenameNoExt :Function
-    contains  :Function
 }
 interface uuidUtils {
     compressUuid: Function,

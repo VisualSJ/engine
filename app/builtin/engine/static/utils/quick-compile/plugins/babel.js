@@ -33,7 +33,9 @@ module.exports = function() {
                         require('@babel/plugin-proposal-class-properties'),
                         { loose: true },
                     ],
-                    'add-module-exports',
+                    [
+                        require('babel-plugin-add-module-exports'),
+                    ],
                 ],
             });
 

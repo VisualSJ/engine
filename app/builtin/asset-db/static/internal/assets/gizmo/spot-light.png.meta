@@ -26,7 +26,8 @@
         "anisotropy": 1,
         "generateMipmap": false,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "191b676f-175b-41fa-8283-ac539875bfd8"
+        "imageUuidOrDatabaseUri": "191b676f-175b-41fa-8283-ac539875bfd8",
+        "mipfilter": "none"
       }
     }
   },

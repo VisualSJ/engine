@@ -25,8 +25,8 @@ module.exports = {
     'web-mobile': CommonWeb,
     'web-desktop': CommonWeb,
     'fb-instant-games': CommonWeb,
-    'wechat-game': CommonWeb,
-    'wechat-game-subcontext': CommonWeb,
+    wechatgame: CommonWeb,
+    'wechatgame-subcontext': CommonWeb,
     qqplay: CommonWeb,
 
     export: {
@@ -43,4 +43,4 @@ module.exports = {
 };
 
 // for wechat subcontext, all json would be packed into js directly
-module.exports['wechat-game-subcontext'].pack = false;
+module.exports['wechatgame-subcontext'].pack = false;

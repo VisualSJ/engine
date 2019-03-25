@@ -42,7 +42,8 @@
         "borderRight": 0,
         "isUuid": true,
         "imageUuidOrDatabaseUri": "a04e994f-ee49-47b6-9d08-2f59e3773fcc",
-        "atlasUuid": ""
+        "atlasUuid": "",
+        "mipfilter": "none"
       }
     }
   },

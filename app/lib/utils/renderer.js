@@ -3,11 +3,10 @@
 const uuid = require('./source/uuid');
 const file = require('./source/file');
 const math = require('./source/math');
-const path = require('./source/path');
 
 class Utils {
     // worker 内调用的 hack ，其他地方不要使用
-    get path() {
+    get Path() {
         return __dirname;
     }
 
@@ -21,10 +20,6 @@ class Utils {
 
     get File() {
         return file;
-    }
-
-    get Path() {
-        return path;
     }
 }
 

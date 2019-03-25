@@ -31,9 +31,6 @@ class AssetPacker {
         this.groups.forEach((item, index) => {
             let fileName = packUuidArray[index];
             packedAssets[fileName] = item.uuids;
-            if (buildResult.options.platfrom === 'wechat-game-subcontext') {
-                return;
-            }
             if (item.type === 'texture') {
                 // texture 资源打包
                 this.packTexture(fileName, item.uuids);
@@ -42,9 +39,6 @@ class AssetPacker {
                 this.packJson(fileName, item.uuids);
             }
         });
-        if (buildResult.options.platfrom === 'wechat-game-subcontext') {
-            return;
-        }
         // 打包独立资源
         this.packSingleJson(_.concat(uuidssArray));
         return packedAssets;
