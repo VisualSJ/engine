@@ -87,9 +87,9 @@ exports.methods = {
 };
 
 exports.ready = async function() {
-    this.address = `${address.ip()}:${7456}`;
     this.number = 0;
-
+    const port = await Editor.Ipc.requestToPackage('preview', 'get-port');
+    this.address = `${address.ip()}:${port}`;
     this.updateAddress();
     this.updateNumber();
 
