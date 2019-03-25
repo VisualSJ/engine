@@ -215,6 +215,14 @@ export function encodeObject(object: any, attributes: any): IProperty {
         data.animatable = attributes.animatable;
     }
 
+    if (attributes.hasOwnProperty('unit')) {
+        data.unit = attributes.unit;
+    }
+
+    if (attributes.hasOwnProperty('displayOrder')) {
+        data.displayOrder = attributes.displayOrder;
+    }
+
     if (
         cc.js.isChildClassOf(ctor, cc.ValueType) ||
         data.type === 'cc.AnimationCurve'

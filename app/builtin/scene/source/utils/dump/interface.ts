@@ -13,6 +13,7 @@ export interface IProperty {
     invalid?: boolean;
     extends?: string[]; // 继承链
     displayName?: string; // 显示到界面上的名字
+    displayOrder?: number; // 显示排序
     tooltip?: string; // 提示文本
     editor?: any; // 组件上定义的编辑器数据
     animatable?: boolean; // 是否可以在动画中编辑
@@ -25,6 +26,7 @@ export interface IProperty {
     max?: number; // 数值类型的最大值
     step?: number; // 数值类型的步进值
     slide?: boolean; // 数组是否显示为滑块
+    unit?: string; // 显示的单位
 
     // Label
     multiline?: boolean; // 字符串是否允许换行

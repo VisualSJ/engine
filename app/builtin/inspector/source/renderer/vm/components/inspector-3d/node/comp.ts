@@ -20,7 +20,8 @@ const componentMap: any = {
     'cc.ToggleComponent': 'cc-toggle-component',
     'cc.SliderComponent': 'cc-slider-component',
     'cc.WidgetComponent': 'cc-widget-component',
-    'cc.LightComponent': 'cc-light-component',
+    'cc.SphereLightComponent': 'cc-sphere-light-component',
+    'cc.SpotLightComponent': 'cc-spot-light-component',
     'cc.SpriteComponent': 'cc-sprite-component',
 };
 
@@ -31,7 +32,8 @@ export const components: any = {
     'cc-toggle-component': require('./components/toggle'),
     'cc-slider-component': require('./components/slider'),
     'cc-widget-component': require('./components/widget'),
-    'cc-light-component': require('./components/light'),
+    'cc-sphere-light-component': require('./components/sphere-light'),
+    'cc-spot-light-component': require('./components/spot-light'),
     'cc-sprite-component': require('./components/sprite'),
 };
 
@@ -106,6 +108,30 @@ export const methods = {
      */
     getCustomComponent(type: string) {
         return componentMap[type];
+    },
+
+    /**
+     * 将 propMap 进行一次排序
+     * @param list 
+     */
+    shortProp(list: any) {
+        const orderList: any = [];
+        const normalList: any = [];
+
+        Object.keys(list).forEach((key: any) => {
+            const item = list[key];
+            if ('displayOrder' in item) {
+                orderList.push(item);
+            } else {
+                normalList.push(item);
+            }
+        });
+
+        orderList.sort((a: any, b: any) => {
+            return a.displayOrder - b.displayOrder;
+        });
+
+        return orderList.concat(normalList);
     },
 };
 

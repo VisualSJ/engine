@@ -1,11 +1,9 @@
 'use strict';
 
 export const template = `
-<div class="light-component">
-    <ui-prop auto="true"
-        :value="value.value.type"
-    ></ui-prop>
-
+<div class="sphere-light-component"
+    v-if="value && value.value"
+>
     <ui-prop auto="true"
         :value="value.value.color"
     ></ui-prop>
@@ -19,22 +17,29 @@ export const template = `
     ></ui-prop>
 
     <ui-prop auto="true"
-        :value="value.value.intensity"
-    ></ui-prop>
-
-    <ui-prop auto="true"
-        v-if="value.value.type.value > 0"
         :value="value.value.size"
     ></ui-prop>
 
     <ui-prop auto="true"
-        v-if="value.value.type.value > 0"
         :value="value.value.range"
     ></ui-prop>
 
     <ui-prop auto="true"
-        v-if="value.value.type.value > 1"
         :value="value.value.spotAngle"
+    ></ui-prop>
+
+    <ui-prop auto="true"
+        :value="value.value.useLuminance"
+    ></ui-prop>
+    
+    <ui-prop auto="true"
+        v-if="value.value.useLuminance.value"
+        :value="value.value.luminance"
+    ></ui-prop>
+    
+    <ui-prop auto="true"
+        v-if="!value.value.useLuminance.value"
+        :value="value.value.luminousPower"
     ></ui-prop>
 </div>
 `;

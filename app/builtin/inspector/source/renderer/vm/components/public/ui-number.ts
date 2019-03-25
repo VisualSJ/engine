@@ -32,6 +32,7 @@ export const template = `
             :step="step"
             :value="value"
             :default="dataDefault"
+            :unit="unit"
             @change="_onChange($event)"
         ></ui-num-input>
     </template>
@@ -47,6 +48,7 @@ export const props = [
     'slide',
     'test',
     'value',
+    'unit',
     'dataDefault',
 ];
 

@@ -42,7 +42,7 @@
             v-else
         >
             <div class="content"
-                v-for="item in value.value"
+                v-for="item in shortProp(value.value)"
                 v-if="item.visible"
             >
                 <ui-prop auto="true"
