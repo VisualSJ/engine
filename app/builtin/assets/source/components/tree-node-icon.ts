@@ -9,7 +9,7 @@ const mapCommon = {
     '*': { type: 'icon', value: 'i-file' },
     database: { type: 'icon', value: 'i-database' },
     json: { type: 'icon', value: 'i-json' },
-    scene: { type: 'icon', value: 'i-json' },
+    scene: { type: 'icon', value: 'i-scene' },
     javascript: { type: 'icon', value: 'i-javascript' },
     typescript: { type: 'icon', value: 'i-typescript' },
     video: { type: 'icon', value: 'i-video' },
