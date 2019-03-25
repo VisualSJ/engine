@@ -21,27 +21,11 @@ assetLibrary.onAssetChanged = (uuid: any) => {
             return;
         }
 
-        // reload raw assets
-        const texture = cc.loader.getRes(url);
-        if (texture) {
-            cc.loader.release(url);
-            cc.loader.load(url, (err: any, img: any) => {
-                if (img) {
-                    if (assetListener.hasEventListener(uuid)) {
-                        assetListener.invoke(uuid, url);
-                    }
-                }
-            });
-            return;
-        }
-
-        //
-
         if (!assetListener.hasEventListener(uuid)) {
             return;
         }
 
-        removeCaches(url);
+        removeCaches(uuid);
 
         if (cc.js.isChildClassOf(ctor, cc.Scene)) {
             return;

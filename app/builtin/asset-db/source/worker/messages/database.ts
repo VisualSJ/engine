@@ -12,11 +12,24 @@ import { queryAsset, tranAssetInfo } from '../utils';
  * worker 需要根据参数启动对应的引擎
  */
 ipcAddListener('asset-worker:init', (event: any, info: IAssetWorkerInfo) => {
-    // 加载引擎
-    require(join(info.engine, './bin/.cache/dev'));
-    Manager.AssetInfo = info;
-    Manager.serialize = require(info.utils + '/serialize');
+    try {
+        // 加载引擎
+        require(join(info.engine, './bin/.cache/dev'));
+        Manager.AssetInfo = info;
+        Manager.serialize = require(info.utils + '/serialize');
 
+        // 判断项目类型，加载对应的 importer
+        if (Manager.AssetInfo.type === '2d') {
+            require(join(info.dist, 'importer-2d'));
+        } else {
+            require(join(info.dist, 'importer-3d'));
+        }
+
+        event.reply(null);
+    } catch(error) {
+        console.error(error);
+        event.reply(error);
+    }
 });
 
 /**

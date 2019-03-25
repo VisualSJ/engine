@@ -125,14 +125,10 @@ exports.methods = {
     },
 },
 exports.mounted = async function() {
-    this.packages = await Editor.Ipc.requestToPackage('tester', 'query-package-list');
+    this.packages = Editor.Package.getPackages();
     this.package = profile.get('package');
 
     tester.on('print', (item) => {
         this.logs.push(item);
-    });
-
-    Editor.I18n.on('switch', (language) => {
-        this.language = language;
     });
 };
