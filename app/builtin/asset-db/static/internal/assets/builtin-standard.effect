@@ -31,6 +31,7 @@ CCEffect %{
       switch: USE_PLANAR_SHADOW
       vert: planar-shadow-vs:vert
       frag: planar-shadow-fs:frag
+      customizations: [ bounds-merge-shadow ]
       depthStencilState:
         depthTest: true
         depthWrite: false
@@ -157,9 +158,9 @@ CCProgram standard-fs %{
     uniform samplerCube envMap;
   #endif
 
-  #pragma define ROUGHNESS_CHANNEL  options(['r', 'g', 'b', 'a'])
-  #pragma define METALLIC_CHANNEL   options(['g', 'r', 'b', 'a'])
-  #pragma define AO_CHANNEL         options(['b', 'r', 'g', 'a'])
+  #pragma define ROUGHNESS_CHANNEL options([r, g, b, a])
+  #pragma define METALLIC_CHANNEL  options([g, r, b, a])
+  #pragma define AO_CHANNEL        options([b, r, g, a])
 
   vec4 frag () {
     #if USE_ALBEDO_MAP
@@ -266,29 +267,29 @@ CCProgram standard-fs %{
     vec3 ambDiff = mix(cc_ambientSky.rgb, cc_ambientGround.rgb, fAmb) * cc_ambientSky.w;
     finalColor += (ambDiff.rgb * diffuse);
 
-  #if USE_IBL
-    vec3 R = normalize(reflect(-V, N));
-    vec4 env = texture(envMap, R);
-	  env.rgb = SRGBToLinear(env.rgb) * cc_ambientSky.w;
-    finalColor += (env.rgb * specular);
-  #endif
+    #if USE_IBL
+      vec3 R = normalize(reflect(-V, N));
+      vec4 env = texture(envMap, R);
+      env.rgb = SRGBToLinear(env.rgb) * cc_ambientSky.w;
+      finalColor += (env.rgb * specular);
+    #endif
 
     finalColor = mix(finalColor, finalColor * pbr.AO_CHANNEL, pbrParams.z);
 
-  #if USE_EMISSIVE_MAP
-    vec3 emissiveColor = texture(emissiveMap, v_uv).rgb;
-	  emissiveColor = SRGBToLinear(emissiveColor) / cc_exposure.x;
-    finalColor += emissiveColor * emissive.rgb * emissiveScale.xyz;
-  #endif
+    #if USE_EMISSIVE_MAP
+      vec3 emissiveColor = texture(emissiveMap, v_uv).rgb;
+      emissiveColor = SRGBToLinear(emissiveColor) / cc_exposure.x;
+      finalColor += emissiveColor * emissive.rgb * emissiveScale.xyz;
+    #endif
 
-  // finalColor = max(finalColor, vec3(0.0));
+    // finalColor = max(finalColor, vec3(0.0));
 
-  #if CC_USE_HDR
-    finalColor *= FP_SCALE;
-  #else
-    finalColor *= cc_exposure.x;
-    finalColor = LinearToSRGB(finalColor);
-  #endif
+    #if CC_USE_HDR
+      finalColor *= FP_SCALE;
+    #else
+      finalColor *= cc_exposure.x;
+      finalColor = LinearToSRGB(finalColor);
+    #endif
     return vec4(finalColor, baseColor.a);
   }
 }%

@@ -48,7 +48,7 @@ CCProgram grid-vs %{
     pos_w.xz += scale * vec2((a_texCoord.x * 2.0 - 1.0) * dist * 0.002);
 
     vec4 pos = cc_matViewProj * vec4(pos_w, 1.0);
-	  pos.z += 0.0001; // nudge on depth to avoid z-fighting at origin
+	  pos.z += 0.00011; // nudge on depth to avoid z-fighting at origin
     return pos;
   }
 }%
