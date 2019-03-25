@@ -226,7 +226,7 @@ exports.expandAsset = (uuid: string): boolean => {
     if (!asset) {
         return false;
     }
-    asset.isExpand = true;
+    db.vm.$set(asset, 'isExpand', true);
     if (parent && parent.uuid) {
         return exports.expandAsset(parent.uuid);
     }

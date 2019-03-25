@@ -40,7 +40,9 @@ export const methods = {
                 uuidsIsExpand.push(uuid);
             }
         }
-        Editor.Ipc.sendToPackage('hierarchy', 'staging-fold', JSON.stringify(uuidsIsExpand));
+        const expand = JSON.stringify(uuidsIsExpand);
+
+        Editor.Ipc.sendToPackage('hierarchy', 'staging', { expand });
     },
 
     /**
@@ -48,11 +50,11 @@ export const methods = {
      */
     async unstaging() {
         // 初始化缓存的折叠数据
-        const expand = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging-fold');
+        const { expand } = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging');
 
-        if (expand === 'false') {
+        if (!expand) {
             vm.$refs.tree.firstAllExpand = false;
-        } else if (expand === 'true') {
+        } else if (expand === true) {
             vm.$refs.tree.firstAllExpand = true;
         } else if (expand) {
             const uuidsIsExpand = JSON.parse(expand);

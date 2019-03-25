@@ -58,9 +58,9 @@ export const methods = {
         const {expand, sort} = await Editor.Ipc.requestToPackage('assets', 'query-staging');
 
         // 节点的折叠
-        if (expand === 'false') {
+        if (!expand) {
             vm.$refs.tree.firstAllExpand = false;
-        } else if (expand === 'true') {
+        } else if (expand === true) {
             vm.$refs.tree.firstAllExpand = true;
         } else if (expand) {
             const uuidsIsExpand = JSON.parse(expand);

@@ -231,7 +231,7 @@ exports.expandNode = (uuid: string): boolean => {
     if (!node) {
         return false;
     }
-    node.isExpand = true;
+    db.vm.$set(node, 'isExpand', true);
     if (parent && parent.uuid) {
         return exports.expandNode(parent.uuid);
     }

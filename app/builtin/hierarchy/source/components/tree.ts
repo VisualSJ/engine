@@ -118,16 +118,7 @@ export const methods = {
      * 清空数据，涉及 uuid 的都需要清空
      */
     clear() {
-        vm.nodes = [];
-        vm.selects = [];
-        vm.twinkles = {};
-        vm.renameUuid = '';
-        vm.intoView = '';
-        vm.current = {};
-        vm.copiedUuids = [];
-
         db.reset();
-
         this.changeData();
     },
 

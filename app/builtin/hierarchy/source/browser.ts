@@ -1,21 +1,36 @@
 'use strict';
 
-let pkg: any = null;
-let expand: string = ''; // 记录展开，其他默认折叠
-const profile = Editor.Profile.load('profile://local/packages/hierarchy.json');
+const profile = {
+    default: Editor.Profile.load('profile://default/packages/hierarchy.json'),
+    global: Editor.Profile.load('profile://global/packages/hierarchy.json'),
+    local: Editor.Profile.load('profile://local/packages/hierarchy.json'),
+};
 
 export const messages = {
+    'get-config'(position: string, key: string) {
+        if (position !== 'local' && position !== 'global') {
+            return;
+        }
+        return profile[position].get(key);
+    },
+    'set-config'(position: string, key: string, value: any) {
+        if (position !== 'local' && position !== 'global') {
+            return;
+        }
+
+        profile[position].set(key, value);
+        profile[position].save();
+    },
     open() {
         Editor.Panel.open('hierarchy');
     },
     /**
      * 暂存折叠数据
+     * 折叠状态，字段 expand
      */
-    'staging-fold'(jsonStr: string) {
-        expand = jsonStr;
-
-        profile.set('expand', jsonStr);
-        profile.save();
+    staging(json: string) {
+        profile.local.set('state', json);
+        profile.local.save();
     },
 
     /**
@@ -24,24 +39,17 @@ export const messages = {
      * 全部展开：expand_all
      * 全部折叠：collapse_all
      */
-    async 'query-staging-fold'() {
-        if (!expand) {
-            const setting = await Editor.Ipc.requestToPackage('preferences', 'get-config', 'general.node_tree');
-
-            switch (setting) {
-                case 'collapse_all': expand = 'false'; break;
-                case 'expand_all': expand = 'true'; break;
-                default: expand = profile.get('expand') || '[]'; break;
-            }
-        }
-
-        return expand;
+    async 'query-staging'() {
+        return profile.local.get('state');
     },
 };
 
 export function load() {
-    // @ts-ignore
-    pkg = this;
+    // 设置默认的 profile
+    profile.default.set('state', {
+        use_global: true,
+        expand: false,
+    });
 }
 
 export function unload() {}

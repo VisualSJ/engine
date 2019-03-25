@@ -68,6 +68,10 @@ export const messages = {
         return profile.local.get('state');
     },
 
+    /**
+     * 打开资源的方式
+     * @param asset
+     */
     async 'open-asset'(asset: IOpenAsset) {
         const { ext, file, uuid } = asset;
 
@@ -137,7 +141,7 @@ export function load() {
     // 设置默认的 profile
     profile.default.set('state', {
         use_global: true,
-        expand: 'false',
+        expand: false,
         sort: 'name',
     });
 
