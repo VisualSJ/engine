@@ -65,9 +65,11 @@ export const methods = {
     },
     onDragOver(event: any) {
         event.preventDefault();
+        if (event.dataTransfer.types.indexOf('index') === -1) {
+            return;
+        }
         // @ts-ignore
         const target: any = event.currentTarget;
-
         const offset = target.getBoundingClientRect();
         let position = 'after'; // 中间位置
         // @ts-ignore
@@ -105,7 +107,7 @@ export const methods = {
         event.currentTarget.removeAttribute('insert'); // 还原节点状态
     },
     onDelete(event: any) {
-        if (event.target.tagName !== 'I') {
+        if (!event.target.classList.contains('icon-del')) {
             return;
         }
         // @ts-ignore
