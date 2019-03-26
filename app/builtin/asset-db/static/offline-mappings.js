@@ -195,7 +195,7 @@ const effectStructure = {
           depthStencilState: {},
           rasterizerState: {},
           blendState: { targets: [{}] },
-          properties: { any: {} }
+          properties: { any: { sampler: {} } }
         }
       ]
     }

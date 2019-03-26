@@ -29,16 +29,16 @@ export const template = `
     ></ui-prop>
 
     <ui-prop auto="true"
-        :value="value.value.useLuminance"
+        :value="value.value.term"
     ></ui-prop>
-    
+
     <ui-prop auto="true"
-        v-if="value.value.useLuminance.value"
+        v-if="value.value.term.value"
         :value="value.value.luminance"
     ></ui-prop>
-    
+
     <ui-prop auto="true"
-        v-if="!value.value.useLuminance.value"
+        v-if="!value.value.term.value"
         :value="value.value.luminousPower"
     ></ui-prop>
 </div>
