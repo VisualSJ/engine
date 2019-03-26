@@ -509,7 +509,8 @@ Utils.getMaxRangeOfNode = function(node) {
         node._components.forEach((component) => {
             let componentName = cc.js.getClassName(component);
             switch (componentName) {
-                case 'cc.LightComponent':
+                case 'cc.SphereLightComponent':
+                case 'cc.SpotLightComponent':
                     compRange = component.range;
                     break;
                 case 'cc.ModelComponent':

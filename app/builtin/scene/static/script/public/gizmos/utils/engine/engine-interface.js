@@ -45,7 +45,7 @@ class EngineInterface {
      * 获得模型相关组件的包围盒
      * @param {*} component
      */
-    getBoudingBox(component) {
+    getBoundingBox(component) {
     }
 
     getRootBoneNode(component) {

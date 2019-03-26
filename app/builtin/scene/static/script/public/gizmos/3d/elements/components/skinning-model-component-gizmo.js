@@ -3,7 +3,7 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let BoxController = require('../controller/box-controller');
 let Gizmo = require('../gizmo-base');
-const { getBoudingBox, getRootBoneNode, getRootBindPose } = require('../../../utils/engine');
+const { getBoundingBox, getRootBoneNode, getRootBindPose } = require('../../../utils/engine');
 let aabb = External.GeometryUtils.aabb;
 
 const vec3 = cc.vmath.vec3;
@@ -60,7 +60,7 @@ class SkinningModelComponentGizmo extends Gizmo {
             this._controller.setScale(worldScale);
 
             let size = cc.v3();
-            let boundingBox = getBoudingBox(this.target);
+            let boundingBox = getBoundingBox(this.target);
 
             //转换到rootBoneNode的坐标系
             let transformAABB = aabb.create(0, 0, 0, 0, 0, 0);

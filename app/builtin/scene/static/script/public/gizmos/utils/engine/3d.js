@@ -70,7 +70,11 @@ class Engine3D extends EngineInterface {
 
     addMeshToNode(node, mesh, opts = {}) {
         let model = node.addComponent(cc.ModelComponent);
-        model._sceneGetter = cc.director.root.ui.getRenderSceneGetter();
+        if (!opts.forwardPipeline) {
+            model._sceneGetter = cc.director.root.ui.getRenderSceneGetter();
+        } else {
+            console.log('forward');
+        }
         model.mesh = mesh;
         const cb = model.onEnable.bind(model);
         model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
@@ -176,7 +180,7 @@ class Engine3D extends EngineInterface {
         }
     }
 
-    getBoudingBox(component) {
+    getBoundingBox(component) {
         let boundingBox = null;
         if (component instanceof cc.ModelComponent) {
             let mesh = component.mesh;

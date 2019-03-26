@@ -14,6 +14,7 @@ class GizmoManager {
     constructor() {
         // 对外暴露，用于监听数据的改变
         this.TransformToolData = TransformToolData;
+        this._isIconGizmoVisible = false;
     }
 
     queryToolName() {
@@ -58,6 +59,21 @@ class GizmoManager {
         } else {
             this._worldAxisController.show();
         }
+    }
+
+    isIconGizmoVisible() {
+        return this._isIconGizmoVisible;
+    }
+
+    setIconGizmoVisible(value) {
+        this._isIconGizmoVisible = value;
+
+        nodeManager.queryUuids().forEach((uuid) => {
+            const node = nodeManager.query(uuid);
+            if (node && node.gizmo) {
+                node.gizmo.setIconGizmoVisible(value);
+            }
+        });
     }
 
     init() {
@@ -278,6 +294,7 @@ class GizmoManager {
 
             if (node.gizmo) {
                 node.gizmo.show();
+                node.gizmo.setIconGizmoVisible(this.isIconGizmoVisible());
             }
         }
     }
@@ -591,19 +608,6 @@ class GizmoManager {
     }
 
     onKeyDown(event) {
-
-        // test
-        if (!this.isGizmoToolLocked()) {
-            switch (event.key.toLowerCase()) {
-                // case 'w': this.transformToolName = 'position'; break;
-                // case 'e': this.transformToolName = 'rotation'; break;
-                // case 'r': this.transformToolName = 'scale'; break;
-                case 'g': this.coordinate = 'global'; break;
-                case 'l': this.coordinate = 'local'; break;
-            }
-        }
-        // test end
-
         if (this.transformTool) {
             if (this.transformTool.onGizmoKeyDown) {
                 this.transformTool.onGizmoKeyDown(event);
@@ -615,6 +619,10 @@ class GizmoManager {
             if (this.transformTool.onGizmoKeyUp) {
                 this.transformTool.onGizmoKeyUp(event);
             }
+        }
+
+        switch (event.key.toLowerCase()) {
+            case 'g': this.setIconGizmoVisible(!this.isIconGizmoVisible()); break;
         }
     }
 

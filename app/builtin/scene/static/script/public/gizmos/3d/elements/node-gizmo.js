@@ -3,7 +3,6 @@ const Utils = require('../../utils');
 const External = require('../../utils/external');
 const NodeUtils = External.NodeUtils;
 let Gizmo = require('./gizmo-base');
-const { getCameraData, setCameraData } = require('../../utils/engine');
 let RectangleController = require('./controller/rectangle-controller');
 let IconController = require('./controller/icon-controller');
 const MathUtil = External.EditorMath;
@@ -14,6 +13,7 @@ class NodeGizmo extends Gizmo {
     init() {
         this._controllers = {};
         this._isInited = true;
+        this._isIconGizmoVisible = false;
 
         this._rectControllerPool = [];
         this._iconControllerPool = [];
@@ -37,6 +37,20 @@ class NodeGizmo extends Gizmo {
 
         let nodes = this.nodes;
         this.unregisterListeners(nodes);
+    }
+
+    setIconGizmoVisible(visible) {
+        this._isIconGizmoVisible = visible;
+        if (visible) {
+            this.updateController();
+        } else {
+            Object.keys(this._controllers).forEach((key) => {
+                let controller = this._controllers[key];
+                if (controller instanceof IconController) {
+                    controller.hide();
+                }
+            });
+        }
     }
 
     getControllerByComp(component) {
@@ -88,21 +102,26 @@ class NodeGizmo extends Gizmo {
 
         if (component instanceof cc.CanvasComponent) {
             controller = this.spawnRectController(gizmoRoot);
-        } else if (component instanceof cc.ParticleSystemComponent) {
-            controller = this.spawnIconController(gizmoRoot);
-            controller.setTextureByUuid('55052bc6-9909-43c1-b2fc-8818060fb069@particle-system');
-        } else if (component instanceof cc.DirectionalLightComponent) {
-            controller = this.spawnIconController(gizmoRoot);
-            controller.setTextureByUuid('9cb543ba-d152-4809-8a44-8e7bd5712123@directional-light');
-        } else if (component instanceof cc.SphereLightComponent) {
-            controller = this.spawnIconController(gizmoRoot);
-            controller.setTextureByUuid('c78f78a5-3553-4d1f-ad3b-177fe55af68b@sphere-light');
-        } else if (component instanceof cc.SpotLightComponent) {
-            controller = this.spawnIconController(gizmoRoot);
-            controller.setTextureByUuid('191b676f-175b-41fa-8283-ac539875bfd8@spot-light');
-        } else if (component instanceof cc.CameraComponent) {
-            controller = this.spawnIconController(gizmoRoot);
-            controller.setTextureByUuid('bd373594-df84-486d-a34a-19d09ddaa973@camera');
+        } else {
+            if (!this._isIconGizmoVisible) { return null; }
+
+            // for icon gizmo
+            if (component instanceof cc.ParticleSystemComponent) {
+                controller = this.spawnIconController(gizmoRoot);
+                controller.setTextureByUuid('55052bc6-9909-43c1-b2fc-8818060fb069@particle-system');
+            } else if (component instanceof cc.DirectionalLightComponent) {
+                controller = this.spawnIconController(gizmoRoot);
+                controller.setTextureByUuid('9cb543ba-d152-4809-8a44-8e7bd5712123@directional-light');
+            } else if (component instanceof cc.SphereLightComponent) {
+                controller = this.spawnIconController(gizmoRoot);
+                controller.setTextureByUuid('c78f78a5-3553-4d1f-ad3b-177fe55af68b@sphere-light');
+            } else if (component instanceof cc.SpotLightComponent) {
+                controller = this.spawnIconController(gizmoRoot);
+                controller.setTextureByUuid('191b676f-175b-41fa-8283-ac539875bfd8@spot-light');
+            } else if (component instanceof cc.CameraComponent) {
+                controller = this.spawnIconController(gizmoRoot);
+                controller.setTextureByUuid('bd373594-df84-486d-a34a-19d09ddaa973@camera');
+            }
         }
 
         if (controller) {

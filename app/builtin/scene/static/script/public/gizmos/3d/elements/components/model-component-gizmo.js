@@ -3,7 +3,7 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let BoxController = require('../controller/box-controller');
 let Gizmo = require('../gizmo-base');
-const { getBoudingBox } = require('../../../utils/engine');
+const { getBoundingBox } = require('../../../utils/engine');
 
 const vec3 = cc.vmath.vec3;
 
@@ -45,7 +45,7 @@ class ModelComponentGizmo extends Gizmo {
         //     this.target instanceof cc.MeshRenderer) {
         let node = this.node;
 
-        let boundingBox = getBoudingBox(this.target);
+        let boundingBox = getBoundingBox(this.target);
         if (boundingBox) {
             this._controller.show();
             let size = cc.v3();

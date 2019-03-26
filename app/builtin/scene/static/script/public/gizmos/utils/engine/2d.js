@@ -167,7 +167,7 @@ class Engine2D extends EngineInterface {
         mesh.setVertices(attr, data);
     }
 
-    getBoudingBox (component) {
+    getBoundingBox (component) {
         let boundingBox = null;
         if (component instanceof cc.MeshRenderer) {
             let mesh = component.mesh;
