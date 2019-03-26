@@ -57,6 +57,10 @@ CCProgram tonemap-fs %{
     color *= cc_exposure.x * FP_SCALE_INV;
     color = ACESToneMap(color);
     color = LinearToSRGB(color);
+  #else
+    color = SRGBToLinear(color);
+    color = ACESToneMap(color);
+    color = LinearToSRGB(color);
   #endif
     return color;
   }

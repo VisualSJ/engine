@@ -149,7 +149,7 @@ class SpotLightComponentGizmo extends Gizmo {
         }
 
         let intensitySize = cc.v4();
-        intensitySize.x = lightComp.luminance * cc.director.root.pipeline.lightMeterScale;
+        intensitySize.x = lightComp.luminance;
         intensitySize.y = lightComp.size;
         setMaterialProperty(this._sizeSphere, 'color', color);
         setMaterialProperty(this._sizeSphere, 'intensitySize', intensitySize);

@@ -105,6 +105,7 @@ class SphereLightComponentGizmo extends Gizmo {
         this._controller.radius = lightComp.range;
 
         let color = lightComp.color.clone();
+
         if (lightComp.useColorTemperature) {
             let colorTemperatureRGB = lightComp._light.colorTemperatureRGB;
             color.r *= colorTemperatureRGB.r;
@@ -113,7 +114,7 @@ class SphereLightComponentGizmo extends Gizmo {
         }
 
         let intensitySize = cc.v4();
-        intensitySize.x = lightComp.luminance * cc.director.root.pipeline.lightMeterScale;
+        intensitySize.x = lightComp.luminance;
         intensitySize.y = lightComp.size;
         setMaterialProperty(this._sizeSphere, 'color', color);
         setMaterialProperty(this._sizeSphere, 'intensitySize', intensitySize);

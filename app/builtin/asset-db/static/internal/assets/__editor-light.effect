@@ -3,12 +3,11 @@ CCEffect %{
   - passes:
     - vert: light-vs:vert
       frag: light-fs:frag
-      priority: max - 10
       rasterizerState:
         cullMode: none
       depthStencilState:
-        depthTest: false
-        depthWrite: false
+        depthTest: true
+        depthWrite: true
       blendState:
         targets:
         - blend: false
@@ -32,16 +31,18 @@ CCProgram light-vs %{
     vec4 intensitySize; // x: intensity, y: size
   };
 
-  vec4 vert () {
-    v_color = color.rgb * intensitySize.x;
+  float Luminance(vec3 linearColor) {
+    return dot(linearColor, vec3(0.3, 0.59, 0.11));
+  }
 
+  vec4 vert () {
+    float f = max(color.r, max(color.g, color.b));
+    v_color = color.rgb / f * intensitySize.x;
   #if CC_USE_HDR
     v_color *= FP_SCALE;
   #else
-    v_color *= cc_exposure.x;
-    v_color = LinearToSRGB(v_color);
+    v_color = LinearToSRGB(v_color * cc_exposure.x);
   #endif
-
     return cc_matViewProj * cc_matWorld * vec4(a_position * intensitySize.y, 1.0);
   }
 }%
