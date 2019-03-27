@@ -143,9 +143,9 @@ class SpotLightComponentGizmo extends Gizmo {
         let color = lightComp.color.clone();
         if (lightComp.useColorTemperature) {
             let colorTemperatureRGB = lightComp._light.colorTemperatureRGB;
-            color.r *= colorTemperatureRGB.r;
-            color.g *= colorTemperatureRGB.g;
-            color.b *= colorTemperatureRGB.b;
+            color.r *= colorTemperatureRGB.x;
+            color.g *= colorTemperatureRGB.y;
+            color.b *= colorTemperatureRGB.z;
         }
 
         let intensitySize = cc.v4();
