@@ -56,7 +56,7 @@ async function startDatabase(config: IAssetDBConfig) {
         return;
     }
 
-    Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.startup', config.name));
+    // Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.startup', config.name));
 
     config.temp = join(Editor.Project.path, 'temp/asset-db', config.name);
     config.library = join(Editor.Project.path, 'library');
@@ -132,7 +132,7 @@ depend.add('worker-init', {
 
         // workder 检测到了插入资源
         child.on('asset-worker:asset-add', (event: any, uuid: string, path: string) => {
-            Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'), path);
+            // Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'), path);
             if (awaitHandler.add[path]) {
                 awaitHandler.add[path].forEach((item) => {
                     item();
