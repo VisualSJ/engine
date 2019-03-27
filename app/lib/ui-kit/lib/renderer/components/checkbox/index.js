@@ -55,7 +55,7 @@ class Checkbox extends Base {
                     this.checked = false;
                     break;
                 }
-                this.checked = !!newData;
+                this.checked = newData;
                 break;
             case 'readonly':
                 break;
@@ -72,9 +72,11 @@ class Checkbox extends Base {
     }
 
     set checked(bool) {
-        bool = !!bool;
+        if (bool !== '-') {
+            bool = !!bool;
+        }
         if (bool) {
-            this.setAttribute('checked', '');
+            this.setAttribute('checked', bool);
         } else {
             this.removeAttribute('checked');
         }
@@ -85,7 +87,10 @@ class Checkbox extends Base {
     }
 
     set value(bool) {
-        this.checked = !!bool;
+        if (bool !== '-') {
+            bool = !!bool;
+        }
+        this.checked = bool;
     }
 
     get pressed() {

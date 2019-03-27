@@ -45,6 +45,10 @@ input::-webkit-inner-spin-button {
   font-size: 0.7em;
   padding: 0.2em 0.3em;
 }
+.invalid {
+  position: absolute;
+  color: var(--focus-c, #fd942b);
+}
 .control-btns {
   position: absolute;
   height: 100%;

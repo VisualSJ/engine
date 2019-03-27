@@ -125,13 +125,17 @@ domUtils.controlDragEvent = (elem, options, detach = false) => {
 };
 
 // 默认颜色
-const DEFAULT_CORLOR  = [0, 0, 0, 255];
+const DEFAULT_CORLOR = [0, 0, 0, 255];
+const INVALID_COLOR = [0, 0, 0, 0];
 /**
  * 验证颜色值与格式转换
  * 出参为颜色数组
  * @param {Color} value
  */
 domUtils.getValidColor = (value) => {
+    if (value === '-') {
+        return INVALID_COLOR;
+    }
     if (Array.isArray(value)) {
         if (value.length < 3 && value.length > 4) {
             console.error(`传入颜色值 ${value} 无效！`);

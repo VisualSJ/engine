@@ -68,9 +68,8 @@ class NumInput extends Base {
     }
 
     set value(val) {
-        if (isNaN(parseFloat(val))) {
+        if (isNaN(parseFloat(val)) && val !== '-') {
             console.warn('Please enter a valid number');
-            this.$input.value = 0;
         }
         this.setAttribute('value', val);
     }
@@ -162,6 +161,10 @@ class NumInput extends Base {
                 if (newData === undefined) {
                     // 新值为 undefined 或 null 则不作处理
                     return;
+                }
+
+                if (newData === '-') {
+                    this.$input.value = '-';
                 }
                 let value;
                 // 存在 preci 控制小数点位数
@@ -468,6 +471,7 @@ class NumInput extends Base {
         if (this.value === '') {
             return;
         }
+
         // 比较与上一次数据的变化
         if (parseFloat(this.value) === this._inputStaging) {
             return;

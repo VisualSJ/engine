@@ -88,7 +88,7 @@ const controlMouseEvent = function(elem, detach = false) {
         {
             start: onDragStart,
             drag: onDragging,
-            end: onDragEnd
+            end: onDragEnd,
         },
         detach
     );
@@ -188,17 +188,22 @@ class Slider extends Base {
                 this.preci = parseInt(newData, 10);
                 break;
             case 'value':
-                if (isNaN(newValue)) {
-                    this.$input.value = 0;
+                if (oldValue === newValue) {
                     break;
                 }
-                let value = mathUtils.clamp(newValue, this.min, this.max);
-                // 判断是否超出界限
-                if (value !== parseFloat(newValue)) {
-                    break;
+                if (newValue !== '-') {
+                    if (isNaN(newValue)) {
+                        this.$input.value = 0;
+                        break;
+                    }
+                    let value = mathUtils.clamp(newValue, this.min, this.max);
+                    // 判断是否超出界限
+                    if (value !== parseFloat(newValue)) {
+                        break;
+                    }
+                    // 存在 preci 控制小数点位数
+                    newValue = parseFloat(newValue).toFixed(this.preci);
                 }
-                // 存在 preci 控制小数点位数
-                newValue = parseFloat(newValue).toFixed(this.preci);
                 // this.value = newValue;
                 this.updateCursorAndInput();
                 break;
@@ -223,6 +228,9 @@ class Slider extends Base {
     }
 
     get currentPosition() {
+        if (this.value === '-') {
+            return 0;
+        }
         return ((this.value - this.min) / (this.max - this.min)) * 100;
     }
 
@@ -260,17 +268,22 @@ class Slider extends Base {
 
     get value() {
         const val = this.getAttribute('value');
+        if (val === '-') {
+            return val;
+        }
         let value = parseFloat(val);
         return isNaN(value) ? 0 : value;
     }
 
     set value(val) {
-        if (this.min > this.max) {
-            console.error('min should not be greater than max');
-            return;
-        }
-        if (typeof val === 'number' && !isNaN(val)) {
-            val = mathUtils.clamp(val, this.min, this.max);
+        if (val !== '-') {
+            if (this.min > this.max) {
+                console.error('min should not be greater than max');
+                return;
+            }
+            if (typeof val === 'number' && !isNaN(val)) {
+                val = mathUtils.clamp(val, this.min, this.max);
+            }
         }
         this.setAttribute('value', val);
     }

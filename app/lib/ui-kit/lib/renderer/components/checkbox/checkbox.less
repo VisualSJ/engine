@@ -3,10 +3,12 @@
 // --border-c 控制 checkbox 单选框的边框颜色
 // --focus-c checkbox 选中的高亮颜色
 // --box-visi 单选框选中效果是否显示
+// --invalid-box-size 显示无效值时的内盒尺寸（百分比在值比较小时带有小数点， css 布局
 // --cursor 鼠标上移效果
 
 :host {
     --box-height: 1.2em;
+    --invalid-box-size: 2px;
     height: var(--box-height);
     line-height: var(--box-height);
     cursor: var(--cursor, pointer);
@@ -25,12 +27,22 @@
         background-color: var(--main-dark-bg);
         border-radius: 2px;
         i {
-            visibility: var(--box-visi, hidden);
             position: absolute;
+            background: var(--focus-c, @focused-color);
+        }
+        i.value {
             width: 100%;
             height: 100%;
-            background: var(--focus-c, @focused-color);
+            visibility: var(--box-visi, hidden);
             clip-path: polygon(8% 55%, 20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
+        }
+        i.invalid {
+            top: var(--invalid-box-size);
+            bottom: var(--invalid-box-size);
+            left: var(--invalid-box-size);
+            right: var(--invalid-box-size);
+            border-radius: 2px;
+            visibility: var(--invalid-visi, hidden);
         }
     }
     label:hover {
@@ -45,8 +57,12 @@
     }
 }
 
-:host([checked]) {
+:host([checked = true]) {
     --box-visi: visible;
+}
+
+:host([checked = '-']) {
+    --invalid-visi: visible;
 }
 
 :host([disabled]),

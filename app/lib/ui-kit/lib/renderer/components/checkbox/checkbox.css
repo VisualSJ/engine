@@ -10,6 +10,7 @@
 }
 :host {
   --box-height: 1.2em;
+  --invalid-box-size: 2px;
   height: var(--box-height);
   line-height: var(--box-height);
   cursor: var(--cursor, pointer);
@@ -30,12 +31,22 @@
   border-radius: 2px;
 }
 :host .default-checkbox i {
-  visibility: var(--box-visi, hidden);
   position: absolute;
+  background: var(--focus-c, #fd942b);
+}
+:host .default-checkbox i.value {
   width: 100%;
   height: 100%;
-  background: var(--focus-c, #fd942b);
+  visibility: var(--box-visi, hidden);
   clip-path: polygon(8% 55%, 20% 40%, 44% 60%, 80% 20%, 93% 35%, 44% 87%);
+}
+:host .default-checkbox i.invalid {
+  top: var(--invalid-box-size);
+  bottom: var(--invalid-box-size);
+  left: var(--invalid-box-size);
+  right: var(--invalid-box-size);
+  border-radius: 2px;
+  visibility: var(--invalid-visi, hidden);
 }
 :host label:hover {
   cursor: var(--cursor, pointer);
@@ -46,8 +57,11 @@
 :host([focused]) label {
   color: var(--focus-c);
 }
-:host([checked]) {
+:host([checked = true]) {
   --box-visi: visible;
+}
+:host([checked = '-']) {
+  --invalid-visi: visible;
 }
 :host([disabled]),
 :host([readOnly]) {
