@@ -60,11 +60,11 @@ class Startup extends EventEmitter {
             // 注册内置插件
             for (let i = 0; i < array.length; i++) {
                 try {
-                    Task.addSyncTask(array[i], I18n.t('startup.load_package', array[i]));
+                    Task.addSyncTask(`startup.${array[i]}`, I18n.t('startup.load_package', array[i]));
                     const path = ps.join(__dirname, `../../builtin/${array[i]}`);
                     await Package.register(path);
                     await Package.enable(path);
-                    Task.removeSyncTask(array[i]);
+                    Task.removeSyncTask(`startup.${array[i]}`);
                 } catch (error) {
                     console.error(error);
                 }

@@ -16,8 +16,8 @@ class Task {
         });
     }
 
-    addSyncTask(title, describe) {
-        ipc.sendSync('editor-lib-task:call', 'addSyncTask', title, describe);
+    addSyncTask(title, describe, message) {
+        ipc.sendSync('editor-lib-task:call', 'addSyncTask', title, describe, message);
     }
 
     removeSyncTask(title) {
@@ -27,9 +27,9 @@ class Task {
 
 module.exports = new Task();
 
-ipc.on('editor-lib-task:show', (event, title, describe) => {
+ipc.on('editor-lib-task:show', (event, title, describe, message) => {
     if (title) {
-        dom.show(title, describe);
+        dom.show(title, describe, message);
     } else {
         dom.show();
     }

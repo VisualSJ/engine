@@ -22,6 +22,11 @@ declare interface IAssetDBConfig {
     visible: boolean;
     readOnly: boolean;
     level: number;
+    interval: number;
+    binaryInterval: number;
+    usePolling: boolean;
+    alwaysStat: boolean;
+    followSymlinks: boolean;
 }
 
 declare interface IAssetWorkerInfo {

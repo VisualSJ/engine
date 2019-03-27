@@ -2,6 +2,7 @@
 
 module.exports = {
     mask: {
+        startup: 'Starting the resource database - %s ...',
         loading: 'Loading resources...',
     },
     'debug-mode': 'Open Assets DevTools',

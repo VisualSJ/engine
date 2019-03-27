@@ -56,8 +56,18 @@ async function startDatabase(config: IAssetDBConfig) {
         return;
     }
 
+    Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.startup', config.name));
+
     config.temp = join(Editor.Project.path, 'temp/asset-db', config.name);
     config.library = join(Editor.Project.path, 'library');
+    config.interval = 500;
+    config.binaryInterval = 1000;
+    config.usePolling = false;
+    // config.useFsEvents = true;
+    // config.ignored = '*.meta';
+    config.alwaysStat = true;
+    config.followSymlinks = false;
+
 
     if (typeof config.visible !== 'boolean') {
         config.visible = true;
@@ -72,7 +82,6 @@ async function startDatabase(config: IAssetDBConfig) {
     }
 
     await databaseWorker.send('asset-worker:startup-database', config);
-    // databaseWorker.on('');
 }
 
 // 编辑器是否启动完毕，这里监听的是 package 的启动
@@ -123,6 +132,7 @@ depend.add('worker-init', {
 
         // workder 检测到了插入资源
         child.on('asset-worker:asset-add', (event: any, uuid: string, path: string) => {
+            Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'), path);
             if (awaitHandler.add[path]) {
                 awaitHandler.add[path].forEach((item) => {
                     item();
@@ -148,7 +158,7 @@ depend.add('worker-init', {
         });
 
         // worker 检测到了删除资源
-        child.on('asset-worker:asset-delete', (event: any, uuid: string, info: any, path: string) => {
+        child.on('asset-worker:asset-delete', (event: any, uuid: string, path: string, info: any) => {
             if (awaitHandler.delete[path]) {
                 awaitHandler.delete[path].forEach((item) => {
                     item();

@@ -59,19 +59,18 @@ ipcAddListener('asset-worker:startup-database', async (event: any, info: any) =>
     }
 
     // 绑定文件添加事件
-    db.on('added', (uuid) => {
-        ipcSend('asset-worker:asset-add', uuid, db.uuidToPath(uuid));
+    db.on('added', (uuid, asset) => {
+        ipcSend('asset-worker:asset-add', uuid, asset.source);
     });
 
     // 绑定文件修改事件
-    db.on('changed', (uuid) => {
-        ipcSend('asset-worker:asset-change', uuid, db.uuidToPath(uuid));
+    db.on('changed', (uuid, asset) => {
+        ipcSend('asset-worker:asset-change', uuid, asset.source);
     });
 
     // 绑定文件删除事件
-    db.on('delete', (uuid) => {
-        const asset = db.uuid2asset[uuid];
-        ipcSend('asset-worker:asset-delete', uuid, asset ? tranAssetInfo(asset) : {}, db.uuidToPath(uuid));
+    db.on('delete', (uuid, asset) => {
+        ipcSend('asset-worker:asset-delete', uuid, asset.source, asset ? tranAssetInfo(asset) : {});
     });
 
     // 启动数据库

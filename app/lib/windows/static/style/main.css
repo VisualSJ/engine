@@ -58,4 +58,5 @@ header > div > div {
     padding: 10px 20px;
     z-index: 1;
     border-radius: 4px;
+    text-align: center;
 }

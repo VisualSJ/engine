@@ -23,7 +23,7 @@ module.exports = {
          * 通知同步任务 “导入资源” 开始
          */
         'asset-db:ready'() {
-            Editor.Task.removeSyncTask(Editor.I18n.t('asset-db.mask.loading'));
+            Editor.Task.removeSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'));
         },
 
         /**
@@ -31,7 +31,7 @@ module.exports = {
          * 通知同步任务 “导入资源” 结束
          */
         'asset-db:close'() {
-            Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
+            Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'));
         },
 
         // ------ 数据库
@@ -208,7 +208,7 @@ module.exports = {
             level: 3,
         });
 
-        Editor.Task.addSyncTask(Editor.I18n.t('asset-db.mask.loading'));
+        Editor.Task.addSyncTask('import-asset', Editor.I18n.t('asset-db.mask.loading'));
         await init();
     },
 

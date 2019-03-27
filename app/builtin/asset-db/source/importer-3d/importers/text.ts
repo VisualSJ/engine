@@ -40,24 +40,17 @@ export default class TextImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
-        let updated = false;
-        // 如果当前资源没有导入，则开始导入当前资源
-        if (!(await asset.existsInLibrary('.json'))) {
+        const text = await readFile(asset.source, 'utf8');
 
-            const text = await readFile(asset.source, 'utf8');
+        // @ts-ignore
+        const jsonAsset = new cc.TextAsset();
+        jsonAsset.name = asset.basename;
+        jsonAsset.text = text;
 
-            // @ts-ignore
-            const jsonAsset = new cc.TextAsset();
-            jsonAsset.name = asset.basename;
-            jsonAsset.text = text;
+        // @ts-ignore
+        await asset.saveToLibrary('.json', Manager.serialize(jsonAsset));
 
-            // @ts-ignore
-            asset.saveToLibrary('.json', Manager.serialize(jsonAsset));
-
-            updated = true;
-        }
-
-        return updated;
+        return true;
     }
 
 }

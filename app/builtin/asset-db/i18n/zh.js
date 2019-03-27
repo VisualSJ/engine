@@ -2,6 +2,7 @@
 
 module.exports = {
     mask: {
+        startup: '正在启动资源数据库 - %s ...',
         loading: '正在加载资源...',
     },
     'debug-mode': '打开资源调试工具',
