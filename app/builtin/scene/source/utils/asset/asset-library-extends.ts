@@ -21,11 +21,11 @@ assetLibrary.onAssetChanged = (uuid: any) => {
             return;
         }
 
+        removeCaches(uuid);
+
         if (!assetListener.hasEventListener(uuid)) {
             return;
         }
-
-        removeCaches(uuid);
 
         if (cc.js.isChildClassOf(ctor, cc.Scene)) {
             return;

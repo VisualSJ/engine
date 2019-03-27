@@ -7,6 +7,8 @@ const menu = require('@base/electron-menu');
 const windows = require('@base/electron-windows');
 const project = require('@editor/project');
 
+const { app } = require('electron');
+
 const projectManager = require('../project');
 
 /**
@@ -35,6 +37,7 @@ let win32 = function() {
         accelerator: 'CmdOrCtrl+Q',
         click() {
             windows.quit && windows.quit();
+            app.exit && app.exit();
         },
     });
 
@@ -96,6 +99,7 @@ let darwin = function() {
         accelerator: 'CmdOrCtrl+Q',
         click() {
             windows.quit && windows.quit();
+            app.exit && app.exit();
         },
     });
 
