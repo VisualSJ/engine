@@ -164,7 +164,7 @@ export async function start() {
 
     // 依赖模块文件
     app.get('/node_modules/*', async (req: any, res: any) => {
-        const path = join(Editor.App.path, '/node_modules', req.params[0]); // 获取文件名路径
+        const path = join(Editor.App.path, 'app', '/node_modules', req.params[0]); // 获取文件名路径
         res.sendFile(path);
     });
 
