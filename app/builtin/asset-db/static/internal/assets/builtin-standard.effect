@@ -284,12 +284,12 @@ CCProgram standard-fs %{
 
     // finalColor = max(finalColor, vec3(0.0));
 
-    #if CC_USE_HDR
+    if (cc_exposure.z == 1.) {
       finalColor *= FP_SCALE;
-    #else
+    } else {
       finalColor *= cc_exposure.x;
       finalColor = LinearToSRGB(finalColor);
-    #endif
+    }
     return vec4(finalColor, baseColor.a);
   }
 }%
