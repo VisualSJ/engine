@@ -47,7 +47,7 @@ class SphereLightComponentGizmo extends Gizmo {
         this._controller.hoverColor = this._lightCtrlHoverColor;
 
         this._sizeSphere = ControllerUtils.sphere(cc.v3(), this._baseSize,
-            this._lightGizmoColor, {effectName: '__editor-light', forwardPipeline: true});
+            this._lightGizmoColor, {effectName: 'editor/light', forwardPipeline: true});
         this._sizeSphere.parent = SphereLightGizmoRoot;
     }
 

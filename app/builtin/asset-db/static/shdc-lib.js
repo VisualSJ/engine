@@ -605,8 +605,7 @@ const parseEffect = (() => {
     else { // deep clone to decouple references
       try { effect = JSON.parse(JSON.stringify(yaml.safeLoad(effectCap[1]))); }
       catch (e) { warn(`parse YAML failed: ${e}`); }
-      if (effect.name) effectName = effect.name;
-      else effect.name = name;
+      effect.name = effectName;
       delete effect.temporaries;
       structuralTypeCheck(mappings.effectStructure, effect);
     }

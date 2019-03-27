@@ -18,7 +18,7 @@ CCEffect %{
         tilingOffset:  { type: vec4,        value: [1.0, 1.0, 0.0, 0.0] }
         albedo:        { type: color4,      value: [1.0, 1.0, 1.0, 1.0] }
         albedoScale:   { type: vec4,        value: [1.0, 1.0, 1.0, 0.0] }
-        pbrParams:     { type: vec4,        value: [0.2, 0.6, 0.0, 1.0] }
+        pbrParams:     { type: vec4,        value: [0.8, 0.6, 0.0, 1.0] }
         pbrScale:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
         emissive:      { type: color4,      value: [1.0, 1.0, 1.0, 1.0] }
         emissiveScale: { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }

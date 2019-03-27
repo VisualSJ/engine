@@ -80,7 +80,7 @@ class Engine3D extends EngineInterface {
         model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
         let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
         let technique = 0;
-        let effectName = '__editor-gizmo';
+        let effectName = 'editor/gizmo';
         if (opts.effectName) {
             effectName = opts.effectName;
         } else {

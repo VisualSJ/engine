@@ -90,7 +90,7 @@ function createGrid(w, l) {
     const cb = model.onEnable.bind(model);
     model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
     let mtl = new cc.Material();
-    mtl.initialize({ effectName: '__editor-grid' });
+    mtl.initialize({ effectName: 'editor/grid' });
     model.material = mtl;
     return model;
 }

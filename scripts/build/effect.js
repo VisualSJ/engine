@@ -74,8 +74,8 @@ const stringifyEffect = (() => {
 const addEssential = (() => {
   // empty array will keep all techs
   const essentialList = {
-    'builtin-smaa': [],
-    'builtin-tonemap': [],
+    'pipeline/smaa': [],
+    'pipeline/tonemap': [],
     'builtin-standard': [0],
     'builtin-unlit': [0],
     'builtin-skybox': [],
@@ -118,20 +118,21 @@ if (process.argv.length > 2) {
       addChunks(file);
       fsJetpack.find(file, { matching: '*.effect', recursive: false }).forEach((f) => compile(f));
     } else {
-      // addChunks(ps.dirname(file));
+      // addChunks(ps.dirname(file)); // this won't work if dir is something like "D:\"
       compile(file);
     }
   }
   process.exit();
 }
 
-const path = ps.join(editorRoot, 'app/builtin/asset-db/static/internal/assets');
-const files = fsJetpack.find(path, { matching: '**/*.effect' });
+const target = ps.join(editorRoot, 'app/builtin/asset-db/static/internal/assets');
+const files = fsJetpack.find(target, { matching: '**/*.effect' });
 const essentialDir = ps.join(Manager.AssetInfo.engine, 'cocos/3d/builtin/effects.js');
 
 let all = [], essentials = [];
 for (let i = 0; i < files.length; ++i) {
-  const name = ps.basename(files[i], '.effect');
+  const path = ps.relative(ps.join(target, 'effects'), ps.dirname(files[i])).replace('\\', '/');
+  const name = path + (path.length ? '/' : '') + ps.basename(files[i], '.effect');
   const content = fs.readFileSync(files[i], { encoding: 'utf8' });
   const effect = shdcLib.buildEffect(name, content);
   all.push(effect); addEssential(essentials, name, effect);

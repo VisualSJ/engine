@@ -1,14 +1,14 @@
 import { Asset, Importer } from '@editor/asset-db';
 import { readFileSync } from 'fs-extra';
 import { find } from 'fs-jetpack';
-import { basename, extname, join } from 'path';
+import { basename, dirname, extname, join, relative } from 'path';
 
 const shdcLib = require('../../../static/shdc-lib');
 
 export default class EffectImporter extends Importer {
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.1.3';
+        return '1.1.4';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -30,19 +30,18 @@ export default class EffectImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
+        const target = this.assetDB!.options.target;
         shdcLib.addChunksCache(find(join(__dirname, '../../../static/chunks'), { matching: ['**/*.inc'] }));
         let updated = false;
         try {
             const ext = extname(asset.source);
-            const filename = basename(asset.source, ext);
+            const path = relative(join(target, 'effects'), dirname(asset.source)).replace('\\', '/');
+            const effectName = path + (path.length ? '/' : '') + basename(asset.source, ext);
 
             if (!(await asset.existsInLibrary('.json'))) {
                 updated = false;
-                const content = readFileSync(asset.source, {
-                    encoding: 'utf-8',
-                });
-                const effect = shdcLib.buildEffect(filename, content);
-                // @ts-ignore
+                const content = readFileSync(asset.source, { encoding: 'utf-8' });
+                const effect = shdcLib.buildEffect(effectName, content);
                 let result = new cc.EffectAsset();
                 result = Object.assign(result, effect);
                 await asset.saveToLibrary('.json', Manager.serialize(result));
