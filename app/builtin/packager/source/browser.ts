@@ -1,8 +1,7 @@
 'use strict';
 
-let pkg: any = null;
-import { existsSync } from 'fs';
-import { copy, ensureDirSync, outputFile, readJsonSync, remove } from 'fs-extra';
+import { existsSync, readFileSync } from 'fs';
+import { copy, ensureDirSync, outputFile, remove } from 'fs-extra';
 import { basename, join } from 'path';
 
 export const messages = {
@@ -48,7 +47,7 @@ export const messages = {
     },
 
     async 'import-package'(type: string) {
-        const path =  await importPackage(type);
+        const path = await importPackage(type);
         if (!path) {
             return false;
         }
@@ -59,11 +58,7 @@ export const messages = {
 
 };
 
-export function load() {
-    // @ts-ignore
-    pkg = this;
-
-}
+export function load() { }
 
 export function unload() { }
 
@@ -97,9 +92,9 @@ async function addPackage(type: string = 'project') {
 
         // 重命名
         const packageFile = join(filePath, './package.json');
-        const packageContent = readJsonSync(packageFile);
-        packageContent.name = basename(filePath);
-        await outputFile(packageFile, JSON.stringify(packageContent, null, 2));
+        const packageContent = readFileSync(packageFile).toString().replace(/my-package/g, basename(filePath));
+        const packageJson = JSON.parse(packageContent);
+        await outputFile(packageFile, JSON.stringify(packageJson, null, 2)); // 格式化
     } catch (error) {
         console.warn(`${Editor.I18n.t('packager.menu.addError')} \n${filePath}`);
         return '';

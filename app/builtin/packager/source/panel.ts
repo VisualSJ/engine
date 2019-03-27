@@ -27,13 +27,7 @@ export const fonts = [{
 export const methods = {};
 
 export const messages = {
-    'packages:update'() {
-        // 没有初始化的时候，无需处理
-        if (!vm.ready) {
-            return;
-        }
-        vm.refresh();
-    },
+
 };
 
 export async function ready() {
@@ -137,19 +131,16 @@ export async function ready() {
     });
 
     // 注册事件
-    Editor.Package.on('register', () => {
-        Editor.Ipc.sendToPanel('packager', 'packages:update');
-    });
-
-    Editor.Package.on('unregister', () => {
-        Editor.Ipc.sendToPanel('packager', 'packages:update');
-    });
-
+    Editor.Package.on('register', vm.refresh);
+    Editor.Package.on('unregister', vm.refresh);
 }
 
 export async function beforeClose() { }
 
 export async function close() {
-    // TODO 需要处理下解绑事件
-
+    // 解绑事件
+    // @ts-ignore
+    Editor.Package.removeListener('register', vm.refresh);
+    // @ts-ignore
+    Editor.Package.removeListener('unregister', vm.refresh);
 }

@@ -1,16 +1,7 @@
 {
-    "name": "new-package",
+    "name": "my-package",
     "version": "0.0.1",
     "description": "The package template",
     "author": "Cocos",
-    "main": "browser.js",
-    "panel": {
-        "main": "panel.js",
-        "icon": "",
-        "title": "new-package",
-        "min-width": 500,
-        "min-height": 400,
-        "width": 500,
-        "height": 600
-    }
+    "main": "browser.js"
 }

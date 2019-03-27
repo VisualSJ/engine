@@ -1,7 +1,7 @@
 'use strict';
 
-export const messages = {};
-
-export function load() { }
-
-export function unload() { }
+module.exports = {
+    messages: {},
+    load() { },
+    unload() { },
+};

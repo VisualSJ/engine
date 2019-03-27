@@ -9,6 +9,39 @@ const { app, protocol } = require('electron');
 const { existsSync, readJsonSync, readdirSync, statSync, outputJSONSync } = require('fs-extra');
 const ipc = require('@base/electron-base-ipc');
 const packageManager = require('@editor/package');
+const Profile = require('../../profile');
+
+// 保存插件状态到 profile 里
+const profile = {
+    // 取项目中插件的状态等数据
+    local: Profile.load('profile://local/packages/packages.json'),
+    getPackage(path) {
+        const packages = this.local.get('packages');
+        const pkg = packages.filter((pkg) => pkg.path === path);
+        if (pkg) {
+            return pkg[0];
+        }
+        return;
+    },
+    timer: 0,
+    save() {
+        if (!Editor.Startup.ready.package) { // 重要：避免编辑器插件体系未完全启动时又写入启动状态
+            return false;
+        }
+        const packages = module.exports.getPackages();
+        const data = packages.map((pkg) => {
+            return { // 暂时开放这些数据
+                name: pkg.name,
+                version: pkg.version,
+                path: pkg.path,
+                enable: pkg.enable,
+                invalid: pkg.invalid,
+            };
+        });
+        this.local.set('packages', data);
+        this.local.save();
+    },
+};
 
 // /**
 //  * 注册调试依赖的文件
@@ -26,7 +59,7 @@ class PackageManager extends EventEmitter {
 
     /**
      * 查询插件数组
-     * 
+     *
      * options: {
      *   name: string
      *   debug: boolean
@@ -34,7 +67,7 @@ class PackageManager extends EventEmitter {
      *   enable: boolean
      *   invalid: boolean
      * }
-     * 
+     *
      * @param {*} options
      */
     getPackages(options) {
@@ -51,7 +84,7 @@ class PackageManager extends EventEmitter {
             if ('path' in options && options.path !== pkg.path) {
                 return;
             }
-            if ('enable' in options && options.enable !== pkg.enable) {
+            if ('enable' in options && options.enable !== pkg.enabled) {
                 return;
             }
             if ('invalid' in options && options.invalid !== pkg.invalid) {
@@ -98,6 +131,12 @@ class PackageManager extends EventEmitter {
 
             this.register(path);
 
+            // 检查 项目/全局 插件是否要启动
+            const pkg = profile.getPackage(path);
+            if (pkg && pkg.enable) {
+                this.enable(path);
+            }
+
             return path;
         });
 
@@ -121,6 +160,8 @@ class PackageManager extends EventEmitter {
      * @param {string} path
      */
     async unregister(path) {
+        await this.disable(path);
+
         await packageManager.unregister(path);
     }
 
@@ -130,6 +171,7 @@ class PackageManager extends EventEmitter {
      */
     async enable(path) {
         await packageManager.enable(path);
+        profile.save();
     }
 
     /**
@@ -137,7 +179,22 @@ class PackageManager extends EventEmitter {
      * @param {string} path
      */
     async disable(path) {
+        await this.close(path);
+
         await packageManager.disable(path);
+
+        profile.save();
+    }
+
+    /**
+     * 关闭已打开的面板
+     * @param {*} path
+     */
+    async close(path) {
+        const pkg = this.getPackages({path})[0];
+        if (pkg) {
+            await Editor.Panel.close(pkg.name);
+        }
     }
 }
 
