@@ -4,46 +4,58 @@
     line-height: 20px;
     font-family: inherit;
     font-size: inherit;
+
     &[state] {
         &:hover {
             background-color: var(--item-hover-bg);
+
             .lock {
                 display: inline-block;
             }
         }
     }
+
     &[isScene] {
         background-color: var(--item-hover-bg);
         border-bottom: 1px solid var(--panel-content-bg);
     }
+
     &[isPrefab] {
         color: #07d02b;
     }
+
     &[active="true"] {
         background-color: var(--item-active-blur-bg);
         transition: 0.3s opacity ease;
         transition-delay: 0.3s;
-        &:hover{
+
+        &:hover {
             background-color: var(--item-active-blur-bg);
         }
     }
+
     &[state="rename"] {
         background-color: transparent !important;
     }
+
     &[draging] {
         background-color: transparent !important;
     }
+
     &[expand="true"] {
         .arrow {
             transform: rotate(90deg);
         }
     }
+
     &[visible="false"] {
+
         >.arrow,
         >.name {
             opacity: 0.5;
         }
     }
+
     .arrow {
         height: 20px;
         line-height: 20px;
@@ -51,16 +63,20 @@
         text-align: center;
         cursor: pointer;
         font-size: 0.9em;
+
         &[animate] {
             transition: 0.2s transform;
         }
+
         &+.name {
             margin-left: 2px;
         }
+
         &+.rename {
             margin-left: 0;
         }
     }
+
     .scene {
         height: 20px;
         line-height: 20px;
@@ -69,10 +85,16 @@
         cursor: pointer;
         margin-left: -2px;
         font-size: 13px;
+        background-image: url("packages://hierarchy/static/icon/scene.png");
+        background-size: 14px 14px;
+        background-repeat: no-repeat;
+        background-position: center 2px;
+
         &+.name {
             margin-left: 2px;
         }
     }
+
     >.lock {
         display: none;
         position: absolute;
@@ -81,33 +103,41 @@
         z-index: 100;
         font-size: 12px;
         color: var(--default-text-c) !important;
+
         &:hover {
             color: var(--item-hover-c) !important;
         }
+
         &.i-lock {
             display: inline-block;
         }
     }
+
     >.name {
         cursor: default;
         margin-left: 22px;
         white-space: nowrap;
         padding-right: 20px;
+
         &[twinkle] {
             animation-duration: 1s;
             animation-fill-mode: both;
             transform-origin: center;
         }
+
         &[twinkle="shake"] {
             animation-name: shake;
         }
+
         &[twinkle="shrink"] {
             animation-name: shrink;
         }
+
         &[twinkle="light"] {
             animation-name: light;
         }
     }
+
     >.loading {
         display: inline-block;
         position: relative;
@@ -116,6 +146,7 @@
         left: -12px;
         transform: scale(0.8);
     }
+
     .rename {
         position: relative;
         display: inline-block;
@@ -123,6 +154,7 @@
         border: 1px solid var(--panel-active-c);
         padding-left: 4px;
         margin-left: 22px;
+
         >input {
             outline: none;
             border: none;
@@ -130,8 +162,10 @@
             color: var(--default-text-c);
             vertical-align: top;
         }
+
         &[state^="error"] {
             border-color: var(--red-c);
+
             &:after {
                 content: attr(title);
                 padding: 0 4px;
@@ -151,14 +185,17 @@
     &[state="search"] {
         >.tree-node {
             padding-left: 26px !important;
+
             .name {
                 margin-left: 6px;
             }
+
             .arrow {
                 display: none;
             }
         }
     }
+
     &[hoving] {
         .tree-node {
             &[insert] {
@@ -182,10 +219,12 @@
     from {
         transform: scale3d(1, 1, 1);
     }
+
     10%,
     20% {
         transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg);
     }
+
     30%,
     50%,
     70%,
@@ -193,11 +232,13 @@
         transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
         color: var(--item-hover-c);
     }
+
     40%,
     60%,
     80% {
         transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
     }
+
     to {
         transform: scale3d(1, 1, 1);
     }
@@ -207,10 +248,12 @@
     from {
         transform: scale3d(1, 1, 1);
     }
+
     50% {
         transform: scale3d(.9, .9, .9);
         color: var(--item-hover-c);
     }
+
     to {
         transform: scale3d(1, 1, 1);
     }
