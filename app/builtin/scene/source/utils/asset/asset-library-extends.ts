@@ -43,7 +43,5 @@ assetLibrary.onAssetChanged = (uuid: any) => {
 
 assetLibrary.onAssetRemoved = (uuid: any, url: any) => {
     removeCaches(url);
-    console.log('delete cache of ' + url);
-
-    assetListener.invoke(uuid, null);
+    // assetListener.invoke(uuid, null);
 };

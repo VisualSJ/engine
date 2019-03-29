@@ -104,6 +104,9 @@ export function apply(messages: any) {
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
+            default:
+                $scene.forwarding('Asset', 'assetChange', [uuid]);
+                break;
         }
     };
 
@@ -138,6 +141,9 @@ export function apply(messages: any) {
         case 'effect':
             // 如果删除的是 effect，需要通知更新 effect 列表
             $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
+        default:
+            $scene.forwarding('Asset', 'assetDelete', [uuid]);
+            break;
         }
     };
 }
