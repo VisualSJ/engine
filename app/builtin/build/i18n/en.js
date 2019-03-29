@@ -21,6 +21,23 @@ module.exports = {
     source_map: 'Source Maps',
     debug_mode: 'Open Build DevTools',
     eruda: 'eruda',
+    require: 'require',
+    wechat_game: {
+        client_path_error: 'Can not find wechat game develop program path [%{path}].',
+        client_info_path_err: 'Can not find wechat game develop program version information path [%{path}].',
+        client_version_low: 'Wechat game develop version is too low, please upgrade to the newest version.',
+        remote_server_address: 'Remote server address',
+        remote_server_address_tips: 'The address of the server used to download the remote resources. ' +
+                                      'Because the WeChat game limits the native packet size to 4 mb, if it is greater than that, ' +
+                                      'it can save some resources to the server for download.',
+        sub_context: 'Open Data Context Root',
+        sub_context_tips: 'The open data context is also called the open data field. ' +
+                            'Here is the code directory that specifies the open data context. ' +
+                            'It is automatically configured into game.json.',
+        build_sub: 'Open Data Context Project',
+        build_sub_tips: 'Developer should create individual project for open data context scene (e.g. leaderboard). ' +
+                          'This option will pack everything in the project to be running in open data context environment.',
+    },
     error: {
         build_error: 'Build Error',
         dirty_info: 'not saved. Please build project after saveing project.',
