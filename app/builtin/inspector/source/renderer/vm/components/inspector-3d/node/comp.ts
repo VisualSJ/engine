@@ -112,7 +112,7 @@ export const methods = {
 
     /**
      * 将 propMap 进行一次排序
-     * @param list 
+     * @param list
      */
     shortProp(list: any) {
         const orderList: any = [];

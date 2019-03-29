@@ -158,7 +158,7 @@ class NumInput extends Base {
     attributeChangedCallback(attr, oldData, newData) {
         switch (attr) {
             case 'value':
-                if (newData === undefined) {
+                if (newData === undefined || newData === null) {
                     // 新值为 undefined 或 null 则不作处理
                     return;
                 }

@@ -49,7 +49,6 @@ class Selection extends EventEmitter {
                 id,
                 time: Date.now(),
             });
-
             ipcManager.sendToAll('selection:select', type, id);
         });
     }

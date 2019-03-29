@@ -1,7 +1,7 @@
 'use strict';
 
-import { readTemplate, translationDump, transSceneDump } from '../../../utils';
-import { on, off } from '../../../event';
+import { off, on } from '../../../event';
+import { mergeDumps, readTemplate, translationDump, transSceneDump } from '../../../utils';
 
 export const template = readTemplate('inspector-3d/node/index.html');
 
@@ -48,6 +48,16 @@ export const methods = {
             return;
         }
 
+        if (Array.isArray(vm.uuid)) {
+            const dumps = [];
+            for (const uuid of vm.uuid) {
+                const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
+                dumps.push(dump);
+            }
+            const result = mergeDumps(dumps);
+            vm.dump = translationDump(result);
+            return;
+        }
         const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', vm.uuid);
 
         // 如果请求数据中途，又有数据更新（num 变化），则忽略这个数据
@@ -155,7 +165,7 @@ export function mounted() {
     // 如果正在请求数据，但这时候又 commit 了，则可以忽略到正在请求的数据
     // 重新发起新的数据请求
     on('commit', () => {
-        vm.num++;   
+        vm.num++;
     });
 }
 

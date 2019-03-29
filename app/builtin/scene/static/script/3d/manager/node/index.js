@@ -120,6 +120,13 @@ class NodeManager extends EventEmitter {
      * @param {*} dump
      */
     async setProperty(uuid, path, dump) {
+        // 多个节点更新值
+        if (Array.isArray(uuid)) {
+            uuid.forEach((id) => {
+                this.setProperty(id, path, dump);
+            });
+            return;
+        }
         const node = this.query(uuid);
         if (!node) {
             console.warn(`Set property failed: ${uuid} does not exist`);
@@ -157,6 +164,12 @@ class NodeManager extends EventEmitter {
      * @param offset 偏移量
      */
     moveArrayElement(uuid, path, target, offset) {
+        if (Array.isArray(uuid)) {
+            uuid.forEach((id) => {
+                this.moveArrayElement(id, path, target, offset);
+            });
+            return;
+        }
         const node = this.query(uuid);
         if (!node) {
             console.warn(`Move property failed: ${uuid} does not exist`);
@@ -211,6 +224,12 @@ class NodeManager extends EventEmitter {
      * @param index 目标 item 原来的索引
      */
     removeArrayElement(uuid, path, index) {
+        if (Array.isArray(uuid)) {
+            uuid.forEach((id) => {
+                this.removeArrayElement(id, path, index);
+            });
+            return;
+        }
         const node = this.query(uuid);
         const key = (path || '').split('.').pop();
 
@@ -265,6 +284,12 @@ class NodeManager extends EventEmitter {
      * @param component 组件的名字
      */
     createComponent(uuid, component) {
+        if (Array.isArray(uuid)) {
+            uuid.forEach((id) => {
+                this.createComponent(id, component);
+            });
+            return;
+        }
         const node = this.query(uuid);
         if (!node) {
             console.warn(`create component failed: ${uuid} does not exist`);
