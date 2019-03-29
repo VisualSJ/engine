@@ -269,6 +269,7 @@ class Builder {
             if (name === 'game.js') {
                     contents = template.render(contents, {
                         REMOTE_SERVER_ROOT: opts.remote_server_root,
+                        engine: `cocos${this._type}`,
                     });
             } else if (name === 'game.json') {
                 contents = JSON.parse(contents);

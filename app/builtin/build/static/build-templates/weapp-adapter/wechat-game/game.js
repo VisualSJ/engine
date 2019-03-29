@@ -6,14 +6,14 @@ require('src/settings');
 var settings = window._CCSettings;
 var SubPackPipe = require('./libs/subpackage-pipe');
 require('main');
-require(settings.debug ? 'cocos2d-js.js' : 'cocos2d-js-min.js');
+require(settings.debug ? '{{engine}}-js.js' : '{{engine}}-js.min.js');
 require('./libs/engine/index.js');
 
 // Adjust devicePixelRatio
 cc.view._maxPixelRatio = 3;
 
-wxDownloader.REMOTE_SERVER_ROOT = {{REMOTE_SERVER_ROOT ? REMOTE_SERVER_ROOT : ''}};
-wxDownloader.SUBCONTEXT_ROOT = {{SUBCONTEXT_ROOT ? SUBCONTEXT_ROOT : ''}};
+wxDownloader.REMOTE_SERVER_ROOT = '{{REMOTE_SERVER_ROOT}}';
+wxDownloader.SUBCONTEXT_ROOT = '{{SUBCONTEXT_ROOT}}';
 var pipeBeforeDownloader = cc.loader.md5Pipe || cc.loader.assetLoader;
 cc.loader.insertPipeAfter(pipeBeforeDownloader, wxDownloader);
 
