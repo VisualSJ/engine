@@ -58,7 +58,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.37';
+        return '1.0.42';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -832,10 +832,9 @@ export class GltfPrefabImporter extends GltfSubAssetImporter {
         const sceneNode = gltfConverter.createScene(
             asset.userData.gltfIndex as number,
             new DefaultGltfAssetFinder(gltfUserData.assetFinder));
-
-        if (sceneNode.name === 'RootScene' || sceneNode.name === 'RootNode' || sceneNode.name === 'Node-0') {
+        if (gltfConverter.gltf.scenes!.length === 1) {
             const baseName = (asset.parent as Asset).basename;
-            sceneNode.name = path.basename(baseName, '');
+            sceneNode.name = path.basename(baseName, path.extname(baseName));
         }
 
         const prefab = generatePrefab(sceneNode);

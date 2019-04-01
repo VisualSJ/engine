@@ -5,7 +5,7 @@ import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, AnimationChannel,
     BufferView, GlTf, Image, Material, Mesh, MeshPrimitive, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
-import { Filter, TextureBaseAssetUserData, WrapMode, defaultMinFilter, defaultMagFilter } from '../texture-base';
+import { defaultMagFilter, defaultMinFilter, Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
 
 // tslint:disable:no-string-literal
 
@@ -955,22 +955,17 @@ export class GltfConverter {
             return node;
         };
 
+        const sceneName = this._getGltfXXName(GltfAssetKind.Scene, iGltfScene);
+        const result = new cc.Node(sceneName);
         const rootNodes: cc.Node[] = [];
         if (gltfScene.nodes !== undefined) {
             gltfScene.nodes.forEach((rootIndex) => {
-                const rootNode = getNode(rootIndex, null);
+                const rootNode = getNode(rootIndex, result);
+                rootNode.parent = result;
                 rootNodes.push(rootNode);
             });
         }
 
-        if (rootNodes.length === 1) {
-            return rootNodes[0];
-        }
-
-        const sceneName = this._getGltfXXName(GltfAssetKind.Scene, iGltfScene);
-
-        const result = new cc.Node(sceneName);
-        rootNodes.forEach((node) => node.parent = result);
         return result;
     }
 
@@ -1073,13 +1068,6 @@ export class GltfConverter {
                 segments.unshift(nodeNames[i]);
             }
             result[nodeIndex] = segments.join('/');
-        });
-
-        // Remove root segment
-        result.forEach((path, index) => {
-            const segments = path.split('/');
-            segments.shift();
-            result[index] = segments.join('/');
         });
 
         return result;

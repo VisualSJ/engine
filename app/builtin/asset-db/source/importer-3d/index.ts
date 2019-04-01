@@ -71,7 +71,7 @@ export function register(database: AssetDB) {
     // dragonbones json | dragonbones-atlas json | tiled-map tmx |
 
     // bin 文件导入
-    database.register(new BufferImporter(), ['.bin']);
+    // database.register(new BufferImporter(), ['.bin']);
 
     database.register(new ImageImporter(), ['.jpg', '.png', '.jpeg', '.webp']);
     database.register(new TextureImporter(), '.texture');
