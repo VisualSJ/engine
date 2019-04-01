@@ -57,7 +57,7 @@ async function link(nodeUuid, assetUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('before-change', node);
+    nodeManager.emit('before-changed', node);
     Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
 
     const parentPrefab = node.parent._prefab;
@@ -93,7 +93,7 @@ function unlink(nodeUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('before-change', node);
+    nodeManager.emit('before-changed', node);
     Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
 
     node._prefab = undefined;
@@ -140,7 +140,7 @@ function generate(nodeUuid) {
     const prefab = new cc.Prefab();
 
     // 发送节点修改消息
-    nodeManager.emit('before-change', node);
+    nodeManager.emit('before-changed', node);
     Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
 
     utils.walkNode(node, (child) => {

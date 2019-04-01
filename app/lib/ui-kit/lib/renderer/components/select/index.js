@@ -45,11 +45,11 @@ class Select extends Base {
     }
 
     get value() {
-        return this.getAttribute('value');
+        return this.$select.getAttribute('value');
     }
 
     set value(val) {
-        this.$select.value = val;
+        this.$select.setAttribute('value', val);
     }
 
     get autofocus() {

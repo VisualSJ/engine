@@ -169,7 +169,7 @@ export const messages = {
      * 创建一个新节点
      * @param uuid
      */
-    async 'scene:node-created'(uuid: string) {
+    async 'scene:node-added'(uuid: string) {
         // 没有初始化的时候，无需处理添加消息
         if (!vm.ready) {
             return;

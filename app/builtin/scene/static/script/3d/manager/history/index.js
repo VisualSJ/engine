@@ -17,8 +17,12 @@ nodeManager.on('changed', (node, enable = true) => { // enable 是内部 undo re
     enable && record(node.uuid);
 });
 
-nodeManager.on('added', (node) => {
-    loopRecord(node);
+nodeManager.on('added', (node, enable = true) => {
+    enable && loopRecord(node);
+});
+
+nodeManager.on('removed', (node, enable = true) => {
+    enable && record(node.uuid);
 });
 
 // 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
@@ -31,10 +35,6 @@ function loopRecord(node) {
         });
     }
 }
-
-nodeManager.on('removed', (node) => {
-    // 注意：删除节点不需要保存之前的状态，因为它的父节点 children 已做了 change 的变更记录
-});
 
 /**
  * 记录受 ipc 修改指令影响的 uuid
@@ -194,18 +194,53 @@ async function restore() {
     // 数据 stepData 是 {} , key 为 uuid ，有多个，value 为改 uuid 节点的引擎属性值
     const uuids = Object.keys(stepData);
 
+    // 先区分下要发什么样的变动事件
+    const nodesEvent = {};
+
+    const currentData = cache.getNodes(uuids);
     for (const uuid of uuids) {
+        const current = currentData[uuid];
+        const future = stepData[uuid];
 
+        if (!future) {
+            nodesEvent[uuid] = 'removed';
+            continue;
+        }
+
+        if (current.isScene) {
+            nodesEvent[uuid] = 'changed';
+            continue;
+        }
+
+        let type = 'changed';
+        const currentParent = current.parent.value.uuid;
+        const futureParent = future.parent.value.uuid;
+
+        if (currentParent === '' && futureParent !== '') {
+            type = 'added';
+        }
+        if (currentParent !== '' && futureParent === '') {
+            type = 'removed';
+        }
+
+        nodesEvent[uuid] = type;
+    }
+
+    for (const uuid of uuids) {
         const node = nodeManager.query(uuid);
+        if (node && nodesEvent[uuid] === 'changed') { // removed 和 added 节点，由父级节点的 children 变动实现，所以这边可以不操作
+            await dumpUtils.restoreNode(node, stepData[uuid]); // 还原变动的节点
+        }
+    }
+
+    // 广播事件
+    for (const uuid of uuids) {
+        const node = nodeManager.query(uuid);
+        const event = nodesEvent[uuid];
+
         if (node) {
-            // 还原节点
-            await dumpUtils.restoreNode(node, stepData[uuid]);
-
-            // 广播已变动的节点
-            Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
-
-            // 给场景内部通知
-            nodeManager.emit('changed', node, false); // false 是给 undo 记录用的，本次变动不参与历史记录操作
+            Manager.Ipc.forceSend('broadcast', `scene:node-${event === 'added' ? 'created' : event}`, uuid);
+            nodeManager.emit(event, node, false);
         }
     }
 
