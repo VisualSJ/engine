@@ -30,8 +30,6 @@ export const $ = {
     content: '.content',
 };
 
-const uuids = new Set();
-
 export const messages = {
     /**
      * 场景已准备
@@ -90,9 +88,9 @@ export const messages = {
         }
         // @ts-ignore
         clearTimeout(this._unselectTimer);
-        uuids.add(uuid);
+        const uuids = Editor.Selection.getSelected(type);
         vm.item.type = type;
-        if (uuids.size > 1) {
+        if (uuids.length > 1) {
             vm.item.uuid = Array.from(uuids);
         } else {
             vm.item.uuid = uuid;
@@ -108,7 +106,6 @@ export const messages = {
         if (!vm) {
             return;
         }
-        uuids.delete(uuid);
 
         // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
         // @ts-ignore
