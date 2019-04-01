@@ -48,7 +48,7 @@ class Startup extends EventEmitter {
         } finally {
             this.ready.window = true;
             this.emit('window-ready');
-            ipc.broadcast('editor3d-lib-startup:emit', 'window-ready');
+            ipc.broadcast('editor3d-lib-startup:emit', 'window');
         }
     }
 
@@ -78,7 +78,7 @@ class Startup extends EventEmitter {
         } finally {
             this.ready.package = true;
             this.emit('package-ready');
-            ipc.broadcast('editor3d-lib-startup:emit', 'package-ready');
+            ipc.broadcast('editor3d-lib-startup:emit', 'package');
         }
     }
 }

@@ -20,5 +20,5 @@ module.exports = new Startup();
 // 监听插件启动事件
 ipc.on('editor3d-lib-startup:emit', (event, name) => {
     module.exports.ready[name] = true;
-    module.exports.emit(name);
+    module.exports.emit(name + '-ready');
 });
