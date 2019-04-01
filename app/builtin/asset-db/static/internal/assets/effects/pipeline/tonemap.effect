@@ -65,7 +65,6 @@ CCProgram tonemap-fs %{
     return color;
   }
 
-  #define CC_USE_SMAA 1
   vec4 frag () {
   #if CC_USE_SMAA
     // Fetch the blending weights for current pixel:

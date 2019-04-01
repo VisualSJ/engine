@@ -31,13 +31,8 @@ CCProgram light-vs %{
     vec4 intensitySize; // x: intensity, y: size
   };
 
-  float Luminance(vec3 linearColor) {
-    return dot(linearColor, vec3(0.3, 0.59, 0.11));
-  }
-
   vec4 vert () {
-    float f = max(color.r, max(color.g, color.b));
-    v_color = color.rgb / f * intensitySize.x;
+    v_color = color.rgb * intensitySize.x * 100.0;
   #if CC_USE_HDR
     v_color *= FP_SCALE;
   #else
