@@ -14,7 +14,8 @@ CCEffect %{
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
-          // blendColorMask: none
+      rasterizerState:
+        cullMode: none
 }%
 
 CCProgram base-vs %{
