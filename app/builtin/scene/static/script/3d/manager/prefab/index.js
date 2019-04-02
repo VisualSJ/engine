@@ -10,20 +10,22 @@ const utils = require('./utils');
 const ipc = require('../ipc');
 
 nodeManager.on('changed', (node) => {
-    if (!node.parent || node.parent instanceof cc.Scene) {
-        return;
-    }
-
-    if (!!node.parent._prefab && !node._prefab) {
-        link(node);
-    }
-
-    if (!node.parent._prefab && node._prefab) {
-        // root 是自己，说明自己是 prefab 根节点，不需要剔除
-        if (node._prefab.root === node) {
+    if (node._prefab) {
+        if (node._prefab.root === node) { // root 是自己，说明自己是 prefab 根节点，不需要剔除
             return;
         }
+
+        if (node.parent && node.parent._prefab) { // 自己的父级是 prefab 符合规则，不需要剔除
+            return;
+        }
+
         unlink(node);
+    } else {
+        if (!node.parent || !node.parent._prefab) {
+            return;
+        }
+
+        link(node);
     }
 });
 
@@ -33,11 +35,7 @@ nodeManager.on('added', (node) => {
     }
 });
 nodeManager.on('removed', (node) => {
-    // root 是自己，说明自己是 prefab 根节点，不需要剔除
-    if (node._prefab && node._prefab.root === node) {
-        return;
-    }
-//    unlink(node);
+
 });
 
 /**
