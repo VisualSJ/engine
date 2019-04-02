@@ -49,6 +49,7 @@ class Select extends Base {
     }
 
     set value(val) {
+        this.$select.value = val;
         this.$select.setAttribute('value', val);
     }
 
