@@ -4,10 +4,13 @@ const operationManager = require('../operation');
 const nodeManager = require('../node');
 const utils = require('./utils');
 const tween = require('./tween');
+const LinearTicks = require('./grid/linear-ticks');
 
 let exitPanModeTimer = null;
 const { vec3, quat, mat4 } = cc.vmath;
 const CameraMoveMode = utils.CameraMoveMode;
+const _lineColor = cc.color().fromHEX('#555555');
+const _lineEnd = 1000000;
 
 class CameraController3D extends CameraControllerBase {
     constructor() {
@@ -20,7 +23,7 @@ class CameraController3D extends CameraControllerBase {
 
         // speed controller
         this.movingSpeed = 30;
-        this.movingSpeedShiftScale = 3;
+        this.movingSpeedShiftScale = 10;
         this.rotationSpeed = 0.006;
         this.panningSpeed = 0.2;
         this.wheelSpeed = 0.1;
@@ -53,25 +56,35 @@ class CameraController3D extends CameraControllerBase {
         this._destEye = cc.v3();
     }
 
-    init(camera) {
-        super.init(camera);
+    init(camera, grid) {
+        super.init(camera, grid);
 
         this.reset();
-        this._grid = utils.createGrid(50, 50);
-        this._grid.enabled = false;
 
         this._lastPos = cc.v3();
         this._lastRot = cc.quat();
+
+        this._initLinearTick();
+    }
+
+    _initLinearTick() {
+        this.hTicks = new LinearTicks()
+            .initTicks([5, 2], 0.1, 10000)
+            .spacing(15, 80);
+
+        this.vTicks = new LinearTicks()
+        .initTicks([5, 2], 0.1, 10000)
+        .spacing(15, 80);
     }
 
     set active(value) {
         if (value) {
-            this._grid.enabled = true;
+            this._gridNode.setWorldRotationFromEuler(90, 0, 0);
             this._camera.projection = 1;
             this.node.setWorldPosition(this._lastPos);
             this.node.setWorldRotation(this._lastRot);
+            this.updateGrid();
         } else {
-            this._grid.enabled = false;
             this.node.getWorldPosition(this._lastPos);
             this.node.getWorldRotation(this._lastRot);
             clearTimeout(exitPanModeTimer);
@@ -184,6 +197,7 @@ class CameraController3D extends CameraControllerBase {
             vec3.add(this._curEye, this._sceneViewCenter, offset);
             this.node.setWorldPosition(this._curEye);
             this.node.setRotation(rot);
+            this.updateGrid();
         } else if (this.camera_move_mode === CameraMoveMode.PAN) { // middle button: panning
             vec3.scale(this.v3a, this.right, -dx * this.panningSpeed);
             vec3.scale(this.v3b, this.up, dy * this.panningSpeed);
@@ -194,6 +208,7 @@ class CameraController3D extends CameraControllerBase {
             // update view center
             vec3.add(this._sceneViewCenter, this._sceneViewCenter, this.v3a);
             vec3.add(this._sceneViewCenter, this._sceneViewCenter, this.v3b);
+            this.updateGrid();
             return false;
         } else if (this.camera_move_mode === CameraMoveMode.WANDER) { // right button: rotation
             this.curMouseDX = dx;
@@ -215,6 +230,7 @@ class CameraController3D extends CameraControllerBase {
         this.node.setWorldPosition(this._curEye);
 
         this.viewDist = vec3.distance(this._curEye, this._sceneViewCenter);
+        this.updateGrid();
     }
 
     /**
@@ -240,6 +256,7 @@ class CameraController3D extends CameraControllerBase {
             const startPosition = this.node.getPosition();
             tween.position(startPosition, this.v3d, 300).step((position) => {
                 this.node.setPosition(position);
+                this.updateGrid();
             });
             return;
         }
@@ -251,9 +268,11 @@ class CameraController3D extends CameraControllerBase {
         const startRotation = this.node.getRotation();
         tween.position(startPosition, this.homePos, 300).step((position) => {
             this.node.setPosition(position);
+            this.updateGrid();
         });
         tween.rotation(startRotation, this.homeRot, 300).step((rotation) => {
             this.node.setRotation(rotation);
+            this.updateGrid();
         });
     }
 
@@ -409,6 +428,108 @@ class CameraController3D extends CameraControllerBase {
         this.node.setRotation(this._curRot);
         this.curMouseDX = 0;
         this.curMouseDY = 0;
+        this.updateGrid();
+    }
+
+    _updateGridData(positions, colors, lineColor, lineEnd) {
+        let hTicks = this.hTicks;
+        let vTicks = this.vTicks;
+
+        let cameraPos = cc.v3();
+        this.node.getPosition(cameraPos);
+        let distance = cameraPos.y; //用camera的高度来调整比例尺
+        let scale = distance / 500;
+
+        let range = 5000;
+        let scaleRange = (range * scale) | 0;
+
+        // 根据camera的位置来调整刻度线
+        let curStartX = -scaleRange + cameraPos.x;
+        let curEndX = scaleRange + cameraPos.x;
+        let curStartY = -scaleRange + cameraPos.z;
+        let curEndY = scaleRange + cameraPos.z;
+        hTicks.range(curStartX, curEndX, range);
+        vTicks.range(curStartY, curEndY, range);
+
+        let tempColor = lineColor.clone();
+        tempColor.a = 0;
+        let transparentLineColor = tempColor.to01();
+
+        let uniformColor;
+        // 用一个比较小的透明度来画线，否则线非常长的时候看远处的线锯齿感非常严重
+        let lineOpacity = 200;
+        // 填充顶点数据
+        for (let i = hTicks.minTickLevel; i <= hTicks.maxTickLevel; ++i) {
+            let ratio = hTicks.tickRatios[i];
+            if (ratio > 0) {
+
+                let ticks = hTicks.ticksAtLevel(i, true);
+                for (let j = 0; j < ticks.length; ++j) {
+                    let tick = ticks[j];
+
+                    let color = lineColor.clone();
+                    // 根据 ratio 再计算一下当前透明度
+                    color.a = ratio * lineOpacity;
+                    // 越远的线越淡
+                    let dist = Math.abs(tick - cameraPos.x);
+                    color.a *= (1 - dist / scaleRange);
+
+                    // x
+                    positions.push(tick, cameraPos.z);
+                    positions.push(tick, curStartY);
+                    positions.push(tick, cameraPos.z);
+                    positions.push(tick, curEndY);
+                    uniformColor = color.to01();
+                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                }
+            }
+        }
+
+        for (let i = vTicks.minTickLevel; i <= vTicks.maxTickLevel; ++i) {
+            let ratio = vTicks.tickRatios[i];
+            if (ratio > 0) {
+                let ticks = vTicks.ticksAtLevel(i, true);
+                for (let j = 0; j < ticks.length; ++j) {
+                    let tick = ticks[j];
+
+                    let color = lineColor.clone();
+                    // 根据 ratio 再计算一下当前透明度
+                    color.a = ratio * lineOpacity;
+                    // 越远的线越淡
+                    let dist = Math.abs(tick - cameraPos.z);
+                    color.a *= (1 - dist / scaleRange);
+                    uniformColor = color.to01();
+                    // y
+                    positions.push(cameraPos.x, tick);
+                    positions.push(curStartX, tick);
+                    positions.push(cameraPos.x, tick);
+                    positions.push(curEndX, tick);
+                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                }
+            }
+        }
+    }
+
+    updateGrid() {
+        let positions = [];
+        let colors = [];
+        let indices = [];
+
+        this._updateGridData(positions, colors, _lineColor, _lineEnd);
+
+        for (let i = 0; i < positions.length; i += 2) {
+            indices.push(i / 2);
+        }
+
+        utils.updateVBAttr(this._gridMeshComp, cc.GFXAttributeName.ATTR_POSITION, positions);
+        utils.updateVBAttr(this._gridMeshComp, cc.GFXAttributeName.ATTR_COLOR, colors);
+        utils.updateIB(this._gridMeshComp, indices);
     }
 }
 

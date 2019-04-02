@@ -34,11 +34,11 @@ class Camera extends EventEmitter {
      */
     init() {
         this._camera = utils.createCamera(cc.color(51, 51, 51, 255));
+        // create grid
+        this._grid = utils.createGrid();
 
-        this._controller2D.init(this._camera);
-        this._controller3D.init(this._camera);
-
-        this._controller.active = true;
+        this._controller2D.init(this._camera, this._grid);
+        this._controller3D.init(this._camera, this._grid);
 
         listener.bind(this);
     }
@@ -54,6 +54,11 @@ class Camera extends EventEmitter {
 
         this._controller = value ? this._controller2D : this._controller3D;
         this._controller.active = true;
+    }
+
+    onSceneLoaded() {
+        this._controller.active = true;
+        this.focus();
     }
 
     /**
@@ -122,8 +127,7 @@ sceneManager.on('open', (error, scene) => {
     // camera._lightNodes = utils.queryLightNodes([camera._light.node]);
     // camera._light.enabled = !utils.isSceneHasActiveLight(camera._lightNodes);
 
-    // 摄像机对准到中心点
-    camera.focus();
+    camera.onSceneLoaded();
 });
 
 operationMgr.on('resize', () => {
