@@ -18,6 +18,7 @@ const Prop = require('./components/prop');
 const Tooltip = require('./components/tooltip');
 const TextArea = require('./components/textarea');
 const Progress = require('./components/progress');
+const Label = require('./components/label');
 
 window.customElements.define('ui-button', Button);
 window.customElements.define('ui-input', Input);
@@ -36,6 +37,7 @@ window.customElements.define('ui-prop', Prop);
 window.customElements.define('ui-tooltip', Tooltip);
 window.customElements.define('ui-textarea', TextArea);
 window.customElements.define('ui-progress', Progress);
+window.customElements.define('ui-label', Label);
 
 class UI {
     get Button() {
@@ -104,6 +106,10 @@ class UI {
 
     get Progress() {
         return Progress;
+    }
+
+    get Label() {
+        return Label;
     }
 }
 
