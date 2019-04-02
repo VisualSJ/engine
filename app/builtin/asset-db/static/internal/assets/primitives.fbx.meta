@@ -1,5 +1,5 @@
 {
-  "ver": "1.0.378",
+  "ver": "1.0.428",
   "importer": "fbx",
   "uuid": "1263d74c-8167-4928-91a6-4e2672411f47",
   "files": [
@@ -119,7 +119,7 @@
       }
     },
     "DefaultMaterial.material": {
-      "ver": "1.0.8",
+      "ver": "1.0.10",
       "importer": "gltf-material",
       "uuid": "1263d74c-8167-4928-91a6-4e2672411f47@DefaultMaterial.material",
       "imported": true,

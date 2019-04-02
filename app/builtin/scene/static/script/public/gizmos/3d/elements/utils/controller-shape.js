@@ -603,7 +603,7 @@ ControllerShape.calcFrustum = function(isOrtho, orthoHeight, fov, aspect, near, 
     let farHalfWidth;
 
     if (isOrtho) {
-        nearHalfHeight = farHalfHeight = orthoHeight / 2;
+        nearHalfHeight = farHalfHeight = orthoHeight;
         nearHalfWidth = farHalfWidth = nearHalfHeight * aspect;
     } else {
         nearHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * near;

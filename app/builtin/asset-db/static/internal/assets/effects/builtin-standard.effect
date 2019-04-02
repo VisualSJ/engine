@@ -194,10 +194,10 @@ CCProgram standard-fs %{
     #endif
     pbr *= pbrScale;
     float roughness = clamp(pbr.ROUGHNESS_CHANNEL, 0.04, 1.0);
-    float metallic = clamp(pbr.METALLIC_CHANNEL, 0.0, 1.0);
+    float metallic = clamp(pbr.METALLIC_CHANNEL, 0.0, 0.96);
 
     // Calculate diffuse & specular
-    vec3 diffuse = baseColor.rgb * 0.96 * (1.0 - metallic);
+    vec3 diffuse = baseColor.rgb * (1.0 - metallic);
     vec3 specular = mix(vec3(0.04), baseColor.rgb, metallic);
 
     vec3 V = normalize(cc_cameraPos.xyz - v_worldPos);

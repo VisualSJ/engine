@@ -473,13 +473,12 @@ class CameraController3D extends CameraControllerBase {
                     // 越远的线越淡
                     let dist = Math.abs(tick - cameraPos.x);
                     color.a *= (1 - dist / scaleRange);
-
+                    uniformColor = color.to01();
                     // x
                     positions.push(tick, cameraPos.z);
                     positions.push(tick, curStartY);
                     positions.push(tick, cameraPos.z);
                     positions.push(tick, curEndY);
-                    uniformColor = color.to01();
                     colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
                     colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
                     colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);

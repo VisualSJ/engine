@@ -131,6 +131,8 @@ function createGrid() {
     node.parent = Manager.backgroundNode;
     node.setWorldPosition(cc.v3(0, 0, 0));
     let model = node.addComponent(cc.ModelComponent);
+    const cb = model.onEnable.bind(model);
+    model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
 
     let positions = [];
     let colors = [];
@@ -147,7 +149,7 @@ function createGrid() {
     }
 
     let primitiveMode = cc.GFXPrimitiveMode.LINE_LIST;
-    // 使用2d点来节省顶点数据
+    // 使用二维顶点来节省顶点数据
     let attributes = {
         positions: {
             name: cc.GFXAttributeName.ATTR_POSITION,

@@ -14,36 +14,44 @@ CCEffect %{
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
-          // blendColorMask: none
 }%
 
 CCProgram grid-vs %{
   precision mediump float;
   #include <cc-local>
   #include <cc-global>
-  in vec2 a_position;
 
+  in vec2 a_position;
   in vec4 a_color;
   out vec4 color;
+  out vec3 pos_w;
 
   vec4 vert () {
-    vec4 pos = vec4(a_position, 0, 1);
-
-    pos = cc_matViewProj * cc_matWorld * pos;
+    vec4 pos = cc_matWorld * vec4(a_position, 0, 1);
+    pos_w = pos.xyz;
     color = a_color;
 
+    pos = cc_matViewProj * pos;
+    pos.z += 0.001;
     return pos;
   }
 }%
 
 CCProgram grid-fs %{
   precision mediump float;
-  in vec4 color;
+  #include <cc-global>
   #include <post-process>
 
+  in vec4 color;
+  in vec3 pos_w;
+
   vec4 frag () {
-    vec4 o = vec4(1, 1, 1, 1);
-    o *= color;
+    vec4 o = color;
+
+    // fade out at grazing angles
+    float scale = abs(normalize(cc_cameraPos.xyz - pos_w).y);
+    if (scale < 0.5) o.a *= max(0.3, scale * 2.0);
+
     return PostProcess(o);
   }
 }%
