@@ -40,7 +40,7 @@ async function openEngine() {
             renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
             registerSystemEvent: false,
             jsList: [],
-            noCache: false,
+            noCache: true,
             groupList: [],
             collisionMatrix: null,
         }, resolve);

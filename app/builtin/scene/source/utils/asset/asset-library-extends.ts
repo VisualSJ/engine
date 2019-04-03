@@ -6,6 +6,7 @@ const assetLibrary = cc.AssetLibrary;
 // 这里的回调需要完全由使用者自己维护，AssetLibrary只负责调用。
 // @ts-ignore
 const assetListener = assetLibrary.assetListener = new CallbacksInvoker();
+const dependListener = assetLibrary.dependListener = new CallbacksInvoker();
 
 function removeCaches(url: any) {
     cc.loader.release(url);
@@ -15,27 +16,56 @@ assetLibrary.onAssetMoved = (uuid: any, src: any, dest: any) => {
 
 };
 
+assetLibrary.propSetter = (asset: any, obj: any, propName: string, oldAsset: any, newAsset: any) => {
+    if (oldAsset === newAsset || obj[propName] === newAsset) {
+        return;
+    }
+    if (asset instanceof cc.Material && newAsset instanceof cc.Texture2D) {
+        for (let i = 0, l = asset.passes.length; i < l; i++) {
+            if (asset.getProperty(propName, i) === oldAsset) {
+                asset.setProperty(propName, newAsset, i);
+            }
+        }
+    } else {
+        obj[propName] = newAsset;
+        asset.onLoaded && asset.onLoaded();
+    }
+};
+
 assetLibrary.onAssetChanged = (uuid: any) => {
     assetLibrary.queryAssetInfo(uuid, (err: any, url: any, isRawAsset: any, ctor: any) => {
         if (err) {
             return;
         }
 
-        removeCaches(uuid);
-
-        if (!assetListener.hasEventListener(uuid)) {
-            return;
+        if (!assetListener.hasEventListener(uuid) && !dependListener.hasEventListener(uuid)) {
+            return removeCaches(uuid);
         }
 
         if (cc.js.isChildClassOf(ctor, cc.Scene)) {
-            return;
+            return removeCaches(uuid);
         }
 
         if (isRawAsset) {
+            removeCaches(uuid);
             assetListener.invoke(uuid, url);
+            dependListener.invoke(uuid, url);
         } else {
+            const id = cc.loader._getReferenceKey(uuid);
+            const oldItem = cc.loader.removeItem(id);
+            const oldAsset = oldItem.content;
+            if (oldAsset instanceof cc.Asset) {
+                const nativeUrl = oldAsset.nativeUrl;
+                if (nativeUrl) {
+                    removeCaches(nativeUrl);
+                }
+            }
             assetLibrary.loadAsset(uuid, (err: any, asset: any) => {
                 assetListener.invoke(uuid, asset);
+                dependListener.invoke(uuid, oldAsset, asset);
+                if (oldAsset instanceof cc.Asset) {
+                    oldAsset.destroy();
+                }
             });
         }
     });
