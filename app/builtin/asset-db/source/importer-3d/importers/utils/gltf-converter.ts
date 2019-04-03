@@ -238,7 +238,7 @@ export class GltfConverter {
             this._gltf.nodes.forEach((node, iNode) => {
                 if (node.children !== undefined) {
                     for (const iChildNode of node.children) {
-                        this._parents[iChildNode] = iChildNode;
+                        this._parents[iChildNode] = iNode;
                     }
                 }
             });
