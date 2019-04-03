@@ -8,12 +8,17 @@
 export const type = 'registerFileProtocol';
 
 export async function handler(request: any, callback: any) {
-    const url = decodeURIComponent(request.url.substr(9));
+    const url = require('url');
     const path = require('path');
     const fs = require('fs');
-    let result = path.join(Editor.Project.path, 'library', url);
+
+    const params = url.parse(request.url);
+
+    const filepath = path.join(params.hostname, params.pathname);
+
+    let result = path.join(Editor.Project.path, 'library', filepath);
     if (!fs.existsSync(result)) {
-        result = path.join(Editor.App.path, 'builtin/asset-db/static/internal/library', url);
+        result = path.join(Editor.App.path, 'builtin/asset-db/static/internal/library', filepath);
     }
     callback({ path: result });
 }
