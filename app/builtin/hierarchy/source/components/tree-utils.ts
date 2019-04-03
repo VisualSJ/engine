@@ -135,7 +135,7 @@ exports.getNodeFromTree = (uuid: string) => {
 /**
  * 更快速地找到单个资源节点
  */
-exports.getNodeFromMap = (uuid = '') => {
+exports.getNodeFromMap = (uuid: string = '') => {
     for (const [top, node] of db.nodesMap) {
         if (uuid === node.uuid) {
             return node;
@@ -148,7 +148,7 @@ exports.getNodeFromMap = (uuid = '') => {
  * 找到当前节点及其前后节点
  * [current, prev, next]
  */
-exports.getSiblingsFromMap = (uuid = '') => {
+exports.getSiblingsFromMap = (uuid: string = '') => {
     const nodes = Array.from(db.nodesMap.values());
     const length = nodes.length;
     let current = nodes[0];
