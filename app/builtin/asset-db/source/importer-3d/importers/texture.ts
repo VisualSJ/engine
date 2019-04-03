@@ -1,4 +1,4 @@
-import { Asset, Importer, queryUuidFromUrl, VirtualAsset } from '@editor/asset-db';
+import { Asset, Importer, queryUuidFromUrl, VirtualAsset, queryPathFromUrl } from '@editor/asset-db';
 import {
     applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
@@ -33,7 +33,7 @@ export default class TextureImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.16';
+        return '1.0.19';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -86,6 +86,9 @@ export default class TextureImporter extends Importer {
                 imageUuid = imageUuidOrDatabaseUri;
             } else {
                 imageUuid = queryUuidFromUrl(imageUuidOrDatabaseUri);
+                if (!imageUuid) {
+                    console.error(`Cannot find image ${queryPathFromUrl(imageUuidOrDatabaseUri) || ''}.`);
+                }
             }
             if (imageUuid !== null) {
                 // @ts-ignore

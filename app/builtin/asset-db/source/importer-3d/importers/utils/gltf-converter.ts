@@ -220,10 +220,34 @@ interface IPrimitiveViewer {
 export class GltfConverter {
     private _nodePathTable: string[] | null = null;
 
-    constructor(
-        private _gltf: GlTf,
-        private _buffers: Buffer[],
-        private _gltfFilePath: string) {
+    /**
+     * The parent index of each node.
+     */
+    private _parents: number[] = [];
+
+    /**
+     * The root node of each skin.
+     */
+    private _skinRoots: number[] = [];
+
+    constructor(private _gltf: GlTf, private _buffers: Buffer[], private _gltfFilePath: string) {
+        // We require the scene graph is a disjoint union of strict trees.
+        // This is also the requirement in glTf 2.0.
+        if (this._gltf.nodes !== undefined) {
+            this._parents = new Array(this._gltf.nodes.length).fill(-1);
+            this._gltf.nodes.forEach((node, iNode) => {
+                if (node.children !== undefined) {
+                    for (const iChildNode of node.children) {
+                        this._parents[iChildNode] = iChildNode;
+                    }
+                }
+            });
+        }
+
+        if (this._gltf.skins) {
+            this._skinRoots = new Array(this._gltf.skins.length).fill(-1);
+        }
+
         this._nodePathTable = this._createNodePathTable();
     }
 
@@ -309,6 +333,7 @@ export class GltfConverter {
 
     public createSkeleton(iGltfSkin: number) {
         const gltfSkin = this._gltf.skins![iGltfSkin];
+        const commongRoot = this._getSkinRoot(iGltfSkin);
         const inverseBindMatrices = new Array(gltfSkin.joints.length);
         if (gltfSkin.inverseBindMatrices === undefined) {
             // The default is that each matrix is a 4x4 identity matrix,
@@ -343,7 +368,18 @@ export class GltfConverter {
 
         const skeleton = new cc.Skeleton();
         skeleton.name = this._getGltfXXName(GltfAssetKind.Skin, iGltfSkin);
-        skeleton._joints = gltfSkin.joints.map((nodeIndex) => this._getNodePath(nodeIndex));
+        const rootPathPrefix = `${this._getNodePath(commongRoot)}/`;
+        skeleton._joints = gltfSkin.joints.map((nodeIndex) => {
+            if (nodeIndex === commongRoot) {
+                return '';
+            }
+            const path = this._getNodePath(nodeIndex);
+            if (path.startsWith(rootPathPrefix)) {
+                return path.substr(rootPathPrefix.length);
+            } else {
+                return path;
+            }
+        });
         skeleton._inverseBindMatrices = inverseBindMatrices;
 
         return skeleton;
@@ -644,6 +680,48 @@ export class GltfConverter {
         }
     }
 
+    private _getParent(node: number) {
+        return this._parents[node];
+    }
+
+    private _commonRoot(nodes: number[]) {
+        if (nodes.length === 0) {
+            return -1;
+        }
+        const roots = nodes.filter((node) => {
+            const parent = this._getParent(node);
+            return (nodes.findIndex((node) => node === parent)) < 0;
+        });
+        if (roots.length === 0) {
+            // Circular
+            return -1;
+        } else if (roots.length === 1) {
+            // The common root is living in nodes.
+            return roots[0];
+        } else {
+            // There are multi roots in nodes.
+            // Try find the common base.
+            const parent = this._getParent(roots[0]);
+            for (let i = 1; i < roots.length; ++i) {
+                if (this._getParent(i) !== parent) {
+                    return -1;
+                }
+            }
+            return parent;
+        }
+    }
+
+    private _getSkinRoot(skin: number) {
+        let result = this._skinRoots[skin];
+        if (result < 0) {
+            result = this._commonRoot(this._gltf.skins![skin].joints);
+            if (result < 0) {
+                throw new Error(`Non-conforming glTf: skin joints do not have a common root.`);
+            }
+        }
+        return result;
+    }
+
     private _readPrimitiveVertices(gltfPrimitive: MeshPrimitive, minPosition: cc.Vec3, maxPosition: cc.Vec3, options: IMeshOptions) {
         const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
 
@@ -936,53 +1014,58 @@ export class GltfConverter {
     }
 
     private _getSceneNode(iGltfScene: number, gltfAssetFinder: IGltfAssetFinder) {
-        const gltfScene = this._gltf.scenes![iGltfScene];
-        const nodes = new Array(this._gltf.nodes!.length);
-
-        const getNode = (index: number, root: cc.Node | null) => {
-            if (nodes[index] !== undefined) {
-                return nodes[index];
-            }
-            const gltfNode = this._gltf.nodes![index];
-            const node = this._createNode(index, gltfAssetFinder, root);
-            nodes[index] = node;
-            if (gltfNode.children !== undefined) {
-                gltfNode.children.forEach((childIndex) => {
-                    const childNode = getNode(childIndex, root || node);
-                    childNode.parent = node;
-                });
-            }
-            return node;
-        };
-
         const sceneName = this._getGltfXXName(GltfAssetKind.Scene, iGltfScene);
         const result = new cc.Node(sceneName);
-        const rootNodes: cc.Node[] = [];
+        const gltfScene = this._gltf.scenes![iGltfScene];
         if (gltfScene.nodes !== undefined) {
-            gltfScene.nodes.forEach((rootIndex) => {
-                const rootNode = getNode(rootIndex, result);
-                rootNode.parent = result;
-                rootNodes.push(rootNode);
+            const mapping: Array<cc.Node | null> = new Array(this._gltf.nodes!.length).fill(null);
+            for (const node of gltfScene.nodes) {
+                const root = this._createEmptyNodeRecursive(node, mapping);
+                root.parent = result;
+            }
+            mapping.forEach((node, iGltfNode) => {
+                this._setupNode(iGltfNode, mapping, gltfAssetFinder);
             });
         }
-
         return result;
     }
 
-    private _createNode(iGltfNode: number, gltfAssetFinder: IGltfAssetFinder, root: cc.Node | null) {
+    private _createEmptyNodeRecursive(iGltfNode: number, mapping: Array<cc.Node | null>): cc.Node {
         const gltfNode = this._gltf.nodes![iGltfNode];
-        const node = this._createEmptyNode(iGltfNode);
+        const result = this._createEmptyNode(iGltfNode);
+        if (gltfNode.children !== undefined) {
+            for (const child of gltfNode.children) {
+                const childResult = this._createEmptyNodeRecursive(child, mapping);
+                childResult.parent = result;
+            }
+        }
+        mapping[iGltfNode] = result;
+        return result;
+    }
+
+    private _setupNode(iGltfNode: number, mapping: Array<cc.Node | null>, gltfAssetFinder: IGltfAssetFinder) {
+        const node = mapping[iGltfNode];
+        if (node === null) {
+            return;
+        }
+        const gltfNode = this._gltf.nodes![iGltfNode];
         if (gltfNode.mesh !== undefined) {
-            let modelComponent = null;
+            let modelComponent: cc.ModelComponent | null = null;
             if (gltfNode.skin === undefined) {
                 modelComponent = node.addComponent(cc.ModelComponent);
             } else {
-                modelComponent = node.addComponent(cc.SkinningModelComponent);
+                const skinningModelComponent = node.addComponent(cc.SkinningModelComponent);
                 const skeleton = gltfAssetFinder.find<cc.Skeleton>('skeletons', gltfNode.skin);
                 if (skeleton) {
-                    modelComponent._skeleton = skeleton;
+                    skinningModelComponent._skeleton = skeleton;
                 }
-                modelComponent._skinningRoot = root;
+                const skinRoot = mapping[this._getSkinRoot(gltfNode.skin)];
+                if (skinRoot === null) {
+                    console.error(`glTf requires that skin joints must exists in same scene as node references it.`);
+                } else {
+                    skinningModelComponent._skinningRoot = skinRoot;
+                }
+                modelComponent = skinningModelComponent;
             }
             const mesh = gltfAssetFinder.find<cc.Mesh>('meshes', gltfNode.mesh);
             if (mesh) {
@@ -1002,7 +1085,6 @@ export class GltfConverter {
             });
             modelComponent._materials = materials;
         }
-        return node;
     }
 
     private _createEmptyNode(iGltfNode: number) {
