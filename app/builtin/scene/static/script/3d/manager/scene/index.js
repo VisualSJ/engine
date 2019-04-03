@@ -22,18 +22,46 @@ let currentSceneData = null;
 class SceneManager extends EventEmitter {
 
     /**
-     * 切换当前状态类型，并且检查是否保存
+     * 切换当前场景的编辑状态
+     * 可以是 cc.Scene | cc.Prefab | cc.Animation
      * @param {*} type 
      */
-    _changeType(type) {
-        // TODO 提示是否保存
-        if (type === 'cc.Prefab') {
-            this.staging();
-            document.body.appendChild(this.$prefab);
+    async _changeType(type) {
+
+        if (this.type === 'cc.Scene') {
+            // 如果当前打开的是场景            
+            switch (type) {
+                case 'cc.Prefab': // 切换到 prefab，则需要缓存场景数据
+                    this.staging();
+                    document.body.appendChild(this.$prefab);
+                    break;
+                case 'cc.Animation': // 切换到 animation，暂未处理
+                    this.$prefab.parentElement && this.$prefab.remove();
+                    break;
+                default: // 切换场景，尝试关闭之前场景
+                    await this.close();
+                    this.$prefab.parentElement && this.$prefab.remove();
+                    break;
+            }
         } else {
-            this.restore();
-            this.$prefab.remove();
+            // 如果打开的不是场景
+            switch (type) {
+                case 'cc.Prefab': // 切换到 prefab，则需要缓存场景数据
+                await this.close();
+                    document.body.appendChild(this.$prefab);
+                    break;
+                case 'cc.Animation': // 切换到 animation，暂未处理
+                    await this.close();
+                    this.$prefab.parentElement && this.$prefab.remove();
+                    break;
+                default: // 切换场景，尝试关闭之前正在编辑的东西以及缓存的场景
+                    await this.close(); // todo
+                    this.$prefab.parentElement && this.$prefab.remove();
+                    break;
+            }
         }
+
+        // 更新 type 数据
         this.type = type;
 
         return true;
@@ -84,7 +112,7 @@ class SceneManager extends EventEmitter {
                     console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
                     uuid = '';
                 } else {
-                    this._changeType(info.type);
+                    await this._changeType(info.type);
                 }
             } catch (error) {
                 console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
@@ -255,6 +283,7 @@ class SceneManager extends EventEmitter {
 
     /**
      * 同步场景的序列化数据到缓存
+     * 这个缓存用于判断 dirty 状态
      */
     syncSceneData() {
         currentSceneData = this.serialize();
@@ -262,6 +291,8 @@ class SceneManager extends EventEmitter {
 
     /**
      * 查询节点数的信息
+     * 传入 uuid 则以这个 uuid 指向的节点为根
+     * 不传入则从场景开始
      * @param {*} uuid
      */
     queryNodeTree(uuid) {
@@ -361,14 +392,14 @@ class SceneManager extends EventEmitter {
 
     /**
      * 缓存当前的场景
+     * 只能缓存一份，并且只能缓存场景
      */
     async staging() {
-        if (this._cache) {
+        if (this._cache || this.type !== 'cc.Scene') {
             return;
         }
 
         const json = Manager.Utils.serialize(cc.director.getScene());
-
         this._cache = {
             uuid: currentSceneUuid,
             json,
@@ -377,7 +408,8 @@ class SceneManager extends EventEmitter {
     }
 
     /**
-     * 还原之前的场景
+     * 还原之前缓存的场景
+     * 并且清空缓存
      */
     async restore() {
         if (!this._cache) {
