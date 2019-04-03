@@ -599,14 +599,14 @@ const parseEffect = (() => {
     shaderName = 'syntax error';
     content = stripComments(content).replace(tabs, ' '.repeat(tabAsSpaces));
     // process each block
-    let effect = {}, templates = {};
+    let effect = { name: effectName }, templates = {};
     let effectCap = effectRE.exec(stripHashComments(content));
     if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
     else { // deep clone to decouple references
-      try { effect = JSON.parse(JSON.stringify(yaml.safeLoad(effectCap[1]))); }
-      catch (e) { warn(`parse YAML failed: ${e}`); }
-      effect.name = effectName;
-      delete effect.temporaries;
+      try {
+        const src = yaml.safeLoad(effectCap[1]);
+        effect.techniques = JSON.parse(JSON.stringify(src.techniques));
+      } catch (e) { warn(`parse YAML failed: ${e}`); }
       structuralTypeCheck(mappings.effectStructure, effect);
     }
     let programCap = programRE.exec(content);
@@ -714,13 +714,23 @@ const mapPassParam = (() => {
     if (shader.defines.find((d) => d === def)) warn('don\'t use shader defines to controll passes');
     return def;
   };
+  const mapDSS = (dss) => {
+    if (dss.stencilWriteMask !== undefined) { dss.stencilWriteMaskFront = dss.stencilWriteMaskBack = dss.stencilWriteMask; delete dss.stencilWriteMask; }
+    else if (dss.stencilWriteMaskFront !== dss.stencilWriteMaskBack) warn('WebGL(2) doesn\'t support inconsistent front/back stencil write mask');
+    if (dss.stencilReadMask !== undefined) { dss.stencilReadMaskFront = dss.stencilReadMaskBack = dss.stencilReadMask; delete dss.stencilReadMask; }
+    else if (dss.stencilReadMaskFront !== dss.stencilReadMaskBack) warn('WebGL(2) doesn\'t support inconsistent front/back stencil read mask');
+    if (dss.stencilRef !== undefined) { dss.stencilRefFront = dss.stencilRefBack = dss.stencilRef; delete dss.stencilRef; }
+    else if (dss.stencilRefFront !== dss.stencilRefBack) warn('WebGL(2) doesn\'t support inconsistent front/back stencil ref');
+    return generalMap(dss);
+  };
   return (pass, shader) => {
     shaderName = 'type error';
     const tmp = {};
     // special treatments
-    if (pass.properties) { tmp.properties = mapProperties(pass.properties, shader); delete pass.properties; }
     if (pass.priority) { tmp.priority = mapPriority(pass.priority); delete pass.priority; }
+    if (pass.depthStencilState) { tmp.depthStencilState = mapDSS(pass.depthStencilState); delete pass.depthStencilState; }
     if (pass.switch) { tmp.switch = mapSwitch(pass.switch, shader); delete pass.switch; }
+    if (pass.properties) { tmp.properties = mapProperties(pass.properties, shader); delete pass.properties; }
     generalMap(pass); Object.assign(pass, tmp);
   };
 })();

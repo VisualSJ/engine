@@ -72,8 +72,6 @@ class Engine3D extends EngineInterface {
         let model = node.addComponent(cc.ModelComponent);
         if (!opts.forwardPipeline) {
             model._sceneGetter = cc.director.root.ui.getRenderSceneGetter();
-        } else {
-            console.log('forward');
         }
         model.mesh = mesh;
         const cb = model.onEnable.bind(model);

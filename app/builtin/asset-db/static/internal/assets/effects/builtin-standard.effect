@@ -36,8 +36,11 @@ CCEffect %{
         depthTest: true
         depthWrite: false
         stencilTestFront: true
-        stencilFuncFront: greater
-        stencilPassOpFront: incr
+        stencilFuncFront: not_equal
+        stencilPassOpFront: replace
+        stencilRef: 0x80 # only use the leftmost bit
+        stencilReadMask: 0x80
+        stencilWriteMask: 0x80
       blendState:
         targets:
         - blend: true
