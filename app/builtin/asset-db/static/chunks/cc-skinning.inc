@@ -5,7 +5,7 @@ in vec4 a_joints;
 
 #pragma builtin(local)
 uniform CCSkinning {
-  mat4 cc_matJoint[128];
+  vec4 cc_matJoint[128 * 3];
   vec4 cc_jointsTextureSize;
 };
 
@@ -32,7 +32,15 @@ mat4 getBoneMatrix(const in float i) {
 }
 #else
 mat4 getBoneMatrix(const in float i) {
-  return cc_matJoint[int(i)];
+  vec4 _0 = cc_matJoint[3 * int(i) + 0];
+  vec4 _1 = cc_matJoint[3 * int(i) + 1];
+  vec4 _2 = cc_matJoint[3 * int(i) + 2];
+  return mat4(
+      vec4(_0.x, _0.y, _0.z, 0),
+      vec4(_0.w, _1.x, _1.y, 0),
+      vec4(_1.z, _1.w, _2.x, 0),
+      vec4(_2.y, _2.z, _2.w, 1)
+  );
 }
 #endif
 
