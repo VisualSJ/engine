@@ -15,7 +15,7 @@ export const template = `
         <ui-prop empty="true"
             :value="dump.name"
         >
-            <ui-input
+            <ui-input disabled
                 :value="dump.name.value"
                 @confirm="dump.name.value = $event.target.value"
                 placeholder="(scene)"

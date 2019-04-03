@@ -15,7 +15,9 @@
         }
     }
 
-    &[isScene] {
+    &[isScene],
+    &[isEditingPrefab] {
+
         background-color: var(--item-hover-bg);
         border-bottom: 1px solid var(--panel-content-bg);
     }
@@ -64,6 +66,7 @@
         cursor: pointer;
         font-size: 0.9em;
         color: var(--default-text-c);
+
         &[animate] {
             transition: 0.2s transform;
         }
@@ -77,7 +80,7 @@
         }
     }
 
-    .scene {
+    .root {
         height: 20px;
         line-height: 20px;
         width: 20px;
@@ -85,10 +88,13 @@
         cursor: pointer;
         margin-left: -2px;
         font-size: 13px;
-        background-image: url("packages://hierarchy/static/icon/scene.png");
-        background-size: 14px 14px;
-        background-repeat: no-repeat;
-        background-position: center 2px;
+
+        &.scene {
+            background-image: url("packages://hierarchy/static/icon/scene.png");
+            background-size: 14px 14px;
+            background-repeat: no-repeat;
+            background-position: center 2px;
+        }
 
         &+.name {
             margin-left: 2px;
@@ -201,6 +207,15 @@
             &[insert] {
                 color: var(--item-active-c) !important;
                 opacity: 0.75;
+            }
+        }
+    }
+
+    &[usefor='prefab'] {
+        .tree-node {
+            &[isPrefab] {
+                color: var(--default-text-c);
+                ;
             }
         }
     }

@@ -6,6 +6,7 @@
         :style="{ paddingLeft: node.left + 'px' }"
         :class="{'parent':node.isParent}"
         :expand="node.isExpand"
+        :isEditingPrefab="node.isEditingPrefab"
         :isPrefab="node.isPrefab"
         :isScene="node.isScene"
         :visible="node.isVisible.toString()"
@@ -23,8 +24,12 @@
             @dblclick.stop
         ></i>
 
-        <i class="scene"
+        <i class="root scene"
             v-if="node.isScene" 
+        ></i>
+
+        <i class="root i-prefab"
+            v-if="node.isEditingPrefab" 
         ></i>
 
         <label class="name"

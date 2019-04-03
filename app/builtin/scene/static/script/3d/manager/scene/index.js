@@ -24,13 +24,13 @@ class SceneManager extends EventEmitter {
     /**
      * 切换当前场景的编辑状态
      * 可以是 cc.Scene | cc.Prefab | cc.Animation
-     * @param {*} type 
+     * @param {*} info
      */
-    async _changeType(type) {
+    async _changeType(info) {
 
         if (this.type === 'cc.Scene') {
-            // 如果当前打开的是场景            
-            switch (type) {
+            // 如果当前打开的是场景
+            switch (info.type) {
                 case 'cc.Prefab': // 切换到 prefab，则需要缓存场景数据
                     this.staging();
                     document.body.appendChild(this.$prefab);
@@ -45,11 +45,11 @@ class SceneManager extends EventEmitter {
             }
         } else {
             // 如果打开的不是场景
-            switch (type) {
+            switch (info.type) {
                 case 'cc.Prefab': // 切换到 prefab，则需要缓存场景数据
                 await this.close();
-                    document.body.appendChild(this.$prefab);
-                    break;
+                document.body.appendChild(this.$prefab);
+                break;
                 case 'cc.Animation': // 切换到 animation，暂未处理
                     await this.close();
                     this.$prefab.parentElement && this.$prefab.remove();
@@ -60,9 +60,8 @@ class SceneManager extends EventEmitter {
                     break;
             }
         }
-
-        // 更新 type 数据
-        this.type = type;
+        this.type = info.type;
+        this.info = info;
 
         return true;
     }
@@ -77,6 +76,8 @@ class SceneManager extends EventEmitter {
         this.prefab = '';
         // 缓存最后打开的场景的信息
         this._cache = null;
+        // 资源信息
+        this.info = null;
 
         // wasd 按键提示
         this.$prefab = document.createElement('div');
@@ -112,7 +113,7 @@ class SceneManager extends EventEmitter {
                     console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
                     uuid = '';
                 } else {
-                    await this._changeType(info.type);
+                    await this._changeType(info);
                 }
             } catch (error) {
                 console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
@@ -127,15 +128,16 @@ class SceneManager extends EventEmitter {
             // 如果 prefab 存在，则进入打开流程，不存在则提示警告并且打开空场景
             if (prefab) {
                 const scene = new cc.Scene();
+                scene.name = this.info.name; // 重要：如 name = Cube.prefab，表示场景给 prefab 编辑使用，后续样式会以此判断，
                 const node = cc.instantiate(prefab);
                 node.parent = scene;
                 this.prefab = node.uuid;
-    
+
                 currentSceneUuid = uuid;
-    
+
                 try {
                     await utils.loadSceneByNode(scene);
-    
+
                     // 发送场景已经打开的消息修改消息
                     Manager.Ipc.send('set-scene', uuid);
                     Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);

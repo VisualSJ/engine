@@ -35,6 +35,18 @@ export async function refresh() {
         nodesTree.children = arr;
     }
 
+    // 默认使用场景
+    vm.usefor = 'scene';
+
+    // 处理 prefab 编辑的情况
+    const root = nodesTree.children[0];
+    if (root.isScene && root.name.includes('.prefab')) {
+        nodesTree = nodesTree.children[0]; // 前进一层，第一层的 scene 没必要显示
+        nodesTree.children[0].isEditingPrefab = true;
+        // 告知父层这是特殊场景
+        vm.usefor = 'prefab';
+    }
+
     toNodesTree();
 }
 
@@ -106,8 +118,8 @@ function legealNodeAttr(node: ItreeNode) {
         left: 0,
         isScene: node.isScene,
         isParent: false,
+        isPrefab: false,
         parentUuid: '',
-        isPrefab: node.prefab,
     };
     const keys = Object.keys(defaultParams);
     for (const key of keys) {
@@ -344,8 +356,8 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.top = start;
         node.left = depth * iconWidth + padding;
         node.isParent = node.children && node.children.length > 0 ? true : false;
+        node.isPrefab = node.prefab;
         node.parentUuid = nodes.uuid;
-        node.isPrefab = !!node.prefab;
         node.isVisible = nodes.isVisible === false ? nodes.isVisible : node.active;
 
         if (vm.search === '') { // 没有搜索

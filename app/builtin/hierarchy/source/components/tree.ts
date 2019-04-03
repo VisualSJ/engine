@@ -31,6 +31,7 @@ export function data() {
         current: {}, // 当前选中项
         copiedUuids: [], // 用于存放已复制节点的 uuid
 
+        usefor: 'scene', // 使用场景 有 scene, prefab
         state: '',
         search: '', // 搜索节点名称
         viewHeight: 0, // 当前树形的可视区域高度
