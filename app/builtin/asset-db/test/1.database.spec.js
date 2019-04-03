@@ -72,13 +72,18 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
             });
 
             it('传入正确的参数', async () => {
+
+                const keys = [
+                    'library', 'name', 'readOnly',
+                    'target', 'temp',  'visible',
+                ];
+
                 const queue = [
                     {
                         args: 'assets',
                         expect: {
-                            keys: ['level', 'name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                            keys,
                             values: {
-                                level: 4,
                                 name: 'assets',
                                 target: join(Editor.Project.path, 'assets'),
                                 library: join(Editor.Project.path, 'library'),
@@ -91,11 +96,10 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                     {
                         args: 'internal',
                         expect: {
-                            keys: ['level', 'name', 'target', 'library', 'temp', 'visible', 'readOnly'],
+                            keys,
                             values: {
-                                level: 4,
                                 name: 'internal',
-                                target: join(Editor.App.path, 'builtin/asset-db/static/internal/assets'),
+                                target: join(Editor.App.path, 'app/builtin/asset-db/static/internal/assets'),
                                 library: join(Editor.Project.path, 'library'),
                                 temp: join(Editor.Project.path, 'temp/asset-db/internal'),
                                 visible: true,
@@ -106,7 +110,6 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                 ];
 
                 for (const test of queue) {
-
                     const result = await Editor.Ipc.requestToPackage('asset-db', 'query-db-info', test.args);
                     expect(result).to.have.all.keys(test.expect.keys);
 

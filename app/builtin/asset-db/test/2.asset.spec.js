@@ -39,7 +39,7 @@ const dbInternal = {
             uuid: '90bdd2a9-2838-4888-b66c-e94c8b7a5169',
             url: 'db://internal/default_prefab/ui/Button.prefab',
             availableUrl001: 'db://internal/default_prefab/ui/Button-001.prefab',
-            path: join(Editor.App.path, 'builtin/asset-db/static/internal/assets/default_prefab/ui/Button.prefab'),
+            path: join(Editor.App.path, 'app/builtin/asset-db/static/internal/assets/default_prefab/ui/Button.prefab'),
         },
     },
 };
@@ -195,7 +195,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                             'visible',
                         ],
                         values: {
-                            file: join(Editor.App.path, 'builtin/asset-db/static/internal/assets'),
+                            file: join(Editor.App.path, 'app/builtin/asset-db/static/internal/assets'),
                             importer: 'database',
                             isDirectory: false,
                             library: {},

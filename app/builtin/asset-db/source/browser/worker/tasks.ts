@@ -48,7 +48,7 @@ windows.on('focus', () => {
 
 /**
  * 启动一个资源数据库
- * @param config 
+ * @param config
  */
 async function startDatabase(config: IAssetDBConfig) {
 
@@ -60,14 +60,40 @@ async function startDatabase(config: IAssetDBConfig) {
 
     config.temp = join(Editor.Project.path, 'temp/asset-db', config.name);
     config.library = join(Editor.Project.path, 'library');
-    config.interval = 500;
-    config.binaryInterval = 1000;
-    config.usePolling = false;
-    // config.useFsEvents = true;
-    // config.ignored = '*.meta';
-    config.alwaysStat = true;
-    config.followSymlinks = false;
 
+    // 不对外暴露的属性
+    Object.defineProperties(config, {
+        interval: {
+            value: 500,
+            enumerable: false,
+            writable: true,
+        },
+        binaryInterval: {
+            value: 1000,
+            enumerable: false,
+            writable: true,
+        },
+        usePolling: {
+            value: false,
+            enumerable: false,
+            writable: true,
+        },
+        alwaysStat: {
+            value: true,
+            enumerable: false,
+            writable: true,
+        },
+        followSymlinks: {
+            value: false,
+            enumerable: false,
+            writable: true,
+        },
+        level: {
+            value: profile.get('log.level'),
+            enumerable: false,
+            writable: true,
+        },
+    });
 
     if (typeof config.visible !== 'boolean') {
         config.visible = true;
@@ -76,7 +102,6 @@ async function startDatabase(config: IAssetDBConfig) {
         config.readOnly = false;
     }
 
-    config.level = profile.get('log.level');
     if (typeof config.level !== 'number' || config.level <= 0 || config.level > 4) {
         config.level = 3;
     }
@@ -87,8 +112,8 @@ async function startDatabase(config: IAssetDBConfig) {
 // 编辑器是否启动完毕，这里监听的是 package 的启动
 depend.add('editor-init', {
     depends: [],
-    async handle() {},
-    async reset() {},
+    async handle() { },
+    async reset() { },
 });
 
 // 查询引擎数据
@@ -98,7 +123,7 @@ depend.add('engine-info', {
         engineInfo = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
         depend.finish('engine-info');
     },
-    async reset() {},
+    async reset() { },
 });
 
 // 运行 db 的 worker 是否启动完成
@@ -114,7 +139,7 @@ depend.add('worker-init', {
         child.on('refresh', () => {
             depend.reset('worker-init');
         });
-    
+
         // 如果 worker 被关闭
         child.on('closed', () => {
             depend.reset('worker-init');
@@ -193,7 +218,7 @@ depend.add('worker-engine', {
         });
         depend.finish('worker-engine');
     },
-    async reset() {},
+    async reset() { },
 });
 
 // 启动内置的资源数据库
@@ -213,7 +238,7 @@ depend.add('builtin-db-startup', {
         });
         depend.finish('builtin-db-startup');
     },
-    async reset() {}
+    async reset() { },
 });
 
 // 启动插件注册的数据库
@@ -237,7 +262,7 @@ depend.add('package-db-startup', {
         }
         depend.finish('package-db-startup');
     },
-    async reset() {},
+    async reset() { },
 });
 
 // DB 插件是否准备就绪
