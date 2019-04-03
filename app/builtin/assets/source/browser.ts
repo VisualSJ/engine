@@ -26,7 +26,6 @@ const fileExts: any = { // 记录各类型文件的默认打开方式
         '.pmtl',
         '.effect',
         '.fbx',
-        '.prefab',
         '.mesh',
     ],
 };
@@ -75,7 +74,7 @@ export const messages = {
     async 'open-asset'(asset: IOpenAsset) {
         const { ext, file, uuid } = asset;
 
-        if (ext === '.scene') {
+        if (ext === '.scene' || ext === '.prefab') {
             Editor.Ipc.sendToPackage('scene', 'open-scene', asset.uuid);
             return;
         }

@@ -91,6 +91,9 @@ export async function beforeClose() {
         case 0:
             // 等待场景保存完毕
             await Editor.Ipc.requestToPackage('scene', 'save-scene');
+
+            // 重新发起一次保存请求，因为有可能是在动画或者 prefab 状态，需要再次检查
+            await beforeClose();
             return true;
     }
 }

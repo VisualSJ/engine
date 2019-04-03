@@ -34,6 +34,7 @@ nodeManager.on('added', (node) => {
         link(node);
     }
 });
+
 nodeManager.on('removed', (node) => {
 
 });
@@ -126,7 +127,7 @@ function revert(nodeUuid) {
  * @param {*} nodeUuid
  */
 function sync(nodeUuid) {
-
+    
 }
 
 /**

@@ -63,3 +63,22 @@ exports.loadSceneByJson = async function loadSceneByJson(json) {
         });
     });
 };
+
+/**
+ * 加载一个 prefab 成为场景
+ */
+exports.loadPrefab = async function(uuid) {
+    return new Promise((resolve, reject) => {
+        cc.AssetLibrary.loadAsset(uuid, (error, prefab) => {
+            if (error) {
+                return reject(error);
+            }
+
+            if (!(prefab instanceof cc.Prefab)) {
+                return reject('Open resources are not prefabricated! - ' + uuid);
+            }
+
+            resolve(prefab);
+        });
+    });
+}

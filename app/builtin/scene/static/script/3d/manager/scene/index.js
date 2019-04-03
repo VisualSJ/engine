@@ -6,6 +6,7 @@ const utils = require('./utils');
 const ipc = require('../ipc');
 const nodeManager = require('../node');
 const { existsSync, readFileSync } = require('fs');
+const prefabUtils = require('../prefab/utils');
 
 let currentSceneUuid = '';
 let currentSceneData = null;
@@ -19,10 +20,51 @@ let currentSceneData = null;
  *   scene.on('reload', (error, scene) => {});
  */
 class SceneManager extends EventEmitter {
+
+    /**
+     * 切换当前状态类型，并且检查是否保存
+     * @param {*} type 
+     */
+    _changeType(type) {
+        // TODO 提示是否保存
+        if (type === 'cc.Prefab') {
+            this.staging();
+            document.body.appendChild(this.$prefab);
+        } else {
+            this.restore();
+            this.$prefab.remove();
+        }
+        this.type = type;
+
+        return true;
+    }
+
     constructor() {
         super();
-
         this.ignore = false;
+
+        // 可以打开场景模式以及预制件模式
+        this.type = 'cc.Scene';
+        // 当前打开的 prefab 节点的 uuid
+        this.prefab = '';
+        // 缓存最后打开的场景的信息
+        this._cache = null;
+
+        // wasd 按键提示
+        this.$prefab = document.createElement('div');
+        // $info.hidden = true;
+        this.$prefab.id = 'preafab_info';
+        this.$prefab.innerHTML = `
+        <style>
+            #preafab_info { position: absolute; top: 10px; left: 10px; font-size: 12px; text-align: center; color: #fff; }
+            #preafab_info div { padding: 2px 0; }
+            #preafab_info span { border: 1px solid #fff; border-radius: 2px; padding: 0 4px; }
+        </style>
+        <div>
+            <button>Save</button>
+            <button>Close</button>
+        </div>
+        `;
     }
 
     /**
@@ -33,9 +75,6 @@ class SceneManager extends EventEmitter {
         if (uuid && uuid === currentSceneUuid) {
             return;
         }
-        currentSceneUuid = uuid;
-        Manager.Ipc.forceSend('broadcast', 'scene:close');
-        this.emit('close');
 
         // cc.view.resizeWithBrowserSize(true);
         if (uuid) {
@@ -44,48 +83,98 @@ class SceneManager extends EventEmitter {
                 if (!info) {
                     console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
                     uuid = '';
+                } else {
+                    this._changeType(info.type);
                 }
             } catch (error) {
                 console.warn('Open scene failed: The specified scenario file could not be found - ' + uuid);
                 uuid = '';
             }
         }
-        if (!uuid) {
-            const fileUuid = await ipc.send('query-asset-uuid', 'db://internal/default_file_content/scene');
-            const fileInfo = await ipc.send('query-asset-info', fileUuid);
-            if (!existsSync(fileInfo.file)) {
-                console.error('Open scene failed: template file is not exist.');
-                return;
+
+        // 如果打开的是预制件，则进入预制件处理流程
+        if (this.type === 'cc.Prefab') {
+            const prefab = await utils.loadPrefab(uuid);
+
+            // 如果 prefab 存在，则进入打开流程，不存在则提示警告并且打开空场景
+            if (prefab) {
+                const scene = new cc.Scene();
+                const node = cc.instantiate(prefab);
+                node.parent = scene;
+                this.prefab = node.uuid;
+    
+                currentSceneUuid = uuid;
+    
+                try {
+                    await utils.loadSceneByNode(scene);
+    
+                    // 发送场景已经打开的消息修改消息
+                    Manager.Ipc.send('set-scene', uuid);
+                    Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
+
+                    // 更新用于对比 dirty 的缓存以及 node 缓存和发送 open 事件
+                    await nodeManager.init(cc.director._scene);
+                    !this.ignore && this.emit('open', null, cc.director._scene);
+                    currentSceneData = this.serialize();
+                    return;
+                } catch (error) {
+                    console.error('Open prefab failed: ' + uuid);
+                    console.error(error);
+                    uuid = '';
+                }
             }
+        }
 
-            const fileContent = readFileSync(fileInfo.file);
-            await utils.loadSceneByJson(fileContent);
+        // 如果打开的不是预制件，则肯定是场景
 
-            currentSceneData = this.serialize();
-            await nodeManager.init(cc.director._scene);
-            !this.ignore && this.emit('open', null, cc.director._scene);
-        } else {
+        // 关闭之前的场景
+        currentSceneUuid = uuid;
+        Manager.Ipc.forceSend('broadcast', 'scene:close');
+        this.emit('close');
+
+        // 如果 uuid 存在，则打开某个场景资源
+        if (uuid) {
             try {
                 await utils.loadSceneByUuid(uuid);
-                currentSceneData = this.serialize();
-                // 爬取节点树上的所有节点数据
+
+                // 发送场景已经打开的消息修改消息
+                Manager.Ipc.send('set-scene', uuid);
+                Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
+
+                // 更新用于对比 dirty 的缓存以及 node 缓存和发送 open 事件
                 await nodeManager.init(cc.director._scene);
                 !this.ignore && this.emit('open', null, cc.director._scene);
+                currentSceneData = this.serialize();
+
+                return;
             } catch (error) {
                 console.error('Open scene failed: ' + uuid);
                 console.error(error);
-                currentSceneData = null;
-                // 爬取节点树上的所有节点数据
-                await nodeManager.init(cc.director._scene);
-                !this.ignore && this.emit('open', error, null);
+                uuid = '';
             }
         }
 
-        if (currentSceneData) {
-            // 发送节点修改消息
-            Manager.Ipc.send('set-scene', uuid);
-            Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
+        // 如果上述判断都不存在，则尝试打开空场景
+        // 1. uuid 不存在
+        // 2. 打开资源失败
+        const fileUuid = await ipc.send('query-asset-uuid', 'db://internal/default_file_content/scene');
+        const fileInfo = await ipc.send('query-asset-info', fileUuid);
+        if (!existsSync(fileInfo.file)) {
+            console.error('Open scene failed: template file is not exist.');
+            return;
         }
+
+        const fileContent = readFileSync(fileInfo.file);
+        await utils.loadSceneByJson(fileContent);
+
+        // 发送场景已经打开的消息修改消息
+        Manager.Ipc.send('set-scene', uuid);
+        Manager.Ipc.forceSend('broadcast', 'scene:ready', currentSceneUuid);
+
+        // 更新用于对比 dirty 的缓存以及 node 缓存和发送 open 事件
+        await nodeManager.init(cc.director._scene);
+        !this.ignore && this.emit('open', null, cc.director._scene);
+        currentSceneData = this.serialize();
     }
 
     /**
@@ -151,10 +240,17 @@ class SceneManager extends EventEmitter {
      * 保存场景
      */
     serialize() {
-        let asset = new cc.SceneAsset();
-        asset.scene = cc.director.getScene();
-        // cc.Object._deferredDestroy();
-        return Manager.Utils.serialize(asset);
+        if (this.type === 'cc.Scene') {
+            let asset = new cc.SceneAsset();
+            asset.scene = cc.director.getScene();
+            return Manager.Utils.serialize(asset);
+        } else {
+            const node = nodeManager.query(this.prefab);
+            const prefab = new cc.Prefab();
+            const dump = prefabUtils.getDumpableNode(node);
+            prefab.data = dump;
+            return Manager.Utils.serialize(prefab);
+        }
     }
 
     /**
@@ -262,6 +358,42 @@ class SceneManager extends EventEmitter {
             };
         });
     }
+
+    /**
+     * 缓存当前的场景
+     */
+    async staging() {
+        if (this._cache) {
+            return;
+        }
+
+        const json = Manager.Utils.serialize(cc.director.getScene());
+
+        this._cache = {
+            uuid: currentSceneUuid,
+            json,
+            currentSceneData,
+        };
+    }
+
+    /**
+     * 还原之前的场景
+     */
+    async restore() {
+        if (!this._cache) {
+            return;
+        }
+
+        const cache = this._cache;
+        this._cahce = null;
+        currentSceneUuid = cache.uuid;
+        currentSceneData = cache.currentSceneData;
+
+        await utils.loadSceneByJson(cache.json);
+        await nodeManager.init(cc.director._scene);
+        !this.ignore && this.emit('reload', null, cc.director._scene);
+    }
+
 }
 
 module.exports = new SceneManager();

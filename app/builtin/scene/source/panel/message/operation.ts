@@ -59,14 +59,15 @@ export function apply(messages: any) {
         }
         const text = await $scene.forwarding('Scene', 'serialize');
         const uuid = profile.get('current-scene') || '';
-        Editor.Ipc.sendToAll('scene-save');
+
         if (uuid) {
-            const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-            if (asset) {
-                await outputFile(asset.file, text);
+            const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+            if (info) {
+                await outputFile(info.file, text);
+                Editor.Ipc.sendToAll('scene-save');
                 // 同步一下缓存数据
                 await $scene.forwarding('Scene', 'syncSceneData');
-                console.log(`Save scene: ${asset.source}`);
+                console.log(`Save scene: ${info.source}`);
                 return uuid;
             }
         }
@@ -80,6 +81,7 @@ export function apply(messages: any) {
         Editor.Ipc.sendToAll('notice:editor-title-change', `Editor 3D - ${url}`);
 
         const newUUID = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
+        Editor.Ipc.sendToAll('scene-save');
 
         // 同步一下缓存数据
         await $scene.forwarding('Scene', 'syncSceneData');
