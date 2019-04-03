@@ -70,6 +70,34 @@ function toNodesTree() {
  * @param node
  */
 function legealNodeAttr(node: ItreeNode) {
+    if (!node.uuid) {
+        return;
+    }
+
+    if (vm.folds[node.uuid] === undefined) {
+        vm.$set(vm.folds, node.uuid, vm.firstAllExpand);
+    }
+
+    Object.defineProperty(node, 'isExpand', {
+        configurable: true,
+        enumerable: true,
+        get() {
+            return vm.folds[node.uuid];
+        },
+        set(val) {
+            vm.folds[node.uuid] = val;
+        },
+    });
+
+    Object.defineProperty(node, 'height', {
+        configurable: true,
+        enumerable: true,
+        get() {
+            return this._height;
+        },
+        set: addHeight.bind(node),
+    });
+
     const defaultParams: any = {
         name: node.name || '(anonymous)',
         state: '',
@@ -319,34 +347,6 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         node.parentUuid = nodes.uuid;
         node.isPrefab = !!node.prefab;
         node.isVisible = nodes.isVisible === false ? nodes.isVisible : node.active;
-
-        if (node.isExpand === undefined) {
-            Object.defineProperty(node, 'isExpand', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return vm.folds[node.uuid];
-                },
-                set(val) {
-                    vm.folds[node.uuid] = val;
-                },
-            });
-        }
-
-        if (vm.folds[node.uuid] === undefined) {
-            vm.$set(vm.folds, node.uuid, vm.firstAllExpand);
-        }
-
-        if (node.height === undefined) {
-            Object.defineProperty(node, 'height', {
-                configurable: true,
-                enumerable: true,
-                get() {
-                    return this._height;
-                },
-                set: addHeight.bind(node),
-            });
-        }
 
         if (vm.search === '') { // 没有搜索
             vm.state = '';
