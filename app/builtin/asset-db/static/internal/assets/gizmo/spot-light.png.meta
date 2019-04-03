@@ -1,11 +1,11 @@
 {
-  "ver": "1.0.10",
+  "ver": "1.0.11",
   "importer": "image",
   "imported": true,
   "uuid": "191b676f-175b-41fa-8283-ac539875bfd8",
   "files": [
-    ".json",
-    ".png"
+    ".png",
+    ".json"
   ],
   "subMetas": {
     "spot-light": {

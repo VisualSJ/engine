@@ -1,11 +1,11 @@
 {
-  "ver": "1.0.10",
+  "ver": "1.0.11",
   "importer": "image",
   "imported": true,
   "uuid": "0e6d4917-9908-41f3-81bf-26852eb3c66a",
   "files": [
-    ".json",
-    ".png"
+    ".png",
+    ".json"
   ],
   "subMetas": {
     "default_toggle_disabled": {

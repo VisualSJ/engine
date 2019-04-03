@@ -1,11 +1,11 @@
 {
-  "ver": "1.0.10",
+  "ver": "1.0.11",
   "importer": "image",
   "imported": true,
   "uuid": "45828f25-b50d-4c52-a591-e19491a62b8c",
   "files": [
-    ".json",
-    ".png"
+    ".png",
+    ".json"
   ],
   "subMetas": {
     "default_radio_button_on": {

@@ -1,11 +1,11 @@
 {
-  "ver": "1.0.10",
+  "ver": "1.0.11",
   "importer": "image",
   "imported": true,
   "uuid": "0da256a2-21f6-481b-90b6-d3643a09179b",
   "files": [
-    ".json",
-    ".png"
+    ".png",
+    ".json"
   ],
   "subMetas": {
     "default_scrollbar": {
