@@ -16,7 +16,7 @@ export interface TextureBaseAssetUserData {
 
 export const defaultMinFilter: Filter = 'linear';
 export const defaultMagFilter: Filter = 'linear';
-export const defaultMipFilter: Filter = 'linear';
+export const defaultMipFilter: Filter = 'none';
 export const defaultWrapModeS: WrapMode = 'repeat';
 export const defaultWrapModeT: WrapMode = 'repeat';
 

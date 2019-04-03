@@ -69,13 +69,11 @@ export default class TextureImporter extends Importer {
             texture._mipmaps = [imageAsset];
         }
 
-        // @ts-ignore
         await asset.saveToLibrary('.json', Manager.serialize(texture));
 
         return true;
     }
 
-    // @ts-ignore
     protected _getImageAsset(asset: VirtualAsset) {
         const userData = asset.userData as Texture2DAssetUserData;
         // Get image.

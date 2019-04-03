@@ -5,6 +5,7 @@ import AudioImporter from './importers/audio-clip';
 import BitmapImporter from './importers/bitmap-font';
 import BufferImporter from './importers/buffer';
 import EffectImporter from './importers/effect';
+import ERPTextureCubeImporter, { ERPTextureCubeFaceImporter } from './importers/erp-texture-cube';
 import FbxImporter from './importers/fbx';
 import GltfImporter, {
     GltfAnimationImporter,
@@ -24,11 +25,10 @@ import SpriteAtlasImporter from './importers/sprite-atlas';
 import SpriteFrameImporter from './importers/sprite-frame';
 import TextImporter from './importers/text';
 import TextureImporter from './importers/texture';
-import ERPTextureCubeImporter, { ERPTextureCubeFaceImporter } from './importers/erp-texture-cube';
+import TextureCubeImporter from './importers/texture-cube';
 import TTFFontImporter from './importers/ttf-font';
 import TypeScriptImporter from './importers/typescipt';
 import UnknownImporter from './importers/unknown';
-import TextureCubeImporter from './importers/texture-cube';
 
 export function register(database: AssetDB) {
     // 未知类型导入（不处理）
@@ -73,7 +73,7 @@ export function register(database: AssetDB) {
     // bin 文件导入
     // database.register(new BufferImporter(), ['.bin']);
 
-    database.register(new ImageImporter(), ['.jpg', '.png', '.jpeg', '.webp']);
+    database.register(new ImageImporter(), ['.jpg', '.png', '.jpeg', '.webp', '.tga']);
     database.register(new TextureImporter(), '.texture');
     database.register(new TextureCubeImporter(), '.cubemap');
     database.register(new ERPTextureCubeImporter());

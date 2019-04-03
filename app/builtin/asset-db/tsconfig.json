@@ -14,13 +14,11 @@
       "../../@types/engine",
       "../../@types/asset-db",
       "../../@types/asset-db/glTF",
-      "../../@types/asset-db/equirect-cubemap-faces-js",
       "../../@types/asset-db/fbx2gltf",
-      "../../@types/asset-db/parse-data-url",
-      "../../@types/asset-db/image-data-uri",
       "../../@types/asset-db/babel-core",
       "../../@types/asset-db/cc",
-      "../../@types/asset-db/gltf-validator"
+      "../../@types/asset-db/gltf-validator",
+      "../../@types/asset-db/third-parts"
     ],
     "esModuleInterop": true
   }

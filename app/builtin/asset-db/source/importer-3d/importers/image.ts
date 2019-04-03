@@ -1,10 +1,11 @@
 import { Asset, Importer, queryUrlFromPath } from '@editor/asset-db';
 import { AssertionError } from 'assert';
+import { readFileSync } from 'fs';
 import Jimp from 'jimp';
-import { extname } from 'path';
+import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './erp-texture-cube';
 import { makeDefaultSpriteFrameAssetUserDataFromImageUuid } from './sprite-frame';
 import { makeDefaultTexture2DAssetUserDataFromImageUuid } from './texture';
-import { makeDefaultTextureCubeAssetUserData, TextureCubeAssetUserData } from './erp-texture-cube';
+import { convertTGA } from './utils/image-mics';
 
 type ImageImportType = 'raw' | 'texture' | 'normal map' | 'sprite-frame' | 'texture cube';
 
@@ -12,7 +13,7 @@ export default class ImageImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.10';
+        return '1.0.11';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -34,39 +35,55 @@ export default class ImageImporter extends Importer {
     }
 
     /**
-     * 实际导入流程
-     * 需要自己控制是否生成、拷贝文件
-     *
-     * 返回是否更新的 boolean
-     * 如果返回 true，则会更新依赖这个资源的所有资源
      * @param asset
      */
     public async import(asset: Asset) {
-        const ext = extname(asset.source);
-
-        // @ts-ignore
-        const image = new cc.ImageAsset();
-        image._setRawAsset(asset.extname);
-
-        // @ts-ignore
-        await asset.saveToLibrary('.json', Manager.serialize(image));
-
-        let importType = asset.userData.type as (ImageImportType | undefined);
-        if (importType === undefined) {
-            importType = 'texture';
-            asset.userData.type = importType;
+        let extName = asset.extname;
+        // If it's a string, is a path to the image file.
+        // Else it's the image data buffer.
+        let imageData: string | Buffer = asset.source;
+        if (extName.toLocaleLowerCase() === '.tga') {
+            const converted = await convertTGA(readFileSync(asset.source));
+            if (!converted) {
+                console.error(`Failed to convert tga image.`);
+                return false;
+            }
+            extName = converted.extName;
+            imageData = converted.data;
         }
+
+        // Do flip if needed.
+        const flipVertical = !!asset.userData.flipVertical;
+        if (flipVertical) {
+            if (typeof imageData === 'string') {
+                imageData = readFileSync(asset.source);
+            }
+            const img = await Jimp.read(imageData);
+            img.flip(false, true);
+            imageData = await img.getBufferAsync(img.getMIME());
+        }
+
+        // Save the image data into library.
+        if (typeof imageData === 'string') {
+            await asset.copyToLibrary(extName, asset.source);
+        } else {
+            await asset.saveToLibrary(extName, imageData);
+        }
+        // Create the image asset.
+        const image = new cc.ImageAsset();
+        image._setRawAsset(extName);
+        await asset.saveToLibrary('.json', Manager.serialize(image));
 
         const imageDatabaseUri = queryUrlFromPath(asset.source);
         if (!imageDatabaseUri) {
             throw new AssertionError({ message: `${asset.source} is not found in asset-db.` });
         }
 
-        let flipVertical = false;
-        if (asset.userData.flipVertical !== undefined) {
-            flipVertical = asset.userData.flipVertical;
+        let importType = asset.userData.type as (ImageImportType | undefined);
+        if (importType === undefined) {
+            importType = 'texture';
+            asset.userData.type = importType;
         }
-
         switch (importType) {
             case 'raw':
                 delete asset.userData.redirect;
@@ -90,15 +107,6 @@ export default class ImageImporter extends Importer {
                 asset.userData.redirect = textureSpriteFrameSubAsset.uuid;
                 textureSpriteFrameSubAsset.assignUserData(makeDefaultSpriteFrameAssetUserDataFromImageUuid(asset.uuid, ''));
                 break;
-        }
-
-        if (!flipVertical) {
-            await asset.copyToLibrary(ext, asset.source);
-        } else {
-            const img = await Jimp.read(asset.source);
-            img.flip(false, true);
-            const buffer = await img.getBufferAsync(img.getMIME());
-            await asset.saveToLibrary(ext, buffer);
         }
 
         return true;

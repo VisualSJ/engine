@@ -7,6 +7,7 @@ import { Animation, Image, Material, Mesh, Skin, Texture } from '../../../../../
 import { makeDefaultTexture2DAssetUserData, Texture2DAssetUserData } from './texture';
 import { GltfAssetFinderKind, GltfConverter,
     GltfSubAsset, IGltfAssetFinder, isDataUri, isFilesystemPath, NormalImportSetting, readGltf, TangentImportSetting } from './utils/gltf-converter';
+import { convertTGA } from './utils/image-mics';
 
 // All sub-assets share the same gltf converter.
 interface IGltfAssetSwapSpace {
@@ -742,8 +743,19 @@ export class GltfImageImporter extends GltfSubAssetImporter {
         const imageAsset = new cc.ImageAsset();
         const image = gltfConverter.readImage(gltfImage);
         if (image) {
-            imageAsset._setRawAsset(image.extName);
-            await asset.saveToLibrary(image.extName, image.imageData);
+            let imageData = image.imageData;
+            let extName = image.extName;
+            if (extName.toLocaleLowerCase() === '.tga') {
+                const converted = await convertTGA(imageData);
+                if (!converted) {
+                    console.error(`Failed to convert tga image.`);
+                    return false;
+                }
+                extName = converted.extName;
+                imageData = converted.data;
+            }
+            imageAsset._setRawAsset(extName);
+            await asset.saveToLibrary(extName, imageData);
         }
 
         await asset.saveToLibrary('.json', Manager.serialize(imageAsset));
