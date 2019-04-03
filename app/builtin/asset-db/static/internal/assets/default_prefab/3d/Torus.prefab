@@ -12,7 +12,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "New Torus",
+    "_name": "Torus",
     "_objFlags": 0,
     "_parent": null,
     "_children": [],
@@ -56,7 +56,7 @@
   },
   {
     "__type__": "cc.ModelComponent",
-    "_name": "New Torus<ModelComponent>",
+    "_name": "Torus<ModelComponent>",
     "_objFlags": 0,
     "node": {
       "__id__": 1
