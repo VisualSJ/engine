@@ -13,6 +13,7 @@ export async function handler(request: any, callback: any) {
     const fs = require('fs');
 
     const params = url.parse(request.url);
+    params.pathname = decodeURIComponent(params.pathname); // 处理空格被转义的问题
 
     const filepath = path.join(params.hostname, params.pathname);
 
