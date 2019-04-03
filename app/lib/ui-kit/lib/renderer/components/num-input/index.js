@@ -385,6 +385,14 @@ class NumInput extends Base {
                 this.dispatch('change');
                 this.dispatch('cancel');
                 break;
+            case 38: // up
+                this.stepUp();
+                event.preventDefault();
+                break;
+            case 40: // down
+                this.stepDown();
+                event.preventDefault();
+                break;
         }
     }
 
@@ -467,8 +475,7 @@ class NumInput extends Base {
      * 需要将数据回流到 root 元素上
      */
     _onInputChange() {
-        // 当获取到的 value 为空时,即用户输入非数字字符，需要获取到当前值判断是否是负号
-        if (this.value === '') {
+        if (this.value === '' || !isFinite(this.value)) {
             return;
         }
 
@@ -526,7 +533,6 @@ class NumInput extends Base {
         that.stepDown();
     }
 
-    // _onKeyDown
     // _onKeyUp
 }
 
