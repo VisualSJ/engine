@@ -137,18 +137,24 @@ export async function start() {
     });
 
     // 根据资源路径加载对应静态资源资源
-    app.get('/res/import/*', async (req: any, res: any) => {
+    app.get('/res/import/*', async (req: any, res: any, next: any) => {
         let path = join(Editor.App.project, '/library', req.params[0]); // 获取文件名路径
         if (!existsSync(path)) {
             path = join(Editor.App.path, 'builtin/asset-db/static/internal/library', req.params[0]);
         }
+        if (!existsSync(path)) {
+            next(new ReqError(`${req.params[0]} 资源不存在`, 404));
+        }
         res.sendFile(path);
     });
 
-    app.get('/res/raw-*', async (req: any, res: any) => {
+    app.get('/res/raw-*', async (req: any, res: any, next: any) => {
         let path = join(Editor.App.project, req.params[0]); // 获取文件名路径
         if (!existsSync(path)) {
             path = join(Editor.App.path, 'builtin/asset-db/static/internal', req.params[0]);
+        }
+        if (!existsSync(path)) {
+            next(new ReqError(`${req.params[0]} 资源不存在`, 404));
         }
         res.sendFile(path);
     });
@@ -169,8 +175,11 @@ export async function start() {
     });
 
     // 依赖模块文件
-    app.get('/node_modules/*', async (req: any, res: any) => {
+    app.get('/node_modules/*', async (req: any, res: any, next: any) => {
         const path = join(Editor.App.path, 'app', '/node_modules', req.params[0]); // 获取文件名路径
+        if (!existsSync(path)) {
+            next(new ReqError(`${req.params[0]} 模块不存在`, 404));
+        }
         res.sendFile(path);
     });
 
