@@ -17,6 +17,9 @@ const profile = {
     local: Profile.load('profile://local/packages/packages.json'),
     getPackage(path) {
         const packages = this.local.get('packages');
+        if (!packages) {
+            return;
+        }
         const pkg = packages.filter((pkg) => pkg.path === path);
         if (pkg) {
             return pkg[0];
@@ -29,6 +32,9 @@ const profile = {
             return false;
         }
         const packages = module.exports.getPackages();
+        if (!packages) {
+            return false;
+        }
         const data = packages.map((pkg) => {
             return { // 暂时开放这些数据
                 name: pkg.name,

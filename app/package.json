@@ -51,6 +51,7 @@
         "globby": "^8.0.2",
         "glsl-parser": "^2.0.1",
         "glsl-tokenizer": "^2.1.5",
+        "gltf-validator": "^2.0.0-dev.2.7",
         "gulp": "^4.0.0",
         "gulp-rev-delete-original": "^0.2.3",
         "gulp-sourcemaps": "^2.6.4",

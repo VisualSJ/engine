@@ -36,7 +36,6 @@
     "chokidar": "^2.1.2",
     "electron": "4.0.4",
     "fs-jetpack": "^2.2.2",
-    "gltf-validator": "^2.0.0-dev.2.7",
     "gulp": "^4.0.0",
     "ping": "^0.2.2",
     "plist": "^3.0.1",
