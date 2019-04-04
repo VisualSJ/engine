@@ -77,12 +77,7 @@ class AssetPacker {
         }
         for (let uuid of uuids) {
             if (!buildResult.jsonCache[uuid]) {
-                if (buildResult.assetCache[uuid]) {
-                    const path = buildResult.assetCache[uuid].library['.json'];
-                    buildResult.jsonCache[uuid] = readJSONSync(path);
-                } else {
-                    throw new Error(`builderror: json ${uuid} is not exit!`);
-                }
+                return;
             }
 
             const data = JSON.stringify(buildResult.jsonCache[uuid], null, this.options.debug ? 0 : 2);
@@ -99,7 +94,7 @@ class AssetPacker {
     packJson(hasName, uuids) {
         uuids = uuids.sort();
         const values = uuids.map((uuid) => {
-            return this.getCacheJson(uuid);
+            return buildResult.jsonCache[uuid];
         });
         const data = JSON.stringify(values, null, this.options.debug ? 0 : 2);
         outputFileSync(getDestPathNoExt(this.paths.res, hasName) + '.json', data);
