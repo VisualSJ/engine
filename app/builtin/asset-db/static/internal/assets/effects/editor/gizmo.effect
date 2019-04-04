@@ -16,7 +16,7 @@ CCEffect %{
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
       properties: &props
-        color: { type: vec4, value: [1, 1, 1, 1], inspector: { picker: color } }
+        color: { type: vec4, value: [1, 1, 1, 1], inspector: { type: color } }
 
   - passes:
     - vert: line-vs:vert
@@ -84,7 +84,7 @@ CCEffect %{
           blendDstAlpha: one_minus_src_alpha
       properties:
         mainTexture: { type: sampler2D, value: white }
-        color:       { type: vec4,      value: [1, 1, 1, 1], inspector: { picker: color } }
+        color:       { type: vec4,      value: [1, 1, 1, 1], inspector: { type: color } }
 }%
 
 CCProgram gizmo-vs %{

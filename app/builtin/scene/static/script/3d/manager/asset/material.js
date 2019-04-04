@@ -18,7 +18,6 @@ const typeMap = {
     [cc.GFXType.FLOAT3]: 'cc.Vec3',
     [cc.GFXType.FLOAT4]: 'cc.Vec4',
 
-    // [cc.GFXType.COLOR4]: 'cc.Color',
     [cc.GFXType.MAT4]: 'cc.Mat4',
 
     [cc.GFXType.SAMPLER2D]: 'cc.Asset',
@@ -120,9 +119,6 @@ function encodeEffect(effect) {
                 }
 
                 let type = typeMap[define.type] || define.type;
-                if (define.inspector && define.inspector.picker === 'color') {
-                    type = 'cc.Color';
-                }
 
                 // define 会有三种可能: Boolean Number String
                 let value;
@@ -141,7 +137,6 @@ function encodeEffect(effect) {
                     displayName: define.inspector ? define.inspector.displayName : undefined,
                 });
 
-
                 defines.push({
                     name: define.name,
                     defines: define.defines,
@@ -157,7 +152,7 @@ function encodeEffect(effect) {
                 const prop = pass.properties[name];
                 const defs = getDefines(name, prog);
                 let type = typeMap[prop.type] || prop.type;
-                if (prop.inspector && prop.inspector.picker === 'color') {
+                if (prop.inspector && prop.inspector.type === 'color') {
                     type = 'cc.Color';
                 }
                 const value = getDefaultValue(type, prop.value);

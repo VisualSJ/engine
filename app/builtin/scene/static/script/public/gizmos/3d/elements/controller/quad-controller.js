@@ -12,7 +12,7 @@ class QuadController extends ControllerBase {
     constructor(rootNode, opts) {
         super(rootNode);
         this.quadNode = null;
-        this._defaultSize = 2;
+        this._defaultSize = 1;
         this._hoverColor = cc.Color.GREEN;
 
         this.initShape(opts);
@@ -31,6 +31,7 @@ class QuadController extends ControllerBase {
         if (opts) {
             if (opts.size) {
                 size = opts.size;
+                this._defaultSize = size;
             }
         }
         let quadNode = ControllerUtils.quad(cc.v3(), size,

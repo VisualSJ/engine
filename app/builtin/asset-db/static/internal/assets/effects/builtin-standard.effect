@@ -16,11 +16,11 @@ CCEffect %{
       frag: standard-fs:frag
       properties: &props
         tilingOffset:  { type: vec4,        value: [1.0, 1.0, 0.0, 0.0] }
-        albedo:        { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { picker: color } }
+        albedo:        { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
         albedoScale:   { type: vec4,        value: [1.0, 1.0, 1.0, 0.0] }
         pbrParams:     { type: vec4,        value: [0.8, 0.6, 0.0, 1.0] }
         pbrScale:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
-        emissive:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { picker: color } }
+        emissive:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
         emissiveScale: { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
         albedoMap:     { type: sampler2D,   value: grey         }
         normalMap:     { type: sampler2D,   value: normal       }
