@@ -90,7 +90,7 @@ class NodeGizmo extends Gizmo {
             }
         }
 
-        controller = new IconController(root);
+        controller = new IconController(root, {texture: true});
         this._iconControllerPool.push(controller);
 
         return controller;

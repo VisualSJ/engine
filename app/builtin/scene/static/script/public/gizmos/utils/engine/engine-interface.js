@@ -23,9 +23,6 @@ class EngineInterface {
     getNodeOpacity(node) {
     }
 
-    setMeshTexture(node, texture) {
-    }
-
     setMaterialProperty(node, propName, value) {
     }
 

@@ -125,12 +125,6 @@ class Engine3D extends EngineInterface {
         return node.modelColor.a;
     }
 
-    setMeshTexture(node, texture) {
-        if (node && node.mtl) {
-            node.mtl.setProperty('mainTexture', texture);
-        }
-    }
-
     setMaterialProperty(node, propName, value) {
         if (node && node.mtl) {
             node.mtl.setProperty(propName, value);

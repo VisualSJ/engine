@@ -3,6 +3,7 @@ const Utils = require('../../../../utils');
 const External = require('../../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let SpotLightController = require('../../controller/cone-controller');
+let QuadController = require('../../controller/quad-controller');
 let Gizmo = require('../../gizmo-base');
 let ControllerUtils = require('../../utils/controller-utils');
 const { create3DNode, setMaterialProperty} = require('../../../../utils/engine');
@@ -23,13 +24,13 @@ class SpotLightComponentGizmo extends Gizmo {
 
     onShow() {
         this._controller.show();
-        this._sizeSphere.active = true;
+        this._sizeSphereCtrl.show();
         this.updateControllerData();
     }
 
     onHide() {
         this._controller.hide();
-        this._sizeSphere.active = false;
+        this._sizeSphereCtrl.hide();
         let nodes = this.nodes;
         this.unregisterListeners(nodes);
     }
@@ -47,9 +48,7 @@ class SpotLightComponentGizmo extends Gizmo {
         this._controller.editable = true;
         this._controller.hoverColor = this._lightCtrlHoverColor;
 
-        this._sizeSphere = ControllerUtils.sphere(cc.v3(), this._baseSize,
-            this._lightGizmoColor, {effectName: 'editor/light', forwardPipeline: true});
-        this._sizeSphere.parent = SpotLightGizmoRoot;
+        this._sizeSphereCtrl = new QuadController(gizmoRoot, {effectName: 'editor/light', forwardPipeline: true});
     }
 
     onControllerMouseDown() {
@@ -127,7 +126,7 @@ class SpotLightComponentGizmo extends Gizmo {
 
         this._controller.setPosition(worldPos);
         this._controller.setRotation(worldRot);
-        this._sizeSphere.setPosition(worldPos);
+        this._sizeSphereCtrl.setPosition(worldPos);
     }
 
     updateControllerData() {
@@ -151,8 +150,9 @@ class SpotLightComponentGizmo extends Gizmo {
         let intensitySize = cc.v4();
         intensitySize.x = lightComp.luminance;
         intensitySize.y = lightComp.size;
-        setMaterialProperty(this._sizeSphere, 'color', color);
-        setMaterialProperty(this._sizeSphere, 'intensitySize', intensitySize);
+        this._sizeSphereCtrl.setMaterialProperty('color', color);
+        this._sizeSphereCtrl.setMaterialProperty('intensitySize', intensitySize);
+        this._sizeSphereCtrl.updateSize(lightComp.size * 2);
 
         this.updateControllerTransform();
     }
