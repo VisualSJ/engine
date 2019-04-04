@@ -16,22 +16,6 @@ assetLibrary.onAssetMoved = (uuid: any, src: any, dest: any) => {
 
 };
 
-assetLibrary.propSetter = (asset: any, obj: any, propName: string, oldAsset: any, newAsset: any) => {
-    if (oldAsset === newAsset || obj[propName] === newAsset) {
-        return;
-    }
-    if (asset instanceof cc.Material && newAsset instanceof cc.Texture2D) {
-        for (let i = 0, l = asset.passes.length; i < l; i++) {
-            if (asset.getProperty(propName, i) === oldAsset) {
-                asset.setProperty(propName, newAsset, i);
-            }
-        }
-    } else {
-        obj[propName] = newAsset;
-        asset.onLoaded && asset.onLoaded();
-    }
-};
-
 assetLibrary.onAssetChanged = (uuid: any) => {
     assetLibrary.queryAssetInfo(uuid, (err: any, url: any, isRawAsset: any, ctor: any) => {
         if (err) {
