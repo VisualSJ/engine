@@ -47,6 +47,7 @@ CCEffect %{
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
+      phase: planarShadow
 
   - name: transparent
     passes:
