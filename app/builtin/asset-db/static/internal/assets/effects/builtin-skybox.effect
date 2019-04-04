@@ -3,7 +3,7 @@ CCEffect %{
   - passes:
     - vert: sky-vs:vert
       frag: sky-fs:frag
-      priority: min + 10
+      priority: max - 10
       rasterizerState:
         cullMode: none
       depthStencilState:

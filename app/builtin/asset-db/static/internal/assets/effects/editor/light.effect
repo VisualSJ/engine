@@ -11,9 +11,6 @@ CCEffect %{
       blendState:
         targets:
         - blend: false
-      properties: &props
-        color: { type: color4, value: [1, 1, 1, 1] }
-        intensitySize: { type: vec4, value: [1, 1, 1, 1] }
 }%
 
 CCProgram light-vs %{

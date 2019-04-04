@@ -18,13 +18,11 @@ const typeParams = {
   VEC2: gfx.GFXType.FLOAT2,
   VEC3: gfx.GFXType.FLOAT3,
   VEC4: gfx.GFXType.FLOAT4,
-  COLOR4: gfx.GFXType.COLOR4,
   MAT2: gfx.GFXType.MAT2,
   MAT3: gfx.GFXType.MAT3,
   MAT4: gfx.GFXType.MAT4,
   SAMPLER2D: gfx.GFXType.SAMPLER2D,
   SAMPLERCUBE: gfx.GFXType.SAMPLER_CUBE,
-  [gfx.GFXType.FLOAT4]: gfx.GFXType.COLOR4,
 };
 
 const invTypeParams = {
@@ -37,7 +35,6 @@ const invTypeParams = {
   [gfx.GFXType.FLOAT2]: 'vec2',
   [gfx.GFXType.FLOAT3]: 'vec3',
   [gfx.GFXType.FLOAT4]: 'vec4',
-  [gfx.GFXType.COLOR4]: 'vec4',
   [gfx.GFXType.MAT2]: 'mat2',
   [gfx.GFXType.MAT3]: 'mat3',
   [gfx.GFXType.MAT4]: 'mat4',
@@ -55,7 +52,6 @@ const sizeMap = {
   [gfx.GFXType.FLOAT2]: 8,
   [gfx.GFXType.FLOAT3]: 12,
   [gfx.GFXType.FLOAT4]: 16,
-  [gfx.GFXType.COLOR4]: 16,
   [gfx.GFXType.MAT2]: 16,
   [gfx.GFXType.MAT3]: 36,
   [gfx.GFXType.MAT4]: 64,
@@ -73,7 +69,6 @@ const formatMap = {
   [gfx.GFXType.FLOAT2]: gfx.GFXFormat.RG32F,
   [gfx.GFXType.FLOAT3]: gfx.GFXFormat.RGB32F,
   [gfx.GFXType.FLOAT4]: gfx.GFXFormat.RGBA32F,
-  [gfx.GFXType.COLOR4]: gfx.GFXFormat.RGBA32F,
 };
 
 const passParams = {
@@ -195,7 +190,7 @@ const effectStructure = {
           depthStencilState: {},
           rasterizerState: {},
           blendState: { targets: [{}] },
-          properties: { any: { sampler: {} } }
+          properties: { any: { sampler: {}, inspector: {} } }
         }
       ]
     }

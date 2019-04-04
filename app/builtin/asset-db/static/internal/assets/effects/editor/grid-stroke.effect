@@ -3,7 +3,7 @@ CCEffect %{
   - passes:
     - vert: grid-vs:vert
       frag: grid-fs:frag
-      priority: min + 10
+      priority: max - 11
       rasterizerState:
         cullMode: none
       depthStencilState:

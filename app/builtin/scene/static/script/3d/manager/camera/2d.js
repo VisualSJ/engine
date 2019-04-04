@@ -143,7 +143,6 @@ class CameraController2D extends CameraControllerBase {
         let grid = this._grid;
         grid.updateRange();
 
-        let uniformColor;
         // draw h ticks
         if (grid.hTicks) {
             for (let i = grid.hTicks.minTickLevel; i <= grid.hTicks.maxTickLevel; i++) {
@@ -151,14 +150,13 @@ class CameraController2D extends CameraControllerBase {
                 if (ratio > 0) {
                     let color = lineColor.clone();
                     color.a = ratio * 255;
-                    uniformColor = color.to01();
                     let ticks = grid.hTicks.ticksAtLevel(i, true);
                     for (let j = 0; j < ticks.length; j++) {
                         let x = ticks[j];
                         positions.push(x, -lineEnd);
                         positions.push(x, lineEnd);
-                        colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                        colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                        colors.push(color.x, color.y, color.z, color.w);
+                        colors.push(color.x, color.y, color.z, color.w);
                     }
                 }
             }
@@ -171,14 +169,13 @@ class CameraController2D extends CameraControllerBase {
                 if (ratio > 0) {
                     let color = lineColor.clone();
                     color.a = ratio * 255;
-                    uniformColor = color.to01();
                     let ticks = grid.vTicks.ticksAtLevel(i, true);
                     for (let j = 0; j < ticks.length; j++) {
                         let y = ticks[j];
                         positions.push(-lineEnd, y);
                         positions.push(lineEnd, y);
-                        colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                        colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
+                        colors.push(color.x, color.y, color.z, color.w);
+                        colors.push(color.x, color.y, color.z, color.w);
                     }
                 }
             }

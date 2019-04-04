@@ -632,7 +632,7 @@ const mapPassParam = (() => {
   };
   const propTypeCheck = (value, type, givenType, shaderType) => {
     if (typeof type === 'string') return `unsupported type ${type}`;
-    if (type !== shaderType && type !== mappings.typeParams[shaderType]) return 'incompatible with shader decl';
+    if (type !== shaderType) return 'incompatible with shader decl';
     if (givenType === 'string') {
       if (!samplerRE.test(mappings.invTypeParams[type])) return 'string for non-samplers';
     } else if (!Array.isArray(value)) return 'non-array for buffer members';

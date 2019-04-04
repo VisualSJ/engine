@@ -453,9 +453,7 @@ class CameraController3D extends CameraControllerBase {
 
         let tempColor = lineColor.clone();
         tempColor.a = 0;
-        let transparentLineColor = tempColor.to01();
 
-        let uniformColor;
         // 用一个比较小的透明度来画线，否则线非常长的时候看远处的线锯齿感非常严重
         let lineOpacity = 200;
         // 填充顶点数据
@@ -473,16 +471,15 @@ class CameraController3D extends CameraControllerBase {
                     // 越远的线越淡
                     let dist = Math.abs(tick - cameraPos.x);
                     color.a *= (1 - dist / scaleRange);
-                    uniformColor = color.to01();
                     // x
                     positions.push(tick, cameraPos.z);
                     positions.push(tick, curStartY);
                     positions.push(tick, cameraPos.z);
                     positions.push(tick, curEndY);
-                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
-                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                    colors.push(color.x, color.y, color.z, color.w);
+                    colors.push(tempColor.x, tempColor.y, tempColor.z, tempColor.w);
+                    colors.push(color.x, color.y, color.z, color.w);
+                    colors.push(tempColor.x, tempColor.y, tempColor.z, tempColor.w);
                 }
             }
         }
@@ -500,16 +497,15 @@ class CameraController3D extends CameraControllerBase {
                     // 越远的线越淡
                     let dist = Math.abs(tick - cameraPos.z);
                     color.a *= (1 - dist / scaleRange);
-                    uniformColor = color.to01();
                     // y
                     positions.push(cameraPos.x, tick);
                     positions.push(curStartX, tick);
                     positions.push(cameraPos.x, tick);
                     positions.push(curEndX, tick);
-                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
-                    colors.push(uniformColor.r, uniformColor.g, uniformColor.b, uniformColor.a);
-                    colors.push(transparentLineColor.r, transparentLineColor.g, transparentLineColor.b, transparentLineColor.a);
+                    colors.push(color.x, color.y, color.z, color.w);
+                    colors.push(tempColor.x, tempColor.y, tempColor.z, tempColor.w);
+                    colors.push(color.x, color.y, color.z, color.w);
+                    colors.push(tempColor.x, tempColor.y, tempColor.z, tempColor.w);
                 }
             }
         }

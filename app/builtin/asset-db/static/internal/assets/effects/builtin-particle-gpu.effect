@@ -19,7 +19,7 @@ CCEffect %{
         mainTexture:            { type: sampler2D, value: grey                 }
         mainTiling_Offset:      { type: vec4,      value: [1, 1, 0, 0]         }
         frameTile_velLenScale:  { type: vec4,      value: [1, 1, 0, 0]         }
-        tintColor:              { type: color4,    value: [0.5, 0.5, 0.5, 0.5] }
+        tintColor:              { type: vec4,      value: [0.5, 0.5, 0.5, 0.5], inspector: { picker: color } }
 }%
 
 // TODO: soft particle
