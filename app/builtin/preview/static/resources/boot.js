@@ -239,9 +239,9 @@
         const gameContainer = q('#GameContainer');
         gameDiv.style.width = gameContainer.style.width = `${width}px`;
         gameDiv.style.height = gameContainer.style.height = `${height}px`;
-        if (cc && cc.game.canvas) {
-            cc.view.setCanvasSize(width, height);
-        }
+        cc.view.enableRetina(true);
+        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
+        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.FIXED_HEIGHT);
     }
 
     /**
