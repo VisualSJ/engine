@@ -1,6 +1,6 @@
 const buildResult = require('./build-result');
 const HashUuid = require('./hash-uuid');
-const {outputFileSync} = require('fs-extra');
+const {outputFileSync, readJSONSync} = require('fs-extra');
 const {getDestPathNoExt} = require('./utils');
 const _ = require('lodash');
 class AssetPacker {
@@ -52,13 +52,11 @@ class AssetPacker {
      */
     packTexture(hasName, uuids) {
         uuids.sort();
-        let values = uuids.map(function(uuid) {
-            if (!buildResult.jsonCache[uuid]) {
-                throw new Error(`builderror: texture ${uuid} is not exit!`);
-            }
-            return buildResult.jsonCache[uuid].content.base;
+        let values = uuids.map((uuid) => {
+            const json = this.getCacheJson(uuid);
+            const {base, mipmaps} = json.content;
+            return [base, mipmaps];
         });
-        values = values.join('|');
         const packedData = {
             type: cc.js._getClassId(cc.Texture2D),
             data: values,
@@ -79,8 +77,14 @@ class AssetPacker {
         }
         for (let uuid of uuids) {
             if (!buildResult.jsonCache[uuid]) {
-                return;
+                if (buildResult.assetCache[uuid]) {
+                    const path = buildResult.assetCache[uuid].library['.json'];
+                    buildResult.jsonCache[uuid] = readJSONSync(path);
+                } else {
+                    throw new Error(`builderror: json ${uuid} is not exit!`);
+                }
             }
+
             const data = JSON.stringify(buildResult.jsonCache[uuid], null, this.options.debug ? 0 : 2);
             outputFileSync(getDestPathNoExt(this.paths.res, uuid) + '.json', data);
         }
@@ -94,11 +98,27 @@ class AssetPacker {
      */
     packJson(hasName, uuids) {
         uuids = uuids.sort();
-        const values = uuids.map(function(uuid) {
-            return buildResult.jsonCache[uuid];
+        const values = uuids.map((uuid) => {
+            return this.getCacheJson(uuid);
         });
         const data = JSON.stringify(values, null, this.options.debug ? 0 : 2);
         outputFileSync(getDestPathNoExt(this.paths.res, hasName) + '.json', data);
+    }
+
+    /**
+     * 获取缓存 json 并处理资源丢失
+     * @param {*} uuid
+     */
+    getCacheJson(uuid) {
+        if (!buildResult.jsonCache[uuid]) {
+            if (buildResult.assetCache[uuid]) {
+                const path = buildResult.assetCache[uuid].library['.json'];
+                buildResult.jsonCache[uuid] = readJSONSync(path);
+            } else {
+                throw new Error(`builderror(pack-asset): json file ${uuid} is not exit!`);
+            }
+        }
+        return buildResult.jsonCache[uuid];
     }
 
     // 计算分组
