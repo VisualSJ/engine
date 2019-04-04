@@ -224,10 +224,6 @@
         stepBtn.addEventListener('click', function() {
             cc.game.step();
         });
-
-        if (isFullScreen()) {
-            window.addEventListener('resize', updateResolution);
-        }
     }
 
     /**
@@ -235,12 +231,9 @@
      */
     function updateResolution() {
         const { width, height } = getEmulatedScreenSize();
-        const gameDiv = q('#GameDiv');
-        const gameContainer = q('#GameContainer');
-        gameDiv.style.width = gameContainer.style.width = `${width}px`;
-        gameDiv.style.height = gameContainer.style.height = `${height}px`;
         cc.view.enableRetina(true);
         cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
+        cc.view.resizeWithBrowserSize(true);
         cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.FIXED_HEIGHT);
     }
 
