@@ -16,7 +16,7 @@ module.exports = function() {
                 highlightCode: false,
                 // TODO - disable transform-strict-mode
                 sourceMaps: 'inline',
-                sourceFileName: `enginesource:///${relativePath}`,
+                sourceFileName: `cocos-3d:///${relativePath}`,
                 compact: false,
                 filename: script.src, // search path for babelrc
                 presets: [

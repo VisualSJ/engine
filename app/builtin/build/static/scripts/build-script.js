@@ -3,15 +3,17 @@ const platfomConfig = require('./platforms-config');
 const {updateProgress, requestToPackage, getRightUrl, getScriptsCache} = require('./utils');
 const Browserify = require('browserify');
 const gulp = require('gulp');
-const {readFileSync, copyFileSync} = require('fs');
+const {readFileSync, copyFileSync, writeFileSync} = require('fs');
 const {ensureDirSync} = require('fs-extra');
-const {join, basename, extname, dirname} = require('path');
+const {join, basename, extname, dirname, isAbsolute} = require('path');
 const projectScripts = require('./project-scripts'); // 配置构建的脚本环境
 // // misc
 const source = require('vinyl-source-stream');
 const viniBuffer = require('vinyl-buffer');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
+const babelify = require('babelify');
+const systemJSToCJSBabelPlugin = require('babel-plugin-systemjs-to-cjs').default;
 
 // browserify prelude
 const prelude = readFileSync(join(__dirname, './_prelude.js'), 'utf8');
@@ -41,6 +43,9 @@ class ScriptBuilder {
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
         let result = await projectScripts.load(scripts);
         result.scripts = await  getScriptsCache(result.scripts);
+        for (let i = 0; i < result.scripts.length; ++i) {
+            result.scripts[i].moduleId = result.moduleIds[i];
+        }
         if (!this.shoudBuild) {
             return result;
         }
@@ -135,8 +140,8 @@ class ScriptBuilder {
                 ],
                 extensions: ['.ts', '.coffee'],
                 ignoreMissing: true,
-                externalRequireName: 'window.__require',
-                prelude: prelude,
+                // externalRequireName: 'window.__require',
+                // prelude: prelude,
                 // detectGlobals: false
                 // browserField: false
             };
@@ -156,15 +161,55 @@ class ScriptBuilder {
                 browserify = new Browserify(opt);
             }
 
+            const libPathToRawPath = (p) => {
+                for (const key of Object.keys(rawPathToLibPath)) {
+                    if (rawPathToLibPath[key] === p) {
+                        return key;
+                    }
+                }
+                throw new Error(`Not found.`);
+            };
+            
+            const mdeps = browserify.pipeline.get("deps").get(0);
+            const baseResolve = mdeps.resolver;
+            mdeps.resolver = (id, parent, cb) => {
+                let absid;
+                if (isAbsolute(id)) {
+                    absid = id;
+                } else {
+                    const rawParent = libPathToRawPath(parent.id);
+                    absid = join(dirname(rawParent), id);
+                }
+                let result = null;
+                const tests = ['', '.js', '.ts', '.json', '/index.js', '/index.ts', '/index.json'];
+                for (const test of tests) {
+                    const p = `${absid}${test}`;
+                    if (p in rawPathToLibPath) {
+                        result = rawPathToLibPath[p];
+                        break;
+                    }
+                }
+                if (result === null) {
+                    const errstr = `Failed to resolve ${id} from ${parent.id}.`;
+                    console.error(errstr);
+                    cb(new Error(errstr), '');
+                    return;
+                }
+                cb(null, result);
+                return;
+            };
+
+            browserify.transform(babelify.configure({
+                plugins:[systemJSToCJSBabelPlugin()]
+            }));
+
             // patchBrowserifyToRedirectPathToRaw(browserify);
 
             for (let i = 0; i < srcPaths.length; ++i) {
                 var file = srcPaths[i];
-                browserify.add(rawPathToLibPath[file]);
+                browserify.add(file);
                 // expose the filename so as to avoid specifying relative path in require()
-                browserify.require(rawPathToLibPath[file], {
-                    expose: basename(file, extname(file)),
-                });
+                browserify.require(file);
             }
 
             // for (let i = 0; i < allScripts.length; ++i) {
@@ -174,7 +219,15 @@ class ScriptBuilder {
             //     }
             // }
 
-            let bundle = browserify.bundle()
+            let bundle = browserify.bundle((err, buf) => {
+                if (err) {
+                    console.log(`${err}`);
+                    return;
+                }
+                const destPath = paths.bundledScript; //.replace('.js', '.test.js');
+                ensureDirSync(dirname(destPath));
+                writeFileSync(destPath, buf.toString());
+            })
                 .on('error', function(error) {
                     error = new Error(nicifyError(error));
                     if (gulp.isRunning) {

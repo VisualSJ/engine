@@ -2,12 +2,9 @@ const { requestToPackage, getRightUrl, isNodeModulePath} = require('./utils');
 const { extname, isAbsolute, resolve, dirname} = require('path');
 const buildResult = require('./build-result');
 const model = require('module');
+require("@editor/cocos-script/systemjs");
 let raw2library = {};
 let library2raw = {};
-// 是否在项目路径下
-function isInProject(path) {
-    return path.indexOf(buildResult.paths.project) !== -1;
-}
 
 /**
  * 对脚本进行整理，拆分为插件类脚本和普通脚本，缓存 asset
@@ -15,9 +12,11 @@ function isInProject(path) {
 async function sortScripts(scriptAssets) {
     let scripts = [];
     let jsList = [];
+    let moduleIds = [];
     for (let asset of scriptAssets) {
         asset.url = getRightUrl(asset.source);
         const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
+        moduleIds.push(userData.moduleId);
         if (userData.isPlugin &&
             (userData.isNative && userData.loadPluginInNative || userData.loadPluginInWeb)) {
             jsList.push(asset.url);
@@ -30,40 +29,18 @@ async function sortScripts(scriptAssets) {
         buildResult.script2library[asset.url] = asset.library['.js'];
         buildResult.script2raw[asset.url] = asset.file;
     }
-    return {scripts, jsList};
+    return {scripts, jsList, moduleIds};
 }
 
-function loadScripts() {
-    for (const file of Object.keys(raw2library)) {
-        require(file);
-        console.info(`Script (${file}) mounted.`);
-    }
-}
-
-function setModuleResolve() {
-    model._resolveFilenameVendor = model._resolveFilename;
-    model._resolveFilename = function(request, parent, isMain) {
-        if (Object.keys(raw2library).length > 0) {
-            let rawPath = request;
-            if (!isAbsolute(request) && isInProject(parent.filename)) {
-                rawPath = resolve(dirname(library2raw[parent.filename]), request);
-            }
-            // 不带扩展名，先查找 js
-            if (extname(rawPath) === '') {
-                const path = rawPath + '.js';
-                if (!raw2library[path]) {
-                    rawPath += '.ts';
-                } else {
-                    rawPath = path;
-                }
-            }
-            let libraryPath = raw2library[rawPath];
-            if (!isNodeModulePath(parent.filename) && libraryPath) {
-                return libraryPath;
-            }
+async function loadScripts(scriptAssets) {
+    for (const asset of scriptAssets) {
+        const raw = asset.library['.js'];
+        if (!raw) {
+            console.error(`Script asset ${asset.uuid} doesn't have library file.`);
+            continue;
         }
-        return model._resolveFilenameVendor(request, parent, isMain);
-    };
+        require(raw);
+    }
 }
 
 /**
@@ -71,17 +48,13 @@ function setModuleResolve() {
  * @param {*} scripts
  */
 async function load(scripts) {
-    raw2library = {};
+    // raw2library = {};
     const result = await sortScripts(scripts);
-    if (!buildResult.options || buildResult.options.type !== 'build-release') {
-        return result;
-    }
+    // if (!buildResult.options || buildResult.options.type !== 'build-release') {
+    //     return result;
+    // }
 
-    if (!model._resolveFilenameVendor) {
-        setModuleResolve();
-    }
-
-    loadScripts();
+    await loadScripts(scripts);
     return result;
 }
 

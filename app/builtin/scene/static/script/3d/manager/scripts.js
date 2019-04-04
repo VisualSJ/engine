@@ -6,47 +6,12 @@ const { extname, isAbsolute, resolve, basename, dirname} = require('path');
 const uuidUtils = require('../../utils/uuid');
 const model = require('module');
 const _ = require('lodash');
+require("@editor/cocos-script/systemjs");
 
 const raw2library = {}; // 存储实际路径与 library 路径的索引 map,(路径默认带有扩展名)
 const library2raw = {};
 const uuid2raw = {};
 const scriptNames = new Set(); // 存储现有脚本名称
-
-let projectPath = '';
-function isNodeModulePath(path) {
-    return path.replace(/\\/g, '/').indexOf('/node_modules/') !== -1;
-}
-
-// 是否在项目路径下
-function isInProject(path) {
-    return path.indexOf(projectPath) !== -1;
-}
-
-function setModuleResolve() {
-    model._resolveFilenameVendor = model._resolveFilename;
-    model._resolveFilename = function(request, parent, isMain) {
-        if (Object.keys(raw2library).length > 0) {
-            let rawPath = request;
-            if (!isAbsolute(request) && isInProject(parent.filename)) {
-                rawPath = resolve(dirname(library2raw[parent.filename]), request);
-            }
-            // 不带扩展名，先查找 js
-            if (extname(rawPath) === '') {
-                const path = rawPath + '.js';
-                if (!raw2library[path]) {
-                    rawPath += '.ts';
-                } else {
-                    rawPath = path;
-                }
-            }
-            let libraryPath = raw2library[rawPath];
-            if (!isNodeModulePath(parent.filename) && libraryPath) {
-                return libraryPath;
-            }
-        }
-        return model._resolveFilenameVendor(request, parent, isMain);
-    };
-}
 
 function _loadScriptInEngin(uuid) {
     const sid = uuidUtils.compressUuid(uuid);
@@ -71,9 +36,6 @@ function reload() {
 async function init(project) {
     projectPath = project;
     const scripts = await ipc.send('query-scripts');
-    if (!model._resolveFilenameVendor) {
-        setModuleResolve();
-    }
     await _loadScripts(scripts);
 }
 
@@ -139,8 +101,14 @@ async function _loadScripts(scripts) {
         uuid2raw[asset.uuid] = asset.file
     }
     for (const asset of scripts) {
-        require(asset.file);
+        require(asset.library['.js']);
         console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
+    }
+    for (const asset of scripts) {
+        const {userData} = await ipc.send('query-asset-meta', asset.uuid);
+        const url = userData.moduleId;
+        console.log(`Load script ${url}`);
+        await System.import(url);
     }
 
     reload();

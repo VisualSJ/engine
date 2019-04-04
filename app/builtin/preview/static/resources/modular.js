@@ -20,7 +20,7 @@ window.__modular = {
 
         var originPush = cc._RF.push;
         cc._RF.push = function(module, uuid, request, path) {
-            modules[path].module = module;
+            // modules[path].module = module;
             originPush(module, uuid, request);
         };
 
@@ -79,6 +79,7 @@ window.__modular = {
         var modules = this.modules;
         for (var path in modules) {
             var module = modules[path];
+            System.import(module.moduleId);
             if (!module.module && module.func) {
                 module.func();
             }

@@ -1,16 +1,14 @@
-'use stirct';
-
-import * as Babel from '@babel/core';
 import { Asset, Importer } from '@editor/asset-db';
-import { File, Program } from 'babel-types';
 import { readFile, readFileSync } from 'fs-extra';
+import * as Path from 'path';
 // @ts-ignore
 import * as uuidUtils from '../../../static/utils/uuid-utils';
+import { compile } from './utils/script-compiler';
 export default class JavascriptImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.4';
+        return '1.0.32';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -54,11 +52,15 @@ export default class JavascriptImporter extends Importer {
                 code = header + code + footer;
             } else {
                 const target = await this.compile(asset);
+                if (!target) {
+                    return false;
+                }
                 code = target.code;
                 asset.saveToLibrary('.js.map', JSON.stringify(target.map));
             }
-            // @ts-ignore
-            asset.saveToLibrary('.js', code);
+            if (code) {
+                asset.saveToLibrary('.js', code);
+            }
 
             updated = true;
             isPlugin && (asset.meta.userData.importAsPlugin = true);
@@ -73,75 +75,20 @@ export default class JavascriptImporter extends Importer {
         // const convert = require('convert-source-map');
         const file = await readFile(asset.source, 'utf8');
         const isPlugin = asset.meta.userData.isPlugin;
+        let baseModuleId = Path.relative(this.assetDB!.options.target, asset.source);
+        baseModuleId = baseModuleId.split(/\/|\\/).join('/');
+        const moduleId = `project:///${this.assetDB!.options.name}/${baseModuleId}`;
         // const sourceMap = !!convert.fromSource(file);
-        const { code, map = '' } = Babel.transformSync(file, {
-            ast: false,
-            highlightCode: false,
-            sourceMaps: true,
-            sourceFileName: `custom-scripts:///${asset.basename}.${asset.extname}`,
+        const result = compile(file, {
+            moduleId,
             filename: asset.source,
-            compact: false,
-            presets: [
-                require('@babel/preset-env'),
-            ],
-            plugins: [
-                [
-                    require('@babel/plugin-proposal-decorators'),
-                    { legacy: true },
-                ],
-                [
-                    require('@babel/plugin-proposal-class-properties'),
-                    { loose: true },
-                ],
-                require('babel-plugin-add-module-exports'),
-                scriptAssetPlugin(asset),
-            ],
+            basename: asset.basename,
+            compressedUUID: uuidUtils.compressUuid(asset.uuid),
         });
-        return { code, map };
+        asset.userData.moduleId = moduleId;
+        if (!result) {
+            console.error(`Failed to compile ${asset.source}.`);
+        }
+        return result;
     }
-}
-
-function scriptAssetPlugin(asset: Asset) {
-    return (babel: typeof Babel): Babel.Plugin => {
-        return {
-            visitor: {
-                // CallExpression(nodePath, state) {
-                //     if (nodePath.node.callee.type === 'Identifier' && nodePath.node.callee.name === 'require') {
-                //         nodePath.node.arguments.push(identifier('__filename'));
-                //     }
-                // },
-                Program: {
-                    exit: (nodePath, parent) => {
-                        // injectRF(babel, nodePath.node as Program, asset);
-                    },
-                },
-            },
-            post(state) {
-                const { ast } = state as { ast: File };
-                injectRF(babel, ast.program, asset);
-            },
-        };
-    };
-}
-
-function injectRF(babel: typeof Babel, program: Program, asset: Asset) {
-    const header = `
-    'use strict';
-    cc._RF.push(module, '${uuidUtils.compressUuid(asset.uuid)}', '${asset.basename}');
-    // ${asset.basename}\n
-    `;
-    insertHeader(babel, program, header);
-
-    const footer = `\ncc._RF.pop();\n`;
-    insertFooter(babel, program, footer);
-}
-
-function insertHeader(babel: typeof Babel, node: Program, content: string) {
-    const headerProgram = (babel.parse(content) as File).program;
-    node.body.unshift(...headerProgram.body);
-}
-
-function insertFooter(babel: typeof Babel, node: Program, content: string) {
-    const footerProgram = (babel.parse(content) as File).program;
-    node.body.push(...footerProgram.body);
 }

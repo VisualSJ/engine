@@ -63,6 +63,7 @@ async function getModules(url: string, path: string) {
     });
 }})();`;
     const content = readFileSync(path, 'utf-8');
+    return content;
     const reg = /cc._RF.push\s*\(\s*module,\s*([\'\"][^\'\"]+\s*[\'\"])\s*,\s*([\'\"][^\'\"]*[\'\"])\s*\)/;
     const rightContent = content.replace(reg, 'cc._RF.push(module, $1, $2, __filename)');
     return HEADER + rightContent + '\n' + FOOTER;

@@ -1,16 +1,13 @@
 {
     "name": "asset-db",
     "version": "0.0.1",
-
     "menu": {
         "i18n:menu.develop/i18n:asset-db.debug-mode": {
             "message": "open-devtools"
         }
     },
-
     "main": "./dist/browser/index.js",
     "dependencies": {},
     "description": "A aseet-db",
-
     "preferences": "./static/preferences.js"
 }

@@ -15,7 +15,6 @@
       "../../@types/asset-db",
       "../../@types/asset-db/glTF",
       "../../@types/asset-db/fbx2gltf",
-      "../../@types/asset-db/babel-core",
       "../../@types/asset-db/cc",
       "../../@types/asset-db/gltf-validator",
       "../../@types/asset-db/third-parts"
