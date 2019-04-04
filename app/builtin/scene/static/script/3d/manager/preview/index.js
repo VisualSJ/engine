@@ -28,7 +28,7 @@ class Preview {
         Scene.on('reload', this.patchSceneCameras.bind(this));
     }
 
-    patchSceneCameras(err, scene) {
+    patchSceneCameras(scene) {
         this.scene = scene.renderScene;
         const cameras = this.scene.cameras;
         for (const camera of cameras) {

@@ -12,26 +12,6 @@ export const messages = {
     open() {
         Editor.Panel.open('scene');
     },
-
-    async 'scene:ready'(uuid: string) {
-        let title = `Editor 3D - ${basename(Editor.App.project)} - `;
-        if (uuid) {
-            const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-            if (asset && asset.source) {
-                title += asset.source;
-            } else {
-                title += 'Untitled';
-            }
-        } else {
-            title += 'Untitled';
-        }
-        ipc.broadcast('notice:editor-title-change', title);
-    },
-
-    'scene:close'() {
-        const title = `Editor 3D - ${basename(Editor.App.project)}`;
-        ipc.broadcast('notice:editor-title-change', title);
-    },
 };
 
 // 直接转发所有 panel 上定义的消息

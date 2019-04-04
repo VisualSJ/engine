@@ -4,12 +4,10 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 let $scene: any = null;
 let $loading: any = null;
-let $path: any = null;
 
 export function init(element: any) {
     $scene = element.$.scene;
     $loading = element.$.loading;
-    $path = element.$.path;
 }
 
 /**
@@ -41,17 +39,6 @@ export function apply(messages: any) {
             return null;
         }
         return await $scene.forwarding('Component', 'queryDump', [uuid]);
-    };
-
-    /**
-     * 查询某个节点的路径信息
-     * 相对于场景的 path 搜索路径
-     */
-    messages['query-node-path'] = async (uuid: string) => {
-        if (!$scene) {
-            return null;
-        }
-        return await $scene.forwarding('Scene', 'queryNodePath', [uuid]);
     };
 
     /**

@@ -115,27 +115,6 @@ function queryNodeTree(uuid) {
 }
 
 /**
- * 查询一个节点相对于场景的搜索路径
- * @param {*} uuid
- */
-function queryNodePath(uuid) {
-    let node = manager.node.query(uuid);
-    if (!node) {
-        return '';
-    }
-    let names = [node.name];
-    node = node.parent;
-    while (node) {
-        if (!node) {
-            break;
-        }
-        names.splice(0, 0, node.name);
-        node = node.parent;
-    }
-    return names.join('/');
-}
-
-/**
  * 查询当前场景是否修改
  */
 function queryDirty() {
@@ -159,8 +138,6 @@ module.exports = {
     serialize,
     // 查询当前场景内的节点树信息
     queryNodeTree,
-    // 查询一个节点的搜索路径
-    queryNodePath,
     // 查询当前场景是否修改
     queryDirty,
 };

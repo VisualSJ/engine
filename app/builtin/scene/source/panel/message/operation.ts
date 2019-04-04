@@ -9,12 +9,10 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 let $scene: any = null;
 let $loading: any = null;
-let $path: any = null;
 
 export function init(element: any) {
     $scene = element.$.scene;
     $loading = element.$.loading;
-    $path = element.$.path;
 }
 
 /**
@@ -57,40 +55,8 @@ export function apply(messages: any) {
         if (!$scene) {
             return '';
         }
-        const text = await $scene.forwarding('Scene', 'serialize');
-        const uuid = profile.get('current-scene') || '';
 
-        if (uuid) {
-            const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
-            if (info) {
-                await outputFile(info.file, text);
-                Editor.Ipc.sendToAll('scene-save');
-                // 同步一下缓存数据
-                await $scene.forwarding('Scene', 'syncSceneData');
-                console.log(`Save scene: ${info.source}`);
-                return uuid;
-            }
-        }
-
-        const url = await Editor.Ipc.requestToPackage(
-            'asset-db',
-            'generate-available-url',
-            'db://assets/New Scene.scene'
-        );
-
-        Editor.Ipc.sendToAll('notice:editor-title-change', `Editor 3D - ${url}`);
-
-        const newUUID = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, text);
-        Editor.Ipc.sendToAll('scene-save');
-
-        // 同步一下缓存数据
-        await $scene.forwarding('Scene', 'syncSceneData');
-
-        profile.set('current-scene', newUUID);
-        profile.save();
-        console.log(`Save scene: ${url}`);
-
-        return newUUID;
+        return await $scene.forwarding('Scene', 'save');
     };
 
     /**
@@ -121,24 +87,10 @@ export function apply(messages: any) {
             });
             return;
         }
-
-        const text = await $scene.forwarding('Scene', 'serialize');
-        await outputFile(savePath, text);
-
         const relatiePath = relative(assetsPath, savePath);
         const url = `db://assets/${relatiePath.replace(/\\/g, '/')}`;
-        Editor.Ipc.sendToAll('notice:editor-title-change', `Editor 3D - ${url}`);
 
-        const uuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', url);
-        // 同步一下缓存数据
-        await $scene.forwarding('Scene', 'syncSceneData');
-
-        profile.set('current-scene', uuid);
-        profile.save();
-        console.log(`Save scene: ${url}`);
-
-        return uuid;
-
+        return await $scene.forwarding('Scene', 'save', url);
     };
 
     /**

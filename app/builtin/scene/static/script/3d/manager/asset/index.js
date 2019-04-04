@@ -174,11 +174,7 @@ function onSceneLoaded() {
     });
 }
 
-sceneMgr.on('open', (error, scene) => {
-    onSceneLoaded();
-});
-
-sceneMgr.on('reload', (error, scene) => {
+sceneMgr.on('open', (scene) => {
     onSceneLoaded();
 });
 

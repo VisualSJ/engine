@@ -4,12 +4,10 @@ const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 let $scene: any = null;
 let $loading: any = null;
-let $path: any = null;
 
 export function init(element: any) {
     $scene = element.$.scene;
     $loading = element.$.loading;
-    $path = element.$.path;
 }
 
 /**
@@ -67,8 +65,6 @@ export function apply(messages: any) {
 
         // 显示搜索路径
         selectNodeUuid = uuid;
-        const path = await $scene.forwarding('Scene', 'queryNodePath', [uuid]);
-        $path.innerHTML = path;
     };
 
     /**
@@ -88,7 +84,6 @@ export function apply(messages: any) {
             return;
         }
         selectNodeUuid = '';
-        $path.innerHTML = '';
     };
 
     /**

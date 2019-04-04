@@ -8,11 +8,7 @@ const CameraMoveMode = EditorCamera.CameraMoveMode;
 const gizmo = require('../../public/gizmos');
 const operationMgr = require('./operation');
 
-scene.on('open', (error, scene) => {
-    gizmo.onSceneLoaded();
-});
-
-scene.on('reload', (error, scene) => {
+scene.on('open', (scene) => {
     gizmo.onSceneLoaded();
 });
 

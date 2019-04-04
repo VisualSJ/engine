@@ -18,7 +18,6 @@ export const $ = {
 
     scene: '.scene',
 
-    path: 'footer .path',
     version: 'footer .version',
 };
 
@@ -56,46 +55,7 @@ export async function ready() {
  * 检查关闭阶段需要检查是否场景更改了未保存
  */
 export async function beforeClose() {
-    let dirty;
-
-    try {
-        dirty = await panel.$.scene.forceForwarding('Scene', 'queryDirty');
-    } catch (error) {
-        dirty = false;
-    }
-
-    if (!dirty) {
-        return;
-    }
-
-    // 如果数据被修改了，弹出提示框询问是否保存
-    const code = await Editor.Dialog.show({
-        title: Editor.I18n.t('scene.messages.waning'),
-        message: Editor.I18n.t('scene.messages.scenario_modified'),
-        detail: Editor.I18n.t('scene.messages.want_to_save'),
-        type: 'warning',
-
-        default: 0,
-        cancel: 2,
-
-        buttons: [
-            Editor.I18n.t('scene.messages.save'),
-            Editor.I18n.t('scene.messages.dont_save'),
-            Editor.I18n.t('scene.messages.cancel'),
-        ],
-    });
-
-    switch (code) {
-        case 2:
-            return false;
-        case 0:
-            // 等待场景保存完毕
-            await Editor.Ipc.requestToPackage('scene', 'save-scene');
-
-            // 重新发起一次保存请求，因为有可能是在动画或者 prefab 状态，需要再次检查
-            await beforeClose();
-            return true;
-    }
+    return await panel.$.scene.forceForwarding('Scene', '_clearMode');
 }
 
 /**

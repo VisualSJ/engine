@@ -115,6 +115,10 @@ async function initManager(info) {
 
     // 监听物体选中情况
     manager.MinWindow.init();
+
+    // 初始化当前场景内的节点信息
+    const scene = cc.director.getScene();
+    scene && manager.Node.init(scene);
 }
 
 exports.engine = initEngine;

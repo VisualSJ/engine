@@ -11,7 +11,7 @@ module.exports = {
 
     messages: {
         warning: '警告',
-        scenario_modified: '场景数据已经修改。',
+        scenario_modified: ' 数据已经修改。',
         want_to_save: '是否需要保存？',
         save: '保存',
         dont_save: '不保存',

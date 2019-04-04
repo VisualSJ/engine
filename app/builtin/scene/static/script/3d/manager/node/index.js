@@ -12,6 +12,8 @@ const uuidUtils = require('../../../utils/uuid');
 const compManager = require('./../component/index');
 const { promisify } = require('util');
 
+const Scene = require('../scene');
+
 const dumpUtils = require('../../utils/dump');
 const getComponentFunctionOfNode = require('../../utils/get-component-function-of-node');
 
@@ -34,9 +36,6 @@ let uuid2node = {};
  *   node.on('removed', (node) => {});
  */
 class NodeManager extends EventEmitter {
-    constructor() {
-        super();
-    }
 
     get supportTypes() {
         return supportTypes;
@@ -513,3 +512,7 @@ class NodeManager extends EventEmitter {
 }
 
 module.exports = new NodeManager();
+
+Scene.on('open', (scene) => {
+    module.exports.init(scene);
+});

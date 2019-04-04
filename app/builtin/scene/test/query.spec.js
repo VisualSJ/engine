@@ -44,14 +44,6 @@ describe('场景查询测试', () => {
         });
     });
 
-    describe('query-node-path', async () => {
-        const path = await Editor.Ipc.requestToPackage('scene', 'query-node-path', uuid);
-
-        it('节点路径匹配', () => {
-            expect(path).to.equal('Main Light');
-        });
-    });
-
     describe('query-dirty', async () => {
         const dirty = await Editor.Ipc.requestToPackage('scene', 'query-dirty', uuid);
 

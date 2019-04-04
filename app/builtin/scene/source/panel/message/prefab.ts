@@ -2,12 +2,10 @@
 
 let $scene: any = null;
 let $loading: any = null;
-let $path: any = null;
 
 export function init(element: any) {
     $scene = element.$.scene;
     $loading = element.$.loading;
-    $path = element.$.path;
 }
 
 /**

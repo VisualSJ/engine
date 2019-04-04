@@ -1,5 +1,6 @@
 'use strict';
 
+const { basename } = require('path');
 const vStacks = require('v-stacks');
 
 /**
@@ -50,9 +51,24 @@ const messages = {
      * 打开场景成功后，记录当前打开的场景
      * @param {*} uuid
      */
-    'set-scene'(uuid) {
+    async 'set-scene'(uuid) {
         profile.set('current-scene', uuid || '');
         profile.save();
+
+        let title = 'Editor 3D - ' + basename(Editor.App.project) + ' - ';
+
+        if (uuid) {
+            const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+            if (asset && asset.source) {
+                title += asset.source;
+            } else {
+                title += 'Untitled';
+            }
+        } else {
+            title += 'Untitled';
+        }
+
+        Editor.Ipc.sendToAll('notice:editor-title-change', title);
     },
 
     /**
@@ -179,8 +195,17 @@ const messages = {
      * @param {*} uuid 
      * @param {*} content 
      */
-    async 'save-asset'(uuid, content) {
-        await Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
+    'save-asset'(uuid, content) {
+        return Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
+    },
+
+    /**
+     * 创建一个新资源
+     * @param {*} url 
+     * @param {*} content 
+     */
+    'create-asset'(url, content) {
+        return Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content);
     },
 
     /**
@@ -197,6 +222,35 @@ const messages = {
      */
     'hide-min-window'() {
         this.hideMinWindow();
+    },
+
+    /**
+     * 弹出选择是否保存的弹窗
+     */
+    'dirty-dialog'(name) {
+        return Editor.Dialog.show({
+            title: Editor.I18n.t('scene.messages.waning'),
+            message: (name || 'Scene') + Editor.I18n.t('scene.messages.scenario_modified'),
+            detail: Editor.I18n.t('scene.messages.want_to_save'),
+            type: 'warning',
+
+            default: 0,
+            cancel: 2,
+
+            buttons: [
+                Editor.I18n.t('scene.messages.save'), // 0
+                Editor.I18n.t('scene.messages.dont_save'), // 1
+                Editor.I18n.t('scene.messages.cancel'), // 2
+            ],
+        });
+    },
+
+    'generate-available-url'(url) {
+        return Editor.Ipc.requestToPackage(
+            'asset-db',
+            'generate-available-url',
+            url,
+        );
     },
 };
 

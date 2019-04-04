@@ -119,7 +119,7 @@ cc.director.on(cc.Director.EVENT_AFTER_UPDATE, () => {
 });
 
 // 场景打开后需要更新 camera
-sceneManager.on('open', (error, scene) => {
+sceneManager.on('open', (scene) => {
     // 设置 debug 摄像机
     // scene._renderScene.setDebugCamera(camera.instance);
 
