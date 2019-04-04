@@ -231,9 +231,6 @@
      */
     function updateResolution() {
         const { width, height } = getEmulatedScreenSize();
-        cc.view.enableRetina(true);
-        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
-        cc.view.resizeWithBrowserSize(true);
         cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.FIXED_HEIGHT);
     }
 
@@ -349,6 +346,11 @@
         });
         const fps = inputSetFPS.value || 60;
         cc.game.setFrameRate(fps);
+
+        cc.view.enableRetina(true);
+        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
+        cc.view.resizeWithBrowserSize(true);
+        cc.view.enableAutoFullScreen(false);
         updateResolution();
     }
 
