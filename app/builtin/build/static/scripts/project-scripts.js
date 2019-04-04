@@ -2,7 +2,7 @@ const { requestToPackage, getRightUrl, isNodeModulePath} = require('./utils');
 const { extname, isAbsolute, resolve, dirname} = require('path');
 const buildResult = require('./build-result');
 const model = require('module');
-require("@editor/cocos-script/systemjs");
+require('@editor/cocos-script/systemjs');
 let raw2library = {};
 let library2raw = {};
 
@@ -40,6 +40,15 @@ async function loadScripts(scriptAssets) {
             continue;
         }
         require(raw);
+    }
+    for (const asset of scriptAssets) {
+        const raw = asset.library['.js'];
+        if (!raw) {
+            console.error(`Script asset ${asset.uuid} doesn't have library file.`);
+            continue;
+        }
+        const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
+        await System.import(userData.moduleId);
     }
 }
 
