@@ -122,6 +122,12 @@ class GizmoBase {
         this._hidden = false;
     }
 
+    update() {
+        if (this.onUpdate) {
+            this.onUpdate();
+        }
+    }
+
     onNodeTransformChanged() {
         if (this.updateControllerTransform) {
             this.updateControllerTransform();

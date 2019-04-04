@@ -65,7 +65,6 @@ class SkinningModelComponentGizmo extends Gizmo {
             //转换到rootBoneNode的坐标系
             let transformAABB = aabb.create(0, 0, 0, 0, 0, 0);
             boundingBox.transform(rootBindPose, null, null, null, transformAABB);
-
             //let transformAABB = boundingBox;
             vec3.scale(size, transformAABB.halfExtents, 2);
             let center = cc.v3(transformAABB.center.x, transformAABB.center.y, transformAABB.center.z);
@@ -80,6 +79,10 @@ class SkinningModelComponentGizmo extends Gizmo {
     }
 
     onNodeChanged() {
+        this.updateControllerData();
+    }
+
+    onUpdate() {
         this.updateControllerData();
     }
 }

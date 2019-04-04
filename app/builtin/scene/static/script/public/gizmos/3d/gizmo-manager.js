@@ -666,6 +666,25 @@ class GizmoManager {
     onResize() {
         this._worldAxisController.onEditorCameraMoved();
     }
+
+    onUpdate() {
+        if (this.transformTool && this.transformTool.target) {
+            this.transformTool.target.forEach((node) => {
+                if (node) {
+                    if (node.gizmo) {
+                        node.gizmo.update();
+                    }
+
+                    // component update
+                    node._components.forEach((component) => {
+                        if (component && component.gizmo) {
+                            component.gizmo.update();
+                        }
+                    });
+                }
+            });
+        }
+    }
 }
 
 TransformToolData.on('tool-name-changed', (name) => {

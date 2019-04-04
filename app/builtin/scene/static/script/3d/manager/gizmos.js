@@ -48,4 +48,9 @@ operationMgr.on('resize', () => {
     gizmo.onResize();
 });
 
+// 有些gizmo在引擎没有提供消息的情况下，需要使用update来更新数据
+cc.director.on(cc.Director.EVENT_AFTER_UPDATE, () => {
+    gizmo.onUpdate();
+});
+
 module.exports = gizmo;

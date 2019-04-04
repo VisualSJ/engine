@@ -189,12 +189,7 @@ class Engine3D extends EngineInterface {
     getRootBoneNode(component) {
         let rootBoneNode = null;
         if (component instanceof cc.SkinningModelComponent) {
-            if (component.skeleton) {
-                let joints = component.skeleton.joints;
-                if (joints && joints.length > 0 && component._skinningTarget) {
-                    rootBoneNode = component._skinningTarget.get(joints[0]);
-                }
-            }
+            rootBoneNode = component.skinningRoot;
         } else {
             console.error('target is not a cc.SkinningModelComponent');
         }
@@ -206,9 +201,13 @@ class Engine3D extends EngineInterface {
         let rootBindPose = null;
 
         if (component instanceof cc.SkinningModelComponent) {
+            let root = component.skinningRoot;
             let skeleton = component.skeleton;
-            if (skeleton) {
-                rootBindPose = skeleton.bindposes[0];
+            if (root) {
+                const iRoot = skeleton.joints.findIndex((joint) => joint === '');
+                if (iRoot !== undefined) {
+                    rootBindPose = skeleton.bindposes[iRoot];
+                }
             }
         } else {
             console.error('target is not a cc.SkinningModelComponent');
