@@ -34,7 +34,7 @@ class Preview {
         for (const camera of cameras) {
             if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
             camera.view.visibility = 1;
-            camera.view.createRenderTarget({ width: this.width, height: this.height });
+            // camera.view.createRenderTarget({ width: this.width, height: this.height });
         }
     }
 
@@ -62,7 +62,7 @@ class Preview {
         this.regions[0].texExtent.height = height;
         this.window.resize(width, height);
         camera.resize(width, height);
-        camera.view.createRenderTarget({ width, height });
+        // camera.view.createRenderTarget({ width, height });
         this.data = Buffer.alloc(this.width * this.height * 4);
     }
 
