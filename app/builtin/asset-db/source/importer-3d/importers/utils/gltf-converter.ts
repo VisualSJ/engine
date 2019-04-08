@@ -5,7 +5,7 @@ import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, AnimationChannel,
     BufferView, GlTf, Image, Material, Mesh, MeshPrimitive, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
-import { defaultMagFilter, defaultMinFilter, Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
+import { Filter, TextureBaseAssetUserData, WrapMode, defaultMinFilter, defaultMagFilter } from '../texture-base';
 
 // tslint:disable:no-string-literal
 

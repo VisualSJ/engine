@@ -22,14 +22,15 @@ Worker.Ipc.send('build-worker:startup');
 // 主进程来的初始化数据
 Worker.Ipc.on('build-worker:init', async (event, info) => {
     Object.assign(BUILD_INFO, info);
+    window.Utils = require(info.utilPath);
     editor._serialize = function() {
         return require(info.utils + '/serialize');
     };
     editor._uuidUtils = function() {
-        const utils = require(info.utilPath);
-        return utils.Uuid;
+        return window.Utils.Uuid;
     };
     window.Editor = editor;
+
     // 加载引擎
     require(join(info.engine, './bin/.cache/dev'));
     initInfo(BUILD_INFO);
