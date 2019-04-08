@@ -24,7 +24,7 @@ CCProgram ubo %{
 }%
 
 CCProgram light-vs %{
-  precision highp float;
+  precision mediump float;
   #include <cc-local>
   #include <cc-global>
   #include <common>
@@ -49,7 +49,7 @@ CCProgram light-vs %{
 }%
 
 CCProgram light-fs %{
-  precision highp float;
+  precision mediump float;
   #include <ubo>
 
   in vec3 v_color;
@@ -62,7 +62,7 @@ CCProgram light-fs %{
   vec4 frag () {
     vec2 uv = v_uv - 0.5;
     vec3 R = normalize(vec3(1.0, uv));
-    if (any(greaterThan(abs(uv), vec2(0.48)))) return vec4(0.0, 0.0, 0.0, 1.0);
+    // if (any(greaterThan(abs(uv), vec2(0.48)))) return vec4(0.0, 0.0, 0.0, 1.0);
     return vec4(v_color, mix(sphere(R, vec3(5.0, 0.0, 0.0)), 1.0, dot(uv, uv) < 0.0625));
     // return vec4(v_color, sphere(R, vec3(4.5, 0.0, 0.0)));
   }

@@ -18,6 +18,7 @@ class Preview {
             height: this.height,
             colorFmt: this.device.colorFormat,
             depthStencilFmt: this.device.depthStencilFormat,
+            isOffscreen: true,
         });
         this.regions = [new cc.GFXBufferTextureCopy()];
         this.regions[0].texExtent.width = this.width;
@@ -34,54 +35,55 @@ class Preview {
         for (const camera of cameras) {
             if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
             camera.view.visibility = 1;
-            // camera.view.createRenderTarget({ width: this.width, height: this.height });
         }
     }
 
-    queryCameraList() {
+    queryWindowList() {
         const array = [];
         if (!this.scene) return array;
-        const cameras = this.scene.cameras;
-        for (let i = 0; i < cameras.length; i++) {
-            const camera = cameras[i];
-            if (!cc.Layers.check(camera.node.layer, cc.Layers.All)) continue;
-            array.push({
-                index: i,
-                name: camera._node.name,
-                uuid: camera._node.uuid,
-            });
+        const windows = this.scene.root.windows;
+        for (let i = 0; i < windows.length; i++) {
+            const window = windows[i];
+            array.push({ index: i, name: window._title });
         }
         return array;
     }
 
-    resize(width, height, camera) {
-        if (!width || !height || width === this.width && height === this.height) { return; }
+    resize(width, height, window) {
         this.width = width;
         this.height = height;
         this.regions[0].texExtent.width = width;
         this.regions[0].texExtent.height = height;
-        this.window.resize(width, height);
-        camera.resize(width, height);
-        // camera.view.createRenderTarget({ width, height });
+        window.resize(width, height);
         this.data = Buffer.alloc(this.width * this.height * 4);
     }
 
-    getImageData(cameraIndex, width, height) {
+    getImageData(index, width, height) {
         if (!this.scene) return this.data;
-        cameraIndex = parseInt(cameraIndex);
-        if (isNaN(cameraIndex)) cameraIndex = 0;
-        const camera = this.scene.cameras[cameraIndex];
-        if (!camera) return this.data;
-        this.resize(width, height, camera);
-        cc.director.root.pipeline.render(camera.view);
-        this.device.copyFramebufferToBuffer(camera.view.framebuffer, this.data.buffer, this.regions);
+        index = parseInt(index);
+        if (isNaN(index)) index = 0;
+        const root = this.scene.root;
+        const window = root.windows[index];
+        if (!window) return this.data;
+
+        const needResize = width && height && (width !== this.width || height !== this.height);
+        if (needResize) { this.resize(width, height, window); }
+
+        for (const view of root.views) {
+            if (view.isEnable && view.window === window) {
+                if (needResize) { view.camera.resize(width, height); }
+                root.pipeline.render(view);
+            }
+        }
+
+        this.device.copyFramebufferToBuffer(window.framebuffer, this.data.buffer, this.regions);
         return this.data;
     }
 }
 
 module.exports = new Preview();
 
-ipcRenderer.on('query-preview-data', (event, id, cameraIndex, width, height) => {
-    const data = module.exports.getImageData(cameraIndex, width, height);
+ipcRenderer.on('query-preview-data', (event, id, index, width, height) => {
+    const data = module.exports.getImageData(index, width, height);
     ipcRenderer.sendTo(id, 'query-preview-data', data);
 });

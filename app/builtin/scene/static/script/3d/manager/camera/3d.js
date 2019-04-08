@@ -69,11 +69,11 @@ class CameraController3D extends CameraControllerBase {
 
     _initLinearTick() {
         this.hTicks = new LinearTicks()
-            .initTicks([5, 2], 0.1, 10000)
+            .initTicks([5, 2], 1, 10000)
             .spacing(15, 80);
 
         this.vTicks = new LinearTicks()
-        .initTicks([5, 2], 0.1, 10000)
+        .initTicks([5, 2], 1, 10000)
         .spacing(15, 80);
     }
 

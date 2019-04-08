@@ -21,7 +21,7 @@ export const $ = {
     preview: '.preview',
     image: '.image',
     automatic: '.automatic',
-    cameras: '.cameras',
+    windows: '.windows',
 };
 
 export const listeners = {
@@ -56,7 +56,7 @@ export const methods = {
         }
         panel.updateLock = true;
         console.time('draw');
-        const buffer: any = await queryPreviewData(panel.$.cameras.value, panel.width, panel.height);
+        const buffer: any = await queryPreviewData(panel.$.windows.value, panel.width, panel.height);
         if (buffer) {
             buffer.copy(panel.image.data);
         }
@@ -74,22 +74,22 @@ export const methods = {
     /**
      * 更新按钮上的文字说明
      */
-    updateText(cameras: any[]) {
+    updateText(windows: any[]) {
         panel.$.automatic.innerHTML = Editor.I18n.t('preview.automatic');
         panel.$.automatic.setAttribute('tooltip', Editor.I18n.t('preview.automatic_tooltip'));
 
-        panel.$.cameras.innerHTML = '';
-        cameras.forEach((item) => {
+        panel.$.windows.innerHTML = '';
+        windows.forEach((item) => {
             const $option = document.createElement('option');
-            $option.innerHTML = item.name;
+            $option.innerHTML = `Display ${item.index}${item.name.length ? ' - ' + item.name : ''}`;
             $option.value = item.index;
-            panel.$.cameras.appendChild($option);
+            panel.$.windows.appendChild($option);
         });
 
         // todo ui bug
         requestAnimationFrame(() => {
-            if (panel.$.cameras.value === null) {
-                panel.$.cameras.value = 0;
+            if (panel.$.windows.value === null) {
+                panel.$.windows.value = 0;
             }
         });
     },
@@ -101,14 +101,14 @@ export const messages = {
         await init(info.id);
         panel.resize();
         panel.update();
-        panel.updateText(info.cameras);
+        panel.updateText(info.windows);
     },
 
     'scene:close'() {},
 
     async 'scene:node-changed'() {
         const info = await Editor.Ipc.requestToPackage('scene', 'query-preview-info');
-        panel.updateText(info.cameras);
+        panel.updateText(info.windows);
         requestAnimationFrame(panel.update);
     },
 };
@@ -120,14 +120,14 @@ export async function ready() {
     await init(info.id);
     panel.resize();
     panel.update();
-    panel.updateText(info.cameras);
+    panel.updateText(info.windows);
 
     panel.$.automatic.addEventListener('confirm', () => {
         panel.automatic = !!panel.$.automatic.value;
         panel.update();
     });
 
-    panel.$.cameras.addEventListener('confirm', () => {
+    panel.$.windows.addEventListener('confirm', () => {
         panel.automatic = !!panel.$.automatic.value;
         panel.update();
     });

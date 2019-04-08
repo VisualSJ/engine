@@ -153,10 +153,10 @@ export function apply(messages: any) {
     };
 
     messages['query-preview-info'] = async () => {
-        const cameras = await $scene.forwarding('Preview', 'queryCameraList');
+        const windows = await $scene.forwarding('Preview', 'queryWindowList');
         return {
             id: $scene.$scene.getWebContents().id,
-            cameras,
+            windows,
         };
     };
 }

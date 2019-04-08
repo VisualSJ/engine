@@ -17,6 +17,7 @@ class SpotLightComponentGizmo extends Gizmo {
         this._range = 0;
         this._angle = 0;
         this._baseSize = 0.5;
+        this._glowSize = 0.4;
 
         this.createController();
         this._isInited = true;
@@ -48,7 +49,11 @@ class SpotLightComponentGizmo extends Gizmo {
         this._controller.editable = true;
         this._controller.hoverColor = this._lightCtrlHoverColor;
 
-        this._sizeSphereCtrl = new QuadController(gizmoRoot, {effectName: 'editor/light', forwardPipeline: true});
+        this._sizeSphereCtrl = new QuadController(gizmoRoot, {
+            effectName: 'editor/light',
+            forwardPipeline: true,
+            size: 4, // radius 1, plus 1 for the glowings
+        });
     }
 
     onControllerMouseDown() {
@@ -149,10 +154,10 @@ class SpotLightComponentGizmo extends Gizmo {
 
         let intensitySize = cc.v4();
         intensitySize.x = lightComp.luminance;
-        intensitySize.y = lightComp.size;
+        intensitySize.y = this._glowSize;
         this._sizeSphereCtrl.setMaterialProperty('color', color);
         this._sizeSphereCtrl.setMaterialProperty('intensitySize', intensitySize);
-        this._sizeSphereCtrl.updateSize(lightComp.size * 2);
+        this._sizeSphereCtrl.updateSize(lightComp.size * 4);
 
         this.updateControllerTransform();
     }

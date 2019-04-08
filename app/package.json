@@ -115,5 +115,6 @@
         "@editor/project": "1.0.0",
         "@editor/setting": "1.0.3",
         "@types/babel__core": "^7.1.0",
-        "@types/pngjs": "^3.3.2"    }
+        "@types/pngjs": "^3.3.2"
+    }
 }
