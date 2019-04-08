@@ -1,5 +1,5 @@
 require('./Game');
 require('./Editbox');
-require('./DeviceMotionEvent');
+// require('./DeviceMotionEvent');
 require('./downloader');
 require('./misc');

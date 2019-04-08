@@ -307,13 +307,10 @@ class Builder {
                     compact: false,
                     filename: path, // search path for babelrc
                     presets: [
-                        [require('@babel/preset-env'),
-                        {
-                            modules: false,
-                        }],
+                        require('@babel/preset-env'),
                     ],
                     plugins: [
-                        // make sure that legacy comes before class-properties.
+                        // make sure that transform-decorators-legacy comes before transform-class-properties.
                         [
                             require('@babel/plugin-proposal-decorators'),
                             { legacy: true },

@@ -5,7 +5,7 @@ import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, AnimationChannel,
     BufferView, GlTf, Image, Material, Mesh, MeshPrimitive, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
-import { Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
+import { Filter, TextureBaseAssetUserData, WrapMode, defaultMinFilter, defaultMagFilter } from '../texture-base';
 
 // tslint:disable:no-string-literal
 
@@ -467,7 +467,7 @@ export class GltfConverter {
 
         const material = new cc.Material();
         material.name = this._getGltfXXName(GltfAssetKind.Material, iGltfMaterial);
-        material._effectAsset = effectGetter('db://internal/builtin-standard.effect');
+        material._effectAsset = effectGetter('db://internal/effects/builtin-standard.effect');
 
         const defines: cc.IDefineMap = {};
         const props: Record<string, any> = {};
@@ -593,9 +593,9 @@ export class GltfConverter {
         } else {
             const gltfSampler = this._gltf.samplers![gltfTexture.sampler];
             userData.minfilter = gltfSampler.minFilter === undefined ?
-                'linear' : convertMinFilter(gltfSampler.minFilter);
+                defaultMinFilter : convertMinFilter(gltfSampler.minFilter);
             userData.magfilter = gltfSampler.magFilter === undefined ?
-                'linear' : convertMagFilter(gltfSampler.magFilter);
+                defaultMagFilter : convertMagFilter(gltfSampler.magFilter);
             userData.wrapModeS = convertWrapMode(gltfSampler.wrapS);
             userData.wrapModeT = convertWrapMode(gltfSampler.wrapT);
         }

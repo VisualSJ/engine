@@ -24,7 +24,7 @@ export const template = `
         </span>
     </div>
     <div class="array"
-        v-if="unfold && value.length > 0"
+        v-if="unfold && value.length !== 0"
         @click="onDelete"
     >
         <template
@@ -125,12 +125,17 @@ export const methods = {
     },
 };
 
-export const watch = {};
+export const watch = {
+    value() {
+    },
+};
 
 export function data() {
     return {
         unfold: true,
+        data: [],
     };
 }
 
-export function mounted() {}
+export function mounted() {
+}

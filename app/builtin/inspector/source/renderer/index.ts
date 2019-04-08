@@ -88,8 +88,13 @@ export const messages = {
         }
         // @ts-ignore
         clearTimeout(this._unselectTimer);
+        const uuids = Editor.Selection.getSelected(type);
         vm.item.type = type;
-        vm.item.uuid = uuid;
+        if (uuids.length > 1) {
+            vm.item.uuid = Array.from(uuids);
+        } else {
+            vm.item.uuid = uuid;
+        }
     },
 
     /**
@@ -101,6 +106,7 @@ export const messages = {
         if (!vm) {
             return;
         }
+
         // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
         // @ts-ignore
         clearTimeout(this._unselectTimer);
@@ -110,7 +116,6 @@ export const messages = {
                     vm.item.type = '';
                     vm.item.uuid = '';
             }, 200);
-        
         }
     },
 
@@ -176,7 +181,7 @@ export async function ready() {
     vm = init(panel.$.content);
 
     const type = Editor.Selection.getLastSelectedType();
-    const uuid = Editor.Selection.getLastSelected(type);
+    const uuid = Editor.Selection.getSelected(type);
 
     vm.item.type = type;
     vm.item.uuid = uuid;

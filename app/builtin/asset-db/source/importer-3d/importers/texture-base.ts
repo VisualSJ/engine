@@ -14,13 +14,19 @@ export interface TextureBaseAssetUserData {
     anisotropy: number;
 }
 
+export const defaultMinFilter: Filter = 'linear';
+export const defaultMagFilter: Filter = 'linear';
+export const defaultMipFilter: Filter = 'linear';
+export const defaultWrapModeS: WrapMode = 'repeat';
+export const defaultWrapModeT: WrapMode = 'repeat';
+
 export function makeDefaultTextureBaseAssetUserData(): TextureBaseAssetUserData {
     return {
-        wrapModeS: 'clamp-to-edge',
-        wrapModeT: 'clamp-to-edge',
-        minfilter: 'linear',
-        magfilter: 'linear',
-        mipfilter: 'none',
+        wrapModeS: defaultWrapModeS,
+        wrapModeT: defaultWrapModeT,
+        minfilter: defaultMinFilter,
+        magfilter: defaultMagFilter,
+        mipfilter: defaultMipFilter,
         premultiplyAlpha: false,
         anisotropy: 1,
     };

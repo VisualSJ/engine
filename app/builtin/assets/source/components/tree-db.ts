@@ -253,7 +253,7 @@ function calcAssetPosition(assets = assetsTree, index = 0, depth = 0) {
         // 扩展属性
         asset.depth = depth;
         asset.top = start;
-        asset.left = (asset.isSubAsset ? (depth + 1) : depth) * iconWidth + padding;
+        asset.left = depth * iconWidth + padding;
         asset._height = assetHeight;
         asset.parentUuid = assets.uuid;
 

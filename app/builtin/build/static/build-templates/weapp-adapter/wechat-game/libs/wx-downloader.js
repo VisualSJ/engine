@@ -69,7 +69,7 @@ WXDownloader.prototype.handle = function (item, callback) {
         }
     }
 
-    if (CC_WECHATGAMESUB) {
+    if (CC_WECHATGAME_SUB) {
         if (REGEX.test(item.url)) {
             return null;
         }
