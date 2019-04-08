@@ -18,4 +18,7 @@ module.exports = {
         cancel: 'Cancel',
         save_as_fail: 'Failed to save scene: please limit the saved path to the current project assets path and suffix it with.scene',
     },
+
+    save_prefab: 'Save Prefab',
+    close_prefab: 'Close',
 };

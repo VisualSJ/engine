@@ -81,4 +81,4 @@ exports.loadPrefab = async function(uuid) {
             resolve(prefab);
         });
     });
-}
+};

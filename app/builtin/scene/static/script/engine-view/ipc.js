@@ -77,7 +77,7 @@ const messages = {
      */
     async 'query-scripts'() {
         // 加载项目脚本
-        const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
+        const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scripts' });
         return scripts;
     },
 
@@ -172,7 +172,7 @@ const messages = {
 
     /**
      * 是否锁定鼠标
-     * @param {*} bool 
+     * @param {*} bool
      */
     'lock-pointer'(bool) {
         if (bool) {
@@ -184,7 +184,7 @@ const messages = {
 
     /**
      * 更改鼠标样式
-     * @param {*} type 
+     * @param {*} type
      */
     'change-pointer'(type) {
         document.body.style.cursor = type;
@@ -192,8 +192,8 @@ const messages = {
 
     /**
      * 保存资源
-     * @param {*} uuid 
-     * @param {*} content 
+     * @param {*} uuid
+     * @param {*} content
      */
     'save-asset'(uuid, content) {
         return Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
@@ -201,8 +201,8 @@ const messages = {
 
     /**
      * 创建一个新资源
-     * @param {*} url 
-     * @param {*} content 
+     * @param {*} url
+     * @param {*} content
      */
     'create-asset'(url, content) {
         return Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content);
@@ -211,7 +211,7 @@ const messages = {
     /**
      * 展示小窗口
      * 例如：粒子控制窗口
-     * @param {*} info 
+     * @param {*} info
      */
     'show-min-window'(info) {
         this.showMinWindow(info);
@@ -249,8 +249,15 @@ const messages = {
         return Editor.Ipc.requestToPackage(
             'asset-db',
             'generate-available-url',
-            url,
+            url
         );
+    },
+
+    /**
+     * 调出面板上对应的 toolbar 元素
+     */
+    toolbar(mode) {
+        this.$toolbar.setAttribute('mode', mode ? mode : '');
     },
 };
 

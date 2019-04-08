@@ -18,4 +18,7 @@ module.exports = {
         cancel: '取消',
         save_as_fail: '另存场景失败：保存路径请限制在当前项目 /assets 路径内，并以 .scene 作为文件后缀',
     },
+
+    save_prefab: '保存 Prefab',
+    close_prefab: '关闭',
 };

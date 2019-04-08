@@ -42,6 +42,7 @@ class Mode {
      * 保存场景
      */
     async save() {}
+
 }
 
 module.exports = Mode;

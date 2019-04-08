@@ -9,7 +9,6 @@ const initListener = require('./listener');
 const tasks = require('./tasks');
 const template = require('art-template');
 const { readFileSync } = require('fs');
-const q = document.querySelector.bind(document);
 class View extends window.HTMLElement {
     constructor() {
         super();
@@ -22,6 +21,7 @@ class View extends window.HTMLElement {
         this.depend = vDependence.create();
 
         this.$minWindow = document.createElement('div');
+        this.$toolbar = document.createElement('div');
 
         // 如果 webview 被注销了，需要通知
         this.$scene.addEventListener('destroyed', () => {
@@ -65,6 +65,9 @@ class View extends window.HTMLElement {
         this.$minWindow.addEventListener('mousewheel', (event) => {
             event.stopPropagation();
         });
+
+        // 场景上的操作按钮
+        this.initToolbar();
 
         // 查询编辑器是否 ready
         if (Editor.Startup.ready.package) {
@@ -145,6 +148,24 @@ class View extends window.HTMLElement {
     // 隐藏小窗口
     hideMinWindow() {
         this.$minWindow.innerHTML = '';
+    }
+
+    /**
+     * 初始化工具条
+     */
+    initToolbar() {
+        const toolbar = join(__dirname, `./../../template/toolbar.html`);
+        this.$toolbar.innerHTML = readFileSync(toolbar, 'utf-8');
+        this.$toolbar.setAttribute('id', 'toolbar');
+        this.appendChild(this.$toolbar);
+
+        this.$toolbar.querySelector('#save_prefab').addEventListener('click', async () => {
+            await this.forwarding('Scene', 'save');
+        });
+
+        this.$toolbar.querySelector('#close_prefab').addEventListener('click', async () => {
+            await this.forwarding('Scene', 'close');
+        });
     }
 
     ///////////////////

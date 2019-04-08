@@ -37,7 +37,7 @@ class SceneManager extends EventEmitter {
 
     /**
      * 推入一个编辑模式
-     * @param {*} mode 
+     * @param {*} mode
      */
     async _pushMode(mode, uuid) {
         // 如果推入的是一个场景
@@ -60,10 +60,12 @@ class SceneManager extends EventEmitter {
         }
 
         // 缓存场景编辑状态
-        await this.modes.main.staging();
-        
+        if (!this.modes.minor) {
+            await this.modes.main.staging();
+        }
+
         // 尝试关闭次要编辑，如果失败，则不打开新的编辑模式
-        if(this.modes.minor && !await this.modes.minor.close()) {
+        if (this.modes.minor && !await this.modes.minor.close()) {
             return false;
         }
 
@@ -81,9 +83,11 @@ class SceneManager extends EventEmitter {
      */
     async _popMode() {
         // 尝试关闭次要编辑，如果失败
-        if(this.modes.minor && !await this.modes.minor.close()) {
+        if (this.modes.minor && !await this.modes.minor.close()) {
             return false;
         }
+
+        this.modes.minor = null;
         return true;
     }
 
@@ -92,12 +96,12 @@ class SceneManager extends EventEmitter {
      */
     async _clearMode() {
         // 尝试关闭次要编辑
-        if(this.modes.minor && !await this.modes.minor.close()) {
+        if (this.modes.minor && !await this.modes.minor.close()) {
             return false;
         }
         await this.modes.main.restore();
         // 尝试关闭主要编辑
-        if(!await this.modes.main.close()) {
+        if (!await this.modes.main.close()) {
             return false;
         }
         return true;
@@ -136,8 +140,8 @@ class SceneManager extends EventEmitter {
      * 关闭当前打开的场景
      */
     async close() {
-        if (this.modes.minor) {
-            return await this.modes.minor.close();
+        if (await this._popMode()) {
+            return await this.modes.main.restore();
         }
         return await this.modes.main.close();
     }

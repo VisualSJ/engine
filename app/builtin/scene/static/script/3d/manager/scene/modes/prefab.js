@@ -5,21 +5,6 @@ const Mode = require('./mode');
 const utils = require('../utils');
 const prefabUtils = require('../../prefab/utils');
 
-// 保存退出按键
-const $prefab = document.createElement('div');
-$prefab.id = 'preafab_info';
-$prefab.innerHTML = `
-<style>
-    #preafab_info { position: absolute; top: 10px; left: 10px; font-size: 12px; text-align: center; color: #fff; }
-    #preafab_info div { padding: 2px 0; }
-    #preafab_info span { border: 1px solid #fff; border-radius: 2px; padding: 0 4px; }
-</style>
-<div>
-    <button>Save</button>
-    <button>Close</button>
-</div>
-`;
-
 class PrefabMode extends Mode {
 
     constructor(manager) {
@@ -54,18 +39,20 @@ class PrefabMode extends Mode {
         node.parent = scene;
         this.node = node.uuid;
 
+        const info = await Manager.Ipc.send('query-asset-info', uuid);
+        scene.name = info.name; // 重要：如 name = Cube.prefab，表示场景给 prefab 编辑使用，后续样式会以此判断，
+        Manager.Ipc.send('toolbar', 'prefab'); // 显示工具条
+
         try {
             await utils.loadSceneByNode(scene);
             this.current = uuid;
 
             // 发送 emit 事件
             this.manager.emit('open', cc.director._scene);
-    
+
             // 广播场景打开消息
             Manager.Ipc.send('set-scene', '');
             Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
-
-            document.body.appendChild($prefab);
 
             this.lastSaveData = this.serialize();
 
@@ -74,7 +61,7 @@ class PrefabMode extends Mode {
             console.error('Open prefab failed: ' + uuid);
             console.error(error);
         }
-        
+
         this.current = '';
 
         return false;
@@ -89,11 +76,11 @@ class PrefabMode extends Mode {
         const json = this.serialize();
         if (this.lastSaveData !== json) {
             const code = await Manager.Ipc.send('dirty-dialog', 'Prefab');
-            switch(code) {
+            switch (code) {
                 case 0:
                 case '0':
                     // Save
-                    await Manager.Ipc.send('save-asset', this.current, json);
+                    await this.save();
                     break;
                 case 1:
                 case '1':
@@ -111,8 +98,7 @@ class PrefabMode extends Mode {
         this.manager.emit('close');
 
         this.lastSaveData = null;
-
-        $prefab.remove();
+        Manager.Ipc.send('toolbar', ''); // 关闭工具条
 
         return true;
     }
@@ -136,7 +122,7 @@ class PrefabMode extends Mode {
      * 软刷新场景
      */
     async softReload() {
-        console.log('TODO SoftReload')
+        console.log('TODO SoftReload');
         // const scene = cc.director.getScene();
         // if (!scene) {
         //     return false;
@@ -160,6 +146,15 @@ class PrefabMode extends Mode {
         const dump = prefabUtils.getDumpableNode(node);
         prefab.data = dump;
         return Manager.Utils.serialize(prefab);
+    }
+
+    /**
+     * 保存 prefab 数据
+     */
+    async save() {
+        const newData = this.serialize();
+        await Manager.Ipc.send('save-asset', this.current, newData);
+        this.lastSaveData = newData;
     }
 
 }
