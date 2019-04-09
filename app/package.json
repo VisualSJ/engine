@@ -111,7 +111,7 @@
         "@editor/asset-db": "1.1.12",
         "@editor/cocos-script": "^1.0.3",
         "@editor/dock": "1.0.3",
-        "@editor/fbx2gltf": "0.9.7-9c16d3d",
+        "@editor/fbx2gltf": "0.9.7-9c16d3d-2",
         "@editor/gulp-rev-all": "^0.9.8-5f221a5",
         "@editor/package": "1.0.5",
         "@editor/panel": "1.0.8",

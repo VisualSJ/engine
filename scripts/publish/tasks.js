@@ -127,7 +127,8 @@ exports.uglifyJs = async function() {
     this.recursive(APP, (file) => {
         if (
             ps.extname(file) !== '.js' ||
-            file.includes('node_modules')
+            file.includes('node_modules') ||
+            file.includes('templates')
         ) {
             return;
         }
@@ -158,7 +159,7 @@ exports.asar = async function() {
         'node_modules/@editor/robotjs',
     ];
 
-    const asar = require('asar');
+    const asar = require('creator-asar');
 
     await new Promise((resolve, reject) => {
         asar.createPackageWithOptions(
