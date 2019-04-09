@@ -59,7 +59,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.53';
+        return '1.0.62';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -93,6 +93,29 @@ export default class GltfImporter extends Importer {
                 UNDECLARED_EXTENSION: Severity.Warning,
             },
         });
+
+        // Remove specified errors.
+        const ignoredMessages = report.issues.messages.filter((message) => {
+            if (message.code === 'VALUE_NOT_IN_RANGE' &&
+                /\/accessors\/\d+\/count/.test(message.pointer) &&
+                message.message === 'Value 0 is out of range.') {
+                return true;
+            }
+            return false;
+        });
+        for (const message of ignoredMessages) {
+            switch (message.severity) {
+                case Severity.Error:
+                    --report.issues.numErrors;
+                    break;
+                case Severity.Warning:
+                    --report.issues.numInfos;
+                    break;
+            }
+            console.debug(`glTf-validator issue(from ${asset.source}) ${JSON.stringify(message)} is ignored.`);
+            report.issues.messages.splice(report.issues.messages.indexOf(message));
+        }
+
         const strintfyMessages = (severity: number) => {
             return JSON.stringify(
                 report.issues.messages.filter((message) => message.severity === severity),
@@ -105,6 +128,7 @@ export default class GltfImporter extends Importer {
                 `please fix them: ` +
                 `\n` +
                 `${strintfyMessages(Severity.Error)}\n`);
+            throw new Error(`Bad glTf format.`);
         } else if (report.issues.numWarnings !== 0) {
             console.warn(
                 `File ${asset.source} contains warnings, ` +
@@ -113,7 +137,7 @@ export default class GltfImporter extends Importer {
                 `\n` +
                 `${strintfyMessages(Severity.Warning)}\n`);
         } else if (report.issues.numHints !== 0 || report.issues.numInfos !== 0) {
-            console.log(
+            console.debug(
                 `Logs from ${asset.source}:` +
                 `\n` +
                 `${strintfyMessages(Severity.Information)}\n`);
@@ -327,7 +351,7 @@ export default class GltfImporter extends Importer {
                             message: `${userData.imageUuidOrDatabaseUri} is not found in asset-db.`,
                         });
                     }
-                    subAsset.rely(imagePath);
+                    subAsset.depend(imagePath);
                 }
             }
         }
@@ -351,7 +375,7 @@ export default class GltfImporter extends Importer {
                 return uuid;
             }
         }
-        asset.rely(destFilePath);
+        asset.depend(destFilePath);
         return null;
     }
 }
@@ -475,7 +499,7 @@ function getFinalImageUrl(
         return null;
     }
 
-    console.log(`Image` +
+    console.debug(`Image` +
         `(Name: ${gltfImage.name}, Raw url: ${gltfImage.uri}, Expected url: ${expectedUri})` +
         ` is not found, fuzzy search starts.`);
     const extName = path.extname(targetName);
@@ -502,17 +526,17 @@ function getFinalImageUrl(
     for (let i = 0; i < maxDepth && inProjectPath(baseDir); ++i) {
         for (const searchDirectory of searchDirectories) {
             const dir = path.join(baseDir, searchDirectory);
-            console.log(`Do fuzzy search in ${dir}.`);
+            console.debug(`Do fuzzy search in ${dir}.`);
             const result = fuzzySearchTexture(dir, baseName, searchExtensions);
             if (result) {
-                console.log(`Found ${result}, use it.`);
+                console.debug(`Found ${result}, use it.`);
                 return result;
             }
         }
         baseDir = path.dirname(baseDir);
     }
 
-    console.log(`Fuzzy search failed.`);
+    console.debug(`Fuzzy search failed.`);
     return rawUri || null;
 }
 
