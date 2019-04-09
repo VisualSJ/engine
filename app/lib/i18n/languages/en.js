@@ -21,6 +21,7 @@ module.exports = {
         show_all: 'Show all',
         close: 'Close window',
         quit: 'Quit',
+        dashboard: 'Dashboard',
 
         // file
         new_project: 'New Project...',

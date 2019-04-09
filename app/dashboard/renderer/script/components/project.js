@@ -31,6 +31,11 @@ exports.watch = {
             type: this.type,
         });
     },
+    list() {
+        this.list.forEach((item) => {
+            item.state = ''; // 添加一个用于显示的状态字段，默认为空，值为 ['', 'deleting']
+        });
+    },
 };
 
 exports.methods = {
@@ -39,10 +44,11 @@ exports.methods = {
 
     /**
      * 从列表内删除一个项目
-     * @param {*} event
-     * @param {*} path 项目路径
+     * @param {*} item
      */
-    async removeProject(path) {
+    async removeProject(item) {
+        const { path } = item; // 项目路径
+
         const isDelete = await dialog.show({
             type: 'info',
             title: t('delete_project'),
@@ -57,23 +63,26 @@ exports.methods = {
             case 2:
                 break;
             case 1:
+                item.state = 'deleting';
                 project.remove(path);
                 fse.removeSync(path);
                 break;
             case 0:
+                item.state = 'deleting';
                 project.remove(path);
         }
     },
 
     /**
      * 打开一个项目
-     * @param {*} event
+     * @param {*} item
      * @param {*} path 项目路径，如果打开新项目，则传入空值
      */
-    async openProject(event, path) {
-        // 如果没传入 path，则弹窗补全
+    async openProject(item) {
+        const { path } = item; // 项目路径
+
         if (!path) {
-            const array = await dialog.openDirectory({title: t('open_project')});
+            const array = await dialog.openDirectory({ title: t('open_project') });
             if (!array || !array[0]) {
                 return;
             }

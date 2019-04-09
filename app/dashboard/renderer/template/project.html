@@ -18,6 +18,7 @@
 
             <div class="pro-wrap" tabindex="0"
                 v-for="(item, index) in list"
+                :key="index"
                 @mouseenter="_onMouseEnter($event, item)"
                 @mouseleave="_onMouseLeave($event)"
             >
@@ -30,13 +31,21 @@
                     </div>
                 </div>
                 <div class="name">{{item.name}}</div>
-                <div class="hover-wrap">
+                <div class="hover-wrap"
+                    v-if="item.state===''"
+                >
                     <span class="iconfont icon-del-b"
-                        @click="removeProject(item.path)"
+                        @click="removeProject(item)"
                     ></span>
+                    
                     <span class="btn btn-blue"
-                        @click="openProject($event, item.path)"
+                        @click="openProject(item)"
                     >{{t('open')}}</span>
+                </div>
+                <div class="icon-deleting"
+                    v-if="item.state==='deleting'"
+                >
+                    <i></i>
                 </div>
             </div>
 

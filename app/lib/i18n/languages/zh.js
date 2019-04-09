@@ -21,6 +21,7 @@ module.exports = {
         show_all: '显示全部',
         close: '关闭窗口',
         quit: '退出',
+        dashboard: '控制面板',
 
         // file
         new_project: '新建项目...',

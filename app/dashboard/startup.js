@@ -14,6 +14,10 @@ const languages = {
     zh: require('./i18n/zh'),
     en: require('./i18n/en'),
 };
+
+// 打开所有项目的键值对
+const projectMap = new Map();
+
 /**
  * 等待 app 初始化完毕
  */
@@ -52,9 +56,9 @@ exports.window = function() {
 
     // 组织页面关闭
     window.on('close', (event) => {
-        event.preventDefault();
-        window.hide();
-        app.dock && app.dock.hide();
+        // event.preventDefault();
+
+        closeWindow();
     });
 };
 
@@ -83,17 +87,16 @@ exports.tray = async function() {
     }
 
     menus.push({
-        label: 'Dashboard',
+        label: i18n.translation('menu.dashboard'),
         click() {
-            window && window.show();
-            app.dock && app.dock.show();
+            showWindow();
         },
     });
 
     menus.push({
-        label: 'Quit',
+        label: i18n.translation('menu.quit'),
         click() {
-            app.exit(0);
+            exitApp();
         },
     });
 
@@ -108,7 +111,7 @@ exports.listener = function() {
 
     // 监听关闭窗口事件
     ipc.on('dashboard:close', (event) => {
-        window.hide();
+        closeWindow();
     });
 
     // 监听最大化窗口事件
@@ -133,9 +136,6 @@ exports.listener = function() {
             '3d': [],
         });
     });
-
-    // 打开所有项目的键值对
-    const projectMap = new Map();
 
     // 设置打开项目方法
     project.setOpenHandler((path) => {
@@ -214,13 +214,39 @@ exports.listener = function() {
             projectMap.delete(path);
             if (projectMap.size <= 0) {
                 // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
-                window && window.show();
-                app.dock && app.dock.show();
+                showWindow();
             }
         });
 
         // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
-        window && window.hide();
-        app.dock && app.dock.hide();
+        hideWindow();
     });
 };
+
+function showWindow() {
+    window && window.show();
+    app.dock && app.dock.show();
+}
+
+function hideWindow() {
+    window && window.hide();
+    app.dock && app.dock.hide();
+}
+
+function closeWindow() {
+    if (projectMap.size <= 0) {
+        exitApp();
+    } else {
+        hideWindow();
+    }
+}
+
+function exitApp() {
+    // TODO 未实现的功能：
+    // 需要触发子进程里的 window 窗口 close 事件，同时等待是否保存数据
+    //
+    // for (const [path, child] of projectMap) {
+    // }
+
+    app.exit(0);
+}
