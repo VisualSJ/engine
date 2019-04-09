@@ -43,7 +43,7 @@ const messages = {
      *
      * todo 应该保留已修改的数据，执行软刷新
      */
-    'query-scene'() {
+    async 'query-scene'() {
         return profile.get('current-scene') || '';
     },
 

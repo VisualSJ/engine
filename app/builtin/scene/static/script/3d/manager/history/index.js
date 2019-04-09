@@ -4,14 +4,29 @@ const nodeManager = require('../node');
 const dumpUtils = require('../../utils/dump');
 const cache = require('./cache');
 
-const steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
-const records = []; // 格式为 uuid[]
-
+let steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
 let index = -1; // 当前指针
 let method = 'redo'; // 'redo' | 'undo' 已执行过的方法
+
+let records = []; // 格式为 uuid[]
 let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
+
+let sceneUuid = ''; // 当前记录的场景 uuid
+let mainSceneData = { // 缓存主场景的历史记录
+    sceneUuid: '',
+    steps: null,
+    index: 0,
+    method: '',
+};
+
+/**
+ * uuids 是所有节点的 uuid 数组
+ */
+nodeManager.on('inited', (uuids, scene) => {
+    reset(uuids, scene);
+});
 
 nodeManager.on('change', (node, enable = true) => { // enable 是内部 undo redo 产生的变化，不参与记录
     enable && record(node.uuid);
@@ -50,9 +65,6 @@ function record(uuid) {
  */
 function stopRecordToArchive() {
     if (records.length === 0) {
-        if (index !== steps.length - 1) {
-            cache.reset(nodeManager.queryUuids());
-        }
         return false;
     }
 
@@ -68,8 +80,6 @@ function stopRecordToArchive() {
 }
 
 function snapshot() {
-    const current = steps[index];
-
     const step = stopRecordToArchive();
 
     if (step === false) {
@@ -80,6 +90,8 @@ function snapshot() {
             return;
         }
     }
+
+    const current = steps[index];
 
     // 如果是处于 undo 状态中的新增步骤，index 步骤数处于上一步的 undo 中，需要修正 -1
     if (current && method === 'undo') {
@@ -255,13 +267,39 @@ async function restore() {
 /**
  * 清空操作记录，重置参数
  */
-function reset() {
-    index = -1;
-    method = 'redo';
-    steps.length = 0;
+function reset(uuids, scene) {
+    if (sceneUuid === scene.uuid) { // 就是当前的场景，此处容错是因为软刷新会多次触发 scene open 事件
+        return;
+    }
+
+    snapshot(); // 保存当前的操作
+
+    if (scene.name.includes('.prefab')) { // 重要：判断此场景是编辑 prefab
+        Object.assign(mainSceneData, { // 暂存数据
+            sceneUuid,
+            steps,
+            index,
+            method,
+        });
+    }
+
+    if (mainSceneData.sceneUuid === scene.uuid) { // 提取数据
+        steps = mainSceneData.steps;
+        index = mainSceneData.index;
+        method = mainSceneData.method;
+    } else {
+        steps = [];
+        index = -1;
+        method = 'redo';
+    }
+
     clearTimeout(timeId);
     stepData = {};
-    records.length = 0;
+    records = [];
+
+    cache.reset(uuids); // 缓存尚未变动的场景数据
+
+    sceneUuid = scene.uuid;
 }
 
 module.exports = {

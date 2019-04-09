@@ -43,18 +43,21 @@ class SceneManager extends EventEmitter {
         // 如果推入的是一个场景
         if (mode === this.SceneMode) {
             // 首先尝试关闭次要编辑
-            if (this.modes.minor && !await this.modes.minor.close()) {
-                return false;
+            if (this.modes.minor) {
+                if (!await this.modes.minor.close()) {
+                    return false; // 取消关闭
+                }
+
+                this.modes.minor = null;
             }
-            this.modes.minor = null;
-            await this.modes.main.restore();
-            // 其次尝试关闭之前的场景
-            if (!await this.modes.main.close()) {
-                return false;
+
+            if (await this.modes.main.restore()) { // 还原暂存的场景
+                return true;
             }
-            // 最后尝试打开新的场景
+
+            // 最后打开新的场景
             if (!await mode.open(uuid)) {
-                return false;
+                return true;
             }
             return true;
         }

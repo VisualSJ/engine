@@ -24,25 +24,38 @@ class SceneMode extends Mode {
 
     /**
      * 打开一个场景资源
-     * @param {*} uuid 
+     * @param {*} uuid
      * @return {Boolean} 是否打开场景
      */
     async open(uuid) {
         if (this._staging) {
-            return console.warn('Scene data has been temporarily stored. Unable to open new scene.');
+            console.warn('Scene data has been temporarily stored. Unable to open new scene.');
+            return false;
+        }
+
+        if (!uuid) {
+            uuid = await Manager.Ipc.send('query-scene'); // 获取上次打开的场景
         }
 
         // 如果 uuid 存在，则打开某个场景资源
         if (uuid) {
+            if (this.current === uuid) {
+                return true; // 场景已打开
+            } else {
+                if (!await this.close()) { // 其次尝试关闭之前的场景
+                    return false; // 取消关闭
+                }
+            }
+
             try {
                 await utils.loadSceneByUuid(uuid);
                 this.current = uuid;
 
                 // 发送 emit 事件
                 this.manager.emit('open', cc.director._scene);
-        
+
                 // 广播场景打开消息
-                Manager.Ipc.send('set-scene', uuid);
+                await Manager.Ipc.send('set-scene', uuid);
                 Manager.Ipc.forceSend('broadcast', 'scene:ready', uuid);
 
                 // 缓存最后一次保存的数据
@@ -71,11 +84,7 @@ class SceneMode extends Mode {
 
         // 发送 emit 事件
         this.manager.emit('open', cc.director._scene);
-
-        // 广播场景打开消息
-        Manager.Ipc.send('set-scene', '');
         Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
-
         // 缓存最后一次保存的数据
         this.lastSaveData = this.serialize();
 
@@ -95,7 +104,7 @@ class SceneMode extends Mode {
         const json = this.serialize();
         if (this.lastSaveData !== json) {
             const code = await ipc.send('dirty-dialog', 'Scene');
-            switch(code) {
+            switch (code) {
                 case 0:
                 case '0':
                     // Save
@@ -116,7 +125,6 @@ class SceneMode extends Mode {
         this.manager.emit('close');
 
         // 发送关闭之前的场景的广播消息
-        Manager.Ipc.send('set-scene', '');
         Manager.Ipc.forceSend('broadcast', 'scene:close');
 
         // 缓存最后一次保存的数据
@@ -208,7 +216,6 @@ class SceneMode extends Mode {
 
         // 发送 emit 事件
         this.manager.emit('close');
-        Manager.Ipc.send('set-scene', '');
 
         return false;
     }
@@ -218,20 +225,15 @@ class SceneMode extends Mode {
      */
     async restore() {
         if (!this._staging) {
-            return;
+            return false;
         }
         await utils.loadSceneByJson(this._staging);
 
         // 发送 emit 事件
         this.manager.emit('open', cc.director._scene);
-        Manager.Ipc.send('set-scene', this.current);
-
-        // 广播场景打开消息
-        Manager.Ipc.send('set-scene', '');
         Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
-
         this._staging = null;
-        return false;
+        return true;
     }
 }
 

@@ -49,9 +49,6 @@ class PrefabMode extends Mode {
 
             // 发送 emit 事件
             this.manager.emit('open', cc.director._scene);
-
-            // 广播场景打开消息
-            Manager.Ipc.send('set-scene', '');
             Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
 
             this.lastSaveData = this.serialize();

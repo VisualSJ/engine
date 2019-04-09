@@ -5,8 +5,6 @@ const ipc = require('@base/electron-base-ipc');
 import { outputFile } from 'fs-extra';
 import { join, relative } from 'path';
 
-const profile = Editor.Profile.load('profile://local/packages/scene.json');
-
 let $scene: any = null;
 let $loading: any = null;
 
@@ -38,11 +36,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return '';
         }
-        uuid = uuid || '';
         await $scene.forwarding('Scene', 'open', [uuid]);
-        profile.set('current-scene', uuid);
-        profile.save();
-        return uuid || '';
     };
 
     /**

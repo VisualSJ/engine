@@ -1,14 +1,8 @@
 'use strict';
 
 const nodeManager = require('../node');
-let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
 
-/**
- * uuids 是所有节点的 uuid 数组
- */
-nodeManager.on('inited', (uuids) => {
-    reset(uuids);
-});
+let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
 
 /**
  * 获取传入 uuid 获取节点上一步记录的 dump 数据
@@ -47,7 +41,7 @@ function refresh(uuids) {
  * 也在操作记录有截点重置的时候触发
  */
 function reset(uuids) {
-    dumpMap = {};
+    dumpMap = Object.create(null);
     uuids.forEach((uuid) => {
         dumpMap[uuid] = nodeManager.queryDump(uuid);
     });
