@@ -315,8 +315,8 @@ class CameraController3D extends CameraControllerBase {
     }
 
     broadcastNodeChanged(node) {
-        Manager.Node.emit('changed', node);
-        Manager.Ipc.send('broadcast', 'scene:node-changed', node.uuid);
+        Manager.Node.emit('change', node);
+        Manager.Ipc.send('broadcast', 'scene:change-node', node.uuid);
     }
 
     onMouseDown(event) {

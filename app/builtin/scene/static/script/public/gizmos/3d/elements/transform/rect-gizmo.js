@@ -117,7 +117,7 @@ class RectGizmo extends TransformGizmo {
             NodeUtils.makeVec3InPrecision(posDelta, 3);
             posDelta.z = 0;
             node.setPosition(localPos.add(posDelta));
-            Utils.broadcastMessage('scene:node-changed', node);
+            Utils.broadcastMessage('scene:change-node', node);
         }
     }
 
@@ -149,7 +149,7 @@ class RectGizmo extends TransformGizmo {
         tempVec2.addSelf(oldAnchor);
         uiTransComp.anchorPoint = tempVec2;
 
-        Utils.broadcastMessage('scene:node-changed', node);
+        Utils.broadcastMessage('scene:change-node', node);
     }
 
     modifyPosDeltaWithAnchor(type, posDelta, sizeDelta, anchor, keepCenter) {
@@ -222,7 +222,7 @@ class RectGizmo extends TransformGizmo {
         let width = size.width + sizeDelta.x;
         let height = size.height + sizeDelta.y;
         uiTransComp.contentSize = cc.size(width, height);
-        Utils.broadcastMessage('scene:node-changed', node);
+        Utils.broadcastMessage('scene:change-node', node);
     }
 
     handleMultiTargetSize(type, delta) {
@@ -274,7 +274,7 @@ class RectGizmo extends TransformGizmo {
 
             uiTransComp.contentSize = cc.size(size.width + sd.x, size.height + sd.y);
 
-            Utils.broadcastMessage('scene:node-changed', node);
+            Utils.broadcastMessage('scene:change-node', node);
         }
     }
 

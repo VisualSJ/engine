@@ -98,7 +98,7 @@ class ScaleGizmo extends TransformGizmo {
             curScale.y = curScale.y + dif.y;
 
             this.setScaleWithPrecision(node, curScale, 3);
-            Utils.broadcastMessage('scene:node-changed', node);
+            Utils.broadcastMessage('scene:change-node', node);
         }.bind(this));
 
         Utils.repaintEngine();
@@ -155,7 +155,7 @@ class ScaleGizmo extends TransformGizmo {
                     curNodePos = this._center.add(offset);
                     NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
                 }
             } else {
                 for (i = 0; i < this._localScaleList.length; ++i) {
@@ -165,7 +165,7 @@ class ScaleGizmo extends TransformGizmo {
 
                     this.setScaleWithPrecision(topNodes[i], newScale, 3);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
                 }
             }
         }

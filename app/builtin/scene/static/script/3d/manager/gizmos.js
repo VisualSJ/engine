@@ -12,23 +12,23 @@ scene.on('open', (scene) => {
     gizmo.onSceneLoaded();
 });
 
-nodeMgr.on('changed', (node) => {
+nodeMgr.on('change', (node) => {
     gizmo.onNodeChanged(node);
 });
 
-nodeMgr.on('added', (node) => {
+nodeMgr.on('add', (node) => {
     gizmo.onNodeAdded(node);
 });
 
-nodeMgr.on('removed', (node) => {
+nodeMgr.on('remove', (node) => {
     gizmo.onNodeRemoved(node);
 });
 
-compMgr.on('component-added', (comp) => {
+compMgr.on('add-component', (comp) => {
     gizmo.onComponentAdded(comp);
 });
 
-compMgr.on('before-component-remove', (comp) => {
+compMgr.on('before-remove-component', (comp) => {
     gizmo.onBeforeComponentRemove(comp);
 });
 

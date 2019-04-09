@@ -13,15 +13,15 @@ let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
 
-nodeManager.on('changed', (node, enable = true) => { // enable 是内部 undo redo 产生的变化，不参与记录
+nodeManager.on('change', (node, enable = true) => { // enable 是内部 undo redo 产生的变化，不参与记录
     enable && record(node.uuid);
 });
 
-nodeManager.on('added', (node, enable = true) => {
+nodeManager.on('add', (node, enable = true) => {
     enable && loopRecord(node);
 });
 
-nodeManager.on('removed', (node, enable = true) => {
+nodeManager.on('remove', (node, enable = true) => {
     enable && record(node.uuid);
 });
 
@@ -203,24 +203,24 @@ async function restore() {
         const future = stepData[uuid];
 
         if (!future) {
-            nodesEvent[uuid] = 'removed';
+            nodesEvent[uuid] = 'remove';
             continue;
         }
 
         if (current.isScene) {
-            nodesEvent[uuid] = 'changed';
+            nodesEvent[uuid] = 'change';
             continue;
         }
 
-        let type = 'changed';
+        let type = 'change';
         const currentParent = current.parent.value.uuid;
         const futureParent = future.parent.value.uuid;
 
         if (currentParent === '' && futureParent !== '') {
-            type = 'added';
+            type = 'add';
         }
         if (currentParent !== '' && futureParent === '') {
-            type = 'removed';
+            type = 'remove';
         }
 
         nodesEvent[uuid] = type;
@@ -228,7 +228,7 @@ async function restore() {
 
     for (const uuid of uuids) {
         const node = nodeManager.query(uuid);
-        if (node && nodesEvent[uuid] === 'changed') { // removed 和 added 节点，由父级节点的 children 变动实现，所以这边可以不操作
+        if (node && nodesEvent[uuid] === 'change') { // remove 和 adde 节点，由父级节点的 children 变动实现，所以这边可以不操作
             await dumpUtils.restoreNode(node, stepData[uuid]); // 还原变动的节点
         }
     }
@@ -239,7 +239,7 @@ async function restore() {
         const event = nodesEvent[uuid];
 
         if (node) {
-            Manager.Ipc.forceSend('broadcast', `scene:node-${event === 'added' ? 'created' : event}`, uuid);
+            Manager.Ipc.forceSend('broadcast', `scene:${event}-node`, uuid);
             nodeManager.emit(event, node, false);
         }
     }

@@ -158,7 +158,7 @@ function restore() {
             // 还原节点
             dump.restoreNode(node, stepData[uuid]);
             // 广播已变动的节点
-            ipc.send('broadcast', 'scene:node-changed', uuid);
+            ipc.send('broadcast', 'scene:change-node', uuid);
         }
     }
 

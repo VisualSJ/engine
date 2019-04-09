@@ -106,7 +106,7 @@ export const messages = {
 
     'scene:close'() {},
 
-    async 'scene:node-changed'() {
+    async 'scene:change-node'() {
         const info = await Editor.Ipc.requestToPackage('scene', 'query-preview-info');
         panel.updateText(info.windows);
         requestAnimationFrame(panel.update);

@@ -28,12 +28,12 @@ let uuid2node = {};
  * 节点管理器
  *
  * Events:
- *   node.on('before-changed', (node) => {});
- *   node.on('before-added', (node) => {});
- *   node.on('before-removed', (node) => {});
- *   node.on('changed', (node) => {});
- *   node.on('added', (node) => {});
- *   node.on('removed', (node) => {});
+ *   node.on('before-change', (node) => {});
+ *   node.on('before-add', (node) => {});
+ *   node.on('before-remove', (node) => {});
+ *   node.on('change', (node) => {});
+ *   node.on('add', (node) => {});
+ *   node.on('remove', (node) => {});
  */
 class NodeManager extends EventEmitter {
 
@@ -133,24 +133,24 @@ class NodeManager extends EventEmitter {
         }
 
         // 触发修改前的事件
-        this.emit('before-changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', uuid);
+        this.emit('before-change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
         if (path === 'parent' && node.parent) {
             // 发送节点修改消息
-            Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', node.parent.uuid);
-            this.emit('before-changed', node.parent);
+            Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.parent.uuid);
+            this.emit('before-change', node.parent);
         }
 
         // 恢复数据
         await dumpUtils.restoreProperty(node, path, dump);
 
         // 触发修改后的事件
-        this.emit('changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+        this.emit('change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
         if (path === 'parent' && node.parent) {
             // 发送节点修改消息
-            Manager.Ipc.forceSend('broadcast', 'scene:node-changed', node.parent.uuid);
-            this.emit('changed', node.parent);
+            Manager.Ipc.forceSend('broadcast', 'scene:change-node', node.parent.uuid);
+            this.emit('change', node.parent);
         }
         return true;
     }
@@ -191,8 +191,8 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('before-changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', uuid);
+        this.emit('before-change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
 
         // 移动顺序
         if (path === 'children') {
@@ -210,8 +210,8 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+        this.emit('change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return true;
     }
@@ -258,8 +258,8 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('before-changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', uuid);
+        this.emit('before-change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
 
         if (path === '_components') {
             const comp = data[index];
@@ -271,8 +271,8 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('changed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+        this.emit('change', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return true;
     }
@@ -297,9 +297,9 @@ class NodeManager extends EventEmitter {
 
         if (component) {
             // 发送节点修改消息
-            this.emit('before-changed', node);
-            this.emit('before-component-added', component, node);
-            Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', uuid);
+            this.emit('before-change', node);
+            this.emit('before-add-component', component, node);
+            Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
 
             const comp = node.addComponent(component);
             compManager.addComponent(comp);
@@ -309,8 +309,8 @@ class NodeManager extends EventEmitter {
             }
 
             // 发送节点修改消息
-            this.emit('changed', node);
-            Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+            this.emit('change', node);
+            Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
         } else {
             console.warn(`create component failed: ${component} does not exist`);
             return false;
@@ -385,20 +385,20 @@ class NodeManager extends EventEmitter {
             node.name = name;
         }
 
-        this.emit('before-added', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-added', node.uuid);
-        this.emit('before-changed', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', uuid);
+        this.emit('before-add', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-add-node', node.uuid);
+        this.emit('before-change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
 
         parent.addChild(node);
 
         await this.add(node);
 
         // 发送节点修改消息
-        this.emit('added', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-added', node.uuid);
-        this.emit('changed', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', uuid);
+        this.emit('add', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:add-node', node.uuid);
+        this.emit('change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return node.uuid;
     }
@@ -449,10 +449,10 @@ class NodeManager extends EventEmitter {
                 node.name = name;
             }
 
-            this.emit('before-added', node);
-            Manager.Ipc.forceSend('broadcast', 'scene:before-node-added', node.uuid);
-            this.emit('before-changed', parent);
-            Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', parentUuid);
+            this.emit('before-add', node);
+            Manager.Ipc.forceSend('broadcast', 'scene:before-add-node', node.uuid);
+            this.emit('before-change', parent);
+            Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', parentUuid);
 
             parent.addChild(node);
 
@@ -460,10 +460,10 @@ class NodeManager extends EventEmitter {
             await this.add(node);
 
             // 发送节点修改消息
-            this.emit('added', node);
-            Manager.Ipc.forceSend('broadcast', 'scene:node-added', node.uuid);
-            this.emit('changed', parent);
-            Manager.Ipc.forceSend('broadcast', 'scene:node-changed', parentUuid);
+            this.emit('add', node);
+            Manager.Ipc.forceSend('broadcast', 'scene:add-node', node.uuid);
+            this.emit('change', parent);
+            Manager.Ipc.forceSend('broadcast', 'scene:change-node', parentUuid);
 
             return node.uuid;
         } catch (error) {
@@ -481,18 +481,18 @@ class NodeManager extends EventEmitter {
         const parent = node.parent;
 
         // 发送节点修改消息
-        this.emit('before-changed', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-changed', parent.uuid);
-        this.emit('before-removed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-node-removed', node.uuid);
+        this.emit('before-change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', parent.uuid);
+        this.emit('before-remove', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-remove-node', node.uuid);
 
         parent.removeChild(node);
 
         // 发送节点修改消息
-        this.emit('changed', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-changed', parent.uuid);
-        this.emit('removed', node);
-        Manager.Ipc.forceSend('broadcast', 'scene:node-removed', node.uuid);
+        this.emit('change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', parent.uuid);
+        this.emit('remove', node);
+        Manager.Ipc.forceSend('broadcast', 'scene:remove-node', node.uuid);
 
         return parent.uuid;
     }

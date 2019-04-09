@@ -120,7 +120,7 @@ class SpotLightComponentGizmo extends Gizmo {
             this.target.range = newHeight;
 
             // 发送节点修改消息
-            Utils.broadcastMessage('scene:node-changed', node);
+            Utils.broadcastMessage('scene:change-node', node);
         }
     }
 

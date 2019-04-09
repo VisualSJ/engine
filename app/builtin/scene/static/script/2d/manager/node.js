@@ -161,8 +161,8 @@ async function createNode(uuid, name = 'New Node', dump) {
     await add(node);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-added', node._id);
-    Manager.Ipc.send('broadcast', 'scene:node-changed', node._parent._id);
+    Manager.Ipc.send('broadcast', 'scene:add-node', node._id);
+    Manager.Ipc.send('broadcast', 'scene:change-node', node._parent._id);
 
     return node._id;
     // return {
@@ -181,7 +181,7 @@ function removeNode(uuid) {
     parent.removeChild(node);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', parent.uuid);
 
     return parent.uuid;
 }
@@ -216,7 +216,7 @@ function createComponent(uuid, component) {
     componentInstance && node.addComponent(componentInstance);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', uuid);
 }
 
 /**
@@ -234,7 +234,7 @@ function removeComponent(uuid, component) {
     node.removeComponent(component);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', uuid);
 }
 
 /**
@@ -255,11 +255,11 @@ async function setProperty(uuid, path, dump) {
     await dumpUtils.restoreProperty(node, path, dump);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', uuid);
 
     if (path === 'parent') {
         // 发送节点修改消息
-        Manager.Ipc.send('broadcast', 'scene:node-changed', parent.uuid);
+        Manager.Ipc.send('broadcast', 'scene:change-node', parent.uuid);
     }
 
     return true;
@@ -306,7 +306,7 @@ function moveArrayElement(uuid, path, target, offset) {
     }
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', uuid);
 
     return true;
 }
@@ -354,7 +354,7 @@ function removeArrayElement(uuid, path, index) {
     const temp = data.splice(index, 1);
 
     // 发送节点修改消息
-    Manager.Ipc.send('broadcast', 'scene:node-changed', uuid);
+    Manager.Ipc.send('broadcast', 'scene:change-node', uuid);
 
     return true;
 }

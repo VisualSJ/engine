@@ -80,7 +80,7 @@ class PositionGizmo extends TransformGizmo {
             node.getPosition(curPos);
             curPos = curPos.add(dif);
             node.setPosition(curPos.x, curPos.y, curPos.z);
-            Utils.broadcastMessage('scene:node-changed', node);
+            Utils.broadcastMessage('scene:change-node', node);
         });
 
         Utils.repaintEngine();
@@ -115,7 +115,7 @@ class PositionGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                Utils.broadcastMessage('scene:change-node', topNodes[i]);
             }
         }
     }

@@ -9,7 +9,7 @@ const nodeManager = require('../node');
 const utils = require('./utils');
 const ipc = require('../ipc');
 
-nodeManager.on('changed', (node) => {
+nodeManager.on('change', (node) => {
     if (node._prefab) {
         if (node._prefab.root === node) { // root 是自己，说明自己是 prefab 根节点，不需要剔除
             return;
@@ -29,13 +29,13 @@ nodeManager.on('changed', (node) => {
     }
 });
 
-nodeManager.on('added', (node) => {
+nodeManager.on('add', (node) => {
     if (node.parent && !!node.parent._prefab) {
         link(node);
     }
 });
 
-nodeManager.on('removed', (node) => {
+nodeManager.on('remove', (node) => {
 
 });
 
@@ -56,8 +56,8 @@ async function link(nodeUuid, assetUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('before-changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.uuid);
 
     const parentPrefab = node.parent._prefab;
 
@@ -76,8 +76,8 @@ async function link(nodeUuid, assetUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:node-changed', node.uuid);
+    nodeManager.emit('change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:change-node', node.uuid);
 }
 
 /**
@@ -92,8 +92,8 @@ function unlink(nodeUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('before-changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.uuid);
 
     node._prefab = undefined;
 
@@ -110,8 +110,8 @@ function unlink(nodeUuid) {
     }
 
     // 发送节点修改消息
-    nodeManager.emit('changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:node-changed', node.uuid);
+    nodeManager.emit('change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:change-node', node.uuid);
 }
 
 /**
@@ -127,7 +127,7 @@ function revert(nodeUuid) {
  * @param {*} nodeUuid
  */
 function sync(nodeUuid) {
-    
+
 }
 
 /**
@@ -139,8 +139,8 @@ function generate(nodeUuid) {
     const prefab = new cc.Prefab();
 
     // 发送节点修改消息
-    nodeManager.emit('before-changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:before-node-change', node.uuid);
+    nodeManager.emit('before-change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.uuid);
 
     utils.walkNode(node, (child) => {
         const info = new cc._PrefabInfo();
@@ -151,8 +151,8 @@ function generate(nodeUuid) {
     });
 
     // 发送节点修改消息
-    nodeManager.emit('changed', node);
-    Manager.Ipc.forceSend('broadcast', 'scene:node-changed', node.uuid);
+    nodeManager.emit('change', node);
+    Manager.Ipc.forceSend('broadcast', 'scene:change-node', node.uuid);
 
     const dump = utils.getDumpableNode(node);
     prefab.data = dump;

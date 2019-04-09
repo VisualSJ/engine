@@ -57,7 +57,7 @@ class CompManager extends EventEmitter {
      * @param {*} component 组件
      */
     addComponent(component) {
-        this.emit('component-added', component);
+        this.emit('add-component', component);
         this.add(component);
     }
 
@@ -66,10 +66,10 @@ class CompManager extends EventEmitter {
      * @param {*} component 组件
      */
     removeComponent(component) {
-        this.emit('before-component-remove', component);
+        this.emit('before-remove-component', component);
         component._destroyImmediate();
         component.node.removeComponent(component);
-        this.emit('component-removed', component);
+        this.emit('remove-component', component);
     }
 
     /**

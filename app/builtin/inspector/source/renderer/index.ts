@@ -123,7 +123,7 @@ export const messages = {
      * 比对节点根据diff结果修改
      * @param {string} uuid
      */
-    async 'scene:node-changed'(uuid: string) {
+    async 'scene:change-node'(uuid: string) {
         vm.$refs.node && vm.$refs.node.refresh();
     },
 

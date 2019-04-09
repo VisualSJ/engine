@@ -135,7 +135,7 @@ operationMgr.on('resize', () => {
 });
 
 // 节点的 active 或者 comp 的 enable 修改的时候需要更新光源数据
-// nodeManager.on('changed', (node) => {
+// nodeManager.on('change', (node) => {
 //     let index = camera._lightNodes.indexOf(node);
 //     if (index !== -1) {
 //         let lightComp = node.getComponent(cc.LightComponent);
@@ -148,7 +148,7 @@ operationMgr.on('resize', () => {
 // });
 
 // 如果删除的节点带有灯光，需要更新摄像机使用的光源数据
-// nodeManager.on('removed', (node) => {
+// nodeManager.on('remove', (node) => {
 //     let index = camera._lightNodes.indexOf(node);
 //     if (index !== -1) {
 //         camera._lightNodes.splice(index, 1);
@@ -157,7 +157,7 @@ operationMgr.on('resize', () => {
 // });
 
 // 如果节点增加了 light，需要更新摄像机使用的光源数据
-// compManager.on('component-added', (comp, node) => {
+// compManager.on('add-component', (comp, node) => {
 //     if (!(comp instanceof cc.LightComponent)) {
 //         return;
 //     }
@@ -168,7 +168,7 @@ operationMgr.on('resize', () => {
 // });
 
 // 如果节点删除，并且删除的节点带有 light，需要更新光源数据
-// compManager.on('component-removed', (comp, node) => {
+// compManager.on('remove-component', (comp, node) => {
 //     if (!(comp instanceof cc.LightComponent)) {
 //         return;
 //     }

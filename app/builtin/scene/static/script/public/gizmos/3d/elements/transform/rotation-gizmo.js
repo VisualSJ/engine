@@ -47,8 +47,7 @@ class RotationGizmo extends TransformGizmo {
 
             if (GizmoConfig.isCreator2x && this._controller.is2D) {
                 this._rotList.push(topNodes[i].angle);
-            }
-            else {
+            } else {
                 let rot = NodeUtils.getWorldRotation3D(topNodes[i]);
                 this._rotList.push(quat.clone(rot));
             }
@@ -157,8 +156,7 @@ class RotationGizmo extends TransformGizmo {
     updateDataFromController() {
         if (GizmoConfig.isCreator2x && this._controller.is2D) {
             this.updateDataFromController2D();
-        } 
-        else {
+        } else {
             this.updateDataFromController3D();
         }
     }
@@ -191,7 +189,7 @@ class RotationGizmo extends TransformGizmo {
                     NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
                 }
             } else {
                 for (i = 0; i < topNodes.length; ++i) {
@@ -203,7 +201,7 @@ class RotationGizmo extends TransformGizmo {
 
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
                 }
             }
         }
@@ -240,16 +238,15 @@ class RotationGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                 //NodeUtils.setWorldRotation3D(topNodes[i], rot);
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                Utils.broadcastMessage('scene:change-node', topNodes[i]);
             }
-        }
-        else {
+        } else {
             for (i = 0; i < topNodes.length; ++i) {
                 let newAngle = this._rotList[i] + zDeltaAngle;
                 topNodes[i].angle = newAngle;
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:node-changed', topNodes[i]);
+                Utils.broadcastMessage('scene:change-node', topNodes[i]);
             }
         }
     }

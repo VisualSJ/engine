@@ -24,7 +24,7 @@ function queryAllEffects() {
             effects[key].uuid = effects[key]._uuid;
         });
         return effects;
-    } catch(error) {
+    } catch (error) {
         return [];
     }
 }
@@ -178,16 +178,16 @@ sceneMgr.on('open', (scene) => {
     onSceneLoaded();
 });
 
-compMgr.on('component-added', (comp) => {
+compMgr.on('add-component', (comp) => {
     assetWatcher.start(comp);
 });
 
-compMgr.on('before-component-remove', (comp) => {
+compMgr.on('before-remove-component', (comp) => {
     assetWatcher.stop(comp);
 });
 
 // 可能会和component事件重复了，但是undo里目前只有这个消息
-nodeMgr.on('changed', (node) => {
+nodeMgr.on('change', (node) => {
     node._components.forEach((component) => {
         assetWatcher.start(component);
     });
