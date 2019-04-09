@@ -187,6 +187,10 @@ export async function moveNode(uuid: string, target: number, offset: number) {
  * 添加节点后数据调整
  */
 function addNodeIntoTree(newNode: any) {
+    if (uuidNodes[newNode.uuid]) { // 节点已存在，不需要由 add 入口再新增；undo redo 会触发节点新的 add 事件
+        return;
+    }
+
     uuidNodes[newNode.uuid] = newNode;
 
     // 父级节点
@@ -372,7 +376,7 @@ function calcNodePosition(nodes = nodesTree, index = 0, depth = 0) {
         } else { // 有搜索
             vm.state = 'search';
             // @ts-ignore
-            if (!node.readOnly && node.name.search(vm.search) !== -1) { // 平级保存
+            if (!node.readonly && node.name.search(vm.search) !== -1) { // 平级保存
                 node.depth = 0; // 平级保存
                 nodesMap.set(start, node);
                 index++;

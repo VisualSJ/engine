@@ -33,7 +33,7 @@ declare interface ItreeNode {
     isPrefab: boolean; // 是否是 prefab
     isEditingPrefab: boolean; // 正在编辑的 prefab 
     isVisible: boolean; // 根据自身和父级的 active 调整状态
-    readOnly: boolean; // 是否是只读
+    readonly: boolean; // 是否是只读
     top: number; // top 位置
     left: number; // 缩进的大小
     depth: number; // 树形层级
