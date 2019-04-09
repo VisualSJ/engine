@@ -103,6 +103,7 @@ async function initManager(info) {
     manager.Preview = require('../preview');
     manager.Component = require('../component');
     manager.MinWindow = require('../min-window');
+    manager.Animation = require('../animation');
 
     // 创建编辑器使用的 camera
     manager.Camera.init();

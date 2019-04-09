@@ -243,6 +243,9 @@ export function apply(messages: any) {
         await $scene.forwarding('History', 'redo');
     };
 
+    /**
+     * 软刷新场景
+     */
     messages['soft-reload'] = async () => {
         if (!$scene) {
             return null;
@@ -250,13 +253,15 @@ export function apply(messages: any) {
         await $scene.forwarding('Scene', 'softReload');
     };
 
+    /**
+     * 实时预览 material 数据
+     */
     messages['preview-material'] = async (uuid: string, material: any) => {
         if (!$scene) {
             return null;
         }
         await $scene.forwarding('Asset', 'previewMaterial', [uuid, material]);
     };
-
 
     ///////////
     // gizmo //
@@ -312,4 +317,31 @@ export function apply(messages: any) {
         }
     };
 
+
+    ///////////////
+    // aniamtion //
+    ///////////////
+
+    /**
+     * 更改当前正在编辑的动画的 sample
+     */
+    messages['change-clip-sample'] = (clip: string, sample: number) => {
+        return $scene.forwatding('Animation', 'operation', 'changeSample', clip, sample);
+    }
+
+    /**
+     * 更改当前正在编辑的动画的 wrapMode
+     */
+    messages['change-clip-wrap-mode'] = (clip: string, wrapMode: number) => {
+        return $scene.forwatding('Animation', 'operation', 'changeWrapMode', clip, wrapMode);
+    }
+
+    /**
+     * 更改当前正在编辑的动画的 speed
+     */
+    messages['change-clip-speed'] = (clip: string, speed: number) => {
+        return $scene.forwatding('Animation', 'operation', 'changeSpeed', clip, speed);
+    }
+
+    // TODO 暴露各种操作消息
 }

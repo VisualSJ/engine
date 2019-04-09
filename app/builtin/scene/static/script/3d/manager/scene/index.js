@@ -36,7 +36,7 @@ class SceneManager extends EventEmitter {
     }
 
     /**
-     * 推入一个编辑模式
+     * 打开一个编辑模式
      * @param {*} mode
      */
     async _pushMode(mode, uuid) {
@@ -105,6 +105,19 @@ class SceneManager extends EventEmitter {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 查询当前正在编辑的模式名字
+     */
+    queryMode() {
+        if (!this.modes.minor) {
+            return 'scene';
+        }
+        if (this.modes.minor === this.AnimationMode) {
+            return 'animation';
+        }
+        return 'prefab';
     }
 
     /**
@@ -213,7 +226,7 @@ class SceneManager extends EventEmitter {
                 prefab: !!node._prefab,
                 parent: (node.parent && node.parent.uuid) || '',
                 isScene: node.constructor.name === 'Scene',
-                readOnly: false, // TODO 暂时未使用到
+                readonly: false,
             };
         };
 

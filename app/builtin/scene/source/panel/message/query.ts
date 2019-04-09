@@ -71,6 +71,9 @@ export function apply(messages: any) {
         return await $scene.forwarding('Asset', 'queryAllEffects');
     };
 
+    /**
+     * 查询一个 material 的 dump 数据
+     */
     messages['query-material'] = async (uuid: string, effectName: string) => {
         return await $scene.forwarding('Asset', 'queryMaterial', [uuid, effectName]);
     };
@@ -148,10 +151,16 @@ export function apply(messages: any) {
         return await $scene.forceForwarding('Gizmo', 'queryIs2D');
     };
 
+    /**
+     * 查询引擎内所有的组件列表
+     */
     messages['query-components'] = async () => {
         return await $scene.forceForwarding('Scene', 'queryComponents');
     };
 
+    /**
+     * 查询预览的信息
+     */
     messages['query-preview-info'] = async () => {
         const windows = await $scene.forwarding('Preview', 'queryWindowList');
         return {
@@ -159,4 +168,32 @@ export function apply(messages: any) {
             windows,
         };
     };
+
+    /**
+     * 查询当前场景的编辑模式
+     */
+    messages['query-scene-mode'] = () => {
+        return $scene.forwarding('Scene', 'queryMode');
+    };
+
+    /**
+     * 传入一个节点，查询这个节点所在的动画节点的 uuid
+     */
+    messages['query-animation-root'] = (uuid: string) => {
+        return $scene.forwarding('Animation', 'queryAnimationRoot', [uuid]);
+    };
+
+    /**
+     * 查询一个 clip 的 dump 数据
+     */
+    messages['query-animation-clip'] = (uuid: string) => {
+        return $scene.forwarding('Animation', 'queryClip', [uuid]);
+    };
+
+    /**
+     * 查询一个节点上，可以编辑的动画属性数组
+     */
+    messages['query-animation-properties'] = (uuid: string) => {
+        return $scene.forwarding('Animation', 'queryProperties', [uuid]);
+    }
 }
