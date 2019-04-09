@@ -6,85 +6,48 @@ CCEffect %{
       priority: max - 10
       rasterizerState:
         cullMode: none
-      depthStencilState:
+      depthStencilState: &disable_depth
         depthTest: false
         depthWrite: false
-      blendState:
+      blendState: &enable_blend
         targets:
         - blend: true
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
-      properties: &props
-        color: { type: vec4, value: [1, 1, 1, 1], inspector: { type: color } }
 
   - passes:
     - vert: line-vs:vert
       frag: line-fs:front
       priority: max - 10
-      rasterizerState:
-        cullMode: none
-      depthStencilState:
-        depthTest: false
-        depthWrite: false
-      blendState:
-        targets:
-        - blend: true
-          blendSrc: src_alpha
-          blendDst: one_minus_src_alpha
-          blendDstAlpha: one_minus_src_alpha
-      properties: *props
+      depthStencilState: *disable_depth
+      blendState: *enable_blend
 
   - passes:
     - vert: line-vs:vert
       frag: line-fs:front
       priority: max - 10
-      rasterizerState:
-        cullMode: none
       depthStencilState:
         depthTest: true
         depthWrite: false
-      blendState:
-        targets:
-        - blend: true
-          blendSrc: src_alpha
-          blendDst: one_minus_src_alpha
-          blendDstAlpha: one_minus_src_alpha
-      properties: *props
+      blendState: *enable_blend
     - vert: line-vs:vert
       frag: line-fs:back
       priority: max - 10
-      rasterizerState:
-        cullMode: none
       depthStencilState:
         depthTest: true
         depthWrite: false
         depthFunc: greater
-      blendState:
-        targets:
-        - blend: true
-          blendSrc: src_alpha
-          blendDst: one
-          blendDstAlpha: one_minus_src_alpha
-      properties: *props
+      blendState: *enable_blend
+
   - passes:
     - vert: sprite-vs:vert
       frag: sprite-fs:frag
       priority: max - 10
       rasterizerState:
         cullMode: none
-      depthStencilState:
-        depthTest: false
-        depthWrite: false
-      blendState:
-        targets:
-        - blend: true
-          blendSrc: src_alpha
-          blendDst: one_minus_src_alpha
-          blendDstAlpha: one_minus_src_alpha
-      properties:
-        mainTexture: { type: sampler2D, value: white }
-        color:       { type: vec4,      value: [1, 1, 1, 1], inspector: { type: color } }
+      depthStencilState: *disable_depth
+      blendState: *enable_blend
 }%
 
 CCProgram gizmo-vs %{
@@ -121,7 +84,6 @@ CCProgram gizmo-fs %{
   #include <rect-area-light>
   #include <cc-global>
   #include <gamma>
-  #include <post-process>
 
   in vec3 normal_w;
   in vec3 pos_w;
@@ -168,7 +130,6 @@ CCProgram line-vs %{
 
 CCProgram line-fs %{
   precision mediump float;
-  #include <post-process>
 
   uniform Constant {
     vec4 color;
@@ -205,7 +166,6 @@ CCProgram sprite-vs %{
 CCProgram sprite-fs %{
   precision mediump float;
   #include <cc-global>
-  #include <post-process>
 
   in vec2 uv0;
   uniform Constant {

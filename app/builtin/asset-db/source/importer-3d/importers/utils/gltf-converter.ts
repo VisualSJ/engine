@@ -640,17 +640,17 @@ export class GltfConverter {
             }
         };
 
-        const convertMinFilter = (gltfFilter: number): Filter => {
+        const convertMinFilter = (gltfFilter: number): Filter[] => {
             switch (gltfFilter) {
-                case GltfTextureMinFilter.NEAREST: return 'nearest';
-                case GltfTextureMinFilter.LINEAR: return 'linear';
-                case GltfTextureMinFilter.NEAREST_MIPMAP_NEAREST: // NEAREST_MIPMAP_NEAREST
-                case GltfTextureMinFilter.LINEAR_MIPMAP_NEAREST: // LINEAR_MIPMAP_NEAREST
-                case GltfTextureMinFilter.NEAREST_MIPMAP_LINEAR: // NEAREST_MIPMAP_LINEAR
-                case GltfTextureMinFilter.LINEAR_MIPMAP_LINEAR: // LINEAR_MIPMAP_LINEAR
+                case GltfTextureMinFilter.NEAREST: return ['nearest', 'none'];
+                case GltfTextureMinFilter.LINEAR: return ['linear', 'none'];
+                case GltfTextureMinFilter.NEAREST_MIPMAP_NEAREST: return ['nearest', 'nearest'];
+                case GltfTextureMinFilter.LINEAR_MIPMAP_NEAREST: return ['linear', 'nearest'];
+                case GltfTextureMinFilter.NEAREST_MIPMAP_LINEAR: return ['nearest', 'linear'];
+                case GltfTextureMinFilter.LINEAR_MIPMAP_LINEAR: return ['linear', 'linear'];
                 default:
                     console.warn(`Unsupported filter: ${gltfFilter}, 'linear' is used.`);
-                    return 'linear';
+                    return ['linear', 'none'];
             }
         };
 
@@ -659,12 +659,16 @@ export class GltfConverter {
             userData.wrapModeT = 'repeat';
         } else {
             const gltfSampler = this._gltf.samplers![gltfTexture.sampler];
-            userData.minfilter = gltfSampler.minFilter === undefined ?
-                defaultMinFilter : convertMinFilter(gltfSampler.minFilter);
-            userData.magfilter = gltfSampler.magFilter === undefined ?
-                defaultMagFilter : convertMagFilter(gltfSampler.magFilter);
             userData.wrapModeS = convertWrapMode(gltfSampler.wrapS);
             userData.wrapModeT = convertWrapMode(gltfSampler.wrapT);
+            userData.magfilter = gltfSampler.magFilter === undefined ?
+                defaultMagFilter : convertMagFilter(gltfSampler.magFilter);
+            userData.minfilter = defaultMinFilter;
+            if (gltfSampler.minFilter !== undefined) {
+                const [ min, mip ] = convertMinFilter(gltfSampler.minFilter);
+                userData.minfilter = min;
+                userData.mipfilter = mip;
+            }
         }
     }
 

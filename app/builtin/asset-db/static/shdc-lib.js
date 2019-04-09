@@ -21,7 +21,7 @@ const arithmetics = /^[\d\+\-*/%\s]+$/;
 const samplerRE = /sampler/;
 const inDecl = /^(\s*)in ((?:\w+\s+)?\w+\s+\w+(?:\[[\d\s]+])?);/gm;
 const outDecl = /^(\s*)out ((?:\w+\s+)?\w+\s+(\w+)(?:\[[\d\s]+])?);/gm;
-const texLookup = /texture(\w*)\s*\((\w+),/g;
+const texLookup = /texture(\w*)\s*\((\w+)\s*,/g;
 const layoutRE = /layout\(.*?\)/g;
 const layoutExtract = /layout\((.*?)\)(\s*)$/;
 const bindingExtract = /binding\s*=\s*(\d+)/;
@@ -606,7 +606,7 @@ const parseEffect = (() => {
       try {
         const src = yaml.safeLoad(effectCap[1]);
         effect.techniques = JSON.parse(JSON.stringify(src.techniques));
-      } catch (e) { warn(`parse YAML failed: ${e}`); }
+      } catch (e) { warn(e); }
       structuralTypeCheck(mappings.effectStructure, effect);
     }
     let programCap = programRE.exec(content);
