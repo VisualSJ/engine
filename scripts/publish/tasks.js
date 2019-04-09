@@ -159,6 +159,7 @@ exports.asar = async function() {
         'node_modules/@editor/robotjs',
     ];
 
+    // npm install cocos-creator/creator-asar
     const asar = require('creator-asar');
 
     await new Promise((resolve, reject) => {
