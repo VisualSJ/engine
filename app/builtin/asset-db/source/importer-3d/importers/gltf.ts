@@ -59,7 +59,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.48';
+        return '1.0.53';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -620,7 +620,7 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.1';
+        return '1.0.2';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -652,7 +652,7 @@ export class GltfAnimationImporter extends GltfSubAssetImporter {
 
         const gltfConverter = await this.fetchGltfConverter(asset.parent as Asset);
 
-        const animationClip = gltfConverter.createAnimation(asset.userData.gltfIndex as number);
+        const animationClip = gltfConverter.createLegacyAnimation(asset.userData.gltfIndex as number);
 
         await asset.saveToLibrary('.json', Manager.serialize(animationClip));
 

@@ -2,6 +2,12 @@
 type Constructor<T = {}> = new (...args: any[]) => T;
 
 declare namespace cc {
+    export class Vec2 {
+        x: number;
+        y: number;
+        constructor(x?: number, y?: number);
+    }
+
     export class Vec3 {
         x: number;
         y: number;
@@ -10,6 +16,14 @@ declare namespace cc {
     }
 
     export class Vec4 {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        constructor(x?: number, y?: number, z?: number, w?: number);
+    }
+
+    export class Quat {
         x: number;
         y: number;
         z: number;
@@ -115,6 +129,11 @@ declare namespace cc {
 
     export class AnimationComponent extends Component {
         addClip(name: string, clip: any): void;
+    }
+
+    export class LegacyAnimationComponent extends Component {
+        _defaultClip: LegacyAnimationClip;
+        addClip (clip: LegacyAnimationClip, newName?: string): void;
     }
 
     export class Asset {
@@ -385,6 +404,97 @@ declare namespace cc {
         _channels: IAnimationChannel[];
         _keysList: number[][];
         _length: number;
+    }
+
+    export type CurveValue = any;
+
+    export type MotionPath = Vec2[];
+
+    export interface IKeyframe {
+        frame: number;
+        value: CurveValue;
+        curve?: 'linear' | number[];
+        motionPath?: MotionPath;
+    }
+
+    export interface ICurveData {
+        props?: {
+            [propertyName: string]: IKeyframe[];
+        };
+        comps?: {
+            [componentName: string]: {
+                [propertyName: string]: IKeyframe[];
+            };
+        };
+        paths?: {
+            [path: string]: ICurveData;
+        };
+    }
+
+    export interface IAnimationEvent {
+        frame: number;
+        func: string;
+        params: string[];
+    }
+
+    /**
+     * !#en Specifies how time is treated when it is outside of the keyframe range of an Animation.
+     * !#zh 动画使用的循环模式。
+     */
+    export enum WrapMode {
+        /**
+         * !#en Reads the default wrap mode set higher up.
+         * !#zh 向 Animation Component 或者 AnimationClip 查找 wrapMode
+         */
+        Default,
+
+        /**
+         * !#en All iterations are played as specified.
+         * !#zh 动画只播放一遍
+         */
+        Normal,
+
+        /**
+         * !#en All iterations are played in the reverse direction from the way they are specified.
+         * !#zh 从最后一帧或结束位置开始反向播放，到第一帧或开始位置停止
+         */
+        Reverse,
+
+        /**
+         * !#en When time reaches the end of the animation, time will continue at the beginning.
+         * !#zh 循环播放
+         */
+        Loop,
+
+        /**
+         * !#en All iterations are played in the reverse direction from the way they are specified.
+         * And when time reaches the start of the animation, time will continue at the ending.
+         * !#zh 反向循环播放
+         */
+        LoopReverse,
+
+        /**
+         * !#en Even iterations are played as specified, odd iterations are played in the reverse direction from the way they
+         * are specified.
+         * !#zh 从第一帧播放到最后一帧，然后反向播放回第一帧，到第一帧后再正向播放，如此循环
+         */
+        PingPong,
+
+        /**
+         * !#en Even iterations are played in the reverse direction from the way they are specified, odd iterations are played
+         * as specified.
+         * !#zh 从最后一帧开始反向播放，其他同 PingPong
+         */
+        PingPongReverse,
+    }
+
+    export class LegacyAnimationClip extends Asset {
+        sample: number;
+        speed: number;
+        wrapMode: WrapMode;
+        curveData: ICurveData;
+        events: IAnimationEvent[];
+        _duration: number;
     }
 
     export const enum GFXPrimitiveMode {

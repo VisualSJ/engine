@@ -218,6 +218,14 @@ interface IPrimitiveViewer {
 }
 
 export class GltfConverter {
+
+    get gltf() {
+        return this._gltf;
+    }
+
+    get path() {
+        return this._gltfFilePath;
+    }
     private _nodePathTable: string[] | null = null;
 
     /**
@@ -249,14 +257,6 @@ export class GltfConverter {
         }
 
         this._nodePathTable = this._createNodePathTable();
-    }
-
-    get gltf() {
-        return this._gltf;
-    }
-
-    get path() {
-        return this._gltfFilePath;
     }
 
     public createMesh(iGltfMesh: number, options: IMeshOptions) {
@@ -494,6 +494,37 @@ export class GltfConverter {
         return animationClip;
     }
 
+    public createLegacyAnimation(iGltfAnimation: number) {
+        const gltfAnimation = this._gltf.animations![iGltfAnimation];
+
+        const rootCurveData: cc.ICurveData = { paths: {} };
+        let duration = 0;
+        gltfAnimation.channels.forEach((gltfChannel) => {
+            const targetNode = gltfChannel.target.node;
+            if (targetNode === undefined) {
+                // When node isn't defined, channel should be ignored.
+                return;
+            }
+
+            const path = this._getNodePath(targetNode);
+            let curveData = path.length === 0 ? rootCurveData : rootCurveData.paths![path];
+            if (curveData === undefined) {
+                curveData = {} as cc.ICurveData;
+                rootCurveData.paths![path] = curveData;
+            }
+
+            const channelDuration = this._gltfChannelToCurveData(gltfAnimation, gltfChannel, curveData);
+            duration = Math.max(channelDuration, duration);
+        });
+
+        const animationClip = new cc.LegacyAnimationClip();
+        animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
+        animationClip.curveData = rootCurveData;
+        animationClip.wrapMode = cc.WrapMode.Loop;
+        animationClip._duration = duration;
+        return animationClip;
+    }
+
     public createMaterial(
         iGltfMaterial: number,
         gltfAssetFinder: IGltfAssetFinder,
@@ -653,14 +684,21 @@ export class GltfConverter {
     public createScene(iGltfScene: number, gltfAssetFinder: IGltfAssetFinder): cc.Node {
         const sceneNode = this._getSceneNode(iGltfScene, gltfAssetFinder);
         if (this._gltf.animations !== undefined) {
-            const animationComponent = sceneNode.addComponent(cc.AnimationComponent);
+            const animationComponent = sceneNode.addComponent(cc.LegacyAnimationComponent);
+            let defaultAnim: cc.LegacyAnimationClip | null = null;
             this._gltf.animations.forEach((gltfAnimation, index) => {
-                const animation = gltfAssetFinder.find('animations', index);
+                const animation = gltfAssetFinder.find<cc.LegacyAnimationClip>('animations', index);
                 if (animation) {
+                    if (!defaultAnim) {
+                        defaultAnim = animation;
+                    }
                     const animationName = this._getGltfXXName(GltfAssetKind.Animation, index);
-                    animationComponent.addClip(animationName, animation);
+                    animationComponent.addClip(animation, animationName);
                 }
             });
+            if (defaultAnim) {
+                animationComponent._defaultClip = defaultAnim;
+            }
         }
         return sceneNode;
     }
@@ -678,6 +716,80 @@ export class GltfConverter {
             const bufferView = this._gltf.bufferViews![gltfImage.bufferView];
             return this._readImageInBufferview(bufferView, gltfImage.mimeType);
         }
+    }
+
+    private _gltfChannelToCurveData(gltfAnimation: Animation, gltfChannel: AnimationChannel, curveData: cc.ICurveData) {
+        let propName: string | undefined;
+        if (gltfChannel.target.path === GltfAnimationChannelTargetPath.translation) {
+            propName = 'position';
+        } else if (gltfChannel.target.path === GltfAnimationChannelTargetPath.rotation) {
+            propName = 'rotation';
+        } else if (gltfChannel.target.path === GltfAnimationChannelTargetPath.scale) {
+            propName = 'scale';
+        } else {
+            console.error(`Unsupported channel target path ${gltfChannel.target.path}.`);
+            return 0;
+        }
+
+        const gltfSampler = gltfAnimation.samplers[gltfChannel.sampler];
+
+        const inputAccessor = this._gltf.accessors![gltfSampler.input];
+        const inputs = this._readAccessorIntoArray(inputAccessor) as Float32Array;
+        let outputs = this._readAccessorIntoArray(this._gltf.accessors![gltfSampler.output]);
+        if (!(outputs instanceof Float32Array)) {
+            const normalizedOutput = new Float32Array(outputs.length);
+            const normalize = (() => {
+                if (outputs instanceof Int8Array) {
+                    return (value: number) => {
+                        return Math.max(value / 127.0, -1.0);
+                    };
+                } else if (outputs instanceof Uint8Array) {
+                    return (value: number) => {
+                        return value / 255.0;
+                    };
+                } else if (outputs instanceof Int16Array) {
+                    return (value: number) => {
+                        return Math.max(value / 32767.0, -1.0);
+                    };
+                } else if (outputs instanceof Uint16Array) {
+                    return (value: number) => {
+                        return value / 65535.0;
+                    };
+                } else {
+                    return (value: number) => {
+                        return value;
+                    };
+                }
+            })();
+            for (let i = 0; i < outputs.length; ++i) {
+                normalizedOutput[i] = normalize(outputs[i]); // Do normalize.
+            }
+            outputs = normalizedOutput;
+        }
+
+        let values: any[] = [];
+        if (propName === 'position' || propName === 'scale') {
+            values = new Array<cc.Vec3>(outputs.length / 3);
+            for (let i = 0; i < values.length; ++i) {
+                values[i] = new cc.Vec3(outputs[i * 3 + 0], outputs[i * 3 + 1], outputs[i * 3 + 2]);
+            }
+        } else if (propName === 'rotation') {
+            values = new Array<cc.Quat>(outputs.length / 4);
+            for (let i = 0; i < values.length; ++i) {
+                values[i] = new cc.Quat(outputs[i * 4 + 0], outputs[i * 4 + 1], outputs[i * 4 + 2], outputs[i * 4 + 3]);
+            }
+        }
+
+        const keyframes = new Array<cc.IKeyframe>(inputs.length);
+        for (let iFrame = 0; iFrame < keyframes.length; ++iFrame) {
+            keyframes[iFrame] = {
+                frame: inputs[iFrame],
+                value: values[iFrame],
+            };
+        }
+        curveData.props = curveData.props || {};
+        curveData.props[propName] = keyframes;
+        return inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? inputAccessor.max[0] : 0;
     }
 
     private _getParent(node: number) {
@@ -830,7 +942,7 @@ export class GltfConverter {
                 name: this._getGfxAttributeName(attributeName),
                 baseType,
                 type,
-                normalize: false,
+                normalize: attributeAccessor.normalized || false,
             });
         }
 
