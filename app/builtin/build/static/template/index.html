@@ -105,6 +105,13 @@
                 </div>
             </ui-prop>
         </div>
+        <div class="line">
+            <ui-prop :label="t('force_combile_engin')">
+                <div slot="content">
+                    <ui-checkbox :checked="setting.force_combile_engin" path="force_combile_engin"></ui-checkbox>
+                </div>
+            </ui-prop>
+        </div>
     </div>
     <footer>
         <div :class="['progress', state]">

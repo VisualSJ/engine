@@ -19,6 +19,7 @@ module.exports = {
     select_all: 'Select All',
     open_compile_file: 'Open compile log file',
     source_map: 'Source Maps',
+    force_combile_engin: 'Force Recompilation Of Engine',
     debug_mode: 'Open Build DevTools',
     eruda: 'eruda',
     require: 'require',

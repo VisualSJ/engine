@@ -1,6 +1,6 @@
 const { join, basename , extname, dirname, resolve, relative} = require('path');
 const { readJSONSync, emptyDirSync, outputFileSync, copySync, ensureDirSync } = require('fs-extra');
-const { readFileSync, existsSync, copyFileSync , writeFileSync} = require('fs');
+const { readFileSync, existsSync, copyFileSync , writeFileSync, statSync} = require('fs');
 
 const minify = require('html-minifier').minify;
 const CleanCSS = require('clean-css');
@@ -38,8 +38,8 @@ class Builder {
 
     // 初始化整理 options 数据
     async _init(options, config) {
-        const isWeChatSubdomain = options.platform === 'wechatgame-subcontext';
-        const isWeChatGame = options.platform === 'wechatgame' || isWeChatSubdomain;
+        const isWeChatSubdomain = options.platform === 'wechat-game-subcontext';
+        const isWeChatGame = options.platform === 'wechat-game' || isWeChatSubdomain;
         const isQQPlay = options.platform === 'qqplay';
         const platformInfo = platfomConfig[options.platform];
         const nativeRenderer = !!options.nativeRenderer;
@@ -419,25 +419,35 @@ class Builder {
     // 构建引擎模块
     async _buildEngine() {
         updateProgress('build engine...');
-        let { sourceMaps, excludedModules, enginVersion, nativeRenderer, platform } = this._options;
-        let { dest, jsCacheExcludes, engine, jsCache } = this._paths;
-        let buildDest = join(this._paths.jsCacheDir, this._options.platform, basename(jsCache));
+        let { sourceMaps, excludedModules, enginVersion, nativeRenderer, platform, force_combile_engin } = this._options;
+        let { dest, jsCacheExcludes, engine, jsCache, jsCacheDir } = this._paths;
+        let buildDest = join(jsCacheDir, this._options.platform, basename(jsCache));
         ensureDirSync(dirname(buildDest));
-        let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
-        if (existsSync(jsCacheExcludes)) {
-            let json = readJSONSync(jsCacheExcludes);
-            enginSameFlag =
-                enginVersion === json.version &&
-                nativeRenderer === json.nativeRenderer &&
-                json.excludes.toString() === excludedModules.toString() &&
-                json.sourceMaps === sourceMaps;
-        }
+        const quickCompilePath = join(jsCacheDir, 'dev', '__quick_compile__.js');
 
-        // 与缓存内容一致无需再次编译
-        if (enginSameFlag && existsSync(jsCache)) {
-            copySync(jsCache, join(dest, basename(jsCache)));
-            updateProgress('build engine success', 15);
-            return;
+        if (!force_combile_engin) {
+            let enginSameFlag = false; // 检查缓存中的引擎是否和当前需要编译的引擎一致
+            if (existsSync(jsCacheExcludes)) {
+                let json = readJSONSync(jsCacheExcludes);
+
+                enginSameFlag =
+                    enginVersion === json.version &&
+                    nativeRenderer === json.nativeRenderer &&
+                    json.excludes.toString() === excludedModules.toString() &&
+                    json.sourceMaps === sourceMaps;
+
+                if (existsSync(quickCompilePath) && json.engineMtime) {
+                    const state = statSync(quickCompilePath);
+                    enginSameFlag = json.engineMtime === state.mtime.toJSON();
+                }
+            }
+
+            // 与缓存内容一致无需再次编译
+            if (enginSameFlag && existsSync(jsCache)) {
+                copySync(jsCache, join(dest, basename(jsCache)));
+                updateProgress('build engine success', 15);
+                return;
+            }
         }
 
         // 构建编译引擎
@@ -483,6 +493,12 @@ class Builder {
         // 拷贝编译后的 js 文件
         copySync(jsCache, join(dest, basename(jsCache)));
 
+        let enginMtime = '';
+        if (existsSync(quickCompilePath)) {
+            const state = statSync(quickCompilePath);
+            enginMtime =  state.mtime.toJSON();
+        }
+
         // 保存模块数据
         writeFileSync(
             jsCacheExcludes,
@@ -491,6 +507,7 @@ class Builder {
                 version: enginVersion,
                 nativeRenderer,
                 sourceMaps,
+                enginMtime,
             }),
             null,
             4

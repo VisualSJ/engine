@@ -19,6 +19,7 @@ module.exports = {
     select_all: '全选',
     open_compile_file: '打开编译日志文件',
     source_map: 'Source Maps',
+    force_combile_engin: '强制重新编译引擎',
     debug_mode: '打开构建调试工具',
     eruda: 'eruda 调试工具',
     require: '必填',

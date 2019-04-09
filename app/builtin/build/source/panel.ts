@@ -91,6 +91,7 @@ export async function ready() {
                 md5Cache: false,
                 source_map: false,
                 inline_SpriteFrames: false, // 是否内联所有的 SpriteFrame
+                force_combile_engin: false,
             },
             // 需要动态获取的默认配置
             name: '', // 游戏名称
