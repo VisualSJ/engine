@@ -11,7 +11,7 @@
                 <div class="name">{{t('open_project')}}</div>
                 <div class="hover-wrap">
                     <span class="btn btn-blue"
-                        @click="openProject"
+                        @click="openProject('')"
                     >{{t('open')}}</span>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                     ></span>
                     
                     <span class="btn btn-blue"
-                        @click="openProject(item)"
+                        @click="openProject(item.path)"
                     >{{t('open')}}</span>
                 </div>
                 <div class="icon-deleting"

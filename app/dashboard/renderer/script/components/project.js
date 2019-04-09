@@ -75,12 +75,9 @@ exports.methods = {
 
     /**
      * 打开一个项目
-     * @param {*} item
      * @param {*} path 项目路径，如果打开新项目，则传入空值
      */
-    async openProject(item) {
-        const { path } = item; // 项目路径
-
+    async openProject(path) {
         if (!path) {
             const array = await dialog.openDirectory({ title: t('open_project') });
             if (!array || !array[0]) {
