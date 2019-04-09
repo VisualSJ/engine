@@ -234,7 +234,7 @@ class Builder {
         updateProgress('build index html...');
         switch (this._options.platform) {
             case 'web-mobile':
-            case 'web-desk':
+            case 'web-desktop':
                 this._buildWebTemplate();
                 this._resolveStatic();
                 break;

@@ -9,7 +9,7 @@ function data() {
         appid: '',
         remote_server_address: '',
         sub_context: '',
-        orientation: 'auto',
+        orientation: 'landscape',
     };
 }
 

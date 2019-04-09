@@ -340,7 +340,7 @@ class AssetBuilder {
         var dest = join(this.paths.res, RAW_ASSET_DEST, asset.nativeUrl);
         ensureDirSync(dirname(dest));
         if (asset instanceof cc.ImageAsset) {
-            const userData = requestToPackage('asset-db', 'query-asset-meta', asset._uuid);
+            const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset._uuid);
             // 图片资源设置的压缩参数
             let {platformSettings} = userData;
             let platform = this.options.platform;
