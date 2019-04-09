@@ -1,6 +1,7 @@
 'use strict';
 
 const nodeManager = require('../node');
+const sceneManager = require('../scene');
 const dumpUtils = require('../../utils/dump');
 const cache = require('./cache');
 
@@ -21,10 +22,11 @@ let mainSceneData = { // 缓存主场景的历史记录
     method: '',
 };
 
-/**
- * uuids 是所有节点的 uuid 数组
- */
-nodeManager.on('inited', (uuids, scene) => {
+sceneManager.on('before-minor', () => {
+    snapshot();
+});
+
+nodeManager.on('inited', (uuids, scene) => { // uuids 是当前场景所有节点的数组
     reset(uuids, scene);
 });
 
@@ -271,8 +273,6 @@ function reset(uuids, scene) {
     if (sceneUuid === scene.uuid) { // 就是当前的场景，此处容错是因为软刷新会多次触发 scene open 事件
         return;
     }
-
-    snapshot(); // 保存当前的操作
 
     if (scene.name.includes('.prefab')) { // 重要：判断此场景是编辑 prefab
         Object.assign(mainSceneData, { // 暂存数据

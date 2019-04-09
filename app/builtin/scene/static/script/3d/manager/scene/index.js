@@ -73,6 +73,7 @@ class SceneManager extends EventEmitter {
         }
 
         // 尝试打开新的编辑模式，如果打开失败，则退回场景编辑
+        this.emit('before-minor');
         if (!await mode.open(uuid)) {
             await this.modes.main.restore();
             return false;
