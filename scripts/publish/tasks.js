@@ -79,6 +79,15 @@ exports.copyFiles = async function() {
 };
 
 /**
+ * 复制 License
+ */
+exports.copyLicense = async function() {
+    this.log('复制 License');
+    const types = ps.join(__dirname, '../../License');
+    fse.copySync(types, ps.join(APP, '../Liscense'));
+};
+
+/**
  * 复制内置引擎
  */
 exports.copyResources = function() {

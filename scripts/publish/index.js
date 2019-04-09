@@ -16,6 +16,7 @@ workflow.task('generate-electron', tasks.generateElectron);
 // 复制具体文件
 workflow.task('copy-electron', tasks.copyMacElectron);
 workflow.task('copy-files', tasks.copyFiles);
+workflow.task('copy-license', tasks.copyLicense)
 workflow.task('copy-resources', tasks.copyResources);
 
 // 清空无用文件
