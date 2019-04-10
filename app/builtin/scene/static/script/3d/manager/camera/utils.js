@@ -150,14 +150,10 @@ function createGrid() {
 
     let primitiveMode = cc.GFXPrimitiveMode.LINE_LIST;
     // 使用二维顶点来节省顶点数据
-    let attributes = {
-        positions: {
-            name: cc.GFXAttributeName.ATTR_POSITION,
-            baseType: cc.Mesh.AttributeBaseType.FLOAT32,
-            type: cc.Mesh.AttributeType.VEC2,
-            normalize: false,
-        },
-    };
+    let attributes = [{
+        name: cc.GFXAttributeName.ATTR_POSITION,
+        format: cc.GFXFormat.RG32F,
+    }];
     let mesh = cc.utils.createMesh({positions, indices, colors, primitiveMode, attributes});
 
     const submesh = mesh.renderingMesh.getSubmesh(0);

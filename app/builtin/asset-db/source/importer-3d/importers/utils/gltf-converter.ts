@@ -787,7 +787,7 @@ export class GltfConverter {
         let currentByteOffset = 0;
         let posBuffer = new ArrayBuffer(0);
         let posBufferAlign = 0;
-        const formats: cc.IVertexAttribute[] = [];
+        const formats: cc.IGFXAttribute[] = [];
         for (const exportingAttribute of exportingAttributes) {
             const attributeName = exportingAttribute.name;
             const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
@@ -811,8 +811,8 @@ export class GltfConverter {
                 this._readAccessor(attributeAccessor, new DataView(posBuffer));
             }
 
-            const baseType = this._getAttributeBaseType(attributeAccessor.componentType);
-            const type = this._getAttributeType(attributeAccessor.type);
+            // const baseType = this._getAttributeBaseType(attributeAccessor.componentType);
+            // const type = this._getAttributeType(attributeAccessor.type);
 
             // // Perform flipY default.
             // if (attributeName.startsWith('TEXCOORD')) {
@@ -835,9 +835,8 @@ export class GltfConverter {
 
             formats.push({
                 name: this._getGfxAttributeName(attributeName),
-                baseType,
-                type,
-                normalize: attributeAccessor.normalized || false,
+                format: this._getAttributeFormat(attributeAccessor.componentType, attributeAccessor.type),
+                isNormalized: attributeAccessor.normalized || false,
             });
         }
 
@@ -852,9 +851,8 @@ export class GltfConverter {
             }
             formats.push({
                 name: this._getGfxAttributeName(semantic.name),
-                baseType: this._getAttributeBaseType(GltfAccessorComponentType.FLOAT),
-                type: this._getAttributeType(semantic.type),
-                normalize: false,
+                format: this._getAttributeFormat(GltfAccessorComponentType.FLOAT, semantic.type),
+                isNormalized: false,
             });
         };
 
@@ -1217,27 +1215,63 @@ export class GltfConverter {
         }
     }
 
-    private _getAttributeType(type: string) {
-        switch (type) {
-            case GltfAccessorType.SCALAR: return cc.AttributeType.SCALAR;
-            case GltfAccessorType.VEC2: return cc.AttributeType.VEC2;
-            case GltfAccessorType.VEC3: return cc.AttributeType.VEC3;
-            case GltfAccessorType.VEC4: return cc.AttributeType.VEC4;
-            default:
-                throw new Error(`Unrecognized attribute type: ${type}.`);
-        }
-    }
-
-    private _getAttributeBaseType(componentType: number) {
+    private _getAttributeFormat(componentType: number, type: string) {
         switch (componentType) {
-            case GltfAccessorComponentType.BYTE: return cc.AttributeBaseType.INT8;
-            case GltfAccessorComponentType.UNSIGNED_BYTE: return cc.AttributeBaseType.UINT8;
-            case GltfAccessorComponentType.SHORT: return cc.AttributeBaseType.INT16;
-            case GltfAccessorComponentType.UNSIGNED_SHORT: return cc.AttributeBaseType.UINT16;
-            case GltfAccessorComponentType.UNSIGNED_INT: return cc.AttributeBaseType.UINT32;
-            case GltfAccessorComponentType.FLOAT: return cc.AttributeBaseType.FLOAT32;
-            default:
-                throw new Error(`Unrecognized component type: ${componentType}`);
+            case GltfAccessorComponentType.BYTE: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R8SN;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG8SN;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB8SN;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA8SN;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            case GltfAccessorComponentType.UNSIGNED_BYTE: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R8;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG8;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB8;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA8;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            case GltfAccessorComponentType.SHORT: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R16I;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG16I;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB16I;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA16I;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            case GltfAccessorComponentType.UNSIGNED_SHORT: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R16UI;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG16UI;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB16UI;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA16UI;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            case GltfAccessorComponentType.UNSIGNED_INT: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R32UI;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG32UI;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB32UI;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA32UI;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            case GltfAccessorComponentType.FLOAT: {
+                switch (type) {
+                    case GltfAccessorType.SCALAR: return cc.GFXFormat.R32F;
+                    case GltfAccessorType.VEC2: return cc.GFXFormat.RG32F;
+                    case GltfAccessorType.VEC3: return cc.GFXFormat.RGB32F;
+                    case GltfAccessorType.VEC4: return cc.GFXFormat.RGBA32F;
+                    default: throw new Error(`Unrecognized attribute type: ${type}.`);
+                }
+            }
+            default: throw new Error(`Unrecognized component type: ${componentType}.`);
         }
     }
 
