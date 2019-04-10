@@ -11,10 +11,10 @@ out vec2 uv;
 out vec4 color;
 
 void computeVertPos(inout vec4 pos, vec2 vertOffset
-#if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
+#if CC_USE_BILLBOARD || CC_USE_VERTICAL_BILLBOARD
   , mat4 view
 #endif
-#if USE_STRETCHED_BILLBOARD
+#if CC_USE_STRETCHED_BILLBOARD
   , vec3 eye
   , vec4 velocity
   , float velocityScale
@@ -23,19 +23,19 @@ void computeVertPos(inout vec4 pos, vec2 vertOffset
   , float xIndex
 #endif
 ) {
-#if USE_BILLBOARD
+#if CC_USE_BILLBOARD
   vec3 camRight = normalize(vec3(view[0][0], view[1][0], view[2][0]));
   vec3 camUp = normalize(vec3(view[0][1], view[1][1], view[2][1]));
   pos.xyz += (camRight * vertOffset.x) + (camUp * vertOffset.y);
-#elif USE_STRETCHED_BILLBOARD
+#elif CC_USE_STRETCHED_BILLBOARD
   vec3 camRight = normalize(cross(pos.xyz - eye, velocity.xyz));
   vec3 camUp = velocity.xyz * velocityScale + normalize(velocity.xyz) * lengthScale * size;
   pos.xyz += (camRight * abs(vertOffset.x) * sign(vertOffset.y)) - camUp * xIndex;
-#elif USE_HORIZONTAL_BILLBOARD
+#elif CC_USE_HORIZONTAL_BILLBOARD
   vec3 camRight = vec3(1, 0, 0);
   vec3 camUp = vec3(0, 0, -1);
   pos.xyz += (camRight * vertOffset.x) + (camUp * vertOffset.y);
-#elif USE_VERTICAL_BILLBOARD
+#elif CC_USE_VERTICAL_BILLBOARD
   vec3 camRight = normalize(vec3(view[0][0], view[1][0], view[2][0]));
   vec3 camUp = vec3(0, 1, 0);
   pos.xyz += (camRight * vertOffset.x) + (camUp * vertOffset.y);
