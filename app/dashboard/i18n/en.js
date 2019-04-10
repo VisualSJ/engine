@@ -6,7 +6,7 @@ module.exports = {
 
     open_project: 'Open Project',
     new_project: 'New Project',
-
+    sure_project: 'Create Now',
     project_path: 'Project Path',
     create_time: 'Create Time',
     recent_modified: 'Recent Modefied',
@@ -19,6 +19,7 @@ module.exports = {
     keep: 'keep',
     remove: 'remove',
     reselect: 'Reselect',
+    info: 'Info',
 
     delete_project: 'Delete Project',
     delete_project_source: 'Delete the file',
@@ -26,9 +27,10 @@ module.exports = {
     project_missing: 'Project does not exist',
     cover_project: 'Directly overwrite the file with the same name',
     stay_tuned: 'Stay tuned!',
+    project_opened: 'The project has been opened.',
 
     message: {
-        duplicate_project: 'Files already exist in this folder.',
+        duplicate_project: 'A project with the same name already exists',
         project_missing: 'There is no project path! Do you want to remove the record?',
         delete_project_record: 'Delete only project records (retain source files)',
         delete_project_source: 'Do you want to delete files from your hard drive?',
@@ -36,6 +38,7 @@ module.exports = {
     },
     template: {
         blank: 'This is a blank project template',
+        select_project: 'Select Folder',
     },
     help: {
         title: 'Help',

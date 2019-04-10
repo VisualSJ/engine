@@ -143,9 +143,9 @@ exports.listener = function() {
         if (projectMap.get(path)) {
 
             const config = {
-                title: 'warn',
-                message: 'Project has been opened!',
-                detail: 'Project has been opened!',
+                title: i18n.translation('info'),
+                message: i18n.translation('project_opened'),
+                detail: path,
                 type: 'warning',
                 buttons: ['Cancel'],
             };

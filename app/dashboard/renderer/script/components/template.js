@@ -7,12 +7,12 @@ const project = require('@editor/project');
 const dialog = require('./../../../../lib/dialog');
 const profile = require('./../../../../lib/profile');
 const setting = require('@editor/setting');
-const {getName, t} = require('./../util');
+const { getName, t } = require('./../util');
 // 存放 dashboard 数据的 json 路径
 const filePath = ps.join(setting.PATH.HOME, 'editor/dashboard.json');
 
 if (!fse.existsSync(filePath)) {
-    const obj = {recentProPath: ps.join(setting.PATH.APP, './../')};
+    const obj = { recentProPath: ps.join(setting.PATH.APP, './../') };
     fse.outputJSONSync(filePath, obj, 'utf8');
 }
 const dashProfile = profile.load('profile://global/editor/dashboard.json');
@@ -57,14 +57,7 @@ exports.methods = {
                 type: 'warning',
                 title: t('warn'),
                 message: t('message.duplicate_project'),
-                buttons: ['直接覆盖同名文件', '重新选择路径'],
-            }).then((index) => {
-                if (index === 0) {
-                    // 复制文件夹
-                    fse.copySync(template.path, path);
-                    updateProjectName(path);
-                    project.open(path);
-                }
+                buttons: ['Cancel'],
             });
             return;
         }
@@ -74,20 +67,24 @@ exports.methods = {
 
         // 打开项目
         project.open(path);
+
+        // 更新默认地址
+        this.updatedRecProPath();
     },
 
     // 打开文件夹弹框
     chooseProSrc() {
         let that = this;
-        dialog.openDirectory({ title: '选择项目路径'})
-            .then((array) => {
-                if (array && array[0]) {
-                    let path = ps.join(array[0] , 'NewProject');
-                    that.directoryPath = getName(path);
-                    dashProfile.set('recentProPath', array[0]);
-                    dashProfile.save();
-                }
-            });
+        dialog.openDirectory({
+            title: this.t('template.select_project'),
+            root: this.directoryPath,
+        }).then((array) => {
+            if (array && array[0]) {
+                that.directoryPath = array[0];
+                dashProfile.set('recentProPath', array[0]);
+                dashProfile.save();
+            }
+        });
     },
 
     /**
@@ -103,11 +100,7 @@ exports.methods = {
      * 更新最近选择路径
      */
     updatedRecProPath() {
-        if (!dashProfile.get('recentProPath') || !fse.existsSync(filePath)) {
-            dashProfile.set('recentProPath', ps.join(setting.PATH.APP, './../'));
-            dashProfile.save();
-        }
-        let path = getName(ps.join(dashProfile.get('recentProPath'), 'NewProject'));
+        let path = getName(dashProfile.get('recentProPath'));
         this.directoryPath = path;
     },
 

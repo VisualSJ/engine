@@ -4,6 +4,7 @@ module.exports = {
 
     open_project: '打开项目',
     new_project: '新建项目',
+    sure_project: '确定新建项目',
     project_path: '项目路径',
     create_time: '创建时间',
     recent_modified: '最近更新',
@@ -17,15 +18,17 @@ module.exports = {
     keep: '保留',
     remove: '移除',
     reselect: '重新选择',
+    info: '提示',
 
     delete_project: '删除项目',
     delete_project_source: '删除文件',
     project_path_palceholder: '请选择一个项目路径作为工作区',
     cover_project: '直接覆盖同名文件',
     stay_tuned: '敬请期待!',
+    project_opened: '此项目已经打开',
 
     message: {
-        duplicate_project: '该文件夹内已存在文件',
+        duplicate_project: '已存在相同名称的项目',
         project_missing: '项目不存在！是否移除该记录？',
         delete_project_record: '仅删除项目记录（保留源文件）',
         delete_project_source: '删除记录并移除硬盘上的源文件',
@@ -33,6 +36,7 @@ module.exports = {
     },
     template: {
         blank: '这是一个空白项目模板',
+        select_project: '选择项目路径',
     },
     help: {
         title: '帮助',
