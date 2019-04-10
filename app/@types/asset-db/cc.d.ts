@@ -128,12 +128,8 @@ declare namespace cc {
     }
 
     export class AnimationComponent extends Component {
-        addClip(name: string, clip: any): void;
-    }
-
-    export class LegacyAnimationComponent extends Component {
-        _defaultClip: LegacyAnimationClip;
-        addClip (clip: LegacyAnimationClip, newName?: string): void;
+        _defaultClip: AnimationClip;
+        addClip (clip: AnimationClip, newName?: string): void;
     }
 
     export class Asset {
@@ -365,47 +361,6 @@ declare namespace cc {
         _inverseBindMatrices: Mat4[];
     }
 
-    export enum AnimationTargetProperty {
-        position,
-        rotation,
-        scale,
-    }
-
-    export interface IPropertyAnimation {
-        /**
-         * Target Property to animate.
-         */
-        property: AnimationTargetProperty;
-    
-        /**
-         * Index of keys into animation's keysList property;
-         */
-        indexOfKeys: number;
-    
-        /**
-         * Property values.
-         */
-        values: number[];
-    }
-
-    export interface IAnimationChannel {
-        /**
-         * Target node's path in scene graph.
-         */
-        target: string;
-    
-        /**
-         * Properties animation.
-         */
-        propertyAnimations: IPropertyAnimation[];
-    }
-
-    export class AnimationClip extends Asset {
-        _channels: IAnimationChannel[];
-        _keysList: number[][];
-        _length: number;
-    }
-
     export type CurveValue = any;
 
     export type MotionPath = Vec2[];
@@ -488,7 +443,7 @@ declare namespace cc {
         PingPongReverse,
     }
 
-    export class LegacyAnimationClip extends Asset {
+    export class AnimationClip extends Asset {
         sample: number;
         speed: number;
         wrapMode: WrapMode;

@@ -388,115 +388,6 @@ export class GltfConverter {
     public createAnimation(iGltfAnimation: number) {
         const gltfAnimation = this._gltf.animations![iGltfAnimation];
 
-        const channels: cc.IAnimationChannel[] = [];
-        const channelMap = new Map<number, number>();
-        const getChannel = (iGltfNode: number) => {
-            let iChannel = channelMap.get(iGltfNode);
-            if (iChannel === undefined) {
-                iChannel = channels.length;
-                channelMap.set(iGltfNode, iChannel);
-                channels.push({
-                    target: this._getNodePath(iGltfNode),
-                    propertyAnimations: [],
-                });
-            }
-            return channels[iChannel];
-        };
-
-        const keysList: number[][] = [];
-        const keysMap = new Map<number, number>();
-        let maxLength = 0;
-        const getIndexOfKeys = (iKeysAccessor: number) => {
-            let result = keysMap.get(iKeysAccessor);
-            if (result === undefined) {
-                const inputAccessor = this._gltf.accessors![iKeysAccessor];
-                if (inputAccessor.componentType !== WebGLRenderingContext.FLOAT ||
-                    inputAccessor.type !== 'SCALAR') {
-                    throw new Error(`Input of an animation channel must be floating point scalars represent times.`);
-                }
-                const inputData = new Float32Array(inputAccessor.count);
-                this._readAccessor(inputAccessor, createDataViewFromTypedArray(inputData));
-
-                const keys = new Array(inputData.length);
-                inputData.forEach((time, index) => {
-                    keys[index] = time;
-                });
-                if (keys.length > 0) {
-                    maxLength = Math.max(maxLength, keys[keys.length - 1]);
-                }
-
-                result = keysList.length;
-                keysMap.set(iKeysAccessor, result);
-                keysList.push(keys);
-            }
-            return result;
-        };
-
-        gltfAnimation.channels.forEach((gltfChannel) => {
-            const targetNode = gltfChannel.target.node;
-            if (targetNode === undefined) {
-                // When node isn't defined, channel should be ignored.
-                return;
-            }
-
-            const channel = getChannel(targetNode);
-
-            const gltfSampler = gltfAnimation.samplers[gltfChannel.sampler];
-
-            const propertyAnimation: cc.IPropertyAnimation = {
-                property: cc.AnimationTargetProperty.position,
-                indexOfKeys: getIndexOfKeys(gltfSampler.input),
-                values: new Array<number>(),
-            };
-            channel.propertyAnimations.push(propertyAnimation);
-
-            const outputAccessor = this._gltf.accessors![gltfSampler.output];
-            if (outputAccessor.componentType !== WebGLRenderingContext.FLOAT) {
-                throw new Error(`Output of an animation channel must be floating point values.`);
-            }
-            const outputData = new Float32Array(
-                this._getComponentsPerAttribute(outputAccessor.type) * outputAccessor.count);
-            this._readAccessor(outputAccessor, createDataViewFromTypedArray(outputData));
-            if (gltfChannel.target.path === GltfAnimationChannelTargetPath.translation) {
-
-                propertyAnimation.property = cc.AnimationTargetProperty.position;
-                if (outputAccessor.type !== GltfAccessorType.VEC3) {
-                    throw new Error(`Output of an animation channel targetting translation must be 3d vectors.`);
-                }
-
-                propertyAnimation.values = Array.from(outputData);
-            } else if (gltfChannel.target.path === GltfAnimationChannelTargetPath.rotation) {
-
-                propertyAnimation.property = cc.AnimationTargetProperty.rotation;
-                if (outputAccessor.type !== GltfAccessorType.VEC4) {
-                    throw new Error(`Output of an animation channel targetting translation must be 4d vectors.`);
-                }
-
-                propertyAnimation.values = Array.from(outputData);
-            } else if (gltfChannel.target.path === GltfAnimationChannelTargetPath.scale) {
-
-                propertyAnimation.property = cc.AnimationTargetProperty.scale;
-                if (outputAccessor.type !== GltfAccessorType.VEC3) {
-                    throw new Error(`Output of an animation channel targetting scale must be 3d vectors.`);
-                }
-
-                propertyAnimation.values = Array.from(outputData);
-            } else {
-                console.error(`Unsupported channel target path ${gltfChannel.target.path}.`);
-            }
-        });
-
-        const animationClip = new cc.AnimationClip();
-        animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
-        animationClip._channels = channels;
-        animationClip._keysList = keysList;
-        animationClip._length = maxLength;
-        return animationClip;
-    }
-
-    public createLegacyAnimation(iGltfAnimation: number) {
-        const gltfAnimation = this._gltf.animations![iGltfAnimation];
-
         const rootCurveData: cc.ICurveData = { paths: {} };
         let duration = 0;
         gltfAnimation.channels.forEach((gltfChannel) => {
@@ -517,7 +408,7 @@ export class GltfConverter {
             duration = Math.max(channelDuration, duration);
         });
 
-        const animationClip = new cc.LegacyAnimationClip();
+        const animationClip = new cc.AnimationClip();
         animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
         animationClip.curveData = rootCurveData;
         animationClip.wrapMode = cc.WrapMode.Loop;
@@ -688,10 +579,10 @@ export class GltfConverter {
     public createScene(iGltfScene: number, gltfAssetFinder: IGltfAssetFinder): cc.Node {
         const sceneNode = this._getSceneNode(iGltfScene, gltfAssetFinder);
         if (this._gltf.animations !== undefined) {
-            const animationComponent = sceneNode.addComponent(cc.LegacyAnimationComponent);
-            let defaultAnim: cc.LegacyAnimationClip | null = null;
+            const animationComponent = sceneNode.addComponent(cc.AnimationComponent);
+            let defaultAnim: cc.AnimationClip | null = null;
             this._gltf.animations.forEach((gltfAnimation, index) => {
-                const animation = gltfAssetFinder.find<cc.LegacyAnimationClip>('animations', index);
+                const animation = gltfAssetFinder.find<cc.AnimationClip>('animations', index);
                 if (animation) {
                     if (!defaultAnim) {
                         defaultAnim = animation;

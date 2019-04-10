@@ -14,7 +14,7 @@ export default class AnimationImporter extends Importer {
 
     // 引擎内对应的类型
     get assetType() {
-        return 'cc.LegacyAnimationClip';
+        return 'cc.AnimationClip';
     }
 
     /**
