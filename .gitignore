@@ -4,6 +4,7 @@
 .vscode
 .workflow
 .history
+.electron
 
 # node 模块
 **/node_modules/

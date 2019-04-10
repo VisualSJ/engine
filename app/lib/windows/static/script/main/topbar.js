@@ -64,7 +64,6 @@ new Vue({
             }
 
             let toolbars = data.info.toolbar;
-
             if (!Array.isArray(toolbars)) {
                 toolbars = [toolbars];
             }
@@ -74,7 +73,19 @@ new Vue({
                 if (!array) {
                     return;
                 }
-                array.push(join(data.path, toolbar.file));
+
+                const exists = array.some((item) => {
+                    return item.name === data.info.name;
+                });
+    
+                if (exists) {
+                    return;
+                }
+
+                array.push({
+                    name: data.info.name,
+                    path: join(data.path, toolbar.file),
+                });
             });
         },
 

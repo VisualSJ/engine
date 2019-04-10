@@ -65,7 +65,7 @@ TrajectoryGizmo.prototype.show = function (root, clip, childPath) {
 
     let animState = animation.getAnimationState(clip.name);
     if (!animState) {
-        Editor.error(`Cant\'t find animation state with clip name [${clip.name}]`);
+        console.error(`Cant\'t find animation state with clip name [${clip.name}]`);
         return;
     }
 

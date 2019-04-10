@@ -28,7 +28,7 @@
                 v-for="item in left"
             >
                 <buttons
-                    :file="item"
+                    :file="item.path"
                 ></buttons>
             </template>
         </div>
@@ -37,7 +37,7 @@
                 v-for="item in middle"
             >
                 <buttons
-                    :file="item"
+                    :file="item.path"
                 ></buttons>
             </template>
         </div>
@@ -46,7 +46,7 @@
                 v-for="item in right"
             >
                 <buttons
-                    :file="item"
+                    :file="item.path"
                 ></buttons>
             </template>
         </div>

@@ -59,7 +59,7 @@ class Gizmo {
     createRoot() {
         let layer = this._view[this.layer()];
         if (!layer) {
-            Editor.warn(`Plase make gizmo layer exists [${this.layer()}] in Gizmo View`);
+            console.warn(`Plase make gizmo layer exists [${this.layer()}] in Gizmo View`);
             return;
         }
 
@@ -241,7 +241,7 @@ class Gizmo {
                 }
             }
 
-            Editor.warn(`Try to adjust non-number value [${key}}]`);
+            console.warn(`Try to adjust non-number value [${key}}]`);
         };
 
         for (let i = 0; i < targets.length; i++) {

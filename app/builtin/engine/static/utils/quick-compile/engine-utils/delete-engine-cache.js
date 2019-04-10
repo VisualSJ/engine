@@ -28,7 +28,7 @@ module.exports = function(enginePath) {
                     Del.sync(pattern);
                 } catch (err) {
                     if (isInEditor) {
-                        Editor.error(err);
+                        console.error(err);
                     } else {
                         console.error(err);
                     }

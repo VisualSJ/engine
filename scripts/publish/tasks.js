@@ -60,9 +60,17 @@ exports.generateElectron = function() {
 exports.copyMacElectron = function() {
     // 从 node_modules 里面将 electron 复制出来
     this.log('复制 Electron 代码');
-    const source = process.platform === 'win32' ?
-        ps.join(__dirname, '../../node_modules/electron/dist') :
-        ps.join(__dirname, '../../node_modules/electron/dist/Electron.app');
+
+    let source = process.platform === 'win32' ?
+        ps.join(__dirname, `../../.electron/${pkg.dependencies.electron}/dist`) :
+        ps.join(__dirname, `../../electron/${pkg.dependencies.electron}/dist/Electron.app`);
+
+    if (!fse.existsSync(source)) {
+        source = process.platform === 'win32' ?
+            ps.join(__dirname, `../../node_modules/electron/dist`) :
+            ps.join(__dirname, `../../node_modules/electron/dist/Electron.app`);
+    }
+
     fse.copySync(source, ELECTRON);
 
     // 保证 app 文件夹存在
@@ -156,10 +164,12 @@ exports.asar = async function() {
     // todo 开个子进程打包，因为 asar 会直接中断进程
     const unpacks = [
         'node_modules/@editor/fbx2gltf',
-        'node_modules/@editor/robotjs',
+        'node_modules/@editor/cocos-script',
+        'node_modules/node',
+        'node_modules/typescript',
     ];
 
-    // npm install cocos-creator/creator-asar
+    // npm install cocos-creator/creator-asar -g
     const asar = require('creator-asar');
 
     await new Promise((resolve, reject) => {

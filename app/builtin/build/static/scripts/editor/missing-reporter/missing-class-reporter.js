@@ -51,7 +51,7 @@ function report(parsingOwner, classId, asset, url) {
             info += `Class ID: "${detailedClassId}"\n`;
         }
         info.slice(0, -1);  // remove last '\n'
-        Editor.warn(info);
+        console.warn(info);
     } else {
         // missing CustomAsset ? not yet implemented
     }

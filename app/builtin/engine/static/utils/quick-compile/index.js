@@ -134,7 +134,7 @@ Object.assign(Compiler.prototype, {
             try {
                 Del.sync(out, { force: true });
             } catch (err) {
-                Editor.error(err);
+                console.error(err);
             }
         }
 
@@ -199,7 +199,12 @@ Object.assign(Compiler.prototype, {
     async tscRollup() {
         const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
         const path = Path.join(info.path, 'rollup');
-        exec(process.platform === 'win32' ? 'tsc.cmd' : 'tsc', {
+
+        let cmd = Path.join(__dirname, '../../../../node_modules/typescript/bin/tsc');
+        // electron 3.x 无法自动找到 unpacked 下的模块
+        cmd = cmd.replace('app.asar', 'app.asar.unpacked');
+
+        exec(process.platform === 'win32' ? cmd + '.cmd' : cmd, {
             cwd: path,
             stdio: 'inherit',
         }, (error, stdout, stderr) => {
@@ -393,7 +398,7 @@ Object.assign(Compiler.prototype, {
             try {
                 scripts = JSON.parse(str).scripts;
             } catch (err) {
-                Editor.error(err);
+                console.error(err);
             }
 
             let cache = this._scriptsCache;

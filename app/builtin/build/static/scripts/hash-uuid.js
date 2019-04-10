@@ -44,13 +44,13 @@ module.exports.calculate = function(uuidGroups, hashName) {
     // add prefix
     if (typeof hashName === 'string') {
         if (hashName.length < 2) {
-            Editor.error('hashName string length must >= 2');
+            console.error('hashName string length must >= 2');
             return hashes;
         }
     } else {
         hashName = '0123456789abcdef'[hashName];
         if (!hashName) {
-            Editor.error('Invalid hashName');
+            console.error('Invalid hashName');
             return hashes;
         }
     }

@@ -71,7 +71,7 @@ function trimImages (files, options, callback) {
 
         image.toFile(file.path, function (err) {
             if (err) {
-                Editor.error(`trimImages [${file.name}] from [${file.originalPath}]  failed`);
+                console.error(`trimImages [${file.name}] from [${file.originalPath}]  failed`);
             }
             next(err);
         });
@@ -186,7 +186,7 @@ function generateAtlas (atlas, options, callback) {
             }
         })
             .catch(err => {
-                Editor.error(`Handle image [${file.path} error]. \n Origin path is [${file.originalPath}:${file.name}]. \n Error : ${err.toString()}`);
+                console.error(`Handle image [${file.path} error]. \n Origin path is [${file.originalPath}:${file.name}]. \n Error : ${err.toString()}`);
             });
     }
 
@@ -221,7 +221,7 @@ function unlinkTempFiles (cb) {
         Del(tmpDir, { force: true }, cb);
     }
     catch (err) {
-        Editor.error(err);
+        console.error(err);
         return;
     }
 }

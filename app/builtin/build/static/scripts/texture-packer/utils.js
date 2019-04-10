@@ -45,7 +45,7 @@ class PacInfo {
         });
 
         if (spriteFrameInfos.length === 0) {
-            Editor.warn(`No SpriteFrame find in forlder [${Path.dirname(pac.url)}]. Please check the AutoAtlas [${path}].`);
+            console.warn(`No SpriteFrame find in forlder [${Path.dirname(pac.url)}]. Please check the AutoAtlas [${path}].`);
             return;
         }
 
@@ -184,7 +184,7 @@ exports.pack = async function (opts) {
         if (meta.filterUnused && needPackSpriteFrames) {
             let resourcesDir = Editor.url('db://assets/resources');
             if (pacInfo.info.path.indexOf(resourcesDir) !== -1) {
-                Editor.warn(`AutoAtlas [${pacInfo.info.path}] is in resources dir. Option [Filter Unused] will not be used.`);
+                console.warn(`AutoAtlas [${pacInfo.info.path}] is in resources dir. Option [Filter Unused] will not be used.`);
             }
             else {
                 spriteFrames = spriteFrames.filter(spriteFrame => {

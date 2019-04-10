@@ -176,7 +176,10 @@ export async function start() {
 
     // 依赖模块文件
     app.get('/node_modules/*', async (req: any, res: any, next: any) => {
-        const path = join(Editor.App.path, 'app', '/node_modules', req.params[0]); // 获取文件名路径
+        let path = join(__dirname, '../../../../node_modules', req.params[0]); // 获取文件名路径
+        // electron 3.x 无法自动找到 unpacked 下的模块
+        path = path.replace('app.asar', 'app.asar.unpacked');
+
         if (!existsSync(path)) {
             next(new ReqError(`${req.params[0]} 模块不存在`, 404));
         }

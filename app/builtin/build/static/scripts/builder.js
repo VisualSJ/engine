@@ -4,7 +4,7 @@ const { readFileSync, existsSync, copyFileSync , writeFileSync, statSync} = requ
 
 const minify = require('html-minifier').minify;
 const CleanCSS = require('clean-css');
-const { spawn } = require('child_process');
+const { spawn, execFile } = require('child_process');
 const RevAll = require('@editor/gulp-rev-all');
 const RevDel = require('gulp-rev-delete-original');
 const gulp = require('gulp');
@@ -561,8 +561,13 @@ class Builder {
                 nativeRenderer: nativeRenderer,
                 wechatgameSub: !!isWeChatSubdomain,
             });
-            const child = spawn('node', [
-                join(engine, 'rollup', 'out', 'build-engine-cli.js'),
+
+            let path = join(__dirname, '../../../../node_modules/node/bin/node');
+            // electron 3.x 无法自动找到 unpacked 下的模块
+            path = path.replace('app.asar', 'app.asar.unpacked');
+
+            const child = spawn(path, [
+                join(engine, 'rollup', 'out', 'build-engine-cli.js'), 
                 '--input',
                 './index.js',
                 '--destination',

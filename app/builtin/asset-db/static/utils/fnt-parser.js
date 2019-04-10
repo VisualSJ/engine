@@ -58,14 +58,14 @@ var FntLoader = {
         if (cc.game.renderType === cc.game.RENDER_TYPE_WEBGL) {
             var texSize = cc.configuration.getMaxTextureSize();
             if (commonObj.scaleW > texSize.width || commonObj.scaleH > texSize.height) {
-                Editor.log("cc.LabelBMFont._parseCommonArguments(): page can't be larger than supported");
+                console.log("cc.LabelBMFont._parseCommonArguments(): page can't be larger than supported");
             }
         }
-        if (commonObj.pages !== 1) { Editor.log('cc.LabelBMFont._parseCommonArguments(): only supports 1 page'); }
+        if (commonObj.pages !== 1) { console.log('cc.LabelBMFont._parseCommonArguments(): only supports 1 page'); }
 
         //page
         var pageObj = self._parseStrToObj(fntStr.match(self.PAGE_EXP)[0]);
-        if (pageObj.id !== 0) { Editor.log('cc.LabelBMFont._parseImageFileName() : file could not be found'); }
+        if (pageObj.id !== 0) { console.log('cc.LabelBMFont._parseImageFileName() : file could not be found'); }
         fnt.atlasName = pageObj.file;
 
         //char

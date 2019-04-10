@@ -331,7 +331,7 @@ async function getMd5Map(pattern) {
         if (uuid) {
             md5Entries.push(compressUuid(uuid, true), appendHashToFileSuffix(filePath).hash);
         } else {
-            Editor.warn(`Can not resolve uuid for path "${filePath}", skip the MD5 process on it.`);
+            console.warn(`Can not resolve uuid for path "${filePath}", skip the MD5 process on it.`);
         }
     }
     return md5Entries;
