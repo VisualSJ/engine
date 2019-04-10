@@ -76,32 +76,46 @@ class Builder {
         // 先清空文件夹
         emptyDirSync(this._paths.dest);
         // 开始正式构建部分
-        updateProgress('begin build', 0, 'start');
+        updateProgress('', 'begin build', 'start');
 
-        // 并发任务
-        await Promise.all([
-            this._buildEngine(), // 构建切割引擎 15%
-            this._buildHtml(), // 构建拷贝模板 index.html 文件 10%
-            this._buildMain(), // 构建拷贝模板 main.js 文件 5%
-            this.buildSetting(
-                {
-                    // 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
-                    scenes: options.scenes,
-                    debug: options.debug,
-                    platform: options.platform,
-                    type: 'build-release', // 构建 setting 的种类
-                    start_scene: options.start_scene,
-                }
-            ),
-        ]).catch((error) => {
-            error.name = 'build-error';
-            console.error(error);
-            updateProgress(`build failed!`, 0, 'failed');
-        });
-        await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置 5%
+        // 并发任务 暂时注释
+        // await Promise.all([
+        //     this._buildHtml(),
+        //     this._buildEngine(),
+        //     this.buildSetting(
+        //         {
+        //             // 构建 settings 脚本,写入脚本 20% (其中包括资源和脚本的构建，资源拷贝资源 30%，打包构建脚本 15%)
+        //             scenes: options.scenes,
+        //             debug: options.debug,
+        //             platform: options.platform,
+        //             type: 'build-release', // 构建 setting 的种类
+        //             start_scene: options.start_scene,
+        //         }
+        //     ),
+        //     this.resolveOthers(),
+        // ]).catch((error) => {
+        //     error.name = 'build-error';
+        //     console.error(error);
+        //     updateProgress('', `build failed!`, 'failed');
+        // });
+        await this._buildHtml(); // 构建拷贝模板 index.html 文件
+        await this.buildSetting(
+            {
+                // 构建 settings 脚本, 写入脚本(其中包括资源和脚本的构建，资源拷贝资源打包构建脚本)
+                scenes: options.scenes,
+                debug: options.debug,
+                platform: options.platform,
+                type: 'build-release', // 构建 setting 的种类
+                start_scene: options.start_scene,
+            }
+        );
+
+        await this._buildMain(); // 需要在构建 settings 之后
+        await this._compressSetting(buildResult.settings); // 压缩 settings 脚本并保存在相应位置
         await this.resolveOthers();
+        await this._buildEngine();
         let endTime = new Date().getTime();
-        updateProgress(`build sucess in ${endTime - startTime} ms`, 0, 'success');
+        updateProgress('', `build success in ${endTime - startTime} ms`, 'success');
         requestToPackage('preview', 'set-build-path', this._paths.dest);
     }
 
@@ -211,7 +225,7 @@ class Builder {
 
     // 拷贝静态资源文件 5%
     _resolveStatic() {
-        updateProgress('resolve static resource...');
+        updateProgress('resolve', 'resolve static resource...', 'start');
         Promise.all(
             static_resource.map((file) => {
                 let src = join(__dirname, './../build-templates/common', file);
@@ -225,13 +239,13 @@ class Builder {
                 copyFileSync(src, dest);
             })
         ).then(() => {
-            updateProgress('resolve static resource success', 5);
+            updateProgress('resolve', 'resolve static resource success', 'success');
         });
     }
 
     // 构建基础 index.html 模板部分的代码 5%
     async _buildHtml() {
-        updateProgress('build index html...');
+        updateProgress('template', 'build index html...', 'start');
         switch (this._options.platform) {
             case 'web-mobile':
             case 'web-desktop':
@@ -245,7 +259,7 @@ class Builder {
                 await this._buildWeChatTemplate(true);
                 break;
         }
-        updateProgress('build index html success', 10);
+        updateProgress('template', 'build index html success', 'success');
     }
 
     /**
@@ -392,11 +406,15 @@ class Builder {
 
     // 构建基础 main.js 模板部分的代码
     _buildMain() {
-        updateProgress('build main.js...');
+        updateProgress('main', 'build main.js...', 'start');
         let options = this._options;
         let contents = readFileSync(join(this._paths.tmplBase, 'common', 'main.ejs'), 'utf8');
         // qqplay set REMOTE_SERVER_ROOT value
         let isQQPlay = options.platform === 'qqplay';
+        let projectName = '';
+        if (buildResult.settings.scripts.length > 0) {
+            projectName  = options.debug ? 'src/project.dev.js' : 'src/project.js';
+        }
         const data = {
             renderMode: !!options.renderMode,
             isWeChatGame: !!options.isWeChatGame,
@@ -407,18 +425,20 @@ class Builder {
             engineCode: '',
             projectCode: '',
             engine: `cocos${this._type}`,
+
+            projectName,
         };
         if (isQQPlay && options.qqplay && options.qqplay.REMOTE_SERVER_ROOT) {
             data.qqplay.REMOTE_SERVER_ROOT = options.qqplay.REMOTE_SERVER_ROOT;
         }
         const content = template.render(contents, data);
         outputFileSync(join(this._paths.dest, 'main.js'), content);
-        updateProgress('build main.js success', 5);
+        updateProgress('main', 'build main.js success', 'success');
     }
 
     // 构建引擎模块
     async _buildEngine() {
-        updateProgress('build engine...');
+        updateProgress('engine', 'build engine...');
         let { sourceMaps, excludedModules, enginVersion, nativeRenderer, platform, force_combile_engin } = this._options;
         let { dest, jsCacheExcludes, engine, jsCache, jsCacheDir } = this._paths;
         let buildDest = join(jsCacheDir, this._options.platform, basename(jsCache));
@@ -445,7 +465,7 @@ class Builder {
             // 与缓存内容一致无需再次编译
             if (enginSameFlag && existsSync(jsCache)) {
                 copySync(jsCache, join(dest, basename(jsCache)));
-                updateProgress('build engine success', 15);
+                updateProgress('engine', 'copy engine success', 'success');
                 return;
             }
         }
@@ -469,7 +489,6 @@ class Builder {
                                 excludes.push(join(engine, file));
                             });
                         }
-                        updateProgress('build engine success', 15);
                         return;
                     }
                 });
@@ -512,7 +531,7 @@ class Builder {
             null,
             4
         );
-        updateProgress('build engine success', 15);
+        updateProgress('engine', 'build engine success', 'success');
     }
 
     /**
@@ -553,11 +572,18 @@ class Builder {
                 ...args,
             ], {
                 cwd: engine,
-                stdio: [0, 1, 2, 'ipc'],
+                // stdio: [0, 1, 2, 'ipc'],
             });
 
             child.on('exit', (code) => {
                 resolve();
+            });
+
+            child.stderr.on('data', (data) => {
+                console.error(`[[Build-engine]]:${data.toString()}`);
+            });
+            child.stdout.on('data', (data) => {
+                console.info(`[[Build-engine]]:${data.toString()}`);
             });
         });
     }
@@ -592,7 +618,7 @@ class Builder {
 
     // 压缩 settings 脚本并保存
     _compressSetting(settings) {
-        updateProgress('compress setting.js...');
+        updateProgress('compress-setting', 'compress setting.js...', 'start');
         if (this._options.debug) {
             this.saveSetting(settings);
             return settings;
@@ -780,7 +806,7 @@ class Builder {
             content += `(${settingsInitFunction.toString()})(${WINDOW_HEADER});`;
         }
         outputFileSync(this._paths.settings, content);
-        updateProgress('compress setting.js success', 5);
+        updateProgress('compress-setting', 'compress setting.js success', 'success');
     }
 
     /**
@@ -789,6 +815,7 @@ class Builder {
      * @returns JSON
      */
     async buildSetting(options) {
+        updateProgress('build-setting', 'build setting ...', 'start');
         const { sceneJson, scenceAsset } = await getCurrentScene(options.start_scene);
         const setting = options;
         scenceAsset && (setting.launchScene = scenceAsset.source);
@@ -813,7 +840,7 @@ class Builder {
         let assetBuilderResult = await assetBuilder.build(setting.scenes || scenceAsset, options.type);
         Object.assign(setting, assetBuilderResult, results);
         buildResult.settings = setting;
-        updateProgress('build setting...', 20);
+        updateProgress('build-setting', 'build setting success', 'success');
         if (options.type === 'build-release') {
             setting.packedAssets = assetPacker.pack();
             setting.md5AssetsMap = (await this.buildMd5Map(setting)) || {};

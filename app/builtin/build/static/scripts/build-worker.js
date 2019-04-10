@@ -47,7 +47,7 @@ Worker.Ipc.on('build-worker:build', async (event, options) => {
         builder.build(options, BUILD_INFO);
     } catch (error) {
         console.log(error);
-        updateProgress(`build failed!`, 0, 'failed');
+        updateProgress('', `build failed!`, 'failed');
     }
 });
 

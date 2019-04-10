@@ -268,12 +268,12 @@ function requestToPackage(...args) {
 /**
  * 通知当前构建进度消息
  * @param {*} msg 消息内容
- * @param {*} rate 当前进度
+ * @param {*} task 当前任务名称
  * @param {*} state 完成状态（
  */
-function updateProgress(msg, rate, state = 'building') {
-    Worker.Ipc.send('build-worker:update-progress', msg, rate, state);
-    console.info(`build:${msg} ${rate}`);
+function updateProgress(task, msg, state = 'building') {
+    console.info(`build:${msg} ${state}`);
+    Worker.Ipc.send('build-worker:update-progress', task, msg, state);
 }
 
 /**

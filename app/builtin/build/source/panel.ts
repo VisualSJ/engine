@@ -32,21 +32,30 @@ export const fonts = [{
 }];
 
 export const methods = {};
-
+const Tasks = ['asset', 'script', 'engine', 'build-setting', 'compress-setting', 'resolve', 'main', 'template'];
+const taskRate = [30, 20, 15, 15, 5, 5, 5, 5];
 export const messages = {
     // 更新当前构建进度
-    'build:update-progress'(msg: string, rate: number, state: string) {
+    'build:update-progress'(task: string, msg: string, state: string) {
         // 当前已经构建失败，其他构建进度不再显示
         if (vm.state === 'failed' && state === 'building') {
             return;
         }
         vm.message = msg;
         vm.state = state ? state : '';
-        if (state === 'start') {
+        if (!task && state === 'start') {
             vm.rate = 0;
+            vm.taskComplate = [];
         }
-        if (rate) {
-            vm.rate += Number(rate);
+        if (task && vm.taskComplate.indexOf(task) === -1 && state === 'success') {
+            const index = Tasks.indexOf(task);
+            vm.rate += taskRate[index];
+            vm.taskComplate.push(task);
+            console.info(index, task);
+        }
+
+        if (!task && state === 'success') {
+            vm.rate = 100;
         }
     },
     'asset-db:ready'() {
@@ -105,6 +114,9 @@ export async function ready() {
             isReady: false,
             nameTest: true,
             pathTest: true,
+
+            tasks: Tasks,
+            taskComplate: [],
         },
         computed: {
             selectAll: {
@@ -309,7 +321,7 @@ export async function ready() {
                     return;
                 }
                 this.rate = 0;
-                const {platform, source_map, debug, build_path, md5Cache} = this.setting;
+                const {platform, source_map, debug, build_path, md5Cache, force_combile_engin} = this.setting;
                 const data = {
                     platform,
                     source_map,
@@ -317,6 +329,7 @@ export async function ready() {
                     start_scene: this.start_scene,
                     debug,
                     md5Cache,
+                    force_combile_engin,
                     scenes: [],
                     dest: join(Editor.Project.path, build_path, platform),
                 };

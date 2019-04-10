@@ -9,6 +9,11 @@ const {promisify} = require('util');
 const _ = require('lodash');
 
 const RAW_ASSET_DEST = 'raw-assets';
+
+function emit(msg, state) {
+    updateProgress('asset', msg, state);
+}
+
 class AssetBuilder {
     init() {
         // buildResult.assetCache = {}; // 存储资源对应的打包情况,资源打包最开始要清空原来存储的数据
@@ -31,7 +36,7 @@ class AssetBuilder {
     }
 
     async build(scenes) {
-        updateProgress('build assets...');
+        emit('build assets...', 'start');
         let startTime = new Date().getTime();
         this.init();
         if (Array.isArray(scenes)) {
@@ -52,7 +57,7 @@ class AssetBuilder {
         await Promise.all([this.copyFiles(), this.compressImgs()])
                 .catch((err) => console.error(err));
         let endTime = new Date().getTime();
-        updateProgress(`build assets success in ${endTime - startTime} ms`, 30);
+        emit(`build assets success in ${endTime - startTime} ms`, 'success');
         return this.result;
     }
 
@@ -372,9 +377,9 @@ class AssetBuilder {
      * 执行图片压缩格式转换任务
      */
     compressImgs() {
-        updateProgress(`build assets : compress image asset ...`);
+        emit(`build assets : compress image asset ...`);
         if (Object.keys(this.compressImgTask).length < 1) {
-            updateProgress(`build assets : copy files sucess !`);
+            emit(`build assets : copy files success !`);
             return;
         }
         return new Promise((resolve) => {
@@ -394,7 +399,7 @@ class AssetBuilder {
                 });
                 buildResult.jsonCache[asset._uuid] = contentJson;
             })).then(() => {
-                updateProgress(`build assets : compress image asset sucess !`);
+                emit(`build assets : compress image asset success !`);
                 resolve();
             }).catch((err) => console.error(err));
         });
@@ -402,9 +407,9 @@ class AssetBuilder {
 
     // 并并执行文件拷贝工作
     copyFiles() {
-        updateProgress(`build assets : copy files ...`);
+        emit(`build assets : copy files ...`);
         if (this.copyPaths.length < 1) {
-            updateProgress(`build assets : copy files sucess !`);
+            emit(`build assets : copy files success !`);
             return;
         }
         return new Promise((resolve) => {
@@ -413,7 +418,7 @@ class AssetBuilder {
             Promise.all(this.copyPaths.map(async (paths) => {
                     await copySync(paths.src, paths.dest);
             })).then(() => {
-                updateProgress(`build assets : copy files sucess !`);
+                emit(`build assets : copy files success !`);
                 resolve();
             }).catch((err) => console.error(err));
         });

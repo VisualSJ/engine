@@ -38,7 +38,7 @@ class ScriptBuilder {
     }
 
     async build() {
-        updateProgress('build scripts...');
+        updateProgress('script', 'build scripts...', 'start');
         this.init();
         let scripts = await requestToPackage('asset-db', 'query-assets', {type: 'scripts'});
         let result = await projectScripts.load(scripts);
@@ -169,8 +169,8 @@ class ScriptBuilder {
                 }
                 throw new Error(`Not found.`);
             };
-            
-            const mdeps = browserify.pipeline.get("deps").get(0);
+
+            const mdeps = browserify.pipeline.get('deps').get(0);
             const baseResolve = mdeps.resolver;
             mdeps.resolver = (id, parent, cb) => {
                 let absid;
@@ -200,7 +200,7 @@ class ScriptBuilder {
             };
 
             browserify.transform(babelify.configure({
-                plugins:[systemJSToCJSBabelPlugin()]
+                plugins: [systemJSToCJSBabelPlugin()],
             }));
 
             // patchBrowserifyToRedirectPathToRaw(browserify);
@@ -263,7 +263,7 @@ class ScriptBuilder {
                 if (error) {
                     reject(error);
                 }
-                updateProgress('build scripts sucess', 15);
+                updateProgress('script', 'build scripts success', 'success');
                 // todo 细节优化
                 resolve();
             });

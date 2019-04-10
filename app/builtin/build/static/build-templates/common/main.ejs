@@ -124,14 +124,15 @@ window.boot = function () {
 		BK.Script.loadlib(<%=projectCode%>);
 	<% } %>
 	<%if(!isQQPlay){%>
-		var bundledScript = settings.debug ? 'src/project.dev.js' : 'src/project.js';
+		var bundledScript = '{{projectName}}';
         if (jsList) {
             jsList = jsList.map(function (x) {
                 return 'src/' + x;
             });
-            jsList.push(bundledScript);
+            bundledScript && jsList.push(bundledScript);
         } else {
-            jsList = [bundledScript];
+			jsList = [];
+            bundledScript && jsList.push(bundledScript);
         }
 	<% } %>
     var option = {
