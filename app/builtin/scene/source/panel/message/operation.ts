@@ -30,13 +30,12 @@ export function apply(messages: any) {
     /**
      * 打开某个场景
      *   通知 webview 打开场景
-     *   记录当前打开的场景 uuid
      */
     messages['open-scene'] = async (uuid: string) => {
         if (!$scene) {
             return '';
         }
-        await $scene.forwarding('Scene', 'open', [uuid]);
+        await $scene.forwarding('Scene', 'open', [uuid || false]); // false 表示强制新建一个空场景
     };
 
     /**
@@ -61,8 +60,11 @@ export function apply(messages: any) {
             return '';
         }
 
+        const assetsPath = join(Editor.Project.path, 'assets');
+
         const savePath = await Editor.Dialog.saveFile({
             title: Editor.I18n.t('scene.save_as'),
+            root: assetsPath,
             filters: [
                 { name: 'Scene File', extensions: ['scene'] },
             ],
@@ -72,7 +74,6 @@ export function apply(messages: any) {
             return;
         }
 
-        const assetsPath = join(Editor.Project.path, 'assets');
         if (!savePath.startsWith(assetsPath) || !savePath.endsWith('.scene')) {
             await Editor.Dialog.show({
                 type: 'warning',
@@ -84,7 +85,7 @@ export function apply(messages: any) {
         const relatiePath = relative(assetsPath, savePath);
         const url = `db://assets/${relatiePath.replace(/\\/g, '/')}`;
 
-        return await $scene.forwarding('Scene', 'save', url);
+        return await $scene.forwarding('Scene', 'save', [url]);
     };
 
     /**
@@ -311,7 +312,6 @@ export function apply(messages: any) {
         }
     };
 
-
     ///////////////
     // aniamtion //
     ///////////////
@@ -321,21 +321,21 @@ export function apply(messages: any) {
      */
     messages['change-clip-sample'] = (clip: string, sample: number) => {
         return $scene.forwatding('Animation', 'operation', 'changeSample', clip, sample);
-    }
+    };
 
     /**
      * 更改当前正在编辑的动画的 wrapMode
      */
     messages['change-clip-wrap-mode'] = (clip: string, wrapMode: number) => {
         return $scene.forwatding('Animation', 'operation', 'changeWrapMode', clip, wrapMode);
-    }
+    };
 
     /**
      * 更改当前正在编辑的动画的 speed
      */
     messages['change-clip-speed'] = (clip: string, speed: number) => {
         return $scene.forwatding('Animation', 'operation', 'changeSpeed', clip, speed);
-    }
+    };
 
     // TODO 暴露各种操作消息
 }

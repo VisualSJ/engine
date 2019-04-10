@@ -33,7 +33,7 @@ class SceneMode extends Mode {
             return false;
         }
 
-        if (!uuid) {
+        if (!uuid && uuid !== false) { // false 表示强制新建一个空场景，来自 ipc [open-scene]
             uuid = await Manager.Ipc.send('query-scene'); // 获取上次打开的场景
         }
 
