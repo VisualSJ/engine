@@ -200,7 +200,7 @@ Object.assign(Compiler.prototype, {
         const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
         const path = Path.join(info.path, 'rollup');
 
-        let cmd = Path.join(__dirname, '../../../../node_modules/typescript/bin/tsc');
+        let cmd = Path.join(__dirname, '../../../../../node_modules/typescript/bin/tsc');
         // electron 3.x 无法自动找到 unpacked 下的模块
         cmd = cmd.replace('app.asar', 'app.asar.unpacked');
 

@@ -51,7 +51,7 @@ export const messages = {
             const index = Tasks.indexOf(task);
             vm.rate += taskRate[index];
             vm.taskComplate.push(task);
-            console.info(index, task);
+            // console.info(index, task);
         }
 
         if (!task && state === 'success') {
