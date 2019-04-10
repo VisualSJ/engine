@@ -200,11 +200,15 @@ Object.assign(Compiler.prototype, {
         const info = await Editor.Ipc.requestToPackage('engine', 'query-info', Editor.Project.type);
         const path = Path.join(info.path, 'rollup');
 
-        let cmd = Path.join(__dirname, '../../../../../node_modules/typescript/bin/tsc');
+        let cmd = Path.join(__dirname, '../../../../../node_modules/node/bin/node');
         // electron 3.x 无法自动找到 unpacked 下的模块
         cmd = cmd.replace('app.asar', 'app.asar.unpacked');
 
-        exec(process.platform === 'win32' ? cmd + '.cmd' : cmd, {
+        let tsc = Path.join(__dirname, '../../../../../node_modules/typescript/lib/tsc.js');
+        // electron 3.x 无法自动找到 unpacked 下的模块
+        tsc = tsc.replace('app.asar', 'app.asar.unpacked');
+
+        exec(cmd + ' ' + tsc, {
             cwd: path,
             stdio: 'inherit',
         }, (error, stdout, stderr) => {

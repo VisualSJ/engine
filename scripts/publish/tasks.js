@@ -167,6 +167,7 @@ exports.asar = async function() {
         'node_modules/@editor/cocos-script',
         'node_modules/node',
         'node_modules/typescript',
+        'node_modules/eruda',
     ];
 
     // npm install cocos-creator/creator-asar -g
