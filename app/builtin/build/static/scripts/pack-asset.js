@@ -17,6 +17,13 @@ class AssetPacker {
      * @memberof AssetPacker
      */
     pack() {
+        // 清空缓存
+        this.inlineSpriteFrames = [];
+        this.startScene = [];
+        this.uuidDepends = {};
+        this.groups = [];
+        this.havaPacker = {};
+
         const packedAssets = {};
         this.options = buildResult.options;
         this.paths = buildResult.paths;

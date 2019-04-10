@@ -57,6 +57,17 @@
     };
     <%=engine%>.addEventListener('load', engineLoaded, false);
     document.body.appendChild(<%=engine%>);
+
+    const canv = document.getElementById('GameCanvas');
+    const $p = canv.parentElement;
+    const bcr = $p.getBoundingClientRect();
+    canv.width = bcr.width;
+    canv.height = bcr.height;
+
+    window.addEventListener('resize', () => {
+      const bcr = $p.getBoundingClientRect();
+      cc.director.root.resize(bcr.width, bcr.height);
+    });
 })();
 </script>
 
