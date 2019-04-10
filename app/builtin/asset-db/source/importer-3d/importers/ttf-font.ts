@@ -16,7 +16,7 @@ export default class TTFFontImporter extends Importer {
     }
 
     get assetType() {
-        return 'cc.Font';
+        return 'cc.TTFFont';
     }
 
     /**
