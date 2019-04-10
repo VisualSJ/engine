@@ -5,6 +5,58 @@ const utils = require('./tree-utils');
 const {createMenu} = require('./panel-context');
 
 exports.menu = (vm: any, asset: ItreeAsset) => {
+    if (asset.isRoot) {
+        dbAsset(vm, asset);
+    } else {
+        normalAsset(vm, asset);
+    }
+};
+
+function dbAsset(vm: any, asset: ItreeAsset) {
+    Editor.Menu.popup({
+        menu: [
+            {
+                label: Editor.I18n.t('assets.menu.new'),
+                enabled: !utils.canNotCreateAsset(asset),
+                submenu: createMenu((addAsset: IaddAsset) => {
+                    addAsset.uuid = asset.uuid;
+                    vm.$emit('addTo', addAsset);
+                }),
+            },
+            {
+                type: 'separator',
+            },
+            {
+                label: Editor.I18n.t('assets.menu.paste'),
+                enabled: !utils.canNotPasteAsset(asset),
+                click() {
+                    vm.$emit('paste', asset.uuid);
+                },
+            },
+            {
+                type: 'separator',
+            },
+            {
+                label: Editor.I18n.t('assets.menu.revealInExplorer'),
+                enabled: !utils.canNotShowInExplorer(asset),
+                click() {
+                    shell.showItemInFolder(asset.file);
+                },
+            },
+            {
+                type: 'separator',
+            },
+            {
+                label: Editor.I18n.t('assets.menu.showUuid'),
+                click() {
+                    console.info(`UUID: ${asset.uuid}, PATH: ${asset.source}`);
+                },
+            },
+        ],
+    });
+}
+
+function normalAsset(vm: any, asset: ItreeAsset) {
     Editor.Menu.popup({
         menu: [
             {
@@ -62,7 +114,7 @@ exports.menu = (vm: any, asset: ItreeAsset) => {
             },
             {
                 label: Editor.I18n.t('assets.menu.reimport'),
-                enabled: !utils.canNotRevealInLibrary(asset),
+                visible: !utils.canNotReimport(asset),
                 click() {
                     vm.$emit('reimport', asset.uuid);
                 },
@@ -93,4 +145,4 @@ exports.menu = (vm: any, asset: ItreeAsset) => {
             },
         ],
     });
-};
+}

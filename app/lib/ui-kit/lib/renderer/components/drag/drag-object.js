@@ -247,11 +247,13 @@ class DragObject extends Base {
     /**
      * 点击清空按钮
      */
-    _onCloseClick() {
+    _onCloseClick(event) {
         if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         this.$root.value = '';
+
+        event.stopPropagation();
     }
 }
 

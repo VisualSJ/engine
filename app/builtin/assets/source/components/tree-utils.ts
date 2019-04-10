@@ -72,6 +72,14 @@ exports.canNotRevealInLibrary = (asset: ItreeAsset) => {
 };
 
 /**
+ * 能否重新导入
+ * @param asset
+ */
+exports.canNotReimport = (asset: ItreeAsset) => {
+    return !asset || asset.isDirectory || asset.isRoot;
+};
+
+/**
  * 获取一组资源的位置信息
  * 资源节点对象 asset,
  * 对象所在数组索引 index，
