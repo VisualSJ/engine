@@ -5,6 +5,7 @@ const fse = require('fs-extra');
 const ps = require('path');
 
 const project = require('@editor/project');
+const ipc = require('@base/electron-base-ipc');
 
 const dialog = require('./../../../../lib/dialog');
 const { t } = require('./../util');
@@ -17,7 +18,8 @@ exports.props = [
 
 exports.data = function() {
     return {
-        list: [],
+        projects: [],
+        opens: [],
         hover: null,
     };
 };
@@ -27,13 +29,18 @@ exports.watch = {
      * 如果 type 更新，则使用新数据刷新页面
      */
     type() {
-        this.list = project.query({
+        this.projects = project.query({
             type: this.type,
         });
     },
+};
+
+exports.computed = {
     list() {
-        this.list.forEach((item) => {
-            item.state = ''; // 添加一个用于显示的状态字段，默认为空，值为 ['', 'deleting']
+        return this.projects.map((item) => {
+            // 添加一个用于显示的状态字段，默认为空，值为 ['', 'opened', deleting']
+            item.state = this.opens.includes(item.path) ? 'opened' : '';
+            return item;
         });
     },
 };
@@ -48,6 +55,20 @@ exports.methods = {
      */
     async removeProject(item) {
         const { path } = item; // 项目路径
+
+        if (!path) {
+            return false;
+        }
+
+        if (this.opens.includes(path)) {
+            await dialog.show({
+                type: 'warning',
+                title: t('warn'),
+                message: t('delete_project_close_first'),
+                buttons: ['Cancel'],
+            });
+            return false;
+        }
 
         const isDelete = await dialog.show({
             type: 'info',
@@ -133,7 +154,7 @@ exports.methods = {
      * 更新当前项目信息
      */
     updateProjects() {
-        this.list = project.query({
+        this.projects = project.query({
             type: this.type,
         });
     },
@@ -150,4 +171,10 @@ exports.mounted = function() {
         .on('add', update)
         .on('remove', update)
         .on('open', update);
+
+    // 更新列表中的项目打开状态
+    ipc.on('dashboard:update-opens', (event, data) => {
+        this.opens = data.opens;
+    });
+    ipc.send('dashboard:get-opens');
 };

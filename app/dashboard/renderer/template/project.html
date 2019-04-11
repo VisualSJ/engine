@@ -39,13 +39,19 @@
                     ></span>
                     
                     <span class="btn btn-blue"
+                        v-if="item.state===''"
                         @click="openProject(item.path)"
                     >{{t('open')}}</span>
                 </div>
                 <div class="icon-deleting"
-                    v-if="item.state==='deleting'"
+                    v-else-if="item.state==='deleting'"
                 >
                     <i></i>
+                </div>
+                <div class="opened"
+                    v-else-if="item.state==='opened'"
+                >
+                    <span>{{t('opened')}}</span>
                 </div>
             </div>
 
@@ -55,14 +61,16 @@
         v-if="hover"
     >
         <div class="detail-line">
-            <span class="label">{{t('project_path')}} </span>:
-            {{hover.path}}
+            <span class="label">{{t('project_path')}}</span>
+            <span class="label">{{hover.path}}</span>
         </div>
         <div class="detail-line">
-            <span class="label">{{t('create_time')}} </span>: {{stamp2time(hover.ctime)}}
+            <span class="label">{{t('create_time')}}</span>
+            <span class="label">{{stamp2time(hover.ctime)}}</span>  
         </div>
         <div class="detail-line">
-            <span class="label">{{t('recent_modified')}} </span>: {{stamp2time(hover.otime)}}
+            <span class="label">{{t('recent_modified')}}</span>
+            <span class="label">{{stamp2time(hover.otime)}}</span>
         </div>
     </div>
 </div>

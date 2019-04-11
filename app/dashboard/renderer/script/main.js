@@ -44,6 +44,7 @@ const $vm = new Vue({
     mounted() {
         this.$on('change-type', (type) => {
             this.type = type;
+            ipc.send(`dashboard:type`, this.type);
         });
         this.$on('change-tab', (tab) => {
             this.tab = tab;

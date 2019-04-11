@@ -12,6 +12,7 @@ module.exports = {
     recent_modified: 'Recent Modefied',
 
     open: 'open',
+    opened: 'Opened',
     select: 'select',
     warn: 'warning',
     cancel: 'cancel',
@@ -20,14 +21,17 @@ module.exports = {
     remove: 'remove',
     reselect: 'Reselect',
     info: 'Info',
+    error: 'Error',
 
     delete_project: 'Delete Project',
+    delete_project_close_first: 'The project to be deleted has been opened, please close first.',
     delete_project_source: 'Delete the file',
     project_path_palceholder: 'Please select a path as a project workspace',
     project_missing: 'Project does not exist',
     cover_project: 'Directly overwrite the file with the same name',
     stay_tuned: 'Stay tuned!',
     project_opened: 'The project has been opened.',
+    open_with_error: 'Open failed: this project is not a {type} project.',
 
     message: {
         duplicate_project: 'A project with the same name already exists',

@@ -10,6 +10,7 @@ module.exports = {
     recent_modified: '最近更新',
 
     open: '打开',
+    opened: '已打开',
     select: '选择',
     help: '帮助',
     warn: '警告',
@@ -19,13 +20,16 @@ module.exports = {
     remove: '移除',
     reselect: '重新选择',
     info: '提示',
+    error: '错误',
 
     delete_project: '删除项目',
+    delete_project_close_first: '将要删除的项目已打开，请先关闭。',
     delete_project_source: '删除文件',
     project_path_palceholder: '请选择一个项目路径作为工作区',
     cover_project: '直接覆盖同名文件',
     stay_tuned: '敬请期待!',
     project_opened: '此项目已经打开',
+    open_with_error: '打开失败：此项目不是完整的 {type} 项目',
 
     message: {
         duplicate_project: '已存在相同名称的项目',

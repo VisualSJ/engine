@@ -1,13 +1,14 @@
 'use strict';
 
-const fse = require('fs-extra');
-const ps = require('path'); // path system
+const { readJSONSync, outputJSONSync, existsSync } = require('fs-extra');
+const { join } = require('path'); // path system
 const { spawn } = require('child_process');
 const { app, Tray, Menu, BrowserWindow, dialog } = require('electron');
 const ipc = require('@base/electron-base-ipc');
 const setting = require('@editor/setting');
 const project = require('@editor/project');
 const i18n = require('@base/electron-i18n');
+const processExists = require('process-exists');
 
 let window = null;
 const languages = {
@@ -17,6 +18,9 @@ const languages = {
 
 // 打开所有项目的键值对
 const projectMap = new Map();
+
+// 默认项目类型
+let openType = '3d';
 
 /**
  * 等待 app 初始化完毕
@@ -37,7 +41,7 @@ exports.window = function() {
     i18n.register(languages.en, 'en');
     i18n.register(languages.zh, 'zh');
     // 打开页面
-    const html = ps.join(__dirname, './renderer/template/index.html');
+    const html = join(__dirname, './renderer/template/index.html');
     window = new BrowserWindow({
         width: 1000,
         height: 650,
@@ -72,7 +76,7 @@ exports.tray = async function() {
             app.once('ready', resolve);
         });
     }
-    tray = new Tray(ps.join(__dirname, './tray.png'));
+    tray = new Tray(join(__dirname, './tray.png'));
 
     const menus = [];
 
@@ -137,32 +141,46 @@ exports.listener = function() {
         });
     });
 
+    // 监听切换项目类型 2d / 3d
+    ipc.on('dashboard:type', (event, type) => {
+        openType = type;
+    });
+
+    // 获取已打开的项目
+    ipc.on('dashboard:get-opens', (event) => {
+        ipcOpenState();
+    });
+
     // 设置打开项目方法
-    project.setOpenHandler((path) => {
-
+    project.setOpenHandler(async (path) => {
         if (projectMap.get(path)) {
-
-            const config = {
-                title: i18n.translation('info'),
-                message: i18n.translation('project_opened'),
-                detail: path,
-                type: 'warning',
-                buttons: ['Cancel'],
-            };
-
-            dialog.showMessageBox(null, config);
+            ipcOpenState();
+            warnAlreadyOpened();
             return;
+        }
+
+        // 再查本项目对应的进程 id 是否在运行
+        const stateFile = join(path, 'temp', 'startup.json');
+        let stateJson = {};
+        if (existsSync(stateFile)) {
+            const json = readJSONSync(stateFile);
+            if (json && json.pid) {
+                if (await processExists(json.pid)) { // 进程在跑
+                    warnAlreadyOpened();
+                    return;
+                }
+                stateJson = json;
+            }
         }
 
         // 检查 package.json
-        const pkgJsonFile = ps.join(path, 'package.json');
+        const pkgJsonFile = join(path, 'package.json');
 
-        if (!fse.existsSync(pkgJsonFile)) {
-            // todo 提示
-            alert(`This project is not a ${this.type} project`);
+        if (!existsSync(pkgJsonFile)) {
+            openWithError(path);
             return;
         }
-        const pkgJson = fse.readJSONSync(pkgJsonFile);
+        const pkgJson = readJSONSync(pkgJsonFile);
 
         // 0.0.1 旧版本兼容
         if (!pkgJson.type && pkgJson.engine) {
@@ -170,9 +188,8 @@ exports.listener = function() {
         }
 
         // 判断当前打开项目与选择的 type 是否匹配
-        if (this.type && this.type !== pkgJson.type) {
-            // todo 提示错误
-            alert(`This project is not a ${this.type} project`);
+        if (openType !== pkgJson.type) {
+            openWithError(path);
             return;
         }
 
@@ -180,7 +197,7 @@ exports.listener = function() {
         const exePath = app.getPath('exe');
 
         // 拼接参数
-        const args = [ps.join(__dirname, '../')];
+        const args = [join(__dirname, '../')];
         if (setting.dev) {
             args.push('--dev');
             args.push('--remote-debugging-port=9223');
@@ -194,6 +211,9 @@ exports.listener = function() {
             stdio: [0, 1, 2, 'ipc'],
         });
         projectMap.set(path, child);
+        stateJson.pid = child.pid;
+        ipcOpenState();
+
         child.on('message', (options) => {
             if (options.channel && options.channel === `open-project`) {
                 if (options.options.path) {
@@ -212,16 +232,42 @@ exports.listener = function() {
 
         child.on('exit', () => {
             projectMap.delete(path);
+            ipcOpenState();
             if (projectMap.size <= 0) {
                 // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
                 showWindow();
             }
         });
 
-        // 如果关闭最后一个项目，需要显示 dashboard(dashboard初始化时赋值)
+        outputJSONSync(stateFile, stateJson); // 保存项目启动状态
+
         hideWindow();
     });
 };
+
+function warnAlreadyOpened(path) {
+    const config = {
+        title: i18n.translation('info'),
+        message: i18n.translation('project_opened'),
+        detail: path,
+        type: 'warning',
+        buttons: ['Cancel'],
+    };
+
+    dialog.showMessageBox(null, config);
+}
+
+function openWithError(path) {
+    const config = {
+        title: i18n.translation('error'),
+        message: i18n.translation('open_with_error').replace('{type}', openType),
+        detail: path,
+        type: 'error',
+        buttons: ['Cancel'],
+    };
+
+    dialog.showMessageBox(null, config);
+}
 
 function showWindow() {
     window && window.show();
@@ -242,11 +288,13 @@ function closeWindow() {
 }
 
 function exitApp() {
-    // TODO 未实现的功能：
-    // 需要触发子进程里的 window 窗口 close 事件，同时等待是否保存数据
-    //
-    // for (const [path, child] of projectMap) {
-    // }
-
+    // TODO 未实现的功能：需要触发子进程里的 window 窗口 close 事件，同时等待是否保存数据
+    // 直接全部结束进程
     app.exit(0);
+}
+
+function ipcOpenState() {
+    ipc.broadcast('dashboard:update-opens', {
+        opens: Array.from(projectMap.keys()),
+    });
 }
