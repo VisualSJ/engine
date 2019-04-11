@@ -233,6 +233,9 @@ class NumInput extends Base {
         this.$unit = this.shadowRoot.querySelector('.unit span');
         this.$child = this.$input;
         this.$input.$root = this.$up.$root = this.$down.$root = this;
+
+        // 记录缓存的 value 值
+        this._staging = null;
     }
 
     /**
@@ -272,6 +275,7 @@ class NumInput extends Base {
         this.$input.addEventListener('mousewheel', this._onMousewheel);
         this.$input.addEventListener('focus', this._onInputFocus);
         this.$input.addEventListener('input', this._onInputChange);
+        this.$input.addEventListener('blur', this._onInputBlur);
 
         // 内部增加减少按钮的事件绑定
         this.$up.addEventListener('mousedown', this._onUpMouseDown);
@@ -359,31 +363,44 @@ class NumInput extends Base {
      */
     _onKeyDown(event) {
         super._onKeyDown(event);
+
+        const inputFocused = this._staging !== null;
+
         switch (event.keyCode) {
             ////////////////
             // 上下箭头使用 Input 的原生事件
             case 13: // enter
-                // 值未发生变化
-                if (this._staging === parseFloat(this.getAttribute('value'))) {
-                    // 当值与原值相等时,需要判断是否是由于只输入负号而导致的数据未更新
-                    break;
+                // 值发生变化
+                if (this._staging !== null && this._staging !== parseFloat(this.getAttribute('value'))) {
+                    // confirm之前需要更改暂存数据值
+                    this._staging = parseFloat(this.getAttribute('value') || 0);
+                    this.$input.value = this._staging;
+                    delete this._staging;
+                    this.dispatch('confirm');
                 }
-                // confirm之前需要更改暂存数据值
-                this._staging = parseFloat(this.getAttribute('value') || 0);
-                this.$input.value = this._staging;
-                this.dispatch('confirm');
+
+                if (inputFocused) {
+                    this.focus();
+                } else {
+                    this.$input.focus();
+                }
                 break;
             case 27: // esc
                 // 清除定时器
                 clearTimeout(this._timer);
                 clearInterval(this._timer);
-                if (this._staging === this.value) {
-                    return;
+
+                // 如果 staging 不存在，或者数据相等
+                if (this._staging !== null && this._staging !== this.value) {
+                    // 清除数据
+                    this.value = this._staging;
+                    this._staging = null;
+
+                    this.dispatch('change');
+                    this.dispatch('cancel');
                 }
-                this.value = this._staging;
-                this.setAttribute('value', this.value);
-                this.dispatch('change');
-                this.dispatch('cancel');
+
+                this.focus();
                 break;
             case 38: // up
                 this.stepUp();
@@ -429,7 +446,6 @@ class NumInput extends Base {
         if (this._shiftFlag) {
             return;
         }
-        this.$input.select();
         this.$input.focus();
     }
 
@@ -446,7 +462,6 @@ class NumInput extends Base {
         if (this._staging === parseFloat(this.$input.value, 10) || !this.getAttribute('value')) {
             this.$input.value = this._staging;
             this.setAttribute('value', this._staging);
-            this.$input._inputStaging = this.$input.value;
             return;
         }
         this._staging = parseFloat(this.$input.value);
@@ -468,10 +483,25 @@ class NumInput extends Base {
         }
         this.$root._staging = parseFloat(this.value);
         this._inputStaging = parseFloat(this.value);
+        this.select();
     }
 
     /**
-     * input 修改事件(这里的触发机制是当且仅当输入的改变的值有效时才触发，也就是输入空格不触发 change ,若未输入值离开后将恢复原值)
+     * 
+     * @param {*} event 
+     */
+    _onInputBlur(event) {
+        // 判断是否为可读或禁用
+        if (this.$root.disabled || this.$root.readOnly) {
+            return;
+        }
+        this.$root._staging = null;
+        this._inputStaging = null;
+    }
+
+    /**
+     * input 修改事件
+     * 这里的触发机制是当且仅当输入的改变的值有效时才触发，也就是输入空格不触发 change ,若未输入值离开后将恢复原值
      * 需要将数据回流到 root 元素上
      */
     _onInputChange() {
@@ -483,8 +513,10 @@ class NumInput extends Base {
         if (parseFloat(this.value) === this._inputStaging) {
             return;
         }
+
         this._inputStaging = this.value;
         this.$root.value = this.value;
+
         // 事件通知要在值设置好之后
         this.$root.dispatch('change');
     }

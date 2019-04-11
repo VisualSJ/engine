@@ -143,6 +143,8 @@ class Input extends Base {
         // 指定会影响tab焦点的内部元素
         this.$child = this.$input;
         this.$input.$root = this.$clear.$root = this;
+
+        this._staging = null;
     }
 
     /**
@@ -159,10 +161,10 @@ class Input extends Base {
         $style.innerHTML = customStyle;
 
         // 绑定事件
-        this.addEventListener('focus', this._onInputFocus);
-        this.addEventListener('blur', this._onInputBlur);
-        this.addEventListener('input', this._onInputChange);
-        this.addEventListener('keydown', this._onInputKeyDown);
+        this.$input.addEventListener('focus', this._onInputFocus);
+        this.$input.addEventListener('blur', this._onInputBlur);
+        this.$input.addEventListener('input', this._onInputChange);
+        // this.$input.addEventListener('keydown', this._onInputKeyDown);
         this.$clear.addEventListener('click', this._onClear, true);
     }
 
@@ -180,7 +182,7 @@ class Input extends Base {
         this.$input.removeEventListener('focus', this._onInputFocus);
         this.$input.removeEventListener('blur', this._onInputBlur);
         this.$input.removeEventListener('input', this._onInputChange);
-        this.$input.removeEventListener('keydown', this._onInputKeyDown);
+        // this.$input.removeEventListener('keydown', this._onInputKeyDown);
         this.$clear.removeEventListener('click', this._onClear, true);
     }
 
@@ -202,7 +204,6 @@ class Input extends Base {
         if (this._shiftFlag) {
             return;
         }
-        this.$input.select();
         this.$input.focus();
     }
 
@@ -215,7 +216,9 @@ class Input extends Base {
         if (this.disabled || this.readOnly) {
             return;
         }
-        this._staging = this.value;
+
+        this.$root._staging = this.value;
+        this.select();
     }
 
     /**
@@ -226,11 +229,8 @@ class Input extends Base {
         if (this.disabled || this.readOnly) {
             return;
         }
-        if (this._staging === this.$input.value) {
-            return;
-        }
-        delete this._staging;
-        this.dispatch('confirm');
+
+        this.$root._staging = null;
     }
 
     /**
@@ -241,34 +241,51 @@ class Input extends Base {
         if (this.disabled || this.readOnly) {
             return;
         }
-        this.value = this.$input.value;
-        this.dispatch('change');
+        this.$root.value = this.value;
+        this.$root.dispatch('change');
     }
 
     /**
      * input 键盘按下事件
      * @param {Event} event
      */
-    _onInputKeyDown(event) {
+    _onKeyDown(event) {
         // 判断是否为可读或禁用
         if (this.disabled || this.readOnly) {
             return;
         }
+
+        const inputFocused = this._staging !== null;
+
         switch (event.keyCode) {
             case 13: // 回车
-                if (this._staging === this.$input.value) { // 先判断值是否发生更改
-                    break;
+                // 先判断值是否发生更改
+                if (this._staging !== null && this._staging !== this.value) {
+                    this._staging = this.value;
+                    this.dispatch('confirm');
                 }
-                this.dispatch('confirm');
-                this._staging = this.value;
+                if (inputFocused) {
+                    this.focus();
+                } else {
+                    this.$input.focus();
+                }
                 break;
             case 27: // esc
-                if (this._staging === this.$input.value) { // 先判断值是否发生更改
-                    break;
+                // 清除定时器
+                clearTimeout(this._timer);
+                clearInterval(this._timer);
+
+                // 如果 staging 不存在，或者数据相等
+                if (this._staging !== null && this._staging !== this.value) {
+                    // 清除数据
+                    this.value = this._staging;
+                    this._staging = null;
+
+                    this.dispatch('change');
+                    this.dispatch('cancel');
                 }
-                this.value = this._staging;
-                this.dispatch('change');
-                this.dispatch('cancel');
+
+                this.focus();
                 break;
         }
     }
