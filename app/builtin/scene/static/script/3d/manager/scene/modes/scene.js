@@ -84,6 +84,7 @@ class SceneMode extends Mode {
 
         // 发送 emit 事件
         this.manager.emit('open', cc.director._scene);
+        await Manager.Ipc.send('set-scene', '');
         Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
         // 缓存最后一次保存的数据
         this.lastSaveData = this.serialize();
@@ -198,7 +199,7 @@ class SceneMode extends Mode {
             url = await ipc.send('generate-available-url', url || 'db://assets/New Scene.scene');
             const uuid = await ipc.send('create-asset', url, json);
             this.current = uuid;
-            Manager.Ipc.send('set-scene', uuid);
+            await Manager.Ipc.send('set-scene', uuid);
         }
 
         this.lastSaveData = json;

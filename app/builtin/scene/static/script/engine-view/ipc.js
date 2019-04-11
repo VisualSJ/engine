@@ -9,6 +9,8 @@ const vStacks = require('v-stacks');
 
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
+let titleFlag_sceneSaved = null; // 当前 title 是否需要变动，此 flag 是为了减少性能开销，并不是场景是否已保存的准确状态
+
 const messages = {
 
     ready() {
@@ -55,6 +57,23 @@ const messages = {
         profile.set('current-scene', uuid || '');
         profile.save();
 
+        await messages['change-title'](uuid ? true : false);
+    },
+
+    /**
+     * 更新编辑器 title
+     * @param {boolean} saved 是否已保存
+     */
+    async 'change-title'(saved) {
+        if (saved === titleFlag_sceneSaved) {
+            return saved; // 状态没变不做处理，减少性能开销
+        }
+
+        // 切换状态
+        titleFlag_sceneSaved = saved;
+
+        const uuid = profile.get('current-scene');
+
         let title = 'Editor 3D - ' + basename(Editor.App.project) + ' - ';
 
         if (uuid) {
@@ -66,6 +85,10 @@ const messages = {
             }
         } else {
             title += 'Untitled';
+        }
+
+        if (saved !== true) {
+            title += '*';
         }
 
         Editor.Ipc.sendToAll('notice:editor-title-change', title);
@@ -195,8 +218,14 @@ const messages = {
      * @param {*} uuid
      * @param {*} content
      */
-    'save-asset'(uuid, content) {
-        return Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
+    async 'save-asset'(uuid, content) {
+        const saved = await Editor.Ipc.requestToPackage('asset-db', 'save-asset', uuid, content);
+
+        if (saved === true) {
+            await messages['change-title'](saved);
+        }
+
+        return saved;
     },
 
     /**

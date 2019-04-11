@@ -32,14 +32,17 @@ nodeManager.on('inited', (uuids, scene) => { // uuids 是当前场景所有节�
 
 nodeManager.on('change', (node, enable = true) => { // enable 是内部 undo redo 产生的变化，不参与记录
     enable && record(node.uuid);
+    Manager.Ipc.send('change-title', false);
 });
 
 nodeManager.on('add', (node, enable = true) => {
     enable && loopRecord(node);
+    Manager.Ipc.send('change-title', false);
 });
 
 nodeManager.on('remove', (node, enable = true) => {
     enable && record(node.uuid);
+    Manager.Ipc.send('change-title', false);
 });
 
 // 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
