@@ -368,6 +368,7 @@ class CameraController3D extends CameraControllerBase {
         if (Math.max(Math.abs(event.wheelDeltaX), Math.abs(event.wheelDeltaY)) > 60) {
             this.scale(-event.wheelDeltaY / 6);
         } else {
+            // 双指操作触摸板，并移动的时候，触发这里，需要先进入 PAN 模式，才能移动
             if (this.camera_move_mode !== CameraMoveMode.PAN) {
                 this.enterPanMode();
             }
