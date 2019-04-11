@@ -2,10 +2,20 @@
 
 const dumpEncode = require('../../../../../dist/utils/dump/encode');
 const dumpDecode = require('../../../../../dist/utils/dump/decode');
+const dumpUtil = require('../../../../../dist/utils/dump/utils');
+
+// 节点默认可以制作动画的属性
+
+//加上类型，让 timeline 可以判断属性的数据类型
+const defaultProperties = [
+    {type: 'cc.Vec3', name: 'position'},
+    {type: 'cc.Vec3', name: 'rotation'},
+    {type: 'cc.Vec3', name: 'scale'},
+];
 
 /**
  * 将 clip 序列化成 dump 格式数据
- * @param {*} state 
+ * @param {*} state
  */
 function encodeClip(state) {
     const clip = state._clip;
@@ -13,7 +23,9 @@ function encodeClip(state) {
     function handleProps(props) {
         const result = {};
         for (let key in props) {
-            result[key] = props[key].map(handleKey);
+            if (key) {
+                result[key] = props[key].map(handleKey);
+            }
         }
         return result;
     }
@@ -22,7 +34,9 @@ function encodeClip(state) {
         const result = {};
 
         for (let key in comps) {
-            result[key] = handleProps(comps[key]);
+            if (key) {
+                result[key] = handleProps(comps[key]);
+            }
         }
         return result;
     }
@@ -87,19 +101,123 @@ function getNodeDataFromClip(clip, path) {
 
 /**
  * 从一个 node 数据，拿出对应的 comp 和 prop 数据
- * @param {*} nodeData 
- * @param {*} prop 
- * @param {*} comp 
+ * @param {*} nodeData
+ * @param {*} prop
+ * @param {*} comp
  */
 function getPropertyDataFrom(nodeData, prop, comp) {
     if (comp) {
-        nodeData.comps = data.comps || {};
+        nodeData.comps = nodeData.comps || {};
         return nodeData.comps[comp][prop];
     } else {
-        return data.props[prop];
+        return nodeData.props[prop];
     }
+}
+
+/**
+ * 判断一个属性属否可以用于制作动画
+ * @param {*} ctor
+ * @param {*} property
+ * @param {*} propObject
+ */
+function getAnimablePropFromProperty(compCtor, property, propObject) {
+    let attrs = cc.Class.attr(compCtor, property);
+    if (!attrs) {
+        return null;
+    }
+
+    const typeName = dumpUtil.getTypeName(compCtor);
+    const attrCtor = dumpUtil.getConstructor(propObject, attrs);
+
+    if (
+        // skip hidden properties
+        attrs.visible === false ||
+        // skip type cc.Node
+        attrs.type === 'cc.Node' ||
+        // if defined animatable and animatable is false then return
+        attrs.animatable === false
+    ) {
+        return null;
+    }
+
+    let propData = {};
+    if (cc.js.getClassByName(typeName)) {
+        propData.name = typeName + '.' + property;
+    } else {
+        propData.name = compCtor.name + '.' + property;
+    }
+
+    if (!attrs.ctor && attrs.type) {
+        propData.type = attrs.type;
+    } else {
+        propData.type = dumpUtil.getTypeName(attrCtor);
+    }
+
+    return propData;
+}
+
+/**
+ * 从 component 内获取可以用于动画制作的属性列表
+ * @param {*} component
+ */
+function getAnimablePropsFromComponent(component) {
+    let result = [];
+
+    const compCtor = component.constructor;
+    if (compCtor) {
+        let props = compCtor.__props__;
+        props.map((key) => {
+            if (key === 'type' || key === '__scriptAsset') {
+                return;
+            }
+
+            let animableProp = getAnimablePropFromProperty(compCtor, key, component[key]);
+            if (animableProp !== null) {
+                result.push(animableProp);
+            }
+        });
+    }
+
+    return result;
+}
+
+/**
+ * 从一个 node 内获取出可以用于动画制作的属性列表
+ * @param {*} node
+ * @param {*} isChild
+ */
+function getAnimableProperties(node, isChild) {
+    let properties = [];
+    if (isChild) {
+        properties.push({name: 'active', type: 'cc.Boolean'});
+    }
+    defaultProperties.forEach((item) => {
+        properties.push(item);
+    });
+
+    node._components.forEach((comp) => {
+        // skip cc.AnimationComponent
+        if (comp.type === 'cc.AnimationComponent') {
+            return;
+        }
+
+        // 相同的组件，只保留第一个组件的属性在 timeline
+        for (let i = 0; i < properties.length; ++i) {
+            if (properties[i].name.startsWith(comp.type)) {
+                return;
+            }
+        }
+
+        let compProps = getAnimablePropsFromComponent(comp);
+        compProps.forEach((prop) => {
+            properties.push(prop);
+        });
+    });
+
+    return properties;
 }
 
 exports.encodeClip = encodeClip;
 exports.getNodeDataFromClip = getNodeDataFromClip;
 exports.getPropertyDataFrom = getPropertyDataFrom;
+exports.getAnimableProperties = getAnimableProperties;

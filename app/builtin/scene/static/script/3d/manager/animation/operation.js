@@ -26,7 +26,7 @@ exports.changeSample = function(uuid, clip, sample) {
         return console.warn(`节点不存在，无法修改动画的 sample\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法修改动画的 sample\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -38,7 +38,7 @@ exports.changeSample = function(uuid, clip, sample) {
 
     state._clip.sample = sample;
     anim._animator._reloadClip(state);
-}
+};
 
 /**
  * 更改一个节点上某个动画的 speed 值
@@ -52,7 +52,7 @@ exports.changeSpeed = function(uuid, clip, speed) {
         return console.warn(`节点不存在，无法修改动画的 sample\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法修改动画的 sample\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -64,7 +64,7 @@ exports.changeSpeed = function(uuid, clip, speed) {
 
     state._clip.speed = speed;
     anim._animator._reloadClip(state);
-}
+};
 
 /**
  * 更改一个节点上某个动画的播放模式
@@ -82,7 +82,7 @@ exports.changeWrapMode = function(uuid, clip, mode) {
         return console.warn(`节点不存在，无法修改动画的 speed\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法修改动画的 speed\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -94,7 +94,7 @@ exports.changeWrapMode = function(uuid, clip, mode) {
 
     state._clip.wrapMode = mode;
     anim._animator._reloadClip(state);
-}
+};
 
 // 节点数据
 
@@ -111,7 +111,7 @@ exports.clearNode = function(uuid, clip, path) {
         return console.warn(`节点不存在，无法清空节点数据数据\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法清空节点数据数据\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -134,7 +134,7 @@ exports.clearNode = function(uuid, clip, path) {
     }
 
     anim._animator._reloadClip(state);
-}
+};
 
 // 属性数据
 
@@ -153,7 +153,7 @@ exports.createProp = function(uuid, clip, path, prop, comp) {
         return console.warn(`节点不存在，无法创建并重置属性轨道\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法创建并重置属性轨道\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -171,7 +171,7 @@ exports.createProp = function(uuid, clip, path, prop, comp) {
 
     data = utils.getPropertyDataFrom(data, prop, comp);
     anim._animator._reloadClip(state);
-}
+};
 
 /**
  * 删除一条属性轨道
@@ -188,7 +188,7 @@ exports.removeProp = function(uuid, clip, path, prop, comp) {
         return console.warn(`节点不存在，无法删除属性轨道\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法删除属性轨道\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -219,7 +219,7 @@ exports.removeProp = function(uuid, clip, path, prop, comp) {
     }
 
     anim._animator._reloadClip(state);
-}
+};
 
 // 关键帧数据
 
@@ -233,7 +233,7 @@ exports.createKey = function(uuid, clip, path, prop, comp) {
         return console.warn(`节点不存在，无法新增关键帧\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法新增关键帧\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -275,14 +275,14 @@ exports.createKey = function(uuid, clip, path, prop, comp) {
     });
 
     anim._animator._reloadClip(state);
-}
+};
 
 /**
  * 移动关键帧
  */
 exports.moveKeys = function(uuid, clip, path, prop, comp, frames, offset) {
     // TODO
-}
+};
 
 /**
  * 删除关键帧
@@ -293,7 +293,7 @@ exports.removeKey = function(uuid, clip, path, prop, comp, frame) {
         return console.warn(`节点不存在，无法新增关键帧\n  node: ${uuid}\n  clip: ${clip}`);
     }
 
-    const anim = node.getComponent(cc.LegacyAnimationComponent);
+    const anim = node.getComponent(cc.AnimationComponent);
     if (!anim) {
         return console.warn(`节点上不存在动画组件，无法新增关键帧\n  node: ${uuid}\n  clip: ${clip}`);
     }
@@ -304,4 +304,4 @@ exports.removeKey = function(uuid, clip, path, prop, comp, frame) {
     }
 
     // TODO
-}
+};
