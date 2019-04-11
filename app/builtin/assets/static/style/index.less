@@ -1,12 +1,17 @@
 @import './icon';
+
 :host {
     position: relative;
     display: flex;
+
     >.assets {
         flex: 1;
         display: flex;
         flex-direction: column;
-    } // .loading 不止在content上有使用，在 .tree-node 的状态变化上也有使用
+        max-width: 100%;
+    }
+
+    // .loading 不止在content上有使用，在 .tree-node 的状态变化上也有使用
     .loading {
         position: absolute;
         top: 0;
@@ -14,9 +19,11 @@
         bottom: 0;
         left: 0;
         z-index: 100;
+
         &.center {
             margin: auto;
         }
+
         ui-loading {
             position: absolute;
             top: 0;
@@ -43,6 +50,7 @@
     font-size: 12px;
     background-color: var(--panel-header-bg);
     white-space: nowrap;
+
     [class^="i-"],
     [class*=" i-"] {
         position: relative;
@@ -55,18 +63,22 @@
         text-align: center;
         transition: all .2s ease;
         overflow: hidden;
+
         &:hover {
             background-color: var(--panel-header-hover-c);
         }
     }
+
     >ui-input {
         flex: 1;
         margin: 0 4px;
         font-size: 11px;
     }
+
     .search-type {
         margin: 0;
         padding: 0 2px;
+
         &:after {
             position: absolute;
             left: 0;
@@ -77,17 +89,21 @@
             transform: scale(0.7);
             font-size: 12px;
         }
+
         &[type="uuid"]:after {
             content: 'U';
             left: -1px;
         }
+
         &[type="type"]:after {
             content: 'T';
         }
     }
+
     .sort-type {
         margin: 0;
         padding: 0 2px;
+
         &:after {
             position: absolute;
             left: 0;
@@ -98,6 +114,7 @@
             transform: scale(0.7);
             font-size: 12px;
         }
+
         &[type="ext"]:after {
             content: 'T';
         }
@@ -110,6 +127,7 @@
     overflow-y: auto;
     box-shadow: inset 0 0 8px 2px var(--panel-content-shadow);
     background-color: var(--panel-content-bg);
+
     .scroll-bar {
         position: absolute;
         left: 0;
@@ -119,6 +137,7 @@
         height: 0;
         overflow: auto;
     }
+
     .select-box {
         opacity: 0;
         position: absolute;
@@ -159,6 +178,7 @@
     pointer-events: none;
     transition: opacity, bottom 0.3s;
     transition-delay: 0.3s;
+
     &.fadeIn {
         opacity: 1;
         bottom: 5px;

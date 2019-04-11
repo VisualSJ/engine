@@ -305,10 +305,7 @@ export async function ready() {
                 vm.$refs.tree.scroll(vm.$refs.viewBox.scrollTop);
             }, false);
 
-            // 下一个 Vue Tick 触发
-            this.$nextTick(() => {
-                this.resizePanel();
-            });
+            this.resizePanel();
         },
         methods: {
             /**
@@ -431,8 +428,10 @@ export async function ready() {
              * 调整可视区域高度
              */
             resizePanel() {
-                vm.viewWidth = panel.clientWidth;
-                vm.$refs.tree.viewHeight = vm.viewHeight = vm.$refs.viewBox.clientHeight;
+                // @ts-ignore
+                this.viewWidth = panel.clientWidth;
+                // @ts-ignore
+                this.$refs.tree.viewHeight = this.viewHeight = this.$refs.viewBox.clientHeight;
             },
             /**
              * 主动定位到资源
