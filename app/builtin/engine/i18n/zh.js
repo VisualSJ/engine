@@ -4,6 +4,7 @@ module.exports = {
     title: 'Engine 管理器',
 
     compile_engine: '编译引擎',
+    wait_quick_compile: '第一次启动时间可能会稍长，请耐心等待',
 
     confirm: '确认',
     browse: '浏览',

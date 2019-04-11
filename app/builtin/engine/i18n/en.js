@@ -4,6 +4,7 @@ module.exports = {
     title: 'Engine Manager',
 
     compile_engine: 'Compile the engine',
+    wait_quick_compile: 'The first boot may take a little longer',
 
     confirm: 'confirm',
     browse: 'browse',

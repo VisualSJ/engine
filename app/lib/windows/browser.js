@@ -91,9 +91,9 @@ class Windows {
     /**
      * 恢复上次的窗口状态
      */
-    restore() {
+    async restore() {
         if (!fs.existsSync(file)) {
-            this.open();
+            await this.open();
             return;
         }
 
@@ -112,7 +112,7 @@ class Windows {
         array.forEach((win) => {
             win.url = ps.join(__dirname, 'static', ps.basename(win.url));
         });
-        windows.restore(json);
+        await windows.restore(json);
     }
 
     /**

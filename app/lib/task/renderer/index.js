@@ -11,8 +11,11 @@ class Task {
     }
 
     sync() {
-        ipc.send('editor-lib-task:query').callback((error, title, describe) => {
-            dom.show(title, describe);
+        if(!window.__MAIN__) {
+            return dom.show();
+        }
+        ipc.send('editor-lib-task:query').callback((error, title, describe, message) => {
+            dom.show(title, describe, message);
         });
     }
 
