@@ -15,8 +15,10 @@ const _lineEnd = 1000000;
 
 class CameraController2D extends CameraControllerBase {
 
-    init(camera, grid) {
-        super.init(camera, grid);
+    init(camera) {
+        super.init(camera);
+        this._gridMeshComp = utils.createGrid('editor/grid-2d');
+        this._gridNode = this._gridMeshComp.node;
         this._initGrid();
 
         this.panningSpeed = 1.5;
@@ -56,9 +58,9 @@ class CameraController2D extends CameraControllerBase {
     }
 
     set active(value) {
+        this._gridNode.active = value;
         if (value) {
             this._camera.projection = 0;    //0:ortho,1:perspective
-            this._gridNode.setWorldRotationFromEuler(0, 0, 0);
 
             let cameraRot = cc.quat();
             //quat.fromEuler(cameraRot, 0, 0, 0);

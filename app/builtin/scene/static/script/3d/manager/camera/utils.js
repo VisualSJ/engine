@@ -70,7 +70,7 @@ function grid(width, length, segw, segl) {
     let dl = length / segl;
 
     let minPos = cc.v3(-hw, -0.1, -hl);
-    let maxPos = cc.v3( hw,  0.1,  hl);
+    let maxPos = cc.v3(hw,  0.1,  hl);
 
     // here we store directional info of the grid layout inside uvs, not actual uvs
     function addLine(x1, z1, x2, z2) {
@@ -101,7 +101,7 @@ function grid(width, length, segw, segl) {
         uvs,
         indices,
         minPos,
-        maxPos
+        maxPos,
     };
 }
 
@@ -117,14 +117,14 @@ function createStrokeGrid(w, l) {
     let model = node.addComponent(cc.ModelComponent);
     model.mesh = cc.utils.createMesh(grid(w, l, w, l));
     const cb = model.onEnable.bind(model);
-    model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
+    model.onEnable = () => { cb(); model.model.viewID = -1; }; // don't show on preview cameras
     let mtl = new cc.Material();
     mtl.initialize({ effectName: 'editor/grid-stroke' });
     model.material = mtl;
     return model;
 }
 
-function createGrid() {
+function createGrid(effectName) {
     let node = new cc.Node('Editor Grid');
 
     node.layer = cc.Layers.Editor | cc.Layers.IgnoreRaycast;
@@ -132,7 +132,7 @@ function createGrid() {
     node.setWorldPosition(cc.v3(0, 0, 0));
     let model = node.addComponent(cc.ModelComponent);
     const cb = model.onEnable.bind(model);
-    model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
+    model.onEnable = () => { cb(); model.model.viewID = -1; }; // don't show on preview cameras
 
     let positions = [];
     let colors = [];
@@ -165,7 +165,7 @@ function createGrid() {
 
     // for material
     const mtl = new cc.Material();
-    mtl.initialize({ effectName: 'editor/grid'});
+    mtl.initialize({ effectName: effectName});
     let overrides = {};
     overrides.primitive = primitiveMode;
     mtl.overridePipelineStates(overrides);

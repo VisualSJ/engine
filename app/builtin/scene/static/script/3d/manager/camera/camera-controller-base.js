@@ -7,13 +7,13 @@ const CameraMoveMode = utils.CameraMoveMode;
 
 class CameraControllerBase extends EventEmitter {
 
-    init(camera, grid) {
+    init(camera) {
         this._camera = camera;
         this.node = this._camera.node;
         this.camera_move_mode = CameraMoveMode.NONE;
 
-        this._gridMeshComp = grid;
-        this._gridNode = grid.node;
+        this._gridMeshComp = null;
+        this._gridNode = null;
     }
 
     focus(nodes) {}

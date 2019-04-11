@@ -56,8 +56,11 @@ class CameraController3D extends CameraControllerBase {
         this._destEye = cc.v3();
     }
 
-    init(camera, grid) {
-        super.init(camera, grid);
+    init(camera) {
+        super.init(camera);
+        this._gridMeshComp = utils.createGrid('editor/grid');
+        this._gridNode = this._gridMeshComp.node;
+        this._gridNode.setWorldRotationFromEuler(90, 0, 0);
 
         this.reset();
 
@@ -78,8 +81,8 @@ class CameraController3D extends CameraControllerBase {
     }
 
     set active(value) {
+        this._gridNode.active = value;
         if (value) {
-            this._gridNode.setWorldRotationFromEuler(90, 0, 0);
             this._camera.projection = 1;
             this.node.setWorldPosition(this._lastPos);
             this.node.setWorldRotation(this._lastRot);

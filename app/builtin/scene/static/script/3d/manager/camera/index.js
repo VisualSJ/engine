@@ -34,11 +34,9 @@ class Camera extends EventEmitter {
      */
     init() {
         this._camera = utils.createCamera(cc.color(51, 51, 51, 255));
-        // create grid
-        this._grid = utils.createGrid();
 
-        this._controller2D.init(this._camera, this._grid);
-        this._controller3D.init(this._camera, this._grid);
+        this._controller2D.init(this._camera);
+        this._controller3D.init(this._camera);
 
         listener.bind(this);
     }
