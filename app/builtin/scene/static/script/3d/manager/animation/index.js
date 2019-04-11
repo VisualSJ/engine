@@ -14,17 +14,40 @@ const operationManager = require('../operation');
 class AniamtionManager extends EventEmitter {
     constructor() {
         super();
+        this._curEditClipName = 't';
 
         // for test
         operationManager.on('keydown', (event) => {
+            let nodeUuid = 'b3rzbP+FtLAqgB3oxdyxnr';
+            let clipUuid = '6b699f29-595b-4412-b952-78b15b3ba92d';
             switch (event.key.toLowerCase()) {
                 case 'z':
-                    this.record('b3rzbP+FtLAqgB3oxdyxnr');
+                    this.record(nodeUuid);
                     console.log('record begin');
                     break;
                 case 'x':
-                    let dumpClip = this.queryClip('t');
+                    let xDumpClip = this.queryClip(nodeUuid, clipUuid);
+                    console.log(xDumpClip);
+                    break;
+                case 'a':
+                    let dumpClip = this.queryClip(nodeUuid, clipUuid);
                     console.log(dumpClip);
+                    let uuid = Scene.AnimationMode.root;
+                    let animPropList = this.queryProperties(uuid);
+                    console.log(animPropList);
+                    let keyProp = animPropList[0];
+                    this.operation('createProp', 't', '/', keyProp.prop, null);
+                    this.operation('createKey', 't', '/', keyProp.prop, null);
+                    break;
+                case 'b':
+                    let buuid = Scene.AnimationMode.root;
+                    let banimPropList = this.queryProperties(buuid);
+                    console.log(banimPropList);
+                    let bkeyProp = banimPropList[0];
+                    this.operation('createKey', 't', '/', bkeyProp.prop, null);
+                    break;
+                case 's':
+                    this.save();
                     break;
             }
 
@@ -42,6 +65,12 @@ class AniamtionManager extends EventEmitter {
         } else if (Scene.modes.minor === Scene.AnimationMode) {
             Scene._popMode();
         }
+    }
+
+    async save() {
+        let state = this.queryRecordAnimState(this._curEditClipName);
+        let clip = state.clip;
+        await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
     }
 
     /**
@@ -63,18 +92,14 @@ class AniamtionManager extends EventEmitter {
      */
     queryRecordAnimComp() {
         const uuid = Scene.AnimationMode.root;
-        const node = Node.query(uuid);
+        const animData = utils.queryNodeAnimationData(uuid, clip);
+        return animData.animComp;
+    }
 
-        if (!node) {
-            return null;
-        }
-
-        const component = node.getComponent(cc.AnimationComponent);
-        if (!component) {
-            console.warn(`节点(${node.uuid})上不存在动画组件`);
-        }
-
-        return component;
+    queryRecordAnimState(clip) {
+        const uuid = Scene.AnimationMode.root;
+        const animData = utils.queryNodeAnimationData(uuid, clip);
+        return animData.animState;
     }
 
     /**
@@ -83,7 +108,7 @@ class AniamtionManager extends EventEmitter {
     queryRecordAnimClips() {
         const component = this.queryRecordAnimComp();
         if (!component) {
-            return;
+            return null;
         }
 
         let clips = component.getClips();
@@ -96,14 +121,9 @@ class AniamtionManager extends EventEmitter {
      * @param {String} clip 需要播放的动画的名字
      */
     play(clip) {
-        const component = this.queryRecordAnimComp();
-        if (!component) {
-            return;
-        }
-
-        const state = component.getAnimationState(clip);
+        const state = this.queryRecordAnimState(clip);
         if (!state) {
-            return console.warn(`节点(${component.node.uuid})不存在动画(${clip})`);
+            return;
         }
 
         state.setTime(0);
@@ -149,17 +169,27 @@ class AniamtionManager extends EventEmitter {
 
     /**
      * 查询一个动画的 dump 数据
-     * @param {String} clip 正在编辑的动画上的某个 clip 的名字
+     * @param {String} nodeUuid 节点的uuid
+     * @param {String} clipUuid clip的uuid
      */
-    queryClip(clip) {
-        const component = this.queryRecordAnimComp();
-        if (!component) {
-            return;
+    queryClip(nodeUuid, clipUuid) {
+        const animData = utils.queryNodeAnimationData(nodeUuid);
+        const animComp = animData.animComp;
+        if (!animComp) {
+            return null;
         }
 
-        const state = component.getAnimationState(clip);
+        let clips = animComp.getClips();
+
+        let state = null;
+        for (let i = 0; i < clips.length; i++) {
+            if (clips[i] && clips[i]._uuid === clipUuid) {
+                state = animComp.getAnimationState(clips[i].name);
+            }
+        }
+
         if (!state) {
-            return console.warn(`找不到指定动画，无法查询动画信息\n  node: ${component.node.uuid}\n  clip: ${clip}`);
+            return null;
         }
 
         const dump = utils.encodeClip(state);
