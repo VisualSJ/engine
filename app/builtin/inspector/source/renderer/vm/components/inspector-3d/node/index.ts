@@ -102,7 +102,7 @@ export const methods = {
             const button = paths.pop();
             let data: any = menu;
             paths.forEach((path: any) => {
-                if (!(path in menu)) {
+                if (!(path in data)) {
                     data[path] = {};
                 }
                 data = data[path];
