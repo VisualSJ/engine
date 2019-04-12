@@ -42,9 +42,9 @@ class AnimationMode extends Mode {
         // 发送 emit 事件
         this.manager.emit('animation-end');
 
-        // 广播场景打开消息
+        // 广播场景关闭消息
         Manager.Ipc.forceSend('broadcast', 'scene:animation-end');
-        
+
         return true;
     }
 

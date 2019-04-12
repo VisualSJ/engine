@@ -90,7 +90,7 @@ class AnimationUtil {
      * @param {*} clip 动画 clip 对象
      * @param {*} path 数据的搜索路径
      */
-    getNodeDataFromClip(clip, path) {
+    getCurveDataFromClip(clip, path) {
         if (path === '/') {
             return clip.curveData || null;
         } else {
@@ -103,23 +103,23 @@ class AnimationUtil {
     }
 
     /**
-     * 从一个 node 数据，拿出对应的 comp 和 prop 数据
-     * @param {*} nodeData
-     * @param {*} prop
+     * 从一个 curveData 数据，拿出对应的 comp 和 prop 数据
+     * @param {*} curveData
      * @param {*} comp
+     * @param {*} prop
      */
-    getPropertyDataFrom(nodeData, prop, comp) {
+    getPropertyDataFrom(curveData, comp, prop) {
         if (comp) {
-            if (!nodeData.comps || !nodeData.comps[comp] || !nodeData.comps[comp][prop]) {
+            if (!curveData.comps || !curveData.comps[comp] || !curveData.comps[comp][prop]) {
                 return null;
             }
 
-            return nodeData.comps[comp][prop];
+            return curveData.comps[comp][prop];
         } else {
-            if (!nodeData.props || !nodeData.props[prop]) {
+            if (!curveData.props || !curveData.props[prop]) {
                 return null;
             }
-            return nodeData.props[prop];
+            return curveData.props[prop];
         }
     }
 
@@ -259,6 +259,55 @@ class AnimationUtil {
         animData.animState = state;
 
         return animData;
+    }
+
+    /**
+     * 根据一个 path，查询对应的 curve 数据
+     * @param {object} clip clip 数据
+     * @param {string} path 带有 root 的路径信息，如：'/root/l1/l2'
+     */
+    queryCurveData(clip, path) {
+        clip = clip || {};
+
+        let data = clip.curveData || {};
+        // 去除 '/root/'
+        path = path.replace(/^\/[^\/]+\/?/, '');
+
+        let comps;
+        let props;
+
+        if (path) {
+            let paths = data.paths || {};
+            data = paths[path] || {};
+        }
+
+        comps = data.comps || {};
+        props = data.props || {};
+
+        return {
+            comps: comps,
+            props: props,
+        };
+    }
+
+    /**
+     * 查询 clip 内属性轨道的数据
+     * 返回的是一个关键帧数组
+     * @param {object} clip clip 数据
+     * @param {string} path 带有 root 的路径信息，如：'/root/l1/l2'
+     * @param {string} component 组件的名字
+     * @param {string} property 属性的名字
+     */
+    queryPropertyKeys(clip, path, component, property) {
+        clip = clip || {};
+        let data = this.queryCurveData(clip, path);
+        if (component) {
+            data = data.comps[component] || {};
+        } else {
+            data = data.props;
+        }
+
+        return data[property] || [];
     }
 }
 

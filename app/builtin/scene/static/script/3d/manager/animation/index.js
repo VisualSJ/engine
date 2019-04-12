@@ -17,41 +17,42 @@ class AniamtionManager extends EventEmitter {
         this._curEditClipName = 't';
 
         // for test
-        operationManager.on('keydown', (event) => {
-            let nodeUuid = 'b3rzbP+FtLAqgB3oxdyxnr';
-            let clipUuid = '6b699f29-595b-4412-b952-78b15b3ba92d';
-            switch (event.key.toLowerCase()) {
-                case 'z':
-                    this.record(nodeUuid);
-                    console.log('record begin');
-                    break;
-                case 'x':
-                    let xDumpClip = this.queryClip(nodeUuid, clipUuid);
-                    console.log(xDumpClip);
-                    break;
-                case 'a':
-                    let dumpClip = this.queryClip(nodeUuid, clipUuid);
-                    console.log(dumpClip);
-                    let uuid = Scene.AnimationMode.root;
-                    let animPropList = this.queryProperties(uuid);
-                    console.log(animPropList);
-                    let keyProp = animPropList[0];
-                    this.operation('createProp', 't', '/', keyProp.prop, null);
-                    this.operation('createKey', 't', '/', keyProp.prop, null);
-                    break;
-                case 'b':
-                    let buuid = Scene.AnimationMode.root;
-                    let banimPropList = this.queryProperties(buuid);
-                    console.log(banimPropList);
-                    let bkeyProp = banimPropList[0];
-                    this.operation('createKey', 't', '/', bkeyProp.prop, null);
-                    break;
-                case 's':
-                    this.save();
-                    break;
-            }
+        // operationManager.on('keydown', (event) => {
+        //     let nodeUuid = 'b3rzbP+FtLAqgB3oxdyxnr';
+        //     let clipUuid = '6b699f29-595b-4412-b952-78b15b3ba92d';
+        //     switch (event.key.toLowerCase()) {
+        //         case 'z':
+        //             this.record(nodeUuid);
+        //             console.log('record begin');
+        //             break;
+        //         case 'x':
+        //             let xDumpClip = this.queryClip(nodeUuid, clipUuid);
+        //             console.log(xDumpClip);
+        //             break;
+        //         case 'a':
+        //             let dumpClip = this.queryClip(nodeUuid, clipUuid);
+        //             console.log(dumpClip);
+        //             let uuid = Scene.AnimationMode.root;
+        //             let animPropList = this.queryProperties(uuid);
+        //             console.log(animPropList);
+        //             let keyProp = animPropList[0];
+        //             this.operation('createProp', 't', '/', null, keyProp.prop);
+        //             this.operation('createKey', 't', '/', null, keyProp.prop, 10);
+        //             break;
+        //         case 'b':
+        //             let buuid = Scene.AnimationMode.root;
+        //             let banimPropList = this.queryProperties(buuid);
+        //             console.log(banimPropList);
+        //             let bkeyProp = banimPropList[0];
+        //             this.operation('createKey', 't', '/', null, bkeyProp.prop);
+        //             break;
+        //         case 'v':
+        //             //this.save();
+        //             console.log(this.queryAnimClipsInfo(nodeUuid));
+        //             break;
+        //     }
 
-        });
+        // });
         // test end
     }
 
@@ -103,17 +104,26 @@ class AniamtionManager extends EventEmitter {
     }
 
     /**
-     * 查询当前正在编辑动画节点的所有clip
+     * 查询节点的所有clip信息
      */
-    queryRecordAnimClips() {
-        const component = this.queryRecordAnimComp();
+    queryAnimClipsInfo(nodeUuid) {
+        const animData = utils.queryNodeAnimationData(nodeUuid);
+        const component = animData.animComp;
         if (!component) {
             return null;
         }
 
         let clips = component.getClips();
+        let clipsInfo = {};
 
-        return clips;
+        clips.forEach((clip) => {
+            if (clip) {
+                clipsInfo.name = clip.name;
+                clipsInfo.uuid = clip._uuid;
+            }
+        });
+
+        return clipsInfo;
     }
 
     /**
@@ -185,6 +195,7 @@ class AniamtionManager extends EventEmitter {
         for (let i = 0; i < clips.length; i++) {
             if (clips[i] && clips[i]._uuid === clipUuid) {
                 state = animComp.getAnimationState(clips[i].name);
+                break;
             }
         }
 
@@ -253,6 +264,8 @@ class AniamtionManager extends EventEmitter {
             return false;
         }
         operation[func](Scene.AnimationMode.root, ...args);
+
+        Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root);
     }
 }
 

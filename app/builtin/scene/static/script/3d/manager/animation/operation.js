@@ -106,23 +106,23 @@ exports.clearNode = function(uuid, clip, path) {
  * @param {String} uuid 动画节点的 uuid
  * @param {String} clip 被修改的动画的名字
  * @param {Strig} path 新增的节点数据路径
- * @param {String} prop 新增的属性的名字
  * @param {String} comp 新增的属性属于哪个组件，如果是 node 属性，则传 null
+ * @param {String} prop 新增的属性的名字
  */
-exports.createProp = function(uuid, clip, path, prop, comp) {
+exports.createProp = function(uuid, clip, path, comp, prop) {
     const animData = utils.queryNodeAnimationData(uuid, clip);
     let state = animData.animState;
     if (!state) {
         return;
     }
 
-    let data = utils.getNodeDataFromClip(state._clip, path);
+    let data = utils.getCurveDataFromClip(state._clip, path);
 
     if (!data) {
         return;
     }
 
-    let propData = utils.getPropertyDataFrom(data, prop, comp);
+    let propData = utils.getPropertyDataFrom(data, comp, prop);
     if (!propData) {
         if (comp) {
             let comps = data.comps = data.comps || {};
@@ -141,23 +141,23 @@ exports.createProp = function(uuid, clip, path, prop, comp) {
  * @param {String} uuid 动画节点的 uuid
  * @param {String} clip 被修改的动画的名字
  * @param {Strig} path 节点数据路径
- * @param {String} prop 属性的名字
  * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
+ * @param {String} prop 属性的名字
  */
-exports.removeProp = function(uuid, clip, path, prop, comp) {
+exports.removeProp = function(uuid, clip, path, comp, prop) {
     const animData = utils.queryNodeAnimationData(uuid, clip);
     let state = animData.animState;
     if (!state) {
         return;
     }
 
-    let data = utils.getNodeDataFromClip(state._clip, path);
+    let data = utils.getCurveDataFromClip(state._clip, path);
 
     if (!data) {
         return;
     }
 
-    let propData = utils.getPropertyDataFrom(data, prop, comp);
+    let propData = utils.getPropertyDataFrom(data, comp, prop);
 
     if (propData && prop) {
         delete propData[prop];
@@ -171,7 +171,7 @@ exports.removeProp = function(uuid, clip, path, prop, comp) {
 /**
  * 在现有位置创建一个关键帧
  */
-exports.createKey = function(uuid, clip, path, prop, comp) {
+exports.createKey = function(uuid, clip, path, comp, prop, frame = 0) {
     const animData = utils.queryNodeAnimationData(uuid, clip);
     let state = animData.animState;
     if (!state) {
@@ -181,7 +181,7 @@ exports.createKey = function(uuid, clip, path, prop, comp) {
     const node = animData.node;
 
     // 获取指定的节点的数据
-    let data = utils.getNodeDataFromClip(state._clip, path);
+    let data = utils.getCurveDataFromClip(state._clip, path);
 
     let ctor = cc.Node;
     let target = node;
@@ -202,7 +202,7 @@ exports.createKey = function(uuid, clip, path, prop, comp) {
     //const dump = dumpEncode.encodeObject(target[prop], ctor);
     let value = target[prop];
     const key = {
-        frame: Math.round(state.time * state._clip.sample) / state._clip.sample,
+        frame: frame / state._clip.sample,
         value: value,
         curve: null,
     };
@@ -218,19 +218,22 @@ exports.createKey = function(uuid, clip, path, prop, comp) {
 /**
  * 移动关键帧
  */
-exports.moveKeys = function(uuid, clip, path, prop, comp, frames, offset) {
+exports.moveKeys = function(uuid, clip, path, comp, prop, frames, offset) {
     // TODO
 };
 
 /**
  * 删除关键帧
  */
-exports.removeKey = function(uuid, clip, path, prop, comp, frame) {
+exports.removeKey = function(uuid, clip, path, comp, prop, frame) {
     const animData = utils.queryNodeAnimationData(uuid, clip);
     let state = animData.animState;
     if (!state) {
         return;
     }
+
+    let sample = state._clip.sample;
+
 
     // TODO
 };
