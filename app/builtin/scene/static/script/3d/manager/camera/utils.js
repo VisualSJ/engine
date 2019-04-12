@@ -157,9 +157,9 @@ function createGrid(effectName) {
     let mesh = cc.utils.createMesh({positions, indices, colors, primitiveMode, attributes});
 
     const submesh = mesh.renderingMesh.getSubmesh(0);
-    const vbInfo = mesh.struct.vertexBundles[0].data;
+    const vbInfo = mesh.struct.vertexBundles[0].view;
     submesh.vbuffer = mesh.data.buffer.slice(vbInfo.offset, vbInfo.offset + vbInfo.length);
-    const ibInfo = mesh.struct.primitives[0].indices.range;
+    const ibInfo = mesh.struct.primitives[0].indexView;
     submesh.ibuffer = mesh.data.buffer.slice(ibInfo.offset, ibInfo.offset + ibInfo.length);
     model.mesh = mesh;
 

@@ -63,7 +63,7 @@ class Engine3D extends EngineInterface {
         const info = submesh.geometricInfo;
         if (info) { info.doubleSided = primitive.doubleSided; }
         // cache vb buffer for vb update
-        const vbInfo = mesh.struct.vertexBundles[0].data;
+        const vbInfo = mesh.struct.vertexBundles[0].view;
         submesh.vbuffer = mesh.data.buffer.slice(vbInfo.offset, vbInfo.offset + vbInfo.length);
         return mesh;
     }

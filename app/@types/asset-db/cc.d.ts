@@ -136,9 +136,11 @@ declare namespace cc {
         name: string;
     }
 
-    export interface IBufferRange {
+    export interface IBufferView {
         offset: number;
         length: number;
+        count: number;
+        stride: number;
     }
     
     export const enum AttributeBaseType {
@@ -200,35 +202,13 @@ declare namespace cc {
         VEC4,
     }
     
-    export const enum IndexUnit {
-        /**
-         * 8 bits unsigned integer.
-         */
-        UINT8,
-    
-        /**
-         * 8 bits unsigned integer.
-         */
-        UINT16,
-    
-        /**
-         * 8 bits unsigned integer.
-         */
-        UINT32,
-    }
-    
     export interface IVertexBundle {
         /**
-         * The data range of this bundle.
+         * The data view of this bundle.
          * This range of data is essentially mapped to a GPU vertex buffer.
          */
-        data: IBufferRange;
-    
-        /**
-         * This bundle's vertices count.
-         */
-        verticesCount: number;
-    
+        view: IBufferView;
+
         /**
          * Attributes.
          */
@@ -244,31 +224,20 @@ declare namespace cc {
          * The vertex bundles that this primitive use.
          */
         vertexBundelIndices: number[];
-    
+
         /**
          * This primitive's topology.
          */
-        // @ts-ignore
         primitiveMode: GFXPrimitiveMode;
-    
-        indices?: {
-            /**
-             * The indices data range of this primitive.
-             */
-            range: IBufferRange;
-    
-            /**
-             * The type of this primitive's indices.
-             */
-            indexUnit: IndexUnit;
-        };
-    
+
+        indexView?: IBufferView;
+
         /**
          * Geometric info for raycast purposes.
          */
         geometricInfo?: {
             doubleSided?: boolean;
-            range: IBufferRange;
+            view: IBufferView;
         };
     }
     

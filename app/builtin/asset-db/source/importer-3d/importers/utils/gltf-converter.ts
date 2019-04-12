@@ -267,7 +267,8 @@ export class GltfConverter {
         const maxPosition = new cc.Vec3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
         const primitives = gltfMesh.primitives.map((gltfPrimitive, primitiveIndex): cc.IPrimitive => {
             const { vertexBuffer,
-                verticesCount,
+                vertexCount,
+                vertexStride,
                 formats,
                 posBuffer,
                 posBufferAlign,
@@ -275,11 +276,12 @@ export class GltfConverter {
 
             bufferBlob.setNextAlignment(0);
             vertexBundles.push({
-                data: {
+                view: {
                     offset: bufferBlob.getLength(),
                     length: vertexBuffer.byteLength,
+                    count: vertexCount,
+                    stride: vertexStride,
                 },
-                verticesCount,
                 attributes: formats,
             });
             bufferBlob.addBuffer(vertexBuffer);
@@ -294,7 +296,12 @@ export class GltfConverter {
             if (primitive.primitiveMode >= cc.GFXPrimitiveMode.TRIANGLE_LIST) {
                 bufferBlob.setNextAlignment(posBufferAlign);
                 primitive.geometricInfo = {
-                    range: { offset: bufferBlob.getLength(), length: posBuffer.byteLength },
+                    view: {
+                        offset: bufferBlob.getLength(),
+                        length: posBuffer.byteLength,
+                        count: posBuffer.byteLength / posBufferAlign,
+                        stride: posBufferAlign,
+                    },
                 };
                 bufferBlob.addBuffer(posBuffer);
             }
@@ -305,12 +312,11 @@ export class GltfConverter {
                 const indicesData = new ArrayBuffer(indexStride * indicesAccessor.count);
                 this._readAccessor(indicesAccessor, new DataView(indicesData));
                 bufferBlob.setNextAlignment(indexStride);
-                primitive.indices = {
-                    indexUnit: this._getIndexUnit(indicesAccessor.componentType),
-                    range: {
-                        offset: bufferBlob.getLength(),
-                        length: indicesData.byteLength,
-                    },
+                primitive.indexView = {
+                    offset: bufferBlob.getLength(),
+                    length: indicesData.byteLength,
+                    count: indicesAccessor.count,
+                    stride: this._getIndexStride(indicesAccessor.componentType),
                 };
                 bufferBlob.addBuffer(indicesData);
             }
@@ -733,7 +739,7 @@ export class GltfConverter {
         const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
 
         // 统计出所有需要导出的属性，并计算它们在顶点缓冲区中的偏移以及整个顶点缓冲区的容量。
-        let vertexBufferStride = 0;
+        let vertexStride = 0;
         let vertexCount = 0;
         let recalcNormal = options.normals === NormalImportSetting.recalculate || options.normals === NormalImportSetting.require;
         let recalcTangent = options.tangents === TangentImportSetting.recalculate || options.tangents === TangentImportSetting.require;
@@ -759,7 +765,7 @@ export class GltfConverter {
             }
             const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
             const attributeByteLength = this._getBytesPerAttribute(attributeAccessor);
-            vertexBufferStride += attributeByteLength;
+            vertexStride += attributeByteLength;
             // Validator: MESH_PRIMITIVE_UNEQUAL_ACCESSOR_COUNT
             vertexCount = attributeAccessor.count;
             exportingAttributes.push({
@@ -770,18 +776,18 @@ export class GltfConverter {
 
         let normalOffset = -1;
         if (recalcNormal) {
-            normalOffset = vertexBufferStride;
-            vertexBufferStride += 4 * 3;
+            normalOffset = vertexStride;
+            vertexStride += 4 * 3;
         }
 
         let tangentOffset = -1;
         if (recalcTangent) {
-            tangentOffset = vertexBufferStride;
-            vertexBufferStride += 4 * 4;
+            tangentOffset = vertexStride;
+            vertexStride += 4 * 4;
         }
 
         // 创建顶点缓冲区。
-        const vertexBuffer = new ArrayBuffer(vertexBufferStride * vertexCount);
+        const vertexBuffer = new ArrayBuffer(vertexStride * vertexCount);
 
         // 写入属性。
         let currentByteOffset = 0;
@@ -792,7 +798,7 @@ export class GltfConverter {
             const attributeName = exportingAttribute.name;
             const attributeAccessor = this._gltf.accessors![gltfPrimitive.attributes[attributeName]];
             const dataView = new DataView(vertexBuffer, currentByteOffset);
-            this._readAccessor(attributeAccessor, dataView, vertexBufferStride);
+            this._readAccessor(attributeAccessor, dataView, vertexStride);
             currentByteOffset += exportingAttribute.byteLength;
 
             if (attributeName === GltfSemanticName.POSITION) {
@@ -846,7 +852,7 @@ export class GltfConverter {
             for (let iVertex = 0; iVertex < vertexCount; ++iVertex) {
                 for (let i = 0; i < nComponent; ++i) {
                     const v = data[iVertex * nComponent + i];
-                    dataView.setFloat32(iVertex * vertexBufferStride + i * 4, v, DataViewUseLittleEndian);
+                    dataView.setFloat32(iVertex * vertexStride + i * 4, v, DataViewUseLittleEndian);
                 }
             }
             formats.push({
@@ -894,7 +900,8 @@ export class GltfConverter {
 
         return {
             vertexBuffer,
-            verticesCount: vertexCount,
+            vertexCount,
+            vertexStride,
             formats,
             posBuffer,
             posBufferAlign,
@@ -1288,11 +1295,11 @@ export class GltfConverter {
         }
     }
 
-    private _getIndexUnit(componentType: number) {
+    private _getIndexStride(componentType: number) {
         switch (componentType) {
-            case GltfAccessorComponentType.UNSIGNED_BYTE: return cc.IndexUnit.UINT8;
-            case GltfAccessorComponentType.UNSIGNED_SHORT: return cc.IndexUnit.UINT16;
-            case GltfAccessorComponentType.UNSIGNED_INT: return cc.IndexUnit.UINT32;
+            case GltfAccessorComponentType.UNSIGNED_BYTE: return 1;
+            case GltfAccessorComponentType.UNSIGNED_SHORT: return 2;
+            case GltfAccessorComponentType.UNSIGNED_INT: return 4;
             default:
                 throw new Error(`Unrecognized index type: ${componentType}`);
         }
