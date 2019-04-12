@@ -385,7 +385,11 @@ class Builder {
         };
         if (options.eruda) {
             data.webDebuggerSrc = './eruda.min.js';
-            copySync(this._paths.webDebuggerSrc, join(this._paths.dest, data.webDebuggerSrc));
+            try {
+                copySync(this._paths.webDebuggerSrc.replace('app.asar', 'app.asar.unpacked'), join(this._paths.dest, data.webDebuggerSrc));
+            } catch(error) {
+                console.warn('Can\'t copy eruda.');
+            }
         }
         // 先判断项目内是否有自定义模板
         let destPath = join(this._paths.project, 'build-templates', options.platform, 'index.html');

@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+
 const { remote } = require('electron');
 const setting = require('@editor/setting');
 
@@ -30,7 +32,11 @@ exports.App = {
         return setting.PATH.HOME;
     },
     get path() {
-        return setting.PATH.APP;
+        // HACK electron 启动后，process.cwd 获取的路径是错误的额
+        // if (setting.PATH.APP === '/') {
+            return path.join(__dirname, '../../');
+        // }
+        // return setting.PATH.APP;
     },
     get project() {
         return setting.PATH.PROJECT;
