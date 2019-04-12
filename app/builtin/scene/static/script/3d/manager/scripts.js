@@ -48,10 +48,13 @@ async function loadScript(uuid) {
         return;
     }
     const asset = await ipc.send('query-asset-info', uuid);
-    const canLoad = await removeScript(asset);
+
+    // 更新已经存在的脚本不需要删除，因为删除之后，会导致序列化错误
+    const canLoad = await removeScript(asset, true);
     if (!canLoad) {
         return;
     }
+
     const name = basename(asset.file, extname(asset.file));
     scriptNames.add(name);
     const {userData} = await ipc.send('query-asset-meta', uuid);
@@ -123,8 +126,9 @@ async function _loadScripts(scripts) {
 /**
  * 根据 asset 移除对应的脚本缓存
  * @param {*} asset
+ * @param {*} keep
  */
-async function removeScript(asset) {
+async function removeScript(asset, keep) {
     const name = basename(asset.file, extname(asset.file));
 
     // 未曾导入过的脚本，需要判断是否有重名
@@ -148,7 +152,7 @@ async function removeScript(asset) {
     // 移除引擎内的索引
     const sid = uuidUtils.compressUuid(asset.uuid);
     const ctor = cc.js._registeredClassIds[sid];
-    if (ctor) {
+    if (ctor && !keep) {
         cc.js.unregisterClass(ctor);
     }
 
