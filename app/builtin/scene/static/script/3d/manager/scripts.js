@@ -13,7 +13,7 @@ const library2raw = {};
 const uuid2raw = {};
 const scriptNames = new Set(); // 存储现有脚本名称
 
-function _loadScriptInEngin(uuid) {
+function _loadScriptInEngine(uuid) {
     const sid = uuidUtils.compressUuid(uuid);
     const ctor = cc.js._registeredClassIds[sid];
     if (ctor) {
@@ -63,8 +63,14 @@ async function loadScript(uuid) {
     library2raw[asset.library['.js']] =  asset.file;
     uuid2raw[uuid] = asset.file
 
-    require(asset.file);
-    _loadScriptInEngin(uuid);
+    require(asset.library['.js']);
+    console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
+
+    const url = userData.moduleId;
+    console.log(`Load script ${url}`);
+    await System.import(url);
+
+    _loadScriptInEngine(uuid);
 
     reload();
 }

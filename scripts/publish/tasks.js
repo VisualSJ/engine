@@ -61,11 +61,14 @@ exports.copyMacElectron = function() {
     // 从 node_modules 里面将 electron 复制出来
     this.log('复制 Electron 代码');
 
+    const ePkg = require('../../package.json');
+
     let source = process.platform === 'win32' ?
-        ps.join(__dirname, `../../.electron/${pkg.dependencies.electron}/dist`) :
-        ps.join(__dirname, `../../electron/${pkg.dependencies.electron}/dist/Electron.app`);
+        ps.join(__dirname, `../../.electron/${ePkg.dependencies.electron}/dist`) :
+        ps.join(__dirname, `../../.electron/${ePkg.dependencies.electron}/Electron.app`);
 
     if (!fse.existsSync(source)) {
+        console.log('使用官方 electron')
         source = process.platform === 'win32' ?
             ps.join(__dirname, `../../node_modules/electron/dist`) :
             ps.join(__dirname, `../../node_modules/electron/dist/Electron.app`);
