@@ -25,7 +25,9 @@ module.exports = function(enginePath) {
                 }
 
                 try {
-                    Del.sync(pattern);
+                    Del.sync(pattern, {
+                        force: true, // 如果不加，不能删除 cwd 目录以外的文件目录
+                    });
                 } catch (err) {
                     if (isInEditor) {
                         console.error(err);

@@ -225,10 +225,12 @@ depend.add('worker-engine', {
 depend.add('builtin-db-startup', {
     depends: ['engine-info', 'worker-init'],
     async handle() {
+        let internal = join(__dirname, '../../../static/internal/assets');
+        internal = internal.replace('app.asar', 'app.asar.unpacked');
         // @ts-ignore
         await startDatabase({
             name: 'internal',
-            target: join(__dirname, '../../../static/internal/assets'),
+            target: internal,
             readOnly: !Editor.dev,
         });
         // @ts-ignore

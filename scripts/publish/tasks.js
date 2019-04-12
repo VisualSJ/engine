@@ -168,6 +168,11 @@ exports.asar = async function() {
         'node_modules/node',
         'node_modules/typescript',
         'node_modules/eruda',
+
+        // 如果不放到 unpacked，会导致 asar 内只能查询到文件夹
+        // 其他资源都会丢失
+        // 问题版本: electron@3.0.13
+        'builtin/asset-db/static/internal',
     ];
 
     // npm install cocos-creator/creator-asar -g
