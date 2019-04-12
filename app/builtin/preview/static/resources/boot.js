@@ -161,12 +161,12 @@
         rotateBtn.addEventListener('click', function() {
             rotated = !rotated;
             toggleElementClass(rotateBtn, 'checked');
-            updateResolution();
+            cc.view._adjustSizeKeepCanvasSize();
             socket.emit('changeOption', 'rotate', rotated);
         });
 
         select.addEventListener('change', function(event) {
-            updateResolution();
+            cc.view._adjustSizeKeepCanvasSize();
             socket.emit('changeOption', 'device', event.target.value);
         });
 
@@ -224,14 +224,6 @@
         stepBtn.addEventListener('click', function() {
             cc.game.step();
         });
-    }
-
-    /**
-     * 更新屏幕分辨率
-     */
-    function updateResolution() {
-        const { width, height } = getEmulatedScreenSize();
-        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.FIXED_HEIGHT);
     }
 
     /**
@@ -305,7 +297,6 @@
         });
         window.__modular.run();
 
-        cc.view.enableRetina(true);
         cc.debug.setDisplayStats(true);
 
         cc.game.canvas.style.imageRendering = 'pixelated';
@@ -318,6 +309,13 @@
             checkEmptyScene();
             inited = true;
         });
+
+        cc.view.enableRetina(true);
+        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
+        cc.view.resizeWithBrowserSize(true);
+        cc.view.enableAutoFullScreen(false);
+        const { width, height } = getEmulatedScreenSize();
+        cc.view.setDesignResolutionSize(width, height, cc.ResolutionPolicy.FIXED_HEIGHT);
 
         cc.game.pause();
 
@@ -346,12 +344,6 @@
         });
         const fps = inputSetFPS.value || 60;
         cc.game.setFrameRate(fps);
-
-        cc.view.enableRetina(true);
-        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
-        cc.view.resizeWithBrowserSize(true);
-        cc.view.enableAutoFullScreen(false);
-        updateResolution();
     }
 
     // 入口函数

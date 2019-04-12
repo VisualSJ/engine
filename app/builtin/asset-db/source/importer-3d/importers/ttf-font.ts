@@ -15,8 +15,10 @@ export default class TTFFontImporter extends Importer {
         return 'ttf-font';
     }
 
+    // 编辑器属性上定义的如果是资源的基类类型，此处也需要定义基类类型
+    // 不会影响实际资源类型
     get assetType() {
-        return 'cc.TTFFont';
+        return 'cc.Font';
     }
 
     /**

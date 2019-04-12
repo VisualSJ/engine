@@ -38,8 +38,10 @@ export default class BitmapImporter extends Importer {
         return 'bitmap-font';
     }
 
+    // 编辑器属性上定义的如果是资源的基类类型，此处也需要定义基类类型
+    // 不会影响实际资源类型
     get assetType() {
-        return 'cc.BitmapFont';
+        return 'cc.Font';
     }
 
     /**
