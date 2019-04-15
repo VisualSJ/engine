@@ -395,6 +395,15 @@ export class GltfConverter {
         const gltfAnimation = this._gltf.animations![iGltfAnimation];
 
         const rootCurveData: cc.ICurveData = { paths: {} };
+        const getCurveData = (node: number) => {
+            const path = this._getNodePath(node);
+            let curveData = path.length === 0 ? rootCurveData : rootCurveData.paths![path];
+            if (curveData === undefined) {
+                curveData = {} as cc.ICurveData;
+                rootCurveData.paths![path] = curveData;
+            }
+            return curveData;
+        };
         let duration = 0;
         gltfAnimation.channels.forEach((gltfChannel) => {
             const targetNode = gltfChannel.target.node;
@@ -403,16 +412,48 @@ export class GltfConverter {
                 return;
             }
 
-            const path = this._getNodePath(targetNode);
-            let curveData = path.length === 0 ? rootCurveData : rootCurveData.paths![path];
-            if (curveData === undefined) {
-                curveData = {} as cc.ICurveData;
-                rootCurveData.paths![path] = curveData;
-            }
+            const curveData = getCurveData(targetNode);
 
             const channelDuration = this._gltfChannelToCurveData(gltfAnimation, gltfChannel, curveData);
             duration = Math.max(channelDuration, duration);
         });
+
+        if (this._gltf.nodes) {
+            this._gltf.nodes.forEach((node, nodeIndex) => {
+                const curveData = getCurveData(nodeIndex);
+                curveData.props = curveData.props || {};
+                if (!Reflect.has(curveData.props, 'position')) {
+                    const v = new cc.Vec3();
+                    if (node.translation) {
+                        cc.vmath.vec3.set(v, node.translation[0], node.translation[1], node.translation[2]);
+                    }
+                    curveData.props.position = {
+                        blending: 'additive3D',
+                        keyframes: [{frame: 0, value: v}],
+                    };
+                }
+                if (!Reflect.has(curveData.props, 'scale')) {
+                    const v = new cc.Vec3();
+                    if (node.scale) {
+                        cc.vmath.vec3.set(v, node.scale[0], node.scale[1], node.scale[2]);
+                    }
+                    curveData.props.scale = {
+                        blending: 'additive3D',
+                        keyframes: [{frame: 0, value: v}],
+                    };
+                }
+                if (!Reflect.has(curveData.props, 'rotation')) {
+                    const v = new cc.Quat();
+                    if (node.rotation) {
+                        cc.vmath.quat.set(v, node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3]);
+                    }
+                    curveData.props.rotation = {
+                        blending: 'additiveQuat',
+                        keyframes: [{frame: 0, value: v}],
+                    };
+                }
+            });
+        }
 
         const animationClip = new cc.AnimationClip();
         animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
@@ -669,16 +710,19 @@ export class GltfConverter {
         }
 
         let values: any[] = [];
+        let blendingFunctionName: 'additive1D' | 'additive3D' | 'additiveQuat' | null = null;
         if (propName === 'position' || propName === 'scale') {
             values = new Array<cc.Vec3>(outputs.length / 3);
             for (let i = 0; i < values.length; ++i) {
                 values[i] = new cc.Vec3(outputs[i * 3 + 0], outputs[i * 3 + 1], outputs[i * 3 + 2]);
             }
+            blendingFunctionName = 'additive3D';
         } else if (propName === 'rotation') {
             values = new Array<cc.Quat>(outputs.length / 4);
             for (let i = 0; i < values.length; ++i) {
                 values[i] = new cc.Quat(outputs[i * 4 + 0], outputs[i * 4 + 1], outputs[i * 4 + 2], outputs[i * 4 + 3]);
             }
+            blendingFunctionName = 'additiveQuat';
         }
 
         const keyframes = new Array<cc.IKeyframe>(inputs.length);
@@ -689,7 +733,7 @@ export class GltfConverter {
             };
         }
         curveData.props = curveData.props || {};
-        curveData.props[propName] = keyframes;
+        curveData.props[propName] = { keyframes, blending: blendingFunctionName };
         return inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? inputAccessor.max[0] : 0;
     }
 

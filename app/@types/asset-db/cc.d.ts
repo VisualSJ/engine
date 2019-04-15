@@ -69,6 +69,7 @@ declare namespace cc {
             z: number;
             w: number;
             constructor(x?: number, y?: number, z?: number, w?: number);
+            static set(out: quat, x: number, y: number, z: number, w: number): quat;
         }
     }
 
@@ -319,13 +320,20 @@ declare namespace cc {
         motionPath?: MotionPath;
     }
 
+    interface IPropertyCurveDataDetail {
+        keyframes: IKeyframe[];
+        blending: 'additive1D' | 'additive3D' | 'additiveQuat' | null;
+    }
+    
+    type PropertyCurveData = IKeyframe[] | IPropertyCurveDataDetail;
+
     export interface ICurveData {
         props?: {
-            [propertyName: string]: IKeyframe[];
+            [propertyName: string]: PropertyCurveData;
         };
         comps?: {
             [componentName: string]: {
-                [propertyName: string]: IKeyframe[];
+                [propertyName: string]: PropertyCurveData;
             };
         };
         paths?: {
