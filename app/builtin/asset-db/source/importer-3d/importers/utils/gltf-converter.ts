@@ -5,7 +5,7 @@ import parseDataUrl from 'parse-data-url';
 import * as path from 'path';
 import { Accessor, Animation, AnimationChannel,
     BufferView, GlTf, Image, Material, Mesh, MeshPrimitive, Node, Scene, Skin, Texture } from '../../../../../../@types/asset-db/glTF';
-import { Filter, TextureBaseAssetUserData, WrapMode, defaultMinFilter, defaultMagFilter } from '../texture-base';
+import { defaultMagFilter, defaultMinFilter, Filter, TextureBaseAssetUserData, WrapMode } from '../texture-base';
 
 // tslint:disable:no-string-literal
 
@@ -781,6 +781,13 @@ export class GltfConverter {
 
     private _readPrimitiveVertices(gltfPrimitive: MeshPrimitive, minPosition: cc.Vec3, maxPosition: cc.Vec3, options: IMeshOptions) {
         const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
+        if (attributeNames.length !== 0 && attributeNames[0] !== GltfSemanticName.POSITION) {
+            const i = attributeNames.findIndex((a) => a === GltfSemanticName.POSITION);
+            if (i >= 0) {
+                attributeNames.splice(i, 1);
+                attributeNames.unshift(GltfSemanticName.POSITION);
+            }
+        }
 
         // 统计出所有需要导出的属性，并计算它们在顶点缓冲区中的偏移以及整个顶点缓冲区的容量。
         let vertexStride = 0;
@@ -1185,19 +1192,31 @@ export class GltfConverter {
             return [];
         }
 
-        const nodeNames = new Array<string>(this._gltf.nodes.length).fill('');
-        for (let iNode = 0; iNode < nodeNames.length; ++iNode) {
-            nodeNames[iNode] = this._getGltfXXName(GltfAssetKind.Node, iNode);
-        }
-
         const parentTable = new Array<number>(this._gltf.nodes.length).fill(-1);
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
             if (gltfNode.children) {
                 gltfNode.children.forEach((iChildNode) => {
                     parentTable[iChildNode] = nodeIndex;
                 });
+                const names = gltfNode.children.map((iChildNode) => {
+                    const childNode = this._gltf.nodes![iChildNode];
+                    let name = childNode.name;
+                    if (typeof name !== 'string' || name.length === 0) {
+                        name =  null;
+                    }
+                    return name;
+                });
+                const uniqueNames = makeUniqueNames(names, uniqueChildNodeNameGenerator);
+                uniqueNames.forEach((uniqueName, iUniqueName) => {
+                    this._gltf.nodes![gltfNode.children![iUniqueName]].name = uniqueName;
+                });
             }
         });
+
+        const nodeNames = new Array<string>(this._gltf.nodes.length).fill('');
+        for (let iNode = 0; iNode < nodeNames.length; ++iNode) {
+            nodeNames[iNode] = this._getGltfXXName(GltfAssetKind.Node, iNode);
+        }
 
         const result = new Array<string>(this._gltf.nodes.length).fill('');
         this._gltf.nodes.forEach((gltfNode, nodeIndex) => {
@@ -1754,3 +1773,30 @@ function createDataViewFromTypedArray(typedArray: ArrayBufferView, offset: numbe
 }
 
 const DataViewUseLittleEndian = true;
+
+type UniqueNameGenerator = (original: string | null, last: string | null, index: number, count: number) => string;
+
+function uniqueChildNodeNameGenerator(original: string | null, last: string | null, index: number, count: number): string {
+    const postfix = count === 0 ? '' : `-${count}`;
+    return `${original || ''}(Creator renamed ${index}${postfix})`;
+}
+
+function makeUniqueNames(names: Array<(string | null)>, generator: UniqueNameGenerator): string[] {
+    const uniqueNames = new Array(names.length).fill('');
+    for (let i = 0; i < names.length; ++i) {
+        let name = names[i];
+        let count = 0;
+        while (true) {
+            const isUnique = () => uniqueNames.every((uniqueName, index) => {
+                return index === i || name !== uniqueName;
+            });
+            if (name === null || !isUnique()) {
+                name = generator(names[i], name, i, count++);
+            } else {
+                uniqueNames[i] = name;
+                break;
+            }
+        }
+    }
+    return uniqueNames;
+}

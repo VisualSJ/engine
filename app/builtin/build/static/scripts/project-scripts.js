@@ -48,6 +48,10 @@ async function loadScripts(scriptAssets) {
             continue;
         }
         const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset.uuid);
+        if (typeof userData.moduleId !== 'string') {
+            console.error(`Script asset ${asset.uuid} doesn't have module Id.`);
+            continue;
+        }
         await System.import(userData.moduleId);
     }
 }
