@@ -28,7 +28,7 @@ const mapCommon = {
                 return thumbnail;
             }
 
-            const src = asset.library[`${asset.fileExt}`];
+            const src = asset.library[`${asset.fileExt === '.tga' ? '.png' : asset.fileExt}`];
             return await setDataURL(src, thumbnail, { x: 0, y: 0 });
         },
     },

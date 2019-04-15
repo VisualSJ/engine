@@ -340,19 +340,16 @@ class AssetBuilder {
             }
             return;
         }
-        let src = assetInfo.library[extName];
+        let src = assetInfo.library[extName === '.tga' ? '.png' : extName];
         // var relativePath = relative(join(this.paths.project, 'asset'), asset.nativeUrl);
         var dest = join(this.paths.res, RAW_ASSET_DEST, asset.nativeUrl);
         ensureDirSync(dirname(dest));
         if (asset instanceof cc.ImageAsset) {
-            const {userData} = await requestToPackage('asset-db', 'query-asset-meta', asset._uuid);
+            const { userData } = await requestToPackage('asset-db', 'query-asset-meta', asset._uuid);
             // 图片资源设置的压缩参数
-            let {platformSettings} = userData;
-            let platform = this.options.platform;
-            // 未设置压缩参数，或者当前构建平台下未设置且没有设置默认转出格式则直接拷贝
-            if (!platformSettings || (!platformSettings[platform] && !platformSettings.default)
-            || (Object.keys(platformSettings.default).length < 1
-            && Object.keys(platformSettings[platform]).length < 1)) {
+            let { platformSettings } = userData;
+            // 未设置压缩参数则直接拷贝
+            if (!platformSettings) {
                 this.copyPaths.push({
                     src,
                     dest,
@@ -362,10 +359,11 @@ class AssetBuilder {
             this.compressImgTask[asset._uuid] = {
                 src: src,
                 dst: dest,
-                platform,
-                compressOption: platformSettings || {},
+                platform: this.options.platform,
+                compressOption: platformSettings,
+                asset: asset
             };
-            return;
+            return true;
         }
         this.copyPaths.push({
             src,
@@ -386,7 +384,7 @@ class AssetBuilder {
             Promise.all(Object.keys(this.compressImgTask).map(async (uuid) => {
                 let options = this.compressImgTask[uuid];
                 let suffix = await promisify(CompressTexture)(options);
-                let asset = buildResult.assetCache[uuid];
+                let asset = options.asset;
                 if (suffix.length > 0) {
                     asset._exportedExts = suffix;
                 }

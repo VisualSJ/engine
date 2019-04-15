@@ -44,7 +44,7 @@ export default class ImageImporter extends Importer {
         let imageData: string | Buffer = asset.source;
         if (extName.toLocaleLowerCase() === '.tga') {
             const converted = await convertTGA(readFileSync(asset.source));
-            if (!converted) {
+            if (converted instanceof Error || !converted) {
                 console.error(`Failed to convert tga image.`);
                 return false;
             }

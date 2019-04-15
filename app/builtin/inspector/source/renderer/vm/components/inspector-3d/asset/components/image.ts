@@ -52,8 +52,18 @@ export const template = `
                     :value="name"
                 >{{formatsInfo[name]}}</option>
                 <option
-                    v-if="tab !== 'default' && tab !== 'android'"
-                    v-for="extname in extOption"
+                    v-if="_supportFormat('pvr', tab)"
+                    v-for="extname in pvrOption"
+                    :value="extname"
+                >{{formatsInfo[extname]}}</option>
+                <option
+                    v-if="_supportFormat('etc1', tab)"
+                    v-for="extname in etc1Option"
+                    :value="extname"
+                >{{formatsInfo[extname]}}</option>
+                <option
+                    v-if="_supportFormat('etc2', tab)"
+                    v-for="extname in etc2Option"
                     :value="extname"
                 >{{formatsInfo[extname]}}</option>
             </ui-select>
@@ -61,13 +71,32 @@ export const template = `
                 v-if="meta && meta.userData && meta.userData.platformSettings"
             >
                 <div class="item"
-                    v-for="(item,key) in meta.userData.platformSettings[tab]"
-                    v-if="item"
+                    v-for="(value,key) in meta.userData.platformSettings[tab]"
                 >
                     <div>{{key}} | Quality</div>
-                    <ui-num-input max="1" min="0" step="0.1" preci="2"
-                        :value="item.quality"
+                    <ui-select
+                        :value="value"
                         @confirm="_onFormatChanged($event, key)"
+                        v-if="_isPVRFormat(key)"
+                    >
+                        <option value="fastest">Fastest</option>
+                        <option value="fast">Fast</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="best">Best</option>
+                    </ui-select>
+                    <ui-select
+                        :value="value"
+                        @confirm="_onFormatChanged($event, key)"
+                        v-if="_isETCFormat(key)"
+                    >
+                        <option value="slow">Slow</option>
+                        <option value="fast">Fast</option>
+                    </ui-select>
+                    <ui-num-input max="100" min="0" step="10" preci="2"
+                        :value="value"
+                        @confirm="_onFormatChanged($event, key)"
+                        v-if="!_isPVRFormat(key) && !_isETCFormat(key)"
                     ></ui-num-input>
                     <ui-button class="iconfont icon-del transparent red"
                         @confirm="_onFormatDeleted(key)"
@@ -121,9 +150,7 @@ export const methods = {
         if (!formatSetting[vm.tab]) {
             vm.$set(vm.meta.userData.platformSettings, vm.tab, {});
         }
-        vm.$set(vm.meta.userData.platformSettings[vm.tab], type, {
-            quality: 0.8,
-        });
+        vm.$set(vm.meta.userData.platformSettings[vm.tab], type, this._defaultQuality(type));
     },
 
     /**
@@ -142,9 +169,40 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
         const value = event.target.value;
-        vm.$set(vm.meta.userData.platformSettings[vm.tab], type, {
-            quality: value,
-        });
+        vm.$set(vm.meta.userData.platformSettings[vm.tab], type, value);
+    },
+
+    /**
+     * 检查对应平台是否支持该格式
+     */
+    _supportFormat(format: string, platform: string) {
+        if (format === 'pvr' && (platform === 'android' || platform === 'default')) {
+            return false;
+        } else if (format === 'etc1' && (platform === 'ios' || platform === 'default')) {
+            return false;
+        } else if (format === 'etc2' && (platform !== 'android' && platform !== 'ios')) {
+            // android 和 ios 才支持 etc2, 目前 web 支持有限，暂不考虑
+            return false;
+        }
+        return true;
+    },
+
+    _isPVRFormat(format: string) {
+        return format.startsWith('pvrtc_');
+    },
+
+    _isETCFormat(format: string) {
+        return format.startsWith('etc1') || format.startsWith('etc2');
+    },
+
+    _defaultQuality(format: string) {
+        if (this._isPVRFormat(format)) {
+            return 'normal';
+        } else if (this._isETCFormat(format)) {
+            return 'fast';
+        }
+
+        return 80;
     },
 };
 
@@ -163,7 +221,9 @@ export function data() {
         tab: 'default',
         platforms: ['android', 'ios', 'wechat', 'html5'],
         defaultOption: ['none', 'png', 'jpg', 'webp'],
-        extOption: ['pvrtc_4bits', 'pvrtc_4bits_rgb', 'pvrtc_2bits', 'pvrtc_2bits_rgb'],
+        pvrOption: ['pvrtc_4bits', 'pvrtc_4bits_rgb', 'pvrtc_2bits', 'pvrtc_2bits_rgb'],
+        etc1Option: ['etc1_rgb'],
+        etc2Option: ['etc2', 'etc2_rgb'],
         formatsInfo: {
             none: 'Select A Format To Add',
             png: 'PNG',
@@ -173,6 +233,9 @@ export function data() {
             pvrtc_4bits_rgb: 'PVRTC 4bits RGB',
             pvrtc_2bits: 'PVRTC 2bits RGBA',
             pvrtc_2bits_rgb: 'PVRTC 2bits RGB',
+            etc1_rgb: 'ETC1 RGB',
+            etc2: 'ETC2 RGBA',
+            etc2_rgb: 'ETC2 RGB',
         },
     };
 }

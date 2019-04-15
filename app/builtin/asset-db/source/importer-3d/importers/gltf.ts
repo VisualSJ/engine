@@ -771,7 +771,7 @@ export class GltfImageImporter extends GltfSubAssetImporter {
             let extName = image.extName;
             if (extName.toLocaleLowerCase() === '.tga') {
                 const converted = await convertTGA(imageData);
-                if (!converted) {
+                if (converted instanceof Error || !converted) {
                     console.error(`Failed to convert tga image.`);
                     return false;
                 }

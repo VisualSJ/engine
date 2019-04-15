@@ -21,12 +21,13 @@ declare module 'equirect-cubemap-faces-js' {
     export default function equirectToCubemapFaces(image: HTMLImageElement): Array<HTMLCanvasElement>;
 }
 
-declare module 'tga' {
+declare module 'tga-js' {
     export default class TGA {
         width: number;
         height: number;
-        pixels: Buffer;
-        constructor(data: Buffer);
+        getImageData(imageData?: ImageData): ImageData | {width: number, height: number, data: Uint8ClampedArray};
+        constructor();
+        load(data: Buffer): null;
     }
 }
 

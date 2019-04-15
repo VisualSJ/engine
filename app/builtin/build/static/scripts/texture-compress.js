@@ -1,9 +1,10 @@
 const Spawn = require('child_process').spawn;
-const {ensureDirSync, copy, writeFile} = require('fs-extra');
+const {ensureDirSync, copy, writeFile, remove} = require('fs-extra');
 const Path = require('path');
 const Async = require('async');
-function spawnTool(tool, opts, cb) {
-    let child = Spawn(tool, opts);
+const Jimp = require('jimp');
+function spawnTool(tool, args, opts, cb) {
+    let child = Spawn(tool, args, opts);
 
     child.stdout.on('data', function(data) {
         console.info(data.toString());
@@ -11,7 +12,7 @@ function spawnTool(tool, opts, cb) {
     child.stderr.on('data', function(data) {
         console.info(data.toString());
     });
-    child.on('close', function() {
+    child.on('exit', function() {
         if (cb) {
             cb(null);
         }
@@ -24,7 +25,7 @@ function spawnTool(tool, opts, cb) {
 }
 
 function changeSuffix(path, suffix) {
-    return Path.join(Path.dirname(path), Path.basenameNoExt(path) + suffix);
+    return Path.join(Path.dirname(path), Path.basename(path, Path.extname(path)) + suffix);
 }
 
 /**
@@ -41,39 +42,50 @@ function changeSuffix(path, suffix) {
 function compress(option, cb) {
     let {src, dst, platform, compressOption} = option;
     if (platform === 'web-mobile' || platform === 'web-desktop') {
-        platform = 'web';
+        platform = 'html5';
     } else if (platform === 'mac' || platform === 'win32') {
         platform = 'native';
+    } else if (platform === 'wechat-game') {
+        platform = 'wechat';
     }
 
     let formats = [];
-
     let platformOption = compressOption[platform];
     if (platformOption && Object.keys(platformOption).length > 0) {
-        formats = platformOption;
+        formats = Object.keys(platformOption);
     } else if (compressOption.default) {
-        formats = compressOption.default;
+        platformOption = compressOption.default;
+        formats = Object.keys(platformOption);
     }
 
     ensureDirSync(Path.dirname(dst));
 
     function getSuffix() {
-        return Object.keys(formats).map((type) => {
-            if (type.indexOf('pvrtc_') === 0) {
-                let formatID = 8; //cc.Texture2D.RGBA_PVRTC_4BPPV1;
-                if (type === 'pvrtc_4bits') {
-                    formatID = 8;
-                } else if (type === 'pvrtc_2bits') {
-                    formatID = 6; //cc.Texture2D.RGBA_PVRTC_2BPPV1;
-                } else if (type === 'pvrtc_4bits_rgb') {
-                    formatID = 7; //cc.Texture2D.RGB_PVRTC_4BPPV1;
-                } else if (type === 'pvrtc_2bits_rgb') {
-                    formatID = 5; //cc.Texture2D.RGB_PVRTC_2BPPV1;
+        let PixelFormat = cc.Texture2D.PixelFormat;
+        return formats.map((type) => {
+            if (type.startsWith('pvrtc_')) {
+                let formatID = PixelFormat.RGBA_PVRTC_4BPPV1;
+                if (type === 'pvrtc_2bits') {
+                    formatID = PixelFormat.RGBA_PVRTC_2BPPV1;
                 }
-
+                else if (type === 'pvrtc_4bits_rgb') {
+                    formatID = PixelFormat.RGB_PVRTC_4BPPV1;
+                }
+                else if (type === 'pvrtc_2bits_rgb') {
+                    formatID = PixelFormat.RGB_PVRTC_2BPPV1;
+                }
+    
                 return `.pvr@${formatID}`;
-            } else if (type.indexOf('etc') === 0) {
-                return '.etc';
+            }
+            else if (type.startsWith('etc')) {
+                let formatID = PixelFormat.RGB_ETC1;
+                if (type === 'etc2') {
+                    formatID = PixelFormat.RGBA_ETC2;
+                }
+                else if (type === 'etc2_rgb') {
+                    formatID = PixelFormat.RGB_ETC2;
+                }
+                return `.pkm@${formatID}`;
             }
             return '.' + type;
         });
@@ -83,7 +95,7 @@ function compress(option, cb) {
         cb(err, getSuffix());
     }
 
-    if (Object.keys(formats).length === 0) {
+    if (formats.length === 0) {
         copy(src, dst, (err) => {
             if (err) {
                 console.error('Failed to copy native asset file %s to %s', src, dst);
@@ -93,18 +105,50 @@ function compress(option, cb) {
         return;
     }
 
-    Async.each(Object.keys(formats), (type, done) => {
-        if (type.indexOf('pvrtc_') !== -1) {
-            return compressPVR(src, dst, {
-                name: type,
-                quality: formats.quality,
-            }, done);
+    let srcExt = Path.extname(src);
+    if (srcExt === '.webp') {
+        let webpTool = Path.join(__dirname, './../tools/texture-compress/libwebp/mac/bin/dwebp');
+        if (process.platform === 'win32') {
+            webpTool = Path.join(__dirname, './../tools/texture-compress/libwebp/windows/bin/dwebp.exe');
         }
-        compressNormal(src, dst,  {
-            name: type,
-            quality: formats.quality,
-        }, done);
-    }, (err) => {
+        var temp = changeSuffix(dst, '.bmp');
+        let args = [
+            src,
+            '-o', temp,
+            '-bmp',
+            '-quiet'
+        ];
+        spawnTool(webpTool, args, {}, function (err) {
+            if (err) {
+                cb(err) 
+            } else {
+                Async.each(formats, (type, done) => {
+                    let compressFunc = compressNormal;
+                    if (type.startsWith('pvrtc_')) {
+                        compressFunc = compressPVR;
+                    }
+                    else if (type.startsWith('etc')) {
+                        compressFunc = compressEtc;
+                    }
+                    compressFunc(temp, dst, { name: type, quality: platformOption[type]}, done);
+                }, err => {
+                    remove(temp);
+                    callback(err);
+                });
+            }
+        });
+        return ;
+    }
+    Async.each(formats, (type, done) => {
+        let compressFunc = compressNormal;
+        if (type.startsWith('pvrtc_')) {
+            compressFunc = compressPVR;
+        }
+        else if (type.startsWith('etc')) {
+            compressFunc = compressEtc;
+        }
+        compressFunc(src, dst, { name: type, quality: platformOption[type]}, done);
+    }, err => {
         callback(err);
     });
 }
@@ -117,19 +161,36 @@ function compress(option, cb) {
  * @param {*} cb
  */
 function compressNormal(src, dst, format, cb) {
-    let distPath = `${dst.replace(Path.extname(src), '')}.${format.name}`;
-    var img = new Image();
-    img.src = src;
-    let canvasImgType = format.name === 'jpg' ? 'jpeg' : format.name;
-    img.onload = function() {
-        var canvas = document.createElement('canvas'); //创建画布节点
-        canvas.width = this.width; //画布宽度为img宽度
-        canvas.height = this.height; //画布高度为img高度
-        var ctx = canvas.getContext('2d'); //绘制2D类型图形
-        ctx.drawImage(img, 0, 0, this.width, this.height); //在画布类绘制图片
-        var outputBase64str = canvas.toDataURL(`image/${canvasImgType}`); //输出jpg格式dataURI并压缩图片质量(取值范围0~1)
-        writeFile(distPath, outputBase64str.replace(`data:image/${format.name};base64,`, ''), 'base64', cb);
-    };
+    if (format.name === 'webp') {
+        let webpTool = Path.join(__dirname, './../tools/texture-compress/libwebp/mac/bin/cwebp');
+        if (process.platform === 'win32') {
+            webpTool = Path.join(__dirname, './../tools/texture-compress/libwebp/windows/bin/cwebp.exe');
+        }
+        dst = changeSuffix(dst, '.webp');
+        let args = [
+            src,
+            '-o', dst,
+            '-q', format.quality,
+            '-quiet'
+        ];
+        spawnTool(webpTool, args, {}, cb);
+    }
+    else {
+        Jimp.read(src)
+        .then(file => {
+            let result = null;
+            if (format.name === 'png') {
+                result = file.deflateLevel((format.quality / 10) | 0);
+            }
+            else {
+                result = file.quality(format.quality) // set JPEG quality
+            }
+            result.write(changeSuffix(dst, `.${format.name}`), cb); // save
+        })
+        .catch(err => {
+            cb(err);
+        });
+    }
 }
 
 /**
@@ -180,7 +241,57 @@ function compressPVR(src, dst, format, cb) {
 
     console.info(`pvrtc compress command :  ${pvrTool} ${pvrOpts.join(' ')}`);
 
-    spawnTool(pvrTool, pvrOpts, cb);
+    spawnTool(pvrTool, pvrOpts, {}, cb);
+}
+
+function compressEtc (src, dst, format, cb) {
+    let etcTool = Path.join(__dirname, './../tools/texture-compress/mali/OSX_x86/etcpack');
+    if (process.platform === 'win32') {
+        etcTool = Path.join(__dirname, './../tools/texture-compress/mali/Windows_64/etcpack.exe');
+    }
+
+    let toolDir = Path.dirname(etcTool);
+    etcTool = '.' + Path.sep + Path.basename(etcTool);
+
+    let etcFormat = 'etc1';
+    let compressFormat = 'RGB';
+    if (format.name === 'etc2') {
+        etcFormat = 'etc2';
+        compressFormat = 'RGBA';
+    }
+    else if (format.name === 'etc2_rgb') {
+        etcFormat = 'etc2';
+    }
+
+    let args = [
+        Path.normalize(src),
+        Path.dirname(dst),
+        
+        '-c', etcFormat,
+        '-s', format.quality,
+    ];
+
+    // windows 中需要进入到 toolDir 去执行命令才能成功
+    let cwd = toolDir;
+
+    let env = Object.assign({}, process.env);
+    // convert 是 imagemagick 中的一个工具
+    // etcpack 中应该是以 'convert' 而不是 './convert' 来调用工具的，所以需要将 toolDir 加到环境变量中
+    // toolDir 需要放在前面，以防止系统找到用户自己安装的 imagemagick 版本
+    env.PATH = toolDir + ':' + env.PATH;
+
+    let opts = {
+        cwd: cwd,
+        env: env
+    };
+
+    if (etcFormat === 'etc2') {
+        args.push('-f', compressFormat);
+    }
+
+    console.log(`etc compress command :  ${etcTool} ${args.join(' ')}`);
+
+    spawnTool(etcTool, args, opts, cb);
 }
 
 module.exports = compress;
