@@ -86,11 +86,72 @@ class AnimationUtil {
     }
 
     /**
+     * 查询一个 clip 数据包含的 paths 路径数组
+     * @param {object} clip clip 数据
+     */
+    queryPaths(clip) {
+        clip = clip || {};
+        let data = clip.curveData || {};
+        let paths = Object.keys(data.paths || {});
+        paths.forEach((path) => {
+            path = '/' + path;
+        });
+        return paths;
+    }
+
+    /**
+     * 查询当前动画的时间帧数组
+     * @param {object} clip clip 数据
+     */
+    queryEvents(clip) {
+        if (!clip) {
+            console.warn('clip is not valid');
+            return null;
+        }
+        return clip.events;
+    }
+
+    /**
+     * 查询某个关键帧的数据
+     * @param {object} clip clip 数据
+     * @param {string} path 带有 root 的路径信息,root用'/'表示
+     * @param {string} component 组件的名字
+     * @param {string} property 属性的名字
+     * @param {number} frame key.frame 是实际的时间，需要传入帧数
+     */
+    queryKey(clip, path, component, property, frame) {
+        clip = clip || {};
+        // js 用的是不精确的浮点数
+        // 所以有一定几率造成小数点吼比对出现问题，需要转成整数后对比
+        let sample = clip.sample;
+
+        let keys = this.queryPropertyKeys(clip, path, component, property);
+
+        if (!keys) {
+            return null;
+        }
+
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            if (Math.round(key.frame * sample) === frame) {
+                return key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * 从一个 clip 对象内，找出 path 指向的数据
      * @param {*} clip 动画 clip 对象
      * @param {*} path 数据的搜索路径
      */
     getCurveDataFromClip(clip, path) {
+        if (!path) {
+            console.error('need a path');
+            return null;
+        }
+
         if (path === '/') {
             return clip.curveData || null;
         } else {
@@ -103,12 +164,12 @@ class AnimationUtil {
     }
 
     /**
-     * 从一个 curveData 数据，拿出对应的 comp 和 prop 数据
+     * 从一个 curveData 数据，拿出某个属性的所有关键帧数据
      * @param {*} curveData
      * @param {*} comp
      * @param {*} prop
      */
-    getPropertyDataFrom(curveData, comp, prop) {
+    getPropertyKeysFrom(curveData, comp, prop) {
         if (comp) {
             if (!curveData.comps || !curveData.comps[comp] || !curveData.comps[comp][prop]) {
                 return null;
@@ -226,12 +287,29 @@ class AnimationUtil {
         return properties;
     }
 
+    getClipName(clipUuid, animComp) {
+        if (!clipUuid) {
+            return null;
+        }
+
+        let clips = animComp.getClips();
+        let clipName = null;
+        clips.forEach((clip) => {
+            if (clip._uuid === clipUuid) {
+                clipName = clip.name;
+                return;
+            }
+        });
+
+        return clipName;
+    }
+
     /**
      * 查询一个节点的动画数据
      * @param {*} uuid
-     * @param {*} clip
+     * @param {*} clipUuid
      */
-    queryNodeAnimationData(uuid, clip) {
+    queryNodeAnimationData(uuid, clipUuid) {
         let animData = {};
         const node = Node.query(uuid);
         if (!node) {
@@ -247,13 +325,20 @@ class AnimationUtil {
         }
         animData.animComp = animComp;
 
-        if (!clip) {
+        if (!clipUuid) {
             return animData;
         }
 
-        const state = animComp.getAnimationState(clip);
+        let clipName = this.getClipName(clipUuid, animComp);
+
+        if (!clipName) {
+            console.warn(`节点(${uuid})不存在动画(${clipUuid})`);
+            return animData;
+        }
+
+        const state = animComp.getAnimationState(clipName);
         if (!state) {
-            console.warn(`节点(${uuid})不存在动画(${clip})`);
+            console.warn(`节点(${uuid})不存在动画(${clipUuid})`);
             return animData;
         }
         animData.animState = state;
@@ -262,52 +347,108 @@ class AnimationUtil {
     }
 
     /**
-     * 根据一个 path，查询对应的 curve 数据
-     * @param {object} clip clip 数据
-     * @param {string} path 带有 root 的路径信息，如：'/root/l1/l2'
-     */
-    queryCurveData(clip, path) {
-        clip = clip || {};
-
-        let data = clip.curveData || {};
-        // 去除 '/root/'
-        path = path.replace(/^\/[^\/]+\/?/, '');
-
-        let comps;
-        let props;
-
-        if (path) {
-            let paths = data.paths || {};
-            data = paths[path] || {};
-        }
-
-        comps = data.comps || {};
-        props = data.props || {};
-
-        return {
-            comps: comps,
-            props: props,
-        };
-    }
-
-    /**
      * 查询 clip 内属性轨道的数据
-     * 返回的是一个关键帧数组
+     * 返回的是一个关键帧数组或null
      * @param {object} clip clip 数据
      * @param {string} path 带有 root 的路径信息，如：'/root/l1/l2'
      * @param {string} component 组件的名字
      * @param {string} property 属性的名字
      */
     queryPropertyKeys(clip, path, component, property) {
-        clip = clip || {};
-        let data = this.queryCurveData(clip, path);
-        if (component) {
-            data = data.comps[component] || {};
-        } else {
-            data = data.props;
+        if (!clip) {
+            return null;
         }
 
-        return data[property] || [];
+        let data = this.getCurveDataFromClip(clip, path);
+        if (!data) {
+            return null;
+        }
+
+        let keys = this.getPropertyKeysFrom(data, component, property);
+
+        return keys;
+    }
+
+    /**
+     * 传入一个 curve 对象，循环内部所有的 comp 和 prop
+     * @param {*} curve
+     * @param {*} handle
+     */
+    eachCurve(curve, handle) {
+        if (!curve) {
+            return;
+        }
+        curve.props && Object.keys(curve.props).forEach((prop) => {
+            let keys = curve.props[prop];
+            handle(null, prop, keys);
+        });
+        curve.comps && Object.keys(curve.comps).forEach((comp) => {
+            let props = curve.comps[comp];
+            props && Object.keys(props).forEach((prop) => {
+                let keys = props[prop];
+                handle(comp, prop, keys);
+            });
+        });
+    }
+
+    /**
+     * 重新计算clip的总时长
+     * @param {*} clip clip数据
+     */
+    recalculateDuration(clip) {
+        let paths = this.queryPaths(clip);
+        paths.splice(0, 0, '/');
+        let duration = 0;
+        let sample = clip.sample;
+
+        paths.forEach((path) => {
+            let curveData = this.getCurveDataFromClip(clip, path);
+            this.eachCurve(curveData, (comp, prop, keys) => {
+                if (!keys || !keys.length) {
+                    return;
+                }
+                let key = keys[keys.length - 1];
+                if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
+                    duration = Math.max((Math.round(key.frame * sample) + 1) / sample, duration);
+                } else {
+                    duration = Math.max(key.frame, duration);
+                }
+            });
+        });
+
+        let events = this.queryEvents(clip);
+        if (events) {
+            let lastEvent = events[events.length - 1];
+            if (lastEvent) {
+                duration = Math.max(lastEvent.frame, duration);
+            }
+        }
+
+        // duration only a getter
+        clip._duration = duration;
+    }
+
+    /**
+     * 更新某个关键帧的曲线数据
+     * @param {object} clip clip 数据
+     * @param {string} path 带有 root 的路径信息,root用'/'表示
+     * @param {string} component 组件的名字
+     * @param {string} property 属性的名字
+     * @param {number} frame key.frame 是实际的时间，需要传入帧数
+     * @param {object} data 曲线数据
+     */
+    updateCurveOfKey(clip, path, component, property, frame, data) {
+        if (!clip) {
+            return false;
+        }
+
+        let key = this.queryKey(clip, path, component, property, frame);
+        if (key) {
+            key.curve = data;
+            return false;
+        } else {
+            return false;
+        }
     }
 }
 

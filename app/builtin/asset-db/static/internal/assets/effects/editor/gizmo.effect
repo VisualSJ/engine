@@ -20,6 +20,8 @@ CCEffect %{
     - vert: line-vs:vert
       frag: line-fs:front
       priority: max - 10
+      rasterizerState:
+        cullMode: none
       depthStencilState: *disable_depth
       blendState: *enable_blend
 

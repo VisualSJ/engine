@@ -8,13 +8,19 @@ const Scene = require('../scene');
 const utils = require('./utils');
 const operation = require('./operation');
 
+let AnimEditState = {
+    record: false,      // 是否在录制模式
+    dirty: false,       // 是否更改
+    playing : false,    // 动画是否正在播放
+};
+
 // for test
 const operationManager = require('../operation');
 
 class AniamtionManager extends EventEmitter {
     constructor() {
         super();
-        this._curEditClipName = 't';
+        this.init();
 
         // for test
         // operationManager.on('keydown', (event) => {
@@ -36,24 +42,31 @@ class AniamtionManager extends EventEmitter {
         //             let animPropList = this.queryProperties(uuid);
         //             console.log(animPropList);
         //             let keyProp = animPropList[0];
-        //             this.operation('createProp', 't', '/', null, keyProp.prop);
-        //             this.operation('createKey', 't', '/', null, keyProp.prop, 10);
+        //             this.operation('createProp', clipUuid, '/', null, keyProp.prop);
+        //             this.operation('createKey', clipUuid, '/', null, keyProp.prop, 10);
         //             break;
         //         case 'b':
         //             let buuid = Scene.AnimationMode.root;
         //             let banimPropList = this.queryProperties(buuid);
         //             console.log(banimPropList);
         //             let bkeyProp = banimPropList[0];
-        //             this.operation('createKey', 't', '/', null, bkeyProp.prop);
+        //             //this.operation('removeKey', clipUuid, '/', null, bkeyProp.prop, 10);
+        //             this.operation('moveKeys', clipUuid, '/', null, bkeyProp.prop, [0, 30], 10);
+        //             //this.operation('changeSample', clipUuid, 100);
         //             break;
         //         case 'v':
-        //             //this.save();
-        //             console.log(this.queryAnimClipsInfo(nodeUuid));
+        //             this.saveClip(clipUuid);
+        //             //console.log(this.queryAnimClipsInfo(nodeUuid));
         //             break;
         //     }
 
         // });
         // test end
+    }
+
+    init() {
+        this._curEditClipUuid = '';
+        this._curEditTime = 0;
     }
 
     /**
@@ -69,7 +82,11 @@ class AniamtionManager extends EventEmitter {
     }
 
     async save() {
-        let state = this.queryRecordAnimState(this._curEditClipName);
+        this.saveClip(this._curEditClipUuid);
+    }
+
+    async saveClip(clipUuid) {
+        let state = this.queryRecordAnimState(clipUuid);
         let clip = state.clip;
         await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
     }
@@ -93,13 +110,13 @@ class AniamtionManager extends EventEmitter {
      */
     queryRecordAnimComp() {
         const uuid = Scene.AnimationMode.root;
-        const animData = utils.queryNodeAnimationData(uuid, clip);
+        const animData = utils.queryNodeAnimationData(uuid);
         return animData.animComp;
     }
 
-    queryRecordAnimState(clip) {
+    queryRecordAnimState(clipUuid) {
         const uuid = Scene.AnimationMode.root;
-        const animData = utils.queryNodeAnimationData(uuid, clip);
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         return animData.animState;
     }
 
@@ -114,12 +131,13 @@ class AniamtionManager extends EventEmitter {
         }
 
         let clips = component.getClips();
-        let clipsInfo = {};
-
+        let clipsInfo = [];
         clips.forEach((clip) => {
             if (clip) {
-                clipsInfo.name = clip.name;
-                clipsInfo.uuid = clip._uuid;
+                let info = {};
+                info.name = clip.name;
+                info.uuid = clip._uuid;
+                clipsInfo.push(info);
             }
         });
 
@@ -127,17 +145,74 @@ class AniamtionManager extends EventEmitter {
     }
 
     /**
-     * 播放一个节点上的指定动画
-     * @param {String} clip 需要播放的动画的名字
+     * 设置当前编辑的Clip
+     * @param {*} clipUuid Clip的uuid
      */
-    play(clip) {
-        const state = this.queryRecordAnimState(clip);
+    setEditClip(clipUuid) {
+        if (!clipUuid) {
+            console.log('clip uuid is empty');
+            return;
+        }
+
+        if (clipUuid === this._curEditClipUuid) {
+            return;
+        }
+
+        this._curEditClipUuid = clipUuid;
+
+        let animData = this.queryRecordAnimState(clipUuid);
+        let animComp = animData.animComp;
+        let state = animData.animState;
+        if (!state) {
+            return;
+        }
+
+        let clipName = utils.getClipName(clipUuid, animComp);
+        animComp.play(clipName);
+        animComp.pause(clipName);
+        animComp.setTime(0);
+
+        this._curEditTime = 0;
+    }
+
+    /**
+     * 设置当前编辑的关键帧时间点
+     * @param {*} time 时间
+     */
+    setCurEditTime(time) {
+        if (Scene.modes.minor !== Scene.AnimationMode) {
+            return;
+        }
+
+        this._curEditTime = time;
+
+        let animData = this.queryRecordAnimState(clipUuid);
+        let animComp = animData.animComp;
+        let state = animData.animState;
+        if (!state) {
+            return;
+        }
+
+        let playTime = time;
+        if (playTime > state.duration) {
+            playTime = state.duration;
+        }
+
+        animComp.setTime(playTime);
+    }
+
+    /**
+     * 播放一个节点上的指定动画
+     * @param {String} clipUuid 需要播放的动画的uuid
+     */
+    play(clipUuid) {
+        const state = this.queryRecordAnimState(clipUuid);
         if (!state) {
             return;
         }
 
         state.setTime(0);
-        component.play(clip);
+        component.play(state.clip.name);
     }
 
     /**
@@ -263,9 +338,9 @@ class AniamtionManager extends EventEmitter {
             console.warn('Method does not exist to manipulate the animation.');
             return false;
         }
-        operation[func](Scene.AnimationMode.root, ...args);
-
-        Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root);
+        if (operation[func](Scene.AnimationMode.root, ...args)) {
+            Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root);
+        }
     }
 }
 

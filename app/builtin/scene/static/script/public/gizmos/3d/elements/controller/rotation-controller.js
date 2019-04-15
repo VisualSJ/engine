@@ -19,7 +19,7 @@ class RotationController extends ControllerBase {
         super(rootNode);
 
         this._deltaRotation = cc.quat(0, 0, 0, 1);
-        this._rotFactor = 3;
+        this._rotFactor = 1;
 
         // for 2d rotation
         this._zDeltaAngle = 0;
