@@ -11,6 +11,7 @@ import { changeSpriteData, changeSpriteState, } from '../sprite-editor/manager';
 
 let panel: any = null;
 let vm: any = null;
+let _waitDeleteUuids: string[] = [];
 
 export const style = readFileSync(join(__dirname, '../../dist/index.css'));
 
@@ -106,15 +107,36 @@ export const messages = {
         if (!vm) {
             return;
         }
-
         // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
-        // @ts-ignore
-        clearTimeout(this._unselectTimer);
-        if (vm.item.type === type && vm.item.uuid === uuid) {
+        if (vm.item.type === type) {
+            // @ts-ignore
+            clearTimeout(this._unselectTimer);
+            _waitDeleteUuids.push(uuid);
+
+            // TODO
+            // 这里的 vm.item.uuid 其实应该改为 uuids，并且强制定义为数组
+            // 否则所有使用的地方都需要增加许多重复的判断
             // @ts-ignore
             this._unselectTimer = setTimeout(() => {
-                    vm.item.type = '';
-                    vm.item.uuid = '';
+                while (_waitDeleteUuids.length) {
+                    const uuid = _waitDeleteUuids.pop();
+
+                    if (Array.isArray(vm.item.uuid)) {
+                        const index = vm.item.uuid.indexOf(uuid);
+                        if (index !== -1) {
+                            vm.item.uuid.splice(index, 1);
+                        }
+                        if (vm.item.uuid.length === 1) {
+                            vm.item.uuid = vm.item.uuid[0];
+                        } else if (vm.item.uuid.length === 0) {
+                            vm.item.type = '';
+                            vm.item.uuid = '';
+                        }
+                    } else if (vm.item.uuid === uuid) {
+                        vm.item.type = '';
+                        vm.item.uuid = '';
+                    }
+                }
             }, 200);
         }
     },

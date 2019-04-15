@@ -7,6 +7,10 @@ const prefabUtils = require('../../prefab/utils');
 
 class PrefabMode extends Mode {
 
+    get name() {
+        return 'prefab';
+    }
+
     constructor(manager) {
         super(manager);
 
@@ -139,6 +143,9 @@ class PrefabMode extends Mode {
      */
     serialize() {
         const node = Manager.Node.query(this.node);
+        if (!node) {
+            return null;
+        }
         const prefab = new cc.Prefab();
         const dump = prefabUtils.getDumpableNode(node);
         prefab.data = dump;

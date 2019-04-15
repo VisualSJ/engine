@@ -3,6 +3,19 @@
 const profile = Editor.Profile.load('profile://local/packages/scene.json');
 
 exports.$scene = null;
+let _dump = null;
+let _timer = null;
+let _softOpen = false;
+
+/**
+ * 更新主窗口上缓存的场景数据
+ */
+exports.updateDump = function() {
+    clearTimeout(_timer);
+    _timer = setTimeout(async () => {
+        _dump = await exports.$scene.forceForwarding('Scene', 'dump');
+    }, 3000);
+}
 
 /**
  * 编辑器是否就绪
@@ -53,6 +66,7 @@ exports.webviewReady = [
         },
         async reset() {
             Editor.Ipc.sendToAll('scene:close');
+            _softOpen = true;
         },
     },
 ];
@@ -130,8 +144,15 @@ exports.autoOpenScene = [
         depends: ['editor-init', 'webview-manager-init'],
         async handle() {
             const uuid = profile.get('current-scene');
+
             await exports.$scene.forwarding('Scene', 'open', [uuid]);
             exports.$scene.depend.finish('auto-open-scene');
+
+            // 如果有缓存的话，在打开场景之后，还原之前的数据
+            if (_softOpen && _dump) {
+                await exports.$scene.forwarding('Scene', 'restore', [_dump]);
+                _softOpen = null;
+            }
         },
     },
 ];

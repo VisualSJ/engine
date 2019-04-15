@@ -9,6 +9,10 @@ const ipc = require('../../ipc');
 
 class SceneMode extends Mode {
 
+    get name() {
+        return 'scene';
+    }
+
     constructor(manager) {
         super(manager);
 
@@ -213,7 +217,7 @@ class SceneMode extends Mode {
         if (this._staging) {
             return;
         }
-        this._staging = Manager.Utils.serialize(cc.director._scene);
+        this._staging = this.serialize();
 
         // 发送 emit 事件
         this.manager.emit('close');

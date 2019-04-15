@@ -1,6 +1,6 @@
 'use strict';
 
-const { EventEmitter } = require('events');
+const EventEmitter = require('../../../public/EventEmitter');
 
 const ipc = require('../ipc');
 
@@ -51,14 +51,18 @@ class SceneManager extends EventEmitter {
                 this.modes.minor = null;
             }
 
-            if (await this.modes.main.restore()) { // 还原暂存的场景
+            // 还原暂存的场景
+            if (await this.modes.main.restore()) {
+                Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
                 return true;
             }
 
-            // 最后打开新的场景
+            // 最后打开新的场景失败
             if (!await mode.open(uuid)) {
-                return true;
+                return false;
             }
+
+            Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
             return true;
         }
 
@@ -78,6 +82,8 @@ class SceneManager extends EventEmitter {
             await this.modes.main.restore();
             return false;
         }
+
+        Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
         this.modes.minor = mode;
         return true;
     }
@@ -92,6 +98,9 @@ class SceneManager extends EventEmitter {
         }
 
         this.modes.minor = null;
+
+        Manager.Ipc.forceSend('broadcast', 'scene:change-mode', 'scene');
+
         return true;
     }
 
@@ -281,6 +290,32 @@ class SceneManager extends EventEmitter {
                 path: item.menuPath,
             };
         });
+    }
+
+    /**
+     * 序列化当前的场景编辑器状态
+     */
+    async dump() {
+        const result = {
+            scene: await this.SceneMode.serialize(),
+            prefab: await this.PrefabMode.serialize(),
+            animation: await this.AnimationMode.serialize(),
+        };
+
+        return result;
+    }
+
+    /**
+     * 从之前备份的数据内，还原场景状态
+     * @param {*} dump 
+     */
+    restore(dump) {
+        this.SceneMode._staging = dump.scene;
+        this.SceneMode.restore();
+        // this.PrefabMode._staging = dump.prefab;
+        // this.PrefabMode.restore();
+        // this.AnimationMode._staging = dump.animation;
+        // this.AnimationMode.restore();
     }
 }
 

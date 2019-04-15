@@ -99,7 +99,13 @@ class AniamtionManager extends EventEmitter {
     }
 
     getSerializedEditClip() {
+        if (!this._curEditClipUuid) {
+            return null;
+        }
         let state = this.queryRecordAnimState(this._curEditClipUuid);
+        if (!state || !state.clip) {
+            return null;
+        }
         let clip = state.clip;
         return Manager.Utils.serialize(clip);
     }

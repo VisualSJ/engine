@@ -4,6 +4,10 @@ const Mode = require('./mode');
 
 class AnimationMode extends Mode {
 
+    get name() {
+        return 'animation';
+    }
+
     constructor(...args) {
         super(...args);
 
@@ -74,7 +78,6 @@ class AnimationMode extends Mode {
      * 获取当前正在编辑的资源的序列化数据
      */
     async serialize() {
-        // TODO 将运行时数据整理成 clip
         return Manager.Animation.getSerializedEditClip();
     }
 

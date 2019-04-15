@@ -203,7 +203,7 @@ class Engine3D extends EngineInterface {
         if (component instanceof cc.SkinningModelComponent) {
             let root = component.skinningRoot;
             let skeleton = component.skeleton;
-            if (root) {
+            if (root && skeleton) {
                 const iRoot = skeleton.joints.findIndex((joint) => joint === '');
                 if (iRoot !== undefined) {
                     rootBindPose = skeleton.bindposes[iRoot];

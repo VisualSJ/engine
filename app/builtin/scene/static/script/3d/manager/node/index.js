@@ -5,7 +5,7 @@
  * 负责管理当前打开场景的 uuid 与节点对应关系
  */
 
-const { EventEmitter } = require('events');
+const EventEmitter = require('../../../public/EventEmitter');
 const { get } = require('lodash');
 const utils = require('./utils');
 const uuidUtils = require('../../../utils/uuid');

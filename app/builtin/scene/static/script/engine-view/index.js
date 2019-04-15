@@ -109,6 +109,7 @@ class View extends window.HTMLElement {
      * @param {*} params 执行方法所用的参数
      */
     async forwarding(module, handler, params = []) {
+        tasks.updateDump();
         return await this.ipc.send('call-method', {
             module,
             handler,
