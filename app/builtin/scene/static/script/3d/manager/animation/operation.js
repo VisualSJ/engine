@@ -52,7 +52,7 @@ class AnimationOperation {
         clip.sample = sample;
 
         utils.recalculateDuration(clip);
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -71,7 +71,7 @@ class AnimationOperation {
         }
 
         state._clip.speed = speed;
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -94,7 +94,7 @@ class AnimationOperation {
         }
 
         state._clip.wrapMode = mode;
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -126,7 +126,7 @@ class AnimationOperation {
             }
         }
 
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -165,7 +165,7 @@ class AnimationOperation {
                 propKeys = props[prop] = props[prop] || [];
             }
         }
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -207,7 +207,7 @@ class AnimationOperation {
         }
 
         utils.recalculateDuration(state._clip);
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -238,6 +238,10 @@ class AnimationOperation {
         let ctor = cc.Node;
         let target = node;
         if (comp) {
+            if (!data.comps) {
+                console.warn(`找不到component track，无法新增关键帧\n  node: ${uuid}`);
+                return false;
+            }
             data = data.comps[comp];
             ctor = cc.js.getClassByName(comp);
             target = node.getComponent(comp);
@@ -246,7 +250,7 @@ class AnimationOperation {
         }
 
         if (!ctor) {
-            console.warn(`找不到类型，无法新增关键帧\n  node: ${uuid}\n  clip: ${clip}`);
+            console.warn(`找不到类型，无法新增关键帧\n  node: ${uuid}`);
             return false;
         }
 
@@ -266,7 +270,7 @@ class AnimationOperation {
         });
 
         utils.recalculateDuration(state._clip);
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
         return true;
     }
 
@@ -307,7 +311,7 @@ class AnimationOperation {
         }
 
         utils.recalculateDuration(state._clip);
-        animData.animComp._animator._reloadClip(state);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -339,13 +343,77 @@ class AnimationOperation {
             let key = keys[i];
             if (Math.round(key.frame * sample) === frame) {
                 keys.splice(i, 1);
-                animData.animComp._animator._reloadClip(state);
+                state.initialize(animData.node);
                 utils.recalculateDuration(state._clip);
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * 插入事件关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {number} frame 关键帧所在的位置
+     * @param {string} funcName 事件回调函数的名字
+     * @param {array} params 参数数组
+     */
+    addEvent(uuid, clipUuid, frame, funcName, params) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let key = utils.addEvent(state._clip, frame, funcName, params);
+        if (!key) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 删除事件关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {object} event 事件帧数据
+     */
+    deleteEvent(uuid, clipUuid, event) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let key = utils.deleteEvent(state._clip, event);
+        if (!key) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 更新某个关键帧的曲线数据
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {string} path 带有 root 的路径信息,root用'/'表示
+     * @param {string} component 组件的名字
+     * @param {string} property 属性的名字
+     * @param {number} frame key.frame 是实际的时间，需要传入帧数
+     * @param {*} data 曲线描述，可能是字符串和数组
+     */
+    updateCurveOfKey(uuid, clipUuid, path, comp, prop, frame, data) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        return utils.updateCurveOfKey(state._clip, path, comp, prop, frame, data);
     }
 }
 

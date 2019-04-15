@@ -100,7 +100,7 @@ class AnimationUtil {
     }
 
     /**
-     * 查询当前动画的时间帧数组
+     * 查询当前动画的事件数组
      * @param {object} clip clip 数据
      */
     queryEvents(clip) {
@@ -186,7 +186,7 @@ class AnimationUtil {
 
     /**
      * 判断一个属性属否可以用于制作动画
-     * @param {*} ctor
+     * @param {*} compCtor
      * @param {*} property
      * @param {*} propObject
      */
@@ -211,6 +211,8 @@ class AnimationUtil {
         }
 
         let propData = {};
+        propData.comp = typeName;
+        propData.prop = property;
         if (cc.js.getClassByName(typeName)) {
             propData.name = typeName + '.' + property;
         } else {
@@ -267,7 +269,7 @@ class AnimationUtil {
 
         node._components.forEach((comp) => {
             // skip cc.AnimationComponent
-            if (comp.type === 'cc.AnimationComponent') {
+            if (comp instanceof cc.AnimationComponent) {
                 return;
             }
 
@@ -435,7 +437,7 @@ class AnimationUtil {
      * @param {string} component 组件的名字
      * @param {string} property 属性的名字
      * @param {number} frame key.frame 是实际的时间，需要传入帧数
-     * @param {object} data 曲线数据
+     * @param {*} data 曲线描述，可能是字符串和数组
      */
     updateCurveOfKey(clip, path, component, property, frame, data) {
         if (!clip) {
@@ -449,6 +451,64 @@ class AnimationUtil {
         } else {
             return false;
         }
+    }
+
+    /**
+     * 插入新的事件
+     * @param {object} clip clip 数据
+     * @param {number} frame 关键帧所在的位置
+     * @param {string} funcName 事件回调函数的名字
+     * @param {array} params 参数数组
+     */
+    addEvent(clip, frame, funcName, params) {
+        if (!clip) {
+            console.log('clip 不存在');
+            return null;
+        }
+
+        let sample = clip.sample;
+        let key = {
+            frame: frame / sample,
+            func: funcName || '',
+            params: params || [],
+        };
+
+        clip.events = clip.events || [];
+        clip.events.push(key);
+
+        // 插入完成后需要排序
+        clip.events.sort((a, b) => {
+            return a.frame - b.frame;
+        });
+
+        this.recalculateDuration(clip);
+
+        return key;
+    }
+
+    /**
+     * 删除事件帧
+     * @param {object} clip clip 数据
+     * @param {object} event 事件帧数据
+     */
+    deleteEvent(clip, event) {
+        if (!clip) {
+            console.log('clip 不存在');
+            return null;
+        }
+        let events = this.queryEvents(clip);
+
+        for (let i = 0; i < events.length; i++) {
+            let key = events[i];
+            if (JSON.stringify(key) === JSON.stringify(event)) {
+                events.splice(i, 1);
+                return key;
+            }
+        }
+
+        this.recalculateDuration(clip);
+
+        return null;
     }
 }
 

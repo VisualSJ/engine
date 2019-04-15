@@ -41,9 +41,10 @@ class AniamtionManager extends EventEmitter {
         //             let uuid = Scene.AnimationMode.root;
         //             let animPropList = this.queryProperties(uuid);
         //             console.log(animPropList);
-        //             let keyProp = animPropList[0];
-        //             this.operation('createProp', clipUuid, '/', null, keyProp.prop);
-        //             this.operation('createKey', clipUuid, '/', null, keyProp.prop, 10);
+        //             let keyProp = animPropList[3];
+        //             this.operation('createProp', clipUuid, '/', keyProp.comp, keyProp.prop);
+        //             this.operation('createKey', clipUuid, '/', keyProp.comp, keyProp.prop, 10);
+        //             //this.operation('addEvent', clipUuid, 10, 'hello', [10]);
         //             break;
         //         case 'b':
         //             let buuid = Scene.AnimationMode.root;
@@ -51,15 +52,21 @@ class AniamtionManager extends EventEmitter {
         //             console.log(banimPropList);
         //             let bkeyProp = banimPropList[0];
         //             //this.operation('removeKey', clipUuid, '/', null, bkeyProp.prop, 10);
-        //             this.operation('moveKeys', clipUuid, '/', null, bkeyProp.prop, [0, 30], 10);
+        //             //this.operation('moveKeys', clipUuid, '/', null, bkeyProp.prop, [0, 30], 10);
         //             //this.operation('changeSample', clipUuid, 100);
+        //             this.operation('deleteEvent', clipUuid, {
+        //                 frame: 0.16666666666666666,
+        //                 func: 'hello',
+        //                 params: [
+        //                   10,
+        //                 ],
+        //               });
         //             break;
         //         case 'v':
         //             this.saveClip(clipUuid);
         //             //console.log(this.queryAnimClipsInfo(nodeUuid));
         //             break;
         //     }
-
         // });
         // test end
     }
@@ -89,6 +96,12 @@ class AniamtionManager extends EventEmitter {
         let state = this.queryRecordAnimState(clipUuid);
         let clip = state.clip;
         await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
+    }
+
+    getSerializedEditClip() {
+        let state = this.queryRecordAnimState(this._curEditClipUuid);
+        let clip = state.clip;
+        return Manager.Utils.serialize(clip);
     }
 
     /**
@@ -306,6 +319,9 @@ class AniamtionManager extends EventEmitter {
      */
     queryProperties(uuid) {
         let node = Node.query(uuid);
+        if (!node) {
+            console.log(`动画节点(${uuid})不存在`);
+        }
         let root = node;
         while (root) {
             if (root.getComponent(cc.AnimationComponent)) {
@@ -322,7 +338,7 @@ class AniamtionManager extends EventEmitter {
 
         let animableProps = utils.getAnimableProperties(node, root !== node);
         let result = animableProps.map((data) => {
-            return {prop: data.name, comp: null, displayName: data.name, type: data.type};
+            return {prop: data.prop, comp: data.comp, displayName: data.name, type: data.type};
         });
 
         return result;

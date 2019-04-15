@@ -75,7 +75,7 @@ class AnimationMode extends Mode {
      */
     async serialize() {
         // TODO 将运行时数据整理成 clip
-        return '';
+        return Manager.Animation.getSerializedEditClip();
     }
 
     /**
@@ -86,6 +86,7 @@ class AnimationMode extends Mode {
 
         // const newData = this.serialize();
         // await Manager.Ipc.send('save-asset', this.current, newData);
+        Manager.Animation.save();
     }
 }
 
