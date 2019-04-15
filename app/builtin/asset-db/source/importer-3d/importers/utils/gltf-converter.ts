@@ -433,7 +433,7 @@ export class GltfConverter {
                     };
                 }
                 if (!Reflect.has(curveData.props, 'scale')) {
-                    const v = new cc.Vec3();
+                    const v = new cc.Vec3(1, 1, 1);
                     if (node.scale) {
                         cc.vmath.vec3.set(v, node.scale[0], node.scale[1], node.scale[2]);
                     }
