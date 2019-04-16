@@ -57,12 +57,16 @@ class Input extends Base {
                 this.$input.disabled = newData !== null;
                 break;
             case 'value':
-                this.$input.value = newData;
+                // 如果焦点在 input 上，则不设置 value 的值
+                if (this._staging) {
+                    break;
+                }
                 if (newData !== '' && this['show-clear']) {
                     this.$clear.style.display = 'inline-block';
                 } else {
                     this.$clear.style.display = 'none';
                 }
+                this.$input.value = newData;
                 break;
             case 'placeholder':
                 this.$input.placeholder = newData;

@@ -163,6 +163,11 @@ class NumInput extends Base {
                     return;
                 }
 
+                // 如果焦点在 input 上，则不设置 value 的值
+                if (this._staging) {
+                    return;
+                }
+
                 if (newData === '-') {
                     this.$input.value = '-';
                 }
@@ -180,6 +185,7 @@ class NumInput extends Base {
                 // 小数点精度控制后和原来的一致，直接给 input 赋值
                 if (value.toString() === newData.toString()) {
                     newData = mathUtils.clamp(newData, this.min, this.max);
+
                     this.$input.value = parseFloat(newData);
                 }
                 break;
