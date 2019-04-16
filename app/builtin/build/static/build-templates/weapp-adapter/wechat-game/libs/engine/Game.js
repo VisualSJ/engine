@@ -17,12 +17,12 @@ cc.game._runMainLoop = function () {
 
     callback = function () {
         if (!self._paused) {
-            self._intervalId = window.requestAnimFrame(callback);
+            self._intervalId = window.requestAnimationFrame(callback);
             director.mainLoop();
         }
     };
 
-    self._intervalId = window.requestAnimFrame(callback);
+    self._intervalId = window.requestAnimationFrame(callback);
     self._paused = false;
 };
 // wechat game platform not support this api
