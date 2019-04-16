@@ -110,11 +110,19 @@ export function encodeComponent(component: any): IProperty {
         if (!data.value) {
             return;
         }
-        if (component[key] === undefined) {
-            return;
+        
+        try {
+            if (component[key] === undefined) {
+                return;
+            }
+            const attrs = cc.Class.attr(ctor, key);
+            data.value[key] = encodeObject(component[key], attrs);
+
+        } catch(error) {
+            console.warn(`Component property dump failed:\n  Node: ${component.node.name}(${component.node.uuid})\n Component: ${data.type}(${component.uuid})\n Property: ${key}`);
+            console.warn(error);
+            delete data.value[key];
         }
-        const attrs = cc.Class.attr(ctor, key);
-        data.value[key] = encodeObject(component[key], attrs);
     });
 
     // editor 附加数据
@@ -228,9 +236,18 @@ export function encodeObject(object: any, attributes: any): IProperty {
         cc.js.isChildClassOf(ctor, cc.ValueType) ||
         data.type === 'cc.AnimationCurve'
     ) { // 如果是 valueType，则直接使用引擎序列化
-        const dump = Manager.Utils.serialize(object, { stringify: false });
-        delete dump.__type__;
-        data.value = dump;
+        try {
+            const dump = Manager.Utils.serialize(object, { stringify: false });
+            delete dump.__type__;
+            data.value = dump;
+        } catch(error) {
+            console.warn(`Value dump failed.`);
+            console.warn(error);
+            
+            const dump = Manager.Utils.serialize(new ctor(), { stringify: false });
+            delete dump.__type__;
+            data.value = dump;
+        }
     } else if (data.type === 'cc.Gradient') {
         // 直接修改 object 会修改到默认值（对象引用问题）
         const dump = JSON.parse(JSON.stringify(object));
