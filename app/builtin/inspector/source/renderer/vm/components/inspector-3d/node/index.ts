@@ -17,6 +17,7 @@ export const components = {
     'ui-prop': require('../../public/ui-prop'),
     comp: require('./comp'),
     'scene-node': require('./scene'),
+    'prefab-node': require('./prefab'),
 };
 
 export const methods = {

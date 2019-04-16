@@ -62,4 +62,10 @@ module.exports = {
         save: '保存',
         abort: '丢弃',
     },
+
+    prefab: {
+        local: '定位',
+        reset: '从资源回退',
+        save: '同步到资源',
+    },
 };

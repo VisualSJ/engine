@@ -407,6 +407,79 @@ class NodeManager extends EventEmitter {
         return node.uuid;
     }
 
+    async restorePrefab(uuid, assetUuid) {
+        if (!cc.director._scene) {
+            return;
+        }
+
+        const query = this.query;
+        const prefab = query(uuid);
+        // 先找出所有的 fileId, 平级循环
+        const fileId2Uuid = getFileId(prefab);
+
+        try {
+            const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
+            const newNode = cc.instantiate(asset);
+            prefab.parent.addChild(newNode);
+            await this.add(newNode); // 以上完整步骤增加临时节点
+
+            await restore(newNode); // 逐层还原 prefab
+
+            newNode.parent = null; // 删除临时节点
+
+            this.emit('change', prefab);
+            Manager.Ipc.forceSend('broadcast', 'scene:change-node', prefab.uuid);
+
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+
+        async function restore(newNode, parentNode) {
+            const dump = dumpUtils.dumpNode(newNode);
+            const fileId = dump.__prefab__.fileId;
+            const prefab =  query(fileId2Uuid[fileId]); // 现有场景中的节点
+            if (!prefab) { // 不存在，可能已被删除，转入新增节点
+
+            } else {
+                if (parentNode) {
+                    const parentDump = dumpUtils.dumpNode(parentNode);
+                    const parentFileId = parentDump.__prefab__.fileId;
+                    const parentPrefab =  query(fileId2Uuid[parentFileId]);
+                    // 改为现有节点的父级节点
+                    dump.parent.value.uuid = parentPrefab.uuid;
+                } else {
+                    dump.parent.value.uuid = prefab.parent.uuid;
+                }
+
+                delete dump.uuid; // 删除不必要的字段
+                delete dump.children;
+                delete dump.__prefab__;
+
+                await dumpUtils.restoreNode(prefab, dump);
+
+                // 循环下一层
+                for (const childNode of newNode.children) {
+                    await restore(childNode, newNode);
+                }
+            }
+
+        }
+
+        function getFileId(node) {
+            const rt = {};
+
+            rt[node._prefab.fileId] = node.uuid;
+
+            if (node.children.length > 0) {
+                node.children.forEach((child) => {
+                    Object.assign(rt, getFileId(child));
+                });
+             }
+            return rt;
+        }
+    }
+
     /**
      * 从一个资源创建对应的节点
      * @param {*} parentUuid

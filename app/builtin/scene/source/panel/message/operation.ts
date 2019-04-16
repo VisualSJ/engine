@@ -168,6 +168,18 @@ export function apply(messages: any) {
     };
 
     /**
+     * 从资源数据还原一个 prefab 节点
+     */
+    messages['restore-prefab'] = async (uuid: string, assetUuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+
+        // 返回 uuid
+        return await $scene.forwarding('Node', 'restorePrefab', [uuid, assetUuid]);
+    };
+
+    /**
      * 删除一个节点
      */
     messages['remove-node'] = async (options: RemoveNodeOptions) => {

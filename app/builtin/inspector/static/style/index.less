@@ -1,46 +1,63 @@
 :host {
     display: flex;
 
-    & > .content {
+    >.content {
         height: 100%;
         flex: 1;
         display: flex;
         flex-direction: column;
         overflow: auto;
-    
-        & > .loading {
+
+        >.loading {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-    
-        & > section {
+
+        >section {
             padding: 10px 5px 6px 10px;
             flex: 1;
             display: flex;
             overflow-y: auto;
 
-            & > .asset {
+            >.asset {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
                 margin-right: 10px;
 
-                & > section {
+                >section {
                     flex: 1;
                 }
             }
-    
-            & > .node {
+
+            >.node {
                 flex: 1;
-    
-                & > .header {
+
+                >.prefab {
+                    text-align: right;
+                    margin-bottom: 10px;
+                    clear: both;
+                    >.title{
+                        float: left;
+                        line-height: 22px;
+                        color: var(--green-c);
+                    }
+
+                    >ui-button {
+                        margin-left: 10px;
+                        font-size: 11px;
+                    }
+
+                }
+
+                >.header {
                     line-height: 26px;
                     display: flex;
 
-                    & > .ui-prop {
+                    >.ui-prop {
                         display: block;
                         margin: 0;
 
@@ -48,24 +65,24 @@
                             flex: 1;
                             display: flex;
 
-                            & > ui-input {
+                            >ui-input {
                                 flex: 1;
                             }
                         }
                     }
                 }
 
-                & > ui-section {
+                >ui-section {
                     display: block;
                 }
-    
-                & > .comp {
+
+                >.comp {
                     display: flex;
                     flex-direction: column;
 
-                    & > ui-section {
+                    >ui-section {
 
-                        & > .header {
+                        >.header {
 
                             ui-checkbox {
                                 position: relative;
@@ -75,11 +92,11 @@
                     }
                 }
 
-                & > .footer {
+                >.footer {
                     margin: 10px 0;
                     text-align: center;
 
-                    & > ui-button {
+                    >ui-button {
                         padding: 4px 20px;
                     }
                 }
@@ -90,18 +107,18 @@
 
 ui-section {
 
-    & > .header {
+    >.header {
         padding: 0 4px;
         line-height: 26px;
         display: flex;
 
-        & > .name {
+        >.name {
             flex: 1;
         }
 
-        & > .setting {
+        >.setting {
 
-            & > i {
+            >i {
                 cursor: pointer;
                 padding: 4px;
             }
@@ -156,4 +173,3 @@ ui-section {
 
 @import './nodes/widget.less';
 @import './nodes/scene.less';
-

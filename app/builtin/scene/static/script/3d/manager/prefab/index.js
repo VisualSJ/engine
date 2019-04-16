@@ -64,7 +64,7 @@ async function link(nodeUuid, assetUuid) {
     const info = new cc._PrefabInfo();
     info.asset = asset || parentPrefab.asset;
     info.root = parentPrefab.root;
-    info.fileId = node.uuid;
+    info.fileId = parentPrefab.fileId || node.uuid;
     node._prefab = info;
 
     if (Array.isArray(node.children)) {
@@ -143,11 +143,13 @@ function generate(nodeUuid) {
     Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.uuid);
 
     utils.walkNode(node, (child) => {
-        const info = new cc._PrefabInfo();
-        info.asset = prefab;
-        info.root = node;
-        info.fileId = child.uuid; // todo fileID
-        child._prefab = info;
+        if (!child._prefab) { // 不存在才创建，存在的话，复用
+            const info = new cc._PrefabInfo();
+            info.asset = prefab;
+            info.root = node;
+            info.fileId = child.uuid;
+            child._prefab = info;
+        }
     });
 
     // 发送节点修改消息

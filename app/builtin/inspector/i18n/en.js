@@ -62,4 +62,10 @@ module.exports = {
         save: 'Save',
         abort: 'Abort',
     },
+
+    prefab: {
+        local: 'Local',
+        reset: 'Reset from asset',
+        save: 'Save to asset',
+    },
 };

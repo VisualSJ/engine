@@ -52,6 +52,7 @@ export function encodeNode(node: any): INode {
     if (node._prefab && node._prefab.asset) {
         data.__prefab__ = {
             uuid: node._prefab.asset._uuid,
+            fileId: node._prefab.fileId,
             rootUuid: node._prefab.root && node._prefab.root.uuid,
             sync: node._prefab.root && node._prefab.root._prefab.sync,
         };

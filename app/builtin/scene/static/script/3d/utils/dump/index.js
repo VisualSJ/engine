@@ -40,16 +40,6 @@ async function restoreNode(node, data) {
     return await dump.set(data, node);
 }
 
-async function restorePrefab(node, prefab) {
-    const root = Manager.Node.query(prefab.rootUuid);
-
-    const info = new cc._PrefabInfo();
-    info.asset = Manager.Utils.serialize.asAsset(prefab.uuid);
-    info.root = root ? root : node;
-    info.fileId = node.uuid;
-    node._prefab = info;
-}
-
 module.exports = {
     dumpNode,
     dumpComponent,

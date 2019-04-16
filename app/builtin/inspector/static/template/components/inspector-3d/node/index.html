@@ -10,6 +10,11 @@
     <template
         v-if="dump && !dump.isScene"
     >
+        <prefab-node
+            v-if="dump.__prefab__"
+            :dump="dump"
+        >
+        </prefab-node>
         <div class="header">
             <ui-prop empty="true"
                 :value="dump.active"

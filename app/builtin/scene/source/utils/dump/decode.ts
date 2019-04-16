@@ -145,6 +145,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
     if (
         info.key === 'enabledInHierarchy' ||
         info.key === '__scriptAsset' ||
+        info.key === 'node' ||
         info.key === 'uuid'
     ) {
         return;
