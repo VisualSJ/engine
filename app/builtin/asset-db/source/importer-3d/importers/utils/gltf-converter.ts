@@ -781,13 +781,6 @@ export class GltfConverter {
 
     private _readPrimitiveVertices(gltfPrimitive: MeshPrimitive, minPosition: cc.Vec3, maxPosition: cc.Vec3, options: IMeshOptions) {
         const attributeNames = Object.getOwnPropertyNames(gltfPrimitive.attributes);
-        if (attributeNames.length !== 0 && attributeNames[0] !== GltfSemanticName.POSITION) {
-            const i = attributeNames.findIndex((a) => a === GltfSemanticName.POSITION);
-            if (i >= 0) {
-                attributeNames.splice(i, 1);
-                attributeNames.unshift(GltfSemanticName.POSITION);
-            }
-        }
 
         // 统计出所有需要导出的属性，并计算它们在顶点缓冲区中的偏移以及整个顶点缓冲区的容量。
         let vertexStride = 0;
