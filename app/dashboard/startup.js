@@ -8,7 +8,7 @@ const ipc = require('@base/electron-base-ipc');
 const setting = require('@editor/setting');
 const project = require('@editor/project');
 const i18n = require('@base/electron-i18n');
-const processExists = require('process-exists');
+const psList = require('ps-list');
 
 let window = null;
 const languages = {
@@ -165,7 +165,21 @@ exports.listener = function() {
         if (existsSync(stateFile)) {
             const json = readJSONSync(stateFile);
             if (json && json.pid) {
-                if (await processExists(json.pid)) { // 进程在跑
+                const proccessList = await psList();
+                let exist = false;
+
+                const checkNames = ['electron', 'editor'];
+                for (const child of proccessList) {
+                    if (child.pid === json.pid) {
+                        const name = child.name.toLowerCase();
+                        if (checkNames.some((x) => name.startsWith(x))) {
+                            exist = true;
+                        }
+                        break;
+                    }
+                }
+
+                if (exist) { // 进程在跑
                     warnAlreadyOpened();
                     return;
                 }
@@ -289,7 +303,7 @@ function closeWindow() {
 
 function exitApp() {
     // TODO 未实现的功能：需要触发子进程里的 window 窗口 close 事件，同时等待是否保存数据
-    // 直接全部结束进程
+    // 现在是直接全部结束
     app.exit(0);
 }
 
