@@ -17,10 +17,6 @@ declare module 'image-data-uri' {
     };
 }
 
-declare module 'equirect-cubemap-faces-js' {
-    export default function equirectToCubemapFaces(image: HTMLImageElement): Array<HTMLCanvasElement>;
-}
-
 declare module 'tga-js' {
     export default class TGA {
         width: number;

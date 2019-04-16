@@ -99,6 +99,7 @@ export default class ImageImporter extends Importer {
                 asset.userData.redirect = textureCubeSubAsset.uuid;
                 textureCubeSubAsset.assignUserData(makeDefaultTextureCubeAssetUserData());
                 (textureCubeSubAsset.userData as TextureCubeAssetUserData).imageDatabaseUri = imageDatabaseUri;
+                (textureCubeSubAsset.userData as TextureCubeAssetUserData).isRGBE = !!asset.userData.isRGBE;
                 break;
             case 'sprite-frame':
                 // const sprite2DSubAsset = await asset.createSubAsset(asset.basename, 'texture');

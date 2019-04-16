@@ -44,7 +44,6 @@
         "cookie-parser": "^1.4.3",
         "d3": "^5.7.0",
         "del": "^3.0.0",
-        "equirect-cubemap-faces-js": "^2.3.0",
         "eruda": "^1.5.4",
         "escodegen": "^1.11.0",
         "esprima": "^4.0.1",

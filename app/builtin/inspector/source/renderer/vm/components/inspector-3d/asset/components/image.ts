@@ -26,6 +26,16 @@ export const template = `
         ></ui-checkbox>
     </ui-prop>
 
+    <ui-prop class="flipVertical"
+        label="isRGBE"
+        v-if="meta ? meta.userData.type==='texture cube' : false"
+    >
+        <ui-checkbox slot="content"
+            :value="meta ? meta.userData.isRGBE : false"
+            @confirm="_onDataChanged($event, 'isRGBE')"
+        ></ui-checkbox>
+    </ui-prop>
+
     <div class="platform-setting">
         <div class="platforms">
             <div class="platform-item"

@@ -1,17 +1,20 @@
 import { Asset, Importer, queryPathFromUrl, VirtualAsset } from '@editor/asset-db';
-import equirectToCubemapFaces from 'equirect-cubemap-faces-js';
 import {
     applyTextureBaseAssetUserData,
     makeDefaultTextureBaseAssetUserData,
     TextureBaseAssetUserData
 } from './texture-base';
+import { equirectToCubemapFaces } from './utils/equirect-cubemap-faces';
 
 export interface TextureCubeAssetUserData extends TextureBaseAssetUserData {
     imageDatabaseUri?: string;
+    isRGBE: boolean;
 }
 
 export function makeDefaultTextureCubeAssetUserData(): TextureCubeAssetUserData {
-    return makeDefaultTextureBaseAssetUserData();
+    const userData = makeDefaultTextureBaseAssetUserData();
+    (userData as TextureCubeAssetUserData).isRGBE = false;
+    return userData as TextureCubeAssetUserData;
 }
 
 interface IERPTextureCubeImporterSwapSpace {
@@ -66,7 +69,7 @@ export default class ERPTextureCubeImporter extends Importer {
             equirectImage.src = imageSource;
         });
 
-        const faceArray = equirectToCubemapFaces(equirectImage);
+        const faceArray = equirectToCubemapFaces(equirectImage, null, {isRGBE: userData.isRGBE});
         if (faceArray.length !== 6) {
             throw new Error(`Failed to split cubemap faces.`);
         }
