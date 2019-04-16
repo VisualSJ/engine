@@ -50,7 +50,7 @@ async function loadScript(uuid) {
     const asset = await ipc.send('query-asset-info', uuid);
 
     // 更新已经存在的脚本不需要删除，因为删除之后，会导致序列化错误
-    const canLoad = await removeScript(asset, true);
+    const canLoad = await removeScript(asset);
     if (!canLoad) {
         return;
     }
@@ -62,6 +62,9 @@ async function loadScript(uuid) {
         return;
     }
 
+    const url = userData.moduleId;
+    await System.delete(url);
+
     raw2library[asset.file] =  asset.library['.js'];
     library2raw[asset.library['.js']] =  asset.file;
     uuid2raw[uuid] = asset.file
@@ -69,7 +72,6 @@ async function loadScript(uuid) {
     require(asset.library['.js']);
     console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
 
-    const url = userData.moduleId;
     console.log(`Load script ${url}`);
     await System.import(url);
 
@@ -126,9 +128,8 @@ async function _loadScripts(scripts) {
 /**
  * 根据 asset 移除对应的脚本缓存
  * @param {*} asset
- * @param {*} keep
  */
-async function removeScript(asset, keep) {
+async function removeScript(asset) {
     const name = basename(asset.file, extname(asset.file));
 
     // 未曾导入过的脚本，需要判断是否有重名
@@ -152,9 +153,8 @@ async function removeScript(asset, keep) {
     // 移除引擎内的索引
     const sid = uuidUtils.compressUuid(asset.uuid);
     const ctor = cc.js._registeredClassIds[sid];
-    if (ctor && !keep) {
-        cc.js.unregisterClass(ctor);
-    }
+
+    cc.js.unregisterClass(ctor);
 
     // 清除 menu 里面的缓存
     for (let i = 0; i < cc._componentMenuItems.length; i++) {

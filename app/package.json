@@ -1,6 +1,6 @@
 {
     "name": "editor",
-    "version": "0.1.2-beta1",
+    "version": "0.8.0",
     "description": "",
     "main": "index.js",
     "author": "XiaMen YaJi",
@@ -111,7 +111,7 @@
         "@base/electron-windows": "1.0.5",
         "@base/electron-worker": "1.0.5",
         "@editor/asset-db": "1.1.13",
-        "@editor/cocos-script": "^1.0.3",
+        "@editor/cocos-script": "1.0.5",
         "@editor/dock": "1.0.3",
         "@editor/fbx2gltf": "0.9.7-9c16d3d-2",
         "@editor/gulp-rev-all": "^0.9.8-5f221a5",
