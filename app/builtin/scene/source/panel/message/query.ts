@@ -105,7 +105,7 @@ export function apply(messages: any) {
         if (!$scene) {
             return null;
         }
-        return await $scene.forwarding('Scene', 'serialize');
+        return await $scene.forwarding('Scene', 'mainSerialize');
     };
 
     /**

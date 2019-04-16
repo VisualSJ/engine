@@ -182,6 +182,12 @@ class SceneMode extends Mode {
      * 序列化当前正在编辑的场景
      */
     serialize() {
+        // 如果缓存了数据，说明当前运行的可能不是场景
+        // 所以直接返回缓存的数据
+        if (this._staging) {
+            return this._staging;
+        }
+
         const scene = cc.director.getScene();
         if (!scene) {
             return null;

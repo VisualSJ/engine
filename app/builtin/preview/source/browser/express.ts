@@ -116,11 +116,11 @@ export async function start() {
         const start_scene = getConfig('start_scene');
         const err = new ReqError(`无法查到当前场景 json 数据(start_scene) = ${start_scene}`, 500);
         if (start_scene === 'current_scene') {
-            const json = await Editor.Ipc.requestToPanel('scene', 'query-scene-json');
-            if (!json) {
+            const sceneAsset = await Editor.Ipc.requestToPanel('scene', 'query-scene-json');
+            if (!sceneAsset) {
                 next(err);
             }
-            res.end(json);
+            res.end(sceneAsset);
         } else if (start_scene) {
             const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', start_scene);
             if (asset && asset.library['.json']) {

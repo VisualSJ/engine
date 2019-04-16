@@ -97,7 +97,7 @@ export const methods = {
 
 export const messages = {
     async 'scene:ready'() {
-        const info = await Editor.Ipc.requestToPackage('scene', 'query-preview-info');
+        const info = await Editor.Ipc.requestToPanel('scene', 'query-preview-info');
         await init(info.id);
         panel.resize();
         panel.update();
@@ -107,7 +107,7 @@ export const messages = {
     'scene:close'() {},
 
     async 'scene:change-node'() {
-        const info = await Editor.Ipc.requestToPackage('scene', 'query-preview-info');
+        const info = await Editor.Ipc.requestToPanel('scene', 'query-preview-info');
         panel.updateText(info.windows);
         requestAnimationFrame(panel.update);
     },
@@ -116,7 +116,7 @@ export const messages = {
 export async function ready() {
     // @ts-ignore
     panel = this;
-    const info = await Editor.Ipc.requestToPackage('scene', 'query-preview-info');
+    const info = await Editor.Ipc.requestToPanel('scene', 'query-preview-info');
     await init(info.id);
     panel.resize();
     panel.update();

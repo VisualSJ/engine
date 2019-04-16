@@ -203,6 +203,13 @@ class SceneManager extends EventEmitter {
     }
 
     /**
+     * 返回场景编辑里面的序列化数据
+     */
+    async mainSerialize() {
+        return await this.modes.main.serialize();
+    }
+
+    /**
      * 保存场景
      */
     async save(url) {
