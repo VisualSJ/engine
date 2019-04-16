@@ -10,6 +10,7 @@
         :isPrefab="node.isPrefab"
         :isScene="node.isScene"
         :visible="node.isVisible.toString()"
+        :additional="JSON.stringify(node.components)"
         @mousedown="mouseDown($event, node)"
         @click="click($event, node)"
         @dblclick="dblclick($event, node)"

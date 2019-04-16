@@ -5,6 +5,8 @@ const path = require('path');
 
 const Base = require('../base');
 
+const DragArea = require('./drag-area');
+
 const STYLE = `<style>${fs.readFileSync(path.join(__dirname, './drag-object.css'), 'utf8')}</style>`;
 const CUSTOM_STYLE = `<style id="custom-style"></style>`;
 const HTML = `${fs.readFileSync(path.join(__dirname, './drag-object.html'), 'utf8')}`;
@@ -216,7 +218,7 @@ class DragObject extends Base {
         if (this.$root.disabled || this.$root.readonly) {
             return;
         }
-        this.$root.setAttribute('state', this.hoving ? 'allow' : 'refused');
+        this.$root.setAttribute('state', (this.hoving || this.additional) ? 'allow' : 'refused');
     }
 
     /**
@@ -241,7 +243,19 @@ class DragObject extends Base {
         if (state === 'refused') {
             return;
         }
-        this.$root.value = event.dataTransfer.getData('value');
+
+        if (this.additional) {
+            const types = this.dropable;
+            const list = DragArea.currentDragInfo.additional;
+            for (const item of list) {
+                if (types.includes(item.type)) {
+                    this.$root.value = item.value;        
+                    return;
+                }
+            }
+        } else {
+            this.$root.value = event.dataTransfer.getData('value');
+        }
     }
 
     /**

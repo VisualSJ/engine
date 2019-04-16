@@ -55,6 +55,27 @@ class DragItem extends window.HTMLElement {
         }
     }
 
+    get additional() {
+        const str = this.getAttribute('additional');
+        try {
+            return JSON.parse(str);
+        } catch(error) {
+            return [];
+        }
+    }
+
+    set additional(array) {
+        if (array && !Array.isArray(array)) {
+            return console.warn(`additional must be array`);
+        }
+
+        if (array && Array.isArray(array)) {
+            this.setAttribute('additional', JSON.stringify(array));
+        } else {
+            this.removeAttribute('additional');
+        }
+    }
+
     /**
      * 插入文档流
      */
@@ -84,9 +105,18 @@ class DragItem extends window.HTMLElement {
         const info = {
             type: this.type,
             extends: this.extends,
+
+            // 附加数据，在移入 area 的时候会判断
+            additional: this.additional || null,
+            // [
+            //     { type: 'cc.SpriteFrame', value: 'uuid' }
+            // ],
         };
 
         (event.dataTransfer.types || []).forEach((name) => {
+            if (info[name]) {
+                return;
+            }
             info[name] = event.dataTransfer.getData(name);
         });
 

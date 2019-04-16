@@ -247,6 +247,12 @@ class SceneManager extends EventEmitter {
                 parent: (node.parent && node.parent.uuid) || '',
                 isScene: node.constructor.name === 'Scene',
                 readonly: false,
+                components: node._components.map((comp) => {
+                    return {
+                        type: cc.js.getClassName(comp.constructor),
+                        value: comp.uuid,
+                    };
+                }),
             };
         };
 

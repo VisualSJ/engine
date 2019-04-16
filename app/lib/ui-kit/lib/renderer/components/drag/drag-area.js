@@ -23,6 +23,25 @@ class DragArea extends window.HTMLElement {
         return dragInfo;
     }
 
+    get additional() {
+        return this.getAttribute('additional') !== null;
+    }
+
+    set additional(bool) {
+        clearTimeout(this.additionalTimer);
+
+        bool = !!bool;
+        if (bool) {
+            this.setAttribute('additional', '');
+        } else {
+            // 在多元素 dragOver 过程中有“缝隙”，会导致 hoving 属性频繁切换
+            // 延迟去除是为了固定 hoving 属性，便可以配合 css 样式使用
+            this.hovingTimer = setTimeout(() => {
+                this.removeAttribute('additional');
+            }, 200);
+        }
+    }
+
     get hoving() {
         return this.getAttribute('hoving') !== null;
     }
@@ -94,6 +113,12 @@ class DragArea extends window.HTMLElement {
         if (!hoving && Array.isArray(dragInfo.extends)) {
             hoving = dragInfo.extends.some((type) => {
                 return types && types.indexOf(type) !== -1;
+            });
+        }
+
+        if (dragInfo.additional && Array.isArray(dragInfo.additional)) {
+            this.additional = dragInfo.additional.some((item) => {
+                return types && types.indexOf(item.type) !== -1;
             });
         }
 
