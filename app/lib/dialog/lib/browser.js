@@ -65,6 +65,7 @@ class Dialog {
             buttonLabel: options.label || '保存',
         };
 
+        // [{ name: 'Scene File', extensions: ['scene'] }]
         if (options.filters) {
             config.filters = options.filters;
         }

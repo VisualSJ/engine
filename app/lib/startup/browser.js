@@ -24,6 +24,7 @@ const array = [
     'project-setting',
     'preview',
     'build',
+    'animator',
     'tester',
 ];
 
@@ -69,7 +70,7 @@ class Startup extends EventEmitter {
                     console.error(error);
                 }
             }
-    
+
             // 扫描全局和本地插件
             await Package.registerDir(ps.join(Editor.App.home, 'packages'));
             await Package.registerDir(ps.join(Editor.Project.path, 'packages'));

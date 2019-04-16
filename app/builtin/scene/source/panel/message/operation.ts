@@ -331,23 +331,56 @@ export function apply(messages: any) {
     /**
      * 更改当前正在编辑的动画的 sample
      */
-    messages['change-clip-sample'] = (clip: string, sample: number) => {
-        return $scene.forwatding('Animation', 'operation', 'changeSample', clip, sample);
+    messages['change-clip-sample'] = (uuid: string, clipUuid: string, sample: number) => {
+        return $scene.forwarding('Animation', 'operation', ['changeSample', uuid, clipUuid, sample]);
     };
 
     /**
      * 更改当前正在编辑的动画的 wrapMode
      */
-    messages['change-clip-wrap-mode'] = (clip: string, wrapMode: number) => {
-        return $scene.forwatding('Animation', 'operation', 'changeWrapMode', clip, wrapMode);
+    messages['change-clip-wrap-mode'] = (uuid: string, clipUuid: string, wrapMode: number) => {
+        return $scene.forwarding('Animation', 'operation', ['changeWrapMode', uuid, clipUuid, wrapMode]);
+    };
+
+    /**
+     * 更改当前动画编辑模式
+     */
+    messages.record = async (uuid: string) => {
+        await $scene.forwarding('Animation', 'record', [uuid]);
     };
 
     /**
      * 更改当前正在编辑的动画的 speed
      */
-    messages['change-clip-speed'] = (clip: string, speed: number) => {
-        return $scene.forwatding('Animation', 'operation', 'changeSpeed', clip, speed);
+    messages['change-clip-speed'] = (clipUuid: string, speed: number) => {
+        return $scene.forwarding('Animation', 'operation', ['changeSpeed', clipUuid, speed]);
     };
 
+    /**
+     * 更改当前正在编辑的动画的 播放状态
+     */
+    messages['change-clip-state'] = (oprate: string, clip: string) => {
+        return $scene.forwarding('Animation', oprate, [clip]);
+    };
+
+    messages['change-clip-prop'] = (oprate: string, clipUuid: string, path: string, comp: any, prop: string) => {
+        return $scene.forwarding('Animation', 'operation', [oprate, clipUuid, path, comp, prop]);
+    };
+
+    messages['create-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
+        return $scene.forwarding('Animation', 'operation', ['createKey', clipUuid, path, comp, prop, frame]);
+    };
+
+    messages['remove-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
+        return $scene.forwarding('Animation', 'operation', ['removeKey', clipUuid, path, comp, prop, frame]);
+    };
+
+    messages['move-clip-keys'] = (clipUuid: string, path: string, comp: any, prop: string, frames: number[], offset: number) => {
+        return $scene.forwarding('Animation', 'operation', ['moveKeys', clipUuid, path, comp, prop, frames, offset]);
+    };
+
+    messages['clear-node-clip'] = (clipUuid: string, path: string) => {
+        return $scene.forwarding('Animation', 'operation', ['clearNode', clipUuid, path]);
+    };
     // TODO 暴露各种操作消息
 }

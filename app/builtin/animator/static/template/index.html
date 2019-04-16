@@ -1,0 +1,145 @@
+<div class="animator"
+    @confirm="onConfirm"
+>
+    <div class="container">
+        <div class="left" ref="left">
+            <tool-bar
+                @mousedown="onToolBar"
+                :time="currentTime"
+                :root="root"
+                :clip="clipDump && clipDump.name"
+                :state="animationState"
+                :dirty="dirty"
+            >
+            </tool-bar>
+            <div class="flex-1 content nodes" 
+            @scroll="onScroll($event, 'node')">
+                <node-tree 
+                    :dumps="nodeDump"
+                    :select="selectedId"
+                    :indent=0
+                    :uuid="currentClip"
+                ></node-tree>
+            </div>
+            <property-tools
+                :uuid="selectedId"
+                @datachange="onProperty"
+            ></property-tools>
+            <div class="flex-1 content propertys" 
+                v-if="properties && Object.keys(properties).length > 0" 
+                @scroll="onScroll($event, 'property')"
+            >    
+                <property-tree v-for="(item, name) in properties" 
+                    :key="name" 
+                    :name="name"
+                    :info="item"
+                    :frame="currentFrame"
+                    @datachange="onProperty"
+                ></property-tree>
+            </div>
+        </div>
+        <div class="right control" ref="right" 
+            @mousewheel = "onMouseWheel"
+            @dragover = onDragOver
+            @mousedown = "onMouseDown"
+            @mousemove = "onMouseMove"
+        >
+            <div class="content-device header">
+                <events
+                    v-if="eventsDump"
+                    :events="eventsDump"
+                    :offset="startOffset"
+                    @datachange="onEvents"
+                >
+                </events>
+            </div> 
+            <div class="content" 
+                v-if="grid && nodeDump && clipDump"
+                ref="node-content"
+            >
+                <template
+                    v-for="path in nodeDump.nodes"
+                >
+                    <preview-row 
+                        :key-frames=calcNodeFrames(path)
+                        :path="path"
+                        :select-key="selectKey"
+                        @datachange="onPreviewRow"
+                    ></preview-row>
+                </template>
+            </div> 
+            <div class="property-tools">
+                <span>wrapMode</span>
+                <ui-select 
+                    :value="clipDump ? clipDump.wrapMode : 0"
+                    name="wrapMode"
+                >
+                    <option value="0">Default</option>
+                    <option value="1">Normal</option>
+                    <option value="2">Loop</option>
+                    <option value="22">PingPong</option>
+                    <option value="36">Reverse</option>
+                    <option value="38">LoopReverse</option>
+                </ui-select>
+            </div> 
+            <div class="content"
+                v-if="grid && clipDump"
+                ref="property-content"
+            >
+                <template
+                    v-for="(item, name) in properties"
+                >
+                    <preview-row 
+                        :key-frames=calcFrames(item)
+                        :path="selectPath"
+                        :select-key="selectKey"
+                        :name="name"
+                        @datachange="onPreviewRow"
+                    ></preview-row>
+                </template>
+            </div> 
+            <control-preview 
+                :position="pointerPosition"
+                :offset="startOffset"
+                @dragstart="onDragStart"
+            ></control-preview>
+        </div>
+    </div>
+    <canvas 
+    ref="gridCanvas"
+    ></canvas>
+    <div class="foot">
+        <div class="left">
+            <span v-if="dirty">*</span>
+            <span>Clips</span>
+            <ui-select v-if="clipsMenu && clipsMenu.length > 0" :value="currentClip">
+                <option v-for="item in clipsMenu" :value="item.uuid">{{item.name}}</option>
+            </ui-select>
+        </div> 
+        <div class="right" v-if="clipDump">
+            <span>sample</span>
+            <ui-num-input :value="clipDump.sample" step="1" name="sample"></ui-num-input>
+            <span>speed</span>
+            <ui-num-input :value="clipDump.speed" name="speed"></ui-num-input>
+            <span>Duration :{{clipDump.duration.toFixed(2)}}({{(clipDump.duration / clipDump.speed).toFixed(2)}})s</span>
+        </div> 
+    </div>
+    <event-editor
+        v-if="showEventEditor"
+        :events="eventsDump"
+        :frame="currentFrame"
+        @close="showEventEditor = false"
+    ></event-editor>
+    <tips-mask
+        v-if = "!animationMode"
+        :root = "root"
+        :animation-mode = "animationMode"
+        :has-comp = "hasAnimationComp"
+        :has-clip = "hasAniamtionClip"
+        :comp-index = "compIndex"
+    ></tips-mask>
+    
+    <div class="loading" v-if="loading">
+        动画数据载入中，请稍等.......
+    </div>
+</div>

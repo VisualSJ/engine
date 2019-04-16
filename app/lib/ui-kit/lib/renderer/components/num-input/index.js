@@ -487,8 +487,8 @@ class NumInput extends Base {
     }
 
     /**
-     * 
-     * @param {*} event 
+     *
+     * @param {*} event
      */
     _onInputBlur(event) {
         // 判断是否为可读或禁用

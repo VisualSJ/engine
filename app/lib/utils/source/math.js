@@ -11,6 +11,16 @@ const MathUtils = {
     },
 
     /**
+     * @method clamp01
+     * @param {number} val
+     * @return {number}
+     *
+     * Clamps a value between 0 and 1.
+     */
+    clamp01(val) {
+        return val < 0 ? 0 : val > 1 ? 1 : val;
+    },
+    /**
      * 加法函数
      * 入参：函数内部转化时会先转字符串再转数值，因而传入字符串或number均可
      * 返回值：arg1加上arg2的精确结果

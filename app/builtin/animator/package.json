@@ -1,0 +1,26 @@
+{
+    "name": "animator",
+    "version": "0.0.1",
+
+    "description": "Animation editor",
+
+    "menu": {
+        "i18n:menu.panel/i18n:animator.title": {
+            "message": "open",
+            "icon": "./static/icon.png"
+        }
+    },
+
+    "main": "./dist/browser.js",
+    "panel": {
+        "title": "i18n:animator.title",
+        "main": "./dist/panel/index.js",
+        "icon": "./static/icon.png",
+        "min-width": 800,
+        "min-height": 500,
+        "width": 1000,
+        "height": 600
+    },
+
+    "author": "Cocos"
+}

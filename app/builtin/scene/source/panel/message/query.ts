@@ -177,6 +177,13 @@ export function apply(messages: any) {
     };
 
     /**
+     * 查询当前动画的播放状态
+     */
+    messages['query-animation-state'] = (clip: string) => {
+        return $scene.forwarding('Animation', 'queryRecordAnimState', [clip]);
+    };
+
+    /**
      * 传入一个节点，查询这个节点所在的动画节点的 uuid
      */
     messages['query-animation-root'] = (uuid: string) => {
@@ -186,8 +193,8 @@ export function apply(messages: any) {
     /**
      * 查询一个 clip 的 dump 数据
      */
-    messages['query-animation-clip'] = (uuid: string) => {
-        return $scene.forwarding('Animation', 'queryClip', [uuid]);
+    messages['query-animation-clip'] = (nodeUuid: string, clipUuid: string) => {
+        return $scene.forwarding('Animation', 'queryClip', [nodeUuid, clipUuid]);
     };
 
     /**
@@ -195,5 +202,12 @@ export function apply(messages: any) {
      */
     messages['query-animation-properties'] = (uuid: string) => {
         return $scene.forwarding('Animation', 'queryProperties', [uuid]);
-    }
+    };
+
+    /**
+     * 查询一个节点上的所有动画 clips 信息
+     */
+    messages['query-animation-clips-info'] = (nodeUuid: string) => {
+        return $scene.forwarding('Animation', 'queryAnimClipsInfo', [nodeUuid]);
+    };
 }
