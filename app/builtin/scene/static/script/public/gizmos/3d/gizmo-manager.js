@@ -645,7 +645,11 @@ class GizmoManager {
 
     onNodeAdded(node) {
         if (node != null) {
-            this.showAllGizmoOfNode(node);
+            // 只显示当前选中的结点的Gizmo
+            let index = this._selection.indexOf(node.uuid);
+            if (index !== -1) {
+                this.showAllGizmoOfNode(node);
+            }
         }
     }
 
@@ -656,7 +660,13 @@ class GizmoManager {
     }
 
     onComponentAdded(comp) {
-        this.showComponentGizmoOfNode(comp.node);
+        if (comp) {
+            // 只显示当前选中的结点的Gizmo
+            let index = this._selection.indexOf(comp.node.uuid);
+            if (index !== -1) {
+                this.showComponentGizmoOfNode(comp.node);
+            }
+        }
     }
 
     onBeforeComponentRemove(comp) {
