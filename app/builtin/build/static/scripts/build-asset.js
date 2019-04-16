@@ -1,7 +1,7 @@
 const buildResult = require('./build-result');
 const { updateProgress, requestToPackage, getAssetUrl} = require('./utils');
 const platfomConfig = require('./platforms-config');
-const {copySync, ensureDirSync, readJSONSync} = require('fs-extra');
+const {copySync, ensureDirSync, readJSONSync, existsSync} = require('fs-extra');
 const {join, dirname, extname} = require('path');
 const lodash = require('lodash'); // 排序、去重
 const CompressTexture = require('./texture-compress');
@@ -223,13 +223,29 @@ class AssetBuilder {
             return;
         }
         this.hasBuild[asset.uuid] = true;
-        if (!asset.library) {
-            asset = await requestToPackage('asset-db', 'query-asset-info', asset.uuid);
-            if (!asset) {
-                return;
-            }
-            buildResult.assetCache[asset.uuid] = asset;
+
+        if (!asset || !asset.uuid) {
+            // 这里的 debugger 是故意留着的
+            // 这个错误不应该发生，所以所有进入这里的代码都需要调试
+            debugger;
+            console.warn(`Builder: discovery of unknown resources`);
+            return;
         }
+
+        // 补全 asset 信息
+        if (!asset.library) {
+            let info = await requestToPackage('asset-db', 'query-asset-info', asset.uuid);
+            if (info) {
+                asset = buildResult.assetCache[asset.uuid] = info;
+            }
+        }
+
+        // 如果资源在缓存内找不到，或者 library 内文件找不到，则提示错误
+        if (!buildResult.assetCache[asset.uuid]) {
+            console.warn(`Builder: Asset is not found\n  uuid: ${asset.uuid}`);
+            return;
+        }
+
         let library = buildResult.assetCache[asset.uuid].library ;
         // 不存在对应序列化 json 的资源，不需要去做反序列化操作，例如 fbx
         if (!library['.json']) {
@@ -243,33 +259,40 @@ class AssetBuilder {
             this.MissingClass = Editor.require('app://editor/page/scene-utils/missing-class-reporter').MissingClass;
         }
         this.MissingClass.hasMissingClass = false;
-        let deseriAsset = cc.deserialize(json, deserializeDetails, {
-            createAssetRefs: true,
-            ignoreEditorOnly: true,
-            classFinder: this.MissingClass.classFinder,
-        });
-        if (this.MissingClass.hasMissingClass) {
-            this.MissingClass.reportMissingClass(asset);
-            console.error(`build-error:Resources in ${asset.uuid} are missing ,please check again!`);
-        }
-        deseriAsset._uuid = asset.uuid;
-        // 预览时只需找出依赖的资源，无需缓存 asset
-        // 检查以及查找对应资源，并返回给对应 asset 数据
-        deserializeDetails.assignAssetsBy((uuid) => {
-            var exists = buildResult.assetCache[uuid];
-            if (exists === undefined) {
-                exists = true;
+
+        try {
+            let deseriAsset = cc.deserialize(json, deserializeDetails, {
+                createAssetRefs: true,
+                ignoreEditorOnly: true,
+                classFinder: this.MissingClass.classFinder,
+            });
+            if (this.MissingClass.hasMissingClass) {
+                this.MissingClass.reportMissingClass(asset);
+                console.error(`Builder: Asset in ${asset.uuid} are missing, please check again!`);
             }
-            if (exists) {
-                return Editor.serialize.asAsset(uuid);
-            } else {
-                // remove deleted asset reference
-                // if is RawAsset, it would also be ignored in serializer
-                return null;
+            deseriAsset._uuid = asset.uuid;
+            // 预览时只需找出依赖的资源，无需缓存 asset
+            // 检查以及查找对应资源，并返回给对应 asset 数据
+            deserializeDetails.assignAssetsBy((uuid) => {
+                var exists = buildResult.assetCache[uuid];
+                if (exists === undefined) {
+                    exists = true;
+                }
+                if (exists) {
+                    return Editor.serialize.asAsset(uuid);
+                } else {
+                    // remove deleted asset reference
+                    // if is RawAsset, it would also be ignored in serializer
+                    return null;
+                }
+            });
+            if (this.shoudBuild) {
+                await this.compress(deseriAsset);
             }
-        });
-        if (this.shoudBuild) {
-            await this.compress(deseriAsset);
+
+        } catch (error) {
+            console.error(`Builder: An unknown error occurred while parsing the asset\n  uuid: ${asset.uuid}`);
+            return;
         }
         // 将资源对应的依赖资源加入构建队列，并递归查询依赖
         if (deserializeDetails.uuidList.length > 0) {

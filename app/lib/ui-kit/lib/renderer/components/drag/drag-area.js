@@ -116,7 +116,7 @@ class DragArea extends window.HTMLElement {
             });
         }
 
-        if (dragInfo.additional && Array.isArray(dragInfo.additional)) {
+        if (dragInfo && dragInfo.additional && Array.isArray(dragInfo.additional)) {
             this.additional = dragInfo.additional.some((item) => {
                 return types && types.indexOf(item.type) !== -1;
             });
