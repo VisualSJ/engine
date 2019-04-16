@@ -19,7 +19,7 @@ import {
 // @ts-ignore
 import { get, set } from 'lodash';
 
-function decodeChild(children: any[], node: any) {
+function decodeChildren(children: any[], node: any) {
     const dumpChildrenUuids: string[] = children.map((child: any) => child.value.uuid);
     const nodeChildrenUuids: string[] = node.children.map((child: INode) => child.uuid);
 
@@ -49,6 +49,58 @@ function decodeChild(children: any[], node: any) {
     });
 }
 
+// 差异还原节点上的组件
+async function decodeComponents(dumpComps: any, node: any) {
+    const dumpCompsUuids = dumpComps.map((comp: any) => {
+        // @ts-ignore
+        if (comp.value.uuid) {
+            // @ts-ignore
+            return comp.value.uuid.value;
+        }
+    });
+
+    const componentsUuids = node._components.map((component: any) => {
+        return component.uuid;
+    });
+
+    // 删除不在新数据上的 component
+    componentsUuids.forEach((compUuid: string) => {
+        if (!dumpCompsUuids.includes(compUuid)) {
+            Manager.Node.removeComponent(compUuid);
+        }
+    });
+
+    for (let i = 0; i < dumpComps.length; i++) {
+        const dumpComp = dumpComps[i];
+        let component = node._components[i];
+
+        // @ts-ignore
+        if (dumpComp.value.uuid) {
+            // @ts-ignore
+            const cacheComp = Manager.Component.query(dumpComp.value.uuid.value);
+            if (cacheComp) {
+                component = node._components[i] = cacheComp;
+                Manager.Component.addComponent(cacheComp);
+            }
+        }
+
+        if (!component) { // 引擎上新增
+            component = node.addComponent(dumpComp.type);
+        }
+
+        if (!dumpComp.value) {
+            continue;
+        }
+
+        for (const key in dumpComp.value) {
+            if (!(key in dumpComp.value)) {
+                continue;
+            }
+            await decodePatch(key, dumpComp.value[key], component);
+        }
+    }
+}
+
 /**
  * 解码一个场景 dump 数据
  * @param dump
@@ -62,7 +114,7 @@ export async function decodeScene(dump: IScene, scene?: any) {
     scene.name = dump.name.value;
     scene.active = dump.active.value;
 
-    dump.children && (decodeChild(dump.children, scene));
+    dump.children && (decodeChildren(dump.children, scene));
 
     for (const key of Object.keys(dump._globals)) {
         for (const itemName of Object.keys(dump._globals[key])) {
@@ -96,27 +148,9 @@ export async function decodeNode(dump: INode, node?: any) {
         node.parent = null;
     }
 
-    dump.children && (decodeChild(dump.children, node));
+    dump.children && (decodeChildren(dump.children, node));
 
-    for (let i = 0; i < dump.__comps__.length; i++) {
-        const componentDump = dump.__comps__[i];
-        let component = node._components[i];
-
-        if (!component) {
-            component = node.addComponent(componentDump.type);
-        }
-
-        if (!componentDump.value) {
-            continue;
-        }
-
-        for (const key in componentDump.value) {
-            if (!(key in componentDump.value)) {
-                continue;
-            }
-            await decodePatch(key, componentDump.value[key], component);
-        }
-    }
+    await decodeComponents(dump.__comps__, node);
 
     if (node.__prefab__) {
         const prefab = node.__prefab__;
