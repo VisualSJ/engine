@@ -24,12 +24,13 @@ function decodeChildren(children: any[], node: any) {
     const nodeChildrenUuids: string[] = node.children.map((child: INode) => child.uuid);
 
     /**
-     * 为了不影响两个数组共有的 uuids
-     * 移除在 node 且不在 dump 的 uuid
-     * 添加在 dump 且不在 node 的 uuid
+     * 出于性能考虑，不去移动两个数组共有的节点
+     * 移除在 node 中且不在 dump 中的 uuid
+     * 添加在 dump 中且不在 node 中的 uuid
+     * 按照 dump 中的顺序重新排列
      */
     nodeChildrenUuids.forEach((uuid: string) => {
-        // @ts-ignore
+        // 删除不存在的节点
         if (!dumpChildrenUuids.includes(uuid)) {
             const child = Manager.Node.query(uuid);
             // 重要：过滤隐藏节点
@@ -40,12 +41,15 @@ function decodeChildren(children: any[], node: any) {
         }
     });
 
-    dumpChildrenUuids.forEach((uuid: string) => {
-        // @ts-ignore
+    dumpChildrenUuids.forEach((uuid: string, i: number) => {
+        const child = Manager.Node.query(uuid);
+        // 节点挂靠父级
         if (!nodeChildrenUuids.includes(uuid)) {
-            const child = Manager.Node.query(uuid);
             child.parent = node;
         }
+
+        // 按新的顺序排列
+        node.children[i] = child;
     });
 }
 
