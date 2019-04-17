@@ -207,6 +207,9 @@ exports.listener = function() {
             return;
         }
 
+        // 优先关闭面板
+        hideWindow();
+
         // electron 程序地址
         const exePath = app.getPath('exe');
 
@@ -254,8 +257,6 @@ exports.listener = function() {
         });
 
         outputJSONSync(stateFile, stateJson); // 保存项目启动状态
-
-        hideWindow();
     });
 };
 
