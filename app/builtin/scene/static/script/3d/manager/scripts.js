@@ -49,7 +49,6 @@ async function loadScript(uuid) {
     }
     const asset = await ipc.send('query-asset-info', uuid);
 
-    // 更新已经存在的脚本不需要删除，因为删除之后，会导致序列化错误
     const canLoad = await removeScript(asset);
     if (!canLoad) {
         return;
