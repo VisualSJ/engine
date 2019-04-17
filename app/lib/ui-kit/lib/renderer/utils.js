@@ -211,7 +211,7 @@ domUtils.setStyle = (element, cssObj) => {
  * @param {Number | String} arg2
  */
 mathUtils.accAdd = (arg1, arg2) => {
-    let { maxPow , num1, num2} = mathUtils.computMaxPow(arg1, arg2);
+    let { maxPow, num1, num2 } = mathUtils.computMaxPow(arg1, arg2);
     return (num1 + num2) / maxPow;
 };
 
@@ -223,12 +223,12 @@ mathUtils.accAdd = (arg1, arg2) => {
  * @param {Number | String} arg2
  */
 mathUtils.accSub = (arg1, arg2) => {
-    let {maxPow, maxPreci} = mathUtils.computMaxPow(arg1, arg2);
+    let { maxPow, maxPreci } = mathUtils.computMaxPow(arg1, arg2);
     return ((arg1 * maxPow - arg2 * maxPow) / maxPow).toFixed(maxPreci);
 };
 
 /**
- * 计算两个数值小数点位数的最大位数与10的乘积,与最大精度
+ * 计算两个数值小数点位数的最大位数与 10 的乘积,与最大精度
  * 入参：函数内部转化时会先转字符串再转数值，因而传入字符串或number均可
  * 返回值：
  * @param {Number | String} arg1
@@ -245,17 +245,21 @@ mathUtils.computMaxPow = (arg1, arg2) => {
     if (maxPreci > 20) {
         maxPreci = 20;
     }
-    if (r1 === 0 && maxPreci > 0) {
-        num1 = num1 * maxPow;
-    } else {
-        num1 = Number(arg1.toString().replace('.', ''));
-    }
 
-    if (r2 === 0 && maxPreci > 0) {
-        num2 = num2 * maxPow;
-    } else {
-        num2 = Number(arg2.toString().replace('.', ''));
-    }
+    // 这里的 else 会引起问题：
+    // 如果 num1 = 0.1 这时候 maxPreci = 2
+    // 按照函数意思，这个 num1 应该是 10，而 else 那段代码会将数据变成 1
+    // if (r1 === 0 && maxPreci > 0) {
+    num1 = num1 * maxPow;
+    // } else {
+    //     num1 = Number(arg1.toString().replace('.', ''));
+    // }
+
+    // if (r2 === 0 && maxPreci > 0) {
+    num2 = num2 * maxPow;
+    // } else {
+    //     num2 = Number(arg2.toString().replace('.', ''));
+    // }
     return {
         maxPow,
         maxPreci,

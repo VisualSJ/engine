@@ -323,6 +323,13 @@ class NumInput extends Base {
      * @param {*} step
      */
     stepUp(step) {
+        //判断是否为可读或禁用
+        if (this.disabled || this.readonly) {
+            return;
+        }
+        if (this._staging === null) {
+            this.$input.focus();
+        }
         this.focused = true;
         const inscrease = step || this.step;
         let value = mathUtils.accAdd(this.$input.value, inscrease);
@@ -344,6 +351,13 @@ class NumInput extends Base {
      * @param {*} step 注意：这相当于一个减法函数，传入 5 是减 5，传入 -5 是加上 5
      */
     stepDown(step) {
+        //判断是否为可读或禁用
+        if (this.disabled || this.readonly) {
+            return;
+        }
+        if (this._staging === null) {
+            this.$input.focus();
+        }
         this.focused = true;
         const decrease = step || this.step;
         let value = mathUtils.accSub(this.$input.value, decrease);
@@ -378,10 +392,7 @@ class NumInput extends Base {
             case 13: // enter
                 // 值发生变化
                 if (this._staging !== null && this._staging !== parseFloat(this.getAttribute('value'))) {
-                    // confirm之前需要更改暂存数据值
-                    this._staging = parseFloat(this.getAttribute('value') || 0);
-                    this.$input.value = this._staging;
-                    delete this._staging;
+                    this.$input.value = parseFloat(this.getAttribute('value') || 0);
                     this.dispatch('confirm');
                 }
 
@@ -400,7 +411,7 @@ class NumInput extends Base {
                 if (this._staging !== null && this._staging !== this.value) {
                     // 清除数据
                     this.value = this._staging;
-                    this._staging = null;
+                    this.$input.value = this._staging;
 
                     this.dispatch('change');
                     this.dispatch('cancel');
@@ -453,6 +464,7 @@ class NumInput extends Base {
             return;
         }
         this.$input.focus();
+        this.focused = true;
     }
 
     /**
@@ -465,17 +477,6 @@ class NumInput extends Base {
             return;
         }
         this.focused = false;
-        if (this._staging === parseFloat(this.$input.value, 10) || !this.getAttribute('value')) {
-            this.$input.value = this._staging;
-            this.setAttribute('value', this._staging);
-            return;
-        }
-        this._staging = parseFloat(this.$input.value);
-        // confirm 之前需要设置一下 value 值为计算后的正确值
-        this.$input.value = this.value;
-        this.$input.setAttribute('value', this.$input.value);
-        this.setAttribute('value', this.$input.value);
-        this.dispatch('confirm');
     }
 
     /**
@@ -501,6 +502,15 @@ class NumInput extends Base {
         if (this.$root.disabled || this.$root.readonly) {
             return;
         }
+
+        if (this.$root._staging !== null) {
+            if (this.$root._staging !== parseFloat(this.value, 10)) {
+                // 设置数据
+                this.$root.setAttribute('value', this.value);
+                this.$root.dispatch('confirm');
+            }
+        }
+
         this.$root._staging = null;
         this._inputStaging = null;
     }

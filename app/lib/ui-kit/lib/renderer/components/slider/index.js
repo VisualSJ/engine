@@ -335,16 +335,16 @@ class Slider extends Base {
     //私有事件
 
     _onFocus() {
-        super._onFocus();
-        // 判断是否已按下shift键
-        if (this._shiftFlag) {
-            return;
+        super._onFocus();		
+        // 判断是否已按下shift键		
+        if (this._shiftFlag || this.isClick) {
+            return;		
         }
         this.$input.focus();
     }
 
     /**
-     * num-input的change监听事件
+     * num-input 的 change 监听事件
      */
     _onInputChange() {
         this.$root.value = this.value;
@@ -385,6 +385,12 @@ class Slider extends Base {
                 this.value = this._staging;
                 this.dispatch('change');
                 this.dispatch('cancel');
+            }
+        } else if (event.keyCode === 13) { // enter
+            if (this.$input._staging === null) {
+                this.$input.focus();
+            } else {
+                this.focus();
             }
         }
     }
