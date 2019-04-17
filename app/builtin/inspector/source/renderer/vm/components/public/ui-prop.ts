@@ -1,7 +1,7 @@
 'use strict';
 
-import { readTemplate } from '../../utils';
 import { emit } from '../../event';
+import { readTemplate } from '../../utils';
 
 export const template = readTemplate('./public/prop.html');
 
@@ -46,7 +46,7 @@ export const methods = {
      * 绑定数据有提交
      * @param event
      */
-    _onConfirm(event: CustomEvent) {
+    async _onConfirm(event: CustomEvent) {
         const vm: any = this;
         const dump = vm.value;
 
@@ -56,7 +56,7 @@ export const methods = {
         event.stopPropagation();
 
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         // 告诉 event bus 数据已经 commit
         emit('commit');

@@ -106,10 +106,16 @@ async function decodeComponents(dumpComps: any, node: any) {
 }
 
 function decodePrefab(dumpPrefab: any, node: any) {
-    if (!dumpPrefab) {
+    if (!dumpPrefab && !node._prefab) { // 不需要变动
         return;
     }
 
+    if (!dumpPrefab && node._prefab) {
+        node._prefab = null; // 删除
+        return;
+    }
+
+    // 新增
     const info = new cc._PrefabInfo();
     const root = Manager.Node.query(dumpPrefab.rootUuid);
     info.root = root ? root : node;

@@ -124,9 +124,9 @@ export const methods = {
                 }
                 return {
                     label: name.replace(/\./g, '-'),
-                    click() {
-                        Editor.Ipc.sendToPanel('scene', 'snapshot');
-                        Editor.Ipc.sendToPanel('scene', 'create-component', {
+                    async click() {
+                        await Editor.Ipc.requestToPanel('scene', 'snapshot');
+                        await Editor.Ipc.requestToPanel('scene', 'create-component', {
                             uuid: vm.uuid,
                             component: item.priority === -1 ? name : item.name,
                         });

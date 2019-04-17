@@ -347,7 +347,7 @@ export const methods = {
      */
     async ipcAdd(json: IaddNode) {
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         const newUuid = await Editor.Ipc.requestToPackage('scene', 'create-node', json);
 
@@ -412,7 +412,7 @@ export const methods = {
      */
     async ipcDelete(uuid: string) {
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         if (uuid && !vm.selects.includes(uuid)) { // 如果该节点没有被选中，则只是删除此单个
             const node = utils.getNodeFromTree(uuid);
@@ -600,7 +600,7 @@ export const methods = {
         }
 
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         // 重名命节点
         const isSuccess = await Editor.Ipc.requestToPackage('scene', 'set-property', { // 发送修改数据
@@ -710,7 +710,7 @@ export const methods = {
      */
     async ipcDrop(json: IdragNode) {
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         // 明确接受 cc.Prefab 资源作为节点
         if (json.type === 'cc.Prefab') {
@@ -790,7 +790,7 @@ export const methods = {
      */
     async paste(uuid: string) {
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         if (!uuid) {
             uuid = this.getFirstSelect();
@@ -833,7 +833,7 @@ export const methods = {
      */
     async duplicate(uuids: string[]) {
         // 保存历史记录
-        Editor.Ipc.sendToPanel('scene', 'snapshot');
+        await Editor.Ipc.requestToPanel('scene', 'snapshot');
 
         if (!uuids) {
             uuids = vm.selects.slice();
