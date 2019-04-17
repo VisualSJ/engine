@@ -173,7 +173,7 @@ class SceneMode extends Mode {
             // 发送 emit 事件
             this.manager.emit('open', cc.director._scene);
         } catch (error) {
-            console.error('Open scene failed: ' + uuid);
+            console.error('Failed to refresh the current scene');
             console.error(error);
         }
     }

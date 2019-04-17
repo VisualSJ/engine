@@ -45,6 +45,9 @@ exports.loadSceneByJson = async function loadSceneByJson(json) {
     return new Promise((resolve, reject) => {
 
         cc.AssetLibrary.loadJson(json, (error, scene) => {
+            if (error) {
+                return reject(error);
+            }
             if (scene instanceof cc.SceneAsset) {
                 scene = scene.scene;
             }

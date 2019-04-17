@@ -76,11 +76,11 @@ class NumInput extends Base {
 
     get step() {
         const value = parseFloat(this.getAttribute('step'));
-        return isNaN(value) ? 1 : value;
+        return isNaN(value) ? 0.01 : value;
     }
 
     set step(val) {
-        let value = isNaN(val) ? 1 : val;
+        let value = isNaN(val) ? 0.01 : val;
         this.$input.step = value;
         this.setAttribute('step', value);
     }
