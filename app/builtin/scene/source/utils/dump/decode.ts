@@ -101,6 +101,18 @@ async function decodeComponents(dumpComps: any, node: any) {
     }
 }
 
+function decodePrefab(dumpPrefab: any, node: any) {
+    if (!dumpPrefab) {
+        return;
+    }
+
+    const info = new cc._PrefabInfo();
+    const root = Manager.Node.query(dumpPrefab.rootUuid);
+    info.root = root ? root : node;
+    info.asset = Manager.Utils.serialize.asAsset(dumpPrefab.uuid);
+    info.fileId = dumpPrefab.fileId || node.uuid;
+    node._prefab = info;
+}
 /**
  * 解码一个场景 dump 数据
  * @param dump
@@ -152,15 +164,7 @@ export async function decodeNode(dump: INode, node?: any) {
 
     await decodeComponents(dump.__comps__, node);
 
-    if (node.__prefab__) {
-        const prefab = node.__prefab__;
-        const root = Manager.Node.query(prefab.rootUuid);
-        const info = new cc._PrefabInfo();
-        info.asset = Manager.Utils.serialize.asAsset(prefab.uuid);
-        info.root = root ? root : node;
-        info.fileId = node.uuid;
-        node._prefab = info;
-    }
+    decodePrefab(dump.__prefab__, node);
 
     return node;
 }
