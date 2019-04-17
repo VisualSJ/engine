@@ -79,7 +79,7 @@ export const methods = {
     },
     exit() {
         // @ts-ignore
-        Editor.Ipc.sendToPanel('scene', 'record', this.root);
+        Editor.Ipc.sendToPanel('scene', 'record', this.root, false);
     },
 };
 export function mounted() {

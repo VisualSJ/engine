@@ -191,16 +191,7 @@ class AnimationOperation {
             return false;
         }
 
-        let props = null;
-        if (comp) {
-            if (data.comps && data.comps[comp]) {
-                props = data.comps[comp];
-            }
-        } else {
-            if (data.props) {
-                props = data.props;
-            }
-        }
+        let props = utils.getPropertysFrom(data, comp);
 
         if (props && prop) {
             delete props[prop];
@@ -230,12 +221,10 @@ class AnimationOperation {
             return false;
         }
 
-        const node = animData.node;
-
         // 获取指定的节点的数据
         let data = utils.getCurveDataFromClip(state._clip, path);
 
-        let ctor = cc.Node;
+        const node = animData.node;
         let target = node;
         if (comp) {
             if (!data.comps) {
@@ -243,20 +232,17 @@ class AnimationOperation {
                 return false;
             }
             data = data.comps[comp];
-            ctor = cc.js.getClassByName(comp);
             target = node.getComponent(comp);
         } else {
             data = data.props;
         }
 
-        if (!ctor) {
-            console.warn(`找不到类型，无法新增关键帧\n  node: ${uuid}`);
+        const keys = data[prop];
+        if (!keys) {
+            console.warn(`找不到属性${prop}，无法新增关键帧\n  node: ${uuid}`);
             return false;
         }
 
-        const keys = data[prop];
-
-        //const dump = dumpEncode.encodeObject(target[prop], ctor);
         let value = target[prop];
         const key = {
             frame: frame / state._clip.sample,
@@ -270,7 +256,7 @@ class AnimationOperation {
         });
 
         utils.recalculateDuration(state._clip);
-        state.initialize(animData.node);
+        state.initialize(node);
         return true;
     }
 
@@ -353,6 +339,86 @@ class AnimationOperation {
     }
 
     /**
+     * 更新关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Strig} path 节点数据路径
+     * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
+     * @param {String} prop 属性的名字
+     * @param {number} frame 关键帧位置
+     */
+    updateKey(uuid, clipUuid, path, comp, prop, frame) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        const node = animData.node;
+
+        // 获取指定的节点的数据
+        let data = utils.getCurveDataFromClip(state._clip, path);
+
+        let target = node;
+        if (comp) {
+            if (!data.comps) {
+                console.warn(`找不到component track，无法更新关键帧\n  node: ${uuid}`);
+                return false;
+            }
+            data = data.comps[comp];
+            target = node.getComponent(comp);
+        } else {
+            data = data.props;
+        }
+
+        const keys = data[prop];
+
+        let sample = state._clip.sample;
+
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            if (Math.round(key.frame * sample) === frame) {
+                key.value = target[prop];
+                state.initialize(node);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 清空关键帧数据，但不删除Track
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Strig} path 节点数据路径
+     * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
+     * @param {String} prop 属性的名字
+     */
+    clearKeys(uuid, clipUuid, path, comp, prop) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let data = utils.getCurveDataFromClip(state._clip, path);
+
+        if (!data) {
+            return false;
+        }
+
+        let props = utils.getPropertysFrom(data, comp);
+
+        if (props && prop) {
+            props[prop] = [];
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * 插入事件关键帧
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
@@ -379,16 +445,16 @@ class AnimationOperation {
      * 删除事件关键帧
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
-     * @param {object} event 事件帧数据
+     * @param {object} frame 事件帧所在位置
      */
-    deleteEvent(uuid, clipUuid, event) {
+    deleteEvent(uuid, clipUuid, frame) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        let key = utils.deleteEvent(state._clip, event);
+        let key = utils.deleteEvent(state._clip, frame);
         if (!key) {
             return false;
         }
@@ -397,7 +463,35 @@ class AnimationOperation {
     }
 
     /**
-     * 更新某个关键帧的曲线数据
+     * 更新事件关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {number} frame 关键帧所在的位置
+     * @param {object} events 事件帧数据
+     */
+    updateEvent(uuid, clipUuid, frame, events) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let keys = utils.deleteEvent(state._clip, frame);
+        if (!keys) {
+            return false;
+        }
+
+        if (events) {
+            events.forEach((event) => {
+                utils.addEvent(state._clip, frame, event.func, event.params);
+            });
+        }
+
+        return true;
+    }
+
+    /**
+     * 修改某个关键帧的曲线数据
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
      * @param {string} path 带有 root 的路径信息,root用'/'表示
@@ -406,14 +500,14 @@ class AnimationOperation {
      * @param {number} frame key.frame 是实际的时间，需要传入帧数
      * @param {*} data 曲线描述，可能是字符串和数组
      */
-    updateCurveOfKey(uuid, clipUuid, path, comp, prop, frame, data) {
+    modifyCurveOfKey(uuid, clipUuid, path, comp, prop, frame, data) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        return utils.updateCurveOfKey(state._clip, path, comp, prop, frame, data);
+        return utils.modifyCurveOfKey(state._clip, path, comp, prop, frame, data);
     }
 }
 

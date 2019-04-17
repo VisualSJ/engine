@@ -61,7 +61,7 @@ export const methods = {
         const name = event.target.getAttribute('name');
         switch (name) {
             case 'enter_animation_mode':
-                Editor.Ipc.sendToPanel('scene', 'record', that.root);
+                Editor.Ipc.sendToPanel('scene', 'record', that.root, true);
                 break;
             case 'add_animation_component':
                 Editor.Ipc.sendToPanel('scene', 'create-component', {

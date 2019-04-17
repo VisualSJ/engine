@@ -1,6 +1,8 @@
 'use strict';
 
 const Mode = require('./mode');
+const dumpEncode = require('../../../../../../dist/utils/dump/encode');
+const dumpDecode = require('../../../../../../dist/utils/dump/decode');
 
 class AnimationMode extends Mode {
 
@@ -13,6 +15,14 @@ class AnimationMode extends Mode {
 
         // 正在编辑的动画根节点 uuid
         this.root = '';
+        this.recordDump = {};
+    }
+
+    walkNode(node, callBack) {
+        callBack(node);
+        node.children && node.children.forEach((child) => {
+            this.walkNode(child, callBack);
+        });
     }
 
     /**
@@ -22,8 +32,28 @@ class AnimationMode extends Mode {
     async open(uuid) {
 
         this.root = uuid;
+        this.recordDump = {};
 
-        // TODO 使用 dump 记录场景状态
+        // dump 会被更改的node的信息
+        let animRoot = Manager.Node.query(this.root);
+        if (!animRoot) {
+            return false;
+        }
+
+        this.walkNode(animRoot, (node) => {
+            let nodeDump = dumpEncode.encodeNode(node);
+            if (!nodeDump.__comps__) {
+                return;
+            }
+
+            // 不记录 cc.Animation component，因为 cc.Animation 状态必须保留
+            for (let i = 0; i < nodeDump.__comps__.length; i++) {
+                if (nodeDump.__comps__[i].type === 'cc.AnimationComponent') {
+                    nodeDump.__comps__.splice(i, 1);
+                }
+            }
+            this.recordDump[node.uuid] = nodeDump;
+        });
 
         // 发送 emit 事件
         this.manager.emit('animation-start', uuid);
@@ -39,9 +69,24 @@ class AnimationMode extends Mode {
      */
     async close() {
 
-        this.root = '';
+        // 还原数据
+        let animRoot = Manager.Node.query(this.root);
+        if (!animRoot) {
+            return false;
+        }
 
-        // TODO 还原场景状态
+        if (!this.recordDump) {
+            return false;
+        }
+
+        this.walkNode(animRoot, (node) => {
+            let nodeDump = this.recordDump[node.uuid];
+            dumpDecode.decodeNode(nodeDump, node);
+            Manager.Node.emit('change', node);
+            Manager.Ipc.send('broadcast', 'scene:change-node', node.uuid);
+        });
+
+        this.root = '';
 
         // 发送 emit 事件
         this.manager.emit('animation-end');
@@ -89,7 +134,7 @@ class AnimationMode extends Mode {
 
         // const newData = this.serialize();
         // await Manager.Ipc.send('save-asset', this.current, newData);
-        Manager.Animation.save();
+        return Manager.Animation.save();
     }
 }
 

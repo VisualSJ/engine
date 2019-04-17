@@ -345,8 +345,8 @@ export function apply(messages: any) {
     /**
      * 更改当前动画编辑模式
      */
-    messages.record = async (uuid: string) => {
-        await $scene.forwarding('Animation', 'record', [uuid]);
+    messages.record = async (uuid: string, active: boolean) => {
+        await $scene.forwarding('Animation', 'record', [uuid, active]);
     };
 
     /**

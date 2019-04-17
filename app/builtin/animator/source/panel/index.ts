@@ -275,7 +275,7 @@ export async function ready() {
                         clipDump && (vm.clipDump = formatClipDump(clipDump));
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
-                        vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', clipDump.name);
+                        // vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', clipDump.name);
                     } else {
                         that.hasAniamtionClip = false;
                     }

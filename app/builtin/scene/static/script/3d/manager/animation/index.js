@@ -41,10 +41,27 @@ class AniamtionManager extends EventEmitter {
         //             let uuid = Scene.AnimationMode.root;
         //             let animPropList = this.queryProperties(uuid);
         //             console.log(animPropList);
-        //             let keyProp = animPropList[3];
+        //             let keyProp = animPropList[0];
         //             this.operation('createProp', clipUuid, '/', keyProp.comp, keyProp.prop);
-        //             this.operation('createKey', clipUuid, '/', keyProp.comp, keyProp.prop, 10);
+        //             //this.operation('createKey', clipUuid, '/', keyProp.comp, keyProp.prop, 10);
+        //             this.operation('updateKey', clipUuid, '/', keyProp.comp, keyProp.prop, 10);
         //             //this.operation('addEvent', clipUuid, 10, 'hello', [10]);
+        //             // this.operation('updateEvent', clipUuid, 10, [
+        //             //     {
+        //             //       frame: 0.16666666666666666,
+        //             //       func: 'hello',
+        //             //       params: [
+        //             //         10,
+        //             //       ],
+        //             //     },
+        //             //     {
+        //             //       frame: 0.16666666666666666,
+        //             //       func: 'goodbye',
+        //             //       params: [
+        //             //         10,
+        //             //       ],
+        //             //     },
+        //             //   ]);
         //             break;
         //         case 'b':
         //             let buuid = Scene.AnimationMode.root;
@@ -54,13 +71,7 @@ class AniamtionManager extends EventEmitter {
         //             //this.operation('removeKey', clipUuid, '/', null, bkeyProp.prop, 10);
         //             //this.operation('moveKeys', clipUuid, '/', null, bkeyProp.prop, [0, 30], 10);
         //             //this.operation('changeSample', clipUuid, 100);
-        //             this.operation('deleteEvent', clipUuid, {
-        //                 frame: 0.16666666666666666,
-        //                 func: 'hello',
-        //                 params: [
-        //                   10,
-        //                 ],
-        //               });
+        //             this.operation('deleteEvent', clipUuid, 10);
         //             break;
         //         case 'v':
         //             this.saveClip(clipUuid);
@@ -77,25 +88,42 @@ class AniamtionManager extends EventEmitter {
     }
 
     /**
-     * 打开某个节点的动画记录模式
+     * 打开/关闭某个节点的动画记录模式
      * @param {String} uuid
+     * @param {Boolean} active 打开或关闭
      */
-    record(uuid) {
-        if (uuid) {
-            Scene._pushMode(Scene.AnimationMode, uuid);
-        } else if (Scene.modes.minor === Scene.AnimationMode) {
-            Scene._popMode();
+    record(uuid, active) {
+        if (active) {
+            if (uuid) {
+                Scene._pushMode(Scene.AnimationMode, uuid);
+                AnimEditState.record = true;
+                return true;
+            }
+        } else {
+            if (Scene.modes.minor === Scene.AnimationMode) {
+                AnimEditState.record = false;
+                Scene._popMode();
+                return true;
+            }
         }
+
+        return false;
     }
 
     async save() {
-        this.saveClip(this._curEditClipUuid);
+        return this.saveClip(this._curEditClipUuid);
     }
 
     async saveClip(clipUuid) {
         let state = this.queryRecordAnimState(clipUuid);
+        if (!state) {
+            return false;
+        }
+
         let clip = state.clip;
         await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
+
+        return true;
     }
 
     getSerializedEditClip() {
@@ -225,13 +253,15 @@ class AniamtionManager extends EventEmitter {
      * @param {String} clipUuid 需要播放的动画的uuid
      */
     play(clipUuid) {
+        clipUuid = clipUuid || this._curEditClipUuid;
         const state = this.queryRecordAnimState(clipUuid);
         if (!state) {
-            return;
+            return false;
         }
 
         state.setTime(0);
         component.play(state.clip.name);
+        return true;
     }
 
     /**
@@ -240,10 +270,11 @@ class AniamtionManager extends EventEmitter {
     pause() {
         const component = this.queryRecordAnimComp();
         if (!component) {
-            return;
+            return false;
         }
 
         component.pause();
+        return true;
     }
 
     /**
@@ -252,11 +283,11 @@ class AniamtionManager extends EventEmitter {
     resume() {
         const component = this.queryRecordAnimComp();
         if (!component) {
-            return;
+            return false;
         }
 
         component.resume();
-
+        return true;
     }
 
     /**
@@ -265,10 +296,11 @@ class AniamtionManager extends EventEmitter {
     stop() {
         const component = this.queryRecordAnimComp();
         if (!component) {
-            return;
+            return false;
         }
 
         component.stop();
+        return true;
     }
 
     /**
@@ -351,6 +383,20 @@ class AniamtionManager extends EventEmitter {
     }
 
     /**
+     * 查询播放的clip的当前所在时间
+     * @param {*} clipUuid clip的uuid
+     */
+    queryPlayingClipTime(clipUuid) {
+        clipUuid = clipUuid || this._curEditClipUuid;
+        const state = this.queryRecordAnimState(clipUuid);
+        if (!state) {
+            return false;
+        }
+
+        return state.time;
+    }
+
+    /**
      * 操作动画
      * @param {String} func
      * @param  {...any} args
@@ -361,7 +407,7 @@ class AniamtionManager extends EventEmitter {
             return false;
         }
         if (operation[func](Scene.AnimationMode.root, ...args)) {
-            Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root);
+            Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root, this._curEditClipUuid);
         }
     }
 }

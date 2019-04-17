@@ -9,9 +9,9 @@ const Node = require('../node');
 
 //加上类型，让 timeline 可以判断属性的数据类型
 const defaultProperties = [
-    {type: 'cc.Vec3', name: 'position'},
-    {type: 'cc.Vec3', name: 'rotation'},
-    {type: 'cc.Vec3', name: 'scale'},
+    {type: 'cc.Vec3', prop: 'position', name: 'position'},
+    {type: 'cc.Quat', prop: 'rotation', name: 'rotation'},
+    {type: 'cc.Vec3', prop: 'scale', name: 'scale'},
 ];
 
 class AnimationUtil {
@@ -182,6 +182,26 @@ class AnimationUtil {
             }
             return curveData.props[prop];
         }
+    }
+
+    /**
+     * 从一个 curveData 数据，拿出指定component的所有属性的Track
+     * @param {*} curveData
+     * @param {*} comp
+     */
+    getPropertysFrom(curveData, comp) {
+        let props = null;
+        if (comp) {
+            if (curveData.comps && curveData.comps[comp]) {
+                props = curveData.comps[comp];
+            }
+        } else {
+            if (curveData.props) {
+                props = curveData.props;
+            }
+        }
+
+        return props;
     }
 
     /**
@@ -439,7 +459,7 @@ class AnimationUtil {
      * @param {number} frame key.frame 是实际的时间，需要传入帧数
      * @param {*} data 曲线描述，可能是字符串和数组
      */
-    updateCurveOfKey(clip, path, component, property, frame, data) {
+    modifyCurveOfKey(clip, path, component, property, frame, data) {
         if (!clip) {
             return false;
         }
@@ -489,24 +509,30 @@ class AnimationUtil {
     /**
      * 删除事件帧
      * @param {object} clip clip 数据
-     * @param {object} event 事件帧数据
+     * @param {object} frame 事件帧所在位置
      */
-    deleteEvent(clip, event) {
+    deleteEvent(clip, frame) {
         if (!clip) {
             console.log('clip 不存在');
             return null;
         }
         let events = this.queryEvents(clip);
 
-        for (let i = 0; i < events.length; i++) {
+        let sample = clip.sample;
+        let keys = [];
+        for (let i = events.length - 1; i >= 0; i--) {
             let key = events[i];
-            if (JSON.stringify(key) === JSON.stringify(event)) {
+            if (Math.round(key.frame * sample) === frame) {
                 events.splice(i, 1);
-                return key;
+                keys.push(key);
             }
         }
 
         this.recalculateDuration(clip);
+
+        if (keys.length > 0) {
+            return keys;
+        }
 
         return null;
     }
