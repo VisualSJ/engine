@@ -157,6 +157,7 @@ let edit = function() {
     editMenu
         .group('undo', 0)
         .group('edit', 1)
+        .group('hierarchy', 2)
         .group('default', 99);
 
     editMenu

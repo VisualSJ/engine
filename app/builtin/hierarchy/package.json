@@ -1,15 +1,21 @@
 {
     "name": "hierarchy",
     "version": "0.0.1",
-
     "menu": {
         "i18n:menu.panel/i18n:hierarchy.title": {
             "message": "open",
             "icon": "./static/icon.png",
             "accelerator": "CmdOrCtrl+4"
+        },
+        "i18n:menu.edit/i18n:hierarchy.menu.link_prefab": {
+            "group": "hierarchy",
+            "message": "link-prefab"
+        },
+        "i18n:menu.edit/i18n:hierarchy.menu.unlink_prefab": {
+            "group": "hierarchy",
+            "message": "unlink-prefab"
         }
     },
-
     "main": "./dist/browser.js",
     "description": "hierarchy",
     "panel": {
@@ -24,27 +30,21 @@
         "shortcuts": {
             "ctrl+a": "selectAll",
             "command+a": "selectAll",
-            
             "ctrl+f": "find",
             "command+f": "find",
-
             "ctrl+d": "duplicate",
             "command+d": "duplicate",
-
             "command+backspace": "delete",
             "ctrl+backspace": "delete",
             "del": "delete",
-
             "up": "up",
             "down": "down",
             "left": "left",
             "backspace": "left",
             "right": "right",
             "enter": "right",
-
             "shift+up": "shiftUp",
             "shift+down": "shiftDown",
-
             "f2": "rename"
         },
         "redirect": {

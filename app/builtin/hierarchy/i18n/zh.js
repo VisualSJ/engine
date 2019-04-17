@@ -56,10 +56,22 @@ module.exports = {
         duplicate: '复制节点',
         showUuid: '显示节点 UUID',
 
+        link_prefab: '关联节点到 Prefab 资源',
+        link_prefab_error_node_empty: '请在层级管理器选择一个节点',
+        link_prefab_error_node_isScene: '场景节点不能关联为 Prefab',
+        link_prefab_error_asset_empty: '请在资源管理器选择一个 Prefab 资源',
+        link_prefab_error_asset_invalid: '请在资源管理器选择有效的 Prefab 资源',
+        unlink_prefab: '还原为普通节点',
+        unlink_prefab_error_prefab_empty: '请在层级管理器选择一个有效的 Prefab',
+
         errorNewnameEmpty: '名称不能为空',
     },
 
     operate: {
+        dialogError: '错误',
+        dialogWaining: '警告',
+        dialogQuestion: '确认',
+        dialogInfo: '提示',
         renameFail: '不能对此节点重命名',
     },
 };

@@ -56,10 +56,22 @@ module.exports = {
         duplicate: 'Duplicate',
         showUuid: 'Show Node UUID',
 
+        link_prefab: 'Connect Node To Prefab',
+        link_prefab_error_node_empty: 'Select a node in the hierarchy manager.',
+        link_prefab_error_node_isScene: 'The scenario node cannot be associated with prefab.',
+        link_prefab_error_asset_empty: 'Select a prefab in the assets manager.',
+        link_prefab_error_asset_invalid: 'Select a prefab in the assets manager.',
+        unlink_prefab: 'Convert to Ordinary Node',
+        unlink_prefab_error_prefab_empty: 'Select a prefab in the hierarchy manager.',
+
         errorNewnameEmpty: 'The name cannot be empty',
     },
 
     operate: {
+        dialogError: 'Error',
+        dialogWaining: 'Warning',
+        dialogQuestion: 'Confirm',
+        dialogInfo: 'Tips',
         renameFail: 'Rename Fail',
     },
 };
