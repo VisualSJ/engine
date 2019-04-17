@@ -98,23 +98,23 @@ export function mergeDumps(dumps: any[]) {
 
     // 提取相同的 component
     temp.__comps__.forEach((sourceComp: any) => {
-        const allow = dumps.every((dump) => {
-            const itemComps = dump.__comps__;
-            return itemComps.some((itemComp: any) => {
-                return itemComp.type === sourceComp.type;
+        const comps: any[] = [];
+
+        // 判断其他几个 dump 内是否有相同的组件
+        dumps.forEach((dump) => {
+            const comp = dump.__comps__.find((item: any) => {
+                return item.type === sourceComp.type;
             });
+            if (comp) {
+                comps.push(comp);
+            }
         });
-        if (!allow) { return; }
-        // 将每个 target 内的指定 comp 弄出来，放在一个队列里
-        const comps = dumps.map((item) => {
-            let comp;
-            item.__comps__.some((compItem: any) => {
-                if (compItem.__orderedType === sourceComp.__orderedType) {
-                    comp = compItem;
-                }
-            });
-            return comp;
-        });
+
+        // 如果长度相等，说明所有 dump 都有这个组件
+        if (comps.length !== dumps.length) {
+            return;
+        }
+
         result.__comps__.push(mergeComponent(comps));
     });
     return result;
