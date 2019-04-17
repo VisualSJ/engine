@@ -5,11 +5,11 @@ export const template = `
 >
     <i :title="t('jump_first_frame')" class="iconfont icon-rewind"  name="rewind"></i>
     <i :title="t('jump_prev_frame')" class="iconfont icon-last"  name="last"></i>
-    <i v-if="state !== 'playing'" :title="t('play_animation')" class="iconfont icon-arrow-right" name="play"></i>
-    <i v-if="state === 'playing'" :title="t('stop_animation')" class="iconfont icon-arrow-right" name="stop"></i>
-    <i v-if="state === 'playing'" :title="t('pause_animation')" class="iconfont icon-arrow-right" name="pause"></i>
+    <i v-if="state !== 'play'" :title="t('play_animation')" class="iconfont icon-arrow-right" name="play"></i>
+    <i v-if="state === 'play'" :title="t('stop_animation')" class="iconfont icon-arrow-right" name="stop"></i>
+    <i v-if="state === 'play'" :title="t('pause_animation')" class="iconfont icon-arrow-right" name="pause"></i>
     <i :title="t('jump_next_frame')" class="iconfont icon-next"  name="next"></i>
-    <i :title="t('insert_event')" class="iconfont icon-event"  name="event"></i>
+    <i :title="t('insert_event')" class="iconfont icon-event"  name="add-event"></i>
     <i class="iconfont icon-save-b"  name="save"></i>
     <i :title="t('exit')" class="iconfont icon-exit" name="exit"></i>
     <div class="time"  name="edit"><span>{{time}}</span></div>
@@ -21,6 +21,7 @@ export const props = [
     'root',
     'state',
     'dirty',
+    'uuid',
 ];
 
 export function data() {
@@ -49,7 +50,7 @@ export const methods = {
         switch (name) {
             case 'exit':
                 if (that.dirty) {
-                    const t = function(key: string) {
+                    const t = (key: string) => {
                         return that.t(key, '');
                     };
                     const result = await Editor.Dialog.show({
@@ -70,10 +71,20 @@ export const methods = {
                     }
                 }
                 that.exit();
-
                 break;
+            case 'rewind':
+            case 'last':
+            case 'next':
+                that.$emit('datachange', 'update-frame', [name]);
+            case'play':
+            case'pause':
+            case'stop':
+                const result = Editor.Ipc.sendToPanel('scene', 'change-clip-state', name, that.uuid);
+                if (result) {
+                    that.$emit('datachange', 'update-state', [name]);
+                }
             default:
-                Editor.Ipc.sendToPanel('scene', 'change-clip-state', name, that.clip);
+                that.$emit('datachange', name);
                 break;
         }
     },

@@ -22,6 +22,7 @@ module.exports = {
     property_tools: {
         create_prop: 'Add prop track',
         remove_prop: 'Remove prop track',
+        clear_keys: 'Clear keyframes data',
         create_key: 'Add keyframe',
         remove_key: 'Remove keyframe',
     },
@@ -36,9 +37,15 @@ module.exports = {
         move_data: 'Move data',
         clear_data: 'Clear data',
     },
+    preview_row: {
+        line_tips: 'Double click to edit curve',
+        open_curve_editor: 'Open the curve editor',
+    },
     is_save: 'Do you need to save it?',
     is_save_message: 'The data has been modified. Do you need to save it?',
     save: 'save',
     abort: 'abort',
     cancel: 'cancel',
+    edit: 'edit',
+    delete: 'delete',
 };

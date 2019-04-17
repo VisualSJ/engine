@@ -63,23 +63,32 @@ function transPropertyDump(dump) {
         return result;
     }
     // comps 需要两层嵌套循环
-    for (const compName of Object.keys(dump.comps)) {
-        for (const name of Object.keys(dump.comps[compName])) {
-            result[name] = transKeyFrames(dump.comps[compName][name], name, compName);
+    for (const comp of Object.keys(dump.comps)) {
+        for (const prop of Object.keys(dump.comps[comp])) {
+            result[prop] = {
+                prop,
+                comp,
+                dump: transKeyFrames(dump.comps[comp][prop], prop, comp),
+            };
         }
     }
-    for (const name of Object.keys(dump.props)) {
-        result[name] = transKeyFrames(dump.props[name], name, 'props');
+    for (const prop of Object.keys(dump.props)) {
+        result[prop] = {
+            prop,
+            comp: null,
+            dump: transKeyFrames(dump.props[prop], prop, null),
+        };
     }
     return result;
 }
 
-function transKeyFrames(keyFrames, name, type) {
+function transKeyFrames(keyFrames, prop, comp) {
     const result = keyFrames.map((item) => {
         return {
             frame : item.frame,
-            name,
-            type,
+            curve: item.curve,
+            prop,
+            comp,
         };
     });
     return result;
@@ -94,9 +103,19 @@ function formatClipDump(dump) {
     return dump;
 }
 
+function timeToFrame(time, sample) {
+    return Math.round((time / 60) * sample);
+}
+
+function frameToTime(frame, sample) {
+    return (frame / sample) * 60;
+}
+
 module.exports = {
     smoothScale,
     formatNodeDump,
     transPropertyDump,
     formatClipDump,
+    timeToFrame,
+    frameToTime,
 };

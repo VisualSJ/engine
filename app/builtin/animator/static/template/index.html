@@ -4,10 +4,10 @@
     <div class="container">
         <div class="left" ref="left">
             <tool-bar
-                @mousedown="onToolBar"
+                @datachange="onToolBar"
                 :time="currentTime"
                 :root="root"
-                :clip="clipDump && clipDump.name"
+                :uuid="currentClip"
                 :state="animationState"
                 :dirty="dirty"
             >
@@ -32,7 +32,9 @@
                 <property-tree v-for="(item, name) in properties" 
                     :key="name" 
                     :name="name"
-                    :info="item"
+                    :prop="item.prop"
+                    :comp="item.comp"
+                    :info="item.data"
                     :frame="currentFrame"
                     @datachange="onProperty"
                 ></property-tree>
@@ -64,6 +66,7 @@
                         :key-frames=calcNodeFrames(path)
                         :path="path"
                         :select-key="selectKey"
+                        :offset="startOffset"
                         @datachange="onPreviewRow"
                     ></preview-row>
                 </template>
@@ -90,10 +93,11 @@
                     v-for="(item, name) in properties"
                 >
                     <preview-row 
-                        :key-frames=calcFrames(item)
+                        :key-frames=calcFrames(item.dump)
                         :path="selectPath"
                         :select-key="selectKey"
                         :name="name"
+                        :offset="startOffset"
                         @datachange="onPreviewRow"
                     ></preview-row>
                 </template>
@@ -107,6 +111,7 @@
     </div>
     <canvas 
     ref="gridCanvas"
+    id="gridCanvas"
     ></canvas>
     <div class="foot">
         <div class="left">
@@ -127,9 +132,16 @@
     <event-editor
         v-if="showEventEditor"
         :events="eventsDump"
-        :frame="currentFrame"
+        :frame="selectEventFrame"
+        :uuid="currentClip"
         @close="showEventEditor = false"
     ></event-editor>
+    <bezier-editor
+        v-if="showBezierEditor"
+        :keyframe="currentBezierData"
+        :uuid="currentClip"
+        @datachange="onPreviewRow"
+    ></bezier-editor>
     <tips-mask
         v-if = "!animationMode"
         :root = "root"
@@ -138,7 +150,6 @@
         :has-clip = "hasAniamtionClip"
         :comp-index = "compIndex"
     ></tips-mask>
-    
     <div class="loading" v-if="loading">
         动画数据载入中，请稍等.......
     </div>

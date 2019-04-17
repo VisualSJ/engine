@@ -1,18 +1,21 @@
 'use strict';
 export const template = `
 <div class="content-item preview-row"
+    @dragend="onDragEnd"
     @dragover="onDragOver"
-    @dragleave="onDragLeave"
+    @drop="onDrop"
     @click.right="onPopMenu"
 >
         <template
             v-if="display"
         >
             <div class="line"
-            v-for="(item, i) in keyFrames"
+            v-for="(item, i) in keyData"
             v-if="keyFrames[i + 1]"
 
-            :style="queryLineStyle(item.x, keyFrames[i + 1].x)"
+            :style="queryLineStyle(item.x, keyData[i + 1].x)"
+            :title="t('line_tips')"
+            @dblclick="openBezierEditor(item)"
             ></div>
         </template>
 
@@ -20,7 +23,7 @@ export const template = `
             v-if="display"
         >
             <div class="key" draggable="true"
-                v-for="(item, index) in keyFrames"
+                v-for="(item, index) in keyData"
 
                 :style="queryKeyStyle(item.x)"
                 :index="index"
@@ -52,6 +55,7 @@ export const props = [
     'selectKey',
     'path',
     'name',
+    'offset',
 ];
 
 export function data() {
@@ -60,10 +64,16 @@ export function data() {
         virtualkeys: [],
         hoverKey: null,
         dragIndex: null,
+        keyData: [],
+        draging: false,
     };
 }
 
 export const watch = {
+    keyFrames() {
+        // @ts-ignore
+        this.refresh();
+    },
 };
 
 export const computed = {
@@ -72,26 +82,24 @@ export const computed = {
         if (that.keyFrames.length < 1) {
             return [];
         }
-        const {name, type} = that.keyFrames[0];
-        if (type === 'props') {
-            return [null, name, that.hoverKey && that.hoverKey.frame];
-        }
-        // todo 组件参数解析
-        return [name, name, that.hoverKey && that.hoverKey.frame];
+        const {comp, prop} = that.keyFrames[0];
+        return [comp, prop, that.hoverKey && that.hoverKey.frame];
     },
 };
 
 export const components = {};
 
 export const methods = {
-    t(key: string, type = '') {
+    t(key: string, type = 'preview_row.') {
         return Editor.I18n.t(`animator.${type}${key}`);
     },
+
     /**
      * 刷新组件
      */
     async refresh() {
-
+        // @ts-ignore
+        this.keyData = JSON.parse(JSON.stringify(this.keyFrames));
     },
 
     queryKeyStyle(x: number) {
@@ -109,23 +117,45 @@ export const methods = {
         return `transform: translateX(${x1 | 0}px); width: ${x2 - x1}px`;
     },
 
+    openBezierEditor(data: any) {
+        // @ts-ignore
+        data.path = this.path;
+        // @ts-ignore
+        this.$emit('datachange', 'openBezierEditor', [data]);
+    },
+
     onDragOver(event: any) {
         event.preventDefault(); // NOTE: Must have, otherwise we can not drop
         event.stopPropagation();
 
         const that: any = this;
-        if (that.dragInfo && that.dragInfo.index) {
-            const params = JSON.parse(JSON.stringify(that.params));
-            params[2] = [that.keyFrames[that.dragInfo.index].frame];
-            requestAnimationFrame(() => {
-                that.dragInfo && that.$emit('datachange', 'moveKeys', [that.path, ... params, event.x - that.dragInfo.x]);
-            });
+        const index = that.dragInfo && that.dragInfo.index;
+        if (index) {
+            if (!that.draging) {
+                requestAnimationFrame(() => {
+                    if (!that.dragInfo) {
+                        that.draging = false;
+                        return;
+                    }
+                    const offset = event.x - that.dragInfo.x;
+                    that.dragInfo.x = event.x;
+                    const data = that.keyData[index];
+
+                    data.x += offset;
+                    that.dragInfo.offset += offset;
+                    that.keyData.splice(index, 1, data);
+                    that.draging = false;
+                });
+            }
+            that.draging = true;
         }
     },
 
-    onDragLeave(event: any) {
+    onDragEnd(event: any) {
         // @ts-ignore
         this.dragInfo = null;
+        // @ts-ignore
+        this.virtualkeys = [];
     },
 
     onDragStart(event: any) {
@@ -135,11 +165,27 @@ export const methods = {
         if (index === 'undefined') {
             return;
         }
+
         // @ts-ignore
         this.dragInfo = {
             index,
             x: event.x,
+            offset: 0,
         };
+
+        // @ts-ignore
+        this.virtualkeys.push(JSON.parse(JSON.stringify(this.keyData[index])));
+    },
+
+    onDrop(event: any) {
+        const that: any = this;
+        if (that.dragInfo && that.dragInfo.offset) {
+            const params = JSON.parse(JSON.stringify(that.params));
+            params[2] = [that.keyFrames[that.dragInfo.index].frame];
+            that.dragInfo && that.$emit('datachange', 'moveKeys', [that.path, ... params, that.dragInfo.offset]);
+        }
+        that.dragInfo = null;
+        that.virtualkeys = [];
     },
 
     onPopMenu(event: any) {
@@ -155,6 +201,7 @@ export const methods = {
             operate = 'removeKey';
             label = that.t('remove_key', 'property.');
         }
+        // 节点轨道不允许新建关键帧
         if (!that.name && operate === 'createKey') {
             return;
         }
@@ -180,16 +227,11 @@ export const methods = {
                 that.$emit('datachange', operate, params);
             },
         }];
-        if (that.hoverKey) {
-            result.push({
-                label: that.hoverKey.name,
-                enabled: false,
-            });
-        }
         return result;
     },
 };
 
 export function mounted() {
-
+    // @ts-ignore
+    this.refresh();
 }

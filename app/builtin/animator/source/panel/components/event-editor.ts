@@ -6,6 +6,7 @@ export const template = readFileSync(join(__dirname, './../../../static/template
 export const props = [
     'events',
     'frame',
+    'uuid',
 ];
 
 export function data() {
@@ -72,9 +73,7 @@ export const methods = {
                 that.value.push(JSON.parse(JSON.stringify(that.default[0])));
                 break;
             case 'save':
-                if (that.dirty) {
-                    that.saveData();
-                }
+                that.saveData();
                 break;
             case 'close':
                 if (that.dirty) {
@@ -93,8 +92,8 @@ export const methods = {
                         return;
                     }
                     if (result === 1) {
-                        const saveSuccess = await that.saveData();
-                        saveSuccess && (that.$emit('close'));
+                        that.saveData();
+                        that.$emit('close');
                         return;
                     }
                 }
@@ -134,7 +133,15 @@ export const methods = {
 
     async saveData() {
         const that: any = this;
-        that.showToast('save sccuss');
+        const result = that.value.map((item: any) => {
+            return {
+                frame: item.frame,
+                func: item.func,
+                params: item.params,
+            };
+        });
+        Editor.Ipc.sendToPanel('scene', 'update-clip-event', that.uuid, that.frame, result);
+        // that.showToast('save succuss');
     },
 
     refresh() {

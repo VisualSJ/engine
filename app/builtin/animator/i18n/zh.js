@@ -22,6 +22,7 @@ module.exports = {
     property: {
         create_prop: '添加属性轨道',
         remove_prop: '移除当前属性轨道',
+        clear_keys: '清空关键帧数据',
         create_key: '添加关键帧',
         remove_key: '移除关键帧',
     },
@@ -37,9 +38,15 @@ module.exports = {
         move_data: '迁移数据',
         clear_data: '清空数据',
     },
+    preview_row: {
+        line_tips: '双击编辑贝塞尔曲线',
+        open_curve_editor: '打开曲线编辑器',
+    },
     is_save: '是否保存数据？',
     is_save_message: '修改的数据尚未保存，是否保存？',
     save: '保存',
     abort: '丢弃',
-    cancel: '取消关闭',
+    cancel: '取消',
+    edit: '编辑',
+    delete: '删除',
 };

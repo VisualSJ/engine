@@ -1,0 +1,73 @@
+.iconfont {
+  vertical-align: sub;
+  font-family: 'animator' !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-edit:before {
+  content: "\e61f";
+}
+.icon-pause:before {
+  content: "\e650";
+}
+.icon-arrow-right:before {
+  content: "\e6df";
+}
+.icon-add:before {
+  content: "\e64d";
+}
+.icon-stop:before {
+  content: "\f0db";
+}
+.icon-refresh-b:before {
+  content: "\e620";
+}
+.icon-last:before {
+  content: "\e619";
+}
+.icon-next:before {
+  content: "\e61b";
+}
+.icon-rewind:before {
+  content: "\e73d";
+}
+.icon-frame:before {
+  content: "\e6cc";
+}
+.icon-frame-active:before {
+  content: "\e74b";
+}
+.icon-event:before {
+  content: "\e633";
+}
+.icon-save:before {
+  content: "\e707";
+}
+.icon-del:before {
+  content: "\e677";
+}
+.icon-del-b:before {
+  content: "\e65a";
+}
+.icon-clear:before {
+  content: "\e64a";
+}
+.icon-clear-b:before {
+  content: "\e648";
+}
+.icon-exit:before {
+  content: "\e646";
+}
+.icon-close:before {
+  content: "\e656";
+}
+.icon-move:before {
+  content: "\e6e2";
+}
+.icon-save-b:before {
+  content: "\e668";
+}
+.icon-list:before {
+  content: "\e609";
+}

@@ -1,0 +1,83 @@
+<section class="bezier-editor mask">
+    <div class="content" ref="content">
+        <div class="left">
+            <div class="toolbar" @mousedown="onToolBar">
+                <span class="data-preview">({{currentBerzier.toString()}})</span>
+                <i class="iconfont icon-save" name="save"></i>
+                <i class="iconfont icon-exit" name="exit"></i>
+            </div>
+            <svg > 
+                <g class="main"
+                    ref="bezier"
+                    :transform="bezierTransform"
+                >
+                    <g class="bezier">
+                        <path
+                        :d="bezierData"
+                        ></path>
+    
+                        <!-- 控制线与控制点 -->
+                        <line
+                            v-if="ctrlPoints && ctrlPoints.p1"
+                            :x1="ctrlPoints.p1[0]" 
+                            :y1="ctrlPoints.p1[1]" 
+                            :x2="ctrlPoints.p2[0]"
+                            :y2="ctrlPoints.p2[1]"
+                        />
+                        <circle
+                            class="ctrl-1"
+                            r="0.01"
+                            v-if="ctrlPoints.p2" 
+                            :cx="ctrlPoints.p2[0]" 
+                            :cy="ctrlPoints.p2[1]" 
+                        />
+    
+                        <line
+                            v-if="ctrlPoints.p3"
+                            :x1="ctrlPoints.p3[0]" 
+                            :y1="ctrlPoints.p3[1]" 
+                            :x2="ctrlPoints.p4[0]"
+                            :y2="ctrlPoints.p4[1]"
+                        />
+                        <circle 
+                            class="ctrl-2"
+                            r="0.01"
+                            v-if="ctrlPoints.p3" 
+                            :cx="ctrlPoints.p3[0]" 
+                            :cy="ctrlPoints.p3[1]" 
+                        />
+                    </g>
+
+                    <!-- 坐标轴 -->
+                    <g class="axis">
+                        <path d="M0 0 L 0 1 L 1 1"/>
+                        <text x="0" y="1.05">TIME</text>
+                        <text x="0" y="0.99" transform="rotate(-90, 0, 1)">PROGRESSION</text>
+                    </g>
+                </g>
+            </svg>
+        </div>
+        <div class="right">
+            <h2>presets</h2>
+            <ui-select 
+                :value="currentPreset"
+                @confirm="onPresetChange"
+            >
+                <option v-for="name in Object.keys(presets)" :value="name">{{name}}</option>
+            </ui-select>
+            <div class="presets">
+                <template v-for="name of Object.keys(presets[currentPreset])">
+                    <div v-if="name" class="preset-item">
+                        <svg @mousedown="applyPreset(presets[currentPreset][name])">
+                            <path
+                                transform="scale(100)"
+                                :d="calcBezier(presets[currentPreset][name], 100)"
+                            ></path>
+                        </svg>
+                        <div class="name">{{name}}</div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</section>

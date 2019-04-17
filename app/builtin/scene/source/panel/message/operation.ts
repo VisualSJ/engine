@@ -350,6 +350,13 @@ export function apply(messages: any) {
     };
 
     /**
+     * 更改当前当前关键帧
+     */
+    messages['set-edit-time'] = (time: number) => {
+        return $scene.forwarding('Animation', 'setCurEditTime', [time]);
+    };
+
+    /**
      * 更改当前正在编辑的动画的 speed
      */
     messages['change-clip-speed'] = (clipUuid: string, speed: number) => {
@@ -357,30 +364,95 @@ export function apply(messages: any) {
     };
 
     /**
-     * 更改当前正在编辑的动画的 播放状态
+     * 更改当前正在编辑的动画的播放状态
      */
-    messages['change-clip-state'] = (oprate: string, clip: string) => {
-        return $scene.forwarding('Animation', oprate, [clip]);
+    messages['change-clip-state'] = (oprate: string, clipUuid: string) => {
+        return $scene.forwarding('Animation', [oprate, clipUuid]);
     };
 
+    /**
+     * 更改当前正在编辑的动画 uuid
+     */
+    messages['change-edit-clip'] = (clipUuid: string) => {
+        return $scene.forwarding('Animation', 'setEditClip', [clipUuid]);
+    };
+
+    /**
+     * 操作动画的属性轨道
+     */
     messages['change-clip-prop'] = (oprate: string, clipUuid: string, path: string, comp: any, prop: string) => {
         return $scene.forwarding('Animation', 'operation', [oprate, clipUuid, path, comp, prop]);
     };
 
+    /**
+     * 新增关键帧
+     */
     messages['create-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
         return $scene.forwarding('Animation', 'operation', ['createKey', clipUuid, path, comp, prop, frame]);
     };
 
+    /**
+     * 移除关键帧
+     */
     messages['remove-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
         return $scene.forwarding('Animation', 'operation', ['removeKey', clipUuid, path, comp, prop, frame]);
     };
 
+    /**
+     * 移动关键帧
+     */
     messages['move-clip-keys'] = (clipUuid: string, path: string, comp: any, prop: string, frames: number[], offset: number) => {
         return $scene.forwarding('Animation', 'operation', ['moveKeys', clipUuid, path, comp, prop, frames, offset]);
     };
 
+    /**
+     * 清除轨道上的关键帧
+     */
+    messages['clear-prop-keys'] = (clipUuid: string, path: string, comp: any, prop: string) => {
+        return $scene.forwarding('Animation', 'operation', ['clearKeys', clipUuid, path, comp, prop]);
+    };
+
+    /**
+     * 清除节点动画数据
+     */
     messages['clear-node-clip'] = (clipUuid: string, path: string) => {
         return $scene.forwarding('Animation', 'operation', ['clearNode', clipUuid, path]);
     };
+
+    /**
+     * 添加帧事件
+     */
+    messages['add-clip-event'] = (clipUuid: string, frame: number, funcName: string , params: any[]) => {
+        return $scene.forwarding('Animation', 'operation', ['addEvent', clipUuid, frame, funcName, params]);
+    };
+
+    /**
+     * 删除帧事件
+     */
+    messages['delete-clip-event'] = (clipUuid: string, frame: number) => {
+        return $scene.forwarding('Animation', 'operation', ['deleteEvent', clipUuid, frame]);
+    };
+
+    /**
+     * 更新帧事件
+     */
+    messages['update-clip-event'] = (clipUuid: string, frame: number, events: any[]) => {
+        return $scene.forwarding('Animation', 'operation', ['updateEvent', clipUuid, frame, events]);
+    };
+
+    /**
+     * 保存动画数据
+     */
+    messages['save-clip'] = () => {
+        return $scene.forwarding('Animation', 'save');
+    };
+
+    /**
+     * 保存动画曲线数据
+     */
+    messages['save-curve-data'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number, data: number[]) => {
+        return $scene.forwarding('Animation', 'operation', ['updateCurveOfKey', clipUuid, path, comp, prop, frame, data]);
+    };
+
     // TODO 暴露各种操作消息
 }

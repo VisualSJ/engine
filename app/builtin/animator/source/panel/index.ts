@@ -14,7 +14,7 @@ export const style = readFileSync(join(__dirname, '../index.css'));
 
 export const template = readFileSync(join(__dirname, '../../static', '/template/index.html'));
 const Grid = require('./grid');
-const {smoothScale, formatNodeDump, queryClipUuid, transPropertyDump, formatClipDump} = require('./../../static/script/utils.js');
+const {smoothScale, formatNodeDump, timeToFrame, frameToTime, formatClipDump} = require('./../../static/script/utils.js');
 export const $ = {
     animator: '.animator',
     grid: '.grid',
@@ -98,11 +98,13 @@ export const messages = {
 
     // 动画更改通知
     async 'scene:animation-change'(uuid: string) {
-        if (!vm || vm.currentClip === uuid) {
+        if (!vm) {
             return;
         }
         const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', vm.root, vm.currentClip);
-        clipDump && (vm.clipDump = formatClipDump(clipDump));
+        requestAnimationFrame(() => {
+            clipDump && (vm.clipDump = formatClipDump(clipDump));
+        });
     },
 
     // 动画播放状态更改通知
@@ -139,6 +141,7 @@ export async function ready() {
 
             clipDump: null,
             currentClip: '', // 当前动画 clip uuid
+            currentBezierData: {},
             clipsMenu: [],
             selectKey: null,
             compIndex: 0, // 存储当前动画组件在根节点组件的 index 值，方便做数据修改
@@ -146,7 +149,9 @@ export async function ready() {
             hasAniamtionClip: false,
             animationMode: false,
             animationState: '', // 当前动画的编辑模式
+            selectEventFrame: 0,
             showEventEditor: false, // 是否显示事件函数编辑器
+            showBezierEditor: false, // 是否显示贝塞尔曲线编辑器
         },
         computed: {
             // 计算关键帧与实际坐标偏移
@@ -203,6 +208,21 @@ export async function ready() {
                 return sample;
             },
         },
+        watch: {
+            currentClip() {
+                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.currentClip);
+            },
+            currentFrame() {
+                // 更新当前关键帧
+                const that: any = this;
+                const time = frameToTime(that.currentFrame, that.sample);
+                Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
+
+                if (that.grid && that.grid.xAxisOffset !== that.startOffset) {
+                    that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
+                }
+            },
+        },
         methods: {
             init(this: any) {
                 // @ts-ignore
@@ -229,7 +249,6 @@ export async function ready() {
                     this.grid.render();
                     this.offset = this.grid.xAxisOffset;
                 });
-                this.updateFrame('rewind');
                 document.addEventListener('mouseup', () => {
                     this.flags.mouseDownName = '';
                 });
@@ -243,8 +262,11 @@ export async function ready() {
                     await that.update(uuid);
                 }
                 // 预览初始化时获取不到文档流宽高，对 canvas 的初始化造成影响
-                requestAnimationFrame(() => {
+                requestAnimationFrame(async () => {
                     that.init();
+                    if (that.grid && that.grid.xAxisOffset !== that.startOffset) {
+                        that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
+                    }
                     that.loading = false;
                 });
             },
@@ -273,6 +295,11 @@ export async function ready() {
                         that.currentClip = defaultClip;
                         const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', root, defaultClip);
                         clipDump && (vm.clipDump = formatClipDump(clipDump));
+
+                        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+                        if (time) {
+                            that.currentFrame = timeToFrame(time, that.sample);
+                        }
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
                         // vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', clipDump.name);
@@ -333,13 +360,16 @@ export async function ready() {
                 }
                 let result: any = [];
                 for (const name of Object.keys(data)) {
-                    result = result.concat(that.calcFrames(data[name]));
+                    result = result.concat(that.calcFrames(data[name].dump));
                 }
                 return result;
             },
 
             // 计算关键帧数据的实际显示位置
             calcFrames(keyFrames: any[]) {
+                if (!keyFrames) {
+                    return [];
+                }
                 const that: any = this;
                 const result = keyFrames.map((item) => {
                     item.x = that.grid.valueToPixelH(item.frame);
@@ -352,9 +382,8 @@ export async function ready() {
              * 更新控制杆关键帧
              * @param operate
              */
-            updateFrame(operate: string) {
+            updateFrame(operate: string, newFrame: number) {
                 const that: any = this;
-                let newFrame = that.currentFrame;
                 switch (operate) {
                     case 'last':
                         newFrame --;
@@ -369,20 +398,10 @@ export async function ready() {
                 if (newFrame < 0) {
                     newFrame = 0;
                 }
-                if (newFrame === 0 && that.grid.xAxisOffset !== that.startOffset) {
-                    that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
-                }
-                if (that.currentFrame === 0 && newFrame === 0) {
+                if (that.currentFrame === newFrame) {
                     return;
                 }
                 that.currentFrame = newFrame;
-            },
-
-            /**
-             * 更新关键帧信息
-             */
-            onKeyMove(path: string, x: number) {
-
             },
 
             resize() {
@@ -434,6 +453,7 @@ export async function ready() {
             onMouseDown(event: any) {
                 const that: any = this;
                 const name = event.target.getAttribute('name');
+                // 点击顶部移动当前关键帧
                 if (name === 'time-pointer') {
                     that.currentFrame = that.pixelToFrame(event.x);
                 } else {
@@ -519,23 +539,31 @@ export async function ready() {
                         Editor.Ipc.sendToPanel('scene', 'change-clip-wrap-mode', that.currentClip,  value);
                         break;
                 }
+                that.dirty = true;
             },
 
             //////////////// 组件事件监听 /////////////////////////////////////////////////
-            // 工具栏事件监听
-            onToolBar(name: string) {
+            // 工具栏事件监听queryPlayingClipTime
+            async onToolBar(operate: string, params: any[]) {
                 const that: any = this;
-                switch (name) {
-                    case 'event':
-                        const item = { frame: that.currentFrame };
-                        that.clipDump.events.push(item);
-                        // this.clipDump.events.slice(this.clipDump.events.length - 1, 0, item);
+                switch (operate) {
+                    case 'add-event':
+                        Editor.Ipc.sendToPanel('scene', 'add-clip-event', that.currentClip, that.currentFrame, '', []);
+                        that.dirty = true;
                         break;
                     case 'save':
-
+                        // todo 数据是否发生修改的验证
+                        const isSave = await Editor.Ipc.requestToPanel('scene', 'save-clip');
+                        if (isSave) {
+                            that.dirty = false;
+                            // todo 保存成功的提示
+                        }
                         break;
-                    default:
-                        that.updateFrame(name);
+                    case 'update-state':
+                        that.animationState = params[0];
+                        break;
+                    case 'update-frame':
+                        that.updateFrame(params[0]);
                         break;
                 }
             },
@@ -555,8 +583,8 @@ export async function ready() {
                     case 'removeProp':
                         Editor.Ipc.requestToPanel('scene', 'change-clip-prop', operate, currentClip, selectPath, ...params);
                         break;
-                        break;
                 }
+                that.dirty = true;
             },
 
             // 预览关键帧列表部分
@@ -567,25 +595,39 @@ export async function ready() {
                     case 'createKey':
                         params[3] = that.pixelToFrame(params[3]);
                         Editor.Ipc.requestToPanel('scene', 'create-clip-key', currentClip, ...params);
+                        that.dirty = true;
                         break;
                     case 'removeKey':
                         Editor.Ipc.requestToPanel('scene', 'remove-clip-key', currentClip, ...params);
+                        that.dirty = true;
                         break;
                     case 'moveKeys':
                         const offset = Math.round(that.grid.pixelToValueH(params[params.length - 1]));
                         if (offset === 0) {
                             return;
                         }
+                        that.dirty = true;
                         params[params.length - 1] = offset;
                         Editor.Ipc.requestToPanel('scene', 'move-clip-keys', currentClip, ...params);
+                        break;
+                    case 'openBezierEditor':
+                        that.currentBezierData = params[0];
+                        that.showBezierEditor = true;
+                        break;
+                    case 'closeBezierEditor':
+                        that.showBezierEditor = false;
                         break;
                 }
             },
 
-            onEvents(operate: string) {
+            onEvents(operate: string, params: any[]) {
                 const that: any = this;
                 if (operate === 'openEventEditor') {
+                    that.selectEventFrame = params[0];
                     that.showEventEditor = true;
+                } else if (operate === 'deleteEvent') {
+                    Editor.Ipc.sendToPanel('scene', 'delete-clip-event', that.currentClip, params[0]);
+                    that.dirty = true;
                 }
             },
         },
@@ -599,12 +641,13 @@ export async function ready() {
             events: require('./components/events'),
             'property-tools': require('./components/property-tools'),
             'event-editor': require('./components/event-editor'),
+            'bezier-editor': require('./components/bezier-editor'),
         },
         async mounted() {
+            const that: any = this;
             const isReady = await Editor.Ipc.requestToPanel('scene', 'query-is-ready');
             if (isReady) {
-                // @ts-ignore
-                await this.refresh();
+                await that.refresh();
             }
         },
     });

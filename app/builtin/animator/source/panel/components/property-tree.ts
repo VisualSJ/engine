@@ -7,9 +7,8 @@ export const template = `
             :empty="isEmpty"
             :title="oprateTitle"
         ></i>
-        <i class="iconfont icon-del"
-            name="removeProp"
-            :title="t('remove_prop')"
+        <i class="iconfont icon-list"
+            name="showPopMenu"
         ></i>
     </span>
 </div>
@@ -19,6 +18,8 @@ export const props = [
     'info',
     'name',
     'frame',
+    'prop',
+    'comp',
 ];
 
 export function data() {
@@ -50,13 +51,9 @@ export const computed = {
         });
         return index !== -1;
     },
-    params() {
-        const that: any = this;
-        if (that.info[0] && that.info[0].type === 'props') {
-            return [null, that.name, that.frame];
-        }
-
-        return [that.name, that.name, that.frame];
+    params(): any {
+        // @ts-ignore
+        return [this.comp, this.prop, this.frame];
     },
 };
 
@@ -72,8 +69,24 @@ export const methods = {
             return;
         }
         const that: any = this;
-        if (event.target.getAttribute('name') === 'removeProp') {
-            that.$emit('datachange', 'removeProp', that.params);
+        if (event.target.getAttribute('name') === 'showPopMenu') {
+            Editor.Menu.popup({
+                x: event.pageX,
+                y: event.pageY,
+                menu: [{
+                        label: that.t('remove_prop'),
+                        click() {
+                            that.$emit('datachange', 'removeProp', that.params);
+                        },
+                    },
+                    {
+                        label: that.t('clear_keys'),
+                        click() {
+                            that.$emit('datachange', 'clearKeys', that.params);
+                        },
+                    },
+                ],
+            });
             return;
         }
         const isEmpty = event.target.getAttribute('empty');

@@ -210,4 +210,11 @@ export function apply(messages: any) {
     messages['query-animation-clips-info'] = (nodeUuid: string) => {
         return $scene.forwarding('Animation', 'queryAnimClipsInfo', [nodeUuid]);
     };
+
+    /**
+     * 查询动画当前的关键帧信息
+     */
+    messages['query-animation-clips-time'] = (clipUuid: string) => {
+        return $scene.forwarding('Animation', 'queryPlayingClipTime', [clipUuid]);
+    };
 }
