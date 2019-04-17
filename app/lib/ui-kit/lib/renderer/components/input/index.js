@@ -72,7 +72,7 @@ class Input extends Base {
                 this.$input.placeholder = newData;
                 break;
             case 'readonly':
-                this.$input.readOnly = newData !== null;
+                this.$input.readonly = newData !== null;
                 break;
             case 'password':
                 this.$input.type = newData !== null ? 'password' : 'text';
@@ -217,7 +217,7 @@ class Input extends Base {
      */
     _onInputFocus() {
         // 判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
 
@@ -230,7 +230,7 @@ class Input extends Base {
      */
     _onInputBlur() {
         // 判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
 
@@ -242,7 +242,7 @@ class Input extends Base {
      */
     _onInputChange() {
         // 判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
         this.$root.value = this.value;
@@ -255,7 +255,7 @@ class Input extends Base {
      */
     _onKeyDown(event) {
         // 判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
 

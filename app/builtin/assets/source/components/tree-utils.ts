@@ -5,7 +5,7 @@ const db = require('./tree-db');
  * @param asset
  */
 exports.canNotDeleteAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isRoot || asset.isSubAsset || asset.readOnly;
+    return !asset || asset.isRoot || asset.isSubAsset || asset.readonly;
 };
 
 /**
@@ -15,7 +15,7 @@ exports.canNotDeleteAsset = (asset: ItreeAsset) => {
 exports.canNotCreateAsset = (asset: ItreeAsset) => {
     return !asset
         || asset.isSubAsset
-        || asset.readOnly
+        || asset.readonly
         || !asset.isDirectory;
 };
 
@@ -50,7 +50,7 @@ exports.canNotDragAsset = (asset: ItreeAsset) => {
 exports.canNotPasteAsset = (asset: ItreeAsset) => {
     return !asset
         || asset.isSubAsset
-        || asset.readOnly
+        || asset.readonly
         || !asset.isDirectory
         || db.vm.copiedUuids.length === 0;
 };

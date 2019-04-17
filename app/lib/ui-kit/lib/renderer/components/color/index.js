@@ -62,7 +62,7 @@ class Color extends Base {
         // 缓存节点
         instanceArray.push(this);
         // 初始化 attribute
-        this.readOnly = this.getAttribute('readonly') !== null;
+        this.readonly = this.getAttribute('readonly') !== null;
         this.disabled = this.getAttribute('disabled') !== null;
 
         // 绑定 color 事件
@@ -128,7 +128,7 @@ class Color extends Base {
      * color 的 click 事件，点击获取初始值并显示 colorPicker
      */
     _onClick() {
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
         this._staging = Array.from(this.value);

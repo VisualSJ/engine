@@ -26,7 +26,7 @@ const instanceArray = [];
  */
 const controlMouseEvent = function(elem, detach = false) {
     const onDragStart = (event) => {
-        if (elem.disabled || elem.readOnly) {
+        if (elem.disabled || elem.readonly) {
             return;
         }
         elem.dragging = true;

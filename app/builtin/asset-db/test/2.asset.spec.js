@@ -187,7 +187,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                             'isDirectory',
                             'library',
                             'name',
-                            'readOnly',
+                            'readonly',
                             'source',
                             'subAssets',
                             'type',
@@ -200,7 +200,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                             isDirectory: false,
                             library: {},
                             name: 'internal',
-                            readOnly: false,
+                            readonly: false,
                             source: 'db://internal',
                             subAssets: {},
                             type: 'database',
@@ -372,7 +372,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
             it('传入正确的参数', async () => {
                 const expectValues = {
                     keys: ['name', 'source', 'file', 'uuid', 'importer', 'type',
-                        'isDirectory', 'library', 'subAssets', 'visible', 'readOnly'],
+                        'isDirectory', 'library', 'subAssets', 'visible', 'readonly'],
                     values: {
                         name: 'string',
                         source: 'string',
@@ -384,7 +384,7 @@ describe('测试 DB 中 Asset 查询的 IPC 接口：', () => {
                         library: 'object',
                         subAssets: 'object',
                         visible: 'boolean',
-                        readOnly: 'boolean',
+                        readonly: 'boolean',
                     },
 
                 };

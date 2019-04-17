@@ -129,7 +129,7 @@ class TextArea extends Base {
                 this.$textarea.placeholder = newData;
                 break;
             case 'readonly':
-                this.$textarea.readOnly = newData !== null;
+                this.$textarea.readonly = newData !== null;
                 break;
         }
     }
@@ -181,7 +181,7 @@ class TextArea extends Base {
      */
     _onTextareaFocus() {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         this.$root._staging = this.$root.value;
@@ -193,7 +193,7 @@ class TextArea extends Base {
      */
     _onTextareaBlur() {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         if (this.$root._staging === this.value) {
@@ -208,7 +208,7 @@ class TextArea extends Base {
      */
     _onTextareaChange(event) {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         if (this._staging === this.value) {
@@ -225,7 +225,7 @@ class TextArea extends Base {
      */
     _onTextareaKeyDown(event) {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
 

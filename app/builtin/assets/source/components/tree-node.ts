@@ -376,7 +376,7 @@ export const methods = {
             $tree.removeAttribute('hoving'); // 由于冒泡阻断了，需要手动移除状态
         }
 
-        if (asset.readOnly) { // 不可用节点，比如 uuid 不存在
+        if (asset.readonly) { // 不可用节点，比如 uuid 不存在
             return;
         }
 

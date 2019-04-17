@@ -142,7 +142,7 @@ export async function encodeAsset(database: AssetDB, asset: VirtualAsset | Asset
         // @ts-ignore
         visible: database.options.visible,
         // @ts-ignore
-        readOnly: database.options.readOnly,
+        readonly: database.options.readonly,
         redirect,
     };
 

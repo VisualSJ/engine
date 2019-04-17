@@ -246,7 +246,7 @@ export async function copyAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    // 目标地址的父级文件夹处于 readOnly 状态
+    // 目标地址的父级文件夹处于 readonly 状态
     const targetParentUrl = dirname(target);
     const targetParentUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', targetParentUrl);
     if (!targetParentUuid) {
@@ -258,7 +258,7 @@ export async function copyAsset(source: string, target: string): Promise<boolean
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.parent')} \ntarget: ${assets.target}`);
         return false;
     }
-    if (targetParentInfo.readOnly) {
+    if (targetParentInfo.readonly) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.readonly')} \ntarget: ${assets.target}`);
         return false;
     }
@@ -318,7 +318,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    // 目标地址的父级文件夹处于 readOnly 状态
+    // 目标地址的父级文件夹处于 readonly 状态
     const targetParentUrl = dirname(target);
     const targetParentUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', targetParentUrl);
     if (!targetParentUuid) {
@@ -330,7 +330,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.parent')} \ntarget: ${assets.target}`);
         return false;
     }
-    if (targetParentInfo.readOnly) {
+    if (targetParentInfo.readonly) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.readonly')} \ntarget: ${assets.target}`);
         return false;
     }

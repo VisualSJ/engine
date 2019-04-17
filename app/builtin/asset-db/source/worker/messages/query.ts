@@ -97,7 +97,7 @@ ipcAddListener('asset-worker:query-assets', async (event: any, options?: any) =>
             library: {},
             subAssets: {},
             visible: database.options.visible,
-            readOnly: database.options.readOnly,
+            readonly: database.options.readonly,
         });
 
         // 循环 database 内每一个资源

@@ -20,7 +20,7 @@ declare interface IAssetDBConfig {
     library: string;
     temp: string;
     visible: boolean;
-    readOnly: boolean;
+    readonly: boolean;
     level: number;
     interval: number;
     binaryInterval: number;
@@ -41,7 +41,7 @@ declare interface IDatabaseInfo {
     target: string; // 源目录地址
     library: string; // 导入数据地址
     temp: string; // 临时目录地址
-    readOnly: boolean; // 是否只读
+    readonly: boolean; // 是否只读
     visible: boolean; // 是否显示
 }
 
@@ -56,7 +56,7 @@ declare interface IAssetInfo {
     library: { [key: string]: string }; // 导入资源的 map
     subAssets: { [key: string]: IAssetInfo }; // 子资源 map
     visible: boolean; // 是否显示
-    readOnly: boolean; // 是否只读
+    readonly: boolean; // 是否只读
     redirect?: IRedirectInfo; // 跳转指向资源
 }
 

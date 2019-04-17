@@ -211,7 +211,7 @@ class NumInput extends Base {
                 this.$input.disabled = newData !== null;
                 break;
             case 'readonly':
-                this.$input.readOnly = newData !== null;
+                this.$input.readonly = newData !== null;
                 break;
             case 'max':
                 this.max = newData;
@@ -425,7 +425,7 @@ class NumInput extends Base {
      */
     _onMousewheel(event) {
         //判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
         //判断是否聚焦,防止 hover 时也会发生滚动控制值
@@ -461,7 +461,7 @@ class NumInput extends Base {
     _onBlur() {
         super._onBlur();
         // 判断是否为可读或禁用
-        if (this.disabled || this.readOnly) {
+        if (this.disabled || this.readonly) {
             return;
         }
         this.focused = false;
@@ -484,7 +484,7 @@ class NumInput extends Base {
      */
     _onInputFocus(event) {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         this.$root._staging = parseFloat(this.value);
@@ -498,7 +498,7 @@ class NumInput extends Base {
      */
     _onInputBlur(event) {
         // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readOnly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
         this.$root._staging = null;

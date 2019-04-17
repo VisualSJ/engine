@@ -74,7 +74,7 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
             it('传入正确的参数', async () => {
 
                 const keys = [
-                    'library', 'name', 'readOnly',
+                    'library', 'name', 'readonly',
                     'target', 'temp',  'visible',
                 ];
 
@@ -89,7 +89,7 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                                 library: join(Editor.Project.path, 'library'),
                                 temp: join(Editor.Project.path, 'temp/asset-db/assets'),
                                 visible: true,
-                                readOnly: false,
+                                readonly: false,
                             },
                         },
                     },
@@ -103,7 +103,7 @@ describe('测试 DB 中 Database 的 IPC 接口：', () => {
                                 library: join(Editor.Project.path, 'library'),
                                 temp: join(Editor.Project.path, 'temp/asset-db/internal'),
                                 visible: true,
-                                readOnly: false,
+                                readonly: false,
                             },
                         },
                     },

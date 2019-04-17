@@ -64,6 +64,6 @@
   --invalid-visi: visible;
 }
 :host([disabled]),
-:host([readOnly]) {
+:host([readonly]) {
   --cursor: default;
 }

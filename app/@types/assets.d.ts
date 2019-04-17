@@ -40,7 +40,7 @@ declare interface ItreeAsset {
     library: { [key: string]: string }; // object 多文件的 library 磁盘路径
     subAssets: { [key: string]: ItreeAsset };
     visible: boolean; // 是否显示
-    readOnly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
+    readonly: boolean; // 是否只读，不允许重名命，删除，拖拽，界面多一个锁图标
     redirect?: { // 一个资源指向另一个资源
         type: string; // 跳转资源的类型
         uuid: string; // 跳转资源的 uuid

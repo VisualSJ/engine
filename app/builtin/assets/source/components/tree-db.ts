@@ -31,7 +31,7 @@ export function newItreeAsset() {
         library: {},
         subAssets: {},
         visible: true,
-        readOnly: false,
+        readonly: false,
 
         fileName: '',
         fileExt: '',

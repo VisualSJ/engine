@@ -54,8 +54,8 @@
         </div>
 
         <i class="readonly i-lock"
-            :title="t('menu.readOnly')"
-            v-if="!asset.isRoot && asset.readOnly"
+            :title="t('menu.readonly')"
+            v-if="!asset.isRoot && asset.readonly"
         ></i>
     </ui-drag-item>
     <div class="tree-node"

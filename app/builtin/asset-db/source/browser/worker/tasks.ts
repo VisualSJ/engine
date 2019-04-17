@@ -98,8 +98,8 @@ async function startDatabase(config: IAssetDBConfig) {
     if (typeof config.visible !== 'boolean') {
         config.visible = true;
     }
-    if (typeof config.readOnly !== 'boolean') {
-        config.readOnly = false;
+    if (typeof config.readonly !== 'boolean') {
+        config.readonly = false;
     }
 
     if (typeof config.level !== 'number' || config.level <= 0 || config.level > 4) {
@@ -231,7 +231,7 @@ depend.add('builtin-db-startup', {
         await startDatabase({
             name: 'internal',
             target: internal,
-            readOnly: !Editor.dev,
+            readonly: !Editor.dev,
         });
         // @ts-ignore
         await startDatabase({
