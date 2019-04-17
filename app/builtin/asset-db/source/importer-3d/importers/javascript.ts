@@ -4,6 +4,7 @@ import * as Path from 'path';
 // @ts-ignore
 import * as uuidUtils from '../../../static/utils/uuid-utils';
 import { compile } from './utils/script-compiler';
+
 export default class JavascriptImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入

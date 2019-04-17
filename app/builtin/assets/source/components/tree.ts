@@ -340,10 +340,36 @@ export const methods = {
         let url = parent.source;
 
         switch (json.type) {
-            case 'folder': json.name = 'New Folder'; break;
-            case 'scene': json.name = `New Scene.${json.type}`; break;
-            case 'file': json.name = 'New File'; break;
-            default: json.name = `New File.${json.type}`; break;
+            case 'folder':
+                json.name = 'New Folder';
+                break;
+            case 'scene':
+                json.name = `New Scene.${json.type}`;
+                break;
+            case 'file':
+                json.name = `New File.${json.type}`;
+                break;
+            case 'ts':
+            case 'js':
+                const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scripts' });
+                let name = 'New Script';
+                let index = 0;
+                while (scripts.some((asset: any) => {
+                    // @ts-ignore
+                    return asset.name.substr(0, asset.name.length - 3) === (index ? name + '-' + index.toString().padStart(3, '0') : name);
+                })) {
+                    index++;
+                }
+                // @ts-ignore
+                json.name = index ? name + '-' + index.toString().padStart(3, '0') : name;
+                json.params = {
+                    Name: json.name.replace(/( |-)/g, '_'),
+                }
+                json.name += `.${json.type}`;
+                break;
+            default:
+                json.name = `New File.${json.type}`;
+                break;
         }
 
         url += `/${json.name}`;
@@ -356,6 +382,8 @@ export const methods = {
             ext: extname(url),
             parentDir: dirname(url),
             parentUuid: parent.uuid,
+
+            params: json.params,
         };
     },
 
@@ -378,7 +406,7 @@ export const methods = {
 
         parent.state = 'loading';
 
-        let content = null; // 注意，文件夹的内容必须传 null 过去
+        let content: string = ''; // 注意，文件夹的内容必须传 null 过去
 
         if (json.type !== 'folder') {
             const fileUrl = `db://internal/default_file_content/${json.type}`;
@@ -392,7 +420,14 @@ export const methods = {
                     parent.state = '';
                     return;
                 }
-                content = readFileSync(fileInfo.file);
+                content = readFileSync(fileInfo.file, 'utf-8');
+            }
+
+            if (json.params) {
+                Object.keys(json.params).forEach((key) => {
+                    // @ts-ignore
+                    content = content.replace(new RegExp(`\<\%${key}\%\>`, 'g'), json.params[key]);
+                });
             }
         }
 

@@ -8,32 +8,27 @@
 //  - [Chinese] http://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
 //  - [English] http://www.cocos2d-x.org/docs/creator/en/scripting/life-cycle-callbacks.html
 
-cc.Class({
-    extends: cc.Component,
+const { Component } = cc;
+const { ccclass, property } = cc._decorator;
 
-    properties: {
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
-        // bar: {
-        //     get () {
-        //         return this._bar;
-        //     },
-        //     set (value) {
-        //         this._bar = value;
-        //     }
-        // },
-    },
+@ccclass('<%Name%>')
+export class <%Name%> extends Component {
+    // Property.
+    // yourProperty = 'some what';
 
-    // LIFE-CYCLE CALLBACKS:
+    // Add `property` decorator if your want the property to be serializable.
+    // @property
+    // yourSerializableProperty = 'some what';
 
-    // onLoad() {},
+    constructor () {
+        super();
+    }
 
-    // start() {},
+    start () {
+        // Your initialization goes here.
+    }
 
-    // update(dt) {},
-});
+    update (deltaTime) {
+        // Your update function goes here.
+    }
+}

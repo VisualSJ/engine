@@ -22,6 +22,8 @@ declare interface IaddAsset {
     content?: string; // 文件的内容
     parentDir?: string; // 所在的目录的 url
     parentUuid?: string; // 所在的目录的 uuid
+
+    params?: object; // 文件模版内需要替换的参数
 }
 
 declare interface ICreateOption {

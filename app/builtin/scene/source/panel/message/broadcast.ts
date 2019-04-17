@@ -93,6 +93,7 @@ export function apply(messages: any) {
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
 
         switch (info.importer) {
+            case 'typescript':
             case 'javascript':
                 // 如果新建的是脚本，需要导入到场景内
                 $scene.forwarding('Script', 'loadScript', [uuid]);
@@ -112,6 +113,7 @@ export function apply(messages: any) {
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
 
         switch (info.importer) {
+            case 'typescript':
             case 'javascript':
                 // 如果修改的是脚本，需要更新场景内的脚本数据
                 $scene.forwarding('Script', 'loadScript', [uuid]);

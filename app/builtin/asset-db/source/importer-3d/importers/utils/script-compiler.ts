@@ -24,6 +24,7 @@ export function compile(source: string, options: IOptions): IResult | null {
         compact: false,
         presets: [
             require('@babel/preset-env'),
+            require('@babel/preset-typescript'),
         ],
         plugins: [
             [
