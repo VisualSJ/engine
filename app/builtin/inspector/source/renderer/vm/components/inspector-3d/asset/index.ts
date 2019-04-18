@@ -92,8 +92,11 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
 
-        vm.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', vm.uuid);
-        vm.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', vm.uuid);
+        // 资源暂时不支持多选
+        const uuid = Array.isArray(vm.uuid) ? vm.uuid[0] : vm.uuid;
+
+        vm.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        vm.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
 
         vm.componentName = vm.getComponentName(vm.info);
 

@@ -9,6 +9,7 @@ const EditorMath = require('../../../utils/math');
 const nodeManager = require('../node');
 const tween = require('./tween');
 
+let exitPanModeTimer = null;
 const _defaultMargin = 5;
 const _lineColor = cc.color().fromHEX('#555555');
 const _lineEnd = 1000000;
