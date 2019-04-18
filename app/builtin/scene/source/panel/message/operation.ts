@@ -367,7 +367,7 @@ export function apply(messages: any) {
      * 更改当前正在编辑的动画的播放状态
      */
     messages['change-clip-state'] = (oprate: string, clipUuid: string) => {
-        return $scene.forwarding('Animation', [oprate, clipUuid]);
+        return $scene.forwarding('Animation', oprate, [clipUuid]);
     };
 
     /**

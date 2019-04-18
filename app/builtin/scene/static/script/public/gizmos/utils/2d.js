@@ -14,7 +14,7 @@ class Utils2D extends UtilsInterface {
     exitPointerLock() {
         document.exitPointerLock();
     }
-    broadcastMessage(message, param) {
+    broadcastMessage(message, node, param) {
 
     }
     getGizmoRoot() {

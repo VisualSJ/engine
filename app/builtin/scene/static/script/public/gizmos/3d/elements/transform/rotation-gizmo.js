@@ -189,7 +189,7 @@ class RotationGizmo extends TransformGizmo {
                     NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
                 }
             } else {
                 for (i = 0; i < topNodes.length; ++i) {
@@ -201,7 +201,7 @@ class RotationGizmo extends TransformGizmo {
 
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i]);
+                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
                 }
             }
         }
@@ -238,7 +238,7 @@ class RotationGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                 //NodeUtils.setWorldRotation3D(topNodes[i], rot);
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:change-node', topNodes[i]);
+                Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
             }
         } else {
             for (i = 0; i < topNodes.length; ++i) {
@@ -246,7 +246,7 @@ class RotationGizmo extends TransformGizmo {
                 topNodes[i].angle = newAngle;
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:change-node', topNodes[i]);
+                Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
             }
         }
     }

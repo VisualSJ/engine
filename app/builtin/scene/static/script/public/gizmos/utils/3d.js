@@ -17,9 +17,8 @@ class Utils3D extends UtilsInterface {
         operationManager.exitPointerLock();
     }
 
-    broadcastMessage(message, param) {
-        let node = param;
-        Manager.Node.emit('change', node);
+    broadcastMessage(message, node, param) {
+        Manager.Node.emit('change', node, param);
         Manager.Ipc.send('broadcast', message, node.uuid);
     }
 

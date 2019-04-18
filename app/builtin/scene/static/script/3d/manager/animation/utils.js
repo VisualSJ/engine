@@ -157,7 +157,7 @@ class AnimationUtil {
         } else {
             path = path.substr(1);
             if (clip.curveData.paths && clip.curveData.paths[path]) {
-                return clip.curveData.paths[paths];
+                return clip.curveData.paths[path];
             }
         }
         return null;

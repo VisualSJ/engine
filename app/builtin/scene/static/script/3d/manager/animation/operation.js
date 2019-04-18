@@ -491,6 +491,43 @@ class AnimationOperation {
     }
 
     /**
+     * 移动事件关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Array} frames 要移动的关键帧数组
+     * @param {number} offset 偏移帧数
+     */
+    moveEvents(uuid, clipUuid, frames, offset) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let events = utils.queryEvents(state._clip);
+        if (!events) {
+            return false;
+        }
+
+        let sample = state._clip.sample;
+        for (let i = 0; i < events.length; i++) {
+            let event = events[i];
+            let curFrame = Math.round(event.frame * sample);
+            let index = frames.indexOf(curFrame);
+            if (index >= 0) {
+                let newFrame = curFrame + offset;
+                if (newFrame < 0) { newFrame = 0; }
+                event.frame = newFrame / sample;
+            }
+        }
+
+        utils.recalculateDuration(state._clip);
+        state.initialize(animData.node);
+
+        return true;
+    }
+
+    /**
      * 修改某个关键帧的曲线数据
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid

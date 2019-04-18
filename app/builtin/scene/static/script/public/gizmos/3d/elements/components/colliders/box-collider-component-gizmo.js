@@ -77,6 +77,10 @@ class BoxColliderComponentGizmo extends Gizmo {
         }
     }
 
+    updateControllerTransform() {
+        this.updateControllerData();
+    }
+
     updateControllerData() {
 
         if (!this._isInited || this.target == null) {

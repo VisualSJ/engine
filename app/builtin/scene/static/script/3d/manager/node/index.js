@@ -149,12 +149,13 @@ class NodeManager extends EventEmitter {
         await dumpUtils.restoreProperty(node, path, dump);
 
         // 触发修改后的事件
-        this.emit('change', node);
+        this.emit('change', node, path);
         Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
+        // 改变父子关系
         if (path === 'parent' && node.parent) {
             // 发送节点修改消息
             Manager.Ipc.forceSend('broadcast', 'scene:change-node', node.parent.uuid);
-            this.emit('change', node.parent);
+            this.emit('change', node.parent, 'children');
         }
         return true;
     }
@@ -214,7 +215,7 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('change', node);
+        this.emit('change', node, path);
         Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return true;
@@ -275,7 +276,7 @@ class NodeManager extends EventEmitter {
         }
 
         // 发送节点修改消息
-        this.emit('change', node);
+        this.emit('change', node, path);
         Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return true;

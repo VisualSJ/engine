@@ -111,6 +111,10 @@ class SphereColliderComponentGizmo extends Gizmo {
         }
     }
 
+    updateControllerTransform() {
+        this.updateControllerData();
+    }
+
     onTargetUpdate() {
         this.updateControllerData();
     }

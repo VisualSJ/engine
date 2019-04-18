@@ -24,9 +24,10 @@ class UtilsInterface {
     /**
      * 广播消息
      * @param {消息内容} message
+     * @param {节点} node
      * @param {参数} param
      */
-    broadcastMessage(message, param) {
+    broadcastMessage(message, node, param) {
     }
 
     /**
