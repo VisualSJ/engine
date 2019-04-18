@@ -1,58 +1,11 @@
 'use strict';
-export const template = `
-<div class="content-item preview-row"
-    @dragend="onDragEnd"
-    @dragover="onDragOver"
-    @drop="onDrop"
-    @click.right="onPopMenu"
->
-        <template
-            v-if="display"
-        >
-            <div class="line"
-            v-for="(item, i) in keyData"
-            v-if="keyFrames[i + 1]"
-
-            :style="queryLineStyle(item.x, keyData[i + 1].x)"
-            :title="t('line_tips')"
-            @dblclick="openBezierEditor(item)"
-            ></div>
-        </template>
-
-        <template
-            v-if="display"
-        >
-            <div class="key" draggable="true"
-                v-for="(item, index) in keyData"
-
-                :style="queryKeyStyle(item.x)"
-                :index="index"
-                @dragstart="onDragStart"
-                @mouseover="hoverKey = item"
-                @mouseleave="hoverKey = null"
-            >
-                <div class="dot"></div>
-            </div>
-        </template>
-
-        <template
-            v-if="display"
-        >
-            <div class="v-key" preview
-                v-for="item in virtualkeys"
-
-                :style="queryKeyStyle(item.x)"
-            >
-                <div class="dot"></div>
-            </div>
-        </template>
-
-    </div>
-`;
+const {join} = require('path');
+const {readFileSync} = require('fs-extra');
+export const template = readFileSync(join(__dirname, './../../../static/template/components/preview-row.html'), 'utf-8');
 
 export const props = [
     'keyFrames',
-    'selectKey',
+    'selectInfo',
     'path',
     'name',
     'offset',
@@ -63,9 +16,7 @@ export function data() {
         display: true,
         virtualkeys: [],
         hoverKey: null,
-        dragIndex: null,
         keyData: [],
-        draging: false,
     };
 }
 
@@ -83,7 +34,23 @@ export const computed = {
             return [];
         }
         const {comp, prop} = that.keyFrames[0];
-        return [comp, prop, that.hoverKey && that.hoverKey.frame];
+        return [that.path, comp, prop, that.hoverKey && that.hoverKey.frame];
+    },
+    selectKey() {
+        const that: any = this;
+        if (!that.selectInfo) {
+            return null;
+        }
+
+        const {data, params} = that.selectInfo;
+        if (params[0] !== that.path) {
+            return;
+        }
+
+        if (that.name && that.name !== data.prop) {
+            return null;
+        }
+        return [data];
     },
 };
 
@@ -124,68 +91,21 @@ export const methods = {
         this.$emit('datachange', 'openBezierEditor', [data]);
     },
 
-    onDragOver(event: any) {
-        event.preventDefault(); // NOTE: Must have, otherwise we can not drop
-        event.stopPropagation();
+    onMouseDown(event: any, index: number) {
+        const that: any = this;        // @ts-ignore
 
-        const that: any = this;
-        const index = that.dragInfo && that.dragInfo.index;
-        if (index) {
-            if (!that.draging) {
-                requestAnimationFrame(() => {
-                    if (!that.dragInfo) {
-                        that.draging = false;
-                        return;
-                    }
-                    const offset = event.x - that.dragInfo.x;
-                    that.dragInfo.x = event.x;
-                    const data = that.keyData[index];
-
-                    data.x += offset;
-                    that.dragInfo.offset += offset;
-                    that.keyData.splice(index, 1, data);
-                    that.draging = false;
-                });
-            }
-            that.draging = true;
-        }
-    },
-
-    onDragEnd(event: any) {
-        // @ts-ignore
-        this.dragInfo = null;
-        // @ts-ignore
-        this.virtualkeys = [];
-    },
-
-    onDragStart(event: any) {
-        event.dataTransfer.setDragImage(document.createElement('div'), 10, 10);
-        event.dataTransfer.dropEffect = 'move';
-        const index = event.target.getAttribute('index');
-        if (index === 'undefined') {
-            return;
-        }
-
-        // @ts-ignore
-        this.dragInfo = {
-            index,
-            x: event.x,
+        const params = JSON.parse(JSON.stringify(that.params));
+        params[3] = [that.keyFrames[index].frame];
+        that.dragInfo = {
+            startX: event.x,
             offset: 0,
+            params,
+            data: that.keyData[index],
         };
 
+        that.$emit('startdrag', 'moveKey', [that.dragInfo]);
         // @ts-ignore
-        this.virtualkeys.push(JSON.parse(JSON.stringify(this.keyData[index])));
-    },
-
-    onDrop(event: any) {
-        const that: any = this;
-        if (that.dragInfo && that.dragInfo.offset) {
-            const params = JSON.parse(JSON.stringify(that.params));
-            params[2] = [that.keyFrames[that.dragInfo.index].frame];
-            that.dragInfo && that.$emit('datachange', 'moveKeys', [that.path, ... params, that.dragInfo.offset]);
-        }
-        that.dragInfo = null;
-        that.virtualkeys = [];
+        // this.virtualkeys.push(JSON.parse(JSON.stringify(this.keyData[index])));
     },
 
     onPopMenu(event: any) {
@@ -196,7 +116,7 @@ export const methods = {
         if (!that.hoverKey) {
             operate = 'createKey';
             label = that.t('create_key', 'property.');
-            params[2] = event.x;
+            params[3] = event.x;
         } else {
             operate = 'removeKey';
             label = that.t('remove_key', 'property.');
@@ -220,7 +140,6 @@ export const methods = {
      */
     createMenu(label: string, operate: string, params: any) {
         const that: any = this;
-        params.unshift(that.path);
         const result: any[] = [{
             label,
             click() {

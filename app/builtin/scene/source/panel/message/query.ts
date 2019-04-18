@@ -177,10 +177,10 @@ export function apply(messages: any) {
     };
 
     /**
-     * 查询当前动画的播放状态
+     * 查询当前动画的播放状态 {}
      */
-    messages['query-animation-state'] = (clip: string) => {
-        return $scene.forwarding('Animation', 'queryRecordAnimState', [clip]);
+    messages['query-animation-state'] = (clipUuid: string) => {
+        return $scene.forwarding('Animation', 'queryPlayState', [clipUuid]);
     };
 
     /**

@@ -1,0 +1,47 @@
+<div class="content-item preview-row" @click.right="onPopMenu">
+	<template v-if="display && !name">
+		<div
+			class="line"
+			v-for="(item, i) in keyData"
+			v-if="keyFrames[i + 1]"
+			:style="queryLineStyle(item.x, keyData[i + 1].x)"
+		></div>
+	</template>
+
+	<template v-if="display && name">
+		<div
+			class="line"
+			v-for="(item, i) in keyData"
+			v-if="keyFrames[i + 1]"
+			:style="queryLineStyle(item.x, keyData[i + 1].x)"
+			:title="t('line_tips')"
+			@dblclick="openBezierEditor(item)"
+		></div>
+	</template>
+
+	<template v-if="display">
+		<div
+			class="key"
+			v-for="(item, index) in keyData"
+			:style="queryKeyStyle(item.x)"
+			:index="index"
+			@mousedown="onMouseDown($event, index)"
+			@mouseover="hoverKey = item"
+			@mouseleave="hoverKey = null"
+		>
+			<div class="dot"></div>
+		</div>
+	</template>
+
+	<template v-if="display">
+		<div class="v-key" preview v-for="item in virtualkeys" :style="queryKeyStyle(item.x)">
+			<div class="dot"></div>
+		</div>
+	</template>
+
+	<template v-if="display && selectKey">
+		<div class="key" v-for="item in selectKey" :style="queryKeyStyle(item.x)">
+			<div class="dot"></div>
+		</div>
+	</template>
+</div>

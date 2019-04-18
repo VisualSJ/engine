@@ -3,8 +3,6 @@ export const template = `
     <div class="contrl-pointer"
         name = "pointer"
         :style="calcStyle()"
-        draggable="true"
-        @dragstart = "onDragStart"
         v-if="display"
     >
         <i class="iconfont icon-arrow-right"></i>
@@ -45,12 +43,6 @@ export const methods = {
      */
     async refresh() {
 
-    },
-
-    onDragStart(event: any) {
-        event.name = 'control-pointer';
-        // @ts-ignore
-        this.$emit('dragstart', event);
     },
 };
 

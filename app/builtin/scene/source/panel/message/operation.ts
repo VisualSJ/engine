@@ -373,8 +373,8 @@ export function apply(messages: any) {
     /**
      * 更改当前正在编辑的动画 uuid
      */
-    messages['change-edit-clip'] = (clipUuid: string) => {
-        return $scene.forwarding('Animation', 'setEditClip', [clipUuid]);
+    messages['change-edit-clip'] = (nodeUuid: string, clipUuid: string) => {
+        return $scene.forwarding('Animation', 'setEditClip', [nodeUuid, clipUuid]);
     };
 
     /**
@@ -424,6 +424,13 @@ export function apply(messages: any) {
      */
     messages['add-clip-event'] = (clipUuid: string, frame: number, funcName: string , params: any[]) => {
         return $scene.forwarding('Animation', 'operation', ['addEvent', clipUuid, frame, funcName, params]);
+    };
+
+    /**
+     * 移动帧事件
+     */
+    messages['move-clip-events'] = (clipUuid: string, frames: number[], offset: number) => {
+        return $scene.forwarding('Animation', 'operation', ['moveEvents', clipUuid, frames, offset]);
     };
 
     /**

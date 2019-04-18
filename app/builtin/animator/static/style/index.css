@@ -79,6 +79,7 @@
 .animator .container > .right .property-tools {
   position: relative;
   justify-content: flex-end;
+  z-index: 2;
 }
 .animator .container > .right .property-tools span {
   margin: 0 5px;

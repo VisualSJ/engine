@@ -107,12 +107,22 @@ export const messages = {
         });
     },
 
-    // 动画播放状态更改通知
-    'scene:animation-state-change'() {
+    // 动画状态更改通知
+    'scene:animation-state-change'(state: number) {
         if (!vm || !vm.animationMode) {
             return;
         }
-        vm.animationMode = false;
+        switch (state) {
+            case 0:
+                vm.animationState = 'stop';
+                break;
+            case 1:
+                vm.animationState = 'playing';
+                break;
+            case 2:
+                vm.animationState = 'pause';
+                break;
+        }
     },
 };
 
@@ -143,12 +153,14 @@ export async function ready() {
             currentClip: '', // 当前动画 clip uuid
             currentBezierData: {},
             clipsMenu: [],
-            selectKey: null,
+            selectKeyInfo: null, // 当前选中的关键帧
+            selectEventInfo: null, // 当前选中的事件信息
             compIndex: 0, // 存储当前动画组件在根节点组件的 index 值，方便做数据修改
             hasAnimationComp: false,
             hasAniamtionClip: false,
-            animationMode: false,
-            animationState: '', // 当前动画的编辑模式
+            animationMode: false, // 当前动画的编辑模式
+            animationState: 'stop', // 当前动画的播放模式
+            aniPlayTask: '',
             selectEventFrame: 0,
             showEventEditor: false, // 是否显示事件函数编辑器
             showBezierEditor: false, // 是否显示贝塞尔曲线编辑器
@@ -210,7 +222,8 @@ export async function ready() {
         },
         watch: {
             currentClip() {
-                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.currentClip);
+                // @ts-ignore
+                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.root, this.currentClip);
             },
             currentFrame() {
                 // 更新当前关键帧
@@ -248,9 +261,6 @@ export async function ready() {
                 requestAnimationFrame(() => {
                     this.grid.render();
                     this.offset = this.grid.xAxisOffset;
-                });
-                document.addEventListener('mouseup', () => {
-                    this.flags.mouseDownName = '';
                 });
             },
 
@@ -302,7 +312,7 @@ export async function ready() {
                         }
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
-                        // vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', clipDump.name);
+                        vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
                     } else {
                         that.hasAniamtionClip = false;
                     }
@@ -384,6 +394,7 @@ export async function ready() {
              */
             updateFrame(operate: string, newFrame: number) {
                 const that: any = this;
+                newFrame = newFrame || that.currentFrame;
                 switch (operate) {
                     case 'last':
                         newFrame --;
@@ -456,6 +467,8 @@ export async function ready() {
                 // 点击顶部移动当前关键帧
                 if (name === 'time-pointer') {
                     that.currentFrame = that.pixelToFrame(event.x);
+                } else if (name === 'pointer') {
+                    that.flags.mouseDownName = 'pointer';
                 } else {
                     if (event.button === 1 || event.button === 2) {
                         // 鼠标中键或右键按下，标识可以开始拖拽时间轴
@@ -471,45 +484,85 @@ export async function ready() {
                 that.flags.mouseDownName = name;
             },
 
+            onMouseUp(event: any) {
+                const that: any = this;
+                if (!that.flags.mouseDownName) {
+                    return;
+                }
+                switch (that.flags.mouseDownName) {
+                    case 'key':
+                        if (!that.selectKeyInfo) {
+                            break;
+                        }
+                        const offsetKey = Math.round(that.grid.pixelToValueH(that.selectKeyInfo.offset));
+                        if (offsetKey === 0) {
+                            break;
+                        }
+                        that.dirty = true;
+                        Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...that.selectKeyInfo.params, offsetKey);
+                        break;
+                    case 'event':
+                        if (!that.selectEventInfo) {
+                            break;
+                        }
+                        const offsetEvent = Math.round(that.grid.pixelToValueH(that.selectEventInfo.offset));
+                        if (offsetEvent === 0) {
+                            that.selectEventInfo = null;
+                            break;
+                        }
+                        Editor.Ipc.sendToPanel('scene', 'move-clip-events', that.currentClip, that.selectEventInfo.frames, offsetEvent);
+                        that.dirty = true;
+                        break;
+                }
+                that.selectEventInfo = null;
+                that.selectKeyInfo = null;
+                that.flags.mouseDownName = '';
+                that.flags.mouseDownX = 0;
+            },
+
             onMouseMove(event: any) {
                 const that: any = this;
                 if (!that.flags.mouseDownName) {
                     return;
                 }
+
                 const {x} = event;
-                if (that.flags.mouseDownName === 'grid') {
-                    const moveX = x - that.flags.mouseDownX;
-                    if (moveX === 0) {
-                        return;
-                    }
-                    that.flags.mouseDownX = x;
-                    that.moveTimeLine(moveX);
-                }
-            },
-
-            onDragStart(event: any) {
-                const that: any = this;
-
-                const { name } = event;
-                if (!name) {
-                    return;
-                }
-                that.flags.mouseDownName = name;
-            },
-
-            onDragOver(event: any) {
-                const that: any = this;
-
-                event.preventDefault(); // NOTE: Must have, otherwise we can not drop
-                event.stopPropagation();
                 switch (that.flags.mouseDownName) {
-                    case 'control-pointer':
-                        const x = event.x - that.$refs.left.offsetWidth + that.offset;
-                        const frame = Math.round(that.grid.pixelToValueH(x));
-                        that.currentFrame = frame;
+                    case 'key':
+                        if (that.selectKeyInfo) {
+                            const {startX, data} = that.selectKeyInfo;
+                            requestAnimationFrame(() => {
+                                const offset = event.x - startX;
+                                that.selectKeyInfo.startX = event.x;
+                                that.selectKeyInfo.offset += offset;
+                                data.x += offset;
+                            });
+                        }
                         break;
+                    case 'event':
+                        if (that.selectEventInfo) {
+                            const {startX, data} = that.selectEventInfo;
+                            requestAnimationFrame(() => {
+                                const offset = event.x - startX;
+                                that.selectEventInfo.startX = event.x;
+                                that.selectEventInfo.offset += offset;
+                                data.x += offset;
+                            });
+                        }
+                        break;
+                    case 'grid':
+                        const moveX = x - that.flags.mouseDownX;
+                        if (moveX === 0) {
+                            return;
+                        }
+                        that.flags.mouseDownX = x;
+                        that.moveTimeLine(moveX);
+                        break;
+                    case 'pointer':
+                        const pixel = x - that.$refs.left.offsetWidth + that.offset;
+                        const frame = Math.round(that.grid.pixelToValueH(pixel));
+                        that.currentFrame = frame;
                 }
-
             },
 
             onScroll(event: any, type: string) {
@@ -543,6 +596,21 @@ export async function ready() {
             },
 
             //////////////// 组件事件监听 /////////////////////////////////////////////////
+            // 更新当前的拖拽物信息
+            updateDragInfo(type: string, params: any[]) {
+                const that: any = this;
+                switch (type) {
+                    case 'moveKey':
+                        that.selectKeyInfo = params[0];
+                        that.flags.mouseDownName = 'key';
+                        break;
+                    case 'moveEvent':
+                        that.selectEventInfo = params[0];
+                        that.flags.mouseDownName = 'event';
+                        break;
+                }
+            },
+
             // 工具栏事件监听queryPlayingClipTime
             async onToolBar(operate: string, params: any[]) {
                 const that: any = this;
@@ -553,19 +621,42 @@ export async function ready() {
                         break;
                     case 'save':
                         // todo 数据是否发生修改的验证
-                        const isSave = await Editor.Ipc.requestToPanel('scene', 'save-clip');
-                        if (isSave) {
-                            that.dirty = false;
-                            // todo 保存成功的提示
-                        }
+                        Editor.Ipc.sendToPanel('scene', 'save-clip');
+                        that.dirty = false;
                         break;
                     case 'update-state':
-                        that.animationState = params[0];
+                        let operate = params[0];
+                        if (operate === 'play' && that.animationState === 'pause') {
+                            operate = 'resume';
+                        }
+                        const changeSuccess = Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
+                        if (changeSuccess) {
+                            if (operate === 'pause' || operate === 'stop') {
+                                cancelAnimationFrame(that.aniPlayTask);
+                            } else {
+                                that.runPointer();
+                            }
+                        } else {
+                            console.warn(`${that.currentClip} change play status ${operate} failed！`);
+                        }
                         break;
                     case 'update-frame':
                         that.updateFrame(params[0]);
                         break;
                 }
+            },
+
+            runPointer() {
+                const that: any = this;
+                that.aniPlayTask = requestAnimationFrame(async () => {
+                    const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+                    if (time) {
+                        that.currentFrame = timeToFrame(time, that.sample);
+                    }
+                    if (that.animationState === 'stop' || that.animationState === 'puase') {
+                        that.runPointer();
+                    }
+                });
             },
 
             // 属性操作
@@ -588,7 +679,7 @@ export async function ready() {
             },
 
             // 预览关键帧列表部分
-            onPreviewRow(operate: string, params: any[]) {
+            onPreviewRow(operate: string, params: any) {
                 const that: any = this;
                 const {currentClip} = that;
                 switch (operate) {
@@ -645,6 +736,7 @@ export async function ready() {
         },
         async mounted() {
             const that: any = this;
+            document.addEventListener('mouseup', that.onMouseUp);
             const isReady = await Editor.Ipc.requestToPanel('scene', 'query-is-ready');
             if (isReady) {
                 await that.refresh();

@@ -104,11 +104,11 @@ function formatClipDump(dump) {
 }
 
 function timeToFrame(time, sample) {
-    return Math.round((time / 60) * sample);
+    return Math.round(time * sample);
 }
 
 function frameToTime(frame, sample) {
-    return (frame / sample) * 60;
+    return frame / sample;
 }
 
 module.exports = {

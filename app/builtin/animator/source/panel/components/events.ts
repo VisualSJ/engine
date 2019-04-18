@@ -1,25 +1,37 @@
 
 export const template = `
 <div class="events"
-    @mousedown="onMouseDown"
     name="time-pointer"
 >
-    <i class="iconfont icon-event" draggable="true"
+    <template
+        v-if="selectEvent"
+        v-for="(info, index) in selectEvent"
+    >
+        <i class="iconfont icon-event preview"
+            v-if="display(info.x)"
+            :style="queryKeyStyle(info.x)"
+        ></i>
+    </template>
+    <template
+        v-if="events"
         v-for="(info, index) in events"
-        v-if="display(info.x)"
-        :style="queryKeyStyle(info.x)"
-        :index="index"
-        @dragstart="onDragStart"
-        @dblclick="openEventEditor(info.frame)"
-        @click.right="onPopMenu($event, info.frame)"
-        drag
-    ></i>
+    >
+        <i class="iconfont icon-event"
+            v-if="display(info.x)"
+            :style="queryKeyStyle(info.x)"
+            :index="index"
+            @mousedown="onMouseDown($event, info)"
+            @dblclick="openEventEditor(info.frame)"
+            @click.right="onPopMenu($event, info.frame)"
+        ></i>
+    </template>
 </div>
 `;
 
 export const props = [
     'events',
     'offset',
+    'selectInfo',
 ];
 
 export function data() {
@@ -33,7 +45,13 @@ export const watch = {
 };
 
 export const computed = {
-
+    selectEvent() {
+        const that: any = this;
+        if (!that.selectInfo) {
+            return null;
+        }
+        return [that.selectInfo.data];
+    },
 };
 
 export const components = {};
@@ -46,10 +64,6 @@ export const methods = {
     display(x: number): boolean {
         // @ts-ignore
         return x + this.offset >= 0;
-    },
-
-    onDragStart() {
-
     },
 
     onPopMenu(event: any, frame: number) {
@@ -71,9 +85,15 @@ export const methods = {
         });
     },
 
-    onMouseDown(event: any) {
-        const index = event.target.getAttribute('index');
-
+    onMouseDown(event: any, info: any) {
+        const that: any = this;
+        const dragInfo = {
+            startX: event.x,
+            data: JSON.parse(JSON.stringify(info)),
+            offset: 0,
+            frames: [info.frame],
+        };
+        that.$emit('startdrag', 'moveEvent', [dragInfo]);
     },
 
     openEventEditor(frame: string) {

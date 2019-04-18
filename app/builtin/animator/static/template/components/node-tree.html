@@ -1,9 +1,10 @@
-<div class="content-item" v-if="dumps" >
+<div class="content-item" 
+    v-if="dumps" 
+>
     <div class="node"
         :selected="select === dumps.uuid"
-        :uuid="dumps.uuid"
         :style="nodeStyle"
-        @mousedown="onMouseDown"
+        @mousedown="onMouseDown(dumps.uuid)"
     >
         <span>{{dumps.name}}</span>
         <span class="operate" @mousedown="onOperate">

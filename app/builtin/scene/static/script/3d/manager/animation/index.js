@@ -294,12 +294,13 @@ class AnimationManager extends EventEmitter {
      * 暂停一个节点上正在播放的动画
      */
     pause() {
-        const component = this.queryRecordAnimComp();
-        if (!component) {
+        const animData = this.queryRecordAnimData();
+        const state = animData.animState;
+        if (!state) {
             return false;
         }
 
-        component._crossFade.pause();
+        state.pause();
         return true;
     }
 

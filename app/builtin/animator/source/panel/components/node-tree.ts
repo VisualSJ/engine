@@ -36,8 +36,7 @@ export const methods = {
     t(key: string) {
         return Editor.I18n.t(`animator.node_tree.${key}`);
     },
-    onMouseDown(event: any) {
-        const uuid = event.target.getAttribute('uuid');
+    onMouseDown(uuid: string) {
         // @ts-ignore
         Editor.Selection.unselect('node', this.select);
         Editor.Selection.select('node', uuid);

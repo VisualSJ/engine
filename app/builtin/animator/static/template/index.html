@@ -7,7 +7,6 @@
                 @datachange="onToolBar"
                 :time="currentTime"
                 :root="root"
-                :uuid="currentClip"
                 :state="animationState"
                 :dirty="dirty"
             >
@@ -34,7 +33,7 @@
                     :name="name"
                     :prop="item.prop"
                     :comp="item.comp"
-                    :info="item.data"
+                    :info="item.dump"
                     :frame="currentFrame"
                     @datachange="onProperty"
                 ></property-tree>
@@ -42,7 +41,6 @@
         </div>
         <div class="right control" ref="right" 
             @mousewheel = "onMouseWheel"
-            @dragover = onDragOver
             @mousedown = "onMouseDown"
             @mousemove = "onMouseMove"
         >
@@ -51,7 +49,9 @@
                     v-if="eventsDump"
                     :events="eventsDump"
                     :offset="startOffset"
+                    :select-Info="selectEventInfo"
                     @datachange="onEvents"
+                    @startdrag="updateDragInfo"
                 >
                 </events>
             </div> 
@@ -65,9 +65,10 @@
                     <preview-row 
                         :key-frames=calcNodeFrames(path)
                         :path="path"
-                        :select-key="selectKey"
+                        :select-Info="selectKeyInfo"
                         :offset="startOffset"
                         @datachange="onPreviewRow"
+                        @startdrag="updateDragInfo"
                     ></preview-row>
                 </template>
             </div> 
@@ -95,17 +96,18 @@
                     <preview-row 
                         :key-frames=calcFrames(item.dump)
                         :path="selectPath"
-                        :select-key="selectKey"
+                        :select-Info="selectKeyInfo"
                         :name="name"
                         :offset="startOffset"
                         @datachange="onPreviewRow"
+                        @startdrag="updateDragInfo"
                     ></preview-row>
                 </template>
             </div> 
             <control-preview 
                 :position="pointerPosition"
                 :offset="startOffset"
-                @dragstart="onDragStart"
+                @startdrag="updateDragInfo"
             ></control-preview>
         </div>
     </div>
