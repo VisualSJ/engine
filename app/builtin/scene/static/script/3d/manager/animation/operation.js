@@ -28,11 +28,14 @@ class AnimationOperation {
         }
 
         //修改所有帧数据的时间
-        let clip = state._clip;
+        let clip = state.clip;
         let paths = utils.queryPaths(clip);
         paths.splice(0, 0, '/');
         paths.forEach((path) => {
-            let curveData = utils.getCurveDataFromClip(clip, path);
+            let curveData = utils.queryCurveDataFromClip(clip, path);
+            if (!curveData) {
+                return;
+            }
             utils.eachCurve(curveData, (comp, prop, keys) => {
                 keys.forEach((key) => {
                     let frame = Math.round(key.frame * clip.sample);
@@ -70,7 +73,7 @@ class AnimationOperation {
             return false;
         }
 
-        state._clip.speed = speed;
+        state.clip.speed = speed;
         state.initialize(animData.node);
 
         return true;
@@ -93,7 +96,7 @@ class AnimationOperation {
             mode = 0;
         }
 
-        state._clip.wrapMode = mode;
+        state.clip.wrapMode = mode;
         state.initialize(animData.node);
 
         return true;
@@ -116,13 +119,13 @@ class AnimationOperation {
 
         // 如果清除的是根节点
         if (path === '/') {
-            delete state._clip.curveData.props;
-            delete state._clip.curveData.comps;
+            delete state.clip.curveData.props;
+            delete state.clip.curveData.comps;
         } else {
             path = path.substr(1);
-            if (state._clip.curveData.paths && state._clip.curveData.paths[path]) {
-                delete state._clip.curveData.paths[paths].props;
-                delete state._clip.curveData.paths[paths].comps;
+            if (state.clip.curveData.paths && state.clip.curveData.paths[path]) {
+                delete state.clip.curveData.paths[paths].props;
+                delete state.clip.curveData.paths[paths].comps;
             }
         }
 
@@ -148,7 +151,7 @@ class AnimationOperation {
             return false;
         }
 
-        let data = utils.getCurveDataFromClip(state._clip, path);
+        let data = utils.getCurveDataFromClip(state.clip, path);
 
         if (!data) {
             return false;
@@ -185,7 +188,7 @@ class AnimationOperation {
             return false;
         }
 
-        let data = utils.getCurveDataFromClip(state._clip, path);
+        let data = utils.queryCurveDataFromClip(state.clip, path);
 
         if (!data) {
             return false;
@@ -197,7 +200,7 @@ class AnimationOperation {
             delete props[prop];
         }
 
-        utils.recalculateDuration(state._clip);
+        utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
         return true;
@@ -222,7 +225,10 @@ class AnimationOperation {
         }
 
         // 获取指定的节点的数据
-        let data = utils.getCurveDataFromClip(state._clip, path);
+        let data = utils.queryCurveDataFromClip(state.clip, path);
+        if (!data) {
+            return false;
+        }
 
         const node = animData.node;
         let target = node;
@@ -245,7 +251,7 @@ class AnimationOperation {
 
         let value = target[prop];
         const key = {
-            frame: frame / state._clip.sample,
+            frame: frame / state.clip.sample,
             value: value,
             curve: null,
         };
@@ -255,7 +261,7 @@ class AnimationOperation {
             return a.frame - b.frame;
         });
 
-        utils.recalculateDuration(state._clip);
+        utils.recalculateDuration(state.clip);
         state.initialize(node);
         return true;
     }
@@ -277,12 +283,12 @@ class AnimationOperation {
             return false;
         }
 
-        let keys = utils.queryPropertyKeys(state._clip, path, comp, prop);
+        let keys = utils.queryPropertyKeys(state.clip, path, comp, prop);
         if (!keys) {
             return false;
         }
 
-        let sample = state._clip.sample;
+        let sample = state.clip.sample;
 
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
@@ -296,7 +302,7 @@ class AnimationOperation {
             }
         }
 
-        utils.recalculateDuration(state._clip);
+        utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
         return true;
@@ -318,19 +324,19 @@ class AnimationOperation {
             return false;
         }
 
-        let keys = utils.queryPropertyKeys(state._clip, path, comp, prop);
+        let keys = utils.queryPropertyKeys(state.clip, path, comp, prop);
         if (!keys) {
             return false;
         }
 
-        let sample = state._clip.sample;
+        let sample = state.clip.sample;
 
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
             if (Math.round(key.frame * sample) === frame) {
                 keys.splice(i, 1);
                 state.initialize(animData.node);
-                utils.recalculateDuration(state._clip);
+                utils.recalculateDuration(state.clip);
                 return true;
             }
         }
@@ -357,7 +363,10 @@ class AnimationOperation {
         const node = animData.node;
 
         // 获取指定的节点的数据
-        let data = utils.getCurveDataFromClip(state._clip, path);
+        let data = utils.queryCurveDataFromClip(state.clip, path);
+        if (!data) {
+            return;
+        }
 
         let target = node;
         if (comp) {
@@ -373,7 +382,7 @@ class AnimationOperation {
 
         const keys = data[prop];
 
-        let sample = state._clip.sample;
+        let sample = state.clip.sample;
 
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
@@ -402,7 +411,7 @@ class AnimationOperation {
             return false;
         }
 
-        let data = utils.getCurveDataFromClip(state._clip, path);
+        let data = utils.queryCurveDataFromClip(state.clip, path);
 
         if (!data) {
             return false;
@@ -433,7 +442,7 @@ class AnimationOperation {
             return false;
         }
 
-        let key = utils.addEvent(state._clip, frame, funcName, params);
+        let key = utils.addEvent(state.clip, frame, funcName, params);
         if (!key) {
             return false;
         }
@@ -454,7 +463,7 @@ class AnimationOperation {
             return false;
         }
 
-        let key = utils.deleteEvent(state._clip, frame);
+        let key = utils.deleteEvent(state.clip, frame);
         if (!key) {
             return false;
         }
@@ -476,14 +485,14 @@ class AnimationOperation {
             return false;
         }
 
-        let keys = utils.deleteEvent(state._clip, frame);
+        let keys = utils.deleteEvent(state.clip, frame);
         if (!keys) {
             return false;
         }
 
         if (events) {
             events.forEach((event) => {
-                utils.addEvent(state._clip, frame, event.func, event.params);
+                utils.addEvent(state.clip, frame, event.func, event.params);
             });
         }
 
@@ -504,12 +513,12 @@ class AnimationOperation {
             return false;
         }
 
-        let events = utils.queryEvents(state._clip);
+        let events = utils.queryEvents(state.clip);
         if (!events) {
             return false;
         }
 
-        let sample = state._clip.sample;
+        let sample = state.clip.sample;
         for (let i = 0; i < events.length; i++) {
             let event = events[i];
             let curFrame = Math.round(event.frame * sample);
@@ -521,7 +530,7 @@ class AnimationOperation {
             }
         }
 
-        utils.recalculateDuration(state._clip);
+        utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
         return true;
@@ -544,7 +553,7 @@ class AnimationOperation {
             return false;
         }
 
-        return utils.modifyCurveOfKey(state._clip, path, comp, prop, frame, data);
+        return utils.modifyCurveOfKey(state.clip, path, comp, prop, frame, data);
     }
 }
 

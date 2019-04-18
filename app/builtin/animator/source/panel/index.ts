@@ -223,7 +223,7 @@ export async function ready() {
         watch: {
             currentClip() {
                 // @ts-ignore
-                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.root, this.currentClip);
+                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.currentClip);
             },
             currentFrame() {
                 // 更新当前关键帧

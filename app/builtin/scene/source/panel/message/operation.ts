@@ -373,8 +373,8 @@ export function apply(messages: any) {
     /**
      * 更改当前正在编辑的动画 uuid
      */
-    messages['change-edit-clip'] = (nodeUuid: string, clipUuid: string) => {
-        return $scene.forwarding('Animation', 'setEditClip', [nodeUuid, clipUuid]);
+    messages['change-edit-clip'] = (clipUuid: string) => {
+        return $scene.forwarding('Animation', 'setEditClip', [clipUuid]);
     };
 
     /**

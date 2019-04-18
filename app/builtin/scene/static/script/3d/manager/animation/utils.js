@@ -21,7 +21,7 @@ class AnimationUtil {
      * @param {*} state
      */
     encodeClip(state) {
-        const clip = state._clip;
+        const clip = state.clip;
         const sample = clip.sample;
         function handleProps(props) {
             const result = {};
@@ -142,11 +142,11 @@ class AnimationUtil {
     }
 
     /**
-     * 从一个 clip 对象内，找出 path 指向的数据
+     * 从一个 clip 对象内，找出 path 指向的数据，不存在的直接返回null
      * @param {*} clip 动画 clip 对象
      * @param {*} path 数据的搜索路径
      */
-    getCurveDataFromClip(clip, path) {
+    queryCurveDataFromClip(clip, path) {
         if (!path) {
             console.error('need a path');
             return null;
@@ -161,6 +161,36 @@ class AnimationUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * 从一个 clip 对象内，获取path 指向的数据，不存在的会创建一个空数据
+     * @param {*} clip 动画 clip 对象
+     * @param {*} path 数据的搜索路径
+     */
+    getCurveDataFromClip(clip, path) {
+        if (!path) {
+            console.error('need a path');
+            return null;
+        }
+
+        if (path === '/') {
+            if (!clip.curveData) {
+                clip.curveData = {};
+            }
+            return clip.curveData;
+        } else {
+            path = path.substr(1);
+            if (!clip.curveData.paths) {
+               clip.curveData.paths = {};
+            }
+
+            if (!clip.curveData.paths[path]) {
+                clip.curveData.paths[path] = {};
+            }
+
+            return clip.curveData.paths[path];
+        }
     }
 
     /**
@@ -381,7 +411,7 @@ class AnimationUtil {
             return null;
         }
 
-        let data = this.getCurveDataFromClip(clip, path);
+        let data = this.queryCurveDataFromClip(clip, path);
         if (!data) {
             return null;
         }
@@ -424,7 +454,10 @@ class AnimationUtil {
         let sample = clip.sample;
 
         paths.forEach((path) => {
-            let curveData = this.getCurveDataFromClip(clip, path);
+            let curveData = this.queryCurveDataFromClip(clip, path);
+            if (!curveData) {
+                return;
+            }
             this.eachCurve(curveData, (comp, prop, keys) => {
                 if (!keys || !keys.length) {
                     return;
