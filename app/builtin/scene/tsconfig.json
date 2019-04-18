@@ -11,6 +11,7 @@
       "../../@types/editor",
       "../../@types/scene"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }

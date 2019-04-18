@@ -19,6 +19,7 @@
       "../../@types/asset-db/gltf-validator",
       "../../@types/asset-db/third-parts"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }

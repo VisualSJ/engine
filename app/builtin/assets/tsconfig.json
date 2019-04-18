@@ -12,6 +12,7 @@
       "../../@types/editor",
       "../../@types/assets"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }

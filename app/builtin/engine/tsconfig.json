@@ -11,6 +11,7 @@
       "../../@types/editor",
       "../../@types/engine"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }

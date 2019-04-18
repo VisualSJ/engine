@@ -11,6 +11,7 @@
             "../../@types/editor",
             "../../@types/console"
         ],
+        "lib": ["dom", "es7"],
         "esModuleInterop": true
     }
 }

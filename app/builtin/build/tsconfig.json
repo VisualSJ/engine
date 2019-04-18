@@ -10,6 +10,7 @@
       "../../node_modules/@types/node",
       "../../@types/editor"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }

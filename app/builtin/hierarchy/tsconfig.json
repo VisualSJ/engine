@@ -12,6 +12,7 @@
       "../../@types/hierarchy",
       "../../@types/asset-db"
     ],
+    "lib": ["dom", "es7"],
     "esModuleInterop": true
   }
 }
