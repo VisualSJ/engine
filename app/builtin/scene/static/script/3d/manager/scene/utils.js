@@ -15,7 +15,7 @@ exports.loadSceneByUuid = async function loadSceneByUuid(uuid) {
         });
         timer = setTimeout(() => {
             reject('Open scene timeout...');
-        }, 3000);
+        }, 15000);
     });
 };
 
@@ -34,7 +34,7 @@ exports.loadSceneByNode = async function loadSceneByNode(scene) {
         });
         timer = setTimeout(() => {
             reject('Open scene timeout...');
-        }, 3000);
+        }, 15000);
     });
 };
 
@@ -62,7 +62,7 @@ exports.loadSceneByJson = async function loadSceneByJson(json) {
             });
             timer = setTimeout(() => {
                 reject('Open scene timeout...');
-            }, 3000);
+            }, 15000);
         });
     });
 };

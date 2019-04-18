@@ -101,30 +101,19 @@ const ipc = (module.exports = new WebviewIpc());
 ipcRenderer.on('webview-ipc:send', async (event, id, message, params) => {
     const handler = ipc._events[message];
 
-    let data;
     try {
-        data = handler(...params);
+        const data = await handler(...params);
+        ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
     } catch (error) {
         console.error(error);
         ipcRenderer.sendToHost('webview-ipc:send-reply', id, encode(error));
         return;
     }
-
-    if (data instanceof Promise) {
-        data.then((data) => {
-            ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
-        }).catch((error) => {
-            console.error(error);
-            ipcRenderer.sendToHost('webview-ipc:send-reply', id, encode(error));
-        });
-        return;
-    }
-    ipcRenderer.sendToHost('webview-ipc:send-reply', id, null, data);
 });
 
 // host 发送过来的消息
 ipcRenderer.on('webview-ipc:force-send', async (event, id, message, params) => {
-    let handler = ipc._events[message];
+    const handler = ipc._events[message];
 
     try {
         const data = await handler(...params);

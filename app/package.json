@@ -114,11 +114,9 @@
         "@editor/dock": "1.0.3",
         "@editor/fbx2gltf": "0.9.7-9c16d3d-2",
         "@editor/gulp-rev-all": "^0.9.8-5f221a5",
-        "@editor/package": "1.0.5",
-        "@editor/panel": "1.0.8",
+        "@editor/package": "1.0.7",
+        "@editor/panel": "1.0.10",
         "@editor/project": "1.0.0",
-        "@editor/setting": "1.0.3",
-        "@types/babel__core": "^7.1.0",
-        "@types/pngjs": "^3.3.2"
+        "@editor/setting": "1.0.3"
     }
 }

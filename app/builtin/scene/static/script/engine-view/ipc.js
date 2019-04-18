@@ -3,6 +3,8 @@
 const { basename } = require('path');
 const vStacks = require('v-stacks');
 
+const tasks = require('./tasks');
+
 /**
  * engine-view 监听的 ipc 消息
  */
@@ -19,6 +21,13 @@ const messages = {
 
     close() {
         this.depend.reset('webview-ready');
+    },
+
+    /**
+     * 立即缓存当前场景的 dump 数据
+     */
+    'immediately-dump'(dump) {
+        tasks.updateDump(dump);
     },
 
     //////////////////////

@@ -11,7 +11,7 @@ class UuidArray {
         if (index !== -1) {
             return false;
         }
-        this.uuids.push(uuid);
+        this.uuids.splice(0, 0, uuid);
         return true;
     }
 

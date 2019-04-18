@@ -10,7 +10,12 @@ let _softOpen = false;
 /**
  * 更新主窗口上缓存的场景数据
  */
-exports.updateDump = function() {
+exports.updateDump = function(dump) {
+    if (dump) {
+        _dump = dump;
+        return;
+    }
+
     clearTimeout(_timer);
     _timer = setTimeout(async () => {
         _dump = await exports.$scene.forceForwarding('Scene', 'dump');

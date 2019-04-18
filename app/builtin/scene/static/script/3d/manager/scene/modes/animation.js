@@ -122,7 +122,7 @@ class AnimationMode extends Mode {
     /**
      * 获取当前正在编辑的资源的序列化数据
      */
-    async serialize() {
+    serialize() {
         return Manager.Animation.getSerializedEditClip();
     }
 

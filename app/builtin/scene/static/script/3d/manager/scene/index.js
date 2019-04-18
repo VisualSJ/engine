@@ -308,11 +308,11 @@ class SceneManager extends EventEmitter {
     /**
      * 序列化当前的场景编辑器状态
      */
-    async dump() {
+    dump() {
         const result = {
-            scene: await this.SceneMode.serialize(),
-            prefab: await this.PrefabMode.serialize(),
-            animation: await this.AnimationMode.serialize(),
+            scene: this.SceneMode.serialize(),
+            prefab: this.PrefabMode.serialize(),
+            animation: this.AnimationMode.serialize(),
         };
 
         return result;

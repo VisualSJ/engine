@@ -37,24 +37,14 @@ class HostIpc extends EventEmitter {
                     return;
                 }
 
-                let result;
                 try {
-                    result = handler(...params);
+                    const result = await handler(...params);
+                    this.$webview.send('webview-ipc:send-reply', id, null, result);
                 } catch (error) {
                     console.error(error);
                     this.$webview.send('webview-ipc:send-reply', id, encode(error));
                     return;
                 }
-
-                if (result instanceof Promise) {
-                    result.then((result) => {
-                        this.$webview.send('webview-ipc:send-reply', id, null, result);
-                    }).catch((error) => {
-                        this.$webview.send('webview-ipc:send-reply', id, encode(error));
-                    });
-                    return;
-                }
-                this.$webview.send('webview-ipc:send-reply', id, null, result);
             }
 
             // webview 主动发送的强制 ipc 消息

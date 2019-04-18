@@ -11,5 +11,6 @@ requestAnimationFrame(async () => {
 
 // 进程刷新的时候，需要通知宿主进程关闭
 window.addEventListener('beforeunload', () => {
+    ipc.send('immediately-dump', Manager.Scene.dump());
     ipc.send('close');
 });

@@ -53,6 +53,10 @@ class Selection extends EventEmitter {
      */
     select(uuid) {
         if (!this.uuids.add(uuid)) {
+            this.uuids.remove(uuid);
+            this.emit('unselect', uuid, this.uuids.uuids.slice());
+            this.uuids.add(uuid);
+            this.emit('select', uuid, this.uuids.uuids.slice());
             return;
         }
 
