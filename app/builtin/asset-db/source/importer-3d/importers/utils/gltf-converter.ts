@@ -861,23 +861,23 @@ export class GltfConverter {
                 this._readAccessor(attributeAccessor, new DataView(posBuffer));
             }
 
-            // const baseType = this._getAttributeBaseType(attributeAccessor.componentType);
-            // const type = this._getAttributeType(attributeAccessor.type);
-
-            // // Perform flipY default.
-            // if (attributeName.startsWith('TEXCOORD')) {
-            //     // FLIP V
-            //     if (baseType === AttributeBaseType.FLOAT32 && type === AttributeType.VEC2) {
-            //         for (let iVert = 0; iVert < verticesCount; ++iVert) {
-            //             const pV = vertexBufferStride * iVert + 4;
-            //             const v = dataView.getFloat32(pV, true);
-            //             if (v >= 0 && v <= 1) {
-            //                 dataView.setFloat32(pV, 1 - v, true);
-            //             } else {
-            //                 console.error(
-            //                     `We currently do flipping texture coordinates(V) compulsively, ` +
-            //                     `so that only normalized texture coordinates are supported.`);
-            //                 break;
+            // FIXIT: FBX2glTf 我们 fork 的版本不会将权重的和置为1（在最新版修复了）。
+            // if (attributeName.startsWith('WEIGHTS')) {
+            //     // Normalize weight.
+            //     const ws = new Array<number>(4);
+            //     const reader = this._getComponentReader(attributeAccessor.componentType);
+            //     const writer = this._getComponentWriter(attributeAccessor.componentType);
+            //     for (let iVert = 0; iVert < vertexCount; ++iVert) {
+            //         let sum = 0.0;
+            //         for (let iw = 0; iw < 4; ++iw) {
+            //             const w = reader(dataView, vertexStride * iVert + iw * 4);
+            //             ws[iw] = w;
+            //             sum += w;
+            //         }
+            //         if (sum !== 1.0 && sum !== 0.0) {
+            //             for (let iw = 0; iw < 4; ++iw) {
+            //                 const normalizedWeight = ws[iw] / sum;
+            //                 writer(dataView, vertexStride * iVert + iw * 4, normalizedWeight);
             //             }
             //         }
             //     }
