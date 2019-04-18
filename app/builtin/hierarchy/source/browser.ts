@@ -82,7 +82,6 @@ export const messages = {
             });
         }
 
-        await Editor.Ipc.requestToPanel('scene', 'snapshot');
         await Editor.Ipc.requestToPackage('scene', 'link-prefab', nodeUuid, assetUuid);
 
     },
@@ -113,7 +112,6 @@ export const messages = {
             });
         }
 
-        await Editor.Ipc.requestToPanel('scene', 'snapshot');
         await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', nodeUuid);
     },
 

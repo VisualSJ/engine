@@ -59,9 +59,9 @@ export const methods = {
             menu: [
                 {
                     label: Editor.I18n.t('inspector.menu.remove_component'),
-                    async click() {
-                        await Editor.Ipc.requestToPanel('scene', 'snapshot');
-                        await Editor.Ipc.requestToPanel('scene', 'remove-array-element', {
+                    click() {
+                        Editor.Ipc.sendToPanel('scene', 'snapshot');
+                        Editor.Ipc.sendToPanel('scene', 'remove-array-element', {
                             uuid,
                             path: '__comps__',
                             index,
@@ -72,9 +72,9 @@ export const methods = {
                 {
                     label: Editor.I18n.t('inspector.menu.move_up_component'),
                     enabled: index !== 0,
-                    async click() {
-                        await Editor.Ipc.requestToPanel('scene', 'snapshot');
-                        await Editor.Ipc.requestToPanel('scene', 'move-array-element', {
+                    click() {
+                        Editor.Ipc.sendToPanel('scene', 'snapshot');
+                        Editor.Ipc.sendToPanel('scene', 'move-array-element', {
                             uuid,
                             path: '__comps__',
                             target: index,
@@ -85,9 +85,9 @@ export const methods = {
                 {
                     label: Editor.I18n.t('inspector.menu.move_down_component'),
                     enabled: index !== total - 1,
-                    async click() {
-                        await Editor.Ipc.requestToPanel('scene', 'snapshot');
-                        await Editor.Ipc.requestToPanel('scene', 'move-array-element', {
+                    click() {
+                        Editor.Ipc.sendToPanel('scene', 'snapshot');
+                        Editor.Ipc.sendToPanel('scene', 'move-array-element', {
                             uuid,
                             path: '__comps__',
                             target: index,
