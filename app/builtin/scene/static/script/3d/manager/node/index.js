@@ -306,8 +306,18 @@ class NodeManager extends EventEmitter {
             this.emit('before-add-component', component, node);
             Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', uuid);
 
-            const comp = node.addComponent(component);
-            compManager.addComponent(comp);
+            const comp = node.addComponent(component); // 触发引擎上节点添加组件
+            compManager.addComponent(comp); // 编辑器内的组件管理
+
+            /**
+             * HACK:
+             * 本来 compManager.addComponent(comp); 来一个加一个就够了
+             * 但现在引擎会根据 component 的依赖情况，自动添加它依赖但缺失的 components
+             * 所以实际上一次产生了多个 components，且引擎不会有反馈
+             * Hack 的做法是对此时的 node 再全部拉取一次 components
+             */
+            compManager.ensureNode(node);
+
             // 一些组件在添加的时候，需要执行部分特殊的逻辑
             if (comp.constructor && utils.addComponentMap[comp.constructor.name]) {
                 utils.addComponentMap[comp.constructor.name](comp, node);

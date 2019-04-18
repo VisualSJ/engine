@@ -67,7 +67,7 @@ async function decodeComponents(dumpComps: any, node: any) {
         return component.uuid;
     });
 
-    // 删除不在新数据上的 component
+    // 删除现有在 node._compoennts 中但不在 dumpComps 中的 component
     componentsUuids.forEach((compUuid: string) => {
         if (!dumpCompsUuids.includes(compUuid)) {
             Manager.Node.removeComponent(compUuid);
@@ -106,10 +106,16 @@ async function decodeComponents(dumpComps: any, node: any) {
 }
 
 function decodePrefab(dumpPrefab: any, node: any) {
-    if (!dumpPrefab) {
+    if (!dumpPrefab && !node._prefab) { // 不需要变动
         return;
     }
 
+    if (!dumpPrefab && node._prefab) {
+        node._prefab = null; // 删除
+        return;
+    }
+
+    // 新增
     const info = new cc._PrefabInfo();
     const root = Manager.Node.query(dumpPrefab.rootUuid);
     info.root = root ? root : node;

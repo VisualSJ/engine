@@ -53,6 +53,18 @@ class CompManager extends EventEmitter {
     }
 
     /**
+     * 再拉取一遍节点上的 components, 确保都存在
+     * @param {*} node
+     */
+    ensureNode(node) {
+        for (let comp of node._components) {
+            if (!this.query(comp.uuid)) {
+                this.add(comp);
+            }
+        }
+    }
+
+    /**
      * 在编辑器中添加新的component
      * @param {*} component 组件
      */
