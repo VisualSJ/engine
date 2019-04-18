@@ -3,7 +3,7 @@
 import { copy, ensureDir, existsSync, outputFile } from 'fs-extra';
 import { dirname, extname, join } from 'path';
 
-import { getName, moveFile, removeFile } from './utils';
+import { getName, isReadonly, moveFile, removeFile } from './utils';
 import { awaitAsset, forwarding } from './worker/index';
 
 /**
@@ -53,6 +53,11 @@ export async function createAsset(url: string, content?: Buffer | string | null,
 
     let overwrite = false;
     if (existsSync(file)) {
+        if (await isReadonly(file)) {
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.readonly')} \n${url}`);
+            return null;
+        }
+
         if (option && !option.overwrite) {
             console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.exist')} \n${url}`);
             return null;
@@ -68,6 +73,12 @@ export async function createAsset(url: string, content?: Buffer | string | null,
         });
 
         if (code === 1) {
+            return null;
+        }
+    } else {
+        // 检查其父级是否只读
+        if (await isReadonly(dirname(url))) {
+            console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.readonly')} \n${url}`);
             return null;
         }
     }
@@ -159,6 +170,11 @@ export async function saveAsset(uuid: string, content: Buffer | string): Promise
         return false;
     }
 
+    if (await isReadonly(uuid)) {
+        console.warn(`${Editor.I18n.t('asset-db.saveAsset.fail.readonly')} \n${uuid}`);
+        return false;
+    }
+
     if (content instanceof Buffer || typeof content === 'string') { // 格式正确，写入成文件
         try {
             await outputFile(info.file, content);
@@ -189,6 +205,11 @@ export async function saveAssetMeta(uuid: string, content: string) {
 
     if (typeof content !== 'string') {
         console.warn(`${Editor.I18n.t('asset-db.saveAssetMeta.fail.content')}`);
+        return false;
+    }
+
+    if (await isReadonly(uuid)) {
+        console.warn(`${Editor.I18n.t('asset-db.saveAssetMeta.fail.readonly')} \n${uuid}`);
         return false;
     }
 
@@ -246,19 +267,14 @@ export async function copyAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
-    // 目标地址的父级文件夹处于 readonly 状态
     const targetParentUrl = dirname(target);
     const targetParentUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', targetParentUrl);
     if (!targetParentUuid) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.parent')} \ntarget: ${assets.target}`);
         return false;
     }
-    const targetParentInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', targetParentUuid);
-    if (!targetParentInfo) {
-        console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.parent')} \ntarget: ${assets.target}`);
-        return false;
-    }
-    if (targetParentInfo.readonly) {
+    // 目标地址的父级文件夹处于 readonly 状态
+    if (await isReadonly(targetParentUuid)) {
         console.warn(`${Editor.I18n.t('asset-db.copyAsset.fail.readonly')} \ntarget: ${assets.target}`);
         return false;
     }
@@ -306,6 +322,11 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         return false;
     }
 
+    if (await isReadonly(source)) {
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.readonly_source')} \nsource: ${source}`);
+        return false;
+    }
+
     // 目标地址错误 或 目标已经存在
     if (!assets.target || existsSync(assets.target)) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.target')} \ntarget: ${target}`);
@@ -325,17 +346,11 @@ export async function moveAsset(source: string, target: string): Promise<boolean
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.parent')} \ntarget: ${assets.target}`);
         return false;
     }
-    const targetParentInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', targetParentUuid);
-    if (!targetParentInfo) {
-        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.parent')} \ntarget: ${assets.target}`);
-        return false;
-    }
-    if (targetParentInfo.readonly) {
+    if (await isReadonly(targetParentUuid)) {
         console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.readonly')} \ntarget: ${assets.target}`);
         return false;
     }
 
-    //
     try {
         await moveFile(assets.source, assets.target);
     } catch (error) {
@@ -364,6 +379,11 @@ export async function deleteAsset(url: string): Promise<boolean> {
     // 如果不存在，停止操作
     if (!file || !existsSync(file)) {
         console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.unexist')} \nurl: ${url}`);
+        return false;
+    }
+
+    if (await isReadonly(url)) {
+        console.warn(`${Editor.I18n.t('asset-db.deleteAsset.fail.readonly')} \nurl: ${url}`);
         return false;
     }
 

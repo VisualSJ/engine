@@ -5,7 +5,10 @@ const db = require('./tree-db');
  * @param asset
  */
 exports.canNotDeleteAsset = (asset: ItreeAsset) => {
-    return !asset || asset.isRoot || asset.isSubAsset || asset.readonly;
+    return !asset
+        || asset.isRoot
+        || asset.readonly
+        || asset.isSubAsset;
 };
 
 /**
@@ -53,6 +56,15 @@ exports.canNotPasteAsset = (asset: ItreeAsset) => {
         || asset.readonly
         || !asset.isDirectory
         || db.vm.copiedUuids.length === 0;
+};
+
+/**
+ * 不能执行 drop 操作的资源，即不能把资源拖进来
+ * @param asset
+ */
+exports.canNotDropAsset = (asset: ItreeAsset) => {
+    return !asset
+        || asset.readonly;
 };
 
 /**
@@ -305,7 +317,7 @@ exports.twinkle = {
 
         // 动画结束后删除
         setTimeout(() => {
-             db.vm.twinkles[uuid] = undefined;
+            db.vm.twinkles[uuid] = undefined;
         }, 1000);
     },
 };

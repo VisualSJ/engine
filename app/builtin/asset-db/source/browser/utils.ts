@@ -2,6 +2,7 @@
 
 import { copy, existsSync, move, readdirSync, remove, statSync } from 'fs-extra';
 import { basename, dirname, extname, join } from 'path';
+import { forwarding } from './worker/index';
 
 /**
  * 初始化一个可用的文件名
@@ -79,4 +80,18 @@ export async function moveFile(source: string, target: string) {
     await removeFile(source + '.meta');
     await move(tmp, target);
     await move(tmp + '.meta', target + '.meta');
+}
+
+/**
+ * 检查资源是否只读
+ */
+export async function isReadonly(uuid_or_url: string) {
+    let uuid = uuid_or_url;
+
+    if (uuid_or_url.startsWith('db://')) {
+        uuid = await forwarding('asset-worker:query-uuid-from-url', uuid_or_url);
+    }
+
+    const info = await forwarding('asset-worker:query-asset-info', uuid);
+    return info && info.readonly || false;
 }
