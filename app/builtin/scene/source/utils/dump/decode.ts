@@ -264,10 +264,10 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
         }
     } else if (dump.isArray) {
-        data[path].length = 0; // 重要：重置原数据
+        data[info.key].length = 0; // 重要：重置原数据
         if (Array.isArray(dump.value)) {
             await Promise.all(dump.value.map(async (item: IProperty, index: number) => {
-                return await decodePatch(`${path}.${index}`, item, data);
+                return await decodePatch(`${info.key}.${index}`, item, data);
             }));
         }
     } else if (ccExtends.includes(assetType) || assetType === dump.type) {

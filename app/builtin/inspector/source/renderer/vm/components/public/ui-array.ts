@@ -11,7 +11,7 @@ export const template = `
         ></i>
     </div>
     <div class="content">
-        <ui-num-input path="length" min="0"
+        <ui-num-input path="length" min="0" step="1"
             :readonly="readonly"
             :disabled="readonly"
             :value="value.length"
@@ -128,8 +128,7 @@ export const methods = {
 };
 
 export const watch = {
-    value() {
-    },
+    value(value: any[]) {},
 };
 
 export function data() {

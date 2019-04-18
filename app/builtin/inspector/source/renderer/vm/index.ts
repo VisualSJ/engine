@@ -85,6 +85,7 @@ export function init(elem: HTMLElement) {
             path: dump.path,
             dump: {
                 type: dump.type,
+                isArray: dump.isArray,
                 value: dump.value,
             },
         });

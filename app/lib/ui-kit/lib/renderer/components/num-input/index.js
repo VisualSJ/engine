@@ -600,7 +600,7 @@ const mouseUpControl = (elem, detach = false) => {
             clearTimeout(elem._timer);
             clearInterval(elem._timer);
             elem.dispatch('confirm');
-            elem._staging = parseFloat(elem.$input.value, 10);
+            // elem._staging = parseFloat(elem.$input.value, 10);
             delete elem._timer;
         };
         return onMouseUp;

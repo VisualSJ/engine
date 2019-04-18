@@ -77,6 +77,7 @@ export const methods = {
         vm.$root.$emit('set-property', {
             path: dump.path,
             type: dump.type,
+            isArray: dump.isArray,
             value: dump.value,
         });
     },
