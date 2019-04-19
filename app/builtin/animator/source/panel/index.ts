@@ -379,6 +379,8 @@ export async function ready() {
                         that.hasAnimationComp = true;
                         const {compIndex, defaultClip} = that.nodeDump.clipInfo;
                         if (!defaultClip) {
+                            that.hasAniamtionClip = false;
+                            that.clipDump = null;
                             return;
                         }
                         that.hasAniamtionClip = true;
@@ -401,9 +403,12 @@ export async function ready() {
                     } else {
                         that.hasAnimationComp = false;
                         that.hasAniamtionClip = false;
+                        that.clipDump = null;
                     }
                 } else {
                     that.hasAnimationComp = false;
+                    that.hasAniamtionClip = false;
+                    that.clipDump = null;
                     await that.updateRoot(uuid);
                 }
             },

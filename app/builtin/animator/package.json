@@ -7,7 +7,8 @@
     "menu": {
         "i18n:menu.panel/i18n:animator.title": {
             "message": "open",
-            "icon": "./static/icon.png"
+            "icon": "./static/icon.png",
+            "accelerator": "CmdOrCtrl+6"
         }
     },
 

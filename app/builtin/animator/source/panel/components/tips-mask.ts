@@ -79,9 +79,10 @@ export const methods = {
                 }
                 // 新建 clip 文件
                 const fileUrl = `db://internal/default_file_content/anim`;
-                const url = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', path);
-                const target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
-                const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', fileUrl, target, {
+                const filePath = await Editor.Ipc.requestToPackage('asset-db', 'query-path-by-url', fileUrl);
+                const target = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', path);
+                const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, {
+                    src: filePath,
                     overwrite: true,
                 });
                 if (!isSuccess) {
