@@ -35,7 +35,7 @@ async function openEngine() {
         cc.game.run({
             id: 'GameCanvas',
             showFPS: false,
-            debugMode: cc.debug.DebugMode.ERROR,
+            debugMode: cc.debug.DebugMode.WARN,
             frameRate: 60,
             renderMode: 2, // 0: auto, 1:Canvas, 2:Webgl
             registerSystemEvent: false,

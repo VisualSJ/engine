@@ -71,6 +71,12 @@ declare namespace cc {
             constructor(x?: number, y?: number, z?: number, w?: number);
             static set(out: quat, x: number, y: number, z: number, w: number): quat;
         }
+        export class mat4 {
+            constructor (...elements: number[]);
+            static getTranslation(out: vec3, mat: mat4): vec3;
+            static getRotation(out: quat, mat: mat4): quat;
+            static getScaling(out: vec3, mat: mat4): vec3;
+        }
     }
 
     export class Component {

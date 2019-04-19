@@ -1170,6 +1170,20 @@ export class GltfConverter {
                 gltfNode.scale[2]
             );
         }
+        if (gltfNode.matrix) {
+            const ns = gltfNode.matrix;
+            const m = new cc.vmath.mat4(
+                ns[0], ns[1], ns[2], ns[3],
+                ns[4], ns[5], ns[6], ns[7],
+                ns[8], ns[9], ns[10], ns[11],
+                ns[12], ns[13], ns[14], ns[15]);
+            const t = cc.vmath.mat4.getTranslation(new cc.Vec3(), m);
+            const r = cc.vmath.mat4.getRotation(new cc.Quat(), m);
+            const s = cc.vmath.mat4.getScaling(new cc.Vec3(), m);
+            node.setPosition(t);
+            node.setRotation(r);
+            node.setScale(s);
+        }
         return node;
     }
 
@@ -1771,7 +1785,7 @@ type UniqueNameGenerator = (original: string | null, last: string | null, index:
 
 function uniqueChildNodeNameGenerator(original: string | null, last: string | null, index: number, count: number): string {
     const postfix = count === 0 ? '' : `-${count}`;
-    return `${original || ''}(Creator renamed ${index}${postfix})`;
+    return `${original || ''}(__autogen ${index}${postfix})`;
 }
 
 function makeUniqueNames(names: Array<(string | null)>, generator: UniqueNameGenerator): string[] {
