@@ -13,6 +13,7 @@ import {
     fillDefaultValue,
     getDefault,
     getTypeInheritanceChain,
+    getTypeName,
     parsingPath,
 } from './utils';
 
@@ -54,7 +55,7 @@ function decodeChildren(children: any[], node: any) {
 }
 
 // 差异还原节点上的组件
-async function decodeComponents(dumpComps: any, node: any) {
+async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
     const dumpCompsUuids = dumpComps.map((comp: any) => {
         // @ts-ignore
         if (comp.value.uuid) {
@@ -64,8 +65,12 @@ async function decodeComponents(dumpComps: any, node: any) {
     });
 
     const componentsUuids = node._components.map((component: any) => {
-        return component.uuid;
-    });
+        // 需要exclude的component，假装不在node上
+        const compType = getTypeName(component.constructor);
+        if (!excludeComps.includes(compType)) {
+            return component.uuid;
+        }
+    }).filter(Boolean);
 
     // 删除现有在 node._compoennts 中但不在 dumpComps 中的 component
     let maxLoopTimes = componentsUuids.length ** 2; // 2次方: 次数限制是为了避免死循环
@@ -167,7 +172,7 @@ export async function decodeScene(dump: IScene, scene?: any) {
  * @param dump
  * @param node
  */
-export async function decodeNode(dump: INode, node?: any) {
+export async function decodeNode(dump: INode, node?: any, excludeComps?: any) {
     if (!dump) {
         return;
     }
@@ -189,7 +194,7 @@ export async function decodeNode(dump: INode, node?: any) {
 
     dump.children && (decodeChildren(dump.children, node));
 
-    await decodeComponents(dump.__comps__, node);
+    await decodeComponents(dump.__comps__, node, excludeComps);
 
     decodePrefab(dump.__prefab__, node);
 

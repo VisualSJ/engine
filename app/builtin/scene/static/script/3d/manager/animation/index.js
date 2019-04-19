@@ -79,18 +79,25 @@ class AnimationManager extends EventEmitter {
                 return true;
             }
         } else {
+            if (!Scene.modes.animation.isOpen) {
+                return false;
+            }
+
+            const animData = this.queryRecordAnimState();
+            if (animData) {
+                const state = animData.animState;
+                if (state) {
+                    state.off('finished', this.onAnimPlayEnd, this);
+                }
+            }
+
             if (await Scene._popMode('animation')) {
+                AnimEditState.record = false;
+
                 // 暂停循环定时器
                 if (this._animUpdateInterval) {
                     clearInterval(this._animUpdateInterval);
                     this._animUpdateInterval = null;
-                }
-
-                AnimEditState.record = false;
-                const animData = this.queryRecordAnimState();
-                const state = animData.animState;
-                if (state) {
-                    state.off('finished', this.onAnimPlayEnd, this);
                 }
 
                 return true;
@@ -287,6 +294,7 @@ class AnimationManager extends EventEmitter {
         }
 
         state.setTime(0);
+        state.weight = 1;
         state.play();
         this.changePlayState(PlayState.PLAYING);
         return true;
@@ -318,6 +326,10 @@ class AnimationManager extends EventEmitter {
             return false;
         }
 
+        if (!state.isPlaying) {
+            state.weight = 1;
+            state.play();
+        }
         state.resume();
         this.changePlayState(PlayState.PLAYING);
         return true;
@@ -413,9 +425,12 @@ class AnimationManager extends EventEmitter {
         }
 
         let animableProps = utils.getAnimableProperties(node, root !== node);
-        let result = animableProps.map((data) => {
-            return {prop: data.prop, comp: data.comp, displayName: data.name, type: data.type};
-        });
+        let result = [];
+        if (animableProps) {
+            animableProps.map((data) => {
+                return {prop: data.prop, comp: data.comp, displayName: data.name, type: data.type};
+            });
+        }
 
         return result;
     }

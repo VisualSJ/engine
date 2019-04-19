@@ -83,7 +83,7 @@ class AnimationMode extends Mode {
 
         this.walkNode(animRoot, (node) => {
             let nodeDump = this.recordDump[node.uuid];
-            dumpDecode.decodeNode(nodeDump, node);
+            dumpDecode.decodeNode(nodeDump, node, ['cc.AnimationComponent']);
             Manager.Node.emit('change', node);
             Manager.Ipc.send('broadcast', 'scene:change-node', node.uuid);
         });

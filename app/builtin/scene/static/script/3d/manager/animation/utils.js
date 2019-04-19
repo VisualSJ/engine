@@ -98,8 +98,8 @@ class AnimationUtil {
         clip = clip || {};
         let data = clip.curveData || {};
         let paths = Object.keys(data.paths || {});
-        paths.forEach((path) => {
-            path = '/' + path;
+        paths = paths.map((path) => {
+            return '/' + path;
         });
         return paths;
     }
@@ -153,7 +153,7 @@ class AnimationUtil {
      */
     queryCurveDataFromClip(clip, path) {
         if (!path) {
-            console.error('need a path');
+            console.debug('need a path');
             return null;
         }
 
