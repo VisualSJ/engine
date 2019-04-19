@@ -427,7 +427,7 @@ class AnimationManager extends EventEmitter {
         let animableProps = utils.getAnimableProperties(node, root !== node);
         let result = [];
         if (animableProps) {
-            animableProps.map((data) => {
+            result = animableProps.map((data) => {
                 return {prop: data.prop, comp: data.comp, displayName: data.name, type: data.type};
             });
         }
