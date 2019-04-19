@@ -3,11 +3,12 @@ export const template = `
 <div class="flex-1 content-device toolbar"
     @mousedown="onMouseDown"
 >
-    <i :title="t('jump_first_frame')" class="iconfont icon-rewind"  name="rewind"></i>
-    <i :title="t('jump_prev_frame')" class="iconfont icon-last"  name="last"></i>
+    <i :title="t('jump_first_frame')" class="iconfont icon-rewind"  name="jump_first_frame"></i>
+    <i :title="t('jump_prev_frame')" class="iconfont icon-last"  name="jump_prev_frame"></i>
     <i v-if="state !== 'playing'" :title="t('play_animation')" class="iconfont icon-arrow-right" name="play"></i>
     <i v-if="state === 'playing'" :title="t('pause_animation')" class="iconfont icon-pause" name="pause"></i>
-    <i :title="t('jump_next_frame')" class="iconfont icon-next"  name="next"></i>
+    <i :title="t('jump_next_frame')" class="iconfont icon-next"  name="jump_next_frame"></i>
+    <i :title="t('jump_last_frame')" class="iconfont icon-forward"  name="jump_last_frame"></i>
     <i :disable="state !== 'playing'" :title="t('stop_animation')" class="iconfont icon-stop" name="stop"></i>
     <i :title="t('insert_event')" class="iconfont icon-event"  name="add-event"></i>
     <div class="time"  name="edit"><span>{{time}}</span></div>
@@ -69,9 +70,10 @@ export const methods = {
                 }
                 that.exit();
                 break;
-            case 'rewind':
-            case 'last':
-            case 'next':
+            case 'jump_prev_frame':
+            case 'jump_first_frame':
+            case 'jump_next_frame':
+            case 'jump_last_frame':
                 that.$emit('datachange', 'update-frame', [name]);
                 break;
             case'play':

@@ -17,6 +17,7 @@ module.exports = {
         play_animation: 'Play animation',
         pause_animation: 'Pause animation',
         jump_next_frame: 'Skip to the next frame',
+        jump_last_frame: 'Jump to the last frame',
         insert_event: 'Insert frame\'s event',
     },
     property_tools: {

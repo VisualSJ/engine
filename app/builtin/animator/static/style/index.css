@@ -15,7 +15,6 @@
   flex: 1;
 }
 .animator .content-device {
-  padding: 0 5px;
   height: 35px;
   line-height: 30px;
 }
@@ -72,6 +71,7 @@
 .animator .container > .right {
   flex: 1;
   position: relative;
+  overflow: hidden;
 }
 .animator .container > .right .content {
   overflow: hidden;
@@ -107,6 +107,7 @@
 .animator .container > .left .toolbar {
   background-color: var(--main-bg);
   box-shadow: 0px 1px 0px #585858 inset;
+  padding: 0 5px;
 }
 .animator .container > .left .toolbar .iconfont {
   margin: 0 5px;
@@ -201,7 +202,7 @@
   position: relative;
   height: 100%;
   line-height: 16px;
-  z-index: 2;
+  z-index: 1;
 }
 .events .iconfont {
   position: absolute;
@@ -214,6 +215,12 @@
   color: #f90;
   font-size: 16px;
   cursor: pointer;
+}
+.events .duration {
+  z-index: 1;
+  height: 100%;
+  background: #e8e39e2e;
+  pointer-events: none;
 }
 .tips-mask {
   display: flex;
@@ -263,9 +270,11 @@
   opacity: 0.5;
   z-index: 1;
 }
+.preview-row .key.active,
 .preview-row .key:hover {
   cursor: pointer;
 }
+.preview-row .key.active .dot,
 .preview-row .key:hover .dot {
   background-color: #baffff;
 }
@@ -544,4 +553,7 @@
 }
 .icon-list:before {
   content: "\e609";
+}
+.icon-forward:before {
+  content: "\e73c";
 }

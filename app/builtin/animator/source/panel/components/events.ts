@@ -3,6 +3,10 @@ export const template = `
 <div class="events"
     name="time-pointer"
 >
+    <div class="duration"
+        v-if="lastFrame && display(lastFrame.x)"
+        :style="queryDurationStyle(lastFrame.x)"
+    ></div>
     <template
         v-if="selectEvent"
         v-for="(info, index) in selectEvent"
@@ -20,6 +24,7 @@ export const template = `
             v-if="display(info.x)"
             :style="queryKeyStyle(info.x)"
             :index="index"
+            name="event"
             @mousedown="onMouseDown($event, info)"
             @dblclick="openEventEditor(info.frame)"
             @click.right="onPopMenu($event, info.frame)"
@@ -32,6 +37,7 @@ export const props = [
     'events',
     'offset',
     'selectInfo',
+    'lastFrame',
 ];
 
 export function data() {
@@ -102,7 +108,12 @@ export const methods = {
     },
 
     queryKeyStyle(x: number) {
-        return `transform: translateX(${x | 0}px);`;
+        return `transform: translateX(${x + 4 | 0}px);`;
+    },
+
+    queryDurationStyle(x: number): string {
+        // @ts-ignore
+        return `transform: translateX(${this.offset | 0}px); width: ${x}px`;
     },
 };
 export function mounted() {

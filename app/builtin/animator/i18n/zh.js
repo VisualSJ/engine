@@ -17,6 +17,7 @@ module.exports = {
         play_animation: '播放动画',
         pause_animation: '暂停动画',
         jump_next_frame: '跳转到下一帧',
+        jump_last_frame: '跳转到最后一帧',
         insert_event: '插入帧事件',
     },
     property: {

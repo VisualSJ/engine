@@ -71,3 +71,6 @@
 .icon-list:before {
   content: "\e609";
 }
+.icon-forward:before {
+  content: "\e73c";
+}

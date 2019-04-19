@@ -21,6 +21,18 @@
         "width": 1000,
         "height": 600
     },
+    "shortcuts": {
+        "ctrl+s": "save",
+        "command+s": "save",
+        "delete": "deleteTheSelectedKeys",
+        "del": "deleteTheSelectedKeys",
+        "left": "jumpPrevFrame",
+        "right": "jumpNextFrame",
+        "ctrl+left": "jumpFirstFrame",
+        "command+left": "jumpFirstFrame",
+        "ctrl+right": "jumpLastFrame",
+        "command+right": "jumpLastFrame"
+    },
 
     "author": "Cocos"
 }

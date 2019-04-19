@@ -99,7 +99,6 @@ module.exports = class Grid {
      */
     public transferX(deltaPixelX: number) {
         // 限制时间轴不能往负数拉
-        // 并且限制了缩放的时候不能往负数区域伸缩
         if (this.xAxisOffset === this.startOffset && deltaPixelX > 0) {
             return;
         }

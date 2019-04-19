@@ -30,7 +30,63 @@ export const fonts = [
     },
 ];
 
-export const methods = {};
+export const methods = {
+    save() {
+        if (!vm) {
+            return;
+        }
+        const isSave = Editor.Ipc.sendToPanel('scene', 'save-clip');
+        if (isSave) {
+            vm.dirty = false;
+        }
+    },
+    deleteTheSelectedKeys() {
+        if (!vm) {
+            return;
+        }
+    },
+
+    /**
+     * 跳转前一帧
+     */
+    jumpPrevFrame() {
+        if (!vm) {
+            return;
+        }
+        vm.updateFrame('jump_prev_frame');
+    },
+
+    /**
+     * 跳转下一帧
+     */
+    jumpNextFrame() {
+        if (!vm) {
+            return;
+        }
+        vm.updateFrame('jump_next_frame');
+    },
+
+    /**
+     * 跳转第一帧
+     */
+    jumpFirstFrame() {
+        if (!vm) {
+            return;
+        }
+        vm.updateFrame('jump_first_frame');
+    },
+
+    /**
+     * 跳转最后一帧
+     */
+    jumpLastFrame() {
+        if (!vm) {
+            return;
+        }
+        vm.updateFrame('jump_last_frame');
+    },
+
+};
 export const listeners = {
     resize() {
         vm && vm.resize();
@@ -50,7 +106,6 @@ export const messages = {
      */
     'scene:close'() {
         vm.loading = true;
-        // vm.clear();
     },
 
     /**
@@ -66,7 +121,7 @@ export const messages = {
     },
 
     /**
-     * 节点修改后需要更新动画编辑器的显示状态
+     * 节点修改后需要更新动画编辑器内节点的显示状态
      * @param {string} uuid
      */
     async 'scene:change-node'(uuid: string) {
@@ -107,7 +162,7 @@ export const messages = {
         });
     },
 
-    // 动画状态更改通知
+    // 动画播放状态更改通知
     'scene:animation-state-change'(state: number) {
         if (!vm || !vm.animationMode) {
             return;
@@ -123,6 +178,15 @@ export const messages = {
                 vm.animationState = 'pause';
                 break;
         }
+    },
+
+    // 动画播放时的事件变化广播消息
+    'scene:animation-time-change'(time: number) {
+        if (!vm || !vm.animationMode) {
+            return;
+        }
+        // const frame = timeToFrame(time, vm.sample);
+        // vm.setCurrentFrame(frame);
     },
 };
 
@@ -219,21 +283,26 @@ export async function ready() {
                 this.clipDump && (sample = this.clipDump.sample);
                 return sample;
             },
+
+            // 计算当前最后一帧与位置数据
+            lastFrameInfo() {
+                const that: any = this;
+                let frame = 0;
+                if (that.clipDump) {
+                    frame = timeToFrame(that.clipDump.duration, that.sample);
+                }
+                const x = that.frameToPixel(frame);
+                return {
+                    frame,
+                    x,
+                };
+            },
+
         },
         watch: {
             currentClip() {
                 // @ts-ignore
                 Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.currentClip);
-            },
-            currentFrame() {
-                // 更新当前关键帧
-                const that: any = this;
-                const time = frameToTime(that.currentFrame, that.sample);
-                Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
-
-                if (that.grid && that.grid.xAxisOffset !== that.startOffset) {
-                    that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
-                }
             },
         },
         methods: {
@@ -274,9 +343,7 @@ export async function ready() {
                 // 预览初始化时获取不到文档流宽高，对 canvas 的初始化造成影响
                 requestAnimationFrame(async () => {
                     that.init();
-                    if (that.grid && that.grid.xAxisOffset !== that.startOffset) {
-                        that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
-                    }
+                    that.setCurrentFrame(that.currentFrame); // 主动触发更新
                     that.loading = false;
                 });
             },
@@ -307,12 +374,12 @@ export async function ready() {
                         clipDump && (vm.clipDump = formatClipDump(clipDump));
 
                         const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
-                        if (time) {
-                            that.currentFrame = timeToFrame(time, that.sample);
+                        if (typeof(time) === 'number') {
+                            that.setCurrentFrame(timeToFrame(time, that.sample));
                         }
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
-                        vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
+                        // vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
                     } else {
                         that.hasAniamtionClip = false;
                     }
@@ -324,6 +391,44 @@ export async function ready() {
 
             ////////////////////////// 数据处理 //////////////////////////////////
 
+            // 更改当前关键帧
+            setCurrentFrame(frame: number) {
+                // 更新当前关键帧
+                const that: any = this;
+                that.currentFrame = frame;
+                if (frame === 0) {
+                    if (that.grid && that.grid.xAxisOffset !== that.startOffset) {
+                        that.moveTimeLine(that.startOffset - that.grid.xAxisOffset);
+                    }
+                    return;
+                }
+                const frameRang = that.frameRang();
+                if (frameRang) {
+                    const {start, end} = frameRang;
+                    // 超过边界
+                    if (frame >= end) {
+                        const startPosition = that.frameToPixel(start + 1);
+                        that.moveTimeLine(startPosition - that.pointerPosition);
+                    } else if (frame < start) {
+                        const endPosition = that.frameToPixel(end - 1);
+                        that.moveTimeLine(endPosition - that.pointerPosition);
+                    }
+                }
+            },
+
+            // 计算当前可视范围内的关键帧范围
+            frameRang() {
+                const that: any = this;
+                if (that.grid) {
+                    const rang = that.$refs.gridCanvas.width;
+                    const start = Math.round(that.grid.pixelToValueH(that.offset));
+                    const end = Math.round(that.grid.pixelToValueH(that.offset + rang));
+                    return {
+                        start,
+                        end,
+                    };
+                }
+            },
             async updateRoot(uuid: string) {
                 const that: any = this;
                 if (that.root !== uuid) {
@@ -392,27 +497,28 @@ export async function ready() {
              * 更新控制杆关键帧
              * @param operate
              */
-            updateFrame(operate: string, newFrame: number) {
+            updateFrame(operate: string) {
                 const that: any = this;
-                newFrame = newFrame || that.currentFrame;
+                let newFrame = that.currentFrame;
                 switch (operate) {
-                    case 'last':
-                        newFrame --;
+                    case 'jump_prev_frame':
+                        if (that.currentFrame > 0) {
+                            newFrame --;
+                        }
                         break;
-                    case 'rewind':
+                    case 'jump_first_frame':
                         newFrame = 0;
                         break;
-                    case 'next':
+                    case 'jump_next_frame':
                         newFrame ++;
                         break;
+                    case 'jump_last_frame':
+                        newFrame = that.lastFrameInfo.frame;
+                        break;
                 }
-                if (newFrame < 0) {
-                    newFrame = 0;
-                }
-                if (that.currentFrame === newFrame) {
-                    return;
-                }
-                that.currentFrame = newFrame;
+                that.setCurrentFrame(newFrame);
+                const time = frameToTime(newFrame, that.sample);
+                Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
             },
 
             resize() {
@@ -424,8 +530,8 @@ export async function ready() {
 
             ///////////////////////// 对时间轴的处理方法 ///////////////////////////////////////
             /**
-             * 对整个时间轴进行缩放
-             * @param delta
+             * 对整个时间轴进行移动
+             * @param delta (移动距离)
              */
             moveTimeLine(delta: number) {
                 const that: any = this;
@@ -437,8 +543,8 @@ export async function ready() {
 
             /**
              * 对整个时间轴进行缩放
-             * @param delta
-             * @param x
+             * @param delta 缩放时鼠标滚动距离，用具计算缩放倍数
+             * @param x 缩放中心点
              */
             scaleTimeLine(delta: number, x: number) {
                 const that: any = this;
@@ -464,9 +570,17 @@ export async function ready() {
             onMouseDown(event: any) {
                 const that: any = this;
                 const name = event.target.getAttribute('name');
+                if (name !== 'event') {
+                    that.selectEventInfo = null;
+                }
+                if (name !== 'key') {
+                    that.selectKeyInfo = null;
+                }
                 // 点击顶部移动当前关键帧
                 if (name === 'time-pointer') {
                     that.currentFrame = that.pixelToFrame(event.x);
+                    const time = frameToTime(that.currentFrame, that.sample);
+                    Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
                 } else if (name === 'pointer') {
                     that.flags.mouseDownName = 'pointer';
                 } else {
@@ -480,7 +594,6 @@ export async function ready() {
                         return;
                     }
                 }
-
                 that.flags.mouseDownName = name;
             },
 
@@ -507,7 +620,7 @@ export async function ready() {
                         }
                         const offsetEvent = Math.round(that.grid.pixelToValueH(that.selectEventInfo.offset));
                         if (offsetEvent === 0) {
-                            that.selectEventInfo = null;
+                            // that.selectEventInfo = null;
                             break;
                         }
                         Editor.Ipc.sendToPanel('scene', 'move-clip-events', that.currentClip, that.selectEventInfo.frames, offsetEvent);
@@ -619,17 +732,12 @@ export async function ready() {
                         Editor.Ipc.sendToPanel('scene', 'add-clip-event', that.currentClip, that.currentFrame, '', []);
                         that.dirty = true;
                         break;
-                    case 'save':
-                        // todo 数据是否发生修改的验证
-                        Editor.Ipc.sendToPanel('scene', 'save-clip');
-                        that.dirty = false;
-                        break;
                     case 'update-state':
                         let operate = params[0];
                         if (operate === 'play' && that.animationState === 'pause') {
                             operate = 'resume';
                         }
-                        const changeSuccess = Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
+                        const changeSuccess = await Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
                         if (changeSuccess) {
                             if (operate === 'pause' || operate === 'stop') {
                                 cancelAnimationFrame(that.aniPlayTask);
@@ -650,10 +758,10 @@ export async function ready() {
                 const that: any = this;
                 that.aniPlayTask = requestAnimationFrame(async () => {
                     const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
-                    if (time) {
+                    if (time !== false) {
                         that.currentFrame = timeToFrame(time, that.sample);
                     }
-                    if (that.animationState === 'stop' || that.animationState === 'puase') {
+                    if (that.animationState !== 'stop' || that.animationState !== 'puase') {
                         that.runPointer();
                     }
                 });
