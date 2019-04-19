@@ -4,17 +4,25 @@ class Mode {
 
     constructor(manager) {
         this.manager = manager;
+        this.isOpen = false;
+
+        // 暂存的场景 json
+        this._staging = null;
     }
 
     /**
      * 打开编辑模式
      */
-    async open() {}
+    async open() {
+        this.isOpen = true;
+    }
 
     /**
      * 关闭编辑模式
      */
-    async close() {}
+    async close() {
+        this.isOpen = false;
+    }
 
     /**
      * 重新加载编辑模式
@@ -39,9 +47,19 @@ class Mode {
     }
 
     /**
-     * 保存场景
+     * 保存编辑模式正在编辑的东西
      */
     async save() {}
+
+    /**
+     * 缓存编辑模式数据
+     */
+    async staging() {}
+
+    /**
+     * 还原编辑模式数据
+     */
+    async restore() {}
 
 }
 

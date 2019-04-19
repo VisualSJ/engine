@@ -21,9 +21,6 @@ class SceneMode extends Mode {
 
         // 记录最后一次保存的数据，用于判断 dirty
         this.lastSaveData = null;
-
-        // 暂存的场景 json
-        this._staging = null;
     }
 
     /**
@@ -44,6 +41,7 @@ class SceneMode extends Mode {
         // 如果 uuid 存在，则打开某个场景资源
         if (uuid) {
             if (this.current === uuid) {
+                super.open(uuid);
                 return true; // 场景已打开
             } else {
                 if (!await this.close()) { // 其次尝试关闭之前的场景
@@ -64,6 +62,8 @@ class SceneMode extends Mode {
 
                 // 缓存最后一次保存的数据
                 this.lastSaveData = this.serialize();
+
+                super.open(uuid);
                 return true;
             } catch (error) {
                 console.error('Open scene failed: ' + uuid);
@@ -93,6 +93,7 @@ class SceneMode extends Mode {
         // 缓存最后一次保存的数据
         this.lastSaveData = this.serialize();
 
+        super.open(uuid);
         return true;
     }
 
@@ -102,7 +103,8 @@ class SceneMode extends Mode {
      */
     async close() {
         if (this._staging) {
-            return console.warn('Scene data has been temporarily stored. Unable to close new scene.');
+            console.warn('Scene data has been temporarily stored. Unable to close new scene.');
+            return false;
         }
 
         // 如果更改，则询问是否需要保存
@@ -135,6 +137,7 @@ class SceneMode extends Mode {
         // 缓存最后一次保存的数据
         this.lastSaveData = null;
 
+        super.close();
         return true;
     }
 
@@ -221,14 +224,13 @@ class SceneMode extends Mode {
      */
     async staging() {
         if (this._staging) {
-            return;
+            return true;
         }
         this._staging = this.serialize();
 
         // 发送 emit 事件
         this.manager.emit('close');
-
-        return false;
+        return true;
     }
 
     /**

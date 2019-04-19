@@ -26,7 +26,7 @@ class PrefabMode extends Mode {
      * 打开 Prefab 编辑模式
      */
     async open(uuid) {
-        // 如果打开某个资源，切资源正在编辑，则不处理
+        // 如果打开某个资源，且资源正在编辑，则不处理
         if (uuid && this.current === uuid) {
             return false;
         }
@@ -57,6 +57,7 @@ class PrefabMode extends Mode {
 
             this.lastSaveData = this.serialize();
 
+            super.open(uuid);
             return true;
         } catch (error) {
             console.error('Open prefab failed: ' + uuid);
@@ -101,6 +102,7 @@ class PrefabMode extends Mode {
         this.lastSaveData = null;
         Manager.Ipc.send('toolbar', ''); // 关闭工具条
 
+        super.close();
         return true;
     }
 

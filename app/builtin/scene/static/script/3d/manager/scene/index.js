@@ -22,115 +22,130 @@ class SceneManager extends EventEmitter {
         super();
         this.ignore = false;
 
-        // 必须存在的编辑模式
-        this.SceneMode = new SceneMode(this);
-        // 可能存在的编辑模式
-        this.PrefabMode = new PrefabMode(this);
-        this.AnimationMode = new AnimationMode(this);
+        // 三种编辑模式
+        // this.SceneMode = new SceneMode(this);
+        // this.PrefabMode = new PrefabMode(this);
+        // this.AnimationMode = new AnimationMode(this);
 
-        // 编辑模式
-        this.modes = {
-            main: this.SceneMode,
-            minor: null,
-        };
+        // 次要的编辑模式（除场景外，场景是一个特殊存在）
+        this.modes = [
+            new SceneMode(this),
+            new PrefabMode(this),
+            new AnimationMode(this),
+        ];
+
+        this.modes.scene = this.modes[0];
+        this.modes.prefab = this.modes[1];
+        this.modes.animation = this.modes[2];
     }
 
     /**
      * 打开一个编辑模式
-     * @param {*} mode
+     * @param {String} name 模式的名字
      */
-    async _pushMode(mode, uuid) {
-        // 如果推入的是一个场景
-        if (mode === this.SceneMode) {
-            // 首先尝试关闭次要编辑
-            if (this.modes.minor) {
-                if (!await this.modes.minor.close()) {
-                    return false; // 取消关闭
+    async _pushMode(name, uuid) {
+        let i;
+
+        // 关闭优先级低的编辑模式
+        for (i = this.modes.length - 1; i > 0; i--) {
+            const current = this.modes[i];
+
+            // 如果循环到打开的是这个模式，则停止
+            if (current.name === name) {
+                break;
+            }
+
+            // 尝试关闭该模式
+            if (current.isOpen) {
+                // 判断关闭是否失败，如果失败，则中断切换编辑模式流程
+                if (!await current.close()) {
+                    return false;
                 }
 
-                this.modes.minor = null;
+                // 尝试还原上一级的编辑模式缓存
+                await this.modes[i - 1].restore();
             }
+        }
 
-            // 还原暂存的场景
-            if (await this.modes.main.restore()) {
-                Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
-                return true;
+        // 缓存优先级更高的所有编辑模式数据
+        for (let j = 0; j < i; j++) {
+            const current = this.modes[j];
+            if (current.isOpen) {
+                await current.staging();
             }
+        }
 
-            // 最后打开新的场景失败
-            if (!await mode.open(uuid)) {
-                return false;
-            }
-
-            Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
+        // 如果还原失败（没有暂存），最后尝试打开新的场景
+        if (await this.modes[i].open(uuid)) {
+            Manager.Ipc.forceSend('broadcast', 'scene:change-mode', this.modes[i].name);
             return true;
         }
 
-        // 缓存场景编辑状态
-        if (!this.modes.minor) {
-            await this.modes.main.staging();
-        }
-
-        // 尝试关闭次要编辑，如果失败，则不打开新的编辑模式
-        if (this.modes.minor && !await this.modes.minor.close()) {
-            return false;
-        }
-
-        // 尝试打开新的编辑模式，如果打开失败，则退回场景编辑
-        this.emit('before-minor');
-        if (!await mode.open(uuid)) {
-            await this.modes.main.restore();
-            return false;
-        }
-
-        Manager.Ipc.forceSend('broadcast', 'scene:change-mode', mode.name);
-        this.modes.minor = mode;
-        return true;
+        return false;
     }
 
     /**
      * 关闭一个编辑模式
+     * @param {String} name 模式的名字
      */
-    async _popMode() {
-        // 尝试关闭次要编辑，如果失败
-        if (this.modes.minor && !await this.modes.minor.close()) {
+    async _popMode(name) {
+        for (let i = this.modes.length - 1; i > 0; i--) {
+            const current = this.modes[i];
+
+            // 如果没传入名字，则关闭最后一个打开的编辑模式
+            if (!name && current.isOpen) {
+                name = current.name;
+            }
+
+            if (name !== current.name) {
+                if (current.isOpen) {
+                    console.warn(`Cannot close edit mode: ${name}`)
+                    return false;
+                }
+                continue;
+            }
+            if (!current.isOpen) {
+                console.warn(`Cannot close edit mode: ${name}`)
+                return false;
+            }
+            if (await current.close()) {
+                // 尝试还原上一级的编辑模式缓存
+                await this.modes[i - 1].restore();
+                Manager.Ipc.forceSend('broadcast', 'scene:change-mode', this.modes[i - 1].name);
+                return true;
+            }
             return false;
         }
-
-        this.modes.minor = null;
-
-        Manager.Ipc.forceSend('broadcast', 'scene:change-mode', 'scene');
-
-        return true;
     }
 
     /**
      * 清空所有的编辑模式
      */
     async _clearMode() {
-        // 尝试关闭次要编辑
-        if (this.modes.minor && !await this.modes.minor.close()) {
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            if (await current.close()) {
+                // Manager.Ipc.forceSend('broadcast', 'scene:change-mode', this.modes[i - 1].name);
+                return true;
+            }
             return false;
         }
-        await this.modes.main.restore();
-        // 尝试关闭主要编辑
-        if (!await this.modes.main.close()) {
-            return false;
-        }
-        return true;
     }
 
     /**
      * 查询当前正在编辑的模式名字
      */
     queryMode() {
-        if (!this.modes.minor) {
-            return 'scene';
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            return current.name;
         }
-        if (this.modes.minor === this.AnimationMode) {
-            return 'animation';
-        }
-        return 'prefab';
     }
 
     /**
@@ -156,9 +171,9 @@ class SceneManager extends EventEmitter {
         }
 
         if (type === 'cc.Prefab') {
-            await this._pushMode(this.PrefabMode, uuid);
+            await this._pushMode('prefab', uuid);
         } else {
-            await this._pushMode(this.SceneMode, uuid);
+            await this._pushMode('scene', uuid);
         }
     }
 
@@ -166,57 +181,66 @@ class SceneManager extends EventEmitter {
      * 关闭当前打开的场景
      */
     async close() {
-        if (await this._popMode()) {
-            return await this.modes.main.restore();
-        }
-        return await this.modes.main.close();
+        this._popMode();
     }
 
     /**
      * 刷新当前场景并且放弃所有修改
      */
     async reload() {
-        if (this.modes.minor) {
-            return await this.modes.minor.reload();
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            return await current.reload();
         }
-        return await this.modes.main.reload();
     }
 
     /**
      * 软刷新，备份当前场景的数据，并重启场景
      */
     async softReload() {
-        if (this.modes.minor) {
-            return await this.modes.minor.softReload();
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            return await current.softReload();
         }
-        return await this.modes.main.softReload();
     }
 
     /**
      * 保存场景
      */
     async serialize() {
-        if (this.modes.minor) {
-            return await this.modes.minor.serialize();
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            return await current.serialize();
         }
-        return await this.modes.main.serialize();
     }
 
     /**
      * 返回场景编辑里面的序列化数据
      */
     async mainSerialize() {
-        return await this.modes.main.serialize();
+        return await this.modes[i].serialize();
     }
 
     /**
      * 保存场景
      */
     async save(url) {
-        if (this.modes.minor) {
-            return await this.modes.minor.save(url);
+        for (let i = this.modes.length - 1; i >= 0; i--) {
+            const current = this.modes[i];
+            if (!current.isOpen) {
+                continue;
+            }
+            return await current.save(url);
         }
-        return await this.modes.main.save(url);
     }
 
     /**
@@ -309,26 +333,22 @@ class SceneManager extends EventEmitter {
      * 序列化当前的场景编辑器状态
      */
     dump() {
-        const result = {
-            scene: this.SceneMode.serialize(),
-            prefab: this.PrefabMode.serialize(),
-            animation: this.AnimationMode.serialize(),
-        };
-
-        return result;
+        const results = this.modes.map((mode) => {
+            return mode.serialize();
+        });
+        return results;
     }
 
     /**
      * 从之前备份的数据内，还原场景状态
-     * @param {*} dump 
+     * @param {*} dumps 
      */
-    restore(dump) {
-        this.SceneMode._staging = dump.scene;
-        this.SceneMode.restore();
-        // this.PrefabMode._staging = dump.prefab;
-        // this.PrefabMode.restore();
-        // this.AnimationMode._staging = dump.animation;
-        // this.AnimationMode.restore();
+    restore(dumps) {
+        dumps.forEach((dump, index) => {
+            const mode = this.modes[index];
+            mode._staging = dump.scene;
+            mode.restore();
+        });
     }
 }
 

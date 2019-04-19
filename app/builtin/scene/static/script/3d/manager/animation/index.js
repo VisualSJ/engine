@@ -60,10 +60,10 @@ class AnimationManager extends EventEmitter {
      * @param {String} uuid
      * @param {Boolean} active 打开或关闭
      */
-    record(uuid, active) {
+    async record(uuid, active) {
         if (active) {
             if (uuid) {
-                Scene._pushMode(Scene.AnimationMode, uuid);
+                Scene._pushMode('animation', uuid);
                 AnimEditState.record = true;
                 // 给默认的clip的animationstate注册结束事件
                 const animData = utils.queryNodeAnimationData(uuid, this._curEditClipUuid);
@@ -79,7 +79,13 @@ class AnimationManager extends EventEmitter {
                 return true;
             }
         } else {
-            if (Scene.modes.minor === Scene.AnimationMode) {
+            if (await Scene._popMode('animation')) {
+                // 暂停循环定时器
+                if (this._animUpdateInterval) {
+                    clearInterval(this._animUpdateInterval);
+                    this._animUpdateInterval = null;
+                }
+
                 AnimEditState.record = false;
                 const animData = this.queryRecordAnimState();
                 const state = animData.animState;
@@ -87,11 +93,6 @@ class AnimationManager extends EventEmitter {
                     state.off('finished', this.onAnimPlayEnd, this);
                 }
 
-                if (this._animUpdateInterval) {
-                    clearInterval(this._animUpdateInterval);
-                    this._animUpdateInterval = null;
-                }
-                Scene._popMode();
                 return true;
             }
         }
@@ -116,7 +117,7 @@ class AnimationManager extends EventEmitter {
     }
 
     getSerializedEditClip() {
-        if (Scene.modes.minor !== Scene.AnimationMode) {
+        if (Scene.modes.animation.isOpen) {
             return null;
         }
 
@@ -135,7 +136,7 @@ class AnimationManager extends EventEmitter {
      * 查询当前正在编辑动画的节点
      */
     queryRecordNode() {
-        const uuid = Scene.AnimationMode.root;
+        const uuid = Scene.modes.animation.root;
         const node = Node.query(uuid);
 
         if (!node) {
@@ -149,7 +150,7 @@ class AnimationManager extends EventEmitter {
      * 查询当前正在编辑动画的节点的动画组件
      */
     queryRecordAnimComp() {
-        const uuid = Scene.AnimationMode.root;
+        const uuid = Scene.modes.animation.root;
         const animData = utils.queryNodeAnimationData(uuid);
         return animData.animComp;
     }
@@ -161,7 +162,7 @@ class AnimationManager extends EventEmitter {
 
     queryRecordAnimData(clipUuid) {
         clipUuid = clipUuid || this._curEditClipUuid;
-        const animData = utils.queryNodeAnimationData(Scene.AnimationMode.root, clipUuid);
+        const animData = utils.queryNodeAnimationData(Scene.modes.animation.root, clipUuid);
         return animData;
     }
 
@@ -214,7 +215,7 @@ class AnimationManager extends EventEmitter {
         this._curEditClipUuid = clipUuid;
 
         // 如果还没进入编辑模式，就不对state操作
-        if (Scene.modes.minor !== Scene.AnimationMode) {
+        if (Scene.modes.animation.isOpen) {
             return;
         }
 
@@ -247,7 +248,7 @@ class AnimationManager extends EventEmitter {
         this._curEditTime = time;
 
         // 如果还没进入编辑模式，就不对state操作
-        if (Scene.modes.minor !== Scene.AnimationMode) {
+        if (Scene.modes.animation.isOpen) {
             return;
         }
 
@@ -422,7 +423,7 @@ class AnimationManager extends EventEmitter {
      * @param {*} clipUuid clip的uuid
      */
     queryPlayingClipTime(clipUuid) {
-        if (Scene.modes.minor !== Scene.AnimationMode) {
+        if (Scene.modes.animation.isOpen) {
             return 0;
         }
 
@@ -447,8 +448,8 @@ class AnimationManager extends EventEmitter {
             console.warn('Method does not exist to manipulate the animation.');
             return false;
         }
-        if (operation[func](Scene.AnimationMode.root, ...args)) {
-            Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.AnimationMode.root, this._curEditClipUuid);
+        if (operation[func](Scene.modes.animation.root, ...args)) {
+            Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.modes.animation.root, this._curEditClipUuid);
         }
     }
 
@@ -468,7 +469,7 @@ class AnimationManager extends EventEmitter {
         }
 
         // check node
-        let animRootNode = Node.query(Scene.AnimationMode.root);
+        let animRootNode = Node.query(Scene.modes.animation.root);
         if (!animRootNode) {
             return;
         }

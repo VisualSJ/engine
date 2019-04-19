@@ -40,6 +40,7 @@ class AnimationMode extends Mode {
             return false;
         }
 
+        // 记录进入动画编辑模式之前的动画状态
         this.walkNode(animRoot, (node) => {
             let nodeDump = dumpEncode.encodeNode(node);
             if (!nodeDump.__comps__) {
@@ -61,6 +62,7 @@ class AnimationMode extends Mode {
         // 广播场景打开消息
         Manager.Ipc.forceSend('broadcast', 'scene:animation-start', uuid);
 
+        super.open(uuid);
         return true;
     }
 
@@ -94,6 +96,7 @@ class AnimationMode extends Mode {
         // 广播场景关闭消息
         Manager.Ipc.forceSend('broadcast', 'scene:animation-end');
 
+        super.close();
         return true;
     }
 
