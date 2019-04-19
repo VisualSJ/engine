@@ -78,10 +78,17 @@ class CompManager extends EventEmitter {
      * @param {*} component 组件
      */
     removeComponent(component) {
+        // 删除钱查询依赖关系，被依赖的组件不能被删除
+        if (component.node._getDependComponent(component)) {
+            return false;
+        }
+
         this.emit('before-remove-component', component);
         component._destroyImmediate();
         component.node.removeComponent(component);
         this.emit('remove-component', component);
+
+        return true;
     }
 
     /**

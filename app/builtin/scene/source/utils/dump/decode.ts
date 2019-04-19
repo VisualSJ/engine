@@ -68,12 +68,29 @@ async function decodeComponents(dumpComps: any, node: any) {
     });
 
     // 删除现有在 node._compoennts 中但不在 dumpComps 中的 component
-    componentsUuids.forEach((compUuid: string) => {
-        if (!dumpCompsUuids.includes(compUuid)) {
-            Manager.Node.removeComponent(compUuid);
+    let maxLoopTimes = componentsUuids.length ** 2; // 2次方: 次数限制是为了避免死循环
+    let i = 0;
+    do {
+        if (i >= componentsUuids.length) {
+            i = 0;
         }
-    });
+        const compUuid = componentsUuids[i];
 
+        if (compUuid && !dumpCompsUuids.includes(compUuid)) {
+            // 删除失败会返回 false, 可能是组件被依赖，会下次再删
+            if (Manager.Node.removeComponent(compUuid)) {
+                componentsUuids.splice(i, 1);
+            } else {
+                i++;
+            }
+        } else {
+            i++;
+        }
+
+        maxLoopTimes--;
+    } while (componentsUuids.length !== 0 && maxLoopTimes);
+
+    // 挂载上新的组件
     for (let i = 0; i < dumpComps.length; i++) {
         const dumpComp = dumpComps[i];
         let component = node._components[i];

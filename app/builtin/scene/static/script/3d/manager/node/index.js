@@ -361,7 +361,7 @@ class NodeManager extends EventEmitter {
             return false;
         }
 
-        compManager.removeComponent(comp);
+        return compManager.removeComponent(comp);
     }
 
     /**
