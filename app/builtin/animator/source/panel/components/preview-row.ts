@@ -70,7 +70,7 @@ export const methods = {
     },
 
     queryKeyStyle(x: number) {
-        return `transform: translateX(${x - 5 | 0}px);`;
+        return `transform: translateX(${x - 6 | 0}px);`;
     },
 
     /**

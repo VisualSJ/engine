@@ -6,6 +6,7 @@ export const template = `
         v-if="display"
     >
         <i class="iconfont icon-arrow-right"></i>
+        <span></span>
     </div>
 `;
 

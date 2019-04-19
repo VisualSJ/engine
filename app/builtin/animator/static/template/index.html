@@ -44,30 +44,36 @@
             @mousedown = "onMouseDown"
             @mousemove = "onMouseMove"
         >
-            <div class="content-device header">
-                <events
+            <div class="content-device header" 
+                name="time-pointer"
+            >
+                <div class="duration"
+                    v-if="lastFrameInfo"
+                    :style="queryDurationStyle(lastFrameInfo.x)"
+                ></div> 
+            </div>
+            <events
                     v-if="eventsDump"
                     :events="eventsDump"
                     :offset="startOffset"
                     :select-Info="selectEventInfo"
-                    :last-frame="lastFrameInfo"
                     @datachange="onEvents"
                     @startdrag="updateDragInfo"
                 >
-                </events>
-            </div> 
+            </events>
             <div class="content" 
-                v-if="grid && nodeDump && clipDump"
                 ref="node-content"
             >
                 <template
-                    v-for="path in nodeDump.nodes"
+                    v-if="grid && nodeDump && clipDump"
                 >
                     <preview-row 
+                        v-for="path in nodeDump.nodes"
                         :key-frames=calcNodeFrames(path)
                         :path="path"
                         :select-Info="selectKeyInfo"
                         :offset="startOffset"
+                        :key="path"
                         @datachange="onPreviewRow"
                         @startdrag="updateDragInfo"
                     ></preview-row>

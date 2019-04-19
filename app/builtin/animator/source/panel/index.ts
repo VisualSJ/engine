@@ -309,7 +309,6 @@ export async function ready() {
                     x,
                 };
             },
-
         },
         watch: {
             currentClip() {
@@ -503,6 +502,16 @@ export async function ready() {
                 return x > this.$refs.right.offsetWidth;
             },
 
+            queryDurationStyle(x: number): string {
+                const that: any = this;
+                let start = that.offset;
+                if (that.grid) {
+                    start = that.grid.valueToPixelH(0);
+                }
+                // @ts-ignore
+                return `transform: translateX(${start}px); width: ${x}px`;
+            },
+
             /**
              * 计算对应节点处的关键帧位置
              * @param path
@@ -676,6 +685,7 @@ export async function ready() {
             onMouseMove(event: any) {
                 const that: any = this;
                 if (!that.flags.mouseDownName) {
+                    event.target.style.cursor = '';
                     return;
                 }
 
@@ -683,6 +693,7 @@ export async function ready() {
                 switch (that.flags.mouseDownName) {
                     case 'key':
                         if (that.selectKeyInfo) {
+                            event.target.style.cursor = 'ew-resize';
                             const {startX, data} = that.selectKeyInfo;
                             requestAnimationFrame(() => {
                                 const offset = event.x - startX;
@@ -694,6 +705,7 @@ export async function ready() {
                         break;
                     case 'event':
                         if (that.selectEventInfo) {
+                            event.target.style.cursor = 'ew-resize';
                             const {startX, data} = that.selectEventInfo;
                             requestAnimationFrame(() => {
                                 const offset = event.x - startX;
@@ -712,6 +724,7 @@ export async function ready() {
                         that.moveTimeLine(moveX);
                         break;
                     case 'pointer':
+                        event.target.style.cursor = 'ew-resize';
                         const pixel = x - that.$refs.left.offsetWidth + that.offset;
                         const frame = Math.round(that.grid.pixelToValueH(pixel));
                         that.currentFrame = frame;

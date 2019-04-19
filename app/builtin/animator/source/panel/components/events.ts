@@ -1,12 +1,6 @@
 
 export const template = `
-<div class="events"
-    name="time-pointer"
->
-    <div class="duration"
-        v-if="lastFrame && display(lastFrame.x)"
-        :style="queryDurationStyle(lastFrame.x)"
-    ></div>
+<div class="events">
     <template
         v-if="selectEvent"
         v-for="(info, index) in selectEvent"
@@ -37,7 +31,6 @@ export const props = [
     'events',
     'offset',
     'selectInfo',
-    'lastFrame',
 ];
 
 export function data() {
@@ -109,11 +102,6 @@ export const methods = {
 
     queryKeyStyle(x: number) {
         return `transform: translateX(${x + 4 | 0}px);`;
-    },
-
-    queryDurationStyle(x: number): string {
-        // @ts-ignore
-        return `transform: translateX(${this.offset | 0}px); width: ${x}px`;
     },
 };
 export function mounted() {
