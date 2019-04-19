@@ -117,7 +117,7 @@ class AnimationManager extends EventEmitter {
     }
 
     getSerializedEditClip() {
-        if (Scene.modes.animation.isOpen) {
+        if (!Scene.modes.animation.isOpen) {
             return null;
         }
 
@@ -215,7 +215,7 @@ class AnimationManager extends EventEmitter {
         this._curEditClipUuid = clipUuid;
 
         // 如果还没进入编辑模式，就不对state操作
-        if (Scene.modes.animation.isOpen) {
+        if (!Scene.modes.animation.isOpen) {
             return;
         }
 
@@ -248,7 +248,7 @@ class AnimationManager extends EventEmitter {
         this._curEditTime = time;
 
         // 如果还没进入编辑模式，就不对state操作
-        if (Scene.modes.animation.isOpen) {
+        if (!Scene.modes.animation.isOpen) {
             return;
         }
 
@@ -423,7 +423,7 @@ class AnimationManager extends EventEmitter {
      * @param {*} clipUuid clip的uuid
      */
     queryPlayingClipTime(clipUuid) {
-        if (Scene.modes.animation.isOpen) {
+        if (!Scene.modes.animation.isOpen) {
             return 0;
         }
 
