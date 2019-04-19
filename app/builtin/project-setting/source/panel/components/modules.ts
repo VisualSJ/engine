@@ -123,8 +123,8 @@ export const methods = {
     
             let modules = Object.create(null);
             modulesInfo.forEach((item: any) => {
-                item.checked = vm.settings.excluded.indexOf(item.name) === -1;
-                modules[item.name] = item;
+                item.checked = vm.settings.excluded.indexOf(item.id) === -1;
+                modules[item.id] = item;
             });
     
             vm.modules = modules;
@@ -138,7 +138,7 @@ export const methods = {
 
         Object.keys(vm.modules).forEach((key: string) => {
             const item = vm.modules[key];
-            item.checked = vm.settings.excluded.indexOf(item.name) === -1;
+            item.checked = vm.settings.excluded.indexOf(item.id) === -1;
         });
 
         vm.updateAll();
