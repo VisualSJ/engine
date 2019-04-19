@@ -31,15 +31,20 @@ export const fonts = [
 ];
 
 export const methods = {
-    save() {
+    async save() {
         if (!vm) {
             return;
         }
-        const isSave = Editor.Ipc.sendToPanel('scene', 'save-clip');
-        if (isSave) {
-            vm.dirty = false;
-        }
+        vm.saveData();
     },
+
+    async exit() {
+        if (!vm) {
+            return;
+        }
+        vm.exit();
+    },
+
     deleteTheSelectedKeys() {
         if (!vm) {
             return;
@@ -121,6 +126,18 @@ export const messages = {
     },
 
     /**
+     * 取消选中某个节点
+     * @param type 选中物体的类型
+     * @param uuid 选中物体的 uuid
+     */
+    async 'selection:unselect'(type: string, uuid: string) {
+        if (!vm || type !== 'node') {
+            return;
+        }
+        vm.selectedId = '';
+    },
+
+    /**
      * 节点修改后需要更新动画编辑器内节点的显示状态
      * @param {string} uuid
      */
@@ -136,9 +153,9 @@ export const messages = {
         if (!vm || uuid !== vm.root || vm.animationMode) {
             return;
         }
-        // vm.animationMode = true;
-        const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
-        mode === 'animation' ? vm.animationMode = true : vm.animationMode = false;
+        vm.animationMode = true;
+        // const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
+        // mode === 'animation' ? vm.animationMode = true : vm.animationMode = false;
     },
 
     // 关闭动画编辑模式消息
@@ -146,7 +163,8 @@ export const messages = {
         if (!vm || !vm.animationMode) {
             return;
         }
-        // vm.animationMode = false;
+        vm.animationMode = false;
+        vm.animationMode = false;
         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
         mode === 'animation' ? vm.animationMode = true : vm.animationMode = false;
     },
@@ -159,6 +177,10 @@ export const messages = {
         const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', vm.root, vm.currentClip);
         requestAnimationFrame(() => {
             clipDump && (vm.clipDump = formatClipDump(clipDump));
+            if (clipDump.sample !== vm.grid.sample) {
+                vm.grid.sample = clipDump.sample;
+                vm.grid.render();
+            }
         });
     },
 
@@ -167,17 +189,7 @@ export const messages = {
         if (!vm || !vm.animationMode) {
             return;
         }
-        switch (state) {
-            case 0:
-                vm.animationState = 'stop';
-                break;
-            case 1:
-                vm.animationState = 'playing';
-                break;
-            case 2:
-                vm.animationState = 'pause';
-                break;
-        }
+        vm.updateState(state);
     },
 
     // 动画播放时的事件变化广播消息
@@ -306,6 +318,9 @@ export async function ready() {
             },
         },
         methods: {
+            t(key: string, type = '') {
+                return Editor.I18n.t(`animator.${type}${key}`);
+            },
             init(this: any) {
                 // @ts-ignore
                 this.$refs.gridCanvas.width = this.$refs.right.offsetWidth;
@@ -352,14 +367,16 @@ export async function ready() {
                 const that: any = this;
                 that.selectedId = uuid;
                 if (that.animationMode) {
+                    // 编辑状态只更新 clips 菜单
+                    that.clipsMenu = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-info', that.root);
                     return;
                 }
                 that.animationMode = false;
                 const root = await Editor.Ipc.requestToPanel('scene', 'query-animation-root', uuid);
                 if (root) {
-                    that.hasAnimationComp = true;
-                    await that.updateRoot(uuid);
+                    await that.updateRoot(root);
                     if (that.nodeDump.clipInfo) {
+                        that.hasAnimationComp = true;
                         const {compIndex, defaultClip} = that.nodeDump.clipInfo;
                         if (!defaultClip) {
                             return;
@@ -379,13 +396,33 @@ export async function ready() {
                         }
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
-                        // vm.animationState = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
+                        const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
+                        that.updateState(state);
                     } else {
+                        that.hasAnimationComp = false;
                         that.hasAniamtionClip = false;
                     }
                 } else {
                     that.hasAnimationComp = false;
                     await that.updateRoot(uuid);
+                }
+            },
+
+            updateState(state: number) {
+                const that: any = this;
+                switch (state) {
+                    case 0:
+                        vm.animationState = 'stop';
+                        that.aniPlayTask && cancelAnimationFrame(that.aniPlayTask);
+                        break;
+                    case 1:
+                        vm.animationState = 'playing';
+                        that.runPointer();
+                        break;
+                    case 2:
+                        vm.animationState = 'pause';
+                        that.aniPlayTask && cancelAnimationFrame(that.aniPlayTask);
+                        break;
                 }
             },
 
@@ -431,16 +468,14 @@ export async function ready() {
             },
             async updateRoot(uuid: string) {
                 const that: any = this;
-                if (that.root !== uuid) {
-                    // 当前节点未添加动画组件
-                    const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
-                    if (!dump) {
-                        return;
-                    }
-                    that.nodeDump = await formatNodeDump(dump);
-                    that.root = uuid;
-                    that.clipsMenu = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-info', that.root);
+                // 当前节点未添加动画组件
+                const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
+                if (!dump) {
+                    return;
                 }
+                that.nodeDump = await formatNodeDump(dump);
+                that.root = uuid;
+                that.clipsMenu = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-info', that.root);
             },
 
             frameToPixel(frame: number) {
@@ -690,22 +725,64 @@ export async function ready() {
                 that.scrolling = true;
             },
 
-            onConfirm(event: any) {
+            async onConfirm(event: any) {
                 const name = event.target.getAttribute('name');
                 const value = event.target.value;
                 const that: any = this;
                 switch (name) {
                     case 'speed':
                         Editor.Ipc.sendToPanel('scene', 'change-clip-speed', that.currentClip, value);
+                        that.dirty = true;
                         break;
                     case 'sample':
                         Editor.Ipc.sendToPanel('scene', 'change-clip-sample', that.currentClip,  value);
+                        that.dirty = true;
                         break;
                     case 'wrapMode':
                         Editor.Ipc.sendToPanel('scene', 'change-clip-wrap-mode', that.currentClip,  value);
+                        that.dirty = true;
+                        break;
+                    case 'exit':
+                        that.exit();
                         break;
                 }
-                that.dirty = true;
+            },
+
+            async exit() {
+                const that: any = this;
+                if (that.dirty) {
+                    const t = that.t;
+                    const result = await Editor.Dialog.show({
+                        type: 'info',
+                        title: t('is_save'),
+                        message: t('is_save_message'),
+                        buttons: [t('cancel'), t('save'), t('abort')],
+                        default: 0,
+                        cancel: 0,
+                    });
+                    if (result === 0) {
+                        return;
+                    }
+                    if (result === 1) {
+                        const saveSuccess = await that.saveData();
+                        if (saveSuccess) {
+                            Editor.Ipc.sendToPanel('scene', 'record', that.root, false);
+                        }
+                        return;
+                    }
+                }
+                // @ts-ignore
+                Editor.Ipc.sendToPanel('scene', 'record', this.root, false);
+            },
+
+            /**
+             * 保存场景数据
+             */
+            async save() {
+                const isSave = await Editor.Ipc.requestToPanel('scene', 'save-clip');
+                if (isSave) {
+                    vm.dirty = false;
+                }
             },
 
             //////////////// 组件事件监听 /////////////////////////////////////////////////
@@ -738,13 +815,7 @@ export async function ready() {
                             operate = 'resume';
                         }
                         const changeSuccess = await Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
-                        if (changeSuccess) {
-                            if (operate === 'pause' || operate === 'stop') {
-                                cancelAnimationFrame(that.aniPlayTask);
-                            } else {
-                                that.runPointer();
-                            }
-                        } else {
+                        if (!changeSuccess) {
                             console.warn(`${that.currentClip} change play status ${operate} failed！`);
                         }
                         break;
@@ -759,7 +830,7 @@ export async function ready() {
                 that.aniPlayTask = requestAnimationFrame(async () => {
                     const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
                     if (time !== false) {
-                        that.currentFrame = timeToFrame(time, that.sample);
+                        that.setCurrentFrame(timeToFrame(time, that.sample));
                     }
                     if (that.animationState !== 'stop' || that.animationState !== 'puase') {
                         that.runPointer();

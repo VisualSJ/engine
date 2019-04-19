@@ -10,7 +10,7 @@ export const template = `
             {{t('need_select_node')}}
         </div>
     </div>
-    <div v-if="root && !animationMode && hasClip" class="tips animationMode">
+    <div v-if="root && !animationMode && hasComp && hasClip" class="tips animationMode">
         <ui-button name="enter_animation_mode">{{t('enter_animation_mode')}}</ui-button>
     </div>
     <div v-if="root && !hasComp" class="tips comp">
@@ -81,7 +81,9 @@ export const methods = {
                 const fileUrl = `db://internal/default_file_content/anim`;
                 const url = await Editor.Ipc.requestToPackage('asset-db', 'query-url-by-path', path);
                 const target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
-                const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', fileUrl, target);
+                const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', fileUrl, target, {
+                    overwrite: true,
+                });
                 if (!isSuccess) {
                     return;
                 }

@@ -24,6 +24,8 @@
     "shortcuts": {
         "ctrl+s": "save",
         "command+s": "save",
+        "ctrl+q": "exit",
+        "command+q": "exit",
         "delete": "deleteTheSelectedKeys",
         "del": "deleteTheSelectedKeys",
         "left": "jumpPrevFrame",
