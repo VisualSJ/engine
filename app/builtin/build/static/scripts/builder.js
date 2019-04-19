@@ -485,14 +485,12 @@ class Builder {
         const excludes = [];
         // 存在模块设置数据，则整理数据
         if (excludedModules && excludedModules.length > 0) {
-            excludedModules.forEach(function(exName) {
-                modules.some(function(item) {
-                    if (item.name === exName) {
-                        if (item.entries) {
-                            item.entries.forEach(function(file) {
-                                excludes.push(join(engine, file));
-                            });
-                        }
+            excludedModules.forEach(exName => {
+                modules.some(item => {
+                    if (item.id === exName) {
+                        item.entries && item.entries.forEach(file => {
+                            excludes.push(file);
+                        });
                         return;
                     }
                 });
@@ -500,15 +498,14 @@ class Builder {
         }
         if (platform === 'wechat-game-subcontext') {
             modules.forEach((module) => {
-                if (module.name === 'WebGL Renderer' || (module.dependencies && module.dependencies.indexOf('WebGL Renderer') !== -1)) {
-                    if (module.entries) {
-                        module.entries.forEach(function(file) {
-                            excludes.push(join(this._paths.engine, file));
-                        });
-                    }
+                if (module.id === 'WebGL Renderer' || (module.dependencies && module.dependencies.indexOf('WebGL Renderer') !== -1)) {
+                    module.entries && module.entries.forEach(file => {
+                        excludes.push(file);
+                    });
                 }
             });
         }
+
         console.time('buildCocosJs');
         // 执行 gulp 任务，编译 cocos js
         await this._buildCocosJs(excludes, buildDest);
@@ -570,16 +567,20 @@ class Builder {
             // electron 3.x 无法自动找到 unpacked 下的模块
             path = path.replace('app.asar', 'app.asar.unpacked');
 
-            const child = spawn(path, [
+            let spawn_options = [
                 join(engine, 'rollup', 'out', 'build-engine-cli.js'), 
                 '--input',
                 './index.js',
                 '--destination',
                 outputPath,
+                '--excludes'
+            ].concat(excludes).concat([
                 '--platform',
                 'build',
                 ...args,
-            ], {
+            ]);
+
+            const child = spawn(path, spawn_options, {
                 cwd: engine,
                 // stdio: [0, 1, 2, 'ipc'],
             });
