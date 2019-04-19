@@ -202,12 +202,14 @@ class AnimationUtil {
     getPropertyKeysFrom(curveData, comp, prop) {
         if (comp) {
             if (!curveData.comps || !curveData.comps[comp] || !curveData.comps[comp][prop]) {
+                console.log(`动画数据中找不到组件(${comp})的属性(${prop})`);
                 return null;
             }
 
             return curveData.comps[comp][prop];
         } else {
             if (!curveData.props || !curveData.props[prop]) {
+                console.log(`动画数据中找不到属性(${prop})`);
                 return null;
             }
             return curveData.props[prop];
@@ -365,14 +367,14 @@ class AnimationUtil {
         let animData = {};
         const node = Node.query(uuid);
         if (!node) {
-            console.warn(`节点(${uuid})不存在`);
+            console.debug(`节点(${uuid})不存在`);
             return animData;
         }
         animData.node = node;
 
         const animComp = node.getComponent(cc.AnimationComponent);
         if (!animComp) {
-            console.warn(`节点(${uuid})上不存在动画组件`);
+            console.debug(`节点(${uuid})上不存在动画组件`);
             return animData;
         }
         animData.animComp = animComp;
@@ -384,13 +386,13 @@ class AnimationUtil {
         let clipName = this.getClipName(clipUuid, animComp);
 
         if (!clipName) {
-            console.warn(`节点(${uuid})不存在动画(${clipUuid})`);
+            console.debug(`节点(${uuid})不存在动画(${clipUuid})`);
             return animData;
         }
 
         const state = animComp.getAnimationState(clipName);
         if (!state) {
-            console.warn(`节点(${uuid})不存在动画(${clipUuid})`);
+            console.debug(`节点(${uuid})不存在动画(${clipUuid})`);
             return animData;
         }
         animData.animState = state;
@@ -534,8 +536,6 @@ class AnimationUtil {
             return a.frame - b.frame;
         });
 
-        this.recalculateDuration(clip);
-
         return key;
     }
 
@@ -561,13 +561,37 @@ class AnimationUtil {
             }
         }
 
-        this.recalculateDuration(clip);
-
         if (keys.length > 0) {
             return keys;
         }
 
         return null;
+    }
+
+    createKey(clip, path, comp, prop, frame, value) {
+        let key = this.queryKey(clip, path, comp, prop, frame);
+
+        if (key) {
+            key.value = value;
+            return key;
+        }
+
+        let keys = this.queryPropertyKeys(clip, path, comp, prop);
+        if (!keys) {
+            return null;
+        }
+
+        key = {
+            frame: frame / clip.sample,
+            value: value,
+            curve: null,
+        };
+        keys.push(key);
+        keys.sort((a, b) => {
+            return a.frame - b.frame;
+        });
+
+        return key;
     }
 }
 

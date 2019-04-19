@@ -44,6 +44,10 @@ class AnimationManager extends EventEmitter {
         super();
         this.init();
         Node.on('change', this.onNodeChanged.bind(this));
+
+        this._stateWrappedInfo = {};
+        // anim update interval
+        this._animUpdateInterval = null;
     }
 
     init() {
@@ -67,6 +71,11 @@ class AnimationManager extends EventEmitter {
                 if (state) {
                     state.on('finished', this.onAnimPlayEnd, this);
                 }
+
+                if (!this._animUpdateInterval) {
+                    this._animUpdateInterval = setInterval(this.update.bind(this), 300);
+                }
+
                 return true;
             }
         } else {
@@ -78,6 +87,10 @@ class AnimationManager extends EventEmitter {
                     state.off('finished', this.onAnimPlayEnd, this);
                 }
 
+                if (this._animUpdateInterval) {
+                    clearInterval(this._animUpdateInterval);
+                    this._animUpdateInterval = null;
+                }
                 Scene._popMode();
                 return true;
             }
@@ -218,6 +231,7 @@ class AnimationManager extends EventEmitter {
 
         state.initialize(animData.node);
         state.setTime(0);
+        Manager.Ipc.send('broadcast', 'scene:animation-time-change', 0);
 
         // 注册结束事件
         state.on('finished', this.onAnimPlayEnd, this);
@@ -418,7 +432,9 @@ class AnimationManager extends EventEmitter {
             return 0;
         }
 
-        return state.time;
+        state.getWrappedInfo(state.time, this._stateWrappedInfo);
+
+        return this._stateWrappedInfo.time;
     }
 
     /**
@@ -510,6 +526,12 @@ class AnimationManager extends EventEmitter {
 
     onAnimPlayEnd() {
         this.changePlayState(PlayState.STOP);
+    }
+
+    update() {
+        if (AnimEditState.playState === PlayState.PLAYING) {
+            Manager.Ipc.send('broadcast', 'scene:animation-time-change', this.queryPlayingClipTime());
+        }
     }
 }
 

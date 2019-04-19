@@ -129,6 +129,7 @@ class AnimationOperation {
             }
         }
 
+        utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
         return true;
@@ -233,33 +234,13 @@ class AnimationOperation {
         const node = animData.node;
         let target = node;
         if (comp) {
-            if (!data.comps) {
-                console.warn(`找不到component track，无法新增关键帧\n  node: ${uuid}`);
-                return false;
-            }
-            data = data.comps[comp];
             target = node.getComponent(comp);
-        } else {
-            data = data.props;
-        }
-
-        const keys = data[prop];
-        if (!keys) {
-            console.warn(`找不到属性${prop}，无法新增关键帧\n  node: ${uuid}`);
-            return false;
         }
 
         let value = target[prop];
-        const key = {
-            frame: frame / state.clip.sample,
-            value: value,
-            curve: null,
-        };
-
-        keys.push(key);
-        keys.sort((a, b) => {
-            return a.frame - b.frame;
-        });
+        if (!utils.createKey(state.clip, path, comp, prop, frame, value)) {
+            return false;
+        }
 
         utils.recalculateDuration(state.clip);
         state.initialize(node);
@@ -335,8 +316,8 @@ class AnimationOperation {
             let key = keys[i];
             if (Math.round(key.frame * sample) === frame) {
                 keys.splice(i, 1);
-                state.initialize(animData.node);
                 utils.recalculateDuration(state.clip);
+                state.initialize(animData.node);
                 return true;
             }
         }
@@ -397,6 +378,40 @@ class AnimationOperation {
     }
 
     /**
+     * 复制关键帧数据到另一个关键帧上，如果选择了多个复制帧，则在目标帧后顺序粘贴
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Strig} path 节点数据路径
+     * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
+     * @param {String} prop 属性的名字
+     * @param {Array} srcFrames 复制的关键帧数组
+     * @param {number} dstFrame 目标关键帧
+     */
+    copyKeysTo(uuid, clipUuid, path, comp, prop, srcFrames, dstFrame) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        srcFrames.sort((a, b) => {
+            return a - b;
+        });
+        for (let i = 0; i < srcFrames.length; i++) {
+            let frame = srcFrames[i];
+            let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
+            if (keyData) {
+                utils.createKey(state.clip, path, comp, prop, dstFrame + frame - srcFrames[0], keyData.value);
+            }
+        }
+
+        utils.recalculateDuration(state.clip);
+        state.initialize(animData.node);
+
+        return true;
+    }
+
+    /**
      * 清空关键帧数据，但不删除Track
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
@@ -421,6 +436,8 @@ class AnimationOperation {
 
         if (props && prop) {
             props[prop] = [];
+            utils.recalculateDuration(state.clip);
+            state.initialize(animData.node);
             return true;
         }
 
@@ -447,6 +464,9 @@ class AnimationOperation {
             return false;
         }
 
+        utils.recalculateDuration(state.clip);
+        state.initialize(animData.node);
+
         return true;
     }
 
@@ -467,6 +487,9 @@ class AnimationOperation {
         if (!key) {
             return false;
         }
+
+        utils.recalculateDuration(state.clip);
+        state.initialize(animData.node);
 
         return true;
     }
@@ -496,6 +519,7 @@ class AnimationOperation {
             });
         }
 
+        state.initialize(animData.node);
         return true;
     }
 
@@ -537,6 +561,52 @@ class AnimationOperation {
     }
 
     /**
+     * 拷贝事件关键帧
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Array} srcFrames 要复制的关键帧数组
+     * @param {number} dstFrame 目标帧位置
+     */
+    copyEventsTo(uuid, clipUuid, srcFrames, dstFrame) {
+        if (!srcFrames || srcFrames.length <= 0) {
+            return false;
+        }
+
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        let events = utils.queryEvents(state.clip);
+        if (!events) {
+            return false;
+        }
+
+        srcFrames.sort((a, b) => {
+            return a - b;
+        });
+
+        let sample = state.clip.sample;
+        let baseFrame = srcFrames[0];
+        for (let i = 0; i < events.length; i++) {
+            let event = events[i];
+            let curFrame = Math.round(event.frame * sample);
+            let index = srcFrames.indexOf(curFrame);
+            if (index >= 0) {
+                let newFrame = curFrame - baseFrame + dstFrame;
+                if (newFrame < 0) { newFrame = 0; }
+                utils.addEvent(state.clip, newFrame, event.func, event.params);
+            }
+        }
+
+        utils.recalculateDuration(state.clip);
+        state.initialize(animData.node);
+
+        return true;
+    }
+
+    /**
      * 修改某个关键帧的曲线数据
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
@@ -553,7 +623,12 @@ class AnimationOperation {
             return false;
         }
 
-        return utils.modifyCurveOfKey(state.clip, path, comp, prop, frame, data);
+        if (utils.modifyCurveOfKey(state.clip, path, comp, prop, frame, data)) {
+            state.initialize(animData.node);
+            return true;
+        }
+
+        return false;
     }
 }
 
