@@ -333,6 +333,8 @@ export const methods = {
             return;
         }
 
+        utils.scrollIntoView(parent.uuid); // 滚动到顶层视窗
+
         if (parent.isExpand === false) {
             this.toggle(parent.uuid, true); // 重新展开父级节点
         }
@@ -351,8 +353,9 @@ export const methods = {
                 break;
             case 'ts':
             case 'js':
+                // 全项目下的 .js 文件不能重名
                 const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scripts' });
-                let name = 'New Script';
+                const name = 'New Script';
                 let index = 0;
                 while (scripts.some((asset: any) => {
                     // @ts-ignore
@@ -364,7 +367,7 @@ export const methods = {
                 json.name = index ? name + '-' + index.toString().padStart(3, '0') : name;
                 json.params = {
                     Name: json.name.replace(/( |-)/g, '_'),
-                }
+                };
                 json.name += `.${json.type}`;
                 break;
             default:
@@ -816,7 +819,6 @@ export const methods = {
                     let target = `${toAsset.source}/${name}`;
                     target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
                     utils.twinkle.sleep();
-                    // tslint:disable-next-line:max-line-length
                     isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, { src: file.path });
                 }
 
@@ -827,7 +829,7 @@ export const methods = {
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
             const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', json.from);
-            const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, {overwrite: true});
+            const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, { overwrite: true });
             if (!uuid) {
                 // 由于在 ipc generate-prefab-data 就预置了节点为 prefab 状态
                 // 现在新增失败，需要取消节点的 prefab 状态
