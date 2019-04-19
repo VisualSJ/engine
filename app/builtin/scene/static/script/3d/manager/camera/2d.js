@@ -310,8 +310,11 @@ class CameraController2D extends CameraControllerBase {
             return;
         }
 
-        this.enterPanMode();
-        return false;
+        if (event.middleButton || event.rightButton) {
+            // 鼠标中间键
+            this.enterPanMode();		
+            return false;		
+        }
     }
 
     onMouseMove(event) {
@@ -319,7 +322,9 @@ class CameraController2D extends CameraControllerBase {
             return;
         }
         
-        this.move(event.moveDeltaX, event.moveDeltaY);
+        if (this.camera_move_mode === CameraMoveMode.PAN) {
+            this.move(event.moveDeltaX, event.moveDeltaY);
+        }
         return false;
     }
 
@@ -328,7 +333,9 @@ class CameraController2D extends CameraControllerBase {
             return;
         }
 
-        this.exitPanMode();
+        if (this.camera_move_mode === CameraMoveMode.PAN) {
+            this.exitPanMode();
+        }
     }
 
     onMouseWheel(event) {

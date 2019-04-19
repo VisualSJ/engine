@@ -103,22 +103,32 @@ async function _loadScripts(scripts) {
         result = asset.library['.js'];
         // This may be caused by parsing error.
         if (result === undefined) {
-            throw new Error(`Script (${asset.source}) can't found in library, please check it`);
+            console.error(`Script (${asset.source}) can't found in library, please check it`);
+            continue;
         }
 
         raw2library[asset.file] = result;
         library2raw[result] = asset.file;
         uuid2raw[asset.uuid] = asset.file
-    }
-    for (const asset of scripts) {
-        require(asset.library['.js']);
-        console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
-    }
-    for (const asset of scripts) {
-        const {userData} = await ipc.send('query-asset-meta', asset.uuid);
-        const url = userData.moduleId;
-        console.log(`Load script ${url}`);
-        await System.import(url);
+
+        try {
+            require(asset.library['.js']);
+            console.info(`Script ${asset.uuid}(${asset.file}) mounted.`);
+        } catch(error) {
+            console.error(`Script (${asset.source}) load failed, please check it`);
+            console.error(error);
+            continue;
+        }
+
+        try {
+            const url = userData.moduleId;
+            console.log(`Load script ${url}`);
+            await System.import(url);
+        } catch(error) {
+            console.error(`Script (${asset.source}) load failed, please check it`);
+            console.error(error);
+            continue;
+        }
     }
 
     reload();

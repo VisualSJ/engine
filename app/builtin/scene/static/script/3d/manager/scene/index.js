@@ -227,7 +227,7 @@ class SceneManager extends EventEmitter {
      * 返回场景编辑里面的序列化数据
      */
     async mainSerialize() {
-        return await this.modes[i].serialize();
+        return await this.modes[0].serialize();
     }
 
     /**
@@ -346,7 +346,7 @@ class SceneManager extends EventEmitter {
     restore(dumps) {
         dumps.forEach((dump, index) => {
             const mode = this.modes[index];
-            mode._staging = dump.scene;
+            mode._staging = dump;
             mode.restore();
         });
     }
