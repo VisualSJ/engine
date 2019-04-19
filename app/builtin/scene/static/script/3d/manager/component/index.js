@@ -84,7 +84,6 @@ class CompManager extends EventEmitter {
         }
 
         this.emit('before-remove-component', component);
-        component._destroyImmediate();
         component.node.removeComponent(component);
         this.emit('remove-component', component);
 

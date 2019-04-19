@@ -64,7 +64,7 @@ async function link(nodeUuid, assetUuid) {
     const info = new cc._PrefabInfo();
     info.asset = asset || parentPrefab.asset;
     info.root = parentPrefab && parentPrefab.root || node;
-    info.fileId = parentPrefab && parentPrefab.fileId || node.uuid;
+    info.fileId = node.uuid;
     node._prefab = info;
 
     if (Array.isArray(node.children)) {

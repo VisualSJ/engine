@@ -106,7 +106,8 @@ async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
             const cacheComp = Manager.Component.query(dumpComp.value.uuid.value);
             if (cacheComp) {
                 component = node._components[i] = cacheComp;
-                Manager.Component.addComponent(cacheComp);
+                component.enabled = true; // 触发引擎重新激活组件
+                Manager.Component.addComponent(component);
             }
         }
 

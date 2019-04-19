@@ -479,6 +479,7 @@ class NodeManager extends EventEmitter {
             if (!prefab) { // 不存在，可能已被删除，转入新增节点
 
             } else {
+                const prefabDump = dumpUtils.dumpNode(prefab);
                 if (parentNode) {
                     const parentDump = dumpUtils.dumpNode(parentNode);
                     const parentFileId = parentDump.__prefab__.fileId;
@@ -491,7 +492,7 @@ class NodeManager extends EventEmitter {
 
                 delete dump.uuid; // 删除不必要的字段
                 delete dump.children;
-                delete dump.__prefab__;
+                dump.__prefab__ = JSON.parse(JSON.stringify(prefabDump.__prefab__));
 
                 await dumpUtils.restoreNode(prefab, dump);
 
