@@ -368,20 +368,20 @@ class CameraController3D extends CameraControllerBase {
     }
 
     onMouseWheel(event) {
-        if (Math.max(Math.abs(event.wheelDeltaX), Math.abs(event.wheelDeltaY)) > 60) {
-            this.scale(-event.wheelDeltaY / 6);
-        } else {
-            // 双指操作触摸板，并移动的时候，触发这里，需要先进入 PAN 模式，才能移动
-            if (this.camera_move_mode !== CameraMoveMode.PAN) {
-                this.enterPanMode();
-            }
-            this.move(event.wheelDeltaX, event.wheelDeltaY);
-            // for touch control
-            clearTimeout(exitPanModeTimer);
-            exitPanModeTimer = setTimeout(() => {
-                this.exitPanMode();
-            }, 100);
-        }
+        // if (Math.max(Math.abs(event.wheelDeltaX), Math.abs(event.wheelDeltaY)) > 60) {
+            this.scale(-event.wheelDeltaY / 12);
+        // } else {
+        //     // 双指操作触摸板，并移动的时候，触发这里，需要先进入 PAN 模式，才能移动
+        //     if (this.camera_move_mode !== CameraMoveMode.PAN) {
+        //         this.enterPanMode();
+        //     }
+        //     this.move(event.wheelDeltaX, event.wheelDeltaY);
+        //     // for touch control
+        //     clearTimeout(exitPanModeTimer);
+        //     exitPanModeTimer = setTimeout(() => {
+        //         this.exitPanMode();
+        //     }, 100);
+        // }
     }
 
     onKeyDown(event) {

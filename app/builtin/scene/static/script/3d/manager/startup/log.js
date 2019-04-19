@@ -17,7 +17,7 @@ function init() {
         if (!(error instanceof Error)) {
             error = format(error, ...args);
         }
-        error = vStacks.encode(error, 1);
+        error = vStacks.encode(error, 0);
         backup.warn(vStacks.decode(error));
         ipc.send('console', 'warn', error);
     };
@@ -26,7 +26,7 @@ function init() {
         if (!(error instanceof Error)) {
             error = format(error, ...args);
         }
-        error = vStacks.encode(error, 1);
+        error = vStacks.encode(error, 0);
         backup.error(vStacks.decode(error));
         ipc.send('console', 'error', error);
     };

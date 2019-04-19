@@ -310,28 +310,17 @@ class CameraController2D extends CameraControllerBase {
             return;
         }
 
-        if (event.middleButton) {
-            // 鼠标中间键
-            this.enterPanMode();
-            return false;
-        } else if (event.rightButton) {
-            // 鼠标右键
-            this.enterPanMode();
-            return false;
-        }
+        this.enterPanMode();
+        return false;
     }
 
     onMouseMove(event) {
         if (this.camera_move_mode === CameraMoveMode.NONE) {
             return;
         }
-        if (event.middleButton) {
-            // 鼠标中间键
-            this.move(event.moveDeltaX, event.moveDeltaY);
-            return false;
-        }
-
-        return true;
+        
+        this.move(event.moveDeltaX, event.moveDeltaY);
+        return false;
     }
 
     onMouseUp(event) {
@@ -339,28 +328,24 @@ class CameraController2D extends CameraControllerBase {
             return;
         }
 
-        if (event.middleButton) { // middle button: panning
-            this.exitPanMode();
-        } else if (event.rightButton) { // right button: panning
-            this.exitPanMode();
-        }
+        this.exitPanMode();
     }
 
     onMouseWheel(event) {
-        if (Math.max(Math.abs(event.wheelDeltaX), Math.abs(event.wheelDeltaY)) > 60) {
-            this.scale(event.wheelDeltaY / 6, event.x, event.y);
-        } else {
-            // 双指操作触摸板，并移动的时候，触发这里，需要先进入 PAN 模式，才能移动
-            if (this.camera_move_mode !== CameraMoveMode.PAN) {
-                this.enterPanMode();
-            }
-            this.move(event.wheelDeltaX, event.wheelDeltaY);
-            // for touch control
-            clearTimeout(exitPanModeTimer);
-            exitPanModeTimer = setTimeout(() => {
-                this.exitPanMode();
-            }, 100);
-        }
+        // if (Math.max(Math.abs(event.wheelDeltaX), Math.abs(event.wheelDeltaY)) > 60) {
+            this.scale(event.wheelDeltaY / 12, event.x, event.y);
+        // } else {
+        //     // 双指操作触摸板，并移动的时候，触发这里，需要先进入 PAN 模式，才能移动
+        //     if (this.camera_move_mode !== CameraMoveMode.PAN) {
+        //         this.enterPanMode();
+        //     }
+        //     this.move(event.wheelDeltaX, event.wheelDeltaY);
+        //     // for touch control
+        //     clearTimeout(exitPanModeTimer);
+        //     exitPanModeTimer = setTimeout(() => {
+        //         this.exitPanMode();
+        //     }, 100);
+        // }
     }
 
     onKeyDown(event) {

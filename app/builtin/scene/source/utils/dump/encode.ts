@@ -262,6 +262,10 @@ export function encodeObject(object: any, attributes: any): IProperty {
         }
         data.value = dump;
     } else if (data.isArray) {
+        if (!Array.isArray(object)) {
+            console.warn(`There were some problems with the data parsing: ${object}`);
+            object = [];
+        }
         data.value = (object || []).map((item: any) => {
             // todo 需要确认数组类型的 attrs
             const childAttritube: any = Object.assign({}, attributes);
