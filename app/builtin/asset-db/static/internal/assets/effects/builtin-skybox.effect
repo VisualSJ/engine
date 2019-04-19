@@ -10,7 +10,7 @@ CCEffect %{
         depthTest: true
         depthWrite: false
       properties:
-        cubeMap: { type: samplerCube, value: default-cube }
+        cubeMap: { value: default-cube }
 }%
 
 CCProgram sky-vs %{

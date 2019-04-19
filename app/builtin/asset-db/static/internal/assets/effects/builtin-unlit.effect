@@ -6,9 +6,9 @@ CCEffect %{
     - vert: unlit-vs:vert
       frag: unlit-fs:frag
       properties: &props
-        color:        { type: vec4,      value: [1, 1, 1, 1], inspector: { type: color } }
-        tilingOffset: { type: vec4,      value: [1, 1, 0, 0] }
-        mainTexture:  { type: sampler2D, value: grey         }
+        color:        { value: [1, 1, 1, 1], inspector: { type: color } }
+        tilingOffset: { value: [1, 1, 0, 0] }
+        mainTexture:  { value: grey         }
   - name: transparent
     passes:
     - vert: unlit-vs:vert

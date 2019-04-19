@@ -17,7 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        mainTexture: { type: sampler2D, value: white }
+        mainTexture: { value: white }
 }%
 
 CCProgram sprite-vs %{

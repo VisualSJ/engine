@@ -22,16 +22,16 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        u_texSampler: { type: sampler2D, sampler: *s1 }
+        u_texSampler: { sampler: *s1 }
     - vert: smaa-blend-vs:vert
       frag: smaa-blend-fs:frag
       depthStencilState:
         depthTest: false
         depthWrite: false
       properties:
-        u_edgeTexSampler: { type: sampler2D, sampler: *s1 }
-        u_areaTexSampler: { type: sampler2D, sampler: *s1 }
-        u_searchTexSampler: { type: sampler2D, sampler: *s2 }
+        u_edgeTexSampler: { sampler: *s1 }
+        u_areaTexSampler: { sampler: *s1 }
+        u_searchTexSampler: { sampler: *s2 }
 }%
 
 CCProgram smaa-edge-vs %{
@@ -108,7 +108,7 @@ CCProgram smaa-edge-fs %{
     edges.xy *= step(0.5 * maxDelta, delta.xy);
 
     vec4 o = vec4(edges, 0.0, 0.0);
-  
+
     return o;
   }
 }%

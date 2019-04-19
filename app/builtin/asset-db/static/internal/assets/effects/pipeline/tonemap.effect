@@ -16,8 +16,8 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        u_texSampler: { type: sampler2D, sampler: *s1 }
-        u_blendTexSampler: { type: sampler2D, sampler: *s1 }
+        u_texSampler: { sampler: *s1 }
+        u_blendTexSampler: { sampler: *s1 }
 }%
 
 CCProgram tonemap-vs %{
@@ -101,7 +101,7 @@ CCProgram tonemap-fs %{
       mixed.rgb = pow(mixed.rgb, vec3(1.0 / 2.2));
       return mixed;
     }
-  #else 
+  #else
     vec4 o = texture(u_texSampler, v_uv);
     //o = texture(u_blendTexSampler, v_uv);
     o.rgb = ToLDR(o.rgb);

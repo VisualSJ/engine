@@ -15,18 +15,18 @@ CCEffect %{
     - vert: standard-vs:vert
       frag: standard-fs:frag
       properties: &props
-        tilingOffset:  { type: vec4,        value: [1.0, 1.0, 0.0, 0.0] }
-        albedo:        { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
-        albedoScale:   { type: vec4,        value: [1.0, 1.0, 1.0, 0.0] }
-        pbrParams:     { type: vec4,        value: [0.8, 0.6, 0.0, 1.0] }
-        pbrScale:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
-        emissive:      { type: vec4,        value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
-        emissiveScale: { type: vec4,        value: [1.0, 1.0, 1.0, 1.0] }
-        albedoMap:     { type: sampler2D,   value: grey         }
-        normalMap:     { type: sampler2D,   value: normal       }
-        pbrMap:        { type: sampler2D,   value: grey         }
-        emissiveMap:   { type: sampler2D,   value: grey         }
-        envMap:        { type: samplerCube, value: default-cube }
+        tilingOffset:  { value: [1.0, 1.0, 0.0, 0.0] }
+        albedo:        { value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
+        albedoScale:   { value: [1.0, 1.0, 1.0, 0.0] }
+        pbrParams:     { value: [0.8, 0.6, 0.0, 1.0] }
+        pbrScale:      { value: [1.0, 1.0, 1.0, 1.0] }
+        emissive:      { value: [1.0, 1.0, 1.0, 1.0], inspector: { type: color } }
+        emissiveScale: { value: [1.0, 1.0, 1.0, 1.0] }
+        albedoMap:     { value: grey         }
+        normalMap:     { value: normal       }
+        pbrMap:        { value: grey         }
+        emissiveMap:   { value: grey         }
+        envMap:        { value: default-cube }
     - &planarShadow
       switch: USE_PLANAR_SHADOW
       vert: planar-shadow-vs:vert

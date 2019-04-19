@@ -16,10 +16,10 @@ CCEffect %{
           blendSrcAlpha: src_alpha
           blendDstAlpha: one
       properties:
-        mainTexture:            { type: sampler2D, value: grey                 }
-        mainTiling_Offset:      { type: vec4,      value: [1, 1, 0, 0]         }
-        frameTile_velLenScale:  { type: vec4,      value: [1, 1, 0, 0]         }
-        tintColor:              { type: vec4,      value: [0.5, 0.5, 0.5, 0.5], inspector: { type: color } }
+        mainTexture:            { value: grey                 }
+        mainTiling_Offset:      { value: [1, 1, 0, 0]         }
+        frameTile_velLenScale:  { value: [1, 1, 0, 0]         }
+        tintColor:              { value: [0.5, 0.5, 0.5, 0.5], inspector: { type: color } }
 }%
 
 // TODO: soft particle

@@ -599,12 +599,13 @@ const parseEffect = (() => {
     shaderName = 'syntax error';
     content = stripComments(content).replace(tabs, ' '.repeat(tabAsSpaces));
     // process each block
-    let effect = { name: effectName }, templates = {};
+    let effect = { name }, templates = {};
     let effectCap = effectRE.exec(stripHashComments(content));
     if (!effectCap) error(`illegal effect starting at ${blockPos[i]}`);
     else { // deep clone to decouple references
       try {
         const src = yaml.safeLoad(effectCap[1]);
+        if (src.name) effect.name = src.name;
         effect.techniques = JSON.parse(JSON.stringify(src.techniques));
       } catch (e) { warn(e); }
       structuralTypeCheck(mappings.effectStructure, effect);
@@ -631,8 +632,7 @@ const mapPassParam = (() => {
     return res;
   };
   const propTypeCheck = (value, type, givenType, shaderType) => {
-    if (typeof type === 'string') return `unsupported type ${type}`;
-    if (type !== shaderType) return 'incompatible with shader decl';
+    if (type === -1) return 'no matching uniform';
     if (givenType === 'string') {
       if (!samplerRE.test(mappings.invTypeParams[type])) return 'string for non-samplers';
     } else if (!Array.isArray(value)) return 'non-array for buffer members';
@@ -642,11 +642,8 @@ const mapPassParam = (() => {
     for (const p of Object.keys(props)) {
       const info = props[p], shaderType = findUniformType(p, shader);
       // type translation or extraction
-      if (info.type === undefined) info.type = shaderType;
-      else if (typeof info.type === 'string') {
-        info.type = mappings.typeParams[info.type.toUpperCase()];
-        if (!info.type) warn(`illegal property type for '${p}'`);
-      }
+      if (info.type !== undefined) warn(`property ${p}: you don\'t have to specify type in here`);
+      info.type = shaderType;
       // sampler specification
       if (info.sampler) { info.sampler = mapSampler(generalMap(info.sampler)); }
       // default values
@@ -656,7 +653,7 @@ const mapPassParam = (() => {
       if (givenType === 'number' || givenType === 'boolean') info.value = [info.value];
       // type check the given value
       const msg = propTypeCheck(info.value, info.type, givenType, shaderType);
-      if (msg) warn(`illegal property declaration ${p}: ${msg}`);
+      if (msg) warn(`illegal property declaration for '${p}': ${msg}`);
     }
     return props;
   };
