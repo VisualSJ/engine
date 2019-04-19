@@ -25,8 +25,13 @@ class AnimationUtil {
         const sample = clip.sample;
         function handleProps(props) {
             const result = {};
+
             for (let key in props) {
                 if (key) {
+                    // special for 骨骼动画
+                    if (!Array.isArray(props[key])) {
+                        props[key] = props[key].keyframes;
+                    }
                     result[key] = props[key].map(handleKey);
                 }
             }
@@ -311,7 +316,11 @@ class AnimationUtil {
      * @param {*} isChild
      */
     getAnimableProperties(node, isChild) {
+        if (!node) {
+            return;
+        }
         let properties = [];
+
         if (isChild) {
             properties.push({name: 'active', type: 'cc.Boolean'});
         }
@@ -387,6 +396,11 @@ class AnimationUtil {
 
         if (!clipName) {
             console.debug(`节点(${uuid})不存在动画(${clipUuid})`);
+            return animData;
+        }
+
+        if (clipName === '') {
+            console.debug(`节点(${uuid})动画(${clipUuid})名字为空`);
             return animData;
         }
 

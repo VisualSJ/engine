@@ -21,7 +21,7 @@ let AnimEditState = {
     playState : PlayState.STOP,    // 动画播放状态
 };
 
-function getNameDataByPropPath(propPath) {
+function getNameDataByPropPath(node, propPath) {
     propPath = propPath.replace(/^__comps__/, '_components');
     const pathKeys = (propPath || '').split('.');
     const propName = pathKeys.pop() || '';
@@ -303,6 +303,7 @@ class AnimationManager extends EventEmitter {
         }
 
         state.pause();
+        this._curEditTime = this.queryPlayingClipTime();
         this.changePlayState(PlayState.PAUSE);
         return true;
     }
@@ -333,6 +334,7 @@ class AnimationManager extends EventEmitter {
         }
 
         state.setTime(0);
+        this._curEditTime = 0;
         state.sample();
         state.stop();
         this.changePlayState(PlayState.STOP);
@@ -503,7 +505,7 @@ class AnimationManager extends EventEmitter {
         }
 
         // 查找comp和prop的名字
-        let nameData = getNameDataByPropPath(propPath);
+        let nameData = getNameDataByPropPath(node, propPath);
         const compName = nameData.compName;
         const propName = nameData.propName;
 
