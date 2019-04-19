@@ -1,10 +1,14 @@
+'use strict';
+
+import { readJSONSync } from 'fs-extra';
+import { basename } from 'path';
 import { Asset, Importer } from '@editor/asset-db';
 
 export default class AnimationImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.0';
+        return '1.0.1';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -26,8 +30,11 @@ export default class AnimationImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
+        
         try {
-            await asset.copyToLibrary('.json', asset.source);
+            const json = readJSONSync(asset.source);
+            json._name = basename(asset.source, '.anim');
+            await asset.saveToLibrary('.json', JSON.stringify(json, null, 2));
         } catch (error) {
             console.error(error);
             return false;
