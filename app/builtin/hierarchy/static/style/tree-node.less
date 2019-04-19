@@ -215,7 +215,24 @@
         .tree-node {
             &[isPrefab] {
                 color: var(--default-text-c);
-                ;
+            }
+        }
+    }
+
+    &[editinganimation] {
+        .tree-node {
+
+            >.arrow,
+            >.name {
+                opacity: 0.3;
+            }
+
+            &[isEditingAnimation] {
+
+                >.arrow,
+                >.name {
+                    opacity: 1;
+                }
             }
         }
     }

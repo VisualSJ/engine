@@ -1,5 +1,6 @@
 <ui-drag-area class="tree" dropable="cc.Node,cc.Prefab"
     :usefor="usefor"
+    :editinganimation="animationUuid!==''"
     :state="state"
     :style="{ top: top + 'px' }"
     @dragenter="dragEnter($event)"

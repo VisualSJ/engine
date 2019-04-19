@@ -119,6 +119,7 @@ function legealNodeAttr(node: ItreeNode) {
         isScene: node.isScene,
         isParent: false,
         isPrefab: false,
+        isEditingAnimation: isAnimationNode(node),
         parentUuid: '',
     };
     const keys = Object.keys(defaultParams);
@@ -126,6 +127,14 @@ function legealNodeAttr(node: ItreeNode) {
         vm.$set(node, key, defaultParams[key]);
     }
     return node;
+}
+
+function isAnimationNode(child: ItreeNode): boolean {
+    if (!vm.animationUuid) {
+        return false;
+    }
+    return child.uuid === vm.animationUuid || (child.parent && uuidNodes[child.parent].isEditingAnimation) ? true : false;
+
 }
 
 /**

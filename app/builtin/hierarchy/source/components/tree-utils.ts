@@ -1,6 +1,20 @@
 const db = require('./tree-db');
 
 /**
+ * 是否禁止所有增删改操作
+ */
+exports.forbidOperate = () => {
+    return db.vm.animationUuid !== '';
+};
+
+/**
+ * 统一处理判断右击菜单是否可用
+ */
+exports.enableContextMenu = () => {
+    return !exports.forbidOperate();
+};
+
+/**
  * 不能执行 删除 操作的资源
  * 以下情况，目前可沿用 canNotDeleteNode 的逻辑判断
  * @param node

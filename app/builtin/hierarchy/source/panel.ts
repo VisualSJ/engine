@@ -153,6 +153,22 @@ export const messages = {
         vm.clear();
     },
 
+    'scene:animation-start'(uuid: string) {
+        // 没有初始化的时候，无需处理添加消息
+        if (!vm.ready) {
+            return;
+        }
+        vm.animationStart(uuid);
+    },
+
+    'scene:animation-end'() {
+        // 没有初始化的时候，无需处理添加消息
+        if (!vm.ready) {
+            return;
+        }
+        vm.animationEnd();
+    },
+
     /**
      * 节点被修改
      * @param uuid
@@ -286,6 +302,20 @@ export async function ready() {
 
                 await vm.$refs.tree.refresh(true);
             },
+            /**
+             * 开始动画编辑模式
+             * @param uuid 节点的 uuid
+             */
+            animationStart(uuid: string) {
+                vm.$refs.tree.animationStart(uuid);
+            },
+            /**
+             * 结束动画编辑模式
+             */
+            animationEnd() {
+                vm.$refs.tree.animationEnd();
+            },
+
             /**
              * 清空
              */

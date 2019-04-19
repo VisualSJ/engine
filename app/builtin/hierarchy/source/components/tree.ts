@@ -32,6 +32,7 @@ export function data() {
         copiedUuids: [], // 用于存放已复制节点的 uuid
 
         usefor: 'scene', // 使用场景 有 scene, prefab
+        animationUuid: '', // 当前正在编辑动画的节点 uuid, 退出动画编辑模式后会将它清空
         state: '',
         search: '', // 搜索节点名称
         viewHeight: 0, // 当前树形的可视区域高度
@@ -99,6 +100,12 @@ export const watch = {
     allExpand() {
         vm.$parent.allExpand = vm.allExpand;
     },
+    /**
+     * 开始编辑节点的动画
+     */
+    async animationUuid() {
+        await vm.refresh();
+    },
 };
 
 export function mounted() {
@@ -152,6 +159,14 @@ export const methods = {
 
         this.changeData();
 
+    },
+
+    animationStart(uuid: string) {
+        vm.animationUuid = uuid;
+    },
+
+    animationEnd() {
+        vm.animationUuid = '';
     },
 
     /**
@@ -346,6 +361,10 @@ export const methods = {
      * @param json
      */
     async ipcAdd(json: IaddNode) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
@@ -411,6 +430,10 @@ export const methods = {
      * @param node
      */
     async ipcDelete(uuid: string) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
@@ -588,6 +611,10 @@ export const methods = {
      * @param name
      */
     async rename(uuid: string, name = '') {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // @ts-ignore 清空需要 rename 的节点
         this.renameUuid = '';
 
@@ -709,6 +736,10 @@ export const methods = {
      * @param json
      */
     async ipcDrop(json: IdragNode) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
@@ -782,13 +813,17 @@ export const methods = {
         vm.copiedUuids.forEach((uuid: string) => {
             utils.twinkle.add(uuid, 'light');
         });
-},
+    },
 
     /**
      * 粘贴
      * @param uuid 粘贴到这个节点里面
      */
     async paste(uuid: string) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
@@ -832,6 +867,10 @@ export const methods = {
      * @param uuids
      */
     async duplicate(uuids: string[]) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         // 保存历史记录
         Editor.Ipc.sendToPanel('scene', 'snapshot');
 
@@ -898,6 +937,10 @@ export const methods = {
      * 移动
      */
     move(json: IdragNode) {
+        if (utils.forbidOperate()) {
+            return;
+        }
+
         if (!json || !json.from || !json.to) {
             return;
         }

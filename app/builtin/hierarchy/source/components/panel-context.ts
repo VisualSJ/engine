@@ -7,6 +7,7 @@ exports.createMenu = (callback: any): any[] => {
     return [
         {
             label: Editor.I18n.t('hierarchy.menu.newNodeEmpty'),
+            enabled: utils.enableContextMenu(),
             click() {
                 callback({
                     name: 'New Node',
@@ -15,6 +16,7 @@ exports.createMenu = (callback: any): any[] => {
         },
         {
             label: Editor.I18n.t('hierarchy.menu.new3dObject'),
+            enabled: utils.enableContextMenu(),
             submenu: [
                 {
                     label: Editor.I18n.t('hierarchy.menu.new3dCube'),
@@ -92,6 +94,7 @@ exports.createMenu = (callback: any): any[] => {
         },
         {
             label: Editor.I18n.t('hierarchy.menu.newEffects'),
+            enabled: utils.enableContextMenu(),
             submenu: [
                 {
                     label: Editor.I18n.t('hierarchy.menu.newEffectsParticle'),
@@ -106,6 +109,7 @@ exports.createMenu = (callback: any): any[] => {
         },
         {
             label: Editor.I18n.t('hierarchy.menu.newUI'),
+            enabled: utils.enableContextMenu(),
             submenu: [
                 {
                     label: Editor.I18n.t('hierarchy.menu.newUILayout'),
@@ -228,6 +232,7 @@ exports.createMenu = (callback: any): any[] => {
         },
         {
             label: Editor.I18n.t('hierarchy.menu.newLightObject'),
+            enabled: utils.enableContextMenu(),
             submenu: [
                 {
                     label: Editor.I18n.t('hierarchy.menu.newLightDirectional'),
@@ -260,6 +265,7 @@ exports.createMenu = (callback: any): any[] => {
         },
         {
             label: Editor.I18n.t('hierarchy.menu.newCameraObject'),
+            enabled: utils.enableContextMenu(),
             click() {
                 callback({
                     name: 'New Camera',
@@ -274,6 +280,7 @@ function panelMenu() {
     return [
         {
             label: Editor.I18n.t('hierarchy.menu.newNode'),
+            enabled: utils.enableContextMenu(),
             submenu: exports.createMenu((addNode: IaddNode) => {
                 db.vm.$refs.tree.addTo(addNode);
             }),
@@ -281,7 +288,7 @@ function panelMenu() {
         {
             label: Editor.I18n.t('hierarchy.menu.paste'),
             // @ts-ignore
-            enabled: !utils.hasEmptyCopyNodes(),
+            enabled: !utils.hasEmptyCopyNodes() && utils.enableContextMenu(),
             click() {
                 db.vm.$refs.tree.paste();
             },

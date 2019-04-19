@@ -31,8 +31,9 @@ declare interface ItreeNode {
     // 以下是扩展的数据
     isScene: boolean; // 是否是 scene 节点
     isPrefab: boolean; // 是否是 prefab
-    isEditingPrefab: boolean; // 正在编辑的 prefab 
     isVisible: boolean; // 根据自身和父级的 active 调整状态
+    isEditingPrefab: boolean; // 正在编辑的 prefab 
+    isEditingAnimation: boolean; // 属于当前动画编辑模式下的节点
     readonly: boolean; // 是否是只读
     top: number; // top 位置
     left: number; // 缩进的大小

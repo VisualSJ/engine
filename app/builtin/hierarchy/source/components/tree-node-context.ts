@@ -6,7 +6,7 @@ const {createMenu} = require('./panel-context');
 const sceneMenu = (vm: any, node: ItreeNode) => [
     {
         label: Editor.I18n.t('hierarchy.menu.newNode'),
-        enabled: !utils.canNotCreateNode(node),
+        enabled: !utils.canNotCreateNode(node) && utils.enableContextMenu(),
         submenu: createMenu((addNode: IaddNode) => {
             addNode.parent = node.uuid;
             vm.$emit('addTo', addNode);
@@ -14,7 +14,7 @@ const sceneMenu = (vm: any, node: ItreeNode) => [
     },
     {
         label: Editor.I18n.t('hierarchy.menu.paste'),
-        enabled: !utils.canNotPasteNode(node),
+        enabled: !utils.canNotPasteNode(node) && utils.enableContextMenu(),
         click() {
             vm.$emit('paste', node.uuid);
         },
@@ -31,7 +31,7 @@ const sceneMenu = (vm: any, node: ItreeNode) => [
 const nodeMenu = (vm: any, node: ItreeNode) => [
     {
         label: Editor.I18n.t('hierarchy.menu.newNode'),
-        enabled: !utils.canNotCreateNode(node),
+        enabled: !utils.canNotCreateNode(node) && utils.enableContextMenu(),
         submenu: createMenu((addNode: IaddNode) => {
             addNode.parent = node.uuid;
             vm.$emit('addTo', addNode);
@@ -42,7 +42,7 @@ const nodeMenu = (vm: any, node: ItreeNode) => [
     },
     {
         label: Editor.I18n.t('hierarchy.menu.copy'),
-        enabled: !utils.canNotCopyNode(node),
+        enabled: !utils.canNotCopyNode(node) && utils.enableContextMenu(),
         click() {
             if (!vm.selects.includes(node.uuid)) {
                 vm.$emit('copy', [node.uuid]);
@@ -53,14 +53,14 @@ const nodeMenu = (vm: any, node: ItreeNode) => [
     },
     {
         label: Editor.I18n.t('hierarchy.menu.paste'),
-        enabled: !utils.canNotPasteNode(node),
+        enabled: !utils.canNotPasteNode(node) && utils.enableContextMenu(),
         click() {
             vm.$emit('paste', node.uuid);
         },
     },
     {
         label: Editor.I18n.t('hierarchy.menu.duplicate'),
-        enabled: !utils.canNotCopyNode(node),
+        enabled: !utils.canNotCopyNode(node) && utils.enableContextMenu(),
         click(event: Event) {
             if (!vm.selects.includes(node.uuid)) {
                 vm.$emit('duplicate', [node.uuid]);
@@ -72,14 +72,14 @@ const nodeMenu = (vm: any, node: ItreeNode) => [
     { type: 'separator' },
     {
         label: Editor.I18n.t('hierarchy.menu.rename'),
-        enabled: !utils.canNotRenameNode(node),
+        enabled: !utils.canNotRenameNode(node) && utils.enableContextMenu(),
         click(event: Event) {
             vm.rename(node);
         },
     },
     {
         label: Editor.I18n.t('hierarchy.menu.delete'),
-        enabled: !utils.canNotDeleteNode(node),
+        enabled: !utils.canNotDeleteNode(node) && utils.enableContextMenu(),
         click() {
             vm.$emit('ipcDelete', node.uuid);
         },

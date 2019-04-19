@@ -123,6 +123,16 @@ class NodeManager extends EventEmitter {
      * @param {*} dump
      */
     async setProperty(uuid, path, dump) {
+        /**
+         * 重要:
+         * 节点的重命名通过属性变动来设置
+         * 由于动画机制依赖节点名称
+         * 所以动画模式下名称不能修改
+         */
+        if (path === 'name' && !this.canChangeNodetree()) {
+            return;
+        }
+
         // 多个节点更新值
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
@@ -168,6 +178,10 @@ class NodeManager extends EventEmitter {
      * @param offset 偏移量
      */
     moveArrayElement(uuid, path, target, offset) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
                 this.moveArrayElement(id, path, target, offset);
@@ -228,6 +242,10 @@ class NodeManager extends EventEmitter {
      * @param index 目标 item 原来的索引
      */
     removeArrayElement(uuid, path, index) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
                 this.removeArrayElement(id, path, index);
@@ -353,6 +371,10 @@ class NodeManager extends EventEmitter {
      * @param {*} data
      */
     async createNode(uuid, name = 'New Node', dump) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (!cc.director._scene) {
             return;
         }
@@ -419,6 +441,10 @@ class NodeManager extends EventEmitter {
     }
 
     async restorePrefab(uuid, assetUuid) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (!cc.director._scene) {
             return;
         }
@@ -449,14 +475,14 @@ class NodeManager extends EventEmitter {
         async function restore(newNode, parentNode) {
             const dump = dumpUtils.dumpNode(newNode);
             const fileId = dump.__prefab__.fileId;
-            const prefab =  query(fileId2Uuid[fileId]); // 现有场景中的节点
+            const prefab = query(fileId2Uuid[fileId]); // 现有场景中的节点
             if (!prefab) { // 不存在，可能已被删除，转入新增节点
 
             } else {
                 if (parentNode) {
                     const parentDump = dumpUtils.dumpNode(parentNode);
                     const parentFileId = parentDump.__prefab__.fileId;
-                    const parentPrefab =  query(fileId2Uuid[parentFileId]);
+                    const parentPrefab = query(fileId2Uuid[parentFileId]);
                     // 改为现有节点的父级节点
                     dump.parent.value.uuid = parentPrefab.uuid;
                 } else {
@@ -486,7 +512,7 @@ class NodeManager extends EventEmitter {
                 node.children.forEach((child) => {
                     Object.assign(rt, getFileId(child));
                 });
-             }
+            }
             return rt;
         }
     }
@@ -498,6 +524,10 @@ class NodeManager extends EventEmitter {
      * @param {*} options { type: 资源类型, position: 位置坐标(vect3), name: 新的名字 }
      */
     async createNodeFromAsset(parentUuid, assetUuid, options) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (!cc.director._scene) {
             return;
         }
@@ -565,6 +595,10 @@ class NodeManager extends EventEmitter {
      * @param {*} uuid
      */
     removeNode(uuid) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         const node = this.query(uuid);
         const parent = node.parent;
 
@@ -596,6 +630,20 @@ class NodeManager extends EventEmitter {
             return {};
         }
         return getComponentFunctionOfNode(node);
+    }
+
+    /**
+     * 统一处理是否可以改变节点树的状态，增删改，重命名
+     */
+    canChangeNodetree() {
+        // 目前动画模式下不允许变动
+        const legeal = Scene.queryMode() !== 'animation';
+
+        if (!legeal) {
+            console.warn('In current editing mode, can not add, move, remove, rename nodes in the scene.');
+        }
+
+        return legeal;
     }
 }
 
