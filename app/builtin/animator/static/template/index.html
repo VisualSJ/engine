@@ -127,7 +127,7 @@
             <ui-button name="exit">退出</ui-button>
             <span v-if="dirty">*</span>
             <span>Clips</span>
-            <ui-select v-if="clipsMenu && clipsMenu.length > 0" :value="currentClip">
+            <ui-select v-if="clipsMenu && clipsMenu.length > 0" name="clip" :value="currentClip">
                 <option v-for="item in clipsMenu" :value="item.uuid">{{item.name}}</option>
             </ui-select>
         </div> 

@@ -763,6 +763,9 @@ export async function ready() {
                     case 'exit':
                         that.exit();
                         break;
+                    case 'clip':
+                        that.currentClip = value;
+                        break;
                 }
             },
 
