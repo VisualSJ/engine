@@ -239,6 +239,7 @@
   },
   {
     "__type__": "cc.PlanarShadowInfo",
+    "_enabled": false,
     "_normal": {
       "__type__": "cc.Vec3",
       "x": 0,
