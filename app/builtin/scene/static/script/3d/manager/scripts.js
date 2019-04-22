@@ -132,7 +132,6 @@ async function _loadScripts(scripts) {
         } catch(error) {
             console.error(`Script (${asset.source}) load failed, please check it`);
             console.error(error);
-            continue;
         }
     });
 
