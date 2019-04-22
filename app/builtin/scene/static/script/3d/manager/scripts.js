@@ -84,6 +84,8 @@ async function loadScript(uuid) {
  * @param {*} scripts
  */
 async function _loadScripts(scripts) {
+    const urls = [];
+
     // 同时加载多个脚本时有依赖关系脚本，有可能会因为顺序问题报错，因而需要优先注册所有的脚本进去,再去执行脚本加载
     for (const asset of scripts) {
         const canLoad = await removeScript(asset);
@@ -120,16 +122,19 @@ async function _loadScripts(scripts) {
             continue;
         }
 
+        urls.push(userData.moduleId);
+    }
+
+    urls.forEach((url) => {
         try {
-            const url = userData.moduleId;
             console.log(`Load script ${url}`);
-            await System.import(url);
+            System.import(url);
         } catch(error) {
             console.error(`Script (${asset.source}) load failed, please check it`);
             console.error(error);
             continue;
         }
-    }
+    });
 
     reload();
 }
