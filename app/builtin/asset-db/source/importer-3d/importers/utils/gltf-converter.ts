@@ -405,6 +405,19 @@ export class GltfConverter {
             return curveData;
         };
         let duration = 0;
+        const keys = new Array<number[]>();
+        const keysMap = new Map<number, number>();
+        const getKeysIndex = (iInputAccessor: number) => {
+            let i = keysMap.get(iInputAccessor);
+            if (i === undefined) {
+                const inputAccessor = this._gltf.accessors![iInputAccessor];
+                const inputs = this._readAccessorIntoArray(inputAccessor) as Float32Array;
+                i = keys.length;
+                keys.push(Array.from(inputs));
+                keysMap.set(iInputAccessor, i);
+            }
+            return i;
+        };
         gltfAnimation.channels.forEach((gltfChannel) => {
             const targetNode = gltfChannel.target.node;
             if (targetNode === undefined) {
@@ -413,8 +426,11 @@ export class GltfConverter {
             }
 
             const curveData = getCurveData(targetNode);
-
-            const channelDuration = this._gltfChannelToCurveData(gltfAnimation, gltfChannel, curveData);
+            const sampler = gltfAnimation.samplers[gltfChannel.sampler];
+            const iKeys = getKeysIndex(sampler.input);
+            this._gltfChannelToCurveData(gltfAnimation, gltfChannel, curveData, iKeys);
+            const inputAccessor = this._gltf.accessors![sampler.input];
+            const channelDuration = inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? inputAccessor.max[0] : 0;
             duration = Math.max(channelDuration, duration);
         });
 
@@ -422,34 +438,47 @@ export class GltfConverter {
             this._gltf.nodes.forEach((node, nodeIndex) => {
                 const curveData = getCurveData(nodeIndex);
                 curveData.props = curveData.props || {};
+                let m: cc.vmath.mat4 | undefined;
+                if (node.matrix) {
+                    m = this._readNodeMatrix(node.matrix);
+                }
                 if (!Reflect.has(curveData.props, 'position')) {
                     const v = new cc.Vec3();
                     if (node.translation) {
                         cc.vmath.vec3.set(v, node.translation[0], node.translation[1], node.translation[2]);
+                    } else if (m) {
+                        cc.vmath.mat4.getTranslation(v, m);
                     }
                     curveData.props.position = {
                         blending: 'additive3D',
-                        keyframes: [{frame: 0, value: v}],
+                        keys: -1,
+                        values: [v],
                     };
                 }
                 if (!Reflect.has(curveData.props, 'scale')) {
                     const v = new cc.Vec3(1, 1, 1);
                     if (node.scale) {
                         cc.vmath.vec3.set(v, node.scale[0], node.scale[1], node.scale[2]);
+                    } else if (m) {
+                        cc.vmath.mat4.getScaling(v, m);
                     }
                     curveData.props.scale = {
                         blending: 'additive3D',
-                        keyframes: [{frame: 0, value: v}],
+                        keys: -1,
+                        values: [v],
                     };
                 }
                 if (!Reflect.has(curveData.props, 'rotation')) {
                     const v = new cc.Quat();
                     if (node.rotation) {
                         cc.vmath.quat.set(v, node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3]);
+                    } else if (m) {
+                        cc.vmath.mat4.getRotation(v, m);
                     }
                     curveData.props.rotation = {
                         blending: 'additiveQuat',
-                        keyframes: [{frame: 0, value: v}],
+                        keys: -1,
+                        values: [v],
                     };
                 }
             });
@@ -460,6 +489,7 @@ export class GltfConverter {
         animationClip.curveData = rootCurveData;
         animationClip.wrapMode = cc.WrapMode.Loop;
         animationClip._duration = duration;
+        animationClip._keys = keys;
         return animationClip;
     }
 
@@ -660,7 +690,7 @@ export class GltfConverter {
         }
     }
 
-    private _gltfChannelToCurveData(gltfAnimation: Animation, gltfChannel: AnimationChannel, curveData: cc.ICurveData) {
+    private _gltfChannelToCurveData(gltfAnimation: Animation, gltfChannel: AnimationChannel, curveData: cc.ICurveData, iKeys: number) {
         let propName: string | undefined;
         if (gltfChannel.target.path === GltfAnimationChannelTargetPath.translation) {
             propName = 'position';
@@ -675,8 +705,6 @@ export class GltfConverter {
 
         const gltfSampler = gltfAnimation.samplers[gltfChannel.sampler];
 
-        const inputAccessor = this._gltf.accessors![gltfSampler.input];
-        const inputs = this._readAccessorIntoArray(inputAccessor) as Float32Array;
         let outputs = this._readAccessorIntoArray(this._gltf.accessors![gltfSampler.output]);
         if (!(outputs instanceof Float32Array)) {
             const normalizedOutput = new Float32Array(outputs.length);
@@ -725,16 +753,8 @@ export class GltfConverter {
             blendingFunctionName = 'additiveQuat';
         }
 
-        const keyframes = new Array<cc.IKeyframe>(inputs.length);
-        for (let iFrame = 0; iFrame < keyframes.length; ++iFrame) {
-            keyframes[iFrame] = {
-                frame: inputs[iFrame],
-                value: values[iFrame],
-            };
-        }
         curveData.props = curveData.props || {};
-        curveData.props[propName] = { keyframes, blending: blendingFunctionName };
-        return inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? inputAccessor.max[0] : 0;
+        curveData.props[propName] = { keys: iKeys, blending: blendingFunctionName, values };
     }
 
     private _getParent(node: number) {
@@ -1172,11 +1192,7 @@ export class GltfConverter {
         }
         if (gltfNode.matrix) {
             const ns = gltfNode.matrix;
-            const m = new cc.vmath.mat4(
-                ns[0], ns[1], ns[2], ns[3],
-                ns[4], ns[5], ns[6], ns[7],
-                ns[8], ns[9], ns[10], ns[11],
-                ns[12], ns[13], ns[14], ns[15]);
+            const m = this._readNodeMatrix(ns);
             const t = cc.vmath.mat4.getTranslation(new cc.Vec3(), m);
             const r = cc.vmath.mat4.getRotation(new cc.Quat(), m);
             const s = cc.vmath.mat4.getScaling(new cc.Vec3(), m);
@@ -1185,6 +1201,14 @@ export class GltfConverter {
             node.setScale(s);
         }
         return node;
+    }
+
+    private _readNodeMatrix(ns: number[]) {
+        return new cc.vmath.mat4(
+            ns[0], ns[1], ns[2], ns[3],
+            ns[4], ns[5], ns[6], ns[7],
+            ns[8], ns[9], ns[10], ns[11],
+            ns[12], ns[13], ns[14], ns[15]);
     }
 
     private _getNodePath(node: number) {

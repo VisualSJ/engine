@@ -319,19 +319,18 @@ declare namespace cc {
 
     export type MotionPath = Vec2[];
 
-    export interface IKeyframe {
-        frame: number;
-        value: CurveValue;
-        curve?: 'linear' | number[];
-        motionPath?: MotionPath;
-    }
+    type EasingMethod = 'linear' | number[];
 
     interface IPropertyCurveDataDetail {
-        keyframes: IKeyframe[];
-        blending: 'additive1D' | 'additive3D' | 'additiveQuat' | null;
+        blending?: 'additive1D' | 'additive3D' | 'additiveQuat' | null;
+        keys: number;
+        values: CurveValue[];
+        easingMethod?: EasingMethod;
+        easingMethods?: EasingMethod[];
+        motionPaths?: MotionPath | MotionPath[];
     }
-    
-    type PropertyCurveData = IKeyframe[] | IPropertyCurveDataDetail;
+
+    type PropertyCurveData = IPropertyCurveDataDetail;
 
     export interface ICurveData {
         props?: {
@@ -411,6 +410,7 @@ declare namespace cc {
         curveData: ICurveData;
         events: IAnimationEvent[];
         _duration: number;
+        _keys: number[][];
     }
 
     export const enum GFXPrimitiveMode {
