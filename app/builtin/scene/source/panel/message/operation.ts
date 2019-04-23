@@ -392,6 +392,13 @@ export function apply(messages: any) {
     };
 
     /**
+     * 拷贝关键帧
+     */
+    messages['copy-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, srcFrames: number[], dstFrame: number) => {
+        return $scene.forwarding('Animation', 'operation', ['copyKeysTo', clipUuid, path, comp, prop, srcFrames, dstFrame]);
+    };
+
+    /**
      * 移除关键帧
      */
     messages['remove-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
@@ -424,6 +431,13 @@ export function apply(messages: any) {
      */
     messages['add-clip-event'] = (clipUuid: string, frame: number, funcName: string , params: any[]) => {
         return $scene.forwarding('Animation', 'operation', ['addEvent', clipUuid, frame, funcName, params]);
+    };
+
+    /**
+     * 添加帧事件
+     */
+    messages['copy-clip-event'] = (clipUuid: string, srcFrames: number[], dstFrame: string) => {
+        return $scene.forwarding('Animation', 'operation', ['copyEventsTo', clipUuid, srcFrames, dstFrame]);
     };
 
     /**

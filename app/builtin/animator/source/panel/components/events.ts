@@ -31,6 +31,7 @@ export const props = [
     'events',
     'offset',
     'selectInfo',
+    'copyInfo',
 ];
 
 export function data() {
@@ -56,7 +57,7 @@ export const computed = {
 export const components = {};
 
 export const methods = {
-    t(key: string, type = 'events.') {
+    t(key: string, type = 'event.') {
         return Editor.I18n.t(`animator.${type}${key}`);
     },
 
@@ -67,20 +68,34 @@ export const methods = {
 
     onPopMenu(event: any, frame: number) {
         const that: any = this;
+        const menu = [{
+            label: that.t('edit', ''),
+            click() {
+                that.openEventEditor(frame);
+            },
+        }, {
+            label: that.t('delete', ''),
+            click() {
+                that.$emit('datachange', 'deleteEvent', [frame]);
+            },
+        }, {
+            label: that.t('copy', ''),
+            click() {
+                that.$emit('datachange', 'copyEvent', [frame]);
+            },
+        }];
+        if (that.copyInfo) {
+            menu.push({
+                label: that.t('paste', ''),
+                click() {
+                    that.$emit('datachange', 'pasteEvent', [frame]);
+                },
+            });
+        }
         Editor.Menu.popup({
             x: event.pageX,
             y: event.pageY,
-            menu: [{
-                label: that.t('edit', ''),
-                click() {
-                    that.openEventEditor(frame);
-                },
-            }, {
-                label: that.t('delete', ''),
-                click() {
-                    that.$emit('datachange', 'deleteEvent', [frame]);
-                },
-            }],
+            menu,
         });
     },
 

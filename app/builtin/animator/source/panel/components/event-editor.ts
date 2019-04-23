@@ -36,7 +36,7 @@ export const computed = {
 export const components = {};
 
 export const methods = {
-    t(key: string, type = 'event_editor.') {
+    t(key: string, type = 'event.') {
         return Editor.I18n.t(`animator.${type}${key}`);
     },
     onConfirm(event: any) {
@@ -77,7 +77,7 @@ export const methods = {
                 break;
             case 'close':
                 if (that.dirty) {
-                    const t = function(key: string) {
+                    const t = (key: string) => {
                         return that.t(key, '');
                     };
                     const result = await Editor.Dialog.show({

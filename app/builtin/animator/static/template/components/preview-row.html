@@ -23,25 +23,32 @@
 		<div
 			class="key"
 			v-for="(item, index) in keyData"
+			name="key"
 			:style="queryKeyStyle(item.x)"
 			:index="index"
 			@mousedown="onMouseDown($event, index)"
-			@mouseover="hoverKey = item"
-			@mouseleave="hoverKey = null"
 		>
-			<div class="dot" name="key" ></div>
+			<div class="dot"></div>
 		</div>
 	</template>
 
 	<template v-if="display">
-		<div class="v-key" preview v-for="item in virtualkeys" :style="queryKeyStyle(item.x)">
-			<div class="dot" name="key" ></div>
+		<div class="v-key" preview 
+			name="key"
+			v-for="item in virtualkeys" 
+			:style="queryKeyStyle(item.x)"
+		>
+			<div class="dot"></div>
 		</div>
 	</template>
 
 	<template v-if="display && selectKey">
-		<div class="key active" v-for="item in selectKey" :style="queryKeyStyle(item.x)">
-			<div class="dot" name="key" ></div>
+		<div class="key active" 
+			name="key"
+			v-for="item in selectKey" 
+			:style="queryKeyStyle(item.x)"
+		>
+			<div class="dot"></div>
 		</div>
 	</template>
 </div>

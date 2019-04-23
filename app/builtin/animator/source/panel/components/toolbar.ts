@@ -10,7 +10,7 @@ export const template = `
     <i :title="t('jump_next_frame')" class="iconfont icon-next"  name="jump_next_frame"></i>
     <i :title="t('jump_last_frame')" class="iconfont icon-forward"  name="jump_last_frame"></i>
     <i :disable="state !== 'playing'" :title="t('stop_animation')" class="iconfont icon-stop" name="stop"></i>
-    <i :title="t('insert_event')" class="iconfont icon-event"  name="add-event"></i>
+    <i :title="t('insert_event')" class="iconfont icon-event"  name="addEvent"></i>
     <div class="time"  name="edit"><span>{{time}}</span></div>
 </div>
 `;

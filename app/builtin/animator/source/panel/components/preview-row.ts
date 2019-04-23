@@ -6,6 +6,7 @@ export const template = readFileSync(join(__dirname, './../../../static/template
 export const props = [
     'keyFrames',
     'selectInfo',
+    'copyInfo',
     'path',
     'name',
     'offset',
@@ -15,7 +16,6 @@ export function data() {
     return {
         display: true,
         virtualkeys: [],
-        hoverKey: null,
         keyData: [],
     };
 }
@@ -34,7 +34,7 @@ export const computed = {
             return [];
         }
         const {comp, prop} = that.keyFrames[0];
-        return [that.path, comp, prop, that.hoverKey && that.hoverKey.frame];
+        return [that.path, comp, prop];
     },
     selectKey() {
         const that: any = this;
@@ -110,20 +110,44 @@ export const methods = {
 
     onPopMenu(event: any) {
         const that: any = this;
-        let label;
-        let operate = '';
         const params = JSON.parse(JSON.stringify(that.params));
-        if (!that.hoverKey) {
-            operate = 'createKey';
-            label = that.t('create_key', 'property.');
-            params[3] = event.x;
-        } else {
-            operate = 'removeKey';
-            label = that.t('remove_key', 'property.');
-        }
-        // 节点轨道不允许新建关键帧
-        if (!that.name && operate === 'createKey') {
+        const index = event.target.getAttribute('index');
+        // 节点轨道只能移除关键帧
+        if (!that.name && !index) {
             return;
+        }
+        const label: string[] = [];
+        const operate: string[] = [];
+        if (index !== undefined && index !== null) {
+            // 在关键帧位置上
+
+            // 复制、粘贴关键帧
+            if (that.name) {
+                operate.push('copyKey');
+                label.push(that.t('copy_key', 'property.'));
+                if (that.canPaste()) {
+                    operate.push('pasteKey');
+                    label.push(that.t('paste_key', 'property.'));
+                }
+            }
+            // 移除关键帧
+            operate.push('removeKey');
+            label.push(that.t('remove_key', 'property.'));
+            params[3] = that.keyFrames[index].frame;
+            params.frame = true;
+        } else {
+            operate.push('createKey');
+            label.push(that.t('create_key', 'property.'));
+            const style = event.target.style.transform;
+            let offset = 0;
+            if (style) {
+                offset = style.match(/translateX\((.*)px\)/)[1];
+            }
+            params[3] = event.offsetX + Number(offset);
+            if (that.canPaste()) {
+                operate.push('pasteKey');
+                label.push(that.t('paste_key', 'property.'));
+            }
         }
         Editor.Menu.popup({
             x: event.pageX,
@@ -133,19 +157,47 @@ export const methods = {
     },
 
     /**
+     * 检查当前轨道是否可以复制
+     */
+    canPaste() {
+        const that: any = this;
+
+        if (!that.name || !that.copyInfo) {
+            return;
+        }
+
+        const index = that.copyInfo.findIndex((item: any, index: number) => {
+            return item !== that.params[index];
+        });
+
+        // 最多只有帧数不同的才可以粘贴
+        if (index === -1 || index === 3) {
+            return true;
+        }
+    },
+
+    /**
      *
      * @param label
      * @param operate
      * @param params
      */
-    createMenu(label: string, operate: string, params: any) {
+    createMenu(label: string[], operate: string[], params: any) {
         const that: any = this;
-        const result: any[] = [{
-            label,
-            click() {
-                that.$emit('datachange', operate, params);
-            },
-        }];
+        const result: any[] = operate.map((name: string, index: number) => {
+            return {
+                label: label[index],
+                click() {
+                    that.$emit('datachange', name, params);
+                },
+            };
+        });
+        if (params.frame) {
+            result.push({
+                label: `frame: ${params[3]}`,
+                enabled: false,
+            });
+        }
         return result;
     },
 };

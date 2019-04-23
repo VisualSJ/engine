@@ -1,5 +1,6 @@
 <div class="animator"
     @confirm="onConfirm"
+    @keydown="onKeyDown"
 >
     <div class="container">
         <div class="left" ref="left">
@@ -49,7 +50,7 @@
             >
                 <div class="duration"
                     v-if="lastFrameInfo"
-                    :style="queryDurationStyle(lastFrameInfo.x)"
+                    :style="queryDurationStyle(lastFrameInfo.frame)"
                 ></div> 
             </div>
             <events
@@ -57,6 +58,7 @@
                     :events="eventsDump"
                     :offset="startOffset"
                     :select-Info="selectEventInfo"
+                    :copy-info="copyEventInfo"
                     @datachange="onEvents"
                     @startdrag="updateDragInfo"
                 >
@@ -80,6 +82,8 @@
                 </template>
             </div> 
             <div class="property-tools">
+                <span>mouseFrame:</span>
+                <span>{{mouseFrame || 0}}</span>
                 <span>wrapMode</span>
                 <ui-select 
                     :value="clipDump ? clipDump.wrapMode : 0"
@@ -104,6 +108,7 @@
                         :key-frames=calcFrames(item.dump)
                         :path="selectPath"
                         :select-Info="selectKeyInfo"
+                        :copy-info="copyKeyInfo"
                         :name="name"
                         :offset="startOffset"
                         @datachange="onPreviewRow"

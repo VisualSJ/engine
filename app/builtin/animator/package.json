@@ -20,22 +20,18 @@
         "min-width": 800,
         "min-height": 500,
         "width": 1000,
-        "height": 600
+        "height": 600,
+        "shortcuts": {
+            "ctrl+backspace": "deleteTheSelectedKeys",
+            "delete": "deleteTheSelectedKeys",
+            "del": "deleteTheSelectedKeys",
+            "left": "jumpPrevFrame",
+            "right": "jumpNextFrame",
+            "ctrl+left": "jumpFirstFrame",
+            "command+left": "jumpFirstFrame",
+            "ctrl+right": "jumpLastFrame",
+            "command+right": "jumpLastFrame"
+        }
     },
-    "shortcuts": {
-        "ctrl+s": "save",
-        "command+s": "save",
-        "ctrl+q": "exit",
-        "command+q": "exit",
-        "delete": "deleteTheSelectedKeys",
-        "del": "deleteTheSelectedKeys",
-        "left": "jumpPrevFrame",
-        "right": "jumpNextFrame",
-        "ctrl+left": "jumpFirstFrame",
-        "command+left": "jumpFirstFrame",
-        "ctrl+right": "jumpLastFrame",
-        "command+right": "jumpLastFrame"
-    },
-
     "author": "Cocos"
 }
