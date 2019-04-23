@@ -67,7 +67,7 @@ async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
     const componentsUuids = node._components.map((component: any) => {
         // 需要exclude的component，假装不在node上
         const compType = getTypeName(component.constructor);
-        if (!excludeComps.includes(compType)) {
+        if (excludeComps && !excludeComps.includes(compType)) {
             return component.uuid;
         }
     }).filter(Boolean);
@@ -104,10 +104,9 @@ async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
         if (dumpComp.value.uuid) {
             // @ts-ignore
             const cacheComp = Manager.Component.query(dumpComp.value.uuid.value);
-            if (cacheComp) {
-                component = node._components[i] = cacheComp;
-                component.enabled = true; // 触发引擎重新激活组件
-                Manager.Component.addComponent(component);
+            if (cacheComp && component !== cacheComp) {
+                node._addComponentAt(cacheComp, i);
+                component = cacheComp;
             }
         }
 
