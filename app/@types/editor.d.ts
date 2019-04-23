@@ -75,6 +75,7 @@ interface Layout {
 interface Panel {
     open: Function;
     close: Function;
+    has: Function;
 }
 
 interface Theme {

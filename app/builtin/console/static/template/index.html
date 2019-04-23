@@ -19,9 +19,9 @@
         </ui-checkbox>
 
         <!-- 是否显示日期 -->
-        <ui-checkbox  class="ml10" :value="tabbar.showDate" path="showDate">
+        <!-- <ui-checkbox  class="ml10" :value="tabbar.displayDate" path="showDate">
             <span>{{t('tabbar.show_date',tabbar.showDate)}}</span>
-        </ui-checkbox>
+        </ui-checkbox> -->
 
         <!-- 筛选种类 -->
         <ui-select class="ml10" :value="tabbar.filterType" path="filterType">
@@ -32,20 +32,20 @@
         </ui-select>
 
         <!-- 调整字体大小 -->
-        <div class="flex-center">
+        <!-- <div class="flex-center">
             <span class="select-label i-fontsize ml10"></span>
             <ui-select :value="tabbar.fontSize" path="fontSize">
                 <option  v-for="item in 20" v-if="item > 8" :value="item">{{item}}</option>
             </ui-select>
-        </div>
+        </div> -->
 
         <!-- 调整行间距 -->
-        <div class="flex-center">
+        <!-- <div class="flex-center">
             <span class="select-label i-lineheight ml10"></span>
             <ui-select :value="tabbar.lineHeight"  path="lineHeight">
                 <option  v-for="item in 36" v-if="item > 19" :value="item">{{item}}</option>
             </ui-select>
-        </div>
+        </div> -->
 
         <!-- <ui-checkbox checked v-on:confirm="onCollapse" class="collapse">Collapse</ui-checkbox> -->
     </header>

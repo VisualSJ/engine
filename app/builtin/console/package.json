@@ -15,9 +15,10 @@
         "main": "./dist/panel.js",
         "icon": "./static/icon.png",
         "save": true,
-        "min-width": 300,
+        "min-width": 350,
         "min-height": 150,
         "width": 600,
         "height": 400
-    }
+    },
+    "preferences": "./static/preferences.js"
 }

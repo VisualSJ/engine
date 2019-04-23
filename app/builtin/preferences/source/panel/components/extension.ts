@@ -55,12 +55,22 @@ export const computed = {};
 export const components = {};
 
 export const methods = {
-    
+
+    /**
+     * 选择某个插件
+     * @param item 
+     */
+    selectPackage(item: any) {
+        // @ts-ignore
+        const vm: any = this;
+        vm.active = item.name;
+        vm.file = join(item.path, item.info.preferences);
+    }
 };
 
 export function mounted() {
     // @ts-ignore
-    const vm = this;
+    const vm: any = this;
 
     const list = Editor.Package.getPackages();
     vm.list = list.filter((item: any) => {

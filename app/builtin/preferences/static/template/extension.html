@@ -6,6 +6,7 @@
             <div
                 v-for="item in list"
                 :active="item.name === active"
+                @click="selectPackage(item)"
             >{{item.name}}</div>
         </div>
     </div>

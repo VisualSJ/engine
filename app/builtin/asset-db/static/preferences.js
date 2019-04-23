@@ -4,13 +4,13 @@ const profile = Editor.Profile.load('profile://global/packages/asset-db.json');
 
 exports.template = `
 <ui-prop
-    label="日志等级"
+    label="${Editor.I18n.t('asset-db.preferences.log_level')}"
 >
     <ui-select class="log-level" slot="content">
-        <option value="1">仅输出错误</option>
-        <option value="2">仅输出错误、警告</option>
-        <option value="3">输出错误、警告以及日志</option>
-        <option value="4">输出所有信息</option>
+        <option value="1">${Editor.I18n.t('asset-db.preferences.log_level_error')}</option>
+        <option value="2">${Editor.I18n.t('asset-db.preferences.log_level_warn')}</option>
+        <option value="3">${Editor.I18n.t('asset-db.preferences.log_level_log')}</option>
+        <option value="4">${Editor.I18n.t('asset-db.preferences.log_level_debug')}</option>
     </ui-select>
 </ui-prop>
 `;

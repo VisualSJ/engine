@@ -82,4 +82,13 @@ module.exports = {
             readonly: '删除资源失败: 只读文件不可删除',
         },
     },
+
+    preferences: {
+        log_level: '日志等级',
+
+        log_level_debug: '输出所有信息',
+        log_level_log: '输出错误、警告以及日志',
+        log_level_warn: '仅输出错误、警告',
+        log_level_error: '仅输出错误',
+    }
 };

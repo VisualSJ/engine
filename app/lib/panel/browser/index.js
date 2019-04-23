@@ -106,6 +106,14 @@ class Panel {
     edit(action) {
         edit[action] && edit[action]();
     }
+
+    /**
+     * 是否已经打开了这个面板
+     * @param {*} name 
+     */
+    has(name) {
+        return panel.getWindow(name) !== null;
+    }
 }
 
 module.exports = new Panel();

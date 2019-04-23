@@ -86,4 +86,13 @@ module.exports = {
             readonly: 'Failed to delete asset: the file is readonly',
         },
     },
+
+    preferences: {
+        log_level: 'Log level',
+
+        log_level_debug: 'Debug',
+        log_level_log: 'Log',
+        log_level_warn: 'Warn',
+        log_level_error: 'Error',
+    }
 };
