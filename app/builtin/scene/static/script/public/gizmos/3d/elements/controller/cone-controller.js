@@ -68,14 +68,16 @@ class ConeController extends EditableController {
         this._circleFromDir = cc.v3(1, 0, 0);
         // for cone line
         let lineData = this.getConeLineData();
-        let coneLineNode = ControllerUtils.lines(lineData.vertices, lineData.indices, this._color);
+        let coneLineNode = ControllerUtils.lines(lineData.vertices, lineData.indices,
+             this._color, {forwardPipeline: true});
         coneLineNode.parent = this.shape;
         this._coneLineNode = coneLineNode;
         this._coneLineMR = getModel(coneLineNode);
 
         // for circle
         let circleNode = ControllerUtils.arc(this._center, this._oriDir,
-            this._circleFromDir, this._twoPI, this._radius, this._color);
+            this._circleFromDir, this._twoPI, this._radius, this._color,
+            {forwardPipeline: true});
         circleNode.parent = this.shape;
         let pos = cc.v3();
         vec3.scale(pos, this._oriDir, this._height);

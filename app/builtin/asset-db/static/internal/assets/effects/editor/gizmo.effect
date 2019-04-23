@@ -132,16 +132,25 @@ CCProgram line-vs %{
 
 CCProgram line-fs %{
   precision mediump float;
+  #include <post-process>
 
   uniform Constant {
     vec4 color;
   };
 
   vec4 front() {
-    return color;
+    #if USE_FORWARD_PIPELINE
+      return PostProcess(color);
+    #else
+      return color;
+    #endif
   }
   vec4 back() {
-    return vec4(color.rgb, color.a * 0.2);
+    #if USE_FORWARD_PIPELINE
+      return PostProcess(vec4(color.rgb, color.a * 0.2));
+    #else
+      return vec4(color.rgb, color.a * 0.2);
+    #endif
   }
 }%
 

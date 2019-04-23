@@ -151,7 +151,7 @@ ControllerUtils.disc = function(center, normal, radius, color = cc.Color.RED) {
     return discNode;
 };
 
-ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color = cc.Color.RED, opts) {
+ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color = cc.Color.RED, opts= {}) {
     let sectorNode = create3DNode('sector');
     addMeshToNode(sectorNode,
         ControllerShape.sector(center, normal, fromDir, radian, radius, 60), opts);
@@ -160,7 +160,7 @@ ControllerUtils.sector = function(center, normal, fromDir, radian, radius, color
     return sectorNode;
 };
 
-ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED, opts) {
+ControllerUtils.arc = function(center, normal, fromDir, radian, radius, color = cc.Color.RED, opts= {}) {
     let arcNode = create3DNode('arc');
     addMeshToNode(arcNode,
         ControllerShape.arc(center, normal, fromDir, radian, radius), opts);
@@ -179,28 +179,28 @@ ControllerUtils.arcDirectionLine = function(center, normal, fromDir, radian,
     return arcDirNode;
 };
 
-ControllerUtils.lines = function(vertices, indices, color = cc.Color.RED) {
+ControllerUtils.lines = function(vertices, indices, color = cc.Color.RED, opts = {}) {
     let linesNode = create3DNode('lines');
     addMeshToNode(linesNode,
-        ControllerShape.lines(vertices, indices));
+        ControllerShape.lines(vertices, indices), opts);
     setMeshColor(linesNode, color);
 
     return linesNode;
 };
 
-ControllerUtils.wireframeBox = function(center, size, color) {
+ControllerUtils.wireframeBox = function(center, size, color, opts= {}) {
     let boxNode = create3DNode('wireframeBox');
     addMeshToNode(boxNode,
-        ControllerShape.wireframeBox(center, size));
+        ControllerShape.wireframeBox(center, size), opts);
     setMeshColor(boxNode, color);
 
     return boxNode;
 };
 
-ControllerUtils.frustum = function(fov, aspect, near, far, color) {
+ControllerUtils.frustum = function(fov, aspect, near, far, color, opts= {}) {
     let frustumNode = create3DNode('frustumNode');
     addMeshToNode(frustumNode,
-        ControllerShape.frustum(fov, aspect, near, far));
+        ControllerShape.frustum(fov, aspect, near, far), opts);
     setMeshColor(frustumNode, color);
 
     return frustumNode;

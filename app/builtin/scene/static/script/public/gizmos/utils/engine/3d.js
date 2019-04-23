@@ -70,12 +70,15 @@ class Engine3D extends EngineInterface {
 
     addMeshToNode(node, mesh, opts = {}) {
         let model = node.addComponent(cc.ModelComponent);
+        let defines = {};
         if (!opts.forwardPipeline) {
             model._sceneGetter = cc.director.root.ui.getRenderSceneGetter();
+        } else {
+            defines.USE_FORWARD_PIPELINE = true;
         }
         model.mesh = mesh;
         const cb = model.onEnable.bind(model);
-        model.onEnable = () => { cb(); model.model.viewID = -1; } // don't show on preview cameras
+        model.onEnable = () => { cb(); model.model.viewID = -1; }; // don't show on preview cameras
         let pm = mesh.renderingMesh.getSubmesh(0).primitiveMode;
         let technique = 0;
         let effectName = 'editor/gizmo';
@@ -101,7 +104,7 @@ class Engine3D extends EngineInterface {
             states.priority = opts.priority;
         }
 
-        mtl.initialize({ effectName, technique, states });
+        mtl.initialize({ effectName, technique, states, defines });
         if (opts.alpha !== undefined) { node.modelColor.a = opts.alpha; }
         mtl.setProperty('color', node.modelColor);
         model.material = mtl;

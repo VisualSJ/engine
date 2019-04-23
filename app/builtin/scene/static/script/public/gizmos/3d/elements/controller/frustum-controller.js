@@ -78,7 +78,8 @@ class FrustumController extends EditableController {
     initShape() {
         this.createShapeNode('FrustumController');
 
-        this._frustumNode = ControllerUtils.frustum(this._fov, this._aspect, this._near, this._far, this._color);
+        this._frustumNode = ControllerUtils.frustum(this._fov, this._aspect,
+            this._near, this._far, this._color, {forwardPipeline: true});
         setNodeOpacity(this._frustumNode, 150);
         this._frustumNode.parent = this.shape;
         this._frustumMeshRenderer = getModel(this._frustumNode);

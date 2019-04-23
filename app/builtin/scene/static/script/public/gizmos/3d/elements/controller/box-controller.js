@@ -54,7 +54,7 @@ class BoxController extends EditableController {
     initShape() {
         this.createShapeNode('BoxController');
 
-        this._wireframeBoxNode = ControllerUtils.wireframeBox(this._center, this._size, this._color);
+        this._wireframeBoxNode = ControllerUtils.wireframeBox(this._center, this._size, this._color, {forwardPipeline: true});
         this._wireframeBoxNode.parent = this.shape;
         this._wireframeBoxMeshRenderer = getModel(this._wireframeBoxNode);
         this.hide();
