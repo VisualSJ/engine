@@ -394,13 +394,13 @@ export class GltfConverter {
     public createAnimation(iGltfAnimation: number) {
         const gltfAnimation = this._gltf.animations![iGltfAnimation];
 
-        const rootCurveData: cc.ICurveData = { paths: {} };
+        const curveDatas: { [path: string]: cc.ICurveData} = {};
         const getCurveData = (node: number) => {
             const path = this._getNodePath(node);
-            let curveData = path.length === 0 ? rootCurveData : rootCurveData.paths![path];
+            let curveData = curveDatas[path];
             if (curveData === undefined) {
-                curveData = {} as cc.ICurveData;
-                rootCurveData.paths![path] = curveData;
+                curveData = {};
+                curveDatas[path] = curveData;
             }
             return curveData;
         };
@@ -486,7 +486,7 @@ export class GltfConverter {
 
         const animationClip = new cc.AnimationClip();
         animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
-        animationClip.curveData = rootCurveData;
+        animationClip.curveDatas = curveDatas;
         animationClip.wrapMode = cc.WrapMode.Loop;
         animationClip._duration = duration;
         animationClip._keys = keys;

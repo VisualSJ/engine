@@ -341,9 +341,6 @@ declare namespace cc {
                 [propertyName: string]: PropertyCurveData;
             };
         };
-        paths?: {
-            [path: string]: ICurveData;
-        };
     }
 
     export interface IAnimationEvent {
@@ -407,7 +404,7 @@ declare namespace cc {
         sample: number;
         speed: number;
         wrapMode: WrapMode;
-        curveData: ICurveData;
+        curveDatas: { [path: string]: ICurveData; };
         events: IAnimationEvent[];
         _duration: number;
         _keys: number[][];
