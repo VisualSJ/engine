@@ -178,9 +178,16 @@ class Engine3D extends EngineInterface {
     getBoundingBox(component) {
         let boundingBox = null;
         if (component instanceof cc.ModelComponent) {
-            boundingBox = aabb.create(0, 0, 0, 0, 0, 0);
-            if (!component.calculateSkinnedBounds(boundingBox)) {
-                return null;
+            if (component instanceof cc.SkinningModelComponent) {
+                boundingBox = aabb.create(0, 0, 0, 0, 0, 0);
+                if (!component.calculateSkinnedBounds(boundingBox)) {
+                    return null;
+                }
+            } else {
+                let mesh = component.mesh;
+                if (mesh) {
+                    boundingBox = aabb.fromPoints(aabb.create(), mesh.minPosition, mesh.maxPosition);
+                }
             }
         } else {
             console.error('target is not a cc.ModelComponent');
