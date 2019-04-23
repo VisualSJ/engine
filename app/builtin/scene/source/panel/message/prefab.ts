@@ -15,7 +15,7 @@ export function apply(messages: any) {
     /**
      * 打开场景的调试工具
      */
-    messages['generate-prefab-data'] = async (uuid: string) => {
+    messages['generate-prefab'] = async (uuid: string) => {
         if (!$scene) {
             return null;
         }

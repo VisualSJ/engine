@@ -42,7 +42,7 @@ nodeManager.on('remove', (node) => {
 /**
  * 将一个 node 与一个 prefab 关联到一起
  * @param {*} nodeUuid 也支持 node 对象
- * @param {*} assetUuid TODO: 待定
+ * @param {*} assetUuid 关联的资源
  */
 async function link(nodeUuid, assetUuid) {
     let node = nodeUuid;
@@ -69,7 +69,7 @@ async function link(nodeUuid, assetUuid) {
 
     if (Array.isArray(node.children)) {
         node.children.forEach((child) => {
-            if (!!child.parent._prefab && !child._prefab) {
+            if (!!child.parent._prefab) {
                 link(child);
             }
         });
@@ -143,13 +143,11 @@ function generate(nodeUuid) {
     Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', node.uuid);
 
     utils.walkNode(node, (child) => {
-        if (!child._prefab) { // 不存在才创建，存在的话，复用
-            const info = new cc._PrefabInfo();
-            info.asset = prefab;
-            info.root = node;
-            info.fileId = child.uuid;
-            child._prefab = info;
-        }
+        const info = new cc._PrefabInfo();
+        info.asset = prefab;
+        info.root = node;
+        info.fileId = child.uuid;
+        child._prefab = info;
     });
 
     // 发送节点修改消息

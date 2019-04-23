@@ -828,12 +828,15 @@ export const methods = {
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
             const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
-            const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', json.from);
+            const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab', json.from);
             const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, { overwrite: true });
             if (!uuid) {
-                // 由于在 ipc generate-prefab-data 就预置了节点为 prefab 状态
+                // 由于在 ipc generate-prefab 就预置了节点为 prefab 状态
                 // 现在新增失败，需要取消节点的 prefab 状态
                 await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', json.from);
+            } else {
+                // 节点重新关联新的资源 uuid
+                await Editor.Ipc.requestToPackage('scene', 'link-prefab', json.from, uuid);
             }
         } else {
             if (!json.from) {

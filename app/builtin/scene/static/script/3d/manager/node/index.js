@@ -453,15 +453,16 @@ class NodeManager extends EventEmitter {
         const prefab = query(uuid);
         // 先找出所有的 fileId, 平级循环
         const fileId2Uuid = getFileId(prefab);
+        // 先找出新数据目标位置
+        let fileId2Index = {};
 
         try {
             const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
             const newNode = cc.instantiate(asset);
             prefab.parent.addChild(newNode);
+            fileId2Index = getIndexPosition(newNode);
             await this.add(newNode); // 以上完整步骤增加临时节点
-
             await restore(newNode); // 逐层还原 prefab
-
             newNode.parent = null; // 删除临时节点
 
             this.emit('change', prefab);
@@ -472,13 +473,15 @@ class NodeManager extends EventEmitter {
             return null;
         }
 
-        async function restore(newNode, parentNode) {
+        async function restore(newNode, parentNode, prefabParent) {
             const dump = dumpUtils.dumpNode(newNode);
             const fileId = dump.__prefab__.fileId;
             const prefab = query(fileId2Uuid[fileId]); // 现有场景中的节点
-            if (!prefab) { // 不存在，可能已被删除，转入新增节点
 
-            } else {
+            if (prefab) {
+                module.exports.emit('before-change', prefab);
+                Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', prefab.uuid);
+
                 const prefabDump = dumpUtils.dumpNode(prefab);
                 if (parentNode) {
                     const parentDump = dumpUtils.dumpNode(parentNode);
@@ -493,13 +496,54 @@ class NodeManager extends EventEmitter {
                 delete dump.uuid; // 删除不必要的字段
                 delete dump.children;
                 dump.__prefab__ = JSON.parse(JSON.stringify(prefabDump.__prefab__));
-
                 await dumpUtils.restoreNode(prefab, dump);
 
-                // 循环下一层
-                for (const childNode of newNode.children) {
-                    await restore(childNode, newNode);
+                // 确保位置准确
+                if (fileId2Index[fileId] !== undefined) {
+                    prefab.setSiblingIndex(fileId2Index[fileId]);
                 }
+
+                // 删除掉不在新数据上的子节点
+                prefab.children.forEach((child) => {
+                    if (!fileId2Index[child._prefab.fileId]) {
+                        module.exports.removeNode(child.uuid);
+                    }
+                });
+
+                // 逐层移动到目标节点上
+                let index = 0;
+                let childNode = newNode.children[index];
+                while (childNode && index < newNode.children.length) {
+                    const isMoved = await restore(childNode, newNode, prefab);
+                    if (!isMoved) {
+                        index++;
+                    }
+                    childNode = newNode.children[index];
+                }
+
+                module.exports.emit('change', prefab);
+                Manager.Ipc.forceSend('broadcast', 'scene:change-node', prefab.uuid);
+
+                // 没有移动
+                return false;
+            } else {
+                module.exports.emit('before-add', newNode);
+                Manager.Ipc.forceSend('broadcast', 'scene:before-add-node', newNode.uuid);
+                module.exports.emit('before-change', prefabParent);
+                Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', prefabParent.uuid);
+
+                const index = fileId2Index[newNode._prefab.fileId];
+                prefabParent.insertChild(newNode, index);
+                // 需要替换关联信息
+                newNode._prefab.root = prefabParent._prefab.root;
+
+                module.exports.emit('add', newNode);
+                Manager.Ipc.forceSend('broadcast', 'scene:add-node', newNode.uuid);
+                module.exports.emit('change', prefabParent);
+                Manager.Ipc.forceSend('broadcast', 'scene:change-node', prefabParent.uuid);
+
+                // 有移动
+                return true;
             }
 
         }
@@ -512,6 +556,18 @@ class NodeManager extends EventEmitter {
             if (node.children.length > 0) {
                 node.children.forEach((child) => {
                     Object.assign(rt, getFileId(child));
+                });
+            }
+            return rt;
+        }
+
+        function getIndexPosition(node) {
+            const rt = {};
+
+            if (node.children.length > 0) {
+                node.children.forEach((child, i) => {
+                    rt[child._prefab.fileId] = i || 0;
+                    Object.assign(rt, getIndexPosition(child));
                 });
             }
             return rt;
@@ -604,18 +660,18 @@ class NodeManager extends EventEmitter {
         const parent = node.parent;
 
         // 发送节点修改消息
-        this.emit('before-change', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', parent.uuid);
         this.emit('before-remove', node);
         Manager.Ipc.forceSend('broadcast', 'scene:before-remove-node', node.uuid);
+        this.emit('before-change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', parent.uuid);
 
         parent.removeChild(node);
 
         // 发送节点修改消息
-        this.emit('change', parent);
-        Manager.Ipc.forceSend('broadcast', 'scene:change-node', parent.uuid);
         this.emit('remove', node);
         Manager.Ipc.forceSend('broadcast', 'scene:remove-node', node.uuid);
+        this.emit('change', parent);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', parent.uuid);
 
         return parent.uuid;
     }

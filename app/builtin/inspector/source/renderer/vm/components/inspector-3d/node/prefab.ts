@@ -38,6 +38,7 @@ export const methods = {
         Editor.Ipc.sendToPanel('assets', 'twinkle', this.assetUuid);
     },
     async restore() {
+        Editor.Ipc.sendToPanel('scene', 'snapshot');
         // @ts-ignore
         await Editor.Ipc.requestToPackage('scene', 'restore-prefab', this.rootUuid, this.assetUuid);
     },
@@ -45,7 +46,9 @@ export const methods = {
         // @ts-ignore
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.assetUuid);
         // @ts-ignore
-        const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab-data', this.rootUuid);
+        const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab', this.rootUuid);
+        // @ts-ignore
+        await Editor.Ipc.requestToPackage('scene', 'link-prefab', this.rootUuid, this.assetUuid);
         await Editor.Ipc.requestToPackage('asset-db', 'create-asset', info.source, content, { overwrite: true });
     },
 };
