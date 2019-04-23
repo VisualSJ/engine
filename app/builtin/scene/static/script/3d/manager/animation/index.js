@@ -118,7 +118,23 @@ class AnimationManager extends EventEmitter {
         }
 
         let clip = state.clip;
-        await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
+
+        // 判断是否为骨骼动画的animationclip，用id中是否有'@'来判断
+        let index = clipUuid.indexOf('@');
+        if (index >= 0) {
+            // 骨骼动画的clip不保存事件，将事件存到meta文件中
+            let eventData = utils.queryEvents(clip);
+            if (eventData && eventData.length > 0) {
+                const metaData = await Manager.Ipc.send('query-asset-meta', clip._uuid);
+                if (metaData && metaData.userData) {
+                    metaData.userData.events = eventData;
+                }
+
+                await Manager.Ipc.send('save-asset-meta', clip._uuid, Manager.Utils.serialize(metaData));
+            }
+        } else  {
+            await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
+        }
 
         return true;
     }

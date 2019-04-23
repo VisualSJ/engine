@@ -48,8 +48,8 @@ class SkinningModelComponentGizmo extends Gizmo {
             return;
         }
 
-        const bounds = aabb.create(0, 0, 0, 0, 0, 0);
-        if (this.target.calculateSkinnedBounds(bounds)) {
+        const bounds = getBoundingBox(this.target);
+        if (bounds) {
             const size = cc.v3();
             vec3.scale(size, bounds.halfExtents, 2);
             const center = cc.v3();
@@ -59,6 +59,7 @@ class SkinningModelComponentGizmo extends Gizmo {
             this._controller.hide();
         }
 
+        // 2.5D可能会用到，暂时留着
         // let rootBindPose = getRootBindPose(this.target);
         // if (rootBindPose) {
         //     this._controller.show();

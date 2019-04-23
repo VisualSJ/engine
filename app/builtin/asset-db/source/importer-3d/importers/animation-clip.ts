@@ -30,7 +30,7 @@ export default class AnimationImporter extends Importer {
      * @param asset
      */
     public async import(asset: Asset) {
-        
+
         try {
             const json = readJSONSync(asset.source);
             json._name = basename(asset.source, '.anim');

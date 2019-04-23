@@ -247,6 +247,22 @@ const messages = {
     },
 
     /**
+     * 查询资源的 meta 信息
+     * @param {*} uuid
+     */
+    async 'query-asset-meta'(uuid) {
+        return await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
+    },
+
+    /**
+     * 查询资源的 meta 信息
+     * @param {*} uuid
+     */
+    async 'save-asset-meta'(uuid, content) {
+        return await Editor.Ipc.requestToPackage('asset-db', 'save-asset-meta', uuid, content);
+    },
+
+    /**
      * 展示小窗口
      * 例如：粒子控制窗口
      * @param {*} info
