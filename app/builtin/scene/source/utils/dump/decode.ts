@@ -65,11 +65,14 @@ async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
     });
 
     const componentsUuids = node._components.map((component: any) => {
-        // 需要exclude的component，假装不在node上
-        const compType = getTypeName(component.constructor);
-        if (excludeComps && !excludeComps.includes(compType)) {
-            return component.uuid;
+        if (excludeComps) {
+            // 需要exclude的component，假装不在node上
+            const compType = getTypeName(component.constructor);
+            if (excludeComps.includes(compType)) {
+                return;
+            }
         }
+        return component.uuid;
     }).filter(Boolean);
 
     // 删除现有在 node._compoennts 中但不在 dumpComps 中的 component

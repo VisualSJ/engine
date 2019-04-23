@@ -450,51 +450,86 @@ class NodeManager extends EventEmitter {
         }
 
         const query = this.query;
-        const prefab = query(uuid);
-        // 先找出所有的 fileId, 平级循环
-        const fileId2Uuid = getFileId(prefab);
-        // 先找出新数据目标位置
-        let fileId2Index = {};
+        const current = query(uuid);
 
-        try {
-            const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
-            const newNode = cc.instantiate(asset);
-            prefab.parent.addChild(newNode);
-            fileId2Index = getIndexPosition(newNode);
-            await this.add(newNode); // 以上完整步骤增加临时节点
-            await restore(newNode); // 逐层还原 prefab
-            newNode.parent = null; // 删除临时节点
+        const cacheChildrenUuid = {};
+        function getChildrenUuid(node) {
+            const rt = {};
 
-            this.emit('change', prefab);
-            Manager.Ipc.forceSend('broadcast', 'scene:change-node', prefab.uuid);
+            if (node) {
+                if (cacheChildrenUuid[node.uuid]) {
+                    return cacheChildrenUuid[node.uuid];
+                }
 
-        } catch (error) {
-            console.error(error);
-            return null;
+                if (Array.isArray(node.children)) {
+                    node.children.forEach((child, i) => {
+                        if (child && child._prefab) {
+                            rt[child._prefab.fileId] = child.uuid;
+                        }
+                    });
+                    cacheChildrenUuid[node.uuid] = rt;
+                }
+            }
+            return rt;
+        }
+
+        const cacheChildrenIndex = {};
+        function getChildrenIndex(node) {
+            const rt = {};
+
+            if (node) {
+                if (cacheChildrenIndex[node.uuid]) {
+                    return cacheChildrenIndex[node.uuid];
+                }
+
+                if (Array.isArray(node.children)) {
+                    node.children.forEach((child, i) => {
+                        if (child && child._prefab) {
+                            rt[child._prefab.fileId] = i;
+                        }
+                    });
+                    cacheChildrenIndex[node.uuid] = rt;
+                }
+            }
+            return rt;
         }
 
         async function restore(newNode, parentNode, prefabParent) {
+            const fileId2Index = getChildrenIndex(parentNode); // 对应新数据上的子集排列
+            const fileId2Uuid = getChildrenUuid(prefabParent); // 对应新数据上的 uuid
+
             const dump = dumpUtils.dumpNode(newNode);
             const fileId = dump.__prefab__.fileId;
-            const prefab = query(fileId2Uuid[fileId]); // 现有场景中的节点
+            const prefab = prefabParent ? query(fileId2Uuid[fileId]) : current;
 
             if (prefab) {
                 module.exports.emit('before-change', prefab);
                 Manager.Ipc.forceSend('broadcast', 'scene:before-change-node', prefab.uuid);
 
-                const prefabDump = dumpUtils.dumpNode(prefab);
-                if (parentNode) {
-                    const parentDump = dumpUtils.dumpNode(parentNode);
-                    const parentFileId = parentDump.__prefab__.fileId;
-                    const parentPrefab = query(fileId2Uuid[parentFileId]);
-                    // 改为现有节点的父级节点
-                    dump.parent.value.uuid = parentPrefab.uuid;
-                } else {
-                    dump.parent.value.uuid = prefab.parent.uuid;
+                // 删除掉不在新数据上的子节点
+                if (Array.isArray(prefab.children)) {
+                    const childrenFileId2Index = getChildrenIndex(newNode);
+
+                    let index = 0;
+                    let child = prefab.children[index];
+                    while (child && index < prefab.children.length) {
+                        if (childrenFileId2Index[child._prefab.fileId] === undefined) {
+                            module.exports.removeNode(child.uuid);
+                        } else {
+                            index++;
+                        }
+                        child = prefab.children[index];
+                    }
                 }
+
+                const prefabDump = dumpUtils.dumpNode(prefab);
 
                 delete dump.uuid; // 删除不必要的字段
                 delete dump.children;
+                if (prefabParent) {
+                    dump.parent.value.uuid = prefabParent.uuid;
+                }
+                // 使用原来的数据
                 dump.__prefab__ = JSON.parse(JSON.stringify(prefabDump.__prefab__));
                 await dumpUtils.restoreNode(prefab, dump);
 
@@ -502,13 +537,6 @@ class NodeManager extends EventEmitter {
                 if (fileId2Index[fileId] !== undefined) {
                     prefab.setSiblingIndex(fileId2Index[fileId]);
                 }
-
-                // 删除掉不在新数据上的子节点
-                prefab.children.forEach((child) => {
-                    if (!fileId2Index[child._prefab.fileId]) {
-                        module.exports.removeNode(child.uuid);
-                    }
-                });
 
                 // 逐层移动到目标节点上
                 let index = 0;
@@ -545,32 +573,22 @@ class NodeManager extends EventEmitter {
                 // 有移动
                 return true;
             }
-
         }
 
-        function getFileId(node) {
-            const rt = {};
+        try {
+            const asset = await promisify(cc.AssetLibrary.loadAsset)(assetUuid);
+            const newNode = cc.instantiate(asset);
+            current.parent.addChild(newNode);
+            await this.add(newNode); // 以上完整步骤增加临时节点
+            await restore(newNode); // 逐层还原 prefab
+            newNode.parent = null; // 删除临时节点
 
-            rt[node._prefab.fileId] = node.uuid;
+            this.emit('change', current);
+            Manager.Ipc.forceSend('broadcast', 'scene:change-node', current.uuid);
 
-            if (node.children.length > 0) {
-                node.children.forEach((child) => {
-                    Object.assign(rt, getFileId(child));
-                });
-            }
-            return rt;
-        }
-
-        function getIndexPosition(node) {
-            const rt = {};
-
-            if (node.children.length > 0) {
-                node.children.forEach((child, i) => {
-                    rt[child._prefab.fileId] = i || 0;
-                    Object.assign(rt, getIndexPosition(child));
-                });
-            }
-            return rt;
+        } catch (error) {
+            console.error(error);
+            return null;
         }
     }
 
