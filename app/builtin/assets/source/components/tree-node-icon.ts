@@ -86,6 +86,7 @@ const map = {
         'gltf-skeleton': { type: 'icon', value: 'i-robot' },
         'gltf-mesh': { type: 'icon', value: 'i-color' },
         'gltf-animation': { type: 'icon', value: 'i-animation' },
+        'animation-clip': { type: 'icon', value: 'i-animation' },
         'texture-cube': { type: 'icon', value: 'i-cubemap' },
     }),
 };
