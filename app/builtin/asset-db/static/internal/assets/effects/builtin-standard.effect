@@ -109,10 +109,13 @@ CCProgram standard-vs %{
 
     #if CC_USE_SKINNING
       skinVertex(pos, normal);
+    #else
+      pos = cc_matWorld * pos;
+      normal = cc_matWorldIT * normal;
     #endif
 
-    v_worldPos = (cc_matWorld * pos).xyz;
-    v_worldNormal = (cc_matWorldIT * normal).xyz;
+    v_worldPos = pos.xyz;
+    v_worldNormal = normal.xyz;
 
     #if USE_ALBEDO_MAP || USE_NORMAL_MAP || USE_PBR_MAP || USE_EMISSIVE_MAP
       v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw;
@@ -122,7 +125,7 @@ CCProgram standard-vs %{
       v_tangent = (cc_matWorldIT * vec4(a_tangent.xyz, 0.0)).xyz;
     #endif
 
-    return cc_matViewProj * cc_matWorld * pos;
+    return cc_matViewProj * pos;
   }
 }%
 
@@ -314,9 +317,11 @@ CCProgram planar-shadow-vs %{
 
     #if CC_USE_SKINNING
       skinVertex(pos);
+    #else
+      pos = cc_matWorld * pos;
     #endif
 
-    pos = cc_matViewProj * cc_matLightPlaneProj * cc_matWorld * pos;
+    pos = cc_matViewProj * cc_matLightPlaneProj * pos;
     pos.z -= 0.0001;
     return pos;
   }

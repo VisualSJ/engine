@@ -48,9 +48,11 @@ CCProgram unlit-vs %{
 
     #if CC_USE_SKINNING
       skinVertex(pos);
+    #else
+      pos = cc_matWorld * pos;
     #endif
 
-    pos = cc_matViewProj * cc_matWorld * pos;
+    pos = cc_matViewProj * pos;
 
     #if USE_TEXTURE
       uv0 = a_texCoord * tilingOffset.xy + tilingOffset.zw;
