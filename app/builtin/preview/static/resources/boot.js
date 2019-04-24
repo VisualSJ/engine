@@ -311,7 +311,6 @@
         });
 
         cc.view.enableRetina(true);
-        cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE);
         cc.view.resizeWithBrowserSize(true);
         cc.view.enableAutoFullScreen(false);
         const { width, height } = getEmulatedScreenSize();

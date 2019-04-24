@@ -80,7 +80,6 @@ const addEssential = (() => {
     'builtin-unlit': [0],
     'builtin-skybox': [],
     'builtin-sprite': [],
-    'builtin-base': [],
     'builtin-particle': [0],
   };
   return (essentials, name, effect) => {

@@ -17,12 +17,12 @@ CCEffect %{
     d1: &d1 { depthTest: true, depthWrite: false }
     r1: &r1 { cullMode: none }
     p1: &p1
-      mainTexture:            { type: sampler2D, value: grey }
-      mainTiling_Offset:      { type: vec4,      value: [1, 1, 0, 0]  }
-      frameTile_velLenScale:  { type: vec4,      value: [1, 1, 0, 0]  }
+      mainTexture:            { value: grey }
+      mainTiling_Offset:      { value: [1, 1, 0, 0]  }
+      frameTile_velLenScale:  { value: [1, 1, 0, 0]  }
     p2: &p2
       <<: *p1
-      tintColor:              { type: vec4,      value: [0.5, 0.5, 0.5, 0.5], inspector: { type: color } }
+      tintColor:              { value: [0.5, 0.5, 0.5, 0.5], inspector: { type: color } }
 
   techniques:
   - name: add

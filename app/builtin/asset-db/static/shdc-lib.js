@@ -585,7 +585,7 @@ const parseEffect = (() => {
       if (!Array.isArray(cur)) { warn(`${path} must be an array`); return; }
       for (let i = 0; i < cur.length; i++) structuralTypeCheck(ref[0], cur[i], path + `[${i}]`);
     } else {
-      if (typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be an object`); return; }
+      if (!cur || typeof cur !== 'object' || Array.isArray(cur)) { warn(`${path} must be an object`); return; }
       if (ref.any) for (const key of Object.keys(cur)) structuralTypeCheck(ref.any, cur[key], path + `.${key}`);
       else for (const key of Object.keys(ref)) {
         let testKey = key;

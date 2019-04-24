@@ -31,6 +31,7 @@ CCEffect %{
       switch: USE_PLANAR_SHADOW
       vert: planar-shadow-vs:vert
       frag: planar-shadow-fs:frag
+      # phase: planarShadow
       customizations: [ bounds-merge-shadow ]
       depthStencilState:
         depthTest: true
@@ -47,7 +48,6 @@ CCEffect %{
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
-      phase: planarShadow
 
   - name: transparent
     passes:
