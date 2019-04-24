@@ -1,6 +1,8 @@
+import { start } from 'repl';
+
 const {join} = require('path');
 const {readFileSync} = require('fs-extra');
-
+const {smoothScale} = require('./../../../static/script/utils.js');
 export const template = readFileSync(join(__dirname, './../../../static/template/components/bezier-editor.html'), 'utf-8');
 
 export const props = [
@@ -60,7 +62,7 @@ return {
         y: 100,
     },
     bezierTransform: '',
-    dirty: false,
+    mouseDownInfo: null,
 };
 }
 
@@ -88,7 +90,7 @@ export const methods = {
         const that: any = this;
         that.currentBerzier = data;
         that.updateBezier();
-        that.dirty = true;
+        that.saveData();
     },
 
     async onToolBar(event: any) {
@@ -99,29 +101,6 @@ export const methods = {
                 that.saveData();
                 break;
             case 'exit':
-                if (that.dirty) {
-                    const t = (key: string) => {
-                        return that.t(key, '');
-                    };
-                    const result = await Editor.Dialog.show({
-                        type: 'info',
-                        title: t('is_save'),
-                        message: t('is_save_message'),
-                        buttons: [t('cancel'), t('save'), t('abort')],
-                        default: 0,
-                        cancel: 0,
-                    });
-                    if (result === 0) {
-                        return;
-                    }
-                    if (result === 1) {
-                        await that.saveData();
-                        that.dirty = false;
-                        that.exit();
-                        return;
-                    }
-                }
-                that.dirty = false;
                 that.exit();
                 break;
         }
@@ -145,6 +124,62 @@ export const methods = {
     exit() {
         // @ts-ignore
         this.$emit('datachange', 'closeBezierEditor');
+    },
+
+    //////////////////////// 事件处理 /////////////////////////////////////////////
+    onMouseDown(event: any, index: number) {
+        const that: any = this;
+        that.mouseDownInfo = {
+            index,
+            startX: event.x,
+            startY: event.y,
+            offsetX: 0,
+            offsetY: 0,
+        };
+    },
+
+    onMouseMove(event: any) {
+        const that: any = this;
+        if (!that.mouseDownInfo) {
+            return;
+        }
+        const {startX, startY, index} = that.mouseDownInfo;
+        const offsetX = (event.x - startX) / that.size;
+        const offsetY = (startY - event.y) / that.size;
+        if (!offsetX && !offsetY) {
+            return;
+        }
+        that.mouseDownInfo.offsetX += offsetX;
+        that.mouseDownInfo.offsetY += offsetY;
+        that.mouseDownInfo.startX = event.x;
+        that.mouseDownInfo.startY = event.y;
+        if (index === 2) {
+            const x0 = Number((that.currentBerzier[0] + offsetX).toFixed(2));
+            const x1 = Number((that.currentBerzier[1] + offsetY).toFixed(2));
+            that.currentBerzier.splice(0, 2, x0, x1);
+        } else if (index === 3) {
+            const x2 = Number((that.currentBerzier[2] + offsetX).toFixed(2));
+            const x3 = Number((that.currentBerzier[3] + offsetY).toFixed(2));
+            that.currentBerzier.splice(2, 2, x2, x3);
+        }
+        requestAnimationFrame(() => {
+            that.updateBezier();
+        });
+    },
+
+    onMouseUp(event: any) {
+        const that: any = this;
+        if (that.mouseDownInfo) {
+            that.saveData();
+            that.mouseDownInfo = null;
+        }
+    },
+
+    onMouseWheel(event: any) {
+        const that: any = this;
+        const scale = smoothScale(-event.deltaY, that.size);
+        that.size = scale;
+        that.bezierTransform = `translate(${that.offset.x} ${that.offset.y}) scale(${that.size})`;
     },
 
     /////////////////////// 数据处理 //////////////////////////////////////////
@@ -209,5 +244,6 @@ export function mounted() {
     } else {
         that.currentBerzier = Array.from(that.presets.Linear.Default);
     }
+    document.addEventListener('mouseup', that.onMouseUp);
     that.init();
 }

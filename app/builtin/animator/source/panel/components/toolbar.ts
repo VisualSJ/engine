@@ -46,30 +46,6 @@ export const methods = {
         const that: any = this;
         const name = event.target.getAttribute('name');
         switch (name) {
-            case 'exit':
-                if (that.dirty) {
-                    const t = (key: string) => {
-                        return that.t(key, '');
-                    };
-                    const result = await Editor.Dialog.show({
-                        type: 'info',
-                        title: t('is_save'),
-                        message: t('is_save_message'),
-                        buttons: [t('cancel'), t('save'), t('abort')],
-                        default: 0,
-                        cancel: 0,
-                    });
-                    if (result === 0) {
-                        return;
-                    }
-                    if (result === 1) {
-                        const saveSuccess = await that.saveData();
-                        saveSuccess && (that.exit());
-                        return;
-                    }
-                }
-                that.exit();
-                break;
             case 'jump_prev_frame':
             case 'jump_first_frame':
             case 'jump_next_frame':
@@ -85,10 +61,6 @@ export const methods = {
                 that.$emit('datachange', name);
                 break;
         }
-    },
-    exit() {
-        // @ts-ignore
-        Editor.Ipc.sendToPanel('scene', 'record', this.root, false);
     },
 };
 export function mounted() {

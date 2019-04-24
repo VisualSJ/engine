@@ -1,9 +1,12 @@
 <section class="bezier-editor mask">
     <div class="content" ref="content">
-        <div class="left">
+        <div class="left"
+            @mousemove="onMouseMove"
+            @mousewheel = "onMouseWheel"
+        >
             <div class="toolbar" @mousedown="onToolBar">
                 <span class="data-preview">({{currentBerzier.toString()}})</span>
-                <i class="iconfont icon-save" name="save"></i>
+                <!-- <i class="iconfont icon-save" name="save"></i> -->
                 <i class="iconfont icon-close" name="exit"></i>
             </div>
             <svg > 
@@ -29,7 +32,8 @@
                             r="0.01"
                             v-if="ctrlPoints.p2" 
                             :cx="ctrlPoints.p2[0]" 
-                            :cy="ctrlPoints.p2[1]" 
+                            :cy="ctrlPoints.p2[1]"
+                            @mousedown="onMouseDown($event, 2)"
                         />
     
                         <line
@@ -44,7 +48,8 @@
                             r="0.01"
                             v-if="ctrlPoints.p3" 
                             :cx="ctrlPoints.p3[0]" 
-                            :cy="ctrlPoints.p3[1]" 
+                            :cy="ctrlPoints.p3[1]"
+                            @mousedown="onMouseDown($event, 3)"
                         />
                     </g>
 

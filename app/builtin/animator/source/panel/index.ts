@@ -31,11 +31,31 @@ export const fonts = [
 ];
 
 export const methods = {
-    deleteTheSelectedKeys() {
+    /**
+     * 删除选中的关键帧或关键帧事件
+     */
+    deleteSelected() {
         if (!vm) {
             return;
         }
-        console.log('delete key');
+        vm.onPreviewRow('removeKey');
+        vm.onEvents('deleteEvent');
+    },
+
+    /**
+     * 拷贝选中的关键帧或关键帧事件
+     */
+    copySelected() {
+        vm.onPreviewRow('copyKey');
+        vm.onEvents('copyEvent');
+    },
+
+    /**
+     * 粘贴复制的内容
+     */
+    paste() {
+        vm.onPreviewRow('pasteKey');
+        vm.onEvents('pasteEvent');
     },
 
     /**
@@ -260,9 +280,9 @@ export async function ready() {
             eventsDump() {
                 const that: any = this;
                 let result: any[] = [];
-                if (that.clipDump) {
+                if (that.clipDump && that.grid) {
                     result = that.clipDump.events.map((item: any) => {
-                        item.x = that.frameToPixel(item.frame);
+                        item.x = that.grid.valueToPixelH(item.frame);
                         return item;
                     });
                 }
@@ -582,6 +602,20 @@ export async function ready() {
                 this.grid && this.grid.resize(offsetWidth, offsetHeight);
             },
 
+            // 更新选中关键帧位置
+            updateSelectInfo() {
+                const that: any = this;
+                if (that.selectKeyInfo) {
+                    for (const item of that.selectKeyInfo.data) {
+                        item.x = that.grid.valueToPixelH(item.frame);
+                    }
+                }
+                if (that.selectEventInfo) {
+                    for (const item of that.selectEventInfo.data) {
+                        item.x = that.grid.valueToPixelH(item.frame);
+                    }
+                }
+            },
             ///////////////////////// 对时间轴的处理方法 ///////////////////////////////////////
             /**
              * 对整个时间轴进行移动
@@ -591,6 +625,7 @@ export async function ready() {
                 const that: any = this;
                 that.grid.transferX(delta);
                 requestAnimationFrame(() => {
+                    that.updateSelectInfo();
                     that.grid.render();
                 });
             },
@@ -604,6 +639,7 @@ export async function ready() {
                 const that: any = this;
                 const scale = smoothScale(delta, that.scale);
                 that.scale = that.grid.xAxisScaleAt(x, scale); // 坐标画布更改
+                that.updateSelectInfo();
                 that.grid.render();
             },
 
@@ -666,7 +702,7 @@ export async function ready() {
                         const menu = [{
                             label: that.t('create', 'event.'),
                             click() {
-                                that.onEvents('addEvent');
+                                that.onEvents('addEvent', [frame]);
                             },
                         }];
                         if (that.copyEventInfo) {
@@ -697,6 +733,7 @@ export async function ready() {
                         return;
                     }
                     if (!name) {
+                        that.flags.mouseDownName = 'box';
                         return;
                     }
                 }
@@ -709,33 +746,38 @@ export async function ready() {
                 if (!that.flags.mouseDownName) {
                     return;
                 }
+                const frame = that.pixelToFrame(event.offsetX);
                 switch (that.flags.mouseDownName) {
                     case 'key':
-                        if (!that.selectKeyInfo) {
+                        if (event.altKey) {
+                            that.copyKeyInfo = that.selectKeyInfo;
+                            that.onPreviewRow('pasteKey', {frame});
                             break;
                         }
-                        const offsetKey = Math.round(that.grid.pixelToValueH(that.selectKeyInfo.offset));
-                        if (offsetKey === 0) {
-                            break;
-                        }
-                        that.dirty = true;
-                        Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...that.selectKeyInfo.params, offsetKey);
+                        that.onPreviewRow('moveKeys');
                         break;
                     case 'event':
                         if (!that.selectEventInfo) {
                             break;
                         }
-                        const offsetEvent = Math.round(that.grid.pixelToValueH(that.selectEventInfo.offset));
-                        if (offsetEvent === 0) {
-                            // that.selectEventInfo = null;
+                        if (event.altKey) {
+                            that.copyEventInfo = that.selectEventInfo;
+                            that.onEvents('pasteEvent', [frame]);
                             break;
                         }
+                        if (that.selectEventInfo.offset === 0) {
+                            break;
+                        }
+                        const offsetEvent = Math.round(that.grid.pixelToValueH(that.selectEventInfo.offset));
+                        if (offsetEvent === 0) {
+                            break;
+                        }
+
                         Editor.Ipc.sendToPanel('scene', 'move-clip-events', that.currentClip, that.selectEventInfo.frames, offsetEvent);
                         that.dirty = true;
+                        that.selectEventInfo = null;
                         break;
                 }
-                that.selectEventInfo = null;
-                that.selectKeyInfo = null;
                 that.flags.mouseDownName = '';
                 that.flags.mouseDownX = 0;
             },
@@ -753,29 +795,42 @@ export async function ready() {
                 switch (that.flags.mouseDownName) {
                     case 'key':
                         if (that.selectKeyInfo) {
-                            event.target.style.cursor = 'ew-resize';
+                            if (event.altKey) {
+                                event.target.style.cursor = 'copy';
+                            } else {
+                                event.target.style.cursor = 'ew-resize';
+                            }
                             const {startX, data} = that.selectKeyInfo;
                             requestAnimationFrame(() => {
                                 const offset = event.x - startX;
                                 that.selectKeyInfo.startX = event.x;
                                 that.selectKeyInfo.offset += offset;
-                                data.x += offset;
+                                data.forEach((item: any) => {
+                                    item.x += offset;
+                                });
                             });
                         }
                         break;
                     case 'event':
                         if (that.selectEventInfo) {
-                            event.target.style.cursor = 'ew-resize';
+                            if (event.altKey) {
+                                event.target.style.cursor = 'copy';
+                            } else {
+                                event.target.style.cursor = 'ew-resize';
+                            }
                             const {startX, data} = that.selectEventInfo;
                             requestAnimationFrame(() => {
                                 const offset = event.x - startX;
                                 that.selectEventInfo.startX = event.x;
                                 that.selectEventInfo.offset += offset;
-                                data.x += offset;
+                                data.forEach((item: any) => {
+                                    item.x += offset;
+                                });
                             });
                         }
                         break;
                     case 'grid':
+                        event.target.style.cursor = '-webkit-grabbing';
                         const moveX = x - that.flags.mouseDownX;
                         if (moveX === 0) {
                             return;
@@ -857,13 +912,15 @@ export async function ready() {
             /**
              * 保存场景数据
              */
-            async save() {
+            async saveData() {
                 const isSave = await Editor.Ipc.requestToPanel('scene', 'save-clip');
                 if (isSave) {
                     vm.dirty = false;
+                    return true;
                 }
             },
 
+            // 关键帧的自动移动
             runPointer() {
                 const that: any = this;
                 that.aniPlayTask = requestAnimationFrame(async () => {
@@ -899,6 +956,9 @@ export async function ready() {
                     case 'moveKey':
                         that.selectKeyInfo = params[0];
                         that.flags.mouseDownName = 'key';
+                        if (params[1] !== that.selectPath) {
+                            that.selectedId = that.nodeDump.path2uuid[params[1]];
+                        }
                         break;
                     case 'moveEvent':
                         that.selectEventInfo = params[0];
@@ -959,49 +1019,74 @@ export async function ready() {
             async onPreviewRow(operate: string, params: any) {
                 const that: any = this;
                 const {currentClip} = that;
-                switch (operate && that.grid) {
+                switch (operate) {
                     case 'copyKey':
-                        params[3] = [params[3]];
-                        that.copyKeyInfo = params;
+                        if (!that.selectKeyInfo) {
+                            break;
+                        }
+                        that.copyKeyInfo = that.selectKeyInfo;
                         break;
                     case 'pasteKey':
-                        if (!params.frame) {
-                            params[3] = that.pixelToFrame(params[3]);
-                        } else {
-                            const t = that.t;
-                            // 在关键帧位置选择了粘贴
-                            const result = await Editor.Dialog.show({
-                                type: 'info',
-                                title: t('is_paste_overwrite'),
-                                message: t('is_paste_overwrite_message'),
-                                buttons: [t('cancel'), t('overwrite')],
-                                default: 0,
-                                cancel: 0,
-                            });
-                            if (result === 0) {
-                                break;
-                            }
+                        if (!that.copyKeyInfo) {
+                            return;
                         }
-                        Editor.Ipc.sendToPanel('scene', 'copy-clip-key', currentClip, ...that.copyKeyInfo, params[3]);
+                        let frame = that.currentFrame;
+                        if (params.x || params.frame) {
+                            frame = params.frame || that.pixelToFrame(params.x);
+                        } else {
+                            // const t = that.t;
+                            // // 在关键帧位置选择了粘贴
+                            // const result = await Editor.Dialog.show({
+                            //     type: 'info',
+                            //     title: t('is_paste_overwrite'),
+                            //     message: t('is_paste_overwrite_message'),
+                            //     buttons: [t('cancel'), t('overwrite')],
+                            //     default: 0,
+                            //     cancel: 0,
+                            // });
+                            // if (result === 0) {
+                            //     break;
+                            // }
+                        }
+                        for (const item of that.copyKeyInfo.params) {
+                            item[3] = [item[3]];
+                            Editor.Ipc.sendToPanel('scene', 'copy-clip-key', currentClip, ...item, frame);
+                        }
                         that.dirty = true;
+                        that.selectKeyInfo = null;
                         break;
                     case 'createKey':
-                        params[3] = that.pixelToFrame(params[3]);
-                        Editor.Ipc.sendToPanel('scene', 'create-clip-key', currentClip, ...params);
+                        params.param[3] = that.pixelToFrame(params.x);
+                        Editor.Ipc.sendToPanel('scene', 'create-clip-key', currentClip, ...params.param);
                         that.dirty = true;
                         break;
                     case 'removeKey':
-                        Editor.Ipc.sendToPanel('scene', 'remove-clip-key', currentClip, ...params);
-                        that.dirty = true;
-                        break;
-                    case 'moveKeys':
-                        const offset = Math.round(that.grid.pixelToValueH(params[params.length - 1]));
-                        if (offset === 0) {
-                            return;
+                        if (!that.selectKeyInfo) {
+                            break;
+                        }
+                        for (const item of that.selectKeyInfo.params) {
+                            Editor.Ipc.sendToPanel('scene', 'remove-clip-key', currentClip, ...item);
                         }
                         that.dirty = true;
-                        params[params.length - 1] = offset;
-                        Editor.Ipc.requestToPanel('scene', 'move-clip-keys', currentClip, ...params);
+                        that.selectKeyInfo = null;
+                        break;
+                    case 'moveKeys':
+                        if (!that.selectKeyInfo) {
+                            break;
+                        }
+                        if (that.selectKeyInfo.offset === 0) {
+                            break;
+                        }
+                        const keyOffset = Math.round(that.grid.pixelToValueH(that.selectKeyInfo.offset));
+                        if (keyOffset === 0) {
+                            break;
+                        }
+                        that.dirty = true;
+                        for (const item of that.selectKeyInfo.params) {
+                            item[3] = [item[3]];
+                            Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...item, keyOffset);
+                        }
+                        that.selectKeyInfo = null;
                         break;
                     case 'openBezierEditor':
                         that.currentBezierData = params[0];
@@ -1015,9 +1100,13 @@ export async function ready() {
 
             async onEvents(operate: string, params: any) {
                 const that: any = this;
+                let frame = that.currentFrame;
+                if (params && params[0]) {
+                    frame = params[0];
+                }
                 switch (operate) {
                     case 'addEvent':
-                        Editor.Ipc.sendToPanel('scene', 'add-clip-event', that.currentClip, that.currentFrame, '', []);
+                        Editor.Ipc.sendToPanel('scene', 'add-clip-event', that.currentClip, frame, '', []);
                         that.dirty = true;
                         break;
                     case 'openEventEditor':
@@ -1025,29 +1114,42 @@ export async function ready() {
                         that.showEventEditor = true;
                         break;
                     case 'deleteEvent':
-                        Editor.Ipc.sendToPanel('scene', 'delete-clip-event', that.currentClip, params[0]);
+                        if (!that.selectEventInfo) {
+                            break;
+                        }
+                        for (const item of that.selectEventInfo.frames) {
+                            Editor.Ipc.sendToPanel('scene', 'delete-clip-event', that.currentClip, item);
+                        }
                         that.dirty = true;
+                        that.selectEventInfo = null;
                         break;
                     case 'copyEvent':
-                        that.copyEventInfo = params;
+                        if (!that.selectEventInfo) {
+                            break;
+                        }
+                        that.copyEventInfo = that.selectEventInfo;
                         break;
                     case 'pasteEvent':
-                        const t = that.t;
+                        // const t = that.t;
                         // 在关键帧位置选择了粘贴
-                        if (params.frame) {
-                            const result = await Editor.Dialog.show({
-                                type: 'info',
-                                title: t('is_paste_overwrite'),
-                                message: t('is_paste_overwrite_message'),
-                                buttons: [t('cancel'), t('overwrite')],
-                                default: 0,
-                                cancel: 0,
-                            });
-                            if (result === 0) {
-                                break;
-                            }
+                        // if (params.frame) {
+                        //     const result = await Editor.Dialog.show({
+                        //         type: 'info',
+                        //         title: t('is_paste_overwrite'),
+                        //         message: t('is_paste_overwrite_message'),
+                        //         buttons: [t('cancel'), t('overwrite')],
+                        //         default: 0,
+                        //         cancel: 0,
+                        //     });
+                        //     if (result === 0) {
+                        //         break;
+                        //     }
+                        // }
+                        if (!that.copyEventInfo) {
+                            break;
                         }
-                        Editor.Ipc.sendToPanel('scene', 'copy-clip-event', that.currentClip, that.copyEventInfo, params[0]);
+                        Editor.Ipc.sendToPanel('scene', 'copy-clip-event', that.currentClip, that.copyEventInfo.frames, frame);
+                        that.selectEventInfo = null;
                         break;
                 }
             },

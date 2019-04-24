@@ -36,21 +36,27 @@ export const computed = {
         const {comp, prop} = that.keyFrames[0];
         return [that.path, comp, prop];
     },
+    // 筛选出能在当前组件内显示的选中关键帧数据
     selectKey() {
         const that: any = this;
-        if (!that.selectInfo) {
+        if (!that.selectInfo || that.selectInfo.data.length < 1) {
             return null;
         }
 
         const {data, params} = that.selectInfo;
-        if (params[0] !== that.path) {
-            return;
-        }
+        const result: any = [];
+        data.forEach((item: any, index: number) => {
+            if (params[index][0] !== that.path) {
+                return;
+            }
 
-        if (that.name && that.name !== data.prop) {
-            return null;
-        }
-        return [data];
+            if (that.name && that.name !== item.prop) {
+                return null;
+            }
+            result.push(item);
+        });
+
+        return result;
     },
 };
 
@@ -94,31 +100,40 @@ export const methods = {
     onMouseDown(event: any, index: number) {
         const that: any = this;        // @ts-ignore
 
-        const params = JSON.parse(JSON.stringify(that.params));
-        params[3] = [that.keyFrames[index].frame];
-        that.dragInfo = {
-            startX: event.x,
-            offset: 0,
-            params,
-            data: that.keyData[index],
-        };
+        const param = JSON.parse(JSON.stringify(that.params));
+        param[3] = that.keyFrames[index].frame;
+        const data = JSON.parse(JSON.stringify(that.keyData[index]));
+        let dragInfo: any = {};
+        if (event.ctrlKey && that.selectInfo) {
+            dragInfo = JSON.parse(JSON.stringify(that.selectInfo));
+            dragInfo.params.push(param);
+            dragInfo.data.push(data);
+        } else {
+            dragInfo = {
+                startX: event.x,
+                offset: 0,
+                params: [param],
+                data: [data],
+            };
+        }
 
-        that.$emit('startdrag', 'moveKey', [that.dragInfo]);
+        that.$emit('startdrag', 'moveKey', [dragInfo, that.path]);
         // @ts-ignore
         // this.virtualkeys.push(JSON.parse(JSON.stringify(this.keyData[index])));
     },
 
     onPopMenu(event: any) {
         const that: any = this;
-        const params = JSON.parse(JSON.stringify(that.params));
-        const index = event.target.getAttribute('index');
+        const params: any = {};
+        params.param = JSON.parse(JSON.stringify(that.params));
+        const name = event.target.getAttribute('name');
         // 节点轨道只能移除关键帧
-        if (!that.name && !index) {
+        if (!that.name && !name) {
             return;
         }
         const label: string[] = [];
         const operate: string[] = [];
-        if (index !== undefined && index !== null) {
+        if (name === 'key') {
             // 在关键帧位置上
 
             // 复制、粘贴关键帧
@@ -133,8 +148,6 @@ export const methods = {
             // 移除关键帧
             operate.push('removeKey');
             label.push(that.t('remove_key', 'property.'));
-            params[3] = that.keyFrames[index].frame;
-            params.frame = true;
         } else {
             operate.push('createKey');
             label.push(that.t('create_key', 'property.'));
@@ -143,7 +156,7 @@ export const methods = {
             if (style) {
                 offset = style.match(/translateX\((.*)px\)/)[1];
             }
-            params[3] = event.offsetX + Number(offset);
+            params.x = event.offsetX + Number(offset);
             if (that.canPaste()) {
                 operate.push('pasteKey');
                 label.push(that.t('paste_key', 'property.'));
@@ -157,7 +170,7 @@ export const methods = {
     },
 
     /**
-     * 检查当前轨道是否可以复制
+     * 检查当前轨道是否可以粘贴
      */
     canPaste() {
         const that: any = this;
@@ -165,15 +178,15 @@ export const methods = {
         if (!that.name || !that.copyInfo) {
             return;
         }
+        return true;
+        // const index = that.copyInfo.params.findIndex((item: any, index: number) => {
+        //     return item !== that.params[index];
+        // });
 
-        const index = that.copyInfo.findIndex((item: any, index: number) => {
-            return item !== that.params[index];
-        });
-
-        // 最多只有帧数不同的才可以粘贴
-        if (index === -1 || index === 3) {
-            return true;
-        }
+        // // 最多只有帧数不同的才可以粘贴
+        // if (index === -1 || index === 3) {
+        //     return true;
+        // }
     },
 
     /**

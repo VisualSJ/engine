@@ -4,15 +4,23 @@ function smoothScale(delta, scale) {
 }
 
 let uuid2path = {};
+let path2uuid = {};
 let nodes = [];
+
+function initNode() {
+    uuid2path = {};
+    path2uuid = {};
+    nodes = [];
+}
+
 async function formatNodeDump(dump, path = '', indent = 0) {
     if (!path) {
-        uuid2path = {};
-        nodes = [];
+        initNode();
         uuid2path[dump.uuid.value] = '/';
         nodes.push('/');
     } else {
         uuid2path[dump.uuid.value] = path;
+        path2uuid[path] = dump.uuid.value;
         nodes.push(path);
     }
     const result = {
@@ -29,6 +37,7 @@ async function formatNodeDump(dump, path = '', indent = 0) {
     }
     if (!path) {
         result.uuid2path = uuid2path;
+        result.path2uuid = path2uuid;
         result.nodes = nodes;
         result.path = '/';
         result.clipInfo = queryClipUuid(dump.__comps__);

@@ -212,14 +212,14 @@ module.exports = class Grid {
         const labelLevel = this.hticks.levelForStep(minStep);
         const ticks = this.hticks.ticksAtLevel(labelLevel, false);
 
-        this.cxt2D.clearRect(0, 0, this.canvas.width, 25);
+        this.cxt2D.clearRect(0, 0, this.canvas.width, 20);
         this.cxt2D.save();
         this.cxt2D.strokeStyle = '#ccc';
         this.cxt2D.font = '16px';
         ticks.forEach((num: number) => {
                 const x = Math.floor(this.valueToPixelH(num)) + 5;
                 const text = this.hformat(num);
-                this.cxt2D.strokeText(text, Math.floor(x - this.startOffset), 15);
+                this.cxt2D.strokeText(text, Math.floor(x - this.startOffset), 13);
             });
         this.cxt2D.restore();
     }

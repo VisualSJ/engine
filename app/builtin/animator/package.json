@@ -22,15 +22,23 @@
         "width": 1000,
         "height": 600,
         "shortcuts": {
-            "ctrl+backspace": "deleteTheSelectedKeys",
-            "delete": "deleteTheSelectedKeys",
-            "del": "deleteTheSelectedKeys",
+            "ctrl+backspace": "deleteSelected",
+            "delete": "deleteSelected",
+            "del": "deleteSelected",
+            "ctrl+c": "copySelected",
+            "command+c": "copySelected",
+            "ctrl+v": "paste",
+            "command+v": "paste",
             "left": "jumpPrevFrame",
             "right": "jumpNextFrame",
             "ctrl+left": "jumpFirstFrame",
             "command+left": "jumpFirstFrame",
             "ctrl+right": "jumpLastFrame",
             "command+right": "jumpLastFrame"
+        },
+        "redirect": {
+            "undo": "scene",
+            "redo": "scene"
         }
     },
     "author": "Cocos"

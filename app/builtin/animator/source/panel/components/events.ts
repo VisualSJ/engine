@@ -2,15 +2,6 @@
 export const template = `
 <div class="events">
     <template
-        v-if="selectEvent"
-        v-for="(info, index) in selectEvent"
-    >
-        <i class="iconfont icon-event preview"
-            v-if="display(info.x)"
-            :style="queryKeyStyle(info.x)"
-        ></i>
-    </template>
-    <template
         v-if="events"
         v-for="(info, index) in events"
     >
@@ -20,8 +11,18 @@ export const template = `
             :index="index"
             name="event"
             @mousedown="onMouseDown($event, info)"
-            @dblclick="openEventEditor(info.frame)"
             @click.right="onPopMenu($event, info.frame)"
+            @dblclick="openEventEditor(info.frame)"
+        ></i>
+    </template>
+    <template
+        v-if="selectEvent"
+        v-for="(info, index) in selectEvent"
+    >
+        <i class="iconfont icon-event preview"
+            v-if="display(info.x)"
+            name="event"
+            :style="queryKeyStyle(info.x)"
         ></i>
     </template>
 </div>
@@ -50,7 +51,7 @@ export const computed = {
         if (!that.selectInfo) {
             return null;
         }
-        return [that.selectInfo.data];
+        return that.selectInfo.data;
     },
 };
 
@@ -63,7 +64,7 @@ export const methods = {
 
     display(x: number): boolean {
         // @ts-ignore
-        return x + this.offset >= 0;
+        return x >= 0;
     },
 
     onPopMenu(event: any, frame: number) {
@@ -101,12 +102,20 @@ export const methods = {
 
     onMouseDown(event: any, info: any) {
         const that: any = this;
-        const dragInfo = {
-            startX: event.x,
-            data: JSON.parse(JSON.stringify(info)),
-            offset: 0,
-            frames: [info.frame],
-        };
+        let dragInfo: any = {};
+        const data = JSON.parse(JSON.stringify(info));
+        if (event.ctrlKey && that.selectInfo) {
+            dragInfo = JSON.parse(JSON.stringify(that.selectInfo));
+            dragInfo.data.push(data);
+            dragInfo.frames.push(info.frame);
+        } else {
+            dragInfo = {
+                startX: event.x,
+                data: [data],
+                offset: 0,
+                frames: [info.frame],
+            };
+        }
         that.$emit('startdrag', 'moveEvent', [dragInfo]);
     },
 
@@ -116,7 +125,7 @@ export const methods = {
     },
 
     queryKeyStyle(x: number) {
-        return `transform: translateX(${x + 4 | 0}px);`;
+        return `transform: translateX(${x - 6 | 0}px);`;
     },
 };
 export function mounted() {

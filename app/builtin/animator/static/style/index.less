@@ -92,7 +92,7 @@
             }
             .contrl-pointer {
                 position: absolute;
-                top: 24px;
+                top: 18px;
                 left: 5px;
                 height: 100%;
                 padding-top: 2px;
@@ -102,7 +102,7 @@
                 .icon-arrow-right {
                     transform: rotate(90deg);
                     position: absolute;
-                    top: -17px;
+                    top: -14px;
                     left: -6px;
                 }
                 span {
@@ -232,9 +232,13 @@
         font-size: 10px;
     }
     .iconfont:hover {
-        color: #f90;
-        font-size: 16px;
+        color: #e0dc2f;
+        // font-size: 16px;
         cursor: pointer;
+    }
+    .iconfont.preview {
+        color: #e0dc2f;
+        pointer-events: none;
     }
 }
 
@@ -268,9 +272,9 @@
     .line {
         height: @h-line;
         position: absolute;
-        top:8px;
+        top: 9px;
         background-color: @c-line;
-        z-index:2;
+        z-index: 2;
     }
     .line:hover {
         background: @c-line-hover;
@@ -300,6 +304,7 @@
         cursor: pointer;
         .dot {
             background-color: @c-key-active;
+            pointer-events: none;
         }
     }
 }
@@ -470,6 +475,7 @@
             stroke-width: 0.01px;
             stroke: #184c76;
             fill: none;
+            position: relative;
             line {
                 stroke: rgba(156, 148, 145, 0.7);
                 stroke-width: 0.01px;
