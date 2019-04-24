@@ -409,28 +409,34 @@ export const methods = {
 
         parent.state = 'loading';
 
-        let content: string = ''; // 注意，文件夹的内容必须传 null 过去
+        /**
+         * 注意：慎重修改此默认值
+         * content 类型可以为 null, string, buffer
+         * 默认 null 是给文件夹使用的
+         */
+        let content: any = null; // 注意，文件夹的内容必须传 null 过去
 
         if (json.type !== 'folder') {
+            content = '';
+
             const fileUrl = `db://internal/default_file_content/${json.type}`;
             const fileUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', fileUrl);
-            if (!fileUuid) {
-                content = '';
-            } else {
+            if (fileUuid) {
                 const fileInfo = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', fileUuid);
                 if (!fileInfo || !existsSync(fileInfo.file)) {
                     console.error(vm.t('readDefaultFileFail'));
                     parent.state = '';
                     return;
                 }
-                content = readFileSync(fileInfo.file, 'utf-8');
-            }
 
-            if (json.params) {
-                Object.keys(json.params).forEach((key) => {
-                    // @ts-ignore
-                    content = content.replace(new RegExp(`\<\%${key}\%\>`, 'g'), json.params[key]);
-                });
+                content = readFileSync(fileInfo.file, 'utf-8');
+
+                if (json.params) {
+                    Object.keys(json.params).forEach((key) => {
+                        // @ts-ignore
+                        content = content.replace(new RegExp(`\<\%${key}\%\>`, 'g'), json.params[key]);
+                    });
+                }
             }
         }
 

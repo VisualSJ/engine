@@ -447,4 +447,7 @@ export const listeners = {
     resize() { // 监听面板大小变化
         vm.resizePanel();
     },
+    show() {
+        vm.resizePanel();
+    },
 };
