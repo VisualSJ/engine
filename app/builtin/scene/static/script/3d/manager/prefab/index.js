@@ -64,7 +64,7 @@ async function link(nodeUuid, assetUuid) {
     const info = new cc._PrefabInfo();
     info.asset = asset || parentPrefab.asset;
     info.root = parentPrefab && parentPrefab.root || node;
-    // 重要：原本就有 _prefab 属性，复用原有的 fileId，在数据从资源还原的时候识别
+    // 重要：原本就有 _prefab 属性，复用 fileId，会在 prefab 从资源还原的时候使用
     info.fileId = node._prefab ? node._prefab.fileId : node.uuid;
     node._prefab = info;
 
@@ -147,7 +147,7 @@ function generate(nodeUuid) {
         const info = new cc._PrefabInfo();
         info.asset = prefab;
         info.root = node;
-        info.fileId = child.uuid;
+        info.fileId = child._prefab ? child._prefab.fileId : child.uuid; // 如果有 _prefab 属性，复用 fileId，会在 prefab 从资源还原的时候使用
         child._prefab = info;
     });
 
