@@ -487,7 +487,7 @@ export class GltfConverter {
         const animationClip = new cc.AnimationClip();
         animationClip.name = this._getGltfXXName(GltfAssetKind.Animation, iGltfAnimation);
         animationClip.curveDatas = curveDatas;
-        animationClip.wrapMode = cc.WrapMode.Loop;
+        animationClip.wrapMode = cc.AnimationClip.WrapMode.Loop;
         animationClip._duration = duration;
         animationClip._keys = keys;
         return animationClip;
@@ -762,30 +762,35 @@ export class GltfConverter {
     }
 
     private _commonRoot(nodes: number[]) {
-        if (nodes.length === 0) {
-            return -1;
-        }
-        const roots = nodes.filter((node) => {
-            const parent = this._getParent(node);
-            return (nodes.findIndex((node) => node === parent)) < 0;
-        });
-        if (roots.length === 0) {
-            // Circular
-            return -1;
-        } else if (roots.length === 1) {
-            // The common root is living in nodes.
-            return roots[0];
-        } else {
-            // There are multi roots in nodes.
-            // Try find the common base.
-            const parent = this._getParent(roots[0]);
-            for (let i = 1; i < roots.length; ++i) {
-                if (this._getParent(i) !== parent) {
-                    return -1;
-                }
+        let minPathLen = Infinity;
+        const paths = nodes.map((node) => {
+            const path: number[] = [];
+            let curNode = node;
+            while (curNode >= 0) {
+                path.unshift(curNode);
+                curNode = this._getParent(curNode);
             }
-            return parent;
+            minPathLen = Math.min(minPathLen, path.length);
+            return path;
+        });
+        if (paths.length === 0) {
+            return -1;
         }
+
+        const commonPath: number[] = [];
+        for (let i = 0; i < minPathLen; ++i) {
+            const n = paths[0][i];
+            if (paths.every((path) => path[i] === n)) {
+                commonPath.push(n);
+            } else {
+                break;
+            }
+        }
+
+        if (commonPath.length === 0) {
+            return -1;
+        }
+        return commonPath[commonPath.length - 1];
     }
 
     private _getSkinRoot(skin: number) {
@@ -793,7 +798,7 @@ export class GltfConverter {
         if (result < 0) {
             result = this._commonRoot(this._gltf.skins![skin].joints);
             if (result < 0) {
-                throw new Error(`Non-conforming glTf: skin joints do not have a common root.`);
+                throw new Error(`Non-conforming glTf: skin joints do not have a common root(they are not under same scene).`);
             }
         }
         return result;

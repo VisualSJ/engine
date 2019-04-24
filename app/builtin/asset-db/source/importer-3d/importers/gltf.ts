@@ -59,7 +59,7 @@ export default class GltfImporter extends Importer {
 
     // 版本号如果变更，则会强制重新导入
     get version() {
-        return '1.0.76';
+        return '1.0.78';
     }
 
     // importer 的名字，用于指定 importer as 等
@@ -113,7 +113,7 @@ export default class GltfImporter extends Importer {
                     break;
             }
             console.debug(`glTf-validator issue(from ${asset.source}) ${JSON.stringify(message)} is ignored.`);
-            report.issues.messages.splice(report.issues.messages.indexOf(message));
+            report.issues.messages.splice(report.issues.messages.indexOf(message), 1);
         }
 
         const strintfyMessages = (severity: number) => {

@@ -353,7 +353,7 @@ declare namespace cc {
      * !#en Specifies how time is treated when it is outside of the keyframe range of an Animation.
      * !#zh 动画使用的循环模式。
      */
-    export enum WrapMode {
+    enum WrapMode {
         /**
          * !#en Reads the default wrap mode set higher up.
          * !#zh 向 Animation Component 或者 AnimationClip 查找 wrapMode
@@ -401,6 +401,7 @@ declare namespace cc {
     }
 
     export class AnimationClip extends Asset {
+        static WrapMode: typeof WrapMode;
         sample: number;
         speed: number;
         wrapMode: WrapMode;
