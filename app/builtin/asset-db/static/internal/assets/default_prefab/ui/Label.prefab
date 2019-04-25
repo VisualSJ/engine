@@ -85,6 +85,7 @@
       "__id__": 1
     },
     "_enabled": true,
+    "_priority": 0,
     "_srcBlendFactor": 2,
     "_dstBlendFactor": 4,
     "_color": {
@@ -94,10 +95,7 @@
       "b": 255,
       "a": 255
     },
-    "_priority": 0,
-    "_sharedMaterial": {
-      "__uuid__": "fda095cb-831d-4601-ad94-846013963de8"
-    },
+    "_sharedMaterial": null,
     "_useOriginalSize": true,
     "_string": "label",
     "_horizontalAlign": 0,
@@ -110,10 +108,10 @@
     "_enableWrapText": true,
     "_font": null,
     "_isSystemFontUsed": true,
-    "_bmFontOriginalSize": -1,
     "_isItalic": false,
     "_isBold": false,
     "_isUnderline": false,
+    "_cacheMode": 0,
     "_id": ""
   },
   {
@@ -124,7 +122,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "b1MHPxWlhDoZYr7rL94bRM",
+    "fileId": "85tZs04QNDoJ8Zw+ovirTw",
     "sync": false,
     "_synced": {
       "default": false,

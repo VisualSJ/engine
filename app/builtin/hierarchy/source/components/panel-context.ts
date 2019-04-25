@@ -170,7 +170,7 @@ exports.createMenu = (callback: any): any[] => {
                     click() {
                         callback({
                             name: 'New ToggleGroup',
-                            assetUuid: '1d86d123-9a96-4be1-9455-ecb1ae4cf8ab',
+                            assetUuid: '2af73429-41d1-4346-9062-7798e42945dd',
                         });
                     },
                 },
