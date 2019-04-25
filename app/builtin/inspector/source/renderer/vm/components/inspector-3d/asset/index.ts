@@ -14,6 +14,7 @@ const importers: string[] = [
     'sprite-frame',
     'material',
     'gltf-material',
+    'scene',
 ];
 
 export const template = readTemplate('inspector-3d/asset/index.html');
@@ -32,6 +33,7 @@ export const components = {
     'asset-fbx': require('./components/fbx'),
     'asset-gltf': require('./components/gltf'),
     'asset-image': require('./components/image'),
+    'asset-scene': require('./components/scene'),
     'asset-javascript': require('./components/javascript'),
     'asset-typescript': require('./components/typescript'),
     'asset-texture': require('./components/texture'),
@@ -63,7 +65,6 @@ export const methods = {
                 Editor.I18n.t('inspector.check_is_saved.save'),
             ],
         });
-        
         if (result === 1) {
             vm._onApply(uuid);
         }

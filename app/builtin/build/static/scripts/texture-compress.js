@@ -123,14 +123,23 @@ function compress(option, cb) {
                 cb(err) 
             } else {
                 Async.each(formats, (type, done) => {
-                    let compressFunc = compressNormal;
                     if (type.startsWith('pvrtc_')) {
-                        compressFunc = compressPVR;
+                        compressPVR(temp, dst, { name: type, quality: platformOption[type]}, done);
                     }
                     else if (type.startsWith('etc')) {
-                        compressFunc = compressEtc;
+                        etcQueue.push(() => compressEtc(temp, dst, { name: type, quality: platformOption[type]}, function (err) {
+                            etcQueue.shift();
+                            done(err);
+                            if (etcQueue.length > 0) etcQueue[0]();
+                        }));
+                        if (etcQueue.length === 1) {
+                            etcQueue[0]();
+                        }
                     }
-                    compressFunc(temp, dst, { name: type, quality: platformOption[type]}, done);
+                    else {
+                        compressNormal(temp, dst, { name: type, quality: platformOption[type]}, done);
+                    }
+                    
                 }, err => {
                     remove(temp);
                     callback(err);
@@ -145,7 +154,15 @@ function compress(option, cb) {
             compressFunc = compressPVR;
         }
         else if (type.startsWith('etc')) {
-            compressFunc = compressEtc;
+            etcQueue.push(() => compressEtc(src, dst, { name: type, quality: platformOption[type]}, function (err) {
+                etcQueue.shift();
+                done(err);
+                if (etcQueue.length > 0) etcQueue[0]();
+            }));
+            if (etcQueue.length === 1) {
+                etcQueue[0]();
+            }
+            return;
         }
         compressFunc(src, dst, { name: type, quality: platformOption[type]}, done);
     }, err => {

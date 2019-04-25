@@ -26,7 +26,7 @@ export const template = `
         ></ui-checkbox>
     </ui-prop>
 
-    <ui-prop class="flipVertical"
+    <ui-prop class="isRGBE"
         label="isRGBE"
         v-if="meta ? meta.userData.type==='texture cube' : false"
     >
