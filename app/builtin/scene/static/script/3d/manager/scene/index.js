@@ -110,8 +110,13 @@ class SceneManager extends EventEmitter {
             }
             if (await current.close()) {
                 // 尝试还原上一级的编辑模式缓存
-                await this.modes[i - 1].restore();
-                Manager.Ipc.forceSend('broadcast', 'scene:change-mode', this.modes[i - 1].name);
+                while (--i >= 0) {
+                    if (this.modes[i].isOpen) {
+                        await this.modes[i].restore();
+                        break;
+                    }
+                }
+                Manager.Ipc.forceSend('broadcast', 'scene:change-mode', this.modes[i].name);
                 return true;
             }
             return false;
