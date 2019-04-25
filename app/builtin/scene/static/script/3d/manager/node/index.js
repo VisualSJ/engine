@@ -306,6 +306,10 @@ class NodeManager extends EventEmitter {
      * @param component 组件的名字
      */
     createComponent(uuid, component) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         if (Array.isArray(uuid)) {
             uuid.forEach((id) => {
                 this.createComponent(id, component);
@@ -355,6 +359,10 @@ class NodeManager extends EventEmitter {
      * @param uuid component 的 uuid
      */
     removeComponent(uuid) {
+        if (!this.canChangeNodetree()) {
+            return;
+        }
+
         const comp = compManager.query(uuid);
         if (!comp) {
             console.warn(`Remove Component failed: ${uuid} does not exist`);
@@ -715,7 +723,7 @@ class NodeManager extends EventEmitter {
         const legeal = Scene.queryMode() !== 'animation';
 
         if (!legeal) {
-            console.warn('In current editing mode, can not add, move, remove, rename nodes in the scene.');
+            console.warn('Animation editing, can not add, move, remove or rename nodes / components in the scene.');
         }
 
         return legeal;
