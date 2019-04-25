@@ -2,30 +2,49 @@
 
 const nodeManager = require('../node');
 const sceneManager = require('../scene');
-const dumpUtils = require('../../utils/dump');
-const cache = require('./cache');
+const animationManager = require('../animation');
+const cacheScene = require('./cache.scene');
+const cacheAnimation = require('./cache.animation');
 
-let steps = []; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
-let index = -1; // 当前指针
-let method = 'redo'; // 'redo' | 'undo' 已执行过的方法
+let cache = cacheScene; // 默认接入场景节点的数据
 
-let records = []; // 格式为 uuid[]
+// 底部 startBrandNewRecord() 会重置这三个参数
+let steps = null; // 记录的步骤数据, step 为 { undo: oldDumpdatas, redo: newDumpdatas }
+let index = null; // 当前指针
+let method = null; // 'redo' | 'undo' 已执行过的方法
+
+let records = []; // 格式为 [uuid]
 let timeId; // 避免连续操作带来的全部执行，
 let isRunning = false;
 let stepData = {}; // 最后需要变动的步骤数据，多次撤销的时候数据会先进行合并，格式为 { uuid1: {}, uuid2: {} }
 
-let sceneUuid = ''; // 当前记录的场景 uuid
-let mainSceneData = { // 缓存主场景的历史记录
-    sceneUuid: '',
+const prefabType = Symbol('prefab-scene');
+const mainType = Symbol('main-scene');
+
+let currentScene = { // 当前的场景, 包括编辑 prefab 时的临时场景
+    uuid: '',
+    type: '', // 场景类型 prefabType 或 mainType
+};
+
+let mainScene = { // 缓存主场景的历史记录
+    uuid: '',
     steps: null,
     index: 0,
     method: '',
 };
 
+let prefabScene = { // 缓存编辑 prefab 下场景的历史记录
+    steps: null,
+    index: 0,
+    method: '',
+};
+
+// 场景模式下 prefab 和 main scene 的切换
 sceneManager.on('before-minor', () => {
     snapshot();
 });
 
+// 场景启动完毕后的事件
 nodeManager.on('inited', (uuids, scene) => { // uuids 是当前场景所有节点的数组
     reset(uuids, scene);
 });
@@ -43,6 +62,26 @@ nodeManager.on('add', (node, enable = true) => {
 nodeManager.on('remove', (node, enable = true) => {
     enable && record(node.uuid);
     Manager.Ipc.send('change-title', false);
+});
+
+// 启动动画模式
+sceneManager.on('animation-start', (uuid) => {
+    startAnimationRecord(uuid);
+});
+
+sceneManager.on('animation-end', () => {
+    endAnimationRecord();
+});
+
+// TODO 事件和入参待定
+animationManager.on('animation-time-change', (node, enable = true) => {
+
+});
+animationManager.on('animation-state-change', (node, enable = true) => {
+
+});
+animationManager.on('animation-change', (node, enable = true) => {
+
 });
 
 // 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
@@ -73,8 +112,8 @@ function stopRecordToArchive() {
         return false;
     }
 
-    const oldData = cache.getNodes(records); // 取得旧数据
-    const newData = cache.getNewNodes(records); // 刷新 dumptree, 取得新数据
+    const oldData = cache.getData(records); // 取得旧数据
+    const newData = cache.getNewData(records); // 刷新 dumptree, 取得新数据
 
     records.length = 0;
 
@@ -199,69 +238,15 @@ async function redo() {
  * 场景刷新
  */
 async function restore() {
-    const dumpdata = steps[index][method];
-    Object.assign(stepData, dumpdata);
-
     if (isRunning) {
         return false;
     }
-
     isRunning = true;
 
-    // 数据 stepData 是 {} , key 为 uuid ，有多个，value 为改 uuid 节点的引擎属性值
-    const uuids = Object.keys(stepData);
+    const dumpdata = steps[index][method];
+    Object.assign(stepData, dumpdata);
 
-    // 先区分下要发什么样的变动事件
-    const nodesEvent = {};
-
-    const currentData = cache.getNodes(uuids);
-    for (const uuid of uuids) {
-        const current = currentData[uuid];
-        const future = stepData[uuid];
-
-        if (!future) {
-            nodesEvent[uuid] = 'remove';
-            continue;
-        }
-
-        if (current.isScene) {
-            nodesEvent[uuid] = 'change';
-            continue;
-        }
-
-        let type = 'change';
-        const currentParent = current.parent.value.uuid;
-        const futureParent = future.parent.value.uuid;
-
-        if (currentParent === '' && futureParent !== '') {
-            type = 'add';
-        }
-        if (currentParent !== '' && futureParent === '') {
-            type = 'remove';
-        }
-
-        nodesEvent[uuid] = type;
-    }
-
-    for (const uuid of uuids) {
-        const node = nodeManager.query(uuid);
-        if (node && nodesEvent[uuid] === 'change') { // remove 和 adde 节点，由父级节点的 children 变动实现，所以这边可以不操作
-            await dumpUtils.restoreNode(node, stepData[uuid]); // 还原变动的节点
-        }
-    }
-
-    // 广播事件
-    for (const uuid of uuids) {
-        const node = nodeManager.query(uuid);
-        const event = nodesEvent[uuid];
-
-        if (node) {
-            Manager.Ipc.forceSend('broadcast', `scene:${event}-node`, uuid);
-            nodeManager.emit(event, node, false);
-        }
-    }
-
-    cache.refresh(uuids);
+    await cache.restore(stepData);
 
     isRunning = false;
     stepData = {};
@@ -273,27 +258,15 @@ async function restore() {
  * 清空操作记录，重置参数
  */
 function reset(uuids, scene) {
-    if (sceneUuid === scene.uuid) { // 就是当前的场景，此处容错是因为软刷新会多次触发 scene open 事件
+    if (currentScene.uuid === scene.uuid) { // 就是当前的场景，此处容错是因为软刷新会多次触发 scene open 事件
         return;
     }
+    currentScene.uuid = scene.uuid; // 缓存当前场景 uuid
 
     if (scene.name.includes('.prefab')) { // 重要：判断此场景是编辑 prefab
-        Object.assign(mainSceneData, { // 暂存数据
-            sceneUuid,
-            steps,
-            index,
-            method,
-        });
-    }
-
-    if (mainSceneData.sceneUuid === scene.uuid) { // 提取数据
-        steps = mainSceneData.steps;
-        index = mainSceneData.index;
-        method = mainSceneData.method;
+        startPrefabRecord();
     } else {
-        steps = [];
-        index = -1;
-        method = 'redo';
+        startMainSceneRecord();
     }
 
     clearTimeout(timeId);
@@ -301,8 +274,71 @@ function reset(uuids, scene) {
     records = [];
 
     cache.reset(uuids); // 缓存尚未变动的场景数据
+}
 
-    sceneUuid = scene.uuid;
+/**
+ * 开始动画编辑模式下的 undo 记录
+ */
+function startAnimationRecord(uuid) {
+    currentScene.editingAnimation = true;
+
+    const scene = currentScene.tpye === prefabType ? prefabScene : mainScene;
+    Object.assign(scene, { // 暂存当前场景的数据
+        steps,
+        index,
+        method,
+    });
+
+    startBrandNewRecord();
+
+    cache = cacheAnimation; // 开始接入动画数据
+
+    cache.reset(uuid); // 由于动画编辑不需要持久性，开启便需要重置数据
+}
+
+/**
+ * 结束动画编辑模式
+ */
+function endAnimationRecord() {
+    // 返回，接入场景数据，场景数据需要持久性，这里不需要再 cache.reset()
+    cache = cacheScene;
+
+    // 回退上次编辑模式下的操作数据
+    const scene = currentScene.tpye === prefabType ? prefabScene : mainScene;
+    steps = scene.steps;
+    index = scene.index;
+    method = scene.method;
+}
+
+function startPrefabRecord() {
+    currentScene.tpye = prefabType;
+
+    Object.assign(mainScene, { // 暂存当前主场景的数据
+        steps,
+        index,
+        method,
+    });
+
+    startBrandNewRecord();
+}
+
+function startMainSceneRecord() {
+    currentScene.tpye = mainType;
+
+    if (mainScene.uuid === currentScene.uuid) {
+        steps = mainScene.steps;
+        index = mainScene.index;
+        method = mainScene.method;
+    } else {
+        mainScene.uuid = currentScene.uuid; // 更新当前场景的标注
+        startBrandNewRecord();
+    }
+}
+
+function startBrandNewRecord() {
+    steps = [];
+    index = -1;
+    method = 'redo';
 }
 
 module.exports = {

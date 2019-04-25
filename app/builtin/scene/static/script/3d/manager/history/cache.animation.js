@@ -1,6 +1,6 @@
 'use strict';
 
-const nodeManager = require('../node');
+const animationManager = require('../animation');
 
 let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
 
@@ -8,7 +8,7 @@ let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
  * 获取传入 uuid 获取节点上一步记录的 dump 数据
  * @param {*} uuids
  */
-function getNodes(uuids) {
+function getData(uuids) {
     const result = {};
     uuids.forEach((uuid) => {
         result[uuid] = dumpMap[uuid];
@@ -17,39 +17,37 @@ function getNodes(uuids) {
 }
 
 /**
- * 获取传入 uuid 获取节点最新的与场景一致的数据
+ * 获取传入 uuid
  * @param {*} uuids
  */
-function getNewNodes(uuids) {
+function getNewData(uuids) {
     refresh(uuids);
-    return getNodes(uuids);
+    return getData(uuids);
 }
 
 /**
- * 刷新缓存的节点树
+ * 刷新缓存
  * @param {*} uuids 数组
  */
 function refresh(uuids) {
     uuids.forEach((id) => {
-        dumpMap[id] = nodeManager.queryDump(id);
+        // dumpMap[id] = animationManager.queryDump(id);
     });
 }
 
 /**
- * 重置节点树
- * 这个触发的时机在 scene ready, 通过 history reset 的时序触发
- * 也在操作记录有截点重置的时候触发
+ * 重置
  */
 function reset(uuids) {
     dumpMap = Object.create(null);
     uuids.forEach((uuid) => {
-        dumpMap[uuid] = nodeManager.queryDump(uuid);
+        dumpMap[uuid] = animationManager.queryDump(uuid);
     });
 }
 
 module.exports = {
-    getNodes,
-    getNewNodes,
+    getData,
+    getNewData,
     refresh,
     reset,
 };
