@@ -6,7 +6,8 @@ export const template = `
         label="Type"
     >
         <ui-select slot="content"
-            :value="meta ? meta.userData.type : ''"
+            v-if="meta"
+            :value="meta.userData.type"
             @confirm="_onDataChanged($event, 'type')"
         >
             <option
@@ -21,17 +22,19 @@ export const template = `
         label="FlipVertical"
     >
         <ui-checkbox slot="content"
-            :value="meta ? meta.userData.flipVertical : false"
+            v-if="meta"
+            :value="meta.userData.flipVertical"
             @confirm="_onDataChanged($event, 'flipVertical')"
         ></ui-checkbox>
     </ui-prop>
 
     <ui-prop class="isRGBE"
         label="isRGBE"
-        v-if="meta ? meta.userData.type==='texture cube' : false"
+        v-if="meta && meta.userData.type==='texture cube'"
     >
         <ui-checkbox slot="content"
-            :value="meta ? meta.userData.isRGBE : false"
+            v-if="meta"
+            :value="meta.userData.isRGBE"
             @confirm="_onDataChanged($event, 'isRGBE')"
         ></ui-checkbox>
     </ui-prop>

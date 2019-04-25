@@ -13,15 +13,15 @@
             v-if="type === '3d'"
         >
             <asset-3d ref="asset"
-                v-if="state.db === 'ready' && item.type === 'asset' && item.uuid"
-                :uuid="item.uuid"
+                v-if="state.db === 'ready' && item.type === 'asset' && item.uuids.length"
+                :uuids="item.uuids"
                 :language="language"
                 :width="width"
             ></asset-3d>
 
             <node-3d ref="node"
-                v-if="state.scene === 'ready' && item.type === 'node' && item.uuid"
-                :uuid="item.uuid"
+                v-if="state.scene === 'ready' && item.type === 'node' && item.uuids.length"
+                :uuids="item.uuids"
 
                 :width="width"
                 :height="height"

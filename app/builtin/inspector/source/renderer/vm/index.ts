@@ -21,7 +21,7 @@ export function init(elem: HTMLElement) {
 
             item: {
                 type: '', // 选中物体的类型
-                uuid: '', // 选中物体的 uuid
+                uuids: [], // 选中物体的 uuid 列表
             },
 
             width: 0,
@@ -80,14 +80,16 @@ export function init(elem: HTMLElement) {
     });
 
     vm.$on('set-property', (dump: any) => {
-        Editor.Ipc.sendToPanel('scene', 'set-property', {
-            uuid: vm.item.uuid,
-            path: dump.path,
-            dump: {
-                type: dump.type,
-                isArray: dump.isArray,
-                value: dump.value,
-            },
+        vm.item.uuids.forEach((uuid: string) => {
+            Editor.Ipc.sendToPanel('scene', 'set-property', {
+                uuid,
+                path: dump.path,
+                dump: {
+                    type: dump.type,
+                    isArray: dump.isArray,
+                    value: dump.value,
+                },
+            });
         });
     });
 

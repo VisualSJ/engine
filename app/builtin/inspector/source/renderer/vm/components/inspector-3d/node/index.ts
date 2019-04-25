@@ -9,7 +9,7 @@ export const props = [
     'width',
     'height',
 
-    'uuid',
+    'uuids',
     'language',
 ];
 
@@ -35,53 +35,54 @@ export const methods = {
         // @ts-ignore
         return Editor.I18n.t(`inspector.${key}`, this.language);
     },
+
     /**
      * 刷新当前选中的节点
      */
     async refresh() {
+        debugger
         // @ts-ignore
         const vm: any = this;
 
         const id = ++vm.num;
 
-        if (!vm.uuid) {
+        if (!vm.uuids || !vm.uuids.length) {
             vm.dump = null;
             return;
         }
 
-        if (Array.isArray(vm.uuid)) {
-            const dumps = [];
-            for (const uuid of vm.uuid) {
-                const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
-                dumps.push(dump);
+        const dumps = [];
+        for (const uuid of vm.uuids) {
+            const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
+            dumps.push(dump);
+
+            // 如果请求数据中途，又有数据更新（num 变化），则忽略这个数据
+            if (id !== vm.num) {
+                return;
             }
-            const result = mergeDumps(dumps);
-            vm.dump = translationDump(result);
-            return;
-        }
-        const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', vm.uuid);
-
-        // 如果请求数据中途，又有数据更新（num 变化），则忽略这个数据
-        if (id !== vm.num) {
-            return;
         }
 
-        if (!dump) {
-            vm.dump = null;
-            return;
-        }
+        const result = mergeDumps(dumps);
 
-        if (dump.isScene) {
-            vm.dump = transSceneDump(dump);
+        if (result.isScene) {
+            vm.dump = transSceneDump(result);
         } else {
-            vm.dump = translationDump(dump);
+            vm.dump = translationDump(result);
         }
-
     },
 
+    /**
+     * 添加组件
+     */
     async _onAddComponentMenu(event: any) {
         // @ts-ignore
         const vm: any = this;
+
+        if (vm.uuids.length !== 1) {
+            return;
+        }
+
+        const uuid = vm.uuids[0];
 
         const { left, bottom } = event.target.getBoundingClientRect();
         const components = await Editor.Ipc.requestToPanel('scene', 'query-components');
@@ -127,7 +128,7 @@ export const methods = {
                     click() {
                         Editor.Ipc.sendToPanel('scene', 'snapshot');
                         Editor.Ipc.sendToPanel('scene', 'create-component', {
-                            uuid: vm.uuid,
+                            uuid,
                             component: item.priority === -1 ? name : item.name,
                         });
                     },
@@ -144,7 +145,7 @@ export const methods = {
 };
 
 export const watch = {
-    uuid() {
+    uuids() {
         // @ts-ignore
         this.refresh();
     },

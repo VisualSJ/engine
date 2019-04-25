@@ -20,7 +20,7 @@ const importers: string[] = [
 export const template = readTemplate('inspector-3d/asset/index.html');
 
 export const props = [
-    'uuid',
+    'uuids',
     'language',
     'width',
 ];
@@ -51,7 +51,7 @@ export const methods = {
     break(uuid: string) {
         // @ts-ignore
         const vm: any = this;
-        uuid = uuid || vm.uuid;
+        uuid = uuid || vm.uuids[0];
 
         if (!vm.dirty) {
             return;
@@ -94,7 +94,7 @@ export const methods = {
         const vm: any = this;
 
         // 资源暂时不支持多选
-        const uuid = Array.isArray(vm.uuid) ? vm.uuid[0] : vm.uuid;
+        const uuid = vm.uuids[0];
 
         vm.info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         vm.meta = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-meta', uuid);
@@ -149,7 +149,7 @@ export const methods = {
         // @ts-ignore
         const vm: any = this;
         if (typeof uuid !== 'string') {
-            uuid = vm.uuid;
+            uuid = vm.uuids[0];
         }
 
         if (vm.$refs.component && vm.$refs.component.apply) {
@@ -171,9 +171,10 @@ export const methods = {
 };
 
 export const watch = {
-    uuid(nData: string, oData: string) {
+
+    uuids(nData: string, oData: string) {
         // @ts-ignore
-        this.break(oData);
+        this.break(oData[0]);
         // @ts-ignore
         this.refresh();
     },

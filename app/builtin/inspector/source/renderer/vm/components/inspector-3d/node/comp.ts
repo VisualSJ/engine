@@ -10,7 +10,7 @@ export const props = [
 
     'index',
     'total',
-    'uuid',
+    'uuids',
     'value',
 ];
 
@@ -45,11 +45,15 @@ export const methods = {
     _onClickComponentMenu(event: any) {
         const vm: any = this;
 
+        if (vm.uuids.length !== 0) {
+            return;
+        }
+
         const { left, bottom } = event.target.getBoundingClientRect();
         const x = Math.round(left + 5);
         const y = Math.round(bottom + 5);
 
-        const uuid = vm.uuid;
+        const uuid = vm.uuids[0];
         const total = vm.total;
         const index = vm.index;
 

@@ -90,12 +90,11 @@ export const messages = {
         // @ts-ignore
         clearTimeout(this._unselectTimer);
         const uuids = Editor.Selection.getSelected(type);
+
+        // 更新选中的物体类型
         vm.item.type = type;
-        if (uuids.length > 1) {
-            vm.item.uuid = Array.from(uuids);
-        } else {
-            vm.item.uuid = uuid;
-        }
+        // 更新选中的 uuid 列表
+        vm.item.uuids = Array.from(uuids);
     },
 
     /**
@@ -107,38 +106,39 @@ export const messages = {
         if (!vm) {
             return;
         }
-        // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
-        if (vm.item.type === type) {
-            // @ts-ignore
-            clearTimeout(this._unselectTimer);
-            _waitDeleteUuids.push(uuid);
 
-            // TODO
-            // 这里的 vm.item.uuid 其实应该改为 uuids，并且强制定义为数组
-            // 否则所有使用的地方都需要增加许多重复的判断
-            // @ts-ignore
-            this._unselectTimer = setTimeout(() => {
-                while (_waitDeleteUuids.length) {
-                    const uuid = _waitDeleteUuids.pop();
-
-                    if (Array.isArray(vm.item.uuid)) {
-                        const index = vm.item.uuid.indexOf(uuid);
-                        if (index !== -1) {
-                            vm.item.uuid.splice(index, 1);
-                        }
-                        if (vm.item.uuid.length === 1) {
-                            vm.item.uuid = vm.item.uuid[0];
-                        } else if (vm.item.uuid.length === 0) {
-                            vm.item.type = '';
-                            vm.item.uuid = '';
-                        }
-                    } else if (vm.item.uuid === uuid) {
-                        vm.item.type = '';
-                        vm.item.uuid = '';
-                    }
-                }
-            }, 200);
+        if (vm.item.type !== type) {
+            return;
         }
+
+        // 延迟判断是否需要清空，如果只是 unselect，立马 select 了其他数据，则不需要清空
+        // @ts-ignore
+        clearTimeout(this._unselectTimer);
+        _waitDeleteUuids.push(uuid);
+
+        // @ts-ignore
+        this._unselectTimer = setTimeout(() => {
+            while (_waitDeleteUuids.length) {
+                const uuid = _waitDeleteUuids.pop();
+
+                const index = vm.item.uuids.indexOf(uuid);
+                if (index !== -1) {
+                    vm.item.uuids.splice(index, 1);
+                }
+
+                if (vm.item.uuids.length === 0) {
+                    vm.item.type = '';
+                    vm.item.uuids = [];
+                }
+            }
+        }, 200);
+    },
+
+    /**
+     * 如果时间变化的时候，需要更新显示数据
+     */
+    async 'scene:animation-time-change'() {
+        vm.$refs.node && vm.$refs.node.refresh();
     },
 
     /**
@@ -203,10 +203,10 @@ export async function ready() {
     vm = init(panel.$.content);
 
     const type = Editor.Selection.getLastSelectedType();
-    const uuid = Editor.Selection.getSelected(type);
+    const uuids = Editor.Selection.getSelected(type);
 
     vm.item.type = type;
-    vm.item.uuid = uuid;
+    vm.item.uuids = uuids;
 
     if (await Editor.Ipc.requestToPackage('asset-db', 'query-ready')) {
         vm.state.db = 'ready';
