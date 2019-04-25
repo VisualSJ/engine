@@ -30,17 +30,17 @@ class AnimationOperation {
         //修改所有帧数据的时间
         let clip = state.clip;
         let paths = utils.queryPaths(clip);
-        paths.splice(0, 0, '/');
         paths.forEach((path) => {
             let curveData = utils.queryCurveDataFromClip(clip, path);
             if (!curveData) {
                 return;
             }
-            utils.eachCurve(curveData, (comp, prop, keys) => {
-                keys.forEach((key) => {
-                    let frame = Math.round(key.frame * clip.sample);
-                    key.frame = frame / sample;
-                });
+            utils.eachCurve(curveData, (comp, prop, keyDatas) => {
+                let keys = clip._keys[keyDatas.keys];
+                for (let i = 0; i < keys.length; i++) {
+                    let frame = Math.round(keys[i] * clip.sample);
+                    keys[i] = frame / sample;
+                }
             });
         });
 
@@ -92,7 +92,7 @@ class AnimationOperation {
             return false;
         }
 
-        if (cc.WrapMode[mode] === undefined) {
+        if (cc.AnimationClip.WrapMode[mode] === undefined) {
             mode = 0;
         }
 
@@ -118,17 +118,16 @@ class AnimationOperation {
         }
 
         // 如果清除的是根节点
-        if (path === '/') {
-            delete state.clip.curveData.props;
-            delete state.clip.curveData.comps;
-        } else {
+        if (path !== '/') {
             path = path.substr(1);
-            if (state.clip.curveData.paths && state.clip.curveData.paths[path]) {
-                delete state.clip.curveData.paths[paths].props;
-                delete state.clip.curveData.paths[paths].comps;
-            }
         }
 
+        if (state.clip.curveDatas && state.clip.curveDatas[path]) {
+            delete state.clip.curveDatas[path].props;
+            delete state.clip.curveDatas[path].comps;
+        }
+
+        utils.removeUnusedKeys(state.clip);
         utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
@@ -158,16 +157,21 @@ class AnimationOperation {
             return false;
         }
 
-        let propKeys = utils.getPropertyKeysFrom(data, comp, prop);
+        let propKeys = utils.getPropertyKeysDataFrom(data, comp, prop);
         if (!propKeys) {
             if (comp) {
                 let comps = data.comps = data.comps || {};
                 let props = comps[comp] = comps[comp] || {};
-                propKeys = props[prop] = props[prop] || [];
+                propKeys = props[prop] = props[prop] || {};
+
             } else {
                 let props = data.props = data.props || {};
-                propKeys = props[prop] = props[prop] || [];
+                propKeys = props[prop] = props[prop] || {};
             }
+            let length = state.clip._keys.push([]);
+            propKeys.keys = length - 1;
+            propKeys.values = [];
+            propKeys.easingMethods = [];
         }
         state.initialize(animData.node);
 
@@ -198,9 +202,15 @@ class AnimationOperation {
         let props = utils.getPropertysFrom(data, comp);
 
         if (props && prop) {
+            let propKeysData = props[prop];
+            let keys = propKeysData.keys;
+            if (keys >= 0) {
+                state.clip._keys.splice(keys, 1);
+            }
             delete props[prop];
         }
 
+        utils.removeUnusedKeys(state.clip);
         utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
 
@@ -217,8 +227,9 @@ class AnimationOperation {
      * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
      * @param {String} prop 属性的名字
      * @param {number} frame 关键帧位置
+     * @param {Object} customData 一些特殊数据，比如拖入时间轴的spriteFrame
      */
-    createKey(uuid, clipUuid, path, comp, prop, frame = 0) {
+    createKey(uuid, clipUuid, path, comp, prop, frame = 0, customData = {}) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
@@ -238,6 +249,12 @@ class AnimationOperation {
         }
 
         let value = target[prop];
+        if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
+            if (customData.uuid) {
+                value = customData.uuid;
+            }
+        }
+
         if (!utils.createKey(state.clip, path, comp, prop, frame, value)) {
             return false;
         }
@@ -258,30 +275,106 @@ class AnimationOperation {
      * @param {number} offset 移动的距离
      */
     moveKeys(uuid, clipUuid, path, comp, prop, frames, offset) {
+        if (offset === 0) {
+            return false;
+        }
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        let keys = utils.queryPropertyKeys(state.clip, path, comp, prop);
-        if (!keys) {
+        let keyframes = utils.queryPropertyKeyframeDatas(state.clip, path, comp, prop);
+        if (!keyframes) {
             return false;
         }
 
         let sample = state.clip.sample;
 
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-            let curFrame = Math.round(key.frame * sample);
-            let index = frames.indexOf(curFrame);
-            if (index >= 0) {
-                let newFrame = curFrame + offset;
-                if (newFrame < 0) { newFrame = 0; }
-                key.frame = newFrame / sample;
-                frames.splice(index, 1);
+        let keys = state.clip._keys[keyframes.keys];
+        let values = keyframes.values;
+        let easingMethods = keyframes.easingMethods;
+
+        // move frames
+        frames.forEach((frame) => {
+            let dstFrame = frame + offset;
+            if (dstFrame < 0) { dstFrame = 0; }
+            let dstTime = dstFrame / sample;
+
+            let dstIndex = 0;
+            let srcIndex = 0;
+            let findDstIndex = false;
+            let isOverride = false;
+            // 遍历一遍得到到所需要的信息
+            for (let i = 0; i < keys.length; i++) {
+                let key = keys[i];
+
+                // 查找待copy的关键帧所在位置
+                let curFrame = Math.round(key * sample);
+                if (curFrame === frame) {
+                    srcIndex = i;
+                }
+
+                // 查找移动目标位置，第一个大于目标时间的位置
+                if (curFrame > dstFrame) {
+                    if (!findDstIndex) {
+                        dstIndex = i;
+                        findDstIndex = true;
+                    }
+                }
+
+                // 要覆盖现有的关键帧
+                if (curFrame === dstFrame) {
+                    isOverride = true;
+                    dstIndex = i;
+                    findDstIndex = true;
+                }
             }
-        }
+
+            if (!findDstIndex) {
+                dstIndex = keys.length;
+            }
+
+            // 覆盖关键帧，删除源关键帧
+            if (isOverride) {
+                //keys[dstIndex] = keys[srcIndex];
+                values[dstIndex] = values[srcIndex];
+                easingMethods[dstIndex] = easingMethods[srcIndex];
+
+                keys.splice(srcIndex, 1);
+                values.splice(srcIndex, 1);
+                easingMethods.splice(srcIndex, 1);
+                return;
+            }
+
+            // 在序列中位置没有发生改变，只需要用新的值覆盖旧的值就可以了
+            if (srcIndex === dstIndex) {
+                keys[srcIndex] = dstTime;
+                return;
+            }
+
+            // 需要插入到新的dstIndex位置,删除旧位置数据
+            if (offset > 0) {
+                keys.splice(dstIndex, 0, dstTime);
+                values.splice(dstIndex, 0, values[srcIndex]);
+                easingMethods.splice(dstIndex, 0, easingMethods[srcIndex]);
+
+                keys.splice(srcIndex, 1);
+                values.splice(srcIndex, 1);
+                easingMethods.splice(srcIndex, 1);
+            } else {
+                let temp = {key: keys[srcIndex], value: values[srcIndex],
+                    easingMethod: easingMethods[srcIndex]};
+
+                keys.splice(srcIndex, 1);
+                values.splice(srcIndex, 1);
+                easingMethods.splice(srcIndex, 1);
+
+                keys.splice(dstIndex, 0, dstTime);
+                values.splice(dstIndex, 0, temp.value);
+                easingMethods.splice(dstIndex, 0, temp.easingMethod);
+            }
+        });
 
         utils.recalculateDuration(state.clip);
         state.initialize(animData.node);
@@ -296,33 +389,43 @@ class AnimationOperation {
      * @param {Strig} path 节点数据路径
      * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
      * @param {String} prop 属性的名字
-     * @param {number} frame 关键帧位置
+     * @param {number} frames 关键帧位置数组
      */
-    removeKey(uuid, clipUuid, path, comp, prop, frame) {
+    removeKey(uuid, clipUuid, path, comp, prop, frames) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        let keys = utils.queryPropertyKeys(state.clip, path, comp, prop);
-        if (!keys) {
+        if (!frames) {
             return false;
         }
 
-        let sample = state.clip.sample;
-
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-            if (Math.round(key.frame * sample) === frame) {
-                keys.splice(i, 1);
-                utils.recalculateDuration(state.clip);
-                state.initialize(animData.node);
-                return true;
-            }
+        if (!Array.isArray(frames)) {
+            frames = [frames];
         }
 
-        return false;
+        frames.forEach((frame) => {
+            let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
+            if (!keyData) {
+                return;
+            }
+
+            let keyIdx = keyData.keyIndex;
+            let keys = state.clip._keys[keyData.keyframes.keys];
+            let values = keyData.keyframes.values;
+            let easingMethods = keyData.keyframes.easingMethods;
+
+            keys.splice(keyIdx, 1);
+            values.splice(keyIdx, 1);
+            easingMethods.splice(keyIdx, 1);
+        });
+
+        utils.recalculateDuration(state.clip);
+        state.initialize(animData.node);
+
+        return true;
     }
 
     /**
@@ -333,8 +436,9 @@ class AnimationOperation {
      * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
      * @param {String} prop 属性的名字
      * @param {number} frame 关键帧位置
+     * @param {Object} customData 一些特殊数据，比如拖入时间轴的spriteFrame
      */
-    updateKey(uuid, clipUuid, path, comp, prop, frame) {
+    updateKey(uuid, clipUuid, path, comp, prop, frame, customData) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
@@ -342,37 +446,27 @@ class AnimationOperation {
         }
 
         const node = animData.node;
-
-        // 获取指定的节点的数据
-        let data = utils.queryCurveDataFromClip(state.clip, path);
-        if (!data) {
-            return;
-        }
-
         let target = node;
         if (comp) {
-            if (!data.comps) {
-                console.warn(`找不到component track，无法更新关键帧\n  node: ${uuid}`);
-                return false;
-            }
-            data = data.comps[comp];
             target = node.getComponent(comp);
-        } else {
-            data = data.props;
         }
 
-        const keys = data[prop];
+        let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
+        if (!keyData) {
+            return false;
+        }
 
-        let sample = state.clip.sample;
-
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-            if (Math.round(key.frame * sample) === frame) {
-                key.value = target[prop];
-                state.initialize(node);
-                return true;
+        let value = target[prop];
+        if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
+            if (customData.uuid) {
+                value = customData.uuid;
             }
         }
+
+        let values = keyData.keyframes.values;
+        values[keyData.keyIndex] = value;
+
+        state.initialize(node);
 
         return false;
     }
@@ -401,7 +495,8 @@ class AnimationOperation {
             let frame = srcFrames[i];
             let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
             if (keyData) {
-                utils.createKey(state.clip, path, comp, prop, dstFrame + frame - srcFrames[0], keyData.value);
+                let value = keyData.keyframes.values[keyData.keyIndex];
+                utils.createKey(state.clip, path, comp, prop, dstFrame + frame - srcFrames[0], value);
             }
         }
 
@@ -435,10 +530,15 @@ class AnimationOperation {
         let props = utils.getPropertysFrom(data, comp);
 
         if (props && prop) {
-            props[prop] = [];
-            utils.recalculateDuration(state.clip);
-            state.initialize(animData.node);
-            return true;
+            propData = props[prop];
+            if (propData) {
+                state.clip._keys[propData.keys] = [];
+                propData.values = [];
+                propData.easingMethods = [];
+                utils.recalculateDuration(state.clip);
+                state.initialize(animData.node);
+                return true;
+            }
         }
 
         return false;
@@ -474,19 +574,26 @@ class AnimationOperation {
      * 删除事件关键帧
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
-     * @param {object} frame 事件帧所在位置
+     * @param {object} frames 事件帧所在位置数组
      */
-    deleteEvent(uuid, clipUuid, frame) {
+    deleteEvent(uuid, clipUuid, frames) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        let key = utils.deleteEvent(state.clip, frame);
-        if (!key) {
+        if (!frames) {
             return false;
         }
+
+        if (!Array.isArray(frames)) {
+            frames = [frames];
+        }
+
+        frames.forEach((frame) => {
+            utils.deleteEvent(state.clip, frame);
+        });
 
         utils.recalculateDuration(state.clip);
         state.initialize(animData.node);

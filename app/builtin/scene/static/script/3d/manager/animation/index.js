@@ -92,6 +92,7 @@ class AnimationManager extends EventEmitter {
             }
 
             if (await Scene._popMode('animation')) {
+                this.stop();
                 AnimEditState.record = false;
 
                 // 暂停循环定时器
@@ -285,6 +286,7 @@ class AnimationManager extends EventEmitter {
             playTime = state.duration;
         }
 
+        state.weight = 1;
         state.setTime(playTime);
         state.sample();
         state.play();
@@ -482,6 +484,7 @@ class AnimationManager extends EventEmitter {
             return false;
         }
         if (operation[func](Scene.modes.animation.root, ...args)) {
+            this.emit('scene:animation-change', Scene.modes.animation.root, this._curEditClipUuid);
             Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.modes.animation.root, this._curEditClipUuid);
         }
     }
@@ -542,7 +545,7 @@ class AnimationManager extends EventEmitter {
 
         let clip = state.clip;
         // 检查是否有属性轨迹
-        let keys = utils.queryPropertyKeys(clip, path, compName, propName);
+        let keys = utils.queryPropertyKeyframeDatas(clip, path, compName, propName);
         if (!keys) {
             return;
         }
@@ -550,8 +553,8 @@ class AnimationManager extends EventEmitter {
         // 打上关键帧
         let sample = clip.sample;
         let curFrame = Math.round(this._curEditTime * sample);
-        let key = utils.queryKey(clip, path, compName, propName, curFrame);
-        if (!key) {
+        let keyData = utils.queryKey(clip, path, compName, propName, curFrame);
+        if (!keyData) {
             this.operation('createKey', this._curEditClipUuid, path, compName, propName, curFrame);
         } else {
             this.operation('updateKey', this._curEditClipUuid, path, compName, propName, curFrame);

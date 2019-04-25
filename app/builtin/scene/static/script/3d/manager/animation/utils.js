@@ -26,13 +26,13 @@ class AnimationUtil {
         function handleProps(props) {
             const result = {};
 
-            for (let key in props) {
-                if (key) {
-                    // special for 骨骼动画
-                    if (!Array.isArray(props[key])) {
-                        props[key] = props[key].keyframes;
+            for (let propName in props) {
+                if (propName) {
+                    let propData = props[propName];
+                    let dumpKeys = handleKeys(propData);
+                    if (dumpKeys) {
+                        result[propName] = dumpKeys;
                     }
-                    result[key] = props[key].map(handleKey);
                 }
             }
             return result;
@@ -49,24 +49,37 @@ class AnimationUtil {
             return result;
         }
 
-        function handleKey(key) {
-            return {
-                frame: Math.round(key.frame * sample),
-                dump: dumpEncode.encodeObject(key.value, { default: null }),
-            };
+        function handleKeys(propKeysData) {
+            if (propKeysData && propKeysData.keys >= 0) {
+                let keys = clip._keys[propKeysData.keys];
+                let values = propKeysData.values;
+                let dumpKeys = [];
+
+                if (keys) {
+                    keys.forEach((key, index) => {
+                        dumpKeys.push({
+                            frame: Math.round(key * sample),
+                            dump: dumpEncode.encodeObject(values[index], {default: null}),
+                        });
+                    });
+
+                    return dumpKeys;
+                }
+            }
+
+            return null;
         }
 
         let paths = {};
 
-        paths['/'] = {
-            props: handleProps(clip.curveData.props),
-            comps: handleComps(clip.curveData.comps),
-        };
-
-        Object.keys(clip.curveData.paths || {}).forEach((path) => {
-            paths[`/${path}`] = {
-                props: handleProps(clip.curveData.paths[path].props),
-                comps: handleComps(clip.curveData.paths[path].comps),
+        Object.keys(clip.curveDatas || {}).forEach((path) => {
+            let dumpPath = path;
+            if (path !== '/') {
+                dumpPath = `/${path}`;
+            }
+            paths[dumpPath] = {
+                props: handleProps(clip.curveDatas[path].props),
+                comps: handleComps(clip.curveDatas[path].comps),
             };
         });
 
@@ -96,10 +109,13 @@ class AnimationUtil {
      */
     queryPaths(clip) {
         clip = clip || {};
-        let data = clip.curveData || {};
-        let paths = Object.keys(data.paths || {});
+        let data = clip.curveDatas || {};
+        let paths = Object.keys(data || {});
         paths = paths.map((path) => {
-            return '/' + path;
+            if (path !== '/') {
+                path = '/' + path;
+            }
+            return path;
         });
         return paths;
     }
@@ -130,16 +146,20 @@ class AnimationUtil {
         // 所以有一定几率造成小数点吼比对出现问题，需要转成整数后对比
         let sample = clip.sample;
 
-        let keys = this.queryPropertyKeys(clip, path, component, property);
+        let keyframes = this.queryPropertyKeyframeDatas(clip, path, component, property);
 
+        let keys = null;
+        if (keyframes.keys >= 0) {
+            keys = clip._keys[keyframes.keys];
+        }
         if (!keys) {
             return null;
         }
 
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
-            if (Math.round(key.frame * sample) === frame) {
-                return key;
+            if (Math.round(key * sample) === frame) {
+                return {keyIndex: i, keyframes};
             }
         }
 
@@ -157,15 +177,11 @@ class AnimationUtil {
             return null;
         }
 
-        if (path === '/') {
-            return clip.curveData || null;
-        } else {
+        if (path !== '/') {
             path = path.substr(1);
-            if (clip.curveData.paths && clip.curveData.paths[path]) {
-                return clip.curveData.paths[path];
-            }
         }
-        return null;
+
+        return clip.curveDatas[path];
     }
 
     /**
@@ -179,32 +195,28 @@ class AnimationUtil {
             return null;
         }
 
-        if (path === '/') {
-            if (!clip.curveData) {
-                clip.curveData = {};
-            }
-            return clip.curveData;
-        } else {
+        if (path !== '/') {
             path = path.substr(1);
-            if (!clip.curveData.paths) {
-               clip.curveData.paths = {};
-            }
-
-            if (!clip.curveData.paths[path]) {
-                clip.curveData.paths[path] = {};
-            }
-
-            return clip.curveData.paths[path];
         }
+
+        if (!clip.curveDatas) {
+            clip.curveDatas = {};
+         }
+
+        if (!clip.curveDatas[path]) {
+             clip.curveDatas[path] = {};
+        }
+
+        return clip.curveDatas[path];
     }
 
     /**
-     * 从一个 curveData 数据，拿出某个属性的所有关键帧数据
+     * 从一个 curveData 数据，拿出某个属性的关键帧数据
      * @param {*} curveData
      * @param {*} comp
      * @param {*} prop
      */
-    getPropertyKeysFrom(curveData, comp, prop) {
+    getPropertyKeysDataFrom(curveData, comp, prop) {
         if (comp) {
             if (!curveData.comps || !curveData.comps[comp] || !curveData.comps[comp][prop]) {
                 console.log(`动画数据中找不到组件(${comp})的属性(${prop})`);
@@ -416,13 +428,13 @@ class AnimationUtil {
 
     /**
      * 查询 clip 内属性轨道的数据
-     * 返回的是一个关键帧数组或null
+     * 返回的是一个关键帧据或null
      * @param {object} clip clip 数据
      * @param {string} path 带有 root 的路径信息，如：'/root/l1/l2'
      * @param {string} component 组件的名字
      * @param {string} property 属性的名字
      */
-    queryPropertyKeys(clip, path, component, property) {
+    queryPropertyKeyframeDatas(clip, path, component, property) {
         if (!clip) {
             return null;
         }
@@ -432,9 +444,9 @@ class AnimationUtil {
             return null;
         }
 
-        let keys = this.getPropertyKeysFrom(data, component, property);
+        let keysData = this.getPropertyKeysDataFrom(data, component, property);
 
-        return keys;
+        return keysData;
     }
 
     /**
@@ -453,10 +465,66 @@ class AnimationUtil {
         curve.comps && Object.keys(curve.comps).forEach((comp) => {
             let props = curve.comps[comp];
             props && Object.keys(props).forEach((prop) => {
-                let keys = props[prop];
-                handle(comp, prop, keys);
+                let propKeysData = props[prop];
+                handle(comp, prop, propKeysData);
             });
         });
+    }
+
+    removeUnusedKeys(clip) {
+        let paths = this.queryPaths(clip);
+
+        let usedKeyDatas = [];
+        paths.forEach((path) => {
+            let curveData = this.queryCurveDataFromClip(clip, path);
+            if (!curveData) {
+                return;
+            }
+            this.eachCurve(curveData, (comp, prop, propKeysData) => {
+                if (propKeysData && propKeysData.keys >= 0) {
+                    let keyData = {};
+                    keyData[propKeysData.keys] = propKeysData.keys;
+                    usedKeyDatas.push(keyData);
+                }
+            });
+        });
+
+        let unUsedKeys = [];
+        let usedKeys = usedKeyDatas.map((data) => {return data.oriKey; });
+        clip._keys.forEach((data, index) => {
+            if (!usedKeys.includes(index)) {
+                unUsedKeys.push(index);
+            }
+        });
+
+        unUsedKeys.sort((a, b) => { return b - a; });
+        // 重新计算删除后的keys索引
+        unUsedKeys.forEach((key) => {
+            Object.keys(usedKeyDatas).forEach((dataKey) => {
+                if (dataKey > key) {
+                    usedKeyDatas[dataKey]--;
+                }
+            });
+        });
+
+        // 删除无用的key数组
+        unUsedKeys.forEach((key) => {
+            clip._keys.splice(key, 1);
+        });
+
+        // 重新映射keys索引
+        paths.forEach((path) => {
+            let curveData = this.queryCurveDataFromClip(clip, path);
+            if (!curveData) {
+                return;
+            }
+            this.eachCurve(curveData, (comp, prop, propKeysData) => {
+                if (propKeysData && propKeysData.keys >= 0) {
+                    usedKeyDatas.push({oriKey: propKeysData.keys, newKey: propKeysData.keys});
+                }
+            });
+        });
+
     }
 
     /**
@@ -465,7 +533,6 @@ class AnimationUtil {
      */
     recalculateDuration(clip) {
         let paths = this.queryPaths(clip);
-        paths.splice(0, 0, '/');
         let duration = 0;
         let sample = clip.sample;
 
@@ -474,16 +541,20 @@ class AnimationUtil {
             if (!curveData) {
                 return;
             }
-            this.eachCurve(curveData, (comp, prop, keys) => {
-                if (!keys || !keys.length) {
+            this.eachCurve(curveData, (comp, prop, propKeysData) => {
+                if (!propKeysData) {
                     return;
                 }
-                let key = keys[keys.length - 1];
-                if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
-                    duration = Math.max((Math.round(key.frame * sample) + 1) / sample, duration);
-                } else {
-                    duration = Math.max(key.frame, duration);
+                if (propKeysData.keys >= 0) {
+                    let keys = clip._keys[propKeysData.keys];
+                    let key = keys[keys.length - 1];
+                    if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
+                        duration = Math.max((Math.round(key * sample) + 1) / sample, duration);
+                    } else {
+                        duration = Math.max(key, duration);
+                    }
                 }
+
             });
         });
 
@@ -513,10 +584,10 @@ class AnimationUtil {
             return false;
         }
 
-        let key = this.queryKey(clip, path, component, property, frame);
-        if (key) {
-            key.curve = data;
-            return false;
+        let keyData = this.queryKey(clip, path, component, property, frame);
+        if (keyData) {
+            keyData.keyframes.easingMethods[keyData.keyIndex] = data;
+            return true;
         } else {
             return false;
         }
@@ -583,29 +654,42 @@ class AnimationUtil {
     }
 
     createKey(clip, path, comp, prop, frame, value) {
-        let key = this.queryKey(clip, path, comp, prop, frame);
+        let keyData = this.queryKey(clip, path, comp, prop, frame);
 
-        if (key) {
-            key.value = value;
-            return key;
+        if (keyData) {
+            keyData.keyframes.values[keyData.keyIndex] = value;
+            return keyData;
         }
 
-        let keys = this.queryPropertyKeys(clip, path, comp, prop);
-        if (!keys) {
+        let keyframeDatas = this.queryPropertyKeyframeDatas(clip, path, comp, prop);
+        if (!keyframeDatas) {
             return null;
         }
 
-        key = {
-            frame: frame / clip.sample,
-            value: value,
-            curve: null,
-        };
-        keys.push(key);
-        keys.sort((a, b) => {
-            return a.frame - b.frame;
-        });
+        if (keyframeDatas.keys < 0) {
+            return null;
+        }
 
-        return key;
+        let keysData = clip._keys[keyframeDatas.keys];
+        if (!keysData) {
+            return null;
+        }
+
+        let newKeyTime = frame / clip.sample;
+        let insertIndex = 0;
+        let i = 0;
+        for (i = 0 ; i < keysData.length; i++) {
+            if (keysData[i] > newKeyTime) {
+                break;
+            }
+        }
+        insertIndex = i;
+
+        keysData.splice(insertIndex, 0, newKeyTime);
+        keyframeDatas.values.splice(insertIndex, 0, value);
+        keyframeDatas.easingMethods.splice(insertIndex, 0, null);
+
+        return {keyIndex: insertIndex, keyframes: keyframeDatas};
     }
 }
 
