@@ -149,6 +149,19 @@ export function apply(messages: any) {
     };
 
     /**
+     * 暂存一个节点的实例化对象
+     * 一般用在复制节点的动作，给下一步粘贴（创建）节点准备数据
+     */
+    messages['copy-node'] = async (uuids: string | string[]) => {
+        if (!$scene) {
+            return false;
+        }
+
+        // 返回 true
+        return await $scene.forwarding('Node', 'copyNode', [uuids]);
+    };
+
+    /**
      * 创建一个新的节点
      */
     messages['create-node'] = async (options: CreateNodeOptions) => {

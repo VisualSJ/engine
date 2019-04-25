@@ -267,28 +267,12 @@ export async function getCopyData(uuids: string[]) {
         const node = exports.getNodeFromTree(uuid);
         if (!exports.canNotCopyNode(node)) {
             rt.uuids.push(uuid);
-            await getDump(uuid);
+            rt.dumps[uuid] = await db.getDumpdata(uuid);
         }
     }
 
-    async function getDump(uuid: string) {
-        if (!uuid) {
-            return;
-        }
+    await db.copyNode(rt.uuids);
 
-        const node = exports.getNodeFromTree(uuid);
-        if (!exports.canNotCopyNode(node)) {
-            const dumpdata = await db.getDumpdata(uuid);
-            rt.dumps[uuid] = dumpdata;
-
-            // 循环子节点
-            if (Array.isArray(dumpdata.children)) {
-                for (const child of dumpdata.children) {
-                    await getDump(child.value.uuid);
-                }
-            }
-        }
-    }
     return rt;
 }
 

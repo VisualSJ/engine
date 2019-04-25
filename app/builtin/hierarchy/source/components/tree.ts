@@ -844,11 +844,6 @@ export const methods = {
             for (const node of nodes) {
                 const dumpdata = vm.copyNodesDumpdata[node.uuid];
                 const newUuid = await db.pasteNode(parent, dumpdata);
-                // 循环其子集
-                const children = dumpdata.children.map((child: any) => child.value.uuid);
-                if (children.length > 0) {
-                    await _forEach(children, newUuid);
-                }
                 newSelected.push(newUuid);
             }
         }
@@ -915,11 +910,6 @@ export const methods = {
 
                 i += 1;
 
-                // 循环其子集
-                const children = dumpdata.children.map((child: any) => child.value.uuid);
-                if (children.length > 0) {
-                    await _forEach(children, newUuid);
-                }
                 newSelected.push(newUuid);
             }
         }

@@ -8,7 +8,6 @@
 const EventEmitter = require('../../../public/EventEmitter');
 const { get } = require('lodash');
 const utils = require('./utils');
-const uuidUtils = require('../../../utils/uuid');
 const compManager = require('./../component/index');
 const { promisify } = require('util');
 
@@ -17,12 +16,9 @@ const Scene = require('../scene');
 const dumpUtils = require('../../utils/dump');
 const getComponentFunctionOfNode = require('../../utils/get-component-function-of-node');
 
-const Reg_Uuid = /^[0-9a-fA-F-]{36}$/;
-const Reg_NormalizedUuid = /^[0-9a-fA-F]{32}$/;
-const Reg_CompressedUuid = /^[0-9a-zA-Z+/]{22,23}$/;
-
 const supportTypes = ['cc.Prefab', 'cc.Mesh'];
 let uuid2node = {};
+let stashNodeInstants = null; // 用于复制粘贴操作，暂存被复制节点的 clone 对象
 
 /**
  * 节点管理器
@@ -373,6 +369,43 @@ class NodeManager extends EventEmitter {
     }
 
     /**
+     * 复制节点的动作，给下一步粘贴（创建）节点准备数据
+     * @param {*} uuids 单个 string 或 array
+     */
+    copyNode(uuids) {
+        if (!Array.isArray(uuids)) {
+            uuids = [uuids];
+        }
+
+        stashNodeInstants = Object.create(null);
+
+        function changeFileId(node) {
+            if (node._prefab) {
+                node._prefab.fileId = node.uuid;
+            }
+
+            if (node.children.length > 0) {
+                node.children.forEach((child) => {
+                    changeFileId(child);
+                });
+            }
+        }
+
+        uuids.forEach((uuid) => {
+            const node = this.query(uuid);
+            if (node) {
+                const instant = cc.instantiate(node);
+
+                // Hack 目前 cc.instantiate 没有变动 fileId，这里变动一下，使它不重复
+                changeFileId(instant);
+
+                stashNodeInstants[uuid] = instant;
+            }
+        });
+        return true;
+    }
+
+    /**
      * 创建一个新节点
      * @param {*} uuid
      * @param {*} name
@@ -394,36 +427,25 @@ class NodeManager extends EventEmitter {
             parent = cc.director._scene;
         }
 
-        const node = new cc.Node();
+        let node = null;
 
-        // 一般情况下是 dumpdata
         if (dump) {
-            if (typeof dump === 'string') {
-                // dump 为 uuid 的情况
-                dump = this.queryDump(dump);
-            }
-            // 这几个属性不需要赋给一个新节点
-            delete dump.uuid;
-            delete dump.parent;
-            delete dump.children;
-
-            // 删除 components 里面多余的属性
-            if (dump.__comps__.length > 0) {
-                for (let i = 0; i < dump.__comps__.length; i++) {
-                    delete dump.__comps__[i].value.uuid;
-                    delete dump.__comps__[i].value.node;
-                }
+            let dumpUuid = null;
+            if (typeof dump === 'string') { // 传入的 dump 是一个 uuid
+                dumpUuid = dump;
+            } else {
+                dumpUuid = dump.uuid.value;
             }
 
-            // 有 __prefab__ 数据的情况
-            if (dump.__prefab__) {
-                const root = parent._prefab ? parent._prefab.root : node;
-                Object.assign(dump.__prefab__, {
-                    rootUuid: root.uuid,
-                });
+            const clone = stashNodeInstants[dumpUuid];
+            if (clone) {
+                node = cc.instantiate(clone);
+            } else {
+                // 容错处理：目前创建节点的机制下不应该进到这里
+                node = new cc.Node();
             }
-
-            await dumpUtils.restoreNode(node, dump);
+        } else {
+            node = new cc.Node();
         }
 
         if (name) {

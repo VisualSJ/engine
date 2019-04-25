@@ -56,6 +56,10 @@ function decodeChildren(children: any[], node: any) {
 
 // 差异还原节点上的组件
 async function decodeComponents(dumpComps: any, node: any, excludeComps?: any) {
+    if (!dumpComps) { // 容错处理
+        return;
+    }
+
     const dumpCompsUuids = dumpComps.map((comp: any) => {
         // @ts-ignore
         if (comp.value.uuid) {

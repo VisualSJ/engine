@@ -166,6 +166,13 @@ export async function getDumpdata(uuid: string) {
 }
 
 /**
+ * 复制节点
+ */
+export async function copyNode(uuids: string | string[]) {
+    return await Editor.Ipc.requestToPackage('scene', 'copy-node', uuids);
+}
+
+/**
  * 粘贴节点到指定父级
  * @param parent  父级 uuid
  * @param dump  被复制的节点 dump 数据
