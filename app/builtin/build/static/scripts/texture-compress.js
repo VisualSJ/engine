@@ -28,6 +28,7 @@ function changeSuffix(path, suffix) {
     return Path.join(Path.dirname(path), Path.basename(path, Path.extname(path)) + suffix);
 }
 
+let etcQueue = [];
 /**
  *
  * 压缩图片资源入口
