@@ -419,6 +419,12 @@ export const methods = {
         if (json.type !== 'folder') {
             content = '';
 
+            if (json.type === 'ts' || json.type === 'js') {
+                if (json.params) {
+                    json.params.Name = json.name;
+                }
+            }
+
             const fileUrl = `db://internal/default_file_content/${json.type}`;
             const fileUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', fileUrl);
             if (fileUuid) {
