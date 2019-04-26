@@ -18,11 +18,11 @@
                 
             <template v-if="nodeDump">
                 <node-tree
-                    v-for="item of nodeDump.nodes"
+                    v-for="(item, index) of nodeDump.nodes"
                     :dumps="item"
                     :select="selectedId"
                     :uuid="currentClip"
-                    :key="item.path"
+                    :key="index"
                     @datachange="onNodes"
                 ></node-tree>
             </template>
@@ -92,7 +92,7 @@
                     >
                         <preview-row 
                             v-for="(item, index) in nodeDump.nodes"
-                            :path="item.name"
+                            :path="item.path"
                             :key-frames=calcNodeFrames(item.path)
                             :index="index"
                             :select-Info="selectKeyInfo"

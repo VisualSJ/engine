@@ -309,6 +309,7 @@ export const methods = {
             from: uuid,
             type: asset.type,
         }));
+
         // @ts-ignore 给其他面板使用
         event.dataTransfer.setData('value', asset.redirect ? asset.redirect.uuid : uuid);
 

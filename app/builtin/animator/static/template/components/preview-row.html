@@ -37,18 +37,18 @@
             :index="index"
             @mousedown="onMouseDown($event, index)"
         >    
-            <template 
-                v-if="keyType === 'key'"
-            >
-                <div  class="dot"></div>
-            </template>
             <template
-                v-if="keyType === 'sprite'"
+                v-if="checkRightSrc(item.imageSrc)"
             >
                 <img class="sprite-key"
                     :src="item.imageSrc" 
                     :alt="item.imageSrc"
                 >
+            </template>
+            <template 
+                v-else
+            >
+                <div  class="dot"></div>
             </template>
         </div>
     </template>
@@ -67,12 +67,12 @@
     <template v-if="selectKey">
         <div 
             v-for="item in selectKey"
-            :class="[typeof(item.imageSrc) === 'string' && name ? 'sprite' : 'key', 'active']" 
+            :class="calcSelectClass(item.imageSrc)" 
             name="key"
             :style="queryKeyStyle(item.x)"
         >
             <template
-                v-if="typeof(item.imageSrc) === 'string' && name"
+                v-if="checkRightSrc(item.imageSrc) && name"
             >
                 <img class="sprite-key"
                     :src="item.imageSrc" 

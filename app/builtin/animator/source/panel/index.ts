@@ -622,6 +622,21 @@ export async function ready() {
                 return result;
             },
 
+            /**
+             * 将 event 上的 x 值，转换为关键帧
+             * @param x
+             */
+            pageToFrame(x: number) {
+                const that: any = this;
+                const offset = x - that.$refs.left.offsetWidth - that.$refs.left.getBoundingClientRect().x - that.startOffset;
+                const offsetFrame = Math.round(that.grid.pixelToValueH(Math.abs(offset)));
+                if (offset > 0) {
+                    return offsetFrame;
+                } else {
+                    return -offsetFrame;
+                }
+            },
+
             // 计算关键帧数据的实际显示位置
             calcFrames(keyFrames: any[]) {
                 if (!keyFrames) {
@@ -870,14 +885,18 @@ export async function ready() {
                                 event.target.style.cursor = 'ew-resize';
                             }
                             const {startX, data} = that.selectKeyInfo;
-                            const offset = event.x - startX;
-                            if (Math.abs(offset) < 4) {
+                            const startFrame = that.pageToFrame(event.x);
+                            const endFrame = that.pageToFrame(startX);
+                            const offsetFrame = that.pageToFrame(event.x) - that.pageToFrame(startX);
+                            if (offsetFrame === 0) {
                                 return;
                             }
+                            const offset = that.grid.valueToPixelH(startFrame) - that.grid.valueToPixelH(endFrame);
                             requestAnimationFrame(() => {
-                                that.selectKeyInfo.startX = event.x;
-                                that.selectKeyInfo.offset += offset;
-                                data.forEach((item: any) => {
+                            that.selectKeyInfo.startX = event.x;
+                            that.selectKeyInfo.offset += offset;
+                            that.selectKeyInfo.offsetFrame += offsetFrame;
+                            data.forEach((item: any) => {
                                     item.x += offset;
                                 });
                             });
@@ -891,11 +910,17 @@ export async function ready() {
                                 event.target.style.cursor = 'ew-resize';
                             }
                             const {startX, data} = that.selectEventInfo;
+                            const startFrame = that.pageToFrame(event.x);
+                            const endFrame = that.pageToFrame(startX);
+                            const offsetFrame = that.pageToFrame(event.x) - that.pageToFrame(startX);
+                            if (offsetFrame === 0) {
+                                return;
+                            }
+                            const offset = that.grid.valueToPixelH(startFrame) - that.grid.valueToPixelH(endFrame);
                             requestAnimationFrame(() => {
-                                const offset = event.x - startX;
-                                that.selectEventInfo.startX = event.x;
-                                that.selectEventInfo.offset += offset;
-                                data.forEach((item: any) => {
+                            that.selectEventInfo.startX = event.x;
+                            that.selectEventInfo.offset += offset;
+                            data.forEach((item: any) => {
                                     item.x += offset;
                                 });
                             });
@@ -912,8 +937,7 @@ export async function ready() {
                         break;
                     case 'pointer':
                         event.target.style.cursor = 'ew-resize';
-                        that.currentFrame = Math.round(that.grid.pixelToValueH(x -
-                            that.$refs.left.offsetWidth - that.$refs.left.getBoundingClientRect().x));
+                        that.currentFrame = that.pageToFrame(x);
                 }
             },
 
@@ -982,6 +1006,9 @@ export async function ready() {
                         that.runPointer();
                     } else {
                         cancelAnimationFrame(that.aniPlayTask);
+                        // 预防数据未完整更新，多查询一次
+                        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+                        that.setCurrentFrame(timeToFrame(time, that.sample));
                     }
                 });
             },
@@ -1147,16 +1174,20 @@ export async function ready() {
                         if (!that.selectKeyInfo) {
                             break;
                         }
-                        if (that.selectKeyInfo.offset === 0) {
+                        // if (that.selectKeyInfo.offsetFrame === 0) {
+                        //     break;
+                        // }
+                        // let keyOffset = Math.round(that.grid.pixelToValueH(Math.abs(that.selectKeyInfo.offset)));
+                        // if (that.selectKeyInfo.offset < 0) {
+                        //     keyOffset = - keyOffset;
+                        // }
+                        const {offsetFrame, params} = that.selectKeyInfo;
+                        if (offsetFrame === 0) {
                             break;
                         }
-                        const keyOffset = Math.round(that.grid.pixelToValueH(that.selectKeyInfo.offset));
-                        if (keyOffset === 0) {
-                            break;
-                        }
-                        for (const item of that.selectKeyInfo.params) {
+                        for (const item of params) {
                             item[3] = [item[3]];
-                            Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...item, keyOffset);
+                            Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...item, offsetFrame);
                         }
                         that.selectKeyInfo = null;
                         break;

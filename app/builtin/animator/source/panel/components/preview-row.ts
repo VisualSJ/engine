@@ -34,7 +34,6 @@ export const watch = {
         const that: any = this;
         cancelAnimationFrame(that.refreshTask);
         that.refreshTask = requestAnimationFrame (async () => {
-            console.log('keyFrames');
             await that.refresh();
         });
     },
@@ -149,6 +148,17 @@ export const methods = {
         that.keyData = keyData;
     },
 
+    calcSelectClass(src: any) {
+        const that: any = this;
+        const result = ['active'];
+        if (that.checkRightSrc(src) && that.name) {
+            result.push('sprite');
+        } else {
+            result.push('key');
+        }
+        return result;
+    },
+
     idDisplay(x: number) {
         const that: any = this;
         if (!that.canvasSize) {
@@ -182,15 +192,31 @@ export const methods = {
      */
     async queryImageSrc(dump: any) {
         if (!dump) {
-            return '';
+            return false;
         }
         if (!dump.value) {
-            return '';
+            return false;
         }
         const uuid = dump.value.uuid.match(/(\S*)@[^@]*$/)[1];
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        if (!asset) {
+            return false;
+        }
         const libraryPath = asset.library[extname(asset.name)];
+        if (!libraryPath) {
+            return false;
+        }
         return libraryPath;
+    },
+
+    checkRightSrc(src: any) {
+        if (typeof(src) === 'boolean') {
+            return true;
+        }
+
+        if (typeof(src) === 'string') {
+            return true;
+        }
     },
 
     openBezierEditor(data: any) {
@@ -241,6 +267,7 @@ export const methods = {
             dragInfo = {
                 startX: event.x,
                 offset: 0,
+                offsetFrame: 0,
                 params: [param],
                 data: [data],
             };
