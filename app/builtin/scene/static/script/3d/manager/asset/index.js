@@ -206,7 +206,7 @@ function canDrop(type) {
 }
 
 function onDragOver(event) {
-    if (!canDrop(event.type)) {
+    if (!event || !canDrop(event.type)) {
         return;
     }
     const {resultNode} = selection.getResultNode(event.x, event.y);

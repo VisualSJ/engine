@@ -308,6 +308,8 @@ export async function ready() {
              * 刷新数据
              */
             async refresh() {
+                vm.resizePanel();
+
                 // 清空原数据
                 vm.clear();
 

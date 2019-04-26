@@ -47,7 +47,7 @@ export const methods = {
         const sort = vm.$refs.tree.sortType;
 
         // 保存数据
-        Editor.Ipc.sendToPackage('assets', 'staging', {expand, sort});
+        Editor.Ipc.sendToPackage('assets', 'staging', { expand, sort });
     },
 
     /**
@@ -55,7 +55,7 @@ export const methods = {
      */
     async unstaging() {
         // 初始化缓存数据
-        const {expand, sort} = await Editor.Ipc.requestToPackage('assets', 'query-staging');
+        const { expand, sort } = await Editor.Ipc.requestToPackage('assets', 'query-staging');
 
         // 节点的折叠
         if (!expand) {
@@ -320,6 +320,8 @@ export async function ready() {
              * 刷新数据
              */
             async refresh() {
+                vm.resizePanel();
+
                 // 清空原数据
                 vm.clear();
 

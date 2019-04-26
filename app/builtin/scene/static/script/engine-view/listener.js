@@ -35,6 +35,10 @@ const utils = {
         };
     },
     creatDragEvent(event, bcr) {
+        // 容错处理
+        if (!Editor.UI.DragArea.currentDragInfo) {
+            return;
+        }
         const {type, value} = Editor.UI.DragArea.currentDragInfo;
         const newEvent = utils.createMouseEvent(event, bcr);
         newEvent.type = type;
@@ -118,7 +122,7 @@ module.exports = function(elem) {
     elem.addEventListener('dragover', (event) => {
         const bcr = elem.getBoundingClientRect();
         const newEvent = utils.creatDragEvent(event, bcr);
-        if (!dragSupportTypes.includes(newEvent.type)) {
+        if (newEvent && !dragSupportTypes.includes(newEvent.type)) {
             return;
         }
         event.preventDefault(); // 阻止原生事件，不添加 drop 事件无法触发

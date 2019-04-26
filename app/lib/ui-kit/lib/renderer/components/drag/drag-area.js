@@ -110,7 +110,7 @@ class DragArea extends window.HTMLElement {
         let types = this.getAttribute('dropable');
         let hoving = types && types.indexOf(type) !== -1;
 
-        if (!hoving && Array.isArray(dragInfo.extends)) {
+        if (!hoving && dragInfo && Array.isArray(dragInfo.extends)) {
             hoving = dragInfo.extends.some((type) => {
                 return types && types.indexOf(type) !== -1;
             });
