@@ -171,7 +171,7 @@ class NumInput extends Base {
     // invalid
 
     get value() {
-        return this.getAttribute('value') || '';
+        return this.getAttribute('value') - 0 || 0;
     }
     set value(val) {
         val -= 0;
@@ -304,19 +304,18 @@ class NumInput extends Base {
         }
 
         // 暂存数据
-        this.$root._staging = this.value;
+        this.$root._staging = this.$root.value;
 
         // 全选所有的文本
         this.select();
-
     }
 
     /**
      * input 丢失焦点
      */
     _onInputBlur() {
-        if (this.$root._staging !== this.value) {
-            this.$root._confirm();
+        if (this.$root._staging !== this.value - 0) {
+            this.$root._confirm(true);
         }
         // 取消缓存的数据
         this.$root._staging = null;
@@ -362,7 +361,7 @@ class NumInput extends Base {
 
     //////////////////////////
 
-    _confirm() {
+    _confirm(ignore) {
         const inputFocused = this._staging !== null;
 
         // 如果数据修改，则发送 confirm 事件
@@ -372,10 +371,12 @@ class NumInput extends Base {
             this.dispatch('confirm');
         }
 
-        if (inputFocused) {
-            this.focus();
-        } else {
-            this.$input.focus();
+        if (!ignore) {
+            if (inputFocused) {
+                this.focus();
+            } else {
+                this.$input.focus();
+            }
         }
     }
 

@@ -246,7 +246,7 @@ class Input extends Base {
      */
     _onInputBlur() {
         if (this.$root._staging !== this.value) {
-            this.$root._confirm();
+            this.$root._confirm(true);
         }
         // 取消缓存的数据
         this.$root._staging = null;
@@ -299,7 +299,7 @@ class Input extends Base {
 
     //////////////////////////
 
-    _confirm() {
+    _confirm(ignore) {
         const inputFocused = this._staging !== null;
 
         // 如果数据修改，则发送 confirm 事件
@@ -309,10 +309,12 @@ class Input extends Base {
             this.dispatch('confirm');
         }
 
-        if (inputFocused) {
-            this.focus();
-        } else {
-            this.$input.focus();
+        if (!ignore) {
+            if (inputFocused) {
+                this.focus();
+            } else {
+                this.$input.focus();
+            }
         }
     }
 
