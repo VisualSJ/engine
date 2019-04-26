@@ -75,6 +75,7 @@ export function data() {
             'limitVelocityOvertimeModule',
             'rotationOvertimeModule',
             'textureAnimationModule',
+            'trailModule',
         ],
     };
 }
