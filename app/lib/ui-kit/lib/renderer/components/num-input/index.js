@@ -325,6 +325,11 @@ class NumInput extends Base {
      * input 数据修改
      */
     _onInputChange() {
+        let value = this.value - 0;
+        if (isNaN(value)) {
+            return;
+        }
+
         // 更新当前组件上的 value
         this.$root.value = this.value;
 
@@ -371,6 +376,8 @@ class NumInput extends Base {
             this.dispatch('confirm');
         }
 
+        this.$input.value = this.value;
+
         if (!ignore) {
             if (inputFocused) {
                 this.focus();
@@ -389,6 +396,8 @@ class NumInput extends Base {
             this.dispatch('change');
             this.dispatch('cancel');
         }
+
+        this.$input.value = this.value;
 
         if (inputFocused) {
             this.focus();
