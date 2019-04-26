@@ -42,7 +42,10 @@ export const methods = {
         }
         const expand = JSON.stringify(uuidsIsExpand);
 
-        Editor.Ipc.sendToPackage('hierarchy', 'staging', { expand });
+        Editor.Ipc.sendToPackage('hierarchy', 'staging', {
+            expand,
+            animationUuid: vm.$refs.tree.animationUuid,
+        });
     },
 
     /**
@@ -50,7 +53,7 @@ export const methods = {
      */
     async unstaging() {
         // 初始化缓存的折叠数据
-        const { expand } = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging');
+        const { expand, animationUuid } = await Editor.Ipc.requestToPackage('hierarchy', 'query-staging');
 
         if (!expand) {
             vm.$refs.tree.firstAllExpand = false;
@@ -61,6 +64,14 @@ export const methods = {
             uuidsIsExpand.forEach((uuid: string) => {
                 vm.$set(vm.$refs.tree.folds, uuid, true);
             });
+        }
+
+        // 检查是否有在编辑动画
+        if (animationUuid) {
+            const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
+            if (mode === 'animation') {
+                vm.$refs.tree.animationUuid = animationUuid;
+            }
         }
     },
     /**

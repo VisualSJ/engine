@@ -162,6 +162,11 @@ export const methods = {
     },
 
     animationStart(uuid: string) {
+        // 容错处理：确保节点存在
+        if (!utils.getNodeFromTree(uuid)) {
+            return;
+        }
+
         vm.animationUuid = uuid;
     },
 
