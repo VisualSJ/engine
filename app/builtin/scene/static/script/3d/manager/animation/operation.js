@@ -203,11 +203,6 @@ class AnimationOperation {
         let props = utils.getPropertysFrom(data, comp);
 
         if (props && prop) {
-            let propKeysData = props[prop];
-            let keys = propKeysData.keys;
-            if (keys >= 0) {
-                state.clip._keys.splice(keys, 1);
-            }
             delete props[prop];
         }
 

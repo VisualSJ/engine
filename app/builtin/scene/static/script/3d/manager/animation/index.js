@@ -564,14 +564,14 @@ class AnimationManager extends EventEmitter {
             path = '/';
             isAnimNode = true;
         } else {
-            path = '';
+            path = '/' + node.name;
             let iterNode = node.parent;
             while (iterNode) {
-                path = '/' + iterNode.name + path;
                 if (iterNode === animRootNode) {
                     isAnimNode = true;
                     break;
                 }
+                path = '/' + iterNode.name + path;
                 iterNode = iterNode.parent;
             }
         }
