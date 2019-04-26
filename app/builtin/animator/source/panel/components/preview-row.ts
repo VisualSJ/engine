@@ -1,11 +1,10 @@
 import { extname } from 'path';
-import { pathToFileURL } from 'url';
 
 'use strict';
 const {join} = require('path');
 const {readFileSync} = require('fs-extra');
 export const template = readFileSync(join(__dirname, './../../../static/template/components/preview-row.html'), 'utf-8');
-
+const LINEHEIGHT = 24;
 export const props = [
     'keyFrames',
     'selectInfo',
@@ -33,11 +32,11 @@ export const watch = {
     // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
         const that: any = this;
-        clearTimeout(that.refreshTask);
-        that.refreshTask = setTimeout (async () => {
+        cancelAnimationFrame(that.refreshTask);
+        that.refreshTask = requestAnimationFrame (async () => {
             console.log('keyFrames');
             await that.refresh();
-        }, 18);
+        });
     },
     // offset() {
     //     const that: any = this;
@@ -55,7 +54,7 @@ export const computed = {
         if (!that.scroll) {
             return true;
         }
-        if (that.offsetHeight >= 0 && that.offsetHeight < that.scroll.height + 20) {
+        if (that.offsetHeight >= 0 && that.offsetHeight < that.scroll.height + LINEHEIGHT) {
             return true;
         }
     },
@@ -69,7 +68,7 @@ export const computed = {
 
     offsetHeight() {
         const that: any = this;
-        return that.index * 20 - that.scroll.top;
+        return that.index * LINEHEIGHT - that.scroll.top;
     },
 
     // 筛选出能在当前组件内显示的选中关键帧数据
@@ -183,10 +182,10 @@ export const methods = {
      */
     async queryImageSrc(dump: any) {
         if (!dump) {
-            return false;
+            return '';
         }
         if (!dump.value) {
-            return false;
+            return '';
         }
         const uuid = dump.value.uuid.match(/(\S*)@[^@]*$/)[1];
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
@@ -224,6 +223,7 @@ export const methods = {
     },
 
     async onMouseDown(event: any, index: number) {
+        event.stopPropagation();
         const that: any = this;        // @ts-ignore
         const data = JSON.parse(JSON.stringify(that.keyData[index]));
         const param = [that.path, data.comp, data.prop, data.frame];
@@ -252,6 +252,7 @@ export const methods = {
     },
 
     onPopMenu(event: any) {
+        event.stopPropagation();
         const that: any = this;
         const params: any = {};
         const name = event.target.getAttribute('name');
@@ -273,18 +274,19 @@ export const methods = {
                     label.push(that.t('paste_key', 'property.'));
                 }
             }
-            // 移除关键帧
-            operate.push('removeKey');
-            label.push(that.t('remove_key', 'property.'));
-        } else {
-            operate.push('createKey');
-            label.push(that.t('create_key', 'property.'));
             const style = event.target.style.transform;
             let offset = 0;
             if (style) {
                 offset = style.match(/translateX\((.*)px\)/)[1];
             }
             params.x = event.offsetX + Number(offset);
+            // 移除关键帧
+            operate.push('removeKey');
+            label.push(that.t('remove_key', 'property.'));
+        } else {
+            operate.push('createKey');
+            label.push(that.t('create_key', 'property.'));
+            params.x = event.offsetX;
             if (that.canPaste()) {
                 operate.push('pasteKey');
                 label.push(that.t('paste_key', 'property.'));

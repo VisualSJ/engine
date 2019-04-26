@@ -67,12 +67,12 @@
     <template v-if="selectKey">
         <div 
             v-for="item in selectKey"
-            :class="[item.imageSrc !== 'undefined' && name ? 'sprite' : 'key', 'active']" 
+            :class="[typeof(item.imageSrc) === 'string' && name ? 'sprite' : 'key', 'active']" 
             name="key"
             :style="queryKeyStyle(item.x)"
         >
             <template
-                v-if="item.imageSrc !== 'undefined' && name"
+                v-if="typeof(item.imageSrc) === 'string' && name"
             >
                 <img class="sprite-key"
                     :src="item.imageSrc" 

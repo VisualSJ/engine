@@ -92,7 +92,7 @@
                     >
                         <preview-row 
                             v-for="(item, index) in nodeDump.nodes"
-                            :path="item.path"
+                            :path="item.name"
                             :key-frames=calcNodeFrames(item.path)
                             :index="index"
                             :select-Info="selectKeyInfo"

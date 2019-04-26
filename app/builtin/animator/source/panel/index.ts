@@ -15,7 +15,7 @@ export const style = readFileSync(join(__dirname, '../index.css'));
 export const template = readFileSync(join(__dirname, '../../static', '/template/index.html'));
 const Grid = require('./grid');
 const {smoothScale, formatNodeDump, timeToFrame, frameToTime, formatClipDump} = require('./../../static/script/utils.js');
-const LINEHEIGHT = 26;
+const LINEHEIGHT = 24;
 export const $ = {
     animator: '.animator',
     grid: '.grid',
@@ -413,7 +413,24 @@ export async function ready() {
                 if (uuid) {
                     await that.update(uuid);
                 } else {
-                    that.resetState();
+                    // 当前没有选中节点，需要判断是否已在动画编辑模式下
+                    const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
+                    mode === 'animation' ? that.animationMode = true : that.animationMode = false;
+                    if (that.animationMode) {
+                        const {rootid, clipid} = await Editor.Ipc.requestToPackage('scene', 'query-current-animation-info');
+                        that.currentClip = clipid;
+                        await that.updateRoot(rootid);
+                        const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', rootid, clipid);
+                        clipDump && (vm.clipDump = formatClipDump(clipDump));
+                        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+                        if (typeof(time) === 'number') {
+                            that.setCurrentFrame(timeToFrame(time, that.sample));
+                        }
+                        const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
+                        that.updateState(state);
+                    } else {
+                        that.resetState();
+                    }
                 }
                 // 预览初始化时获取不到文档流宽高，对 canvas 的初始化造成影响
                 requestAnimationFrame(async () => {
@@ -465,10 +482,10 @@ export async function ready() {
                         if (typeof(time) === 'number') {
                             that.setCurrentFrame(timeToFrame(time, that.sample));
                         }
-                        const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
-                        mode === 'animation' ? that.animationMode = true : that.animationMode = false;
                         const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
                         that.updateState(state);
+                        const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
+                        mode === 'animation' ? that.animationMode = true : that.animationMode = false;
                     } else {
                         that.hasAnimationComp = false;
                         that.hasAniamtionClip = false;
@@ -1004,8 +1021,7 @@ export async function ready() {
                 const that: any = this;
                 switch (operate) {
                     case 'addEvent':
-                        // @ts-ignore
-                        that.onEvents(operate, params);
+                        that.onEvents('addEvent', params);
                         break;
                     case 'update-state':
                         let operate = params[0];

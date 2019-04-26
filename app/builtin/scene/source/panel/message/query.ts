@@ -184,6 +184,14 @@ export function apply(messages: any) {
     };
 
     /**
+     * 查询当前动画的播放状态
+     * @returns {rootid,clipid}
+     */
+    messages['query-current-animation-info'] = () => {
+        return $scene.forwarding('Animation', 'getEditAnimationInfo');
+    };
+
+    /**
      * 传入一个节点，查询这个节点所在的动画节点的 uuid
      */
     messages['query-animation-root'] = (uuid: string) => {
