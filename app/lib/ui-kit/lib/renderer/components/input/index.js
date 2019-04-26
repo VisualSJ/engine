@@ -10,6 +10,19 @@ const HTML = `${fs.readFileSync(path.join(__dirname, './input.html'), 'utf8')}`;
 const instanceArray = [];
 let customStyle = '';
 
+/**
+ * Attribute
+ *
+ *   disabled: 禁用组件，显示灰色，无法输入，无法选中
+ *   readonly: 可以选中，无法输入
+ *   invalid: 无效数据
+ *
+ *   value: 当前的文本值
+ *   password: 所有输入文字都显示成 *
+ *   placeholder: 没有输入的时候显示的灰色提示文字
+ *   show-clear: 是否显示清除 value 的按钮
+ */
+
 class Input extends Base {
 
     /**
@@ -37,10 +50,12 @@ class Input extends Base {
     static get observedAttributes() {
         return [
             'disabled',
-            'value',
-            'placeholder',
             'readonly',
+            'invalid',
+
+            'value',
             'password',
+            'placeholder',
             'show-clear',
         ];
     }
@@ -53,27 +68,36 @@ class Input extends Base {
      */
     attributeChangedCallback(attr, oldData, newData) {
         switch (attr) {
+
             case 'disabled':
                 this.$input.disabled = newData !== null;
                 break;
+            case 'readonly':
+                this.$input.readonly = newData !== null;
+                break;
+            case 'invalid':
+                if (newData !== null) {
+                    this.$input.value = '-';
+                } else {
+                    this.$input.value = this.value;
+                }
+                break;
+
             case 'value':
+                // 无效状态在被修改后应该重置
+                if (this.invalid) {
+                    this.invalid = false;
+                }
                 // 如果焦点在 input 上，则不设置 value 的值
                 if (this._staging) {
                     break;
-                }
-                if (newData !== '' && this['show-clear']) {
-                    this.$clear.style.display = 'inline-block';
-                } else {
-                    this.$clear.style.display = 'none';
                 }
                 this.$input.value = newData;
                 break;
             case 'placeholder':
                 this.$input.placeholder = newData;
                 break;
-            case 'readonly':
-                this.$input.readonly = newData !== null;
-                break;
+
             case 'password':
                 this.$input.type = newData !== null ? 'password' : 'text';
                 break;
@@ -87,18 +111,27 @@ class Input extends Base {
     }
 
     ////////////////////////////
-    //
+
+    // disabled
+    // readonly
+    // invalid
+
     get value() {
         return this.getAttribute('value') || '';
     }
-
     set value(val) {
         val += '';
         this.setAttribute('value', val);
-        if (val !== '' && this['show-clear']) {
-            this.$clear.style.display = 'inline-block';
+    }
+
+    get password() {
+        return this.getAttribute('password') !== null;
+    }
+    set password(bool) {
+        if (bool) {
+            this.setAttribute('password', '');
         } else {
-            this.$clear.style.display = 'none';
+            this.removeAttribute('password');
         }
     }
 
@@ -111,22 +144,9 @@ class Input extends Base {
         this.$input.setAttribute('placeholder', val);
     }
 
-    get password() {
-        return this.getAttribute('password') !== null;
-    }
-
-    set password(val) {
-        if (val) {
-            this.setAttribute('password', '');
-        } else {
-            this.removeAttribute('password');
-        }
-    }
-
     get 'show-clear'() {
         return this.getAttribute('show-clear') !== null;
     }
-
     set 'show-clear'(val) {
         if (val) {
             this.setAttribute('show-clear', '');
@@ -145,10 +165,16 @@ class Input extends Base {
         this.$clear = this.shadowRoot.querySelector('.clear');
 
         // 指定会影响tab焦点的内部元素
-        this.$child = this.$input;
         this.$input.$root = this.$clear.$root = this;
 
+        // 焦点在内部的 input 的时候，缓存的数据，用于 esc 还原数据
         this._staging = null;
+
+        // 绑定事件
+        this.$input.addEventListener('focus', this._onInputFocus);
+        this.$input.addEventListener('blur', this._onInputBlur);
+        this.$input.addEventListener('input', this._onInputChange);
+        this.$clear.addEventListener('click', this._onClear, true);
     }
 
     /**
@@ -163,13 +189,6 @@ class Input extends Base {
         // 插入自定义样式
         const $style = this.shadowRoot.querySelector('#custom-style');
         $style.innerHTML = customStyle;
-
-        // 绑定事件
-        this.$input.addEventListener('focus', this._onInputFocus);
-        this.$input.addEventListener('blur', this._onInputBlur);
-        this.$input.addEventListener('input', this._onInputChange);
-        // this.$input.addEventListener('keydown', this._onInputKeyDown);
-        this.$clear.addEventListener('click', this._onClear, true);
     }
 
     /**
@@ -181,13 +200,6 @@ class Input extends Base {
         // 移除缓存的元素对象
         const index = instanceArray.indexOf(this);
         instanceArray.splice(index, 1);
-
-        // 取消绑定事件
-        this.$input.removeEventListener('focus', this._onInputFocus);
-        this.$input.removeEventListener('blur', this._onInputBlur);
-        this.$input.removeEventListener('input', this._onInputChange);
-        // this.$input.removeEventListener('keydown', this._onInputKeyDown);
-        this.$clear.removeEventListener('click', this._onClear, true);
     }
 
     // get set focused
@@ -199,11 +211,13 @@ class Input extends Base {
 
     /**
      * 获得了焦点
-     * 需要将焦点转移到 input 元素上
-     * @param {Event} event
      */
     _onFocus(event) {
         super._onFocus(event);
+        // 只读或者禁用状态，不需要处理
+        if (this.disabled || this.readonly) {
+            return;
+        }
         // 判断是否已按下shift键
         if (this._shiftFlag) {
             return;
@@ -213,15 +227,17 @@ class Input extends Base {
 
     /**
      * input 获得了焦点
-     * 需要记录现在的 value 数据
      */
     _onInputFocus() {
-        // 判断是否为可读或禁用
+        // 只读或者禁用状态，不需要处理
         if (this.disabled || this.readonly) {
             return;
         }
 
+        // 暂存数据
         this.$root._staging = this.value;
+
+        // 全选所有的文本
         this.select();
     }
 
@@ -229,29 +245,33 @@ class Input extends Base {
      * input 丢失焦点
      */
     _onInputBlur() {
-        // 判断是否为可读或禁用
-        if (this.disabled || this.readonly) {
-            return;
+        if (this.$root._staging !== this.value) {
+            this.$root._confirm();
         }
-
+        // 取消缓存的数据
         this.$root._staging = null;
     }
 
     /**
-     * input 被修改
+     * input 数据修改
      */
     _onInputChange() {
-        // 判断是否为可读或禁用
-        if (this.disabled || this.readonly) {
-            return;
+        // 更新 clear 按钮状态
+        if (this.value !== '' && this.$root['show-clear']) {
+            this.$root.$clear.style.display = 'inline-block';
+        } else {
+            this.$root.$clear.style.display = 'none';
         }
+
+        // 更新当前组件上的 value
         this.$root.value = this.value;
+
+        // 发送 change 事件
         this.$root.dispatch('change');
     }
 
     /**
      * input 键盘按下事件
-     * @param {Event} event
      */
     _onKeyDown(event) {
         // 判断是否为可读或禁用
@@ -259,47 +279,68 @@ class Input extends Base {
             return;
         }
 
-        const inputFocused = this._staging !== null;
-
         switch (event.keyCode) {
             case 13: // 回车
-                // 先判断值是否发生更改
-                if (this._staging !== null && this._staging !== this.value) {
-                    this._staging = this.value;
-                    this.dispatch('confirm');
-                }
-                if (inputFocused) {
-                    this.focus();
-                } else {
-                    this.$input.focus();
-                }
+                this._confirm();
                 break;
             case 27: // esc
-                // 清除定时器
-                clearTimeout(this._timer);
-                clearInterval(this._timer);
-
-                // 如果 staging 不存在，或者数据相等
-                if (this._staging !== null && this._staging !== this.value) {
-                    // 清除数据
-                    this.value = this._staging;
-                    this._staging = null;
-
-                    this.dispatch('change');
-                    this.dispatch('cancel');
-                }
-
-                this.focus();
+                this._cancel();
                 break;
         }
     }
 
+    /**
+     * 点击清除按钮
+     */
     _onClear() {
-        this.$root.value = '';
-        this.$root._onFocus();
         this.style.display = 'none';
-        this.$root.dispatch('change');
-        this.$root.dispatch('confirm');
+        this.$root._clear();
+    }
+
+    //////////////////////////
+
+    _confirm() {
+        const inputFocused = this._staging !== null;
+
+        // 如果数据修改，则发送 confirm 事件
+        if (this._staging !== null && this._staging !== this.value) {
+            this._staging = this.value;
+            this.dispatch('change');
+            this.dispatch('confirm');
+        }
+
+        if (inputFocused) {
+            this.focus();
+        } else {
+            this.$input.focus();
+        }
+    }
+
+    _cancel() {
+        const inputFocused = this._staging !== null;
+
+        // 如果缓存数据存在，这时候退出，则还原缓存数据
+        if (this._staging !== null && this._staging !== this.value) {
+            this.$input.value = this._staging;
+            this.dispatch('change');
+            this.dispatch('cancel');
+        }
+
+        if (inputFocused) {
+            this.focus();
+        }
+    }
+
+    _clear() {
+        if (this.value === '') {
+            return;
+        }
+        this.value = '';
+        this.$input.value = '';
+        this.dispatch('change');
+        this.dispatch('confirm');
+
+        this.focus();
     }
 
     // _onKeyDown

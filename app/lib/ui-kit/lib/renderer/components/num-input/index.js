@@ -20,6 +20,21 @@ const HTML = `${fs.readFileSync(path.join(__dirname, './num-input.html'), 'utf8'
 const instanceArray = [];
 let customStyle = '';
 
+/**
+ * Attribute
+ *
+ *   disabled: 禁用组件，显示灰色，无法输入，无法选中
+ *   readonly: 可以选中，无法输入
+ *   invalid: 无效数据
+ *
+ *   value: 当前的文本值
+ *   unit: 显示的单位
+ *   preci: 保留小数点位数
+ *   step: 步进数据
+ *   max: 最大值
+ *   min: 最小值
+ */
+
 class NumInput extends Base {
 
     /**
@@ -51,105 +66,16 @@ class NumInput extends Base {
         });
     }
 
-    ////////////////////////////////////////////////////
-
-    get value() {
-        let val = parseFloat(this.getAttribute('value'));
-        if (isNaN(val)) {
-            return 0;
-        }
-        if (!(this.preci == null)) {
-            let rang = mathUtils.comPreci(val);
-            if (rang > this.preci) {
-                val = val.toFixed(this.preci);
-            }
-        }
-        return mathUtils.clamp(val, this.min, this.max);
-    }
-
-    set value(val) {
-        if (isNaN(parseFloat(val)) && val !== '-') {
-            console.warn('Please enter a valid number');
-        }
-        this.setAttribute('value', val);
-    }
-
-    get step() {
-        const value = parseFloat(this.getAttribute('step'));
-        return isNaN(value) ? 0.01 : value;
-    }
-
-    set step(val) {
-        let value = isNaN(val) ? 0.01 : val;
-        this.$input.step = value;
-        this.setAttribute('step', value);
-    }
-
-    get unit() {
-        return this.getAttribute('unit');
-    }
-
-    set unit(val) {
-        this.setAttribute('unit', val);
-    }
-
-    get max() {
-        let max = this.$input.max;
-        if (max === '') {
-            max = Infinity;
-        }
-        return max;
-    }
-
-    set max(val) {
-        let value = isNaN(val) ? Infinity : val;
-        this.$input.max = value;
-        if (this.$input.max !== value) {
-            this.setAttribute('max', value);
-        }
-    }
-
-    get min() {
-        let min = this.$input.min;
-        if (min === '') {
-            min = -Infinity;
-        }
-        return min;
-    }
-
-    set min(val) {
-        let value = isNaN(val) ? -Infinity : val;
-        this.$input.min = value;
-        if (this.$input.min !== value) {
-            this.setAttribute('min', value);
-        }
-    }
-
-    set preci(val) {
-        // 输入的位数为非数字或者是负数
-        if (isNaN(val) || !(val >= 0) || val > 20) {
-            console.warn('preci only allows numbers between 0 and 20!');
-            this.setAttribute('preci', 20);
-            return;
-        }
-    }
-
-    get preci() {
-        return parseInt(this.getAttribute('preci'), 10) || 20;
-    }
-
-    // get set focused
-    // get set disabled
-    // get _shiftFlag
-
     static get observedAttributes() {
         return [
+            'disabled',
+            'readonly',
+            'invalid',
+
             'value',
             'unit',
             'preci',
             'step',
-            'disabled',
-            'readonly',
             'max',
             'min',
         ];
@@ -157,10 +83,24 @@ class NumInput extends Base {
 
     attributeChangedCallback(attr, oldData, newData) {
         switch (attr) {
+            case 'disabled':
+                this.$input.disabled = newData !== null;
+                break;
+            case 'readonly':
+                this.$input.readonly = newData !== null;
+                break;
+            case 'invalid':
+                if (newData !== null) {
+                    this.$input.value = '-';
+                } else {
+                    this.$input.value = this.value;
+                }
+                break;
+
             case 'value':
-                if (newData === undefined || newData === null) {
-                    // 新值为 undefined 或 null 则不作处理
-                    return;
+                // 无效状态在被修改后应该重置
+                if (this.invalid) {
+                    this.invalid = false;
                 }
 
                 // 如果焦点在 input 上，则不设置 value 的值
@@ -168,32 +108,36 @@ class NumInput extends Base {
                     return;
                 }
 
+                // TODO hack 允许输入 -
                 if (newData === '-') {
                     this.$input.value = '-';
-                }
-                let value;
-                // 存在 preci 控制小数点位数
-                if (!(this.preci == null)) {
-                    let rang = mathUtils.comPreci(this.value);
-                    if (rang > this.preci) {
-                        value = parseFloat(newData).toFixed(this.preci);
-                    } else {
-                        value = parseFloat(newData);
-                    }
+                    return;
                 }
 
-                // 小数点精度控制后和原来的一致，直接给 input 赋值
-                if (value.toString() === newData.toString()) {
-                    newData = mathUtils.clamp(newData, this.min, this.max);
-
-                    this.$input.value = parseFloat(newData);
+                let value = parseFloat(newData);
+                if (isNaN(value)) {
+                    value = 0;
                 }
+
+                if (typeof this.preci === 'number') {
+                    value = value.toFixed(this.preci);
+                }
+
+                if (typeof this.max === 'number') {
+                    value = Math.min(this.max, value);
+                }
+
+                if (typeof this.min === 'number') {
+                    value = Math.max(this.min, value);
+                }
+
+                this.$input.value = value;
                 break;
             case 'unit':
                 this.$unit.innerHTML = newData || '';
                 break;
             case 'preci':
-                this.preci = parseInt(newData, 10);
+                // this.preci = newData;
                 break;
             case 'step':
                 // 未设置 preci 时，可直接赋值
@@ -207,23 +151,71 @@ class NumInput extends Base {
                     console.warn('The accuracy of step needs to be consistent with preci');
                 }
                 break;
-            case 'disabled':
-                this.$input.disabled = newData !== null;
-                break;
-            case 'readonly':
-                this.$input.readonly = newData !== null;
-                break;
             case 'max':
-                this.max = newData;
+                // this.max = newData;
                 const newVal = mathUtils.clamp(this.value, this.min, this.max);
                 this.$input.value = parseFloat(newVal);
                 break;
             case 'min':
-                this.min = newData;
+                // this.min = newData;
                 const newVal2 = mathUtils.clamp(this.value, this.min, this.max);
                 this.$input.value = parseFloat(newVal2);
                 break;
         }
+    }
+
+    ////////////////////////////
+
+    // disabled
+    // readonly
+    // invalid
+
+    get value() {
+        return this.getAttribute('value') || '';
+    }
+    set value(val) {
+        val -= 0;
+        this.setAttribute('value', val);
+    }
+
+    get unit() {
+        return this.getAttribute('unit') || '';
+    }
+    set unit(val) {
+        val += '';
+        this.setAttribute('unit', val);
+    }
+
+    get preci() {
+        return this.getAttribute('preci') || null;
+    }
+    set preci(val) {
+        val -= 0;
+        this.setAttribute('preci', val);
+    }
+
+    get step() {
+        return this.getAttribute('step') || 1;
+    }
+    set step(val) {
+        val -= 0;
+        this.setAttribute('step', val);
+    }
+
+    get max() {
+        return this.getAttribute('max') || null;
+    }
+    set max(val) {
+        val -= 0;
+        this.setAttribute('max', val);
+    }
+
+    get min() {
+        return this.getAttribute('min') || null;
+    }
+    set min(val) {
+        val -= 0;
+        this.setAttribute('min', val);
     }
 
     /**
@@ -233,15 +225,23 @@ class NumInput extends Base {
         super();
         this.shadowRoot.innerHTML = `${STYLE}${CUSTOM_STYLE}${HTML}`;
         // 指定会影响 tab 焦点的内部元素
-        this.$child = this.$input = this.shadowRoot.querySelector('input');
+        this.$input = this.shadowRoot.querySelector('input');
         this.$up = this.shadowRoot.querySelector('.up');
         this.$down = this.shadowRoot.querySelector('.down');
         this.$unit = this.shadowRoot.querySelector('.unit span');
-        this.$child = this.$input;
         this.$input.$root = this.$up.$root = this.$down.$root = this;
 
-        // 记录缓存的 value 值
+        // 记录缓存的 value 值，用户 esc 还原数据
         this._staging = null;
+
+        // 绑定事件
+        this.$input.addEventListener('focus', this._onInputFocus);
+        this.$input.addEventListener('blur', this._onInputBlur);
+        this.$input.addEventListener('input', this._onInputChange);
+        
+        // 内部增加减少按钮的事件绑定
+        this.$up.addEventListener('mousedown', this._onUpMouseDown);
+        this.$down.addEventListener('mousedown', this._onDownMouseDown);
     }
 
     /**
@@ -253,44 +253,10 @@ class NumInput extends Base {
         // 缓存节点
         instanceArray.push(this);
 
-        // 初始化 attribute
-        let attrs = ['readonly', 'step', 'max', 'min', 'disabled', 'value'];
-        attrs.forEach((name) => {
-            let value = this.getAttribute(name);
-            if (value === null) {
-                return;
-            }
-            if (name === 'value') {
-                if (this.preci !== null) {
-                    let rang = mathUtils.comPreci(value);
-                    if (rang > this.preci) {
-                        value = parseFloat(value).toFixed(this.preci);
-                        this.setAttribute('value', value);
-                    }
-                }
-            }
-            this.$input.setAttribute(name, value);
-        });
-
-        // 默认值
-        if (this.$input.value === '') {
-            this.$input.value = 0;
-        }
-
-        // 给内部 input 绑定事件
-        this.$input.addEventListener('mousewheel', this._onMousewheel);
-        this.$input.addEventListener('focus', this._onInputFocus);
-        this.$input.addEventListener('input', this._onInputChange);
-        this.$input.addEventListener('blur', this._onInputBlur);
-
-        // 内部增加减少按钮的事件绑定
-        this.$up.addEventListener('mousedown', this._onUpMouseDown);
-        this.$down.addEventListener('mousedown', this._onDownMouseDown);
-        mouseUpControl(this);
-
         // 插入自定义样式
         const $style = this.shadowRoot.querySelector('#custom-style');
         $style.innerHTML = customStyle;
+        mouseUpControl(this);
     }
 
     /**
@@ -302,20 +268,133 @@ class NumInput extends Base {
         // 删除之前缓存的数据
         const index = instanceArray.indexOf(this);
         instanceArray.splice(index, 1);
-
-        this.$input.removeEventListener('mousewheel', this._onMousewheel);
-        this.$input.removeEventListener('focus', this._onInputFocus);
-        this.$input.removeEventListener('input', this._onInputChange);
-
-        this.$up.removeEventListener('mousedown', this._onUpMouseDown);
-        this.$down.removeEventListener('mousedown', this._onDownMouseDown);
         mouseUpControl(this, true);
     }
 
-    // get set focused
-    // get set disabled
-    // get _shiftFlag
+    //////////////////////
+    // 私有事件
 
+    /**
+     * 获得了焦点
+     */
+    _onFocus(event) {
+        super._onFocus(event);
+        // 只读或者禁用状态，不需要处理
+        if (this.disabled || this.readonly) {
+            return;
+        }
+        // 判断是否已按下shift键
+        if (this._shiftFlag) {
+            return;
+        }
+        this.$input.focus();
+    }
+
+    /**
+     * input 获得了焦点
+     */
+    _onInputFocus() {
+        // 只读或者禁用状态，不需要处理
+        if (this.disabled) {
+            return;
+        }
+        if (this.readonly) {
+            this.$root.focus();
+            return;
+        }
+
+        // 暂存数据
+        this.$root._staging = this.value;
+
+        // 全选所有的文本
+        this.select();
+
+    }
+
+    /**
+     * input 丢失焦点
+     */
+    _onInputBlur() {
+        if (this.$root._staging !== this.value) {
+            this.$root._confirm();
+        }
+        // 取消缓存的数据
+        this.$root._staging = null;
+    }
+
+    /**
+     * input 数据修改
+     */
+    _onInputChange() {
+        // 更新当前组件上的 value
+        this.$root.value = this.value;
+
+        // 发送 change 事件
+        this.$root.dispatch('change');
+    }
+
+    /**
+     * input 键盘按下事件
+     */
+    _onKeyDown(event) {
+        // 判断是否为可读或禁用
+        if (this.disabled || this.readonly) {
+            return;
+        }
+
+        switch (event.keyCode) {
+            case 13: // 回车
+                this._confirm();
+                break;
+            case 27: // esc
+                this._cancel();
+                break;
+            case 38: // up
+                event.preventDefault();
+                this.stepUp();
+                break;
+            case 40: // down
+                event.preventDefault();
+                this.stepDown();
+                break;
+        }
+    }
+
+    //////////////////////////
+
+    _confirm() {
+        const inputFocused = this._staging !== null;
+
+        // 如果数据修改，则发送 confirm 事件
+        if (this._staging !== null && this._staging !== this.value) {
+            this._staging = this.value;
+            this.dispatch('change');
+            this.dispatch('confirm');
+        }
+
+        if (inputFocused) {
+            this.focus();
+        } else {
+            this.$input.focus();
+        }
+    }
+
+    _cancel() {
+        const inputFocused = this._staging !== null;
+
+        // 如果缓存数据存在，这时候退出，则还原缓存数据
+        if (this._staging !== null && this._staging !== this.value) {
+            this.$input.value = this._staging;
+            this.dispatch('change');
+            this.dispatch('cancel');
+        }
+
+        if (inputFocused) {
+            this.focus();
+        }
+    }
+
+    /////////////////////////////////////////
     // 公有事件 外部可使用的接口 stepUp、stepDown
 
     /**
@@ -327,13 +406,19 @@ class NumInput extends Base {
         if (this.disabled || this.readonly) {
             return;
         }
+
         if (this._staging === null) {
             this.$input.focus();
         }
-        this.focused = true;
+
+        if (this.invalid) {
+            this.$input.value = this.value;
+        }
+
+        // this.focused = true;
         const inscrease = step || this.step;
         let value = mathUtils.accAdd(this.$input.value, inscrease);
-        if (value > this.max) {
+        if (this.max !== null && value > this.max) {
             if (this._timer) {
                 // 清除定时器
                 clearTimeout(this._timer);
@@ -355,13 +440,18 @@ class NumInput extends Base {
         if (this.disabled || this.readonly) {
             return;
         }
+
         if (this._staging === null) {
             this.$input.focus();
         }
-        this.focused = true;
+
+        if (this.invalid) {
+            this.$input.value = this.value;
+        }
+
         const decrease = step || this.step;
         let value = mathUtils.accSub(this.$input.value, decrease);
-        if (value < this.min) {
+        if (this.min !== null && value < this.min) {
             if (this._timer) {
                 // 清除定时器
                 clearTimeout(this._timer);
@@ -374,211 +464,48 @@ class NumInput extends Base {
         this.dispatch('change');
     }
 
-    //////////////////////
-    // 私有事件
-
-    /**
-     * 键盘点击事件
-     * @param {Event} event
-     */
-    _onKeyDown(event) {
-        super._onKeyDown(event);
-
-        const inputFocused = this._staging !== null;
-
-        switch (event.keyCode) {
-            ////////////////
-            // 上下箭头使用 Input 的原生事件
-            case 13: // enter
-                // 值发生变化
-                if (this._staging !== null && this._staging !== parseFloat(this.getAttribute('value'))) {
-                    this.$input.value = parseFloat(this.getAttribute('value') || 0);
-                    this.dispatch('confirm');
-                }
-
-                if (inputFocused) {
-                    this.focus();
-                } else {
-                    this.$input.focus();
-                }
-                break;
-            case 27: // esc
-                // 清除定时器
-                clearTimeout(this._timer);
-                clearInterval(this._timer);
-
-                // 如果 staging 不存在，或者数据相等
-                if (this._staging !== null && this._staging !== this.value) {
-                    // 清除数据
-                    this.value = this._staging;
-                    this.$input.value = this._staging;
-
-                    this.dispatch('change');
-                    this.dispatch('cancel');
-                }
-
-                this.focus();
-                break;
-            case 38: // up
-                this.stepUp();
-                event.preventDefault();
-                break;
-            case 40: // down
-                this.stepDown();
-                event.preventDefault();
-                break;
-        }
-    }
-
-    /**
-     * 滚轮事件,滚动滚轮控制值
-     * @param {*} event
-     */
-    _onMousewheel(event) {
-        //判断是否为可读或禁用
-        if (this.disabled || this.readonly) {
-            return;
-        }
-        //判断是否聚焦,防止 hover 时也会发生滚动控制值
-        if (!this.$root.focused) {
-            return;
-        }
-        event.preventDefault();
-        // let value;
-        if (event.wheelDelta > 0) {
-            this.$root.stepUp();
-        } else {
-            this.$root.stepDown();
-        }
-    }
-
-    /**
-     * 获得了焦点
-     * 需要将焦点转移到 input 元素上
-     * @param {*} event
-     */
-    _onFocus(event) {
-        super._onFocus(event);
-        // 判断是否已按下 shift 键
-        if (this._shiftFlag) {
-            return;
-        }
-        this.$input.focus();
-        this.focused = true;
-    }
-
-    /**
-     * blur 事件，,当值发生改变时,离开 input 则视为确认该值
-     */
-    _onBlur() {
-        super._onBlur();
-        // 判断是否为可读或禁用
-        if (this.disabled || this.readonly) {
-            return;
-        }
-        this.focused = false;
-    }
-
-    /**
-     * focus 事件,获取焦点时,存储此时的值
-     * @param {Event} event
-     */
-    _onInputFocus(event) {
-        // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readonly) {
-            return;
-        }
-        this.$root._staging = parseFloat(this.value);
-        this._inputStaging = parseFloat(this.value);
-        this.select();
-    }
-
-    /**
-     *
-     * @param {*} event
-     */
-    _onInputBlur(event) {
-        // 判断是否为可读或禁用
-        if (this.$root.disabled || this.$root.readonly) {
-            return;
-        }
-
-        if (this.$root._staging !== null) {
-            if (this.$root._staging !== parseFloat(this.value, 10)) {
-                // 设置数据
-                this.$root.setAttribute('value', this.value);
-                this.$root.dispatch('confirm');
-            }
-        }
-
-        this.$root._staging = null;
-        this._inputStaging = null;
-    }
-
-    /**
-     * input 修改事件
-     * 这里的触发机制是当且仅当输入的改变的值有效时才触发，也就是输入空格不触发 change ,若未输入值离开后将恢复原值
-     * 需要将数据回流到 root 元素上
-     */
-    _onInputChange() {
-        if (this.value === '' || !isFinite(this.value)) {
-            return;
-        }
-
-        // 比较与上一次数据的变化
-        if (parseFloat(this.value) === this._inputStaging) {
-            return;
-        }
-
-        this._inputStaging = this.value;
-        this.$root.value = this.value;
-
-        // 事件通知要在值设置好之后
-        this.$root.dispatch('change');
-    }
-
     /**
      * up 按键点击事件
      */
     _onUpMouseDown(event) {
-        event.stopPropagation();
-        this.setAttribute('pressed', '');
-        let that = this.$root;
         // 判断是否为可读或禁用
-        if (that.disabled || that.readonly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
-        clearTimeout(that._timer);
-        clearInterval(that._timer);
+        event.stopPropagation();
+        this.setAttribute('pressed', '');
+
+        clearTimeout(this.$root._timer);
+        clearInterval(this.$root._timer);
         // 初次 300 ms 延迟，以免点击时无法单步递增
-        that._timer = setTimeout(() => {
-            that._timer = setInterval(() => {
-                that.stepUp();
+        this.$root._timer = setTimeout(() => {
+            this.$root._timer = setInterval(() => {
+                this.$root.stepUp();
             }, 50);
         }, 300);
-        that.stepUp();
+        this.$root.stepUp();
     }
 
     /**
      * down 按键点击事件
      */
     _onDownMouseDown(event) {
-        event.stopPropagation();
-        this.setAttribute('pressed', '');
-        let that = this.$root;
         // 判断是否为可读或禁用
-        if (that.disabled || that.readonly) {
+        if (this.$root.disabled || this.$root.readonly) {
             return;
         }
-        clearTimeout(that._timer);
-        clearInterval(that._timer);
+        event.stopPropagation();
+        this.setAttribute('pressed', '');
+
+        clearTimeout(this.$root._timer);
+        clearInterval(this.$root._timer);
         // 初次 300 ms 延迟，以免点击时无法单步递增
-        that._timer = setTimeout(() => {
-            that._timer = setInterval(() => {
-                that.stepDown();
+        this.$root._timer = setTimeout(() => {
+            this.$root._timer = setInterval(() => {
+                this.$root.stepDown();
             }, 50);
         }, 300);
-        that.stepDown();
+        this.$root.stepDown();
     }
 
     // _onKeyUp

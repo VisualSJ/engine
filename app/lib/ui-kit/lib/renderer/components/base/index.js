@@ -54,6 +54,19 @@ class Base extends window.HTMLElement {
         }
     }
 
+    get invalid() {
+        return this.getAttribute('invalid') !== null;
+    }
+
+    set invalid(val) {
+        val = !!val;
+        if (val) {
+            this.setAttribute('invalid', '');
+        } else {
+            this.removeAttribute('invalid');
+        }
+    }
+
     set path(val) {
         this.setAttribute('path', val);
     }
@@ -136,11 +149,15 @@ class Base extends window.HTMLElement {
      * @param {Event} event
      */
     _onMouseDown(event) {
-        if (!this.disabled && !this.readonly) {
-            return;
+        if (this.readonly) {
+            this.focus();
+            event.preventDefault();
+            event.stopPropagation();
         }
-        event.preventDefault();
-        event.stopPropagation();
+        if (this.disabled) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
 
     /**

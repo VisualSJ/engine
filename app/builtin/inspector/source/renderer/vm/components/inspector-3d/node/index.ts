@@ -40,7 +40,6 @@ export const methods = {
      * 刷新当前选中的节点
      */
     async refresh() {
-        debugger
         // @ts-ignore
         const vm: any = this;
 
