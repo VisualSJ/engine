@@ -128,7 +128,7 @@ function merge(values: any[]) {
     const ignore = ['default', 'extends'];
 
     // 将 value 内的其他值合并到 result 内
-    Object.keys(temp).forEach((key) => {
+    Object.keys(temp || {}).forEach((key) => {
         if (ignore.indexOf(key) !== -1) {
             result[key] = temp[key];
             return;
