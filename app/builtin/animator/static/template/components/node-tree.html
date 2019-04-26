@@ -1,28 +1,29 @@
 <div class="content-item" 
-    v-if="dumps" 
+    v-if="dumps"
+    :selected="select === dumps.uuid"
+    @mousedown="onMouseDown(dumps.uuid)" 
 >
-    <div class="node"
-        :selected="select === dumps.uuid"
+    <div
+        class="node"
+        :title="dumps.name"
         :style="nodeStyle"
-        @mousedown="onMouseDown(dumps.uuid)"
-    >
-        <span>{{dumps.name}}</span>
-        <span class="operate" @mousedown="onOperate">
-            <!-- <i class="iconfont icon-move"
-                name="move"
-                :title="t('move_data')"
-            ></i> -->
-            <i class="iconfont icon-clear-b"
-                name="clear"
-                :title="t('clear_data')"
-            ></i>
-        </span>
-        <!-- <div class="node-edit">
-            <span></span>
-            <ui-input></ui-input>
-        </div> -->
+        >{{dumps.name}}
     </div>
-    <template v-if="dumps.children && dumps.children.length > 0" v-for="node in dumps.children">
+    <div class="operate" @mousedown="onOperate">
+        <!-- <i class="iconfont icon-move"
+            name="move"
+            :title="t('move_data')"
+        ></i> -->
+        <i class="iconfont icon-clear-b"
+            name="clear"
+            :title="t('clear_data')"
+        ></i>
+    <!-- <div class="node-edit">
+        <span></span>
+        <ui-input></ui-input>
+    </div> -->
+    </div>
+    <!-- <template v-if="dumps.children && dumps.children.length > 0" v-for="node in dumps.children">
         <node-tree v-if="node"
         :dumps="node"
         :key="node.uuid"
@@ -30,5 +31,5 @@
         :indent="node.indent"
         :uuid="uuid"
         >{{node}}</node-tree>
-    </template>
+    </template> -->
 </div>

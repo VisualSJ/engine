@@ -25,7 +25,7 @@ export const computed = {
     nodeStyle(): any {
         return {
             // @ts-ignore
-            'padding-left': `${this.indent * 8}px`,
+            'padding-left': `${this.dumps.indent * 4}px`,
         };
     },
 };
@@ -38,6 +38,10 @@ export const methods = {
     },
     onMouseDown(uuid: string) {
         // @ts-ignore
+        if (this.select === uuid) {
+            return;
+        }
+        // @ts-ignore
         Editor.Selection.unselect('node', this.select);
         Editor.Selection.select('node', uuid);
     },
@@ -49,7 +53,7 @@ export const methods = {
             case 'move':
                 break;
             case 'clear':
-                Editor.Ipc.sendToPanel('scene', 'clear-node-clip', that.uuid, that.dumps.path);
+                that.$emit('datachange', 'clearNode', [that.dumps.path]);
                 break;
         }
     },

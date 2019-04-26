@@ -19,7 +19,6 @@ export const props = [
     'time',
     'root',
     'state',
-    'dirty',
 ];
 
 export function data() {

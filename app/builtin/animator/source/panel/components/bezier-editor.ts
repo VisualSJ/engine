@@ -14,9 +14,6 @@ export function data() {
 return {
     // 预制的曲线数据
     presets: {
-        Constant: {
-
-        },
         Linear: {
             Default: [0.3, 0.3, 0.7, 0.7],
         },
@@ -63,6 +60,7 @@ return {
     },
     bezierTransform: '',
     mouseDownInfo: null,
+    applyName: 'Default',
 };
 }
 
@@ -86,8 +84,10 @@ export const methods = {
         that.currentPreset = event.target.value;
     },
 
-    applyPreset(data: number[]) {
+    applyPreset(name: string) {
         const that: any = this;
+        const data = that.presets[that.currentPreset][name];
+        that.applyName = name;
         that.currentBerzier = data;
         that.updateBezier();
         that.saveData();
@@ -115,7 +115,14 @@ export const methods = {
         if (data && data.toString() === that.currentBerzier.toString()) {
             return true;
         }
-        await Editor.Ipc.requestToPanel('scene', 'save-curve-data', that.uuid, path, comp, prop, frame, that.currentBerzier);
+
+        let bezier = null;
+        if (that.applyName) {
+            bezier = that.applyName.toLowerCase();
+        } else {
+            bezier = that.findRightBezier(that.currentBerzier);
+        }
+        await Editor.Ipc.requestToPanel('scene', 'save-curve-data', that.uuid, path, comp, prop, frame, bezier);
     },
 
     /**
@@ -163,6 +170,7 @@ export const methods = {
             that.currentBerzier.splice(2, 2, x2, x3);
         }
         requestAnimationFrame(() => {
+            that.applyName = '';
             that.updateBezier();
         });
     },
@@ -234,13 +242,54 @@ export const methods = {
         that.ctrlPoints = that.calcControl(that.currentBerzier);
         that.bezierData = that.calcBezierData(that.ctrlPoints);
     },
+
+    /**
+     * 根据数据判断是否在预制内，存在返回名称，不存在返回源数据
+     * @param data
+     */
+    findRightBezier(data: number[]) {
+        const that: any = this;
+        for (const type of that.presets) {
+            for (const name of Object.keys(that.presets[type])) {
+                if (that.presets[type][name].toString() === data.toString()) {
+                    return name.toLowerCase();
+                }
+            }
+        }
+        return data;
+    },
+
+    /**
+     * 根据名字查找对应的曲线数据，没找到则返回默认值
+     * @param checkName
+     */
+    findBezierData(checkName: string) {
+        const that: any = this;
+        for (const type of that.presets) {
+            for (const name of Object.keys(that.presets[type])) {
+                if (checkName === name.toLowerCase()) {
+                    that.currentPreset = type;
+                    that.applyName = name;
+                    return that.presets[type][name];
+                }
+            }
+        }
+        // 没找到，返回默认值
+        return that.presets.Linear.Default;
+    },
 };
 
 export function mounted() {
     // @ts-ignore
     const that: any = this;
     if (that.keyframe && that.keyframe.curve) {
-        that.currentBerzier = Array.from(that.keyframe.curve);
+        if (typeof(that.keyframe.curve) === 'string') {
+            that.currentBerzier = that.findBezierData(that.keyframe.curve);
+        } else {
+            // 数据类型的曲线
+            that.applyName = '';
+            that.currentBerzier = Array.from(that.keyframe.curve);
+        }
     } else {
         that.currentBerzier = Array.from(that.presets.Linear.Default);
     }

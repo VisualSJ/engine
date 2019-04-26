@@ -10,6 +10,7 @@ export const template = `
 
 export const props = [
     'uuid',
+    'updataFlag',
 ];
 
 export function data() {
@@ -20,6 +21,11 @@ return {
 
 export const watch = {
     async uuid() {
+        // @ts-ignore
+        await this.refresh();
+    },
+
+    async updateFlag() {
         // @ts-ignore
         await this.refresh();
     },
@@ -35,6 +41,7 @@ export const methods = {
     t(key: string) {
         return Editor.I18n.t(`animator.property.${key}`);
     },
+
     async onMouseDown(event: any) {
         const that: any = this;
         const name = event.target.getAttribute('name');

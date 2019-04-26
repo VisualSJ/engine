@@ -1,3 +1,6 @@
+import { extname } from 'path';
+import { pathToFileURL } from 'url';
+
 'use strict';
 const {join} = require('path');
 const {readFileSync} = require('fs-extra');
@@ -9,33 +12,66 @@ export const props = [
     'copyInfo',
     'path',
     'name',
-    'offset',
+    'comp',
+    'prop',
+    'canvasSize',
+    'index',
+    'scroll',
+    'wrapHeight',
 ];
 
 export function data() {
     return {
-        display: true,
         virtualkeys: [],
         keyData: [],
+        imageSrc: [],
+        refreshTask: null,
     };
 }
 
 export const watch = {
+    // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
-        // @ts-ignore
-        this.refresh();
+        const that: any = this;
+        clearTimeout(that.refreshTask);
+        that.refreshTask = setTimeout (async () => {
+            console.log('keyFrames');
+            await that.refresh();
+        }, 18);
     },
+    // offset() {
+    //     const that: any = this;
+    //     cancelAnimationFrame(that.refreshTask);
+    //     that.refreshTask = requestAnimationFrame(async () => {
+    //         console.log('keyFrames');
+    //         await that.refresh();
+    //     });
+    // },
 };
 
 export const computed = {
-    params() {
+    display() {
         const that: any = this;
-        if (that.keyFrames.length < 1) {
-            return [];
+        if (!that.scroll) {
+            return true;
         }
-        const {comp, prop} = that.keyFrames[0];
-        return [that.path, comp, prop];
+        if (that.offsetHeight >= 0 && that.offsetHeight < that.scroll.height + 20) {
+            return true;
+        }
     },
+
+    previewStyle() {
+        const that: any = this;
+        return {
+            transform: `translateY(${that.offsetHeight}px)`,
+        };
+    },
+
+    offsetHeight() {
+        const that: any = this;
+        return that.index * 20 - that.scroll.top;
+    },
+
     // 筛选出能在当前组件内显示的选中关键帧数据
     selectKey() {
         const that: any = this;
@@ -50,13 +86,31 @@ export const computed = {
                 return;
             }
 
-            if (that.name && that.name !== item.prop) {
+            if (that.prop && that.prop !== item.prop) {
                 return null;
             }
+
+            // if (!that.idDisplay(item.x)) {
+            //     return;
+            // }
+
             result.push(item);
         });
 
         return result;
+    },
+
+    draggable(): boolean {
+        // @ts-ignore
+        return this.keyType !== 'key';
+    },
+
+    keyType() {
+        // @ts-ignore
+        if (this.prop === 'spriteFrame' && this.comp === 'cc.SpriteComponent') {
+            return 'sprite';
+        }
+        return 'key';
     },
 };
 
@@ -71,8 +125,40 @@ export const methods = {
      * 刷新组件
      */
     async refresh() {
-        // @ts-ignore
-        this.keyData = JSON.parse(JSON.stringify(this.keyFrames));
+        const that: any = this;
+        if (that.keyFrames.length < 1) {
+            that.keyData = null;
+            return;
+        }
+        let indexFirst = -1;
+        let keyData = that.keyFrames.filter((item: any, index: number) => {
+            const result = that.idDisplay(item.x);
+            if (!result && indexFirst === -1) {
+                indexFirst = index;
+            }
+            return result;
+        });
+        if (indexFirst !== -1) {
+            keyData.push(that.keyFrames[indexFirst]);
+        }
+        keyData = JSON.parse(JSON.stringify(keyData));
+        if (that.prop === 'spriteFrame' && that.comp === 'cc.SpriteComponent') {
+            for (const item of keyData) {
+                item.imageSrc = await this.queryImageSrc(item.data);
+            }
+        }
+        that.keyData = keyData;
+    },
+
+    idDisplay(x: number) {
+        const that: any = this;
+        if (!that.canvasSize) {
+            return;
+        }
+        if (x > that.canvasSize.w) {
+            return;
+        }
+        return true;
     },
 
     queryKeyStyle(x: number) {
@@ -86,8 +172,26 @@ export const methods = {
      * @param {*} scale
      * @param {*} offset
      */
-    queryLineStyle(x1: number, x2: number) {
-        return `transform: translateX(${x1 | 0}px); width: ${x2 - x1}px`;
+    queryLineStyle(item1: any, item2: any) {
+        if (item1 && item2) {
+            return `transform: translateX(${item1.x | 0}px); width: ${item2.x - item1.x}px`;
+        }
+    },
+
+    /**
+     * 查找图片资源信息
+     */
+    async queryImageSrc(dump: any) {
+        if (!dump) {
+            return false;
+        }
+        if (!dump.value) {
+            return false;
+        }
+        const uuid = dump.value.uuid.match(/(\S*)@[^@]*$/)[1];
+        const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
+        const libraryPath = asset.library[extname(asset.name)];
+        return libraryPath;
     },
 
     openBezierEditor(data: any) {
@@ -97,15 +201,40 @@ export const methods = {
         this.$emit('datachange', 'openBezierEditor', [data]);
     },
 
-    onMouseDown(event: any, index: number) {
-        const that: any = this;        // @ts-ignore
+    onDragOver(event: any) {
+        const that: any = this;
+        if (!that.draggable) {
+            return;
+        }
+        const {type} = Editor.UI.DragArea.currentDragInfo;
+        if (type !== 'cc.SpriteFrame') {
+            return;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+    },
 
-        const param = JSON.parse(JSON.stringify(that.params));
-        param[3] = that.keyFrames[index].frame;
+    onDrop(event: any) {
+        const that: any = this;
+        const {value} = Editor.UI.DragArea.currentDragInfo;
+        that.$emit('datachange', 'createKey', {
+            x: event.offsetX,
+            param: [that.path, that.comp, that.prop, 0, {uuid: value}],
+        });
+    },
+
+    async onMouseDown(event: any, index: number) {
+        const that: any = this;        // @ts-ignore
         const data = JSON.parse(JSON.stringify(that.keyData[index]));
+        const param = [that.path, data.comp, data.prop, data.frame];
+        if (!that.name) {
+            if (data.prop === 'spriteFrame' && data.comp === 'cc.SpriteComponent') {
+                data.imageSrc = await this.queryImageSrc(data.data);
+            }
+        }
         let dragInfo: any = {};
         if (event.ctrlKey && that.selectInfo) {
-            dragInfo = JSON.parse(JSON.stringify(that.selectInfo));
+            dragInfo = that.selectInfo;
             dragInfo.params.push(param);
             dragInfo.data.push(data);
         } else {
@@ -125,7 +254,6 @@ export const methods = {
     onPopMenu(event: any) {
         const that: any = this;
         const params: any = {};
-        params.param = JSON.parse(JSON.stringify(that.params));
         const name = event.target.getAttribute('name');
         // 节点轨道只能移除关键帧
         if (!that.name && !name) {
@@ -215,7 +343,7 @@ export const methods = {
     },
 };
 
-export function mounted() {
+export async function mounted() {
     // @ts-ignore
-    this.refresh();
+    await this.refresh();
 }

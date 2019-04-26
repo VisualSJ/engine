@@ -17,11 +17,21 @@ async function formatNodeDump(dump, path = '', indent = 0) {
     if (!path) {
         initNode();
         uuid2path[dump.uuid.value] = '/';
-        nodes.push('/');
+        nodes.push({
+            path: '/',
+            uuid: dump.uuid.value,
+            name: dump.name.value,
+            indent,
+        });
     } else {
         uuid2path[dump.uuid.value] = path;
         path2uuid[path] = dump.uuid.value;
-        nodes.push(path);
+        nodes.push({
+            path,
+            uuid: dump.uuid.value,
+            name: dump.name.value,
+            indent,
+        });
     }
     const result = {
         name: dump.name.value,
@@ -98,6 +108,7 @@ function transKeyFrames(keyFrames, prop, comp) {
             curve: item.curve,
             prop,
             comp,
+            data: JSON.parse(JSON.stringify(item.dump)),
         };
     });
     return result;

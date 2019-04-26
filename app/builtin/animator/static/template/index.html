@@ -9,20 +9,38 @@
                 :time="currentTime"
                 :root="root"
                 :state="animationState"
-                :dirty="dirty"
             >
             </tool-bar>
-            <div class="flex-1 content nodes" 
-            @scroll="onScroll($event, 'node')">
-                <node-tree 
-                    :dumps="nodeDump"
+            <div class="flex-1 content nodes"
+                ref="nodes"
+                @scroll="onScroll($event, 'node')"
+            >
+                
+            <template v-if="nodeDump">
+                <node-tree
+                    v-for="item of nodeDump.nodes"
+                    :dumps="item"
                     :select="selectedId"
-                    :indent=0
                     :uuid="currentClip"
+                    :key="item.path"
+                    @datachange="onNodes"
                 ></node-tree>
+            </template>
+                <!-- <div class="wrap"
+                    :style="{height: nodesHeight + 'px'}"
+                    v-if="nodeDump"                 
+                >
+                    <node-tree 
+                        v-for="item of nodeDump.nodes"
+                        :dumps="item"
+                        :select="selectedId"
+                        :uuid="currentClip"
+                    ></node-tree>
+                </div> -->
             </div>
             <property-tools
                 :uuid="selectedId"
+                :update-flag="selectDataChange"
                 @datachange="onProperty"
             ></property-tools>
             <div class="flex-1 content propertys" 
@@ -66,20 +84,26 @@
             <div class="content" 
                 ref="node-content"
             >
-                <template
-                    v-if="grid && nodeDump && clipDump"
+                <div class="wrap"
+                    :style="{height:nodesHeight+'px'}"
                 >
-                    <preview-row 
-                        v-for="path in nodeDump.nodes"
-                        :key-frames=calcNodeFrames(path)
-                        :path="path"
-                        :select-Info="selectKeyInfo"
-                        :offset="startOffset"
-                        :key="path"
-                        @datachange="onPreviewRow"
-                        @startdrag="updateDragInfo"
-                    ></preview-row>
-                </template>
+                    <template
+                        v-if="grid && nodeDump && clipDump"
+                    >
+                        <preview-row 
+                            v-for="(item, index) in nodeDump.nodes"
+                            :path="item.path"
+                            :key-frames=calcNodeFrames(item.path)
+                            :index="index"
+                            :select-Info="selectKeyInfo"
+                            :key="index"
+                            :canvas-size="canvasSize"
+                            :scroll="nodeScrollInfo"
+                            @datachange="onPreviewRow"
+                            @startdrag="updateDragInfo"
+                        ></preview-row>
+                    </template>
+                </div>
             </div> 
             <div class="property-tools">
                 <span>mouseFrame:</span>
@@ -98,23 +122,32 @@
                 </ui-select>
             </div> 
             <div class="content"
-                v-if="grid && clipDump"
                 ref="property-content"
             >
-                <template
-                    v-for="(item, name) in properties"
+                <div
+                    class="wrap"
+                    v-if="grid && clipDump && properties"
+                    :style="{height:propertyHeight+'px'}"
                 >
-                    <preview-row 
-                        :key-frames=calcFrames(item.dump)
-                        :path="selectPath"
-                        :select-Info="selectKeyInfo"
-                        :copy-info="copyKeyInfo"
-                        :name="name"
-                        :offset="startOffset"
-                        @datachange="onPreviewRow"
-                        @startdrag="updateDragInfo"
-                    ></preview-row>
-                </template>
+                    <template
+                        v-for="(name, index) in Object.keys(properties)"
+                    >
+                        <preview-row 
+                            :key-frames=properties[name].keyFrames
+                            :path="selectPath"
+                            :select-Info="selectKeyInfo"
+                            :copy-info="copyKeyInfo"
+                            :name="name"
+                            :index="index"
+                            :comp="properties[name].comp"
+                            :prop="properties[name].prop"
+                            :canvas-size="canvasSize"
+                            :scroll="propertyScrollInfo"
+                            @datachange="onPreviewRow"
+                            @startdrag="updateDragInfo"
+                        ></preview-row>
+                    </template>
+                </div>
             </div> 
             <control-preview 
                 :position="pointerPosition"
@@ -130,7 +163,6 @@
     <div class="foot">
         <div class="left">
             <ui-button name="exit">退出</ui-button>
-            <span v-if="dirty">*</span>
             <span>Clips</span>
             <ui-select v-if="clipsMenu && clipsMenu.length > 0" name="clip" :value="currentClip">
                 <option v-for="item in clipsMenu" :value="item.uuid">{{item.name}}</option>
@@ -141,7 +173,7 @@
             <ui-num-input :value="clipDump.sample" step="1" name="sample"></ui-num-input>
             <span>speed</span>
             <ui-num-input :value="clipDump.speed" name="speed"></ui-num-input>
-            <span>Duration :{{clipDump.duration.toFixed(2)}}({{(clipDump.duration / clipDump.speed).toFixed(2)}})s</span>
+            <span v-if="clipDump.duration">Duration :{{clipDump.duration.toFixed(2)}}({{(clipDump.duration / clipDump.speed).toFixed(2)}})s</span>
         </div> 
     </div>
     <event-editor

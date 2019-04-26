@@ -95,6 +95,7 @@ interface Ipc {
 
 interface UI {
     NumInput: any;
+    DragArea: any,
 }
 
 interface Logger {

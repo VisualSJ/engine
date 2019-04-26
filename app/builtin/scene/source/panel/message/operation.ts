@@ -400,8 +400,8 @@ export function apply(messages: any) {
     /**
      * 新增关键帧
      */
-    messages['create-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number) => {
-        return $scene.forwarding('Animation', 'operation', ['createKey', clipUuid, path, comp, prop, frame]);
+    messages['create-clip-key'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number, customData?: any) => {
+        return $scene.forwarding('Animation', 'operation', ['createKey', clipUuid, path, comp, prop, frame, customData]);
     };
 
     /**
@@ -485,7 +485,7 @@ export function apply(messages: any) {
      * 保存动画曲线数据
      */
     messages['save-curve-data'] = (clipUuid: string, path: string, comp: any, prop: string, frame: number, data: number[]) => {
-        return $scene.forwarding('Animation', 'operation', ['updateCurveOfKey', clipUuid, path, comp, prop, frame, data]);
+        return $scene.forwarding('Animation', 'operation', ['modifyCurveOfKey', clipUuid, path, comp, prop, frame, data]);
     };
 
     // TODO 暴露各种操作消息

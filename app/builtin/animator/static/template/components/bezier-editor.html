@@ -7,7 +7,7 @@
             <div class="toolbar" @mousedown="onToolBar">
                 <span class="data-preview">({{currentBerzier.toString()}})</span>
                 <!-- <i class="iconfont icon-save" name="save"></i> -->
-                <i class="iconfont icon-close" name="exit"></i>
+                <span class="exit" name="exit">退出</span>
             </div>
             <svg > 
                 <g class="main"
@@ -72,8 +72,8 @@
             </ui-select>
             <div class="presets">
                 <template v-for="name of Object.keys(presets[currentPreset])">
-                    <div v-if="name" class="preset-item">
-                        <svg @mousedown="applyPreset(presets[currentPreset][name])">
+                    <div v-if="name" class="preset-item" :select="name === applyName">
+                        <svg @mousedown="applyPreset(name)">
                             <path
                                 transform="scale(100)"
                                 :d="calcBezier(presets[currentPreset][name], 100)"

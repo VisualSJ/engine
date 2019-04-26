@@ -1,54 +1,89 @@
-<div class="content-item preview-row" @click.right="onPopMenu">
-	<template v-if="display && !name">
-		<div
-			class="line"
-			v-for="(item, i) in keyData"
-			v-if="keyFrames[i + 1]"
-			:style="queryLineStyle(item.x, keyData[i + 1].x)"
-		></div>
-	</template>
+<div class="content-item preview-row"
+    v-if="display"
+    :style="previewStyle"
+    @click.right="onPopMenu"
+    @dragover="onDragOver"
+    @drop="onDrop"
+>
+    <!-- 节点预览显示的关键帧线条 -->
+    <template v-if="!name && !draggable">
+        <div
+            class="line"
+            v-for="(item, i) in keyData"
+            v-if="keyFrames[i + 1]"
+            :style="queryLineStyle(item, keyData[i + 1])"
+        ></div>
+    </template>
 
-	<template v-if="display && name">
-		<div
-			class="line"
-			v-for="(item, i) in keyData"
-			v-if="keyFrames[i + 1]"
-			:style="queryLineStyle(item.x, keyData[i + 1].x)"
-			:title="t('line_tips')"
-			@dblclick="openBezierEditor(item)"
-		></div>
-	</template>
+    <!-- 属性轨道显示的关键帧线条 -->
+    <template v-if="name && !draggable">
+        <div
+            class="line"
+            v-for="(item, i) in keyData"
+            v-if="keyFrames[i + 1]"
+            :style="queryLineStyle(item, keyData[i + 1])"
+            :title="t('line_tips')"
+            @dblclick="openBezierEditor(item)"
+        ></div>
+    </template>
 
-	<template v-if="display">
-		<div
-			class="key"
-			v-for="(item, index) in keyData"
-			name="key"
-			:style="queryKeyStyle(item.x)"
-			:index="index"
-			@mousedown="onMouseDown($event, index)"
-		>
-			<div class="dot"></div>
-		</div>
-	</template>
+    <!-- 关键帧显示 -->
+    <template>
+        <div
+            :class="keyType"
+            name="key"
+            v-for="(item, index) in keyData"
+            :style="queryKeyStyle(item.x)"
+            :index="index"
+            @mousedown="onMouseDown($event, index)"
+        >    
+            <template 
+                v-if="keyType === 'key'"
+            >
+                <div  class="dot"></div>
+            </template>
+            <template
+                v-if="keyType === 'sprite'"
+            >
+                <img class="sprite-key"
+                    :src="item.imageSrc" 
+                    :alt="item.imageSrc"
+                >
+            </template>
+        </div>
+    </template>
 
-	<template v-if="display">
-		<div class="v-key" preview 
-			name="key"
-			v-for="item in virtualkeys" 
-			:style="queryKeyStyle(item.x)"
-		>
-			<div class="dot"></div>
-		</div>
-	</template>
+    <!-- <template v-if="display">
+        <div class="v-key" preview 
+            name="key"
+            v-for="item in virtualkeys" 
+            :style="queryKeyStyle(item.x)"
+        >
+            <div class="dot"></div>
+        </div>
+    </template> -->
 
-	<template v-if="display && selectKey">
-		<div class="key active" 
-			name="key"
-			v-for="item in selectKey" 
-			:style="queryKeyStyle(item.x)"
-		>
-			<div class="dot"></div>
-		</div>
-	</template>
+    <!-- 选中的关键数据显示 -->
+    <template v-if="selectKey">
+        <div 
+            v-for="item in selectKey"
+            :class="[item.imageSrc !== 'undefined' && name ? 'sprite' : 'key', 'active']" 
+            name="key"
+            :style="queryKeyStyle(item.x)"
+        >
+            <template
+                v-if="item.imageSrc !== 'undefined' && name"
+            >
+                <img class="sprite-key"
+                    :src="item.imageSrc" 
+                    :alt="item.imageSrc"
+                >
+            </template>
+            <template 
+                v-else
+            >
+                <div  class="dot"></div>
+            </template>
+        </div>
+    </template>
 </div>
