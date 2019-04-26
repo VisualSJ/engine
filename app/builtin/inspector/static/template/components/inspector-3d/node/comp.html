@@ -17,7 +17,9 @@
                     @dragstart="_onDragStart($event)"
                 >{{value.name}}</ui-drag-item>
             </div>
-            <div class="setting">
+            <div class="setting"
+                v-if="uuids.length === 1"
+            >
                 <i class="iconfont icon-setting"
                     @click.stop="_onClickComponentMenu($event)"
                 ></i>

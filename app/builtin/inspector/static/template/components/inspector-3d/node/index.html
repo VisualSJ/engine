@@ -77,6 +77,7 @@
 
         <div class="footer">
             <ui-button
+                v-if="uuids.length === 1"
                 @click="_onAddComponentMenu($event)"
             >{{t('add_component')}}</ui-button>
         </div>

@@ -45,7 +45,7 @@ export const methods = {
     _onClickComponentMenu(event: any) {
         const vm: any = this;
 
-        if (vm.uuids.length !== 0) {
+        if (vm.uuids.length !== 1) {
             return;
         }
 
