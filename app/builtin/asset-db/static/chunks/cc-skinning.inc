@@ -103,13 +103,23 @@ mat4 getBoneMatrix(const in float i) {
   return mat4(v1, v2, v3, v4);
 }
 #endif
-mat4 skinMatrix() {
-  return
-    getBoneMatrix(a_joints.x * 2.0 + 1.0) * getBoneMatrix(a_joints.x * 2.0 + 0.0) * a_weights.x +
-    getBoneMatrix(a_joints.y * 2.0 + 1.0) * getBoneMatrix(a_joints.y * 2.0 + 0.0) * a_weights.y +
-    getBoneMatrix(a_joints.z * 2.0 + 1.0) * getBoneMatrix(a_joints.z * 2.0 + 0.0) * a_weights.z +
-    getBoneMatrix(a_joints.w * 2.0 + 1.0) * getBoneMatrix(a_joints.w * 2.0 + 0.0) * a_weights.w;
-}
+#if CC_BINDPOSE_COMPUTATION_DEFERED
+  mat4 skinMatrix() {
+    return
+      getBoneMatrix(a_joints.x * 2.0 + 1.0) * getBoneMatrix(a_joints.x * 2.0 + 0.0) * a_weights.x +
+      getBoneMatrix(a_joints.y * 2.0 + 1.0) * getBoneMatrix(a_joints.y * 2.0 + 0.0) * a_weights.y +
+      getBoneMatrix(a_joints.z * 2.0 + 1.0) * getBoneMatrix(a_joints.z * 2.0 + 0.0) * a_weights.z +
+      getBoneMatrix(a_joints.w * 2.0 + 1.0) * getBoneMatrix(a_joints.w * 2.0 + 0.0) * a_weights.w;
+  }
+#else
+  mat4 skinMatrix() {
+    return
+      getBoneMatrix(a_joints.x) * a_weights.x +
+      getBoneMatrix(a_joints.y) * a_weights.y +
+      getBoneMatrix(a_joints.z) * a_weights.z +
+      getBoneMatrix(a_joints.w) * a_weights.w;
+  }
+#endif
 #else
 mat4 getBoneMatrix(const in float i) {
   vec4 _0 = cc_matJoint[3 * int(i) + 0];
