@@ -52,8 +52,8 @@ class AnimationUtil {
         function handleKeys(propKeysData) {
             if (propKeysData && propKeysData.keys >= 0) {
                 let keys = clip._keys[propKeysData.keys];
-                let values = propKeysData.values;
-                let easingMethods = propKeysData.easingMethods;
+                let values = propKeysData.values || [];
+                let easingMethods = propKeysData.easingMethods || [];
                 let dumpKeys = [];
 
                 if (keys) {
