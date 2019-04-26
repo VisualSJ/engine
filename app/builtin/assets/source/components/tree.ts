@@ -421,7 +421,7 @@ export const methods = {
 
             if (json.type === 'ts' || json.type === 'js') {
                 if (json.params) {
-                    json.params.Name = json.name;
+                    json.params.Name = json.name.replace(json.ext, '').replace(/[^a-zA-Z0-9]|\s+/g, '');
                 }
             }
 
