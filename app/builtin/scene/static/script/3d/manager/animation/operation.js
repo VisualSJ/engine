@@ -6,6 +6,7 @@ const utils = require('./utils');
 
 const dumpEncode = require('../../../../../dist/utils/dump/encode');
 const dumpDecode = require('../../../../../dist/utils/dump/decode');
+const { promisify } = require('util');
 
 // clip 数据
 class AnimationOperation {
@@ -219,6 +220,28 @@ class AnimationOperation {
 
     // 关键帧数据
 
+    async getValueFrom(node, path, comp, prop, customData) {
+        let target = node.getChildByPath(path);
+        if (!target) {
+            console.warn(`Target animation node referenced by path ${path} is not found(from ${node.name}).`);
+        }
+
+        if (comp) {
+            target = target.getComponent(comp);
+        }
+
+        let value = target[prop];
+        if (customData) {
+            if (comp === 'cc.SpriteComponent' && prop === 'spriteFrame') {
+                if (customData.uuid) {
+                    value = await promisify(cc.AssetLibrary.loadAsset)(customData.uuid);
+                }
+            }
+        }
+
+        return value;
+    }
+
     /**
      * 创建一个关键帧
      * @param {String} uuid 动画节点的 uuid
@@ -229,7 +252,7 @@ class AnimationOperation {
      * @param {number} frame 关键帧位置
      * @param {Object} customData 一些特殊数据，比如拖入时间轴的spriteFrame
      */
-    createKey(uuid, clipUuid, path, comp, prop, frame = 0, customData = {}) {
+    async createKey(uuid, clipUuid, path, comp, prop, frame = 0, customData) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
@@ -243,17 +266,7 @@ class AnimationOperation {
         }
 
         const node = animData.node;
-        let target = node;
-        if (comp) {
-            target = node.getComponent(comp);
-        }
-
-        let value = target[prop];
-        if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
-            if (customData.uuid) {
-                value = customData.uuid;
-            }
-        }
+        let value = await this.getValueFrom(node, path, comp, prop, customData);
 
         if (!utils.createKey(state.clip, path, comp, prop, frame, value)) {
             return false;
@@ -398,7 +411,7 @@ class AnimationOperation {
             return false;
         }
 
-        if (!frames) {
+        if (frames === null || frames === undefined) {
             return false;
         }
 
@@ -435,40 +448,40 @@ class AnimationOperation {
      * @param {Strig} path 节点数据路径
      * @param {String} comp 属性属于哪个组件，如果是 node 属性，则传 null
      * @param {String} prop 属性的名字
-     * @param {number} frame 关键帧位置
+     * @param {number} frames 关键帧位置数组
      * @param {Object} customData 一些特殊数据，比如拖入时间轴的spriteFrame
      */
-    updateKey(uuid, clipUuid, path, comp, prop, frame, customData) {
+    async updateKey(uuid, clipUuid, path, comp, prop, frames, customData) {
+        if (frames === null || frames === undefined) {
+            return false;
+        }
+
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
+        if (!Array.isArray(frames)) {
+            frames = [frames];
+        }
+
         const node = animData.node;
-        let target = node;
-        if (comp) {
-            target = node.getComponent(comp);
-        }
-
-        let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
-        if (!keyData) {
-            return false;
-        }
-
-        let value = target[prop];
-        if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
-            if (customData.uuid) {
-                value = customData.uuid;
+        frames.forEach(async (frame) => {
+            let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
+            if (!keyData) {
+                return;
             }
-        }
 
-        let values = keyData.keyframes.values;
-        values[keyData.keyIndex] = value;
+            let value = await this.getValueFrom(node, path, comp, prop, customData);
+
+            let values = keyData.keyframes.values;
+            values[keyData.keyIndex] = value;
+        });
 
         state.initialize(node);
 
-        return false;
+        return true;
     }
 
     /**
@@ -530,7 +543,7 @@ class AnimationOperation {
         let props = utils.getPropertysFrom(data, comp);
 
         if (props && prop) {
-            propData = props[prop];
+            let propData = props[prop];
             if (propData) {
                 state.clip._keys[propData.keys] = [];
                 propData.values = [];
@@ -583,7 +596,7 @@ class AnimationOperation {
             return false;
         }
 
-        if (!frames) {
+        if (frames === null || frames === undefined) {
             return false;
         }
 
@@ -605,26 +618,36 @@ class AnimationOperation {
      * 更新事件关键帧
      * @param {String} uuid 动画节点的 uuid
      * @param {String} clipUuid 被修改的动画的uuid
-     * @param {number} frame 关键帧所在的位置
+     * @param {number} frames 关键帧所在的位置数组
      * @param {object} events 事件帧数据
      */
-    updateEvent(uuid, clipUuid, frame, events) {
+    updateEvent(uuid, clipUuid, frames, events) {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
             return false;
         }
 
-        let keys = utils.deleteEvent(state.clip, frame);
-        if (!keys) {
+        if (frames === null || frames === undefined) {
             return false;
         }
 
-        if (events) {
-            events.forEach((event) => {
-                utils.addEvent(state.clip, frame, event.func, event.params);
-            });
+        if (!Array.isArray(frames)) {
+            frames = [frames];
         }
+
+        frames.forEach((frame) => {
+            let keys = utils.deleteEvent(state.clip, frame);
+            if (!keys) {
+                return false;
+            }
+
+            if (events) {
+                events.forEach((event) => {
+                    utils.addEvent(state.clip, frame, event.func, event.params);
+                });
+            }
+        });
 
         state.initialize(animData.node);
         return true;
@@ -641,6 +664,10 @@ class AnimationOperation {
         const animData = utils.queryNodeAnimationData(uuid, clipUuid);
         let state = animData.animState;
         if (!state) {
+            return false;
+        }
+
+        if (frames === null || frames === undefined) {
             return false;
         }
 

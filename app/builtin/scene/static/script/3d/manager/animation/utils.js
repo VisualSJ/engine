@@ -53,6 +53,7 @@ class AnimationUtil {
             if (propKeysData && propKeysData.keys >= 0) {
                 let keys = clip._keys[propKeysData.keys];
                 let values = propKeysData.values;
+                let easingMethods = propKeysData.easingMethods;
                 let dumpKeys = [];
 
                 if (keys) {
@@ -60,6 +61,7 @@ class AnimationUtil {
                         dumpKeys.push({
                             frame: Math.round(key * sample),
                             dump: dumpEncode.encodeObject(values[index], {default: null}),
+                            curve: easingMethods[index],
                         });
                     });
 
@@ -101,6 +103,81 @@ class AnimationUtil {
 
             time: state.time || 0,
         };
+    }
+
+    /**
+     * 将clip的dump 格式数据设置给clip
+     * @param {*} dumpClip
+     * @param {*} state 当前动画状态
+     */
+    decodeClip(dumpClip, state) {
+        let clip = state.clip;
+        clip.name = dumpClip.name;
+        clip._duration = dumpClip.duration;
+        clip.sample = dumpClip.sample;
+        clip.speed = dumpClip.speed;
+        clip.wrapMode = dumpClip.wrapMode;
+
+        function handleProps(dumpProps, oriProps) {
+            let restoreProps = {};
+            for (let prop in dumpProps) {
+                if (prop) {
+                    let keyframeDatas = handleKeys(dumpProps[prop]);
+                    if (keyframeDatas) {
+                        let oriPropData = oriProps[prop];
+                        let restoreProp = {};
+                        clip._keys[oriPropData.keys] = keyframeDatas.keys;
+                        restoreProp.keys = oriPropData.keys;
+                        restoreProp.values = keyframeDatas.values;
+                        restoreProp.easingMethods = keyframeDatas.easingMethods;
+                        restoreProps[prop]  = restoreProp;
+                    }
+                }
+            }
+
+            return restoreProps;
+        }
+
+        function handleComps(dumpComps, oriComps) {
+            let restoreComps = {};
+            for (let comp in dumpComps) {
+                if (comp) {
+                    restoreComps[comp] = handleProps(dumpComps[comp], oriComps[comp]);
+                }
+            }
+
+            return restoreComps;
+        }
+
+        function handleKeys(dumpKeys) {
+            if (!dumpKeys) {
+                return null;
+            }
+
+            let keys = [];
+            let values = [];
+            let easingMethods = [];
+            dumpKeys.forEach((dumpKey, index) => {
+                keys.push(dumpKey.frame / dumpClip.sample);
+                dumpDecode.decodePatch('' + index, dumpKey.dump, values);
+                easingMethods.push(dumpKey.curve);
+            });
+
+            return {keys, values, easingMethods};
+        }
+
+        Object.keys(dumpClip.paths).forEach((path) => {
+            let oriPath = path;
+            if (oriPath !== '/') {
+                oriPath = oriPath.substr(1);
+            }
+            clip.curveDatas[oriPath] = {
+            props: handleProps(dumpClip.paths[path].props, clip.curveDatas[oriPath].props),
+            comps: handleComps(dumpClip.paths[path].comps, clip.curveDatas[oriPath].comps),
+            };
+        });
+
+        this.removeUnusedKeys(clip);
     }
 
     /**
@@ -474,7 +551,8 @@ class AnimationUtil {
     removeUnusedKeys(clip) {
         let paths = this.queryPaths(clip);
 
-        let usedKeyDatas = [];
+        let usedKeyDatas = {};
+        let usedKeys = [];
         paths.forEach((path) => {
             let curveData = this.queryCurveDataFromClip(clip, path);
             if (!curveData) {
@@ -482,15 +560,13 @@ class AnimationUtil {
             }
             this.eachCurve(curveData, (comp, prop, propKeysData) => {
                 if (propKeysData && propKeysData.keys >= 0) {
-                    let keyData = {};
-                    keyData[propKeysData.keys] = propKeysData.keys;
-                    usedKeyDatas.push(keyData);
+                    usedKeyDatas[propKeysData.keys] = propKeysData.keys;
+                    usedKeys.push(propKeysData.keys);
                 }
             });
         });
 
         let unUsedKeys = [];
-        let usedKeys = usedKeyDatas.map((data) => {return data.oriKey; });
         clip._keys.forEach((data, index) => {
             if (!usedKeys.includes(index)) {
                 unUsedKeys.push(index);
@@ -520,7 +596,7 @@ class AnimationUtil {
             }
             this.eachCurve(curveData, (comp, prop, propKeysData) => {
                 if (propKeysData && propKeysData.keys >= 0) {
-                    usedKeyDatas.push({oriKey: propKeysData.keys, newKey: propKeysData.keys});
+                    propKeysData.keys = usedKeyDatas[propKeysData.keys];
                 }
             });
         });
@@ -547,8 +623,11 @@ class AnimationUtil {
                 }
                 if (propKeysData.keys >= 0) {
                     let keys = clip._keys[propKeysData.keys];
-                    let key = keys[keys.length - 1];
-                    if (comp === 'cc.Sprite' && prop === 'spriteFrame') {
+                    let key = 0;
+                    if (keys && keys.length > 0) {
+                        key = keys[keys.length - 1];
+                    }
+                    if (comp === 'cc.SpriteComponent' && prop === 'spriteFrame') {
                         duration = Math.max((Math.round(key * sample) + 1) / sample, duration);
                     } else {
                         duration = Math.max(key, duration);

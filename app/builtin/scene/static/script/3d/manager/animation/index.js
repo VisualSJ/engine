@@ -73,7 +73,7 @@ class AnimationManager extends EventEmitter {
                 }
 
                 if (!this._animUpdateInterval) {
-                    this._animUpdateInterval = setInterval(this.update.bind(this), 300);
+                    this._animUpdateInterval = setInterval(this.update.bind(this), 100);
                 }
 
                 return true;
@@ -138,6 +138,13 @@ class AnimationManager extends EventEmitter {
         }
 
         return true;
+    }
+
+    /**
+     * 获取当前编辑动画数据
+     */
+    getEditAnimationInfo() {
+        return {rootid: Scene.modes.animation.root, clipid: this._curEditClipUuid };
     }
 
     getSerializedEditClip() {
@@ -291,6 +298,7 @@ class AnimationManager extends EventEmitter {
         state.sample();
         state.play();
         state.pause();
+        Manager.Ipc.send('broadcast', 'scene:animation-time-change', playTime);
         this.changePlayState(PlayState.PAUSE);
     }
 
@@ -368,6 +376,7 @@ class AnimationManager extends EventEmitter {
         state.sample();
         state.stop();
         this.changePlayState(PlayState.STOP);
+        Manager.Ipc.send('broadcast', 'scene:animation-time-change', 0);
         return true;
     }
 
@@ -399,6 +408,39 @@ class AnimationManager extends EventEmitter {
 
         const dump = utils.encodeClip(state);
         return dump;
+    }
+
+    /**
+     * 根据一个动画的 dump 数据，还原clip数据
+     * @param {String} nodeUuid 节点的uuid
+     * @param {String} clipUuid clip的uuid
+     * @param {object} dumpData dump数据
+     */
+    restoreFromDump(nodeUuid, clipUuid, dumpData) {
+        const animData = utils.queryNodeAnimationData(nodeUuid);
+        const animComp = animData.animComp;
+        if (!animComp) {
+            return false;
+        }
+
+        let clips = animComp.getClips();
+
+        let state = null;
+        for (let i = 0; i < clips.length; i++) {
+            if (clips[i] && clips[i]._uuid === clipUuid) {
+                state = animComp.getAnimationState(clips[i].name);
+                break;
+            }
+        }
+
+        if (!state) {
+            return false;
+        }
+
+        utils.decodeClip(dumpData, state);
+        this.emit('scene:animation-change', nodeUuid, clipUuid);
+        Manager.Ipc.send('broadcast', 'scene:animation-change', nodeUuid, clipUuid);
+        return true;
     }
 
     /**
@@ -478,12 +520,12 @@ class AnimationManager extends EventEmitter {
      * @param {String} func
      * @param  {...any} args
      */
-    operation(func, ...args) {
+    async operation(func, ...args) {
         if (!operation[func]) {
             console.warn('Method does not exist to manipulate the animation.');
             return false;
         }
-        if (operation[func](Scene.modes.animation.root, ...args)) {
+        if (await operation[func](Scene.modes.animation.root, ...args)) {
             this.emit('scene:animation-change', Scene.modes.animation.root, this._curEditClipUuid);
             Manager.Ipc.send('broadcast', 'scene:animation-change', Scene.modes.animation.root, this._curEditClipUuid);
         }
