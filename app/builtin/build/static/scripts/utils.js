@@ -155,6 +155,10 @@ async function getScriptsCache(scripts) {
         mpConfig.fileCache = {};
         for (let item of scripts) {
             const rawPath = buildResult.script2raw[item.file];
+            if (!buildResult.script2library[item.file]) {
+                console.warn(`Script not found: ${item.source}`);
+                continue;
+            }
             mpConfig.fileCache[rawPath] = readFileSync(buildResult.script2library[item.file], 'utf8');
         }
         let md = new Mdeps(mpConfig);

@@ -40,6 +40,7 @@ export const messages = {
             return;
         }
         vm.state.scene = 'ready';
+        vm.$refs.node && vm.$refs.node.refresh();
     },
 
     /**

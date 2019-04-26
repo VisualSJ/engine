@@ -170,11 +170,15 @@ class SceneMode extends Mode {
 
             // 发送 emit 事件
             this.manager.emit('close');
+            // 发送关闭之前的场景的广播消息
+            Manager.Ipc.forceSend('broadcast', 'scene:close');
 
             await utils.loadSceneByJson(json);
 
             // 发送 emit 事件
             this.manager.emit('open', cc.director._scene);
+            // 发送关闭之前的场景的广播消息
+            Manager.Ipc.forceSend('broadcast', 'scene:ready', this.current || '');
         } catch (error) {
             console.error('Failed to refresh the current scene');
             console.error(error);
