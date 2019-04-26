@@ -2,47 +2,66 @@
 
 const animationManager = require('../animation');
 
-let dumpMap = {}; // key 为 uuid, value 为 dumpdata 的平级节点树
-
+let nodeUuid = ''; // 当前正在编辑的节点 uuid
+let clipUuid = ''; // 当前正在编辑的动画 uuid
+let clipDump = null; // 当前正在编辑的动画的 dump 数据
 /**
- * 获取传入 uuid 获取节点上一步记录的 dump 数据
- * @param {*} uuids
+ * 获取此时的动画数据
+ * 由于是单节点单动画轨道，所以不需要各 id 参数
  */
-function getData(uuids) {
-    const result = {};
-    uuids.forEach((uuid) => {
-        result[uuid] = dumpMap[uuid];
-    });
-    return result;
+function getData() {
+    return {
+        nodeUuid,
+        clipUuid,
+        clipDump,
+    };
 }
 
 /**
  * 获取传入 uuid
  * @param {*} uuids
  */
-function getNewData(uuids) {
-    refresh(uuids);
-    return getData(uuids);
+function getNewData() {
+    refresh();
+    return getData();
 }
 
 /**
  * 刷新缓存
- * @param {*} uuids 数组
  */
-function refresh(uuids) {
-    uuids.forEach((id) => {
-        // dumpMap[id] = animationManager.queryDump(id);
-    });
+function refresh() {
+    if (nodeUuid && clipUuid) {
+        clipDump = animationManager.queryClip(nodeUuid, clipUuid);
+    }
+}
+
+function setNodeUuid(uuid) {
+    nodeUuid = uuid;
+}
+
+function setClipUuid(uuid) {
+    clipUuid = uuid;
+    refresh();
 }
 
 /**
- * 重置
+ * 重置记录
  */
-function reset(uuids) {
-    dumpMap = Object.create(null);
-    uuids.forEach((uuid) => {
-        dumpMap[uuid] = animationManager.queryDump(uuid);
-    });
+function reset(nodeUuid) {
+    // TODO
+    return;
+
+    setNodeUuid(nodeUuid);
+    setClipUuid('');
+    clipDump = Object.create(null);
+
+    // TODO testing
+    setClipUuid(animationManager._curEditClipUuid);
+}
+
+async function restore(stepData) {
+    await animationManager.restoreFromDump(stepData.nodeUuid, stepData.clipUuid, stepData.clipDump);
+    refresh();
 }
 
 module.exports = {

@@ -65,22 +65,24 @@ nodeManager.on('remove', (node, enable = true) => {
 });
 
 // 启动动画模式
-sceneManager.on('animation-start', (uuid) => {
-    startAnimationRecord(uuid);
+sceneManager.on('animation-start', (nodeUuid) => {
+    startAnimationRecord(nodeUuid);
 });
 
 sceneManager.on('animation-end', () => {
     endAnimationRecord();
 });
 
+// TODO 缺少一个记录 clip uuid 的事件
+
 // TODO 事件和入参待定
-animationManager.on('animation-time-change', (node, enable = true) => {
+// animationManager.on('animation-time-change', (node, enable = true) => {
 
-});
-animationManager.on('animation-state-change', (node, enable = true) => {
+// });
+// animationManager.on('animation-state-change', (node, enable = true) => {
 
-});
-animationManager.on('animation-change', (node, enable = true) => {
+// });
+animationManager.on('animation-change', (nodeUuid, clipUuid) => {
 
 });
 
@@ -279,7 +281,7 @@ function reset(uuids, scene) {
 /**
  * 开始动画编辑模式下的 undo 记录
  */
-function startAnimationRecord(uuid) {
+function startAnimationRecord(nodeUuid) {
     currentScene.editingAnimation = true;
 
     const scene = currentScene.tpye === prefabType ? prefabScene : mainScene;
@@ -293,7 +295,7 @@ function startAnimationRecord(uuid) {
 
     cache = cacheAnimation; // 开始接入动画数据
 
-    cache.reset(uuid); // 由于动画编辑不需要持久性，开启便需要重置数据
+    cache.reset(nodeUuid); // 由于动画编辑不需要持久性，开启便需要重置数据
 }
 
 /**
