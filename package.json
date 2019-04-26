@@ -19,6 +19,7 @@
     "clear:build": "node ./scripts/clear/build.js",
     "clear:modules": "node ./scripts/clear/modules.js",
     "refresh": "node ./scripts/refresh.js",
+    "refresh-dev": "node ./scripts/refresh.js && npm run build:effect",
     "publish": "node ./scripts/publish/index.js",
     "test": "mocha"
   },

@@ -104,6 +104,9 @@ CCProgram standard-vs %{
   #endif
 
   vec4 vert () {
+#if CC_USE_SKINNING
+    highp
+#endif
     vec4 pos = vec4(a_position, 1.0);
     vec4 normal = vec4(a_normal, 0.0);
 
@@ -313,6 +316,9 @@ CCProgram planar-shadow-vs %{
   in vec3 a_position;
 
   vec4 vert () {
+#if CC_USE_SKINNING
+    highp
+#endif
     vec4 pos = vec4(a_position, 1);
 
     #if CC_USE_SKINNING
