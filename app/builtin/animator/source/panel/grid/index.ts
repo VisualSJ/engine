@@ -138,7 +138,7 @@ module.exports = class Grid {
 
     public resize(w: number, h: number) {
         if (!w || !h) {
-            const rect = this.canvas.element.getBoundingClientRect();
+            const rect = this.canvas.getBoundingClientRect();
             w = w || rect.width;
             h = h || rect.height;
 

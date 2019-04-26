@@ -106,6 +106,13 @@ export const listeners = {
     resize() {
         vm && vm.resize();
     },
+
+    /**
+     * 窗口显示时调用更新
+     */
+    show() {
+        vm && vm.init();
+    },
 };
 export const messages = {
     /**
@@ -531,6 +538,7 @@ export async function ready() {
                     return;
                 }
                 const frameRang = that.frameRang();
+
                 if (frameRang) {
                     const {start, end} = frameRang;
                     // 超过边界
@@ -549,8 +557,8 @@ export async function ready() {
                 const that: any = this;
                 if (that.grid) {
                     const rang = that.$refs.gridCanvas.width;
-                    const start = Math.round(that.grid.pixelToValueH(that.offset));
-                    const end = Math.round(that.grid.pixelToValueH(that.offset + rang));
+                    const start = Math.round(that.grid.pixelToValueH(that.startOffset));
+                    const end = Math.round(that.grid.pixelToValueH(that.startOffset + rang));
                     return {
                         start,
                         end,
@@ -999,7 +1007,8 @@ export async function ready() {
                 that.aniPlayTask = requestAnimationFrame(async () => {
                     if (that.animationState === 'playing') {
                         const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
-                        that.setCurrentFrame(timeToFrame(time, that.sample));
+                        const frame = timeToFrame(time, that.sample);
+                        that.setCurrentFrame(frame);
                         if (time === false) {
                             return;
                         }
@@ -1181,11 +1190,11 @@ export async function ready() {
                         // if (that.selectKeyInfo.offset < 0) {
                         //     keyOffset = - keyOffset;
                         // }
-                        const {offsetFrame, params} = that.selectKeyInfo;
+                        const {offsetFrame} = that.selectKeyInfo;
                         if (offsetFrame === 0) {
                             break;
                         }
-                        for (const item of params) {
+                        for (const item of that.selectKeyInfo.params) {
                             item[3] = [item[3]];
                             Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...item, offsetFrame);
                         }
