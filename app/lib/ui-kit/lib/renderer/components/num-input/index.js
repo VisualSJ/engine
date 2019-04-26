@@ -326,7 +326,7 @@ class NumInput extends Base {
      */
     _onInputChange() {
         let value = this.value - 0;
-        if (isNaN(value)) {
+        if (isNaN(value) || this.value === '') {
             return;
         }
 
