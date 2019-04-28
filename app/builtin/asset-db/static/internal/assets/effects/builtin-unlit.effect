@@ -44,9 +44,6 @@ CCProgram unlit-vs %{
   #endif
 
   vec4 vert () {
-#if CC_USE_SKINNING
-    highp
-#endif
     vec4 pos = vec4(a_position, 1);
 
     #if CC_USE_SKINNING

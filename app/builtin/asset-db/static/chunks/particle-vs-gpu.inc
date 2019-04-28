@@ -276,75 +276,76 @@ vec4 evaluateGradientRange(int rangeMode, vec4 minColor, vec4 maxColor,
   }
 }
 
-void gpvs_main() {
+vec4 gpvs_main() {
   vec4 pos = vec4(a_position_starttime.xyz, 1.);
   float activeTime = u_psTime - a_position_starttime.w;
   float normalizedTime = activeTime / a_dir_life.w;
-#if VELOCITY_OVERTIME_MODULE_ENABLE
-  float speedModifier = u_speedModifier;
-#else
-  float speedModifier = 1.;
-#endif
+
+  #if VELOCITY_OVERTIME_MODULE_ENABLE
+    float speedModifier = u_speedModifier;
+  #else
+    float speedModifier = 1.;
+  #endif
   pos.xyz += a_dir_life.xyz * activeTime * speedModifier;
 
-#if USE_STRETCHED_BILLBOARD
-  vec4 velocity = vec4(a_dir_life.xyz, 0.);
-  velocity *= speedModifier;
-#endif
-#if !USE_WORLD_SPACE
-  pos = cc_matWorld * pos;
   #if USE_STRETCHED_BILLBOARD
-    velocity = rotateQuat(velocity, u_worldRot);
+    vec4 velocity = vec4(a_dir_life.xyz, 0.);
+    velocity *= speedModifier;
   #endif
-#endif
-#if VELOCITY_OVERTIME_MODULE_ENABLE
-  vec4 velocityTrack = vec4(EVAL_CURVE_INTEGRAL(velocity_pos_x, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(velocity_pos_y, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(velocity_pos_z, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), 0);
-  velocityTrack = velocityTrack * speedModifier;
-  if (u_velocity_space == SIMULATE_SPACE_LOCAL) {
-    velocityTrack = rotateQuat(velocityTrack, u_worldRot);
-  }
-  pos += velocityTrack;
-  #if USE_STRETCHED_BILLBOARD
-    vec4 velocityVel = vec4(EVAL_CURVE_RANGE(velocity_x, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_RANGE(velocity_y, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_RANGE(velocity_z, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), 0);
+  #if !USE_WORLD_SPACE
+    pos = cc_matWorld * pos;
+    #if USE_STRETCHED_BILLBOARD
+      velocity = rotateQuat(velocity, u_worldRot);
+    #endif
+  #endif
+  #if VELOCITY_OVERTIME_MODULE_ENABLE
+    vec4 velocityTrack = vec4(EVAL_CURVE_INTEGRAL(velocity_pos_x, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(velocity_pos_y, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(velocity_pos_z, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), 0);
+    velocityTrack = velocityTrack * speedModifier;
     if (u_velocity_space == SIMULATE_SPACE_LOCAL) {
-      velocityVel = rotateQuat(velocityVel, u_worldRot);
+      velocityTrack = rotateQuat(velocityTrack, u_worldRot);
     }
-    velocityVel *= speedModifier;
-    velocity += velocityVel;
+    pos += velocityTrack;
+    #if USE_STRETCHED_BILLBOARD
+      vec4 velocityVel = vec4(EVAL_CURVE_RANGE(velocity_x, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_RANGE(velocity_y, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), EVAL_CURVE_RANGE(velocity_z, normalizedTime, a_dir_life.w, a_rndSeed + VELOCITY_OVERTIME_RAND_OFFSET), 0);
+      if (u_velocity_space == SIMULATE_SPACE_LOCAL) {
+        velocityVel = rotateQuat(velocityVel, u_worldRot);
+      }
+      velocityVel *= speedModifier;
+      velocity += velocityVel;
+    #endif
   #endif
-#endif
 
-#if FORCE_OVERTIME_MODULE_ENABLE
-  vec4 forceTrack = vec4(EVAL_CURVE_INTEGRAL_TWICE(force_pos_x, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL_TWICE(force_pos_y, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL_TWICE(force_pos_z, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), 0);
-  forceTrack = forceTrack * speedModifier;
-  if (u_force_space == SIMULATE_SPACE_LOCAL) {
-    forceTrack = rotateQuat(forceTrack, u_worldRot);
-  }
-  pos += forceTrack;
-  #if USE_STRETCHED_BILLBOARD
-    vec4 forceVel = vec4(EVAL_CURVE_INTEGRAL(force_vel_x, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(force_vel_y, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(force_vel_z, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), 0);
+  #if FORCE_OVERTIME_MODULE_ENABLE
+    vec4 forceTrack = vec4(EVAL_CURVE_INTEGRAL_TWICE(force_pos_x, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL_TWICE(force_pos_y, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL_TWICE(force_pos_z, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), 0);
+    forceTrack = forceTrack * speedModifier;
     if (u_force_space == SIMULATE_SPACE_LOCAL) {
-      forceVel = rotateQuat(forceVel, u_worldRot);
+      forceTrack = rotateQuat(forceTrack, u_worldRot);
     }
-    forceVel *= speedModifier;
-    velocity += forceVel;
+    pos += forceTrack;
+    #if USE_STRETCHED_BILLBOARD
+      vec4 forceVel = vec4(EVAL_CURVE_INTEGRAL(force_vel_x, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(force_vel_y, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), EVAL_CURVE_INTEGRAL(force_vel_z, normalizedTime, a_dir_life.w, a_rndSeed + FORCE_OVERTIME_RAND_OFFSET), 0);
+      if (u_force_space == SIMULATE_SPACE_LOCAL) {
+        forceVel = rotateQuat(forceVel, u_worldRot);
+      }
+      forceVel *= speedModifier;
+      velocity += forceVel;
+    #endif
   #endif
-#endif
 
   float size = a_vertIdx_size_angle.z;
-#if SIZE_OVERTIME_MODULE_ENABLE
-  float sizeModifier = EVAL_CURVE_RANGE(size, normalizedTime, a_rndSeed + SIZE_OVERTIME_RAND_OFFSET);
-  size *= sizeModifier;
-#endif
+  #if SIZE_OVERTIME_MODULE_ENABLE
+    float sizeModifier = EVAL_CURVE_RANGE(size, normalizedTime, a_rndSeed + SIZE_OVERTIME_RAND_OFFSET);
+    size *= sizeModifier;
+  #endif
 
   vec2 cornerOffset = vec2((a_vertIdx_size_angle.xy - 0.5) * size);
-#if !USE_STRETCHED_BILLBOARD
-  float angle = a_vertIdx_size_angle.w;
-  #if ROTATE_OVERTIME_MODULE_ENABLE
-    angle += EVAL_CURVE_INTEGRAL(rotate, normalizedTime, a_dir_life.w, a_rndSeed + ROTATION_OVERTIME_RAND_OFFSET);
+  #if !USE_STRETCHED_BILLBOARD
+    float angle = a_vertIdx_size_angle.w;
+    #if ROTATE_OVERTIME_MODULE_ENABLE
+      angle += EVAL_CURVE_INTEGRAL(rotate, normalizedTime, a_dir_life.w, a_rndSeed + ROTATION_OVERTIME_RAND_OFFSET);
+    #endif
+    rotateCorner(cornerOffset, angle);
   #endif
-  rotateCorner(cornerOffset, angle);
-#endif
 
   computeVertPos(pos, cornerOffset
   #if USE_BILLBOARD || USE_VERTICAL_BILLBOARD
@@ -363,32 +364,32 @@ void gpvs_main() {
   pos = cc_matViewProj * pos;
 
   float frameIndex = 0.;
-#if TEXTURE_ANIMATION_ENABLE
-  if (u_animation_mode == ANIMATION_MODE_WHOLE_SHEET) {
-    frameIndex = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
-  } else if (u_animation_mode == ANIMATION_MODE_SINGLE_ROW) {
-    float rowLength = 1. / frameTile_velLenScale.y;
-    if (u_random_row) {
-      float f = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
-      float startRow = floor(random(floor(u_psTime * 1000.)) * frameTile_velLenScale.y);
-      float from = startRow * rowLength;
-      float to = from + rowLength;
-      frameIndex = mix(from, to, f);
+  #if TEXTURE_ANIMATION_ENABLE
+    if (u_animation_mode == ANIMATION_MODE_WHOLE_SHEET) {
+      frameIndex = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
+    } else if (u_animation_mode == ANIMATION_MODE_SINGLE_ROW) {
+      float rowLength = 1. / frameTile_velLenScale.y;
+      if (u_random_row) {
+        float f = repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.);
+        float startRow = floor(random(floor(u_psTime * 1000.)) * frameTile_velLenScale.y);
+        float from = startRow * rowLength;
+        float to = from + rowLength;
+        frameIndex = mix(from, to, f);
+      }
+      else {
+        float from = float(u_row_index) * rowLength;
+        float to = from + rowLength;
+        frameIndex = mix(from, to, repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.));
+      }
     }
-    else {
-      float from = float(u_row_index) * rowLength;
-      float to = from + rowLength;
-      frameIndex = mix(from, to, repeat(u_cycles * EVAL_CURVE_RANGE(frameOverTime, normalizedTime, a_rndSeed + TEXTURE_ANIMATION_RAND_OFFSET), 1.));
-    }
-  }
-#endif
+  #endif
   uv = computeUV(frameIndex, a_vertIdx_size_angle.xy, frameTile_velLenScale.xy) * mainTiling_Offset.xy + mainOffset.zw;
 
-#if COLOR_OVERTIME_MODULE_ENABLE
-  color = a_color * EVAL_GRADIENT_RANGE(color, normalizedTime, a_rndSeed + COLOR_OVERTIME_RAND_OFFSET);
-#else
-  color = a_color;
-#endif
+  #if COLOR_OVERTIME_MODULE_ENABLE
+    color = a_color * EVAL_GRADIENT_RANGE(color, normalizedTime, a_rndSeed + COLOR_OVERTIME_RAND_OFFSET);
+  #else
+    color = a_color;
+  #endif
 
-  gl_Position = pos;
+  return pos;
 }
