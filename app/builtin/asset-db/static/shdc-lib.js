@@ -383,6 +383,8 @@ const glsl300to100 = (code, blocks, paramInfo, vert) => {
     if (i.type !== 'block') return;
     res += code.slice(idx, i.beg);
     blocks.find((u) => u.name === i.name).members.forEach((m) => {
+      // crucial optimization, for the uniform vectors on iOS WebGL is extremely limited
+      if (code.match(new RegExp(`[^\\w]${m.name}[^\\w]`, 'g')).length <= 1) return;
       let type = mappings.invTypeParams[m.type];
       res += `uniform ${type} ${m.name}${m.count > 1 ? `[${m.count}]` : ''};\n`;
     });

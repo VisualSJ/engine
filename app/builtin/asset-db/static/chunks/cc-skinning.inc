@@ -11,7 +11,7 @@ in vec4 a_joints;
 #else
   #pragma builtin(local)
   uniform CCSkinning {
-    vec4 cc_matJoint[65 * 3];
+    vec4 cc_matJoint[30 * 3];
   };
 #endif
 
