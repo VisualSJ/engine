@@ -76,6 +76,7 @@ export function mergeDumps(dumps: any[]) {
             return dump.uuid.value;
         }),
         __type__: temp.__type__,
+        __prefab__: temp.__prefab__,
         __comps__: [],
     };
 
