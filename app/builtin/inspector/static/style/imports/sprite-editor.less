@@ -4,13 +4,16 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+
     .header {
         height: 110px;
         background-color: var(--panel-header-bg);
+
         ui-slider {
             width: 100%;
         }
     }
+
     .content {
         position: relative;
         width: 100%;
@@ -18,36 +21,48 @@
         overflow: auto;
         box-shadow: inset 0 0 8px 2px var(--panel-content-shadow);
         background-color: var(--panel-content-bg);
+
         .scroll {
+            &[horizontal="center"] {
+                justify-content: center;
+            }
+
             display: flex;
             align-items: center;
-            justify-content: center;
             min-height: 100%;
+
         }
     }
+
     .canvas {
         display: block;
         background-image: url('packages://inspector/static/checkerboard-32x32.png');
         background-size: 16px 16px;
         background-position: center center;
     }
+
     .svg {
         position: absolute;
         width: 100%;
         height: 100%;
         overflow: visible;
     }
+
     .table {
         display: table;
+
         .td-r {
             text-align: right;
         }
+
         .td-c {
             text-align: center;
         }
+
         .td-top {
             vertical-align: top;
         }
+
         .tiny {
             margin: 5px;
         }

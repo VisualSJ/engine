@@ -81,14 +81,35 @@ export async function ready() {
             startBottomPos: 0,
 
             scale: 100,
-            minScale: 10,
-            maxScale: 1000,
+            minScale: 5,
+            maxScale: 500,
+            horizontal: 'center',
             changed: false,
         },
         watch: {
-            userData() {
+            async userData() {
                 if (vm.userData.imageUuidOrDatabaseUri) {
-                    vm.openSprite();
+
+                    await vm.openSprite();
+
+                    // 限制缩放比例
+                    const width = vm.userData.rawWidth || vm.userData.width;
+                    const height = vm.userData.rawHeight || vm.userData.height;
+
+                    const maxWidth = window.screen.width * window.devicePixelRatio * 2;
+                    const maxHeight = window.screen.height * window.devicePixelRatio * 2;
+
+                    if (width > maxWidth || height > maxHeight) { // 大图，限制缩放比例
+                        vm.minScale = 1;
+                        vm.maxScale = 200;
+                        // @ts-ignore
+                        const radioWidth = parseInt(vm.$refs.canvas.parentNode.clientWidth / width * 100, 10);
+                        // @ts-ignore
+                        const radioHeight = parseInt(vm.$refs.canvas.parentNode.clientHeight / height * 100, 10);
+                        vm.scale = Math.min(radioWidth, radioHeight) || vm.minScale;
+                    }
+
+                    vm.refreshScaleSlider();
                 }
             },
             scale() {
@@ -128,11 +149,21 @@ export async function ready() {
                 vm.$refs.canvas.width = width;
                 vm.$refs.canvas.height = height;
 
+                const canvasParent = vm.$refs.canvas.parentNode;
+                const canvasParentWidth = canvasParent.clientWidth;
+
+                if (canvasParentWidth > width) {
+                    vm.horizontal = 'center';
+                } else {
+                    vm.horizontal = 'left';
+                }
+
                 vm.repaint();
             },
             refreshScaleSlider() {
                 // @ts-ignore
                 const vm = this;
+
                 // @ts-ignore
                 const $scale = vm.$refs.scale;
                 // @ts-ignore
@@ -144,12 +175,12 @@ export async function ready() {
 
                 // @ts-ignore
                 vm.$refs.content.onmousewheel = (wheelEvent) => {
-                    let deltaY = 10;
+                    let deltaY = 1;
                     if (wheelEvent.deltaY < 0) {
-                        deltaY = -10;
+                        deltaY = -1;
                     }
 
-                    $scale.value += deltaY;
+                    $scale.value -= deltaY;
                     // @ts-ignore
                     vm.scale = $scale.value;
 
