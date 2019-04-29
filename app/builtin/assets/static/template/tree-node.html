@@ -41,7 +41,7 @@
         <div class="rename"
             v-else
             :state="renameInputState"
-            :title="t('menu.' + renameInputState)"
+            :title="t('operate.' + renameInputState)"
         >
             <input ref='renameInput'
                 :value="renameValue"
@@ -64,7 +64,7 @@
     >
         <div class="rename"
             :state="addInputState"
-            :title="t('menu.' + addInputState)"
+            :title="t('operate.' + addInputState)"
         >
             <input ref='addInput'
                 :value="addAsset.name"

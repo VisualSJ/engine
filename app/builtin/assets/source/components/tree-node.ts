@@ -199,7 +199,7 @@ export const methods = {
     /**
      * 改变输入值时判断是否重名
      */
-    renameChange(event: Event) {
+    async renameChange(event: Event) {
         // @ts-ignore
         const { asset } = this;
         const parentAsset = utils.getAssetFromTree(asset.parentUuid);
@@ -217,6 +217,15 @@ export const methods = {
             state = 'errorNewnameEmpty';
         }
 
+        // @ts-ignore 脚本文件额外的校验
+        if (['.ts', '.js'].includes(asset.fileExt)) {
+            // @ts-ignore
+            const valid = await utils.scriptName.isValid(this.renameValue);
+            if (!valid) {
+                state = 'errorScriptName';
+            }
+        }
+
         // @ts-ignore
         this.renameInputState = state;
     },
@@ -226,7 +235,12 @@ export const methods = {
      */
     renameSubmit(event: Event) {
         // @ts-ignore
-        const newName = this.$refs.renameInput.value.trim();
+        let newName = this.$refs.renameInput.value.trim();
+
+        // @ts-ignore;
+        if (this.renameInputState !== '' || !newName) {
+            newName = '';
+        }
 
         // @ts-ignore
         this.$emit('rename', this.renameUuid, newName);
@@ -236,13 +250,15 @@ export const methods = {
      * @param asset
      */
     renameCancel(event: Event) {
+        // @ts-ignore 重要：给撤销用
+        this.$refs.renameInput.value = '';
         // @ts-ignore
         this.$emit('rename', this.renameUuid, '');
     },
     /**
      * 改变输入值时判断是否重名
      */
-    addChange(event: Event) {
+    async addChange(event: Event) {
         // @ts-ignore
         const { asset, addAsset } = this;
         // @ts-ignore
@@ -255,6 +271,15 @@ export const methods = {
             state = 'errorNewnameDuplicate';
         } else if (addAsset.name === '' || addAsset.name === addAsset.ext) {
             state = 'errorNewnameEmpty';
+        }
+
+        // @ts-ignore 脚本文件额外的校验
+        if (['ts', 'js'].includes(addAsset.type)) {
+            // @ts-ignore
+            const valid = await utils.scriptName.isValid(addAsset.name);
+            if (!valid) {
+                state = 'errorScriptName';
+            }
         }
 
         // @ts-ignore
@@ -270,7 +295,7 @@ export const methods = {
         // @ts-ignore
         const newName = this.$refs.addInput.value.trim();
         // @ts-ignore
-        if (newName === '' || newName === this.addAsset.ext || /[/\\]/.test(newName)) {
+        if (this.addInputState !== '' || newName === '' || newName === this.addAsset.ext || /[/\\]/.test(newName)) {
             // @ts-ignore
             this.$emit('addConfirm', null);
             return;
@@ -287,6 +312,8 @@ export const methods = {
      * @param event
      */
     addCancel(event: Event) {
+        // @ts-ignore 重要：给撤销用
+        this.$refs.addInput.value = '';
         // @ts-ignore
         this.$emit('addConfirm', null);
     },

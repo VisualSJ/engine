@@ -353,22 +353,8 @@ export const methods = {
                 break;
             case 'ts':
             case 'js':
-                // 全项目下的 .js 文件不能重名
-                const scripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scripts' });
-                const name = 'New Script';
-                let index = 0;
-                while (scripts.some((asset: any) => {
-                    // @ts-ignore
-                    return asset.name.substr(0, asset.name.length - 3) === (index ? name + '-' + index.toString().padStart(3, '0') : name);
-                })) {
-                    index++;
-                }
-                // @ts-ignore
-                json.name = index ? name + '-' + index.toString().padStart(3, '0') : name;
-                json.params = {
-                    Name: json.name.replace(/( |-)/g, '_'),
-                };
-                json.name += `.${json.type}`;
+                const valid = await utils.scriptName.getValid(`New Script.${json.type}`);
+                json.name = valid.fileName;
                 break;
             default:
                 json.name = `New File.${json.type}`;
@@ -385,8 +371,6 @@ export const methods = {
             ext: extname(url),
             parentDir: dirname(url),
             parentUuid: parent.uuid,
-
-            params: json.params,
         };
     },
 
@@ -414,16 +398,10 @@ export const methods = {
          * content 类型可以为 null, string, buffer
          * 默认 null 是给文件夹使用的
          */
-        let content: any = null; // 注意，文件夹的内容必须传 null 过去
+        let content: any = null;
 
         if (json.type !== 'folder') {
             content = '';
-
-            if (json.type === 'ts' || json.type === 'js') {
-                if (json.params) {
-                    json.params.Name = json.name.replace(json.ext, '').replace(/[^a-zA-Z0-9]|\s+/g, '');
-                }
-            }
 
             const fileUrl = `db://internal/default_file_content/${json.type}`;
             const fileUuid = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-uuid', fileUrl);
@@ -437,10 +415,22 @@ export const methods = {
 
                 content = readFileSync(fileInfo.file, 'utf-8');
 
-                if (json.params) {
-                    Object.keys(json.params).forEach((key) => {
-                        // @ts-ignore
-                        content = content.replace(new RegExp(`\<\%${key}\%\>`, 'g'), json.params[key]);
+                if (['ts', 'js'].includes(json.type)) {
+                    const valid = await utils.scriptName.getValid(json.name);
+
+                    if (!valid || !valid.fileName || !valid.className) {
+                        console.error(vm.t('errorScriptName'));
+                        parent.state = '';
+                        return;
+                    }
+
+                    json.name = valid.fileName;
+                    const needToReplace: any = {
+                        Name: valid.className,
+                    };
+
+                    Object.keys(needToReplace).forEach((key) => {
+                        content = content.replace(new RegExp(`\<\%${key}\%\>`, 'g'), needToReplace[key]);
                     });
                 }
             }

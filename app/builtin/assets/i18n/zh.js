@@ -38,9 +38,6 @@ module.exports = {
         reimport: '重新导入资源',
         revealInExplorer: '在文件目录中显示',
         showUuid: '显示资源 UUID 和路径',
-
-        errorNewnameDuplicate: '同级下的文件名称已存在，请选择其他名称',
-        errorNewnameEmpty: '名称不能为空',
     },
 
     operate: {
@@ -54,6 +51,9 @@ module.exports = {
         pasteFail_parent_into_child: '父级资源不能粘贴到其子集资源里',
         refreshFail: '刷新 Assets 但返回了空数据',
         readDefaultFileFail: 'Internal DB 里缺少该类型的默认文件',
+        errorNewnameDuplicate: '同级下的文件名称已存在，请选择其他名称',
+        errorNewnameEmpty: '名称不能为空',
+        errorScriptName: '脚本文件名称不能以数字开头且不能与现有脚本文件重名',
     },
 
     deprecate: {

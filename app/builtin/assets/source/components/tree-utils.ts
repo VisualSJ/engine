@@ -92,6 +92,64 @@ exports.canNotReimport = (asset: ItreeAsset) => {
 };
 
 /**
+ * 项目内的脚本文件名称不能重复
+ */
+exports.scriptName = {
+    allScripts: null,
+    timer: 0,
+    fileName: '',
+    className: '',
+    async isValid(fileName: string) {
+        if (/^[^a-zA-Z_]/.test(fileName.trim())) {
+            return false;
+        }
+
+        if (!this.allScripts) {
+            this.allScripts = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scripts' });
+        }
+
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.allScripts = null;
+        }, 2000); // 即使用后清空
+
+        const className = this.getValidClassName(fileName);
+
+        const valid = !this.allScripts.some((asset: any) => {
+            return fileName === asset.name || className === this.getValidClassName(asset.name);
+        });
+        return valid;
+    },
+    async getValid(fileName: string) {
+        this.fileName = await this.getValidFileName(fileName);
+        this.className = this.getValidClassName(this.fileName);
+
+        return {
+            fileName: this.fileName,
+            className: this.className,
+        };
+    },
+    async getValidFileName(fileName: string) {
+        fileName = fileName.trim().replace(/^[^a-zA-Z_]+/, '');
+        const baseName = fileName.substr(0, fileName.indexOf('.'));
+        const extName = fileName.substr(fileName.indexOf('.'));
+        let index = 0;
+        while (!await this.isValid(fileName)) {
+            index++;
+            const padString = `-${index.toString().padStart(3, '0')}`;
+            fileName = `${baseName}${padString}${extName}`;
+        }
+
+        return fileName;
+    },
+    getValidClassName(fileName: string) {
+        fileName = fileName.substr(0, fileName.indexOf('.'));
+        const className = fileName.replace(/[^a-zA-Z0-9]|\s+/g, '');
+        return className;
+    },
+};
+
+/**
  * 获取一组资源的位置信息
  * 资源节点对象 asset,
  * 对象所在数组索引 index，

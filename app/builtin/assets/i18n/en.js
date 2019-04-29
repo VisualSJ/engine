@@ -38,9 +38,6 @@ module.exports = {
         reimport: 'Reimport Asset',
         revealInExplorer: 'Reveal In Explorer',
         showUuid: 'Show Asset UUID and PATH',
-
-        errorNewnameDuplicate: 'The name of the file or folder already exists. Please select another name',
-        errorNewnameEmpty: 'The name cannot be empty',
     },
 
     operate: {
@@ -55,6 +52,9 @@ module.exports = {
         pasteFail_parent_into_child: 'subAsset cannot paste ancestry',
         refreshFail: 'Refreshing assets data, but it return null.',
         readDefaultFileFail: 'The default file for this type is missing in the internal DB.',
+        errorNewnameDuplicate: 'The name of the file or folder already exists. Please select another name',
+        errorNewnameEmpty: 'The name cannot be empty',
+        errorScriptName: 'Script file names cannot begin with a number and cannot have the same name as an existing script file.',
     },
 
     deprecate: {
