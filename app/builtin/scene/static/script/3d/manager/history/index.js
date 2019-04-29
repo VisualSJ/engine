@@ -73,18 +73,14 @@ sceneManager.on('animation-end', () => {
     endAnimationRecord();
 });
 
-// TODO 缺少一个记录 clip uuid 的事件
-
-// TODO 事件和入参待定
-// animationManager.on('animation-time-change', (node, enable = true) => {
-
-// });
-// animationManager.on('animation-state-change', (node, enable = true) => {
-
-// });
-animationManager.on('animation-change', (nodeUuid, clipUuid) => {
-
+// 动画编辑的事件
+animationManager.on('scene:animation-change', (nodeUuid, clipUuid) => {
+    // records.push(clipUuid);
 });
+
+// animationManager.on('clip-change', (nodeUuid, clipUuid) => {
+//     cache.reset(nodeUuid, clipUuid);
+// });
 
 // 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
 function loopRecord(node) {

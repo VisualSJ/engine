@@ -32,6 +32,8 @@ function getNewData() {
 function refresh() {
     if (nodeUuid && clipUuid) {
         clipDump = animationManager.queryClip(nodeUuid, clipUuid);
+    } else {
+        clipDump = null;
     }
 }
 
@@ -47,16 +49,9 @@ function setClipUuid(uuid) {
 /**
  * 重置记录
  */
-function reset(nodeUuid) {
-    // TODO
-    return;
-
-    setNodeUuid(nodeUuid);
-    setClipUuid('');
-    clipDump = Object.create(null);
-
-    // TODO testing
-    setClipUuid(animationManager._curEditClipUuid);
+function reset(nodeUuid, clipUuid) {
+    nodeUuid && setNodeUuid(nodeUuid);
+    setClipUuid(clipUuid || animationManager._curEditClipUuid);
 }
 
 async function restore(stepData) {
@@ -69,4 +64,5 @@ module.exports = {
     getNewData,
     refresh,
     reset,
+    restore,
 };
