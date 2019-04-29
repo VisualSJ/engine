@@ -17,9 +17,17 @@ class Utils3D extends UtilsInterface {
         operationManager.exitPointerLock();
     }
 
-    broadcastMessage(message, node, param) {
-        Manager.Node.emit('change', node, param);
-        Manager.Ipc.send('broadcast', message, node.uuid);
+    emitNodeMessage(message, ...params) {
+        Manager.Node.emit(message, ...params);
+    }
+
+    broadcastMessage(message, ...params) {
+        Manager.Ipc.send('broadcast', message, ...params);
+    }
+
+    onNodeChanged(node, ...param) {
+        Manager.Node.emit('change', node, ...param);
+        Manager.Ipc.send('broadcast', 'scene:change-node', node.uuid);
     }
 
     getGizmoRoot() {

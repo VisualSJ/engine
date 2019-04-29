@@ -49,7 +49,7 @@ class SphereLightComponentGizmo extends Gizmo {
         this._sizeSphereCtrl = new QuadController(gizmoRoot, {
             effectName: 'editor/light',
             forwardPipeline: true,
-            size: 4 // radius 1, plus 1 for the glowings
+            size: 4, // radius 1, plus 1 for the glowings
         });
     }
 
@@ -85,7 +85,7 @@ class SphereLightComponentGizmo extends Gizmo {
             this.target.range = newRange;
 
             // 发送节点修改消息
-            Utils.broadcastMessage('scene:change-node', node);
+            Utils.onNodeChanged(node);
         }
     }
 

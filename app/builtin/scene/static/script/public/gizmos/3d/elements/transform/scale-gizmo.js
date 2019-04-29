@@ -58,7 +58,7 @@ class ScaleGizmo extends TransformGizmo {
 
     onControllerMouseUp() {
         if (this._controller.updated) {
-            this.commitChanges();
+            this.onControlEnd('scale');
         }
     }
 
@@ -88,7 +88,7 @@ class ScaleGizmo extends TransformGizmo {
             dif.y = offset * -1;
         }
 
-        this.recordChanges();
+        this.onControlUpdate('scale');
 
         let curScale = cc.v3();
         this.topNodes.forEach(function(node) {
@@ -98,7 +98,7 @@ class ScaleGizmo extends TransformGizmo {
             curScale.y = curScale.y + dif.y;
 
             this.setScaleWithPrecision(node, curScale, 3);
-            Utils.broadcastMessage('scene:change-node', node, 'scale');
+            Utils.onNodeChanged(node);
         }.bind(this));
 
         Utils.repaintEngine();
@@ -118,7 +118,7 @@ class ScaleGizmo extends TransformGizmo {
             return;
         }
 
-        this.commitChanges();
+        this.onControlEnd('scale');
     }
 
     setScaleWithPrecision(node, newScale, precision) {
@@ -128,7 +128,7 @@ class ScaleGizmo extends TransformGizmo {
 
     updateDataFromController() {
         if (this._controller.updated) {
-            this.recordChanges();
+            this.onControlUpdate('scale');
 
             let i;
             let scaleDelta = this._controller.getDeltaScale();
@@ -155,7 +155,7 @@ class ScaleGizmo extends TransformGizmo {
                     curNodePos = this._center.add(offset);
                     NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'scale');
+                    Utils.onNodeChanged(topNodes[i]);
                 }
             } else {
                 for (i = 0; i < this._localScaleList.length; ++i) {
@@ -165,7 +165,7 @@ class ScaleGizmo extends TransformGizmo {
 
                     this.setScaleWithPrecision(topNodes[i], newScale, 3);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'scale');
+                    Utils.onNodeChanged(topNodes[i]);
                 }
             }
         }

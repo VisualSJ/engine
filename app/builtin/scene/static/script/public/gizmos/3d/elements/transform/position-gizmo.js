@@ -42,7 +42,7 @@ class PositionGizmo extends TransformGizmo {
 
     onControllerMouseUp() {
         if (this._controller.updated) {
-            this.commitChanges();
+            this.onControlEnd('position');
         }
     }
 
@@ -73,14 +73,14 @@ class PositionGizmo extends TransformGizmo {
             dif.y = -offset;
         }
 
-        this.recordChanges();
+        this.onControlUpdate('position');
 
         let curPos = cc.v3();
         this.topNodes.forEach((node) => {
             node.getPosition(curPos);
             curPos = curPos.add(dif);
             node.setPosition(curPos.x, curPos.y, curPos.z);
-            Utils.broadcastMessage('scene:change-node', node, 'position');
+            Utils.onNodeChanged(node);
         });
 
         Utils.repaintEngine();
@@ -100,12 +100,12 @@ class PositionGizmo extends TransformGizmo {
             return;
         }
 
-        this.commitChanges();
+        this.onControlEnd('position');
     }
 
     updateDataFromController() {
         if (this._controller.updated) {
-            this.recordChanges();
+            this.onControlUpdate('position');
 
             let deltaPos = this._controller.getDeltaPosition();
             let topNodes = this.topNodes;
@@ -115,7 +115,7 @@ class PositionGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], curNodePos);
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:change-node', topNodes[i], 'position');
+                Utils.onNodeChanged(topNodes[i]);
             }
         }
     }

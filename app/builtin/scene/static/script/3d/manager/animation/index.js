@@ -44,6 +44,8 @@ class AnimationManager extends EventEmitter {
         super();
         this.init();
         Node.on('change', this.onNodeChanged.bind(this));
+        Node.on('gizmo-control-begin', this.onNodeChanged.bind(this));
+        Node.on('gizmo-control-end', this.onNodeChanged.bind(this));
 
         this._stateWrappedInfo = {};
         // anim update interval
@@ -244,6 +246,7 @@ class AnimationManager extends EventEmitter {
 
         let oldClipUuid = this._curEditClipUuid;
         this._curEditClipUuid = clipUuid;
+        Manager.Ipc.send('broadcast', 'scene:animation-clip-change', this._curEditClipUuid);
 
         // 如果还没进入编辑模式，就不对state操作
         if (!Scene.modes.animation.isOpen) {

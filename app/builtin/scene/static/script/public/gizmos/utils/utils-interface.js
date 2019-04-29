@@ -22,12 +22,26 @@ class UtilsInterface {
     }
 
     /**
+     * 发送消息
+     * @param {消息内容} message
+     * @param {参数} params
+     */
+    emitNodeMessage(message, ...params) {
+    }
+
+    /**
      * 广播消息
      * @param {消息内容} message
-     * @param {节点} node
-     * @param {参数} param
+     * @param {参数} params
      */
-    broadcastMessage(message, node, param) {
+    broadcastMessage(message, ...params) {
+    }
+
+    /**
+     * 当Gizmo操作的结点数据改变时
+     * @param {节点} node
+     */
+    onNodeChanged(node, ...params) {
     }
 
     /**

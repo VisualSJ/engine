@@ -59,6 +59,30 @@ class GizmoBase {
         return this._rootNode;
     }
 
+    onControlBegin(propPath) {
+        this._isControlBegin = true;
+        this.recordChanges();
+        this.nodes.forEach((node) => {
+            Utils.emitNodeMessage('gizmo-control-begin', node, propPath);
+            Utils.broadcastMessage('scene:gizmo-control-begin', node.uuid, propPath);
+        });
+    }
+
+    onControlUpdate(propPath) {
+        if (!this._isControlBegin) {
+            this.onControlBegin(propPath);
+        }
+    }
+
+    onControlEnd(propPath) {
+        this._isControlBegin = false;
+        this.commitChanges();
+        this.nodes.forEach((node) => {
+            Utils.emitNodeMessage('gizmo-control-end', node, propPath);
+            Utils.broadcastMessage('scene:gizmo-control-end', node.uuid, propPath);
+        });
+    }
+
     recordChanges() {
         // 因为会在mousemove中调用，确保一次操作变动只record一次
         if (!this._recorded) {

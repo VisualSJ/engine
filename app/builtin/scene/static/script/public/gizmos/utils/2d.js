@@ -14,8 +14,11 @@ class Utils2D extends UtilsInterface {
     exitPointerLock() {
         document.exitPointerLock();
     }
-    broadcastMessage(message, node, param) {
-
+    emitNodeMessage(message, ...params) {
+    }
+    broadcastMessage(message, ...params) {
+    }
+    onNodeChanged(node, ...params) {
     }
     getGizmoRoot() {
         return _Scene.view.foregroundNode.getChildByName('gizmoRoot');

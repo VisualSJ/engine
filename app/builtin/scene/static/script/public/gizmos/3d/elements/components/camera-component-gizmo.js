@@ -112,7 +112,7 @@ class CameraComponentGizmo extends Gizmo {
 
             let node = this.node;
             // 发送节点修改消息
-            Utils.broadcastMessage('scene:change-node', node);
+            Utils.onNodeChanged(node);
         }
     }
 

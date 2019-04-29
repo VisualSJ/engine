@@ -83,7 +83,7 @@ class RotationGizmo extends TransformGizmo {
         this._rotating = false;
 
         if (this._controller.updated) {
-            this.commitChanges();
+            this.onControlEnd('rotation');
         }
 
         Utils.exitPointerLock();
@@ -121,7 +121,7 @@ class RotationGizmo extends TransformGizmo {
 
         this.keydownDelta += delta;
 
-        this.recordChanges();
+        this.onControlUpdate('rotation');
 
         this.updateRotationByZDeltaAngle(this.keydownDelta);
         Utils.repaintEngine();
@@ -150,7 +150,7 @@ class RotationGizmo extends TransformGizmo {
         this.keydownDelta = null;
         this._rotating = false;
 
-        this.commitChanges();
+        this.onControlEnd('rotation');
     }
 
     updateDataFromController() {
@@ -163,7 +163,7 @@ class RotationGizmo extends TransformGizmo {
 
     updateDataFromController3D() {
         if (this._controller.updated) {
-            this.recordChanges();
+            this.onControlUpdate('rotation');
 
             let i;
             let rot = cc.quat(0, 0, 0, 1);
@@ -189,7 +189,7 @@ class RotationGizmo extends TransformGizmo {
                     NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
+                    Utils.onNodeChanged(topNodes[i]);
                 }
             } else {
                 for (i = 0; i < topNodes.length; ++i) {
@@ -201,7 +201,7 @@ class RotationGizmo extends TransformGizmo {
 
                     NodeUtils.setWorldRotation3D(topNodes[i], rot);
                     // 发送节点修改消息
-                    Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
+                    Utils.onNodeChanged(topNodes[i]);
                 }
             }
         }
@@ -209,7 +209,7 @@ class RotationGizmo extends TransformGizmo {
 
     updateDataFromController2D() {
         if (this._controller.updated) {
-            this.recordChanges();
+            this.onControlUpdate('rotation');
 
             let zDeltaAngle = this._controller.getZDeltaAngle();
             this.updateRotationByZDeltaAngle(zDeltaAngle);
@@ -238,7 +238,7 @@ class RotationGizmo extends TransformGizmo {
                 NodeUtils.setWorldPosition3D(topNodes[i], this._center.add(offsetPos));
                 //NodeUtils.setWorldRotation3D(topNodes[i], rot);
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
+                Utils.onNodeChanged(topNodes[i]);
             }
         } else {
             for (i = 0; i < topNodes.length; ++i) {
@@ -246,7 +246,7 @@ class RotationGizmo extends TransformGizmo {
                 topNodes[i].angle = newAngle;
 
                 // 发送节点修改消息
-                Utils.broadcastMessage('scene:change-node', topNodes[i], 'rotation');
+                Utils.onNodeChanged(topNodes[i]);
             }
         }
     }

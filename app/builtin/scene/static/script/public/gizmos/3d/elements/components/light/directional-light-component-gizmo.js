@@ -53,7 +53,7 @@ class DirectionalLightComponentGizmo extends Gizmo {
         if (this._controller.updated) {
             let node = this.node;
             // 发送节点修改消息
-            Utils.broadcastMessage('scene:change-node', node);
+            Utils.onNodeChanged(node);
         }
     }
 
