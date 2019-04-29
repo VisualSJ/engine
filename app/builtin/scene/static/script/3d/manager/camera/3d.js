@@ -245,7 +245,9 @@ class CameraController3D extends CameraControllerBase {
     focus(nodes) {
         if (nodes) {
             if (nodes.length <= 0) { return; }
-            nodes = nodes.map((id) => nodeManager.query(id));
+            nodes = nodes.map((id) => nodeManager.query(id)).filter(Boolean);
+            if (nodes.length <= 0) { return; }
+
             let worldPos = nodeUtils.getCenterWorldPos3D(nodes);
             let minRange = nodeUtils.getMinRangeOfNodes(nodes) * 4;
 

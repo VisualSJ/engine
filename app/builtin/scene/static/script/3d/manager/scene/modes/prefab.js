@@ -51,6 +51,9 @@ class PrefabMode extends Mode {
             await utils.loadSceneByNode(scene);
             this.current = uuid;
 
+            // 默认选中当前节点
+            Manager.Selection.select(this.node);
+
             // 发送 emit 事件
             this.manager.emit('open', cc.director._scene);
             Manager.Ipc.forceSend('broadcast', 'scene:ready', '');
@@ -94,6 +97,7 @@ class PrefabMode extends Mode {
             }
         }
         this.current = '';
+        Manager.Selection.clear();
 
         // 发送关闭之前的场景的广播消息
         Manager.Ipc.forceSend('broadcast', 'scene:close');

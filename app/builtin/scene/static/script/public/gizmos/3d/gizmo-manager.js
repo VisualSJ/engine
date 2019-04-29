@@ -115,7 +115,11 @@ class GizmoManager {
 
         // 软刷新后保留原先的gizmo
         let selectedNodes = Selection.query();
-        this.select(selectedNodes);
+        let curSelected = [];
+        selectedNodes.forEach((node) => {
+            curSelected.push(node);
+            this.select(node, curSelected);
+        });
 
         // 显示常驻的node gizmo
         this.initNodeGizmo();
