@@ -104,7 +104,7 @@ class SphereColliderComponentGizmo extends Gizmo {
             this._controller.setPosition(worldPos);
             this._controller.setRotation(worldRot);
 
-            this._controller.radius = this.target.radius;
+            this._controller.updateSize(this.target.center, this.target.radius);
         } else {
             this._controller.hide();
             console.error('target is not a cc.SphereColliderComponent');

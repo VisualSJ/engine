@@ -58,6 +58,11 @@ class Engine3D extends EngineInterface {
         if (primitive.uvs) { primitive.uvs = flat(primitive.uvs, (v) => [v.x, v.y]); }
         // create
         let mesh = cc.utils.createMesh(primitive);
+        // 为了不和射线检测，需要自己去掉包围盒数据
+        if (!primitive.minPos || !primitive.maxPos) {
+            mesh.struct.minPosition = 0;
+            mesh.struct.maxPosition = 0;
+        }
         // set double sided flag for raycast
         const submesh = mesh.renderingMesh.getSubmesh(0);
         const info = submesh.geometricInfo;

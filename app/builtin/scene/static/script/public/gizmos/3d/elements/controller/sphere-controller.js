@@ -57,10 +57,12 @@ class SphereController extends EditableController {
         let fromDir = this._axisDir[fromAxisName];
         let frontArcNode = ControllerUtils.arc(this._center, normalDir, fromDir,
             Math.PI * 2, this._radius, color);
+        frontArcNode.name = 'arc_' + axisName + '_front';
         frontArcNode.parent = this.shape;
 
         let backArcNode = ControllerUtils.arc(this._center, normalDir, fromDir,
             Math.PI * 2, this._radius, color);
+        backArcNode.name = 'arc_' + axisName + '_back';
         backArcNode.parent = this.shape;
         setNodeOpacity(backArcNode, 30);
 
