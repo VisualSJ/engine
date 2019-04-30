@@ -138,7 +138,16 @@ const expandStructMacro = (() => {
   };
 })();
 
-// replace the obvious constants, which are often used inside array subscripts
+/**
+ * Replace the obvious constants, which are often used inside array subscripts
+ * To bypass the process, you should declare the macro with spaces succeeding the hash tag.
+ * This will become necessary when doing something like this:
+ * ```glsl
+ * #if SOME_MACRO
+ * #  define SOME_PLAIN_DEFINE // you can't write '#define' here
+ * #endif
+ * ```
+ */
 const replacePlainDefines = (code) => {
   let defCap = plainDefineRE.exec(code);
   while (defCap != null) {
