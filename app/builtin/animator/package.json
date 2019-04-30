@@ -17,8 +17,8 @@
         "title": "i18n:animator.title",
         "main": "./dist/panel/index.js",
         "icon": "./static/icon.png",
-        "min-width": 800,
-        "min-height": 500,
+        "min-width": 500,
+        "min-height": 300,
         "width": 1000,
         "height": 600,
         "shortcuts": {

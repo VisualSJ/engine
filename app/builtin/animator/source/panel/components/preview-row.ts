@@ -3,20 +3,18 @@ import { extname } from 'path';
 'use strict';
 const {join} = require('path');
 const {readFileSync} = require('fs-extra');
+const _ = require('lodash');
 export const template = readFileSync(join(__dirname, './../../../static/template/components/preview-row.html'), 'utf-8');
 const LINEHEIGHT = 24;
 export const props = [
     'keyFrames',
     'selectInfo',
     'copyInfo',
-    'path',
+    'param',
     'name',
-    'comp',
-    'prop',
-    'canvasSize',
     'index',
     'scroll',
-    'wrapHeight',
+    'box',
 ];
 
 export function data() {
@@ -32,6 +30,10 @@ export const watch = {
     // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
         const that: any = this;
+        // 不显示的时候不去更新和计算
+        if (!that.display) {
+            return;
+        }
         cancelAnimationFrame(that.refreshTask);
         that.refreshTask = requestAnimationFrame (async () => {
             await that.refresh();
@@ -45,6 +47,58 @@ export const watch = {
     //         await that.refresh();
     //     });
     // },
+    async display() {
+        const that: any = this;
+        if (!that.display) {
+            return;
+        }
+        if (that.keyData && that.keyData.length > 1) {
+            return;
+        }
+        await that.refresh();
+    },
+
+    box() {
+        const that: any = this;
+        if (!that.display || !that.box || !that.keyData) {
+            return;
+        }
+        const {origin, w, h, type} = that.box;
+        // 选择框在属性轨道， node 处不参与收集
+        if (type === 'property' && !that.name) {
+            return;
+        }
+        // 属性轨道
+        let path = '';
+        if (that.name) {
+            if (that.param[1]) {
+                path = `comp_${that.param[1]}${that.param[2]}`;
+            } else {
+                path = `prop_${that.param[2]}`;
+            }
+        } else {
+            path = `path_${that.param[0]}`;
+        }
+        // 先判断 y 坐标是否符合条件
+        if (that.offsetHeight + LINEHEIGHT / 2 < origin.y || that.offsetHeight + LINEHEIGHT / 2 > origin.y + h) {
+            that.$emit('datachange', 'updateSelect', [null, path, null]);
+            return;
+        }
+        let result = [];
+        const param = [];
+        for (const item of that.keyData) {
+            if (item.x > origin.x && item.x < origin.x + w) {
+                result.push(item);
+                param.push([that.param[0], item.comp, item.prop, item.frame]);
+            }
+        }
+        if (result.length < 1) {
+            that.$emit('datachange', 'updateSelect', [null, path, null]);
+            return;
+        }
+        result = JSON.parse(JSON.stringify(result));
+        that.$emit('datachange', 'updateSelect', [result, path, param]);
+    },
 };
 
 export const computed = {
@@ -53,7 +107,7 @@ export const computed = {
         if (!that.scroll) {
             return true;
         }
-        if (that.offsetHeight >= 0 && that.offsetHeight < that.scroll.height + LINEHEIGHT) {
+        if (that.offsetHeight >= 0 && that.offsetHeight < that.scroll.height) {
             return true;
         }
     },
@@ -76,15 +130,17 @@ export const computed = {
         if (!that.selectInfo || that.selectInfo.data.length < 1) {
             return null;
         }
-
         const {data, params} = that.selectInfo;
         const result: any = [];
         data.forEach((item: any, index: number) => {
-            if (params[index][0] !== that.path) {
+            if (!params[index]) {
+                return;
+            }
+            if (params[index][0] !== that.param[0]) {
                 return;
             }
 
-            if (that.prop && that.prop !== item.prop) {
+            if (that.param[2] && that.param[2] !== item.prop) {
                 return null;
             }
 
@@ -105,7 +161,7 @@ export const computed = {
 
     keyType() {
         // @ts-ignore
-        if (this.prop === 'spriteFrame' && this.comp === 'cc.SpriteComponent') {
+        if (this.param[2] === 'spriteFrame' && this.param[1] === 'cc.SpriteComponent') {
             return 'sprite';
         }
         return 'key';
@@ -140,11 +196,12 @@ export const methods = {
             keyData.push(that.keyFrames[indexFirst]);
         }
         keyData = JSON.parse(JSON.stringify(keyData));
-        if (that.prop === 'spriteFrame' && that.comp === 'cc.SpriteComponent') {
+        if (that.param[2] === 'spriteFrame' && that.param[1] === 'cc.SpriteComponent') {
             for (const item of keyData) {
                 item.imageSrc = await this.queryImageSrc(item.data);
             }
         }
+        that.$emit('datachange', 'updateKey');
         that.keyData = keyData;
     },
 
@@ -161,10 +218,13 @@ export const methods = {
 
     idDisplay(x: number) {
         const that: any = this;
-        if (!that.canvasSize) {
+        if (!that.scroll) {
             return;
         }
-        if (x > that.canvasSize.w) {
+        if (x > that.scroll.size.w) {
+            return;
+        }
+        if (x < that.offset) {
             return;
         }
         return true;
@@ -221,7 +281,7 @@ export const methods = {
 
     openBezierEditor(data: any) {
         // @ts-ignore
-        data.path = this.path;
+        data.path = this.param[0];
         // @ts-ignore
         this.$emit('datachange', 'openBezierEditor', [data]);
     },
@@ -244,7 +304,7 @@ export const methods = {
         const {value} = Editor.UI.DragArea.currentDragInfo;
         that.$emit('datachange', 'createKey', {
             x: event.offsetX,
-            param: [that.path, that.comp, that.prop, 0, {uuid: value}],
+            param: [...that.param, 0, {uuid: value}],
         });
     },
 
@@ -252,17 +312,27 @@ export const methods = {
         event.stopPropagation();
         const that: any = this;        // @ts-ignore
         const data = JSON.parse(JSON.stringify(that.keyData[index]));
-        const param = [that.path, data.comp, data.prop, data.frame];
+        const param = that.param;
         if (!that.name) {
             if (data.prop === 'spriteFrame' && data.comp === 'cc.SpriteComponent') {
                 data.imageSrc = await this.queryImageSrc(data.data);
             }
+            param[1] = data.comp;
+            param[2] = data.prop;
         }
-        let dragInfo: any = {};
-        if (event.ctrlKey && that.selectInfo) {
-            dragInfo = that.selectInfo;
-            dragInfo.params.push(param);
-            dragInfo.data.push(data);
+        param[3] = data.frame;
+        let dragInfo = that.selectInfo || {};
+        let paramIndex = -1;
+        if (that.selectInfo && (event.ctrlKey || that.selectInfo.sortDump)) {
+            // 当前点击的关键帧不在选择范围之内
+            paramIndex = dragInfo.params.findIndex((item: any) => {
+                return item.toString() === param.toString();
+            });
+            const hasSelect = that.selectInfo  && paramIndex !== -1 && (event.ctrlKey || that.selectInfo.sortDump) ;
+            if (!hasSelect) {
+                dragInfo.params.push(param);
+                dragInfo.data.push(data);
+            }
         } else {
             dragInfo = {
                 startX: event.x,
@@ -272,8 +342,12 @@ export const methods = {
                 data: [data],
             };
         }
-
-        that.$emit('startdrag', 'moveKey', [dragInfo, that.path]);
+        if (dragInfo.sortDump && paramIndex !== -1) {
+            dragInfo.startX = event.x;
+            dragInfo.offset = 0;
+            dragInfo.offsetFrame = 0;
+        }
+        that.$emit('startdrag', 'moveKey', [dragInfo, that.param[0]]);
         // @ts-ignore
         // this.virtualkeys.push(JSON.parse(JSON.stringify(this.keyData[index])));
     },
@@ -281,7 +355,9 @@ export const methods = {
     onPopMenu(event: any) {
         event.stopPropagation();
         const that: any = this;
-        const params: any = {};
+        const params: any = {
+            param : that.param,
+        };
         const name = event.target.getAttribute('name');
         // 节点轨道只能移除关键帧
         if (!that.name && !name) {

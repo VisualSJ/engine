@@ -141,6 +141,7 @@ export const methods = {
             };
         });
         Editor.Ipc.sendToPanel('scene', 'update-clip-event', that.uuid, that.frame, result);
+        that.dirty = false;
         // that.showToast('save succuss');
     },
 

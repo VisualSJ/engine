@@ -2,9 +2,12 @@
     @confirm="onConfirm"
 >
     <div class="content">
-        <div class="line header">
+        <div class="header">
             <h4 class="name">{{t('title')}}<span v-if="dirty">*</span></h4>
-            <span class="tools" @mousedown="onMouseDown">
+            <i class="iconfont icon-close" name="close" @mousedown="onMouseDown"></i>
+        </div>
+        <div class="functions">
+            <div class="tools" @mousedown="onMouseDown">
                 <i class="iconfont icon-add" 
                     name="addFunc"
                     :title="t('add_func')" 
@@ -12,10 +15,7 @@
                 <i class="iconfont icon-save-b"
                     name="save"
                 ></i>
-                <i class="iconfont icon-close" name="close"></i>
-            </span>
-        </div>
-        <div class="functions">
+            </div>
             <div class="func" v-for="(event, eventIndex) in value">
                 <ui-section expand>
                     <div slot="header" class="line header" @click.stop>
@@ -71,7 +71,7 @@
                                 :value="val"
                                 :index="JSON.stringify([eventIndex, paramIndex])"
                             ></ui-checkbox>
-                            <span @mousedown="onMouseDown">
+                            <span class="operate" @mousedown="onMouseDown">
                                 <i class="iconfont icon-del"  
                                     name="delParams" 
                                     :title="t('del_params')" 

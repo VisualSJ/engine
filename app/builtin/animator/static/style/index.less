@@ -4,6 +4,7 @@
     height: 100%;
     flex-direction: column;
     user-select: none;
+    background: #424242;
     #gridCanvas {
         position: absolute;
         top: 0;
@@ -17,8 +18,8 @@
         flex: 1;
     }
     .content-device {
-        height: 33px;
-        line-height: 28px;
+        height: 28px;
+        line-height: 22px;
         .duration {
             z-index: 1;
             width: 0;
@@ -29,9 +30,10 @@
     }
     .content {
         width: 100%;
-        height: 44%;
         flex: 1;
         overflow-y: auto;
+        position: relative;
+        z-index: 1;
     }
     .content-item {
         line-height: 24px;
@@ -64,22 +66,24 @@
     }
     .container {
         display: flex;
-        height: 90vh;
         flex: 1;
-        position: absolute;
-        z-index: 2;
-        width: 100%;
-        height: 100%;
         & > .right, & > .left {
             flex-direction: column;
             line-height: 20px;
+            display: flex;
         }
         & > .right {
             flex: 1;
             position: relative;
             overflow: hidden;
+            
             .content {
                 overflow: hidden;
+                .box {
+                    border: 1px solid #749ab9;
+                    background: rgba(108, 139, 156, 0.2);
+                    position: absolute;
+                }
             }
             .property-tools {
                 position: relative;
@@ -91,7 +95,8 @@
             }
             .contrl-pointer {
                 position: absolute;
-                top: 14px;
+                z-index: 1;
+                top: 12px;
                 left: 5px;
                 height: 100%;
                 padding-top: 2px;
@@ -103,9 +108,9 @@
                 .icon-arrow-right {
                     transform: rotate(90deg);
                     position: absolute;
-                    top: -11px;
-                    left: -5px;
-                    font-size: 9px;
+                    top: -10px;
+                    left: -4px;
+                    font-size: 8px;
                 }
                 span {
                     display: inline-block;
@@ -129,17 +134,18 @@
                     color: #ccc;
                 }
                 .time {
-                    float: right;
-                    padding: 2px 4px;
+                    display: inline-block;
+                    vertical-align: bottom;
+                    padding: 0 4px;
                     min-width: 60px;
                     span {
                         box-shadow: 0px 1px 0px #585858 inset;
                         background: var(--main-dark-bg);
                         display: inline-block;
-                        width: 100%;
+                        width: 92%;
                         line-height: 20px;
                         text-align: right;
-                        padding: 1px 4px;
+                        padding: 1px 6px;
                     }
                 }
             }
@@ -149,11 +155,6 @@
         }
     }
     .foot {
-        position: absolute;
-        box-sizing: border-box;
-        bottom: 0;
-        width: 100%;
-        z-index: 2;
         padding: 4px 10px;
         display: flex;
         justify-content: space-between;
@@ -175,7 +176,20 @@
             margin: 0 5px;
         }
     }
-
+    .keyframe-move-info {
+        position: absolute;
+        z-index:2;
+        border: 1px solid;
+        background: #fff;
+        color: #333;
+        padding: 4px;
+        & > div {
+            .name {
+                display: inline-block;
+                width: 28px;
+            }
+        }
+    }
 }
 
 ///////////////////// node-tree //////////////////////////////
@@ -237,7 +251,7 @@
     z-index: 2;
     .iconfont {
         position: absolute;
-        bottom: -2px;
+        bottom: -4px;
         color: #ceb56e;
         transition: all 0.5ms;
         font-size: 10px;
@@ -316,6 +330,9 @@
             background-color: @c-key-active;
             pointer-events: none;
         }
+    }
+    .key.active{
+        pointer-events: none;
     }
     .sprite {
         position: absolute;
@@ -408,6 +425,8 @@
         display: flex;
         flex-direction: column;
         & > .header {
+            display: flex;
+            justify-content: space-between;
             height: 24px;
             background: #4b4747;
             padding: 5px;
@@ -420,14 +439,18 @@
             overflow-y: auto;
             flex: 1;
             height: 100%;
+            padding-top: 0;
         }
     }
-    ui-section, ui-input, ui-checkbox, ui-num-input {
+    ui-input, ui-checkbox, ui-num-input {
         width: 100%;
         height: 25px;
     }
     ui-checkbox {
         margin-top: 7px;
+    }
+    ui-section {
+        width: 100%;
     }
     .iconfont:hover {
         cursor: pointer;
@@ -435,18 +458,28 @@
     }
     .tools {
         display: flex;
-        justify-content: flex-end;
+        .iconfont {
+            margin: 0 5px;
+        }
     }
     .line {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 10px;
         padding: 0 8px;
+        margin-bottom: 5px;
         .name {
             min-width: 8px;
         }
         & > * {
             margin-right: 5px;
+        }
+        .operate {
+            visibility: hidden;
+        }
+    }
+    .line:hover {
+        .operate {
+            visibility: visible;
         }
     }
     .params {

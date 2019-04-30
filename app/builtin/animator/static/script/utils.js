@@ -56,6 +56,9 @@ async function formatNodeDump(dump, path = '', indent = 0) {
 }
 
 function queryClipUuid(comp) {
+    if (!comp) {
+        return;
+    }
     if (comp.length < 1) {
         return null;
     }
@@ -131,6 +134,34 @@ function frameToTime(frame, sample) {
     return frame / sample;
 }
 
+function sortSelectParams(params) {
+    const result = {};
+    for (const param of params) {
+        const [path] = param;
+        if (!result[path]) {
+            result[path] = {};
+        }
+        const paramPath = calcParamPath(param);
+        if (!result[path][paramPath]) {
+            param[3] = [param[3]];
+            result[path][paramPath] = param;
+            continue;
+        }
+
+        result[path][paramPath][3].push(param[3]);
+    }
+    return result;
+}
+
+function calcParamPath(param) {
+    let path;
+    if (param[1]) {
+        path = `comp_${param[1]}${param[2]}`;
+    } else {
+        path = `prop_${param[2]}`;
+    }
+    return path;
+}
 module.exports = {
     smoothScale,
     formatNodeDump,
@@ -138,4 +169,5 @@ module.exports = {
     formatClipDump,
     timeToFrame,
     frameToTime,
+    sortSelectParams,
 };

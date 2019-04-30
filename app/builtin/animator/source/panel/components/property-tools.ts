@@ -1,6 +1,6 @@
 
 export const template = `
-<div class="flex-1 property-tools">
+<div class="property-tools">
     <div class="left">属性列表</div>
     <div class="right" @mousedown="onMouseDown">
         <i :title="t('create_prop')" class="iconfont icon-add" name="createProp"></i>

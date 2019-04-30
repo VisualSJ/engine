@@ -113,6 +113,7 @@ export const methods = {
                 startX: event.x,
                 data: [data],
                 offset: 0,
+                offsetFrame: 0,
                 frames: [info.frame],
             };
         }

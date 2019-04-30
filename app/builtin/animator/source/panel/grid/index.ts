@@ -190,7 +190,7 @@ module.exports = class Grid {
         for (let i = this.hticks.minTickLevel; i <= this.hticks.maxTickLevel; ++i) {
             ratio = this.hticks.tickRatios[i];
             if (ratio > 0) {
-                this.cxt2D.strokeStyle  = `rgba(23, 23, 23, ${ratio * 0.5})`;
+                this.cxt2D.strokeStyle  = `rgba(33, 33, 33, ${ratio * 0.8})`;
                 ticks = this.hticks.ticksAtLevel(i, true);
                 for (const j of ticks) {
                     this.cxt2D.beginPath();
@@ -215,11 +215,10 @@ module.exports = class Grid {
         this.cxt2D.clearRect(0, 0, this.canvas.width, 20);
         this.cxt2D.save();
         this.cxt2D.strokeStyle = '#ccc';
-        this.cxt2D.font = '16px';
         ticks.forEach((num: number) => {
                 const x = Math.floor(this.valueToPixelH(num)) + 5;
                 const text = this.hformat(num);
-                this.cxt2D.strokeText(text, Math.floor(x - this.startOffset), 13);
+                this.cxt2D.strokeText(text, Math.floor(x - this.startOffset), 11);
             });
         this.cxt2D.restore();
     }

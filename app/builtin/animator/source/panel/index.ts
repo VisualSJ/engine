@@ -14,7 +14,7 @@ export const style = readFileSync(join(__dirname, '../index.css'));
 
 export const template = readFileSync(join(__dirname, '../../static', '/template/index.html'));
 const Grid = require('./grid');
-const {smoothScale, formatNodeDump, timeToFrame, frameToTime, formatClipDump} = require('./../../static/script/utils.js');
+const {smoothScale, formatNodeDump, timeToFrame, frameToTime, formatClipDump, sortSelectParams} = require('./../../static/script/utils.js');
 const LINEHEIGHT = 24;
 export const $ = {
     animator: '.animator',
@@ -55,8 +55,8 @@ export const methods = {
      * 粘贴复制的内容
      */
     paste() {
-        vm.onPreviewRow('pasteKey');
-        vm.onEvents('pasteEvent');
+        vm.onPreviewRow('pasteKey', {frame: vm.currentFrame});
+        vm.onEvents('pasteEvent', {frame: vm.currentFrame});
     },
 
     /**
@@ -111,7 +111,7 @@ export const listeners = {
      * 窗口显示时调用更新
      */
     show() {
-        vm && vm.init();
+        vm && vm.refresh();
     },
 };
 export const messages = {
@@ -217,6 +217,7 @@ export const messages = {
         }
         // const frame = timeToFrame(time, vm.sample);
         // vm.setCurrentFrame(frame);
+        // console.log(time);
     },
 };
 
@@ -250,7 +251,7 @@ export async function ready() {
             selectEventInfo: null, // 当前选中的事件信息
             copyKeyInfo: null, // 复制的关键帧信息
             copyEventInfo: null, // 复制的关键帧事件信息
-            compIndex: 0, // 存储当前动画组件在根节点组件的 index 值，方便做数据修改
+            // compIndex: 0, // 存储当前动画组件在根节点组件的 index 值，方便做数据修改
             hasAnimationComp: false,
             hasAniamtionClip: false,
             animationMode: false, // 当前动画的编辑模式
@@ -263,6 +264,10 @@ export async function ready() {
 
             nodeScrollInfo: null,
             propertyScrollInfo: null,
+            moveInfo: null, // 存储当前移动过程中的关键帧信息
+            boxInfo: null,
+            boxStyle: null,
+            boxData: null,
         },
         computed: {
             // 计算关键帧与实际坐标偏移
@@ -340,14 +345,6 @@ export async function ready() {
                 };
             },
 
-            mouseFrame() {
-                const that: any = this;
-                if (that.grid) {
-                    return Math.round(that.grid.pixelToValueH(that.mousePosition));
-                }
-                return false;
-            },
-
             nodesHeight() {
                 const that: any = this;
                 if (!that.nodeDump) {
@@ -362,6 +359,17 @@ export async function ready() {
                     return 0;
                 }
                 return Object.keys(that.properties).length * LINEHEIGHT;
+            },
+
+            compIndex() {
+                const that: any = this;
+                if (!that.nodeDump) {
+                    return;
+                }
+                if (!that.nodeDump.clipInfo) {
+                    return;
+                }
+                return that.nodeDump.clipInfo.compIndex;
             },
         },
         watch: {
@@ -398,20 +406,24 @@ export async function ready() {
                 requestAnimationFrame(() => {
                     that.grid.render();
                     that.offset = that.grid.xAxisOffset;
+                    that.loading = false;
+                    that.setCurrentFrame(that.currentFrame); // 主动触发更新
                 });
             },
 
             async refresh() {
                 const that: any = this;
-                that.canvasSize = {
+                const size = {
                     w: that.$refs.right.offsetWidth,
                     h: that.$refs.right.offsetHeight,
                 };
                 that.nodeScrollInfo = {
+                    size,
                     height: that.$refs['node-content'].offsetHeight,
                     top: 0,
                 };
                 that.propertyScrollInfo = {
+                    size,
                     height: that.$refs['property-content'].offsetHeight,
                     top: 0,
                 };
@@ -439,14 +451,8 @@ export async function ready() {
                         that.resetState();
                     }
                 }
-                // 预览初始化时获取不到文档流宽高，对 canvas 的初始化造成影响
-                requestAnimationFrame(async () => {
-                    that.init();
-                    that.setCurrentFrame(that.currentFrame); // 主动触发更新
-                    that.loading = false;
-                });
+                that.init();
             },
-
             resetState() {
                 const that: any = this;
                 that.animationMode = false;
@@ -470,14 +476,14 @@ export async function ready() {
                     await that.updateRoot(root);
                     if (that.nodeDump.clipInfo) {
                         that.hasAnimationComp = true;
-                        const {compIndex, defaultClip} = that.nodeDump.clipInfo;
+                        const { defaultClip} = that.nodeDump.clipInfo;
                         if (!defaultClip) {
                             that.hasAniamtionClip = false;
                             that.clipDump = null;
                             return;
                         }
                         that.hasAniamtionClip = true;
-                        that.compIndex = compIndex;
+                        // that.compIndex = compIndex;
                         if (that.defaultClip === defaultClip) {
                             return;
                         }
@@ -636,13 +642,29 @@ export async function ready() {
              */
             pageToFrame(x: number) {
                 const that: any = this;
-                const offset = x - that.$refs.left.offsetWidth - that.$refs.left.getBoundingClientRect().x - that.startOffset;
+                const offset =  x - that.$refs.left.getBoundingClientRect().right - that.startOffset;
                 const offsetFrame = Math.round(that.grid.pixelToValueH(Math.abs(offset)));
                 if (offset > 0) {
                     return offsetFrame;
                 } else {
                     return -offsetFrame;
                 }
+            },
+
+            /**
+             * 将 event 上的 x, y 计算为相对于Ctrl面板的坐标信息
+             */
+            pageToCtrol(x: number, y: number) {
+                const that: any = this;
+                const result: any = {};
+                if (x) {
+                    result.x = x -  that.$refs.left.getBoundingClientRect().right;
+                }
+
+                if (y) {
+                    result.y = y - that.$refs.left.getBoundingClientRect().top;
+                }
+                return result;
             },
 
             // 计算关键帧数据的实际显示位置
@@ -656,6 +678,56 @@ export async function ready() {
                     return item;
                 });
                 return result;
+            },
+
+            // 计算框选的数据信息
+            calcBoxStyle() {
+                const that: any = this;
+                if (!that.boxInfo) {
+                    return;
+                }
+                const {startX, startY, type, x, y} = that.boxInfo;
+                const point = that.pageToCtrol(x, y);
+                // 先把鼠标移动的点控制转化为当前与i内需框选的范围之内
+                const {offsetTop, offsetHeight, offsetWidth} = that.$refs[`${type}-content`];
+                const endX = Editor.Utils.Math.clamp(point.x, 0, offsetWidth);
+                const endY = Editor.Utils.Math.clamp(point.y, offsetTop, offsetTop + offsetHeight);
+                const w = startX - endX;
+                const h = startY - endY;
+                // 宽高一个为 0 返回
+                if (!w || !h) {
+                    return;
+                }
+                const origin: any = {};
+                if (w > 0 && h > 0) {
+                    // 往左上角移动
+                    origin.x = endX;
+                    origin.y = endY - offsetTop;
+                } else if (w < 0 && h < 0) {
+                    // 右下角移动
+                    origin.x = startX;
+                    origin.y = startY - offsetTop;
+                } else if (w < 0 && h > 0) {
+                    // 左下角
+                    origin.x = startX;
+                    origin.y = endY - offsetTop;
+                } else if (w > 0 && h < 0) {
+                    // 右下角
+                    origin.x = endX;
+                    origin.y = startY - offsetTop;
+                }
+                that.boxData = {
+                    origin,
+                    w: Math.abs(w),
+                    h: Math.abs(h),
+                    type: that.boxInfo.type,
+                };
+                return {
+                    top: `${origin.y}px`,
+                    left: `${origin.x}px`,
+                    right: `${offsetWidth - origin.x - Math.abs(w)}px`,
+                    bottom: `${offsetHeight - origin.y - Math.abs(h)}px`,
+                };
             },
 
             /**
@@ -781,6 +853,8 @@ export async function ready() {
              */
             onMouseDown(event: any) {
                 const that: any = this;
+                that.boxInfo = null;
+                that.boxStyle = null;
                 const name = event.target.getAttribute('name');
                 if (name !== 'event') {
                     that.selectEventInfo = null;
@@ -788,50 +862,80 @@ export async function ready() {
                 if (name !== 'key') {
                     that.selectKeyInfo = null;
                 }
+                let boxInfo: any = null;
                 // 点击顶部移动当前关键帧
-                if (name === 'time-pointer') {
-                    const frame = that.pixelToFrame(event.offsetX);
-                    if (event.button === 2) {
-                        // 粘贴关键帧事件
-                        const menu = [{
-                            label: that.t('create', 'event.'),
-                            click() {
-                                that.onEvents('addEvent', [frame]);
-                            },
-                        }];
-                        if (that.copyEventInfo) {
-                            menu.push({
-                                label: that.t('paste', 'event.'),
+                switch (name) {
+                    case 'time-pointer':
+                        const frame = that.pixelToFrame(event.offsetX);
+                        if (event.button === 2) {
+                            // 粘贴关键帧事件
+                            const menu = [{
+                                label: that.t('create', 'event.'),
                                 click() {
-                                    that.onEvents('pasteEvent', [frame]);
+                                    that.onEvents('addEvent', [frame]);
                                 },
+                            }];
+                            if (that.copyEventInfo) {
+                                menu.push({
+                                    label: that.t('paste', 'event.'),
+                                    click() {
+                                        that.onEvents('pasteEvent', [frame]);
+                                    },
+                                });
+                            }
+                            Editor.Menu.popup({
+                                x: event.pageX,
+                                y: event.pageY,
+                                menu,
                             });
+                            return;
                         }
-                        Editor.Menu.popup({
-                            x: event.pageX,
-                            y: event.pageY,
-                            menu,
-                        });
-                        return;
-                    }
-                    that.currentFrame = frame;
-                    const time = frameToTime(that.currentFrame, that.sample);
-                    Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
-                } else if (name === 'pointer') {
-                    that.flags.mouseDownName = 'pointer';
-                } else {
-                    if (event.button === 1 || event.button === 2) {
-                        // 鼠标中键或右键按下，标识可以开始拖拽时间轴
-                        that.flags.mouseDownName = 'grid';
-                        that.flags.mouseDownX = event.x;
-                        return;
-                    }
-                    if (!name) {
-                        that.flags.mouseDownName = 'box';
-                        return;
-                    }
+                        that.currentFrame = frame;
+                        const time = frameToTime(that.currentFrame, that.sample);
+                        Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
+                        break;
+                    case 'pointer':
+                        that.flags.mouseDownName = 'pointer';
+                        break;
+                    case 'node':
+                    case 'property':
+                        boxInfo = {
+                            type: name,
+                        };
+                        that.flags.mouseDownName = name;
+                        break;
+                    default:
+                        if (event.button === 1 || event.button === 2) {
+                            // 鼠标中键或右键按下，标识可以开始拖拽时间轴
+                            that.flags.mouseDownName = 'grid';
+                            that.flags.mouseDownX = event.x;
+                            return;
+                        }
+                        if (!name) {
+                            break;
+                        }
+                        that.flags.mouseDownName = name;
                 }
-                that.flags.mouseDownName = name;
+                // 针对 box 的显示效果
+                if (!boxInfo) {
+                    const $node = event.path.find((item: any) => {
+                        return item.className === 'content';
+                    });
+                    if (!$node) {
+                        return;
+                    }
+                    that.flags.mouseDownName = $node.getAttribute('name');
+                    boxInfo = {
+                        type: $node.getAttribute('name'),
+                    };
+                }
+
+                if (['node', 'property'].includes(that.flags.mouseDownName)) {
+                    const positionResult = that.pageToCtrol(event.x, event.y);
+                    boxInfo.startX = positionResult.x;
+                    boxInfo.startY = positionResult.y;
+                    that.boxInfo = boxInfo;
+                }
             },
 
             onMouseUp(event: any) {
@@ -840,6 +944,10 @@ export async function ready() {
                 if (!that.flags.mouseDownName) {
                     return;
                 }
+                that.boxInfo = null;
+                that.boxStyle = null;
+                that.boxData = null;
+                that.flags.draging = false;
                 const frame = that.pixelToFrame(event.offsetX);
                 switch (that.flags.mouseDownName) {
                     case 'key':
@@ -859,31 +967,42 @@ export async function ready() {
                             that.onEvents('pasteEvent', [frame]);
                             break;
                         }
-                        if (that.selectEventInfo.offset === 0) {
+                        if (that.selectEventInfo.offsetFrame === 0) {
                             break;
                         }
-                        const offsetEvent = Math.round(that.grid.pixelToValueH(that.selectEventInfo.offset));
-                        if (offsetEvent === 0) {
-                            break;
-                        }
-
-                        Editor.Ipc.sendToPanel('scene', 'move-clip-events', that.currentClip, that.selectEventInfo.frames, offsetEvent);
+                        const {frames, offsetFrame} = that.selectEventInfo;
+                        Editor.Ipc.sendToPanel('scene', 'move-clip-events', that.currentClip, frames, offsetFrame);
                         that.selectEventInfo = null;
                         break;
                 }
                 that.flags.mouseDownName = '';
                 that.flags.mouseDownX = 0;
+                that.moveInfo = null;
+                // that.boxInfo = null;
             },
 
             onMouseMove(event: any) {
                 const that: any = this;
-                const {x} = event;
-                const pixel = x - that.$refs.left.offsetWidth + that.offset;
-                // that.mousePosition = x - that.$refs.left.offsetWidth;
-                if (!that.flags.mouseDownName) {
-                    event.target.style.cursor = '';
-                    return;
+                const {x, y} = event;
+                // 需要实时显示拖拽过程中鼠标信息的处理
+                if (['key', 'event', 'pointer'].includes(that.flags.mouseDownName)) {
+                    const frame = that.pageToFrame(x);
+                    if (frame < 0) {
+                        return;
+                    }
+                    const result = that.pageToCtrol(x, y);
+                    if (!that.moveInfo) {
+                        that.moveInfo = {
+                            x: result.x + 5,
+                            y: result.y + 5,
+                        };
+                    } else {
+                        that.moveInfo.x = result.x + 5;
+                        that.moveInfo.y = result.y + 5;
+                    }
+                    that.moveInfo.frame = that.pageToFrame(x);
                 }
+
                 switch (that.flags.mouseDownName) {
                     case 'key':
                         if (that.selectKeyInfo) {
@@ -901,12 +1020,13 @@ export async function ready() {
                             }
                             const offset = that.grid.valueToPixelH(startFrame) - that.grid.valueToPixelH(endFrame);
                             requestAnimationFrame(() => {
-                            that.selectKeyInfo.startX = event.x;
-                            that.selectKeyInfo.offset += offset;
-                            that.selectKeyInfo.offsetFrame += offsetFrame;
-                            data.forEach((item: any) => {
+                                that.selectKeyInfo.startX = event.x;
+                                that.selectKeyInfo.offset += offset;
+                                that.selectKeyInfo.offsetFrame += offsetFrame;
+                                data.forEach((item: any) => {
                                     item.x += offset;
                                 });
+                                that.moveInfo.offsetFrame = that.selectKeyInfo.offsetFrame;
                             });
                         }
                         break;
@@ -926,11 +1046,13 @@ export async function ready() {
                             }
                             const offset = that.grid.valueToPixelH(startFrame) - that.grid.valueToPixelH(endFrame);
                             requestAnimationFrame(() => {
-                            that.selectEventInfo.startX = event.x;
-                            that.selectEventInfo.offset += offset;
-                            data.forEach((item: any) => {
-                                    item.x += offset;
+                                that.selectEventInfo.startX = event.x;
+                                that.selectEventInfo.offset += offset;
+                                that.selectEventInfo.offsetFrame += offsetFrame;
+                                data.forEach((item: any) => {
+                                        item.x += offset;
                                 });
+                                that.moveInfo.offsetFrame = that.selectEventInfo.offsetFrame;
                             });
                         }
                         break;
@@ -945,7 +1067,21 @@ export async function ready() {
                         break;
                     case 'pointer':
                         event.target.style.cursor = 'ew-resize';
-                        that.currentFrame = that.pageToFrame(x);
+                        that.currentFrame = that.moveInfo.frame;
+                }
+                if (!that.flags.mouseDownName) {
+                    event.target.style.cursor = '';
+                    return;
+                }
+                if (['node', 'property'].includes(that.flags.mouseDownName)) {
+                    that.flags.draging = true;
+                    // 对 box 的框选处理
+                    if (that.boxInfo) {
+                        that.boxStyle = null;
+                        that.boxInfo.x = event.x;
+                        that.boxInfo.y = event.y;
+                        that.boxStyle = that.calcBoxStyle();
+                    }
                 }
             },
 
@@ -1068,6 +1204,9 @@ export async function ready() {
                         if (!changeSuccess) {
                             console.warn(`${that.currentClip} change play status ${operate} failed！`);
                         }
+                        if (operate === 'stop') {
+                            that.setCurrentFrame(0);
+                        }
                         break;
                     case 'update-frame':
                         that.updateFrameContinue = true;
@@ -1160,9 +1299,12 @@ export async function ready() {
                             //     break;
                             // }
                         }
-                        for (const item of that.copyKeyInfo.params) {
-                            item[3] = [item[3]];
-                            Editor.Ipc.sendToPanel('scene', 'copy-clip-key', currentClip, ...item, frame);
+                        const path2Param = sortSelectParams(that.copyKeyInfo.params);
+                        for (const path of Object.keys(path2Param)) {
+                            for (const name of Object.keys(path2Param[path])) {
+                                const param = path2Param[path][name];
+                                Editor.Ipc.sendToPanel('scene', 'copy-clip-key', currentClip, ...param, frame);
+                            }
                         }
                         that.selectKeyInfo = null;
                         break;
@@ -1174,8 +1316,12 @@ export async function ready() {
                         if (!that.selectKeyInfo) {
                             break;
                         }
-                        for (const item of that.selectKeyInfo.params) {
-                            Editor.Ipc.sendToPanel('scene', 'remove-clip-key', currentClip, ...item);
+                        const removePaths = sortSelectParams(that.selectKeyInfo.params);
+                        for (const path of Object.keys(removePaths)) {
+                            for (const name of Object.keys(removePaths[path])) {
+                                const param = removePaths[path][name];
+                                Editor.Ipc.sendToPanel('scene', 'remove-clip-key', currentClip, ...param);
+                            }
                         }
                         that.selectKeyInfo = null;
                         break;
@@ -1194,9 +1340,12 @@ export async function ready() {
                         if (offsetFrame === 0) {
                             break;
                         }
-                        for (const item of that.selectKeyInfo.params) {
-                            item[3] = [item[3]];
-                            Editor.Ipc.sendToPanel('scene', 'move-clip-keys', that.currentClip, ...item, offsetFrame);
+                        const movePaths = sortSelectParams(that.selectKeyInfo.params);
+                        for (const path of Object.keys(movePaths)) {
+                            for (const name of Object.keys(movePaths[path])) {
+                                const param = movePaths[path][name];
+                                Editor.Ipc.sendToPanel('scene', 'move-clip-keys', currentClip, ...param, offsetFrame);
+                            }
                         }
                         that.selectKeyInfo = null;
                         break;
@@ -1206,6 +1355,30 @@ export async function ready() {
                         break;
                     case 'closeBezierEditor':
                         that.showBezierEditor = false;
+                        break;
+                    case 'updateSelect':
+                        if (!that.selectKeyInfo) {
+                            if (!params[0]) {
+                                break;
+                            }
+                            that.selectKeyInfo = {};
+                        }
+                        if (!that.selectKeyInfo.sortDump) {
+                            if (!params[0]) {
+                                break;
+                            }
+                            that.selectKeyInfo.sortDump = {};
+                        }
+                        that.selectKeyInfo.sortDump[params[1]] = [params[0], params[2]];
+                        let data1: any = [];
+                        let data2: any = [];
+                        Object.keys(that.selectKeyInfo.sortDump).map((name: any) => {
+                            const item = that.selectKeyInfo.sortDump[name];
+                            data1 = data1.concat(item[0]);
+                            data2 = data2.concat(item[1]);
+                        });
+                        that.selectKeyInfo.data = data1;
+                        that.selectKeyInfo.params = data2;
                         break;
                 }
             },

@@ -1,6 +1,6 @@
 
 export const template = `
-<div class="flex-1 content-device toolbar"
+<div class="content-device toolbar"
     @mousedown="onMouseDown"
 >
     <i :title="t('jump_first_frame')" class="iconfont icon-rewind"  name="jump_first_frame"></i>
