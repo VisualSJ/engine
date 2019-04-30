@@ -71,6 +71,15 @@ exports.createMenu = (callback: any): any[] => {
                 callback({ type: 'effect' });
             },
         },
+        {
+            type: 'separator',
+        },
+        {
+            label: Editor.I18n.t('assets.menu.newAnimation'),
+            click() {
+                callback({ type: 'anim' });
+            },
+        },
     ];
 };
 

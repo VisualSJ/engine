@@ -202,27 +202,32 @@ export const methods = {
     async renameChange(event: Event) {
         // @ts-ignore
         const { asset } = this;
+        const scripts = ['.ts', '.js'];
         const parentAsset = utils.getAssetFromTree(asset.parentUuid);
         // @ts-ignore
         const filenames = parentAsset.children.map((one) => one.name).filter((name) => name !== asset.name);
 
         // @ts-ignore
-        this.renameValue = this.$refs.renameInput.value.trim();
+        const value = this.$refs.renameInput.value.trim();
+        const fileName = value.substr(0, value.indexOf('.')).trim();
+        const fileExt = value.substr(value.indexOf('.')).trim();
+        // @ts-ignore
+        this.renameValue = value;
+
         let state = '';
         // @ts-ignore
         if (filenames.includes(this.renameValue)) {
             state = 'errorNewnameDuplicate';
             // @ts-ignore
-        } else if (this.renameValue === '' || this.renameValue === asset.fileExt) {
+        } else if (this.renameValue === '' || fileName === '') {
             state = 'errorNewnameEmpty';
-        }
-
-        // @ts-ignore 脚本文件额外的校验
-        if (['.ts', '.js'].includes(asset.fileExt)) {
-            // @ts-ignore
-            const valid = await utils.scriptName.isValid(this.renameValue);
-            if (!valid) {
-                state = 'errorScriptName';
+        } else if (scripts.includes(fileExt)) { // @ts-ignore 脚本文件额外的校验
+            if (fileName !== asset.fileName) { // 自身文件可以只换后缀，如 .js 换为 .ts
+                // @ts-ignore
+                const valid = await utils.scriptName.isValid(this.renameValue);
+                if (!valid) {
+                    state = 'errorScriptName';
+                }
             }
         }
 
@@ -271,10 +276,7 @@ export const methods = {
             state = 'errorNewnameDuplicate';
         } else if (addAsset.name === '' || addAsset.name === addAsset.ext) {
             state = 'errorNewnameEmpty';
-        }
-
-        // @ts-ignore 脚本文件额外的校验
-        if (['ts', 'js'].includes(addAsset.type)) {
+        } else if (['ts', 'js'].includes(addAsset.type)) { // @ts-ignore 脚本文件额外的校验
             // @ts-ignore
             const valid = await utils.scriptName.isValid(addAsset.name);
             if (!valid) {

@@ -115,15 +115,16 @@ export function apply(messages: any) {
         switch (info.importer) {
             case 'typescript':
             case 'javascript':
+                // 先删再加
+                await $scene.forwarding('Script', 'removeScript', [info]);
                 // 如果修改的是脚本，需要更新场景内的脚本数据
-                $scene.forwarding('Script', 'loadScript', [uuid]);
+                await $scene.forwarding('Script', 'loadScript', [uuid]);
                 break;
             case 'effect':
                 $scene.forwarding('Effect', 'registerEffects', [[uuid]]);
-            default:
-                $scene.forwarding('Asset', 'assetChange', [uuid]);
                 break;
         }
+        $scene.forwarding('Asset', 'assetChange', [uuid]);
     };
 
     /**
@@ -131,16 +132,16 @@ export function apply(messages: any) {
      */
     messages['asset-db:asset-delete'] = (uuid: string, info: any) => {
         switch (info.importer) {
+            case 'typescript':
             case 'javascript':
-            // 如果修改的是脚本，需要更新场景内的脚本数据
-            $scene.forwarding('Script', 'removeScript', [info]);
-            break;
-        case 'effect':
-            // 如果删除的是 effect，需要通知更新 effect 列表
-            $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
-        default:
-            $scene.forwarding('Asset', 'assetDelete', [uuid]);
-            break;
+                // 如果修改的是脚本，需要更新场景内的脚本数据
+                $scene.forwarding('Script', 'removeScript', [info]);
+                break;
+            case 'effect':
+                // 如果删除的是 effect，需要通知更新 effect 列表
+                $scene.forwarding('Effect', 'removeEffects', [[uuid]]);
+                break;
         }
+        $scene.forwarding('Asset', 'assetDelete', [uuid]);
     };
 }

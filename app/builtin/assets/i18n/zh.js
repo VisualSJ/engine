@@ -29,6 +29,7 @@ module.exports = {
         newMaterial: 'Material',
         newPhysicsMaterial: 'Physics Material',
         newEffect: 'Effect',
+        newAnimation: 'Animation',
         copy: '复制',
         paste: '粘贴',
         delete: '删除',

@@ -29,6 +29,7 @@ module.exports = {
         newMaterial: 'Material',
         newPhysicsMaterial: 'Physics Material',
         newEffect: 'Effect',
+        newAnimation: 'Animation',
         copy: 'Copy',
         paste: 'Paste',
         delete: 'Delete',
