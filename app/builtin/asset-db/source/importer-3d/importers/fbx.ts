@@ -52,7 +52,7 @@ export default class FbxImporter extends GltfImporter {
         await convert(tmpFbxPath, destPath);
 
         if (fs.existsSync(resultGltfPath)) {
-            console.log(`${tmpFbxPath}(from ${asset.source}) is converted to: ${resultGltfPath}`);
+            console.debug(`${tmpFbxPath}(from ${asset.source}) is converted to: ${resultGltfPath}`);
             fs.writeFileSync(statusFilePath, JSON.stringify(expectedStatus, undefined, 2));
             return resultGltfPath;
         }

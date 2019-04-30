@@ -430,7 +430,7 @@ export class GltfConverter {
             const iKeys = getKeysIndex(sampler.input);
             this._gltfChannelToCurveData(gltfAnimation, gltfChannel, curveData, iKeys);
             const inputAccessor = this._gltf.accessors![sampler.input];
-            const channelDuration = inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? inputAccessor.max[0] : 0;
+            const channelDuration = inputAccessor.max !== undefined && inputAccessor.max.length === 1 ? Math.fround(inputAccessor.max[0]) : 0;
             duration = Math.max(channelDuration, duration);
         });
 
@@ -873,11 +873,11 @@ export class GltfConverter {
             if (attributeName === GltfSemanticName.POSITION) {
                 if (attributeAccessor.min) {
                     cc.vmath.vec3.min(minPosition, minPosition, new cc.vmath.vec3(
-                        attributeAccessor.min[0], attributeAccessor.min[1], attributeAccessor.min[2]));
+                        Math.fround(attributeAccessor.min[0]), Math.fround(attributeAccessor.min[1]), Math.fround(attributeAccessor.min[2])));
                 }
                 if (attributeAccessor.max) {
                     cc.vmath.vec3.max(maxPosition, maxPosition, new cc.vmath.vec3(
-                        attributeAccessor.max[0], attributeAccessor.max[1], attributeAccessor.max[2]));
+                        Math.fround(attributeAccessor.max[0]), Math.fround(attributeAccessor.max[1]), Math.fround(attributeAccessor.max[2])));
                 }
                 const comps = this._getComponentsPerAttribute(attributeAccessor.type);
                 const bytes = this._getBytesPerComponent(attributeAccessor.componentType);
