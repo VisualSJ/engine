@@ -78,6 +78,9 @@ class AnimationManager extends EventEmitter {
                     this._animUpdateInterval = setInterval(this.update.bind(this), 100);
                 }
 
+                this.emit('scene:animation-clip-change', uuid, this._curEditClipUuid);
+                Manager.Ipc.send('broadcast', 'scene:animation-clip-change', this._curEditClipUuid);
+
                 return true;
             }
         } else {
@@ -246,6 +249,7 @@ class AnimationManager extends EventEmitter {
 
         let oldClipUuid = this._curEditClipUuid;
         this._curEditClipUuid = clipUuid;
+        this.emit('scene:animation-clip-change', Scene.modes.animation.root, this._curEditClipUuid);
         Manager.Ipc.send('broadcast', 'scene:animation-clip-change', this._curEditClipUuid);
 
         // 如果还没进入编辑模式，就不对state操作

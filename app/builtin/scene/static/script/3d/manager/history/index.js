@@ -75,12 +75,19 @@ sceneManager.on('animation-end', () => {
 
 // 动画编辑的事件
 animationManager.on('scene:animation-change', (nodeUuid, clipUuid) => {
-    // records.push(clipUuid);
+    if (!sceneManager.modes.animation.isOpen) {
+        return;
+    }
+    records.push(clipUuid);
 });
 
-// animationManager.on('clip-change', (nodeUuid, clipUuid) => {
-//     cache.reset(nodeUuid, clipUuid);
-// });
+// 切换所编辑的动画
+animationManager.on('scene:animation-clip-change', (nodeUuid, clipUuid) => {
+    if (!sceneManager.modes.animation.isOpen) {
+        return;
+    }
+    cache.reset(nodeUuid, clipUuid);
+});
 
 // 新增的是一个复合节点，就需要其子节点也一起记录，例如 prefab
 function loopRecord(node) {
