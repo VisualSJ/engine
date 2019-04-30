@@ -462,7 +462,8 @@ class AnimationOperation {
         }
 
         const node = animData.node;
-        frames.forEach(async (frame) => {
+        for (let i = 0; i < frames.length; i++) {
+            let frame = frames[i];
             let keyData = utils.queryKey(state.clip, path, comp, prop, frame);
             if (!keyData) {
                 return;
@@ -472,7 +473,7 @@ class AnimationOperation {
 
             let values = keyData.keyframes.values;
             values[keyData.keyIndex] = value;
-        });
+        }
 
         state.initialize(node);
 
