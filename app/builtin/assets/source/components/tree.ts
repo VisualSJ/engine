@@ -829,23 +829,30 @@ export const methods = {
             toAsset.state = '';
 
         } else if (json.type === 'cc.Node') { // 明确接受外部拖进来的节点 cc.Node
-            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', json.from);
-            const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab', json.from);
-            const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, { overwrite: true });
-            if (!uuid) {
-                // 由于在 ipc generate-prefab 就预置了节点为 prefab 状态
-                // 现在新增失败，需要取消节点的 prefab 状态
-                await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', json.from);
-            } else {
-                // 节点重新关联新的资源 uuid
-                await Editor.Ipc.requestToPackage('scene', 'link-prefab', json.from, uuid);
+            for (const node of json.values) {
+                if (node.type !== 'cc.Node') {
+                    continue;
+                }
+
+                const nodeUuid = node.value;
+                const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', nodeUuid);
+                const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab', nodeUuid);
+                const uuid = await vm.ipcAdd(`${toAsset.source}/${dump.name.value}.prefab`, content, { overwrite: true });
+                if (!uuid) {
+                    // 由于在 ipc generate-prefab 就预置了节点为 prefab 状态
+                    // 现在新增失败，需要取消节点的 prefab 状态
+                    await Editor.Ipc.requestToPackage('scene', 'unlink-prefab', nodeUuid);
+                } else {
+                    // 节点重新关联新的资源 uuid
+                    await Editor.Ipc.requestToPackage('scene', 'link-prefab', nodeUuid, uuid);
+                }
             }
         } else {
             if (!json.from) {
                 return;
             }
             if (json.copy) { // 按住了 ctrl 键，拖动复制
-                const uuids = json.from.split(',');
+                const uuids = json.values.map((info: IdragAssetInfo) => info.value);
                 vm.copy(uuids);
                 vm.paste(json.to);
                 return;

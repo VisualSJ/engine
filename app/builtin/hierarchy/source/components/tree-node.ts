@@ -227,7 +227,7 @@ export const methods = {
      */
     addChange(event: Event) {
         // @ts-ignore
-        const {addNode} = this;
+        const { addNode } = this;
         // @ts-ignore
         addNode.name = this.$refs.addInput.value.trim();
         let state = '';
@@ -280,19 +280,26 @@ export const methods = {
      * @param uuid
      */
     dragStart(event: Event, node: ItreeNode) {
+        const uuid = node.uuid;
         // @ts-ignore
-        let uuid = node.uuid;
+        const values: any[] = []; // 支持多选时数据填充
         // @ts-ignore
         if (this.selects.includes(uuid)) {
             // @ts-ignore
-            uuid = this.selects.join(',');
+            this.selects.forEach((id: string) => {
+                const selected = utils.getNodeFromTree(id);
+                values.push({ type: selected.type, value: selected.uuid });
+            });
+        } else {
+            values.push({ type: node.type, value: uuid });
         }
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: uuid,
-            type: 'cc.Node',
+            type: node.type,
+            values, // 需要判断是否多选时，取该数据
         }));
-        // @ts-ignore 给其他面板使用
+        // @ts-ignore
         event.dataTransfer.setData('value', uuid);
 
         const img = new Image();
@@ -314,7 +321,7 @@ export const methods = {
             !event.dataTransfer ||
             (event.dataTransfer.types.length === 1 && event.dataTransfer.types[0] === 'value')
         ) {
-           // @ts-ignore
+            // @ts-ignore
             if (!this.selects.includes(node.uuid)) {
                 // @ts-ignore
                 this.$emit('ipcSingleSelect', node.uuid);
@@ -394,9 +401,6 @@ export const methods = {
         } else {
             data = JSON.parse(dragData);
         }
-
-        // @ts-ignore 跨面板的取值
-        data.uuid = event.dataTransfer.getData('value');
 
         data.to = node.uuid; // 被瞄准的节点
         data.insert = insert; // 在重新排序前获取数据

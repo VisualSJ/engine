@@ -324,20 +324,29 @@ export const methods = {
      * @param uuid
      */
     dragStart(event: Event, asset: ItreeAsset) {
+        const uuid = asset.uuid;
         // @ts-ignore
-        let uuid = asset.uuid;
+        const values: any[] = []; // 支持多选时数据填充
         // @ts-ignore
         if (this.selects.includes(uuid)) {
             // @ts-ignore
-            uuid = this.selects.join(',');
+            this.selects.forEach((id: string) => {
+                const selected = utils.getAssetFromTree(id);
+                values.push({ type: selected.type, value: selected.uuid });
+            });
+        } else {
+            values.push({ type: asset.type, value: uuid });
         }
+        // @ts-ignore
+        this.$refs.dragitem.values = values; // 拖动组件新增加的 values 属性
+
         // @ts-ignore
         event.dataTransfer.setData('dragData', JSON.stringify({
             from: uuid,
             type: asset.type,
+            values, // 需要判断是否多选时，取该数据
         }));
-
-        // @ts-ignore 给其他面板使用
+        // @ts-ignore
         event.dataTransfer.setData('value', asset.redirect ? asset.redirect.uuid : uuid);
 
         const img = new Image();

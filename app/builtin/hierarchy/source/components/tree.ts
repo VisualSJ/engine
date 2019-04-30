@@ -750,26 +750,32 @@ export const methods = {
 
         // 明确接受 cc.Prefab 资源作为节点
         if (json.type === 'cc.Prefab') {
-            const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
+            for (const asset of json.values) {
+                if (asset.type !== 'cc.Prefab') {
+                    continue;
+                }
 
-            await Editor.Ipc.requestToPanel('scene', 'create-node', {
-                parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
-                assetUuid: json.uuid,
-            });
+                const assetUuid = asset.value;
+                const [toNode, toIndex, toArr, toParent] = utils.getGroupFromTree(db.nodesTree, json.to); // 将被注入数据的对象
+                await Editor.Ipc.requestToPanel('scene', 'create-node', {
+                    parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
+                    assetUuid,
+                });
 
-            if (json.insert === 'inside') {
-                return; // 上步已新增完毕
+                if (json.insert === 'inside') {
+                    continue; // 上步已新增完毕
+                }
+
+                let offset = toIndex - toArr.length; // 目标索引减去自身索引
+                if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
+                    offset += 1;
+                } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
+                    offset -= 1;
+                }
+
+                // 在父级里平移
+                db.moveNode(toParent.uuid, toArr.length, offset);
             }
-
-            let offset = toIndex - toArr.length; // 目标索引减去自身索引
-            if (offset < 0 && json.insert === 'after') { // 小于0的偏移默认是排在目标元素之前，如果是 after 要 +1
-                offset += 1;
-            } else if (offset > 0 && json.insert === 'before') { // 大于0的偏移默认是排在目标元素之后，如果是 before 要 -1
-                offset -= 1;
-            }
-
-            // 在父级里平移
-            db.moveNode(toParent.uuid, toArr.length, offset);
 
         } else if (json.type === 'cc.Node') {
             if (!json.from) {

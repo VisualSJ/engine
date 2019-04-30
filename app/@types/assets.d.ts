@@ -7,11 +7,18 @@ declare interface IdragAsset {
      * 是否接受该类型需要在 drop 中明确判断
      */
     type: string;
-    from?: string; // 被拖动的节点 uuid
+    from: string; // 被拖动的节点 uuid
+    values: IdragAssetInfo[]; // 数组，多选资源时所有被选资源的信息
     to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
     copy: boolean; // 是否是拖动复制
     files?: string[]; // 拖拽中带上外部系统文件
+}
+
+declare interface IdragAssetInfo {
+    type: string,
+    value: string,
+    extends?: string[]
 }
 
 declare interface IaddAsset {
@@ -73,7 +80,7 @@ declare interface IOpenAssetRule { // 一种类型的规则配置
     args: string, // 备用的 cmd 命令行使用的参数
 }
 
-declare interface IOpenAsset { 
+declare interface IOpenAsset {
     ext: string, // 文件后缀或后缀的类型 如 '.mtl', 'image'
     file: string, // 文件的磁盘路径'
     uuid: string,

@@ -7,10 +7,16 @@ declare interface IdragNode {
      */
     type: string; 
     from?: string; // 被拖动的节点 uuid
-    uuid?: string; // 跨面板传递的有效 uuid
+    values: IdragNodeInfo[]; // 数组，多选资源时所有被选资源的信息
     to: string; // 被指向的节点 uuid
     insert: string; // 插入方式，有三种：inside, before, after
     copy: boolean; // 是否是拖动复制
+}
+
+declare interface IdragNodeInfo {
+    type: string,
+    value: string,
+    extends?: string[]
 }
 
 declare interface IaddNode {
