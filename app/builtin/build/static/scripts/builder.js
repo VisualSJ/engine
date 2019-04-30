@@ -486,10 +486,10 @@ class Builder {
         const excludes = [];
         // 存在模块设置数据，则整理数据
         if (excludedModules && excludedModules.length > 0) {
-            excludedModules.forEach((exName) => {
-                modules.some((item) => {
-                    if (item.id === exName) {
-                        excludes.push(file);
+            excludedModules.forEach(exName => {
+                modules.some(module => {
+                    if (module.id === exName) {
+                        excludes.push(module.id);
                         return;
                     }
                 });
@@ -498,7 +498,7 @@ class Builder {
         if (platform === 'wechat-game-subcontext') {
             modules.forEach((module) => {
                 if (module.id === 'WebGL Renderer' || (module.dependencies && module.dependencies.indexOf('WebGL Renderer') !== -1)) {
-                    excludes.push(file);
+                    excludes.push(module.id);
                 }
             });
         }
