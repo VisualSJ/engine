@@ -3,12 +3,13 @@
 let EditableController = require('./editable-controller');
 let ControllerShape = require('../utils/controller-shape');
 let ControllerUtils = require('../utils/controller-utils');
-const { AttributeName, setNodeOpacity, getModel, updateVBAttr } = require('../../../utils/engine');
+const { AttributeName, setNodeOpacity, getModel, updateVBAttr, ProjectionType } = require('../../../utils/engine');
 const External = require('../../../utils/external');
 const MathUtil = External.EditorMath;
 
 const vec3 = cc.vmath.vec3;
 let tempVec3 = cc.v3();
+
 class FrustumController extends EditableController {
     constructor(rootNode) {
         super(rootNode);
@@ -43,7 +44,7 @@ class FrustumController extends EditableController {
         let farHalfWidth;
 
         if (isOrtho) {
-            farHalfHeight = orthoHeight / 2;
+            farHalfHeight = orthoHeight;
             farHalfWidth = farHalfHeight * aspect;
         } else {
             farHalfHeight = Math.tan(MathUtil.deg2rad(fov / 2)) * far;
@@ -61,7 +62,7 @@ class FrustumController extends EditableController {
         vec3.scale(offset, this._oriDir, this._far);
 
         if (axisName !== 'neg_z') {
-            let data = this.getFarClipSize(this._cameraProjection === 0,
+            let data = this.getFarClipSize(this._cameraProjection === ProjectionType.ORTHO,
                 this._orthoHeight, this._fov, this._aspect, this._far);
 
             if (axisName === 'x' || axisName === 'neg_x') {
@@ -94,8 +95,8 @@ class FrustumController extends EditableController {
         this._near = near;
         this._far = far;
 
-        let positions = ControllerShape.calcFrustum(this._cameraProjection === 0, this._orthoHeight,
-            this._fov, this._aspect, this._near, this._far).vertices;
+        let positions = ControllerShape.calcFrustum(this._cameraProjection === ProjectionType.ORTHO,
+            this._orthoHeight, this._fov, this._aspect, this._near, this._far).vertices;
         updateVBAttr(this._frustumMeshRenderer, AttributeName.POSITION, positions);
 
         if (this._edit) {

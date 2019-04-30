@@ -16,6 +16,11 @@ function setMatColor(node, c) {
         }          
     }
 } 
+
+let ProjectionType = {
+    ORTHO: 0,
+    PERSPECTIVE: 1,
+};
 class Engine2D extends EngineInterface {
     constructor() {
         super();
@@ -46,6 +51,8 @@ class Engine2D extends EngineInterface {
             SPHERE: cc.LightComponent.Type.SPHERE,
             SPOT: cc.LightComponent.Type.SPOT,
         };
+
+        this.ProjectionType = ProjectionType;
     }
 
     create3DNode (name) {
@@ -216,10 +223,10 @@ class Engine2D extends EngineInterface {
         if (component instanceof cc.Camera) {
             cameraData = {};
             if (component.ortho) {
-                cameraData.projection = 0;
+                cameraData.projection = this.ProjectionType.ORTHO;
             }
             else {
-                cameraData.projection = 1;
+                cameraData.projection = this.ProjectionType.PERSPECTIVE;
             }
 
             cameraData.orthoHeight = component.orthoSize;
@@ -241,6 +248,9 @@ class Engine2D extends EngineInterface {
             }
             if (cameraData.far) {
                 component.farClip = cameraData.far;
+            }
+            if (cameraData.orthoHeight) {
+                component.orthoSize = cameraData.orthoHeight;
             }
         } else {
             console.error('target is not a cc.Camera');

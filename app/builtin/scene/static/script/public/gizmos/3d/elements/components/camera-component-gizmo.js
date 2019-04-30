@@ -4,9 +4,8 @@ const External = require('../../../utils/external');
 const NodeUtils = External.NodeUtils;
 let FrustumController = require('../controller/frustum-controller');
 let Gizmo = require('../gizmo-base');
-const { getCameraData, setCameraData } = require('../../../utils/engine');
+const { getCameraData, setCameraData, ProjectionType } = require('../../../utils/engine');
 const MathUtil = External.EditorMath;
-const vec3 = cc.vmath.vec3;
 
 class CameraComponentGizmo extends Gizmo {
     init() {
@@ -50,11 +49,17 @@ class CameraComponentGizmo extends Gizmo {
 
         let cameraData = getCameraData(this.target);
 
+        this._projection = cameraData.projection;
         this._fov = cameraData.fov;
         this._near = cameraData.near;
         this._far = cameraData.far;
         this._aspect = cameraData.aspect;
-        this._farHalfHeight = Math.tan(MathUtil.deg2rad(this._fov / 2)) * this._far;
+        if (this._projection === ProjectionType.PERSPECTIVE) {
+            this._farHalfHeight = Math.tan(MathUtil.deg2rad(this._fov / 2)) * this._far;
+        } else {
+            this._farHalfHeight = cameraData.orthoHeight;
+        }
+
         this._farHalfWidth = this._farHalfHeight * this._aspect;
     }
 
@@ -87,17 +92,6 @@ class CameraComponentGizmo extends Gizmo {
                 newHalfHeight = this._farHalfHeight + deltaHeight;
             }
 
-            newHalfHeight = Math.abs(newHalfHeight);
-            let angle = this._fov;
-            if (newHalfHeight !== this._farHalfHeight) {
-                angle = Math.atan2(newHalfHeight, this._far) * 2;
-                if (angle < MathUtil.D2R) {
-                    angle = MathUtil.D2R;
-                }
-                angle = angle * MathUtil.R2D;
-                angle = MathUtil.toPrecision(angle, 3);
-            }
-
             let newFar = this._far;
             if (deltaDistance !== 0) {
                 newFar = this._far + deltaDistance;
@@ -108,7 +102,23 @@ class CameraComponentGizmo extends Gizmo {
                 newFar = MathUtil.toPrecision(newFar, 3);
             }
 
-            setCameraData(this.target, {fov: angle, far: newFar});
+            newHalfHeight = Math.abs(newHalfHeight);
+            if (this._projection === ProjectionType.PERSPECTIVE) {
+                let angle = this._fov;
+                if (newHalfHeight !== this._farHalfHeight) {
+                    angle = Math.atan2(newHalfHeight, this._far) * 2;
+                    if (angle < MathUtil.D2R) {
+                        angle = MathUtil.D2R;
+                    }
+                    angle = angle * MathUtil.R2D;
+                    angle = MathUtil.toPrecision(angle, 3);
+                }
+
+                setCameraData(this.target, {fov: angle, far: newFar});
+            } else {
+                newHalfHeight = MathUtil.toPrecision(newHalfHeight, 3);
+                setCameraData(this.target, {orthoHeight: newHalfHeight, far: newFar});
+            }
 
             let node = this.node;
             // 发送节点修改消息

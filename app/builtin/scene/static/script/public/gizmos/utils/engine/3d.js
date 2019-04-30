@@ -41,6 +41,11 @@ class Engine3D extends EngineInterface {
             SPHERE: cc.LightComponent.Type.SPHERE,
             SPOT: cc.LightComponent.Type.SPOT,
         };
+
+        this.ProjectionType = {
+            ORTHO: cc.CameraComponent.ProjectionType.ORTHO,
+            PERSPECTIVE: cc.CameraComponent.ProjectionType.PERSPECTIVE,
+        };
     }
 
     create3DNode(name) {
@@ -256,6 +261,9 @@ class Engine3D extends EngineInterface {
             }
             if (cameraData.far) {
                 component.far = cameraData.far;
+            }
+            if (cameraData.orthoHeight) {
+                component.orthoHeight = cameraData.orthoHeight;
             }
         } else {
             console.error('target is not a cc.CameraComponent');
