@@ -177,6 +177,15 @@ class AnimationUtil {
             };
         });
 
+        // for events
+        clip.events = dumpClip.events.map((event) => {
+            return {
+                frame: event.frame / dumpClip.sample,
+                func: event.func,
+                params: event.params,
+            };
+        });
+
         this.removeUnusedKeys(clip);
     }
 
