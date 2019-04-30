@@ -38,6 +38,7 @@ class Builder {
 
     // 初始化整理 options 数据
     async _init(options, config) {
+        buildResult.reset();
         const isWeChatSubdomain = options.platform === 'wechat-game-subcontext';
         const isWeChatGame = options.platform === 'wechat-game' || isWeChatSubdomain;
         const isQQPlay = options.platform === 'qqplay';
@@ -387,7 +388,7 @@ class Builder {
             data.webDebuggerSrc = './eruda.min.js';
             try {
                 copySync(this._paths.webDebuggerSrc.replace('app.asar', 'app.asar.unpacked'), join(this._paths.dest, data.webDebuggerSrc));
-            } catch(error) {
+            } catch (error) {
                 console.warn('Can\'t copy eruda.');
             }
         }
@@ -485,8 +486,8 @@ class Builder {
         const excludes = [];
         // 存在模块设置数据，则整理数据
         if (excludedModules && excludedModules.length > 0) {
-            excludedModules.forEach(exName => {
-                modules.some(item => {
+            excludedModules.forEach((exName) => {
+                modules.some((item) => {
                     if (item.id === exName) {
                         excludes.push(file);
                         return;
@@ -564,12 +565,12 @@ class Builder {
             path = path.replace('app.asar', 'app.asar.unpacked');
 
             let spawn_options = [
-                join(engine, 'rollup', 'out', 'build-engine-cli.js'), 
+                join(engine, 'rollup', 'out', 'build-engine-cli.js'),
                 '--input',
                 './index.js',
                 '--destination',
                 outputPath,
-                '--excludes'
+                '--excludes',
             ].concat(excludes).concat([
                 '--platform',
                 'build',
