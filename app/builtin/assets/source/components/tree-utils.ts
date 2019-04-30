@@ -1,4 +1,5 @@
 const db = require('./tree-db');
+import { basename, extname } from 'path';
 
 /**
  * 不能执行 删除 操作的资源
@@ -131,8 +132,8 @@ exports.scriptName = {
     },
     async getValidFileName(fileName: string) {
         fileName = fileName.trim().replace(/^[^a-zA-Z_]+/, '');
-        const baseName = fileName.substr(0, fileName.indexOf('.'));
-        const extName = fileName.substr(fileName.indexOf('.'));
+        const extName = extname(fileName);
+        const baseName = basename(fileName, extName);
         let index = 0;
         while (!await this.isValid(fileName)) {
             index++;
@@ -143,8 +144,9 @@ exports.scriptName = {
         return fileName;
     },
     getValidClassName(fileName: string) {
-        fileName = fileName.substr(0, fileName.indexOf('.'));
-        const className = fileName.replace(/[^a-zA-Z0-9]|\s+/g, '');
+        const extName = extname(fileName);
+        const baseName = basename(fileName, extName);
+        const className = baseName.replace(/[^a-zA-Z0-9]|\s+/g, '');
         return className;
     },
 };

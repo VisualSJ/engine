@@ -54,6 +54,7 @@ module.exports = {
         refreshFail: 'Refreshing assets data, but it return null.',
         readDefaultFileFail: 'The default file for this type is missing in the internal DB.',
         errorNewnameDuplicate: 'The name of the file or folder already exists. Please select another name',
+        errorNewnameUnlegal: 'The file name contains illegal characters.',
         errorNewnameEmpty: 'The name cannot be empty',
         errorScriptName: 'Script file names cannot begin with a number and cannot have the same name as an existing script file.',
     },

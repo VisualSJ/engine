@@ -1,6 +1,6 @@
 'use strict';
 import { readFileSync } from 'fs';
-import { basename, dirname, join } from 'path';
+import { basename, extname, join } from 'path';
 
 const { openAsset } = require('./tree-node-open');
 const context = require('./tree-node-context');
@@ -209,22 +209,23 @@ export const methods = {
 
         // @ts-ignore
         const value = this.$refs.renameInput.value.trim();
-        const fileName = value.substr(0, value.indexOf('.')).trim();
-        const fileExt = value.substr(value.indexOf('.')).trim();
-        // @ts-ignore
-        this.renameValue = value;
+        const fileExt = extname(value);
+        const fileName = basename(value, fileExt);
 
         let state = '';
         // @ts-ignore
-        if (filenames.includes(this.renameValue)) {
+        if (filenames.includes(value)) {
             state = 'errorNewnameDuplicate';
-            // @ts-ignore
-        } else if (this.renameValue === '' || fileName === '') {
+        } else if (value === '' || fileName === '') {
             state = 'errorNewnameEmpty';
+        } else if (!asset.isDirectory && /^\..*/.test(fileName)) {
+            state = 'errorNewnameEmpty';
+        } else if (/^[\w\-.\s]+$/.test(value) === false) {
+            state = 'errorNewnameUnlegal';
         } else if (scripts.includes(fileExt)) { // @ts-ignore 脚本文件额外的校验
             if (fileName !== asset.fileName) { // 自身文件可以只换后缀，如 .js 换为 .ts
                 // @ts-ignore
-                const valid = await utils.scriptName.isValid(this.renameValue);
+                const valid = await utils.scriptName.isValid(value);
                 if (!valid) {
                     state = 'errorScriptName';
                 }
@@ -233,6 +234,8 @@ export const methods = {
 
         // @ts-ignore
         this.renameInputState = state;
+        // @ts-ignore
+        this.renameValue = value;
     },
     /**
      * 提交重名命
@@ -266,19 +269,27 @@ export const methods = {
     async addChange(event: Event) {
         // @ts-ignore
         const { asset, addAsset } = this;
+        const scripts = ['.ts', '.js'];
         // @ts-ignore
         const filenames = asset.children ? asset.children.map((one) => one.name) : [];
 
         // @ts-ignore
-        addAsset.name = this.$refs.addInput.value.trim();
+        const value = this.$refs.addInput.value.trim();
+        const fileExt = extname(value);
+        const fileName = basename(value, fileExt);
+
         let state = '';
-        if (filenames.includes(addAsset.name)) {
+        if (filenames.includes(value)) {
             state = 'errorNewnameDuplicate';
-        } else if (addAsset.name === '' || addAsset.name === addAsset.ext) {
+        } else if (value === '' || fileName === '') {
             state = 'errorNewnameEmpty';
-        } else if (['ts', 'js'].includes(addAsset.type)) { // @ts-ignore 脚本文件额外的校验
+        } else if (!asset.isDirectory && /^\..*/.test(value)) {
+            state = 'errorNewnameEmpty';
+        } else if (/^[\w\-.\s]+$/.test(value) === false) {
+            state = 'errorNewnameUnlegal';
+        } else if (scripts.includes(fileExt)) { // @ts-ignore 脚本文件额外的校验
             // @ts-ignore
-            const valid = await utils.scriptName.isValid(addAsset.name);
+            const valid = await utils.scriptName.isValid(value);
             if (!valid) {
                 state = 'errorScriptName';
             }
@@ -286,6 +297,7 @@ export const methods = {
 
         // @ts-ignore
         this.addInputState = state;
+        addAsset.name = value;
     },
     /**
      * 提交新增资源
