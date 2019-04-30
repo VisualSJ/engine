@@ -225,13 +225,13 @@ export function apply(messages: any) {
     /**
      * 执行 entity 上指定组件的方法
      */
-    // messages['excute-component-method'] = async (options: ExcuteComponentMethodOptions) => {
-    //     return await $scene.forwarding('Node', 'excuteComponentMethod', [
-    //         options.uuid,
-    //         options.index,
-    //         ...options.methodNames,
-    //     ]);
-    // };
+    messages['excute-component-method'] = async (options: ExcuteComponentMethodOptions) => {
+        return await $scene.forwarding('Component', 'excuteComponentMethod', [
+            options.uuid,
+            options.name,
+            options.args,
+        ]);
+    };
 
     /**
      * 保存一次操作记录

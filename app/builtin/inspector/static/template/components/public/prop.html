@@ -4,7 +4,7 @@
     :node="value && isType('cc.Node')"
     :asset="value && isType('cc.Asset')"
     :component="value && isType('cc.Component')"
-    :readonly="readonly || value.readonly"
+    :readonly="readonly || (value ? value.readonly : false)"
     @confirm="_onConfirm($event)"
 >
 
@@ -19,10 +19,10 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
@@ -36,8 +36,8 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
         </div>
         <div class="content">
             <ui-null></ui-null>
@@ -50,10 +50,10 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
@@ -68,8 +68,8 @@
         v-else-if="value.isArray"
     >
         <ui-array
-            :name="getName(value.name)"
-            :readonly="readonly || value.readonly"
+            :name="getName(value ? value.name : '')"
+            :readonly="readonly || (value ? value.readonly : false)"
             v-model="value.value"
         ></ui-array>
     </template>
@@ -80,15 +80,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-number
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :min="value.min"
                 :max="value.max"
                 :step="value.step"
@@ -106,12 +106,12 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
         </div>
         <div class="content">
             <ui-bool
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-bool>
@@ -124,15 +124,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-string
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :data-default="value.default"
                 v-model="value.value"
             ></ui-string>
@@ -145,15 +145,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-enum
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :list="value.enumList"
                 :data-default="value.default"
                 v-model="value.value"
@@ -167,15 +167,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-size
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-size>
@@ -188,15 +188,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-vec2
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-vec2>
@@ -209,15 +209,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-vec3
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-vec3>
@@ -230,15 +230,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-vec4
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-vec4>
@@ -250,7 +250,7 @@
         v-else-if="value.type === 'cc.Mat4'"
     >
         <ui-mat4
-            :name="getName(value.name)"
+            :name="getName(value ? value.name : '')"
             v-model="value.value"
         ></ui-mat4>
     </template>
@@ -261,15 +261,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-color
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-color>
@@ -282,15 +282,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-rect
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :value="value.value"
                 :data-default="value.default"
             ></ui-rect>
@@ -303,15 +303,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-node
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :type="value.type"
                 v-model="value.value"
                 :data-default="value.default"
@@ -325,15 +325,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-asset
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :type="value.type"
                 v-model="value.value"
                 :data-default="value.default"
@@ -347,15 +347,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-component
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 :type="value.type"
                 v-model="value.value"
                 :data-default="value.default"
@@ -369,15 +369,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-curve
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
                 :width="width"
@@ -392,16 +392,16 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-curve-range
-                :readonly="readonly || value.readonly"
-                :name="getName(value.name)"
+                :readonly="readonly || (value ? value.readonly : false)"
+                :name="getName(value ? value.name : '')"
                 v-model="value.value"
 
                 :width="width"
@@ -416,15 +416,15 @@
     >
         <div class="name">
             <span
-                :title="getName(value.name)"
-            >{{getName(value.name)}}</span>
+                :title="getName(value ? value.name : '')"
+            >{{getName(value ? value.name : '')}}</span>
             <i class="iconfont icon-lock"
-                v-if="readonly || value.readonly"
+                v-if="readonly || (value ? value.readonly : false)"
             ></i>
         </div>
         <div class="content">
             <ui-gradient
-                :readonly="readonly || value.readonly"
+                :readonly="readonly || (value ? value.readonly : false)"
                 v-model="value.value"
                 :data-default="value.default"
             ></ui-gradient>
@@ -436,8 +436,8 @@
         v-else-if="value.type === 'cc.GradientRange'"
     >
         <ui-gradient-range
-            :readonly="readonly || value.readonly"
-            :name="getName(value.name)"
+            :readonly="readonly || (value ? value.readonly : false)"
+            :name="getName(value ? value.name : '')"
             v-model="value.value"
         ></ui-gradient-range>
     </template>
@@ -447,8 +447,8 @@
         v-else-if="value.type === 'ui.Depend'"
     >
         <ui-depend
-            :readonly="readonly || value.readonly"
-            :name="getName(value.name)"
+            :readonly="readonly || (value ? value.readonly : false)"
+            :name="getName(value ? value.name : '')"
             v-model="value.value"
             :children="value.children"
 
@@ -462,7 +462,7 @@
         v-else-if="value.type === 'cc.ClickEvent'"
     >
         <ui-click-event
-            :readonly="readonly || value.readonly"
+            :readonly="readonly || (value ? value.readonly : false)"
             v-model="value.value"
 
             :width="width"
@@ -475,8 +475,8 @@
         v-else
     >
         <ui-object
-            :readonly="readonly || value.readonly"
-            :name="getName(value.name)"
+            :readonly="readonly || (value ? value.readonly : false)"
+            :name="getName(value ? value.name : '')"
             :value="value.value"
 
             :width="width"

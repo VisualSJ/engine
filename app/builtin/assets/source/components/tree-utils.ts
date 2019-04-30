@@ -137,6 +137,7 @@ exports.scriptName = {
         let index = 0;
         while (!await this.isValid(fileName)) {
             index++;
+            // @ts-ignore
             const padString = `-${index.toString().padStart(3, '0')}`;
             fileName = `${baseName}${padString}${extName}`;
         }

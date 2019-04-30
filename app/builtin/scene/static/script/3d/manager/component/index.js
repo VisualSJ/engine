@@ -102,5 +102,14 @@ class CompManager extends EventEmitter {
         }
         return dumpUtils.dumpComponent(node);
     }
+
+    excuteComponentMethod(uuid, name, args) {
+        const comp = uuid2comp[uuid];
+        if (!comp || !comp[name]) {
+            return;
+        }
+
+        comp[name](...args);
+    }
 }
 module.exports = new CompManager();

@@ -66,8 +66,8 @@ interface RemoveComponentOptions {
 
 interface ExcuteComponentMethodOptions {
     uuid: string;
-    index: number;
-    methodNames: string[];
+    name: string;
+    args: any[];
 }
 
 interface NodeDump {

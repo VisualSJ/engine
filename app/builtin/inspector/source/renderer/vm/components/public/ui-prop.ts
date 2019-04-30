@@ -50,7 +50,7 @@ export const methods = {
         const vm: any = this;
         const dump = vm.value;
 
-        if (!dump.path) {
+        if (!dump || !dump.path) {
             return;
         }
         event.stopPropagation();
