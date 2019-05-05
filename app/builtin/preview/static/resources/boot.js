@@ -204,7 +204,7 @@
                 fps = 60;
                 inputSetFPS.value = fps.toString();
             }
-            cc.game.setFrameRate(fps);
+            cc.game.setFrameRate(parseInt(fps));
         });
 
         // init recompile button
@@ -342,7 +342,7 @@
             setTimeout(resolve, 100);
         });
         const fps = inputSetFPS.value || 60;
-        cc.game.setFrameRate(fps);
+        cc.game.setFrameRate(parseInt(fps));
     }
 
     // 入口函数

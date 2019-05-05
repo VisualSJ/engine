@@ -28,7 +28,7 @@ export class <%Name%> extends Component {
         // Your initialization goes here.
     }
 
-    update (deltaTime: number) {
+    // update (deltaTime: number) {
         // Your update function goes here.
-    }
+    // }
 }

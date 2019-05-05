@@ -167,14 +167,16 @@ async function removeScript(asset) {
     const sid = uuidUtils.compressUuid(asset.uuid);
     const ctor = cc.js._registeredClassIds[sid];
 
-    cc.js.unregisterClass(ctor);
+    if (ctor) {
+        cc.js.unregisterClass(ctor);
 
-    // 清除 menu 里面的缓存
-    for (let i = 0; i < cc._componentMenuItems.length; i++) {
-        const item = cc._componentMenuItems[i];
-        if (item && item.component === ctor) {
-            cc._componentMenuItems.splice(i, 1);
-            break;
+        // 清除 menu 里面的缓存
+        for (let i = 0; i < cc._componentMenuItems.length; i++) {
+            const item = cc._componentMenuItems[i];
+            if (item && item.component === ctor) {
+                cc._componentMenuItems.splice(i, 1);
+                break;
+            }
         }
     }
 
