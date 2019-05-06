@@ -103,7 +103,15 @@ export function mergeScene(dumps: Array<IScene>) : IScene {
     const activeDumps = dumps.map((dump) => {
         return dump.active;
     });
-    const _globalsDumps = dumps.map((dump) => {
+    const _globalsDump: any = {};
+    Object.keys(dumps[0]._globals).map((key) => {
+        const _itemDumps = dumps.map((dump) => {
+            return dump._globals[key];
+        });
+        _globalsDump[key] = mergeProperty(_itemDumps);
+    });
+    
+    dumps.map((dump) => {
         return dump._globals;
     });
     const uuidDumps = dumps.map((dump) => {
@@ -113,7 +121,7 @@ export function mergeScene(dumps: Array<IScene>) : IScene {
     return {
         name: mergeProperty(nameDumps),
         active: mergeProperty(activeDumps),
-        _globals: mergeProperty(_globalsDumps),
+        _globals: _globalsDump,
         isScene: true,
 
         uuid: mergeProperty(uuidDumps),
