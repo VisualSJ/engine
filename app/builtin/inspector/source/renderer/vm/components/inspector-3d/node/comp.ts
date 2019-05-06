@@ -24,6 +24,7 @@ const componentMap: any = {
     'cc.SpotLightComponent': 'cc-spot-light-component',
     'cc.SpriteComponent': 'cc-sprite-component',
     'cc.AvatarModelComponent': 'cc-avatar-model-component',
+    'cc.MaskComponent': 'cc-mask-component',
 };
 
 export const components: any = {
@@ -37,6 +38,7 @@ export const components: any = {
     'cc-spot-light-component': require('./components/spot-light'),
     'cc-sprite-component': require('./components/sprite'),
     'cc-avatar-model-component': require('./components/avatar-model'),
+    'cc-mask-component': require('./components/mask'),
 };
 
 export const methods = {
