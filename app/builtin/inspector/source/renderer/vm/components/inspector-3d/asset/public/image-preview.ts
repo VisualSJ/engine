@@ -5,7 +5,9 @@ const textureType = ['texture', 'texture-cube'];
 exports.template = `
 <div class="image-preview">
     <div ref="content" class="content">
-        <canvas ref="canvas" width=1 height=1></canvas>
+        <canvas ref="canvas" width=1 height=1
+            @click="twinkle"
+        ></canvas>
     </div>
     <div class="label">
         <span>{{ info }}</span>
@@ -180,6 +182,11 @@ export const methods = {
                 dHeight
             );
         }
+    },
+
+    twinkle() {
+        // @ts-ignore
+        Editor.Ipc.sendToPanel('assets', 'twinkle', this.meta.userData.imageUuidOrDatabaseUri);
     },
 };
 
