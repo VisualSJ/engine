@@ -73,7 +73,7 @@ export function mergeDumps(dumps: any[]) {
 
     const result: any = {
         uuid: dumps.map((dump) => {
-            return dump.uuid.value;
+            return dump && dump.uuid && dump.uuid.value;
         }),
         __type__: temp.__type__,
         __prefab__: temp.__prefab__,

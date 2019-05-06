@@ -25,7 +25,6 @@ export const template = `
     </div>
     <div class="array"
         v-if="unfold && value.length !== 0"
-        @click="onDelete"
     >
         <template
             v-for="(item, index) in value"
@@ -43,7 +42,7 @@ export const template = `
                     :value="item"
                     :label="index"
                 ></ui-prop>
-                <i class="iconfont icon-del" :index = 'index'></i>
+                <i class="iconfont icon-del" @click="onDelete(index)"></i>
             </div>
         </template>
     </div>
@@ -108,15 +107,10 @@ export const methods = {
         vm.emitConfirm();
         event.currentTarget.removeAttribute('insert'); // 还原节点状态
     },
-    onDelete(event: any) {
-        if (!event.target.classList.contains('icon-del')) {
-            return;
-        }
-        // @ts-ignore
-        const vm: any = this;
-        const index = event.target.getAttribute('index');
-        vm.value.splice(index, 1);
-        vm.emitConfirm();
+    onDelete(index: number) {
+        const that: any = this;
+        that.value.splice(index, 1);
+        that.emitConfirm();
     },
     emitConfirm() {
         // 主动通知数据更新

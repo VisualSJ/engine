@@ -9,8 +9,9 @@ export const template = `
         @confirm="value.target.value.uuid = $event.target.value"
     ></ui-drag-object>
     <ui-select
-        :value="value._componentName.value"
-        @confirm="value._componentName.value = $event.target.value"
+        :value="value.component.value"
+        path="component"
+        @confirm="value.component.value = $event.target.value"
     >
         <option
             v-for="(item,name) in components"
@@ -18,13 +19,14 @@ export const template = `
     </ui-select>
     <ui-select
         :value="value.handler.value"
+        path="handler"
         @confirm="value.handler.value = $event.target.value"
     >
         <template
-            v-if="components[value._componentName.value]"
+            v-if="components[value.component.value]"
         >
             <option
-                v-for="item in components[value._componentName.value]"
+                v-for="item in components[value.component.value]"
             >{{item}}</option>
         </template>
     </ui-select>
