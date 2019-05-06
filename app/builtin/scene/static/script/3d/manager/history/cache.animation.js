@@ -30,10 +30,14 @@ function getNewData() {
  * 刷新缓存
  */
 function refresh() {
-    if (nodeUuid && clipUuid) {
-        clipDump = animationManager.queryClip(nodeUuid, clipUuid);
-    } else {
-        clipDump = null;
+    try {
+        if (nodeUuid && clipUuid) {
+            clipDump = animationManager.queryClip(nodeUuid, clipUuid);
+        } else {
+            clipDump = null;
+        }
+    } catch (error) {
+        console.error(error);
     }
 }
 
@@ -55,10 +59,13 @@ function reset(nodeUuid, clipUuid) {
 }
 
 async function restore(stepData) {
-    await animationManager.restoreFromDump(stepData.nodeUuid, stepData.clipUuid, stepData.clipDump);
-
-    Manager.Ipc.forceSend('broadcast', `scene:change-node`, stepData.nodeUuid);
-    refresh();
+    try {
+        await animationManager.restoreFromDump(stepData.nodeUuid, stepData.clipUuid, stepData.clipDump);
+        Manager.Ipc.forceSend('broadcast', 'scene:change-node', stepData.nodeUuid);
+        refresh();
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 module.exports = {

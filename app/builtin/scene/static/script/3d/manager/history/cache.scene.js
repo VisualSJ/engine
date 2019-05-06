@@ -32,7 +32,11 @@ function getNewData(uuids) {
  */
 function refresh(uuids) {
     uuids.forEach((id) => {
-        dumpMap[id] = nodeManager.queryDump(id);
+        try {
+            dumpMap[id] = nodeManager.queryDump(id);
+        } catch (error) {
+            console.error(error);
+        }
     });
 }
 
@@ -87,7 +91,11 @@ async function restore(stepData) {
     for (const uuid of uuids) {
         const node = nodeManager.query(uuid);
         if (node && nodesEvent[uuid] === 'change') { // remove 和 adde 节点，由父级节点的 children 变动实现，所以这边可以不操作
-            await dumpUtils.restoreNode(node, stepData[uuid]); // 还原变动的节点
+            try {
+                await dumpUtils.restoreNode(node, stepData[uuid]); // 还原变动的节点
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 

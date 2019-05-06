@@ -138,116 +138,128 @@ function stopRecordToArchive() {
 }
 
 function snapshot() {
-    const step = stopRecordToArchive();
+    try {
+        const step = stopRecordToArchive();
 
-    if (step === false) {
-        return false;
-    } else {
-        // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
-        if (JSON.stringify(step.undo) === JSON.stringify(step.redo)) {
+        if (step === false) {
             return false;
-        }
-    }
-
-    const current = steps[index];
-
-    // 如果是处于 undo 状态中的新增步骤，index 步骤数处于上一步的 undo 中，需要修正 -1
-    if (current && method === 'undo') {
-        index -= 1;
-    }
-
-    // 清除指针后面的数据
-    const deprecated = steps.splice(index + 1);
-    // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
-
-    // 存入新步骤
-    if (deprecated.length > 0) {
-        /**
-         * 当前 current 是旧数据，step 是新数据
-         * 需要保留 current 数据, 但 redo 指向已变更
-         * 所以 current.redo 和 step.undo 如果有相同的 uuid 记录，此 uuid 记录应该以 step 的为准
-         */
-        for (const uuid in current.redo) {
-            if (step.undo[uuid]) {
-                current.redo[uuid] = JSON.parse(JSON.stringify(step.undo[uuid]));
+        } else {
+            // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
+            if (JSON.stringify(step.undo) === JSON.stringify(step.redo)) {
+                return false;
             }
         }
+
+        const current = steps[index];
+
+        // 如果是处于 undo 状态中的新增步骤，index 步骤数处于上一步的 undo 中，需要修正 -1
+        if (current && method === 'undo') {
+            index -= 1;
+        }
+
+        // 清除指针后面的数据
+        const deprecated = steps.splice(index + 1);
+        // TODO 内存优化可用从 deprecated 里面包含的对象处理，新的记录点已建立，已删除的节点不可能在 undo 复原，故可以删除；但需考虑编辑器和引擎的其他节点管理机制
+
+        // 存入新步骤
+        if (deprecated.length > 0) {
+            /**
+             * 当前 current 是旧数据，step 是新数据
+             * 需要保留 current 数据, 但 redo 指向已变更
+             * 所以 current.redo 和 step.undo 如果有相同的 uuid 记录，此 uuid 记录应该以 step 的为准
+             */
+            for (const uuid in current.redo) {
+                if (step.undo[uuid]) {
+                    current.redo[uuid] = JSON.parse(JSON.stringify(step.undo[uuid]));
+                }
+            }
+        }
+
+        steps.push(step);
+
+        // 如果步骤数大于 100, 始终保持最大 100
+        if (steps.length > 100) {
+            const deprecated2 = steps.shift();
+            // TODO 内存优化可用从 deprecated2 里面包含的对象处理，不可能再 undo 复原的节点可以删除掉
+        }
+
+        // 重设指针和方法
+        index = steps.length - 1;
+        method = 'redo';
+
+        return true;
+    } catch (error) {
+        console.error(error);
     }
-
-    steps.push(step);
-
-    // 如果步骤数大于 100, 始终保持最大 100
-    if (steps.length > 100) {
-        const deprecated2 = steps.shift();
-        // TODO 内存优化可用从 deprecated2 里面包含的对象处理，不可能再 undo 复原的节点可以删除掉
-    }
-
-    // 重设指针和方法
-    index = steps.length - 1;
-    method = 'redo';
-
-    return true;
 }
 
 /**
  * 撤销
  */
 async function undo() {
-    if (records.length !== 0) {
-        snapshot();
-    }
-
-    if (method === 'undo') {
-        if (index === 0) {
-            return;
+    try {
+        if (records.length !== 0) {
+            snapshot();
         }
 
-        index--;
-    } else {
-        if (index < 0) {
-            return;
-        }
-        method = 'undo';
-    }
-    const state = await restore();
+        if (method === 'undo') {
+            if (index === 0) {
+                return;
+            }
 
-    // 运行中，定时下次运行
-    if (state === false) {
-        clearTimeout(timeId);
-        timeId = setTimeout(async () => {
-            await restore();
-        }, 500);
+            index--;
+        } else {
+            if (index < 0) {
+                return;
+            }
+            method = 'undo';
+        }
+        const state = await restore();
+
+        // 运行中，定时下次运行
+        if (state === false) {
+            clearTimeout(timeId);
+            timeId = setTimeout(async () => {
+                await restore();
+            }, 500);
+        }
+        return state;
+    } catch (error) {
+        console.error(error);
     }
-    return state;
 }
 
 /**
  * 重做
  */
 async function redo() {
-    if (records.length !== 0) {
-        snapshot();
-    }
-
-    if (method === 'redo') {
-        if (index === steps.length - 1) {
-            return;
+    try {
+        if (records.length !== 0) {
+            snapshot();
         }
 
-        index++;
-    } else {
-        method = 'redo';
-    }
-    const state = await restore();
+        if (method === 'redo') {
+            if (index === steps.length - 1) {
+                return;
+            }
 
-    // 运行中，定时下次运行
-    if (state === false) {
-        clearTimeout(timeId);
-        timeId = setTimeout(async () => {
-            await restore();
-        }, 500);
+            index++;
+        } else {
+            method = 'redo';
+        }
+        const state = await restore();
+
+        // 运行中，定时下次运行
+        if (state === false) {
+            clearTimeout(timeId);
+            timeId = setTimeout(async () => {
+                await restore();
+            }, 500);
+        }
+        return state;
+    } catch (error) {
+        console.error(error);
     }
-    return state;
 }
 
 /**
@@ -262,7 +274,11 @@ async function restore() {
     const dumpdata = steps[index][method];
     Object.assign(stepData, dumpdata);
 
-    await cache.restore(stepData);
+    try {
+        await cache.restore(stepData);
+    } catch (error) {
+        console.error(error);
+    }
 
     isRunning = false;
     stepData = {};
@@ -277,19 +293,24 @@ function reset(uuids, scene) {
     if (currentScene.uuid === scene.uuid) { // 就是当前的场景，此处容错是因为软刷新会多次触发 scene open 事件
         return;
     }
-    currentScene.uuid = scene.uuid; // 缓存当前场景 uuid
 
-    if (scene.name.includes('.prefab')) { // 重要：判断此场景是编辑 prefab
-        startPrefabRecord();
-    } else {
-        startMainSceneRecord();
+    try {
+        currentScene.uuid = scene.uuid; // 缓存当前场景 uuid
+
+        if (scene.name.includes('.prefab')) { // 重要：判断此场景是编辑 prefab
+            startPrefabRecord();
+        } else {
+            startMainSceneRecord();
+        }
+
+        clearTimeout(timeId);
+        stepData = {};
+        records = [];
+
+        cache.reset(uuids); // 缓存尚未变动的场景数据
+    } catch (error) {
+        console.error(error);
     }
-
-    clearTimeout(timeId);
-    stepData = {};
-    records = [];
-
-    cache.reset(uuids); // 缓存尚未变动的场景数据
 }
 
 /**
