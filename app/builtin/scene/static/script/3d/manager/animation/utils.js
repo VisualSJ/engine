@@ -453,7 +453,7 @@ class AnimationUtil {
             return null;
         }
 
-        let clips = animComp.getClips();
+        let clips = animComp.clips;
         let clipName = null;
         clips.forEach((clip) => {
             if (clip && clip._uuid === clipUuid) {

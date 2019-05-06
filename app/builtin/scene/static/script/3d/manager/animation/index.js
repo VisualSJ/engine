@@ -99,7 +99,8 @@ class AnimationManager extends EventEmitter {
                     // 如果更改，则询问是否需要保存
                     const json = Manager.Utils.serialize(state.clip);
                     if (this._lastSaveData !== json) {
-                        const code = await Manager.Ipc.send('dirty-dialog', 'Animation');
+                        const clipName = utils.getClipName(this._curEditClipUuid, animData.animComp);
+                        const code = await Manager.Ipc.send('dirty-dialog', clipName + '.anim');
                         switch (code) {
                             case 0:
                             case '0':
@@ -238,7 +239,7 @@ class AnimationManager extends EventEmitter {
             return null;
         }
 
-        let clips = component.getClips();
+        let clips = component.clips;
         let clipsInfo = [];
         clips.forEach((clip) => {
             if (clip) {
@@ -425,7 +426,7 @@ class AnimationManager extends EventEmitter {
             return null;
         }
 
-        let clips = animComp.getClips();
+        let clips = animComp.clips;
 
         let state = null;
         for (let i = 0; i < clips.length; i++) {
@@ -456,7 +457,7 @@ class AnimationManager extends EventEmitter {
             return false;
         }
 
-        let clips = animComp.getClips();
+        let clips = animComp.clips;
 
         let state = null;
         for (let i = 0; i < clips.length; i++) {

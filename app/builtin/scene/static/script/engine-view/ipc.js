@@ -283,7 +283,7 @@ const messages = {
      */
     'dirty-dialog'(name) {
         return Editor.Dialog.show({
-            title: Editor.I18n.t('scene.messages.waning'),
+            title: Editor.I18n.t('scene.messages.warning'),
             message: (name || 'Scene') + Editor.I18n.t('scene.messages.scenario_modified'),
             detail: Editor.I18n.t('scene.messages.want_to_save'),
             type: 'warning',
