@@ -38,6 +38,9 @@ module.exports = {
         create: 'New frame event',
         paste: 'Paste frame event',
     },
+    bezier: {
+        title: 'Bezier Editor',
+    },
     node_tree: {
         move_data: 'Move data',
         clear_data: 'Clear data',

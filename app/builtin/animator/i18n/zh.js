@@ -39,6 +39,9 @@ module.exports = {
         create: '新建帧事件',
         paste: '粘贴帧事件',
     },
+    bezier: {
+        title: '贝塞尔曲线编辑器',
+    },
     node_tree: {
         move_data: '迁移数据',
         clear_data: '清空数据',

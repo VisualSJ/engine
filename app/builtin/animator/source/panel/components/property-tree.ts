@@ -1,8 +1,8 @@
 
 export const template = `
-<div class="content-item property">
+<div class="content-item property" @mousedown="onMouseDown">
     <span class="name">{{name}}</span>
-    <span class="oprate" @mousedown="onMouseDown">
+    <span class="oprate">
         <i class="key"
             :empty="isEmpty"
             :title="oprateTitle"
@@ -65,11 +65,11 @@ export const methods = {
     },
     onMouseDown(event: any) {
         if (!event.target) {
-            console.log(event);
             return;
         }
         const that: any = this;
-        if (event.target.getAttribute('name') === 'showPopMenu') {
+        const name = event.target.getAttribute('name');
+        if (name === 'showPopMenu' || event.button === 2) {
             Editor.Menu.popup({
                 x: event.pageX,
                 y: event.pageY,

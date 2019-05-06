@@ -12,8 +12,8 @@ export const props = [
 export function data() {
 return {
     default: [{
-      func: 'functionName',
-      params: ['param', 0, false],
+      func: '',
+      params: [],
     }],
     toast: '',
     toastTask: [],
@@ -48,18 +48,19 @@ export const methods = {
         let index = event.target.getAttribute('index');
         that.dirty = true;
         const value = event.target.value;
+        let params;
         switch (name) {
             case 'funcName':
                 that.value[index].func = value;
                 break;
             case 'changeParamType':
                 index = JSON.parse(index);
-                let params = that.value[index[0]].params;
+                params = that.value[index[0]].params;
                 params.splice(index[1], 1, that.defaultParams[value]);
                 break;
             case 'param':
                 index = JSON.parse(index);
-                params = that.value[index[0]];
+                params = that.value[index[0]].params;
                 params.splice(index[1], 1, value);
                 break;
         }
@@ -71,6 +72,7 @@ export const methods = {
         switch (name) {
             case 'addFunc':
                 that.value.push(JSON.parse(JSON.stringify(that.default[0])));
+                that.dirty = true;
                 break;
             case 'save':
                 that.saveData();
@@ -100,19 +102,23 @@ export const methods = {
                 that.$emit('close');
                 break;
             case 'delFunc':
-                that.value.spilce(index, 1);
+                that.value.splice(index, 1);
+                that.dirty = true;
                 break;
             case 'addParams':
                 const params = that.value[index].params;
                 params.push('param');
+                that.dirty = true;
                 break;
             case 'delParams':
                 index = JSON.parse(index);
                 const temp = that.value[index[0]].params;
                 temp.splice(index[1], 1);
+                that.dirty = true;
                 break;
             case 'clearParams':
                 that.value[index].params = [];
+                that.dirty = true;
                 break;
         }
     },

@@ -76,7 +76,7 @@ module.exports = class Grid {
         if (decimals > 0) {
             temp = new Array(decimals + 1).join('0') + temp;
         }
-        return text + Math.floor(frame / this.sample) + ':' + temp;
+        return text + Math.floor(frame / this.sample) + '-' + temp;
     }
 
     /**

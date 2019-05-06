@@ -10,44 +10,124 @@ export const props = [
     'uuid',
 ];
 
+// 一些非贝塞尔曲线数据的名字
+const STATIC_DATA = ['constant'];
+
 export function data() {
 return {
     // 预制的曲线数据
+    // 引擎的命名规则 https://github.com/cocos-creator/engine/blob/master/cocos2d/animation/easing.js
     presets: {
         Linear: {
-            Default: [0.3, 0.3, 0.7, 0.7],
+            Default: {
+                name: 'linear',
+                data: [0.3, 0.3, 0.7, 0.7],
+            },
+        },
+        // 使用 canvas 绘制的相关静态图像
+        Static: {
+            Constant: {
+                name: STATIC_DATA[0],
+            },
         },
         'Ease In': {
-            Cubic: [0.4, 0, 0.5, 0.5],
-            Quad: [0.55, 0.08, 0.68, 0.53],
-            Quart: [0.89, 0.03, 0.68, 0.21],
-            Quint: [0.75, 0.05, 0.85, 0.06],
-            Sine: [0.48, 0, 0.73, 0.71],
-            Expo: [0.95, 0.04, 0.79, 0.03],
-            Circ: [0.6, 0.04, 0.98, 0.33],
+            Cubic: {
+                name: 'cubicIn',
+                data: [0.4, 0, 0.5, 0.5],
+            },
+            Quad: {
+                name: 'quadIn',
+                data: [0.55, 0.08, 0.68, 0.53],
+            },
+            Quart: {
+                name: 'quartIn',
+                data: [0.89, 0.03, 0.68, 0.21],
+            },
+            Quint: {
+                name: 'quintIn',
+                data: [0.75, 0.05, 0.85, 0.06],
+            },
+            Sine: {
+                name: 'sineIn',
+                data: [0.48, 0, 0.73, 0.71],
+            },
+            Expo: {
+                name: 'expoIn',
+                data: [0.95, 0.04, 0.79, 0.03],
+            },
+            Circ: {
+                name: 'circIn',
+                data: [0.6, 0.04, 0.98, 0.33],
+            },
+            // Elastic: {
+            //     name: 'elasticIn',
+            //     data: [],
+            // },
         },
         'Ease Out': {
-            Cubic: [0.06, 0.12, 0.58, 1],
-            Quad: [0.25, 0.46, 0.45, 0.95],
-            Quart: [0.16, 0.84, 0.43, 1],
-            Quint: [0.22, 1, 0.31, 1],
-            Sine: [0.39, 0.59, 0.56, 1],
-            Expo: [0.18, 1, 0.22, 1],
-            Circ: [0.08, 0.82, 0.01, 1],
+            Cubic: {
+                name: 'cubicOut',
+                data: [0.06, 0.12, 0.58, 1],
+            },
+            Quad: {
+                name: 'quadOut',
+                data: [0.25, 0.46, 0.45, 0.95],
+            },
+            Quart: {
+                name: 'quartOut',
+                data: [0.16, 0.84, 0.43, 1],
+            },
+            Quint: {
+                name: 'quintOut',
+                data: [0.22, 1, 0.31, 1],
+            },
+            Sine: {
+                name: 'sineOut',
+                data: [0.39, 0.59, 0.56, 1],
+            },
+            Expo: {
+                name: 'expoOut',
+                data: [0.18, 1, 0.22, 1],
+            },
+            Circ: {
+                name: 'circOut',
+                data: [0.08, 0.82, 0.01, 1],
+            },
         },
         'Ease In Out': {
-            Cubic: [0.42, 0, 0.58, 1],
-            Quad: [0.48, 0.04, 0.52, 0.96],
-            Quart: [0.83, 0, 0.17, 1],
-            Quint: [0.94, 0, 0.06, 1],
-            Sine: [0.46, 0.05, 0.54, 0.95],
-            Expo: [1, 0, 0, 1],
-            Circ: [0.86, 0.14, 0.14, 0.86],
+            Cubic: {
+                name: 'cubicInOut',
+                data: [0.42, 0, 0.58, 1],
+            },
+            Quad: {
+                name: 'quadInOut',
+                data: [0.48, 0.04, 0.52, 0.96],
+            },
+            Quart: {
+                name: 'quartInOut',
+                data: [0.83, 0, 0.17, 1],
+            },
+            Quint: {
+                name: 'quintInOut',
+                data: [0.94, 0, 0.06, 1],
+            },
+            Sine: {
+                name: 'sineInOut',
+                data: [0.46, 0.05, 0.54, 0.95],
+            },
+            Expo: {
+                name: 'expoInOut',
+                data: [1, 0, 0, 1],
+            },
+            Circ: {
+                name: 'circInOut',
+                data: [0.86, 0.14, 0.14, 0.86],
+            },
         },
-        Back: {
-            Forward: [0.18, 0.89, 0.31, 1.21],
-            Reverse: [0.6, -0.27, 0.73, 0.04],
-        },
+        // Back: {
+        //     Forward: [0.18, 0.89, 0.31, 1.21],
+        //     Reverse: [0.6, -0.27, 0.73, 0.04],
+        // },
     },
     currentPreset: 'Linear',
     currentBerzier: [],
@@ -61,6 +141,8 @@ return {
     bezierTransform: '',
     mouseDownInfo: null,
     applyName: 'Default',
+    movePosition: null,
+    moveStyle: null,
 };
 }
 
@@ -75,7 +157,7 @@ export const computed = {
 export const components = {};
 
 export const methods = {
-    t(key: string, type = 'curve_editor.') {
+    t(key: string, type = 'bezier.') {
         return Editor.I18n.t(`animator.${type}${key}`);
     },
     /////////////////////// 事件处理 ///////////////////////////////////
@@ -86,24 +168,12 @@ export const methods = {
 
     applyPreset(name: string) {
         const that: any = this;
-        const data = that.presets[that.currentPreset][name];
+        const data = that.presets[that.currentPreset][name].data;
         that.applyName = name;
-        that.currentBerzier = data;
+        that.bezierName = that.presets[that.currentPreset][name].name;
+        that.currentBerzier = JSON.parse(JSON.stringify(data));
         that.updateBezier();
         that.saveData();
-    },
-
-    async onToolBar(event: any) {
-        const that: any = this;
-        const name = event.target.getAttribute('name');
-        switch (name) {
-            case 'save':
-                that.saveData();
-                break;
-            case 'exit':
-                that.exit();
-                break;
-        }
     },
 
     /**
@@ -117,8 +187,8 @@ export const methods = {
         }
 
         let bezier = null;
-        if (that.applyName) {
-            bezier = that.applyName.toLowerCase();
+        if (that.applyName && that.bezierName) {
+            bezier = that.bezierName;
         } else {
             bezier = that.findRightBezier(that.currentBerzier);
         }
@@ -163,23 +233,32 @@ export const methods = {
         if (index === 2) {
             const x0 = Number((that.currentBerzier[0] + offsetX).toFixed(2));
             const x1 = Number((that.currentBerzier[1] + offsetY).toFixed(2));
+            that.movePosition = `${x0},${x1}`;
             that.currentBerzier.splice(0, 2, x0, x1);
         } else if (index === 3) {
             const x2 = Number((that.currentBerzier[2] + offsetX).toFixed(2));
             const x3 = Number((that.currentBerzier[3] + offsetY).toFixed(2));
+            that.movePosition = `${x2},${x3}`;
             that.currentBerzier.splice(2, 2, x2, x3);
         }
+        const {top, left} = that.$refs.bezier.getBoundingClientRect();
+        that.moveStyle = {
+            left: `${event.x - left + 10}px`,
+            top: `${event.y - top + 20}px`,
+        };
         requestAnimationFrame(() => {
             that.applyName = '';
             that.updateBezier();
         });
     },
 
-    onMouseUp(event: any) {
+    onMouseUp() {
         const that: any = this;
         if (that.mouseDownInfo) {
             that.saveData();
             that.mouseDownInfo = null;
+            that.movePosition = null;
+            that.moveStyle = null;
         }
     },
 
@@ -230,7 +309,7 @@ export const methods = {
 
     init() {
         const that: any = this;
-        const {clientHeight} = that.$refs.content;
+        const {clientHeight} = that.$refs.main;
         that.size = Math.min(Math.round(clientHeight * 0.6), 400);
         that.updateBezier();
         // 先平移再缩放
@@ -249,10 +328,15 @@ export const methods = {
      */
     findRightBezier(data: number[]) {
         const that: any = this;
-        for (const type of that.presets) {
+        for (const type of Object.keys(that.presets)) {
             for (const name of Object.keys(that.presets[type])) {
-                if (that.presets[type][name].toString() === data.toString()) {
-                    return name.toLowerCase();
+                const item = that.presets[type][name];
+                if (!item.data) {
+                    continue;
+                }
+                // 数据相等并且存有名字
+                if (item.data.toString() === data.toString() && item.name) {
+                    return item.name;
                 }
             }
         }
@@ -265,17 +349,19 @@ export const methods = {
      */
     findBezierData(checkName: string) {
         const that: any = this;
-        for (const type of that.presets) {
+        for (const type of Object.keys(that.presets)) {
             for (const name of Object.keys(that.presets[type])) {
-                if (checkName === name.toLowerCase()) {
+                const item = that.presets[type][name];
+                if (checkName === item.name) {
                     that.currentPreset = type;
                     that.applyName = name;
-                    return that.presets[type][name];
+                    that.bezierName = item.name;
+                    return item.data;
                 }
             }
         }
         // 没找到，返回默认值
-        return that.presets.Linear.Default;
+        return that.presets.Linear.Default.data;
     },
 };
 
@@ -284,14 +370,15 @@ export function mounted() {
     const that: any = this;
     if (that.keyframe && that.keyframe.curve) {
         if (typeof(that.keyframe.curve) === 'string') {
-            that.currentBerzier = that.findBezierData(that.keyframe.curve);
+            that.currentBerzier = JSON.parse(JSON.stringify(that.findBezierData(that.keyframe.curve)));
         } else {
             // 数据类型的曲线
             that.applyName = '';
+            that.bezierName = '';
             that.currentBerzier = Array.from(that.keyframe.curve);
         }
     } else {
-        that.currentBerzier = Array.from(that.presets.Linear.Default);
+        that.currentBerzier = Array.from(that.presets.Linear.Default.data);
     }
     document.addEventListener('mouseup', that.onMouseUp);
     that.init();

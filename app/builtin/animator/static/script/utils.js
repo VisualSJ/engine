@@ -3,30 +3,26 @@ function smoothScale(delta, scale) {
     return scale;
 }
 
-let uuid2path = {};
-let path2uuid = {};
-let nodes = [];
-
-function initNode() {
-    uuid2path = {};
-    path2uuid = {};
-    nodes = [];
+function initNode(obj) {
+    obj.uuid2path = {};
+    obj.path2uuid = {};
+    obj.nodes = [];
 }
 
-async function formatNodeDump(dump, path = '', indent = 0) {
+async function formatNodeDump(dump, path = '', indent = 0, obj = {}) {
     if (!path) {
-        initNode();
-        uuid2path[dump.uuid.value] = '/';
-        nodes.push({
+        initNode(obj);
+        obj.uuid2path[dump.uuid.value] = '/';
+        obj.nodes.push({
             path: '/',
             uuid: dump.uuid.value,
             name: dump.name.value,
             indent,
         });
     } else {
-        uuid2path[dump.uuid.value] = path;
-        path2uuid[path] = dump.uuid.value;
-        nodes.push({
+        obj.uuid2path[dump.uuid.value] = path;
+        obj.path2uuid[path] = dump.uuid.value;
+        obj.nodes.push({
             path,
             uuid: dump.uuid.value,
             name: dump.name.value,
@@ -42,13 +38,13 @@ async function formatNodeDump(dump, path = '', indent = 0) {
     };
     for (const node of dump.children) {
         const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', node.value.uuid);
-        const childDump = await formatNodeDump(dump, `${path}/${dump.name.value}`, indent + 2);
+        const childDump = await formatNodeDump(dump, `${path}/${dump.name.value}`, indent + 2, obj);
         result.children.push(childDump);
     }
     if (!path) {
-        result.uuid2path = uuid2path;
-        result.path2uuid = path2uuid;
-        result.nodes = nodes;
+        result.uuid2path = obj.uuid2path;
+        result.path2uuid = obj.path2uuid;
+        result.nodes = obj.nodes;
         result.path = '/';
         result.clipInfo = queryClipUuid(dump.__comps__);
     }

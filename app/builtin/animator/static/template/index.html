@@ -43,7 +43,7 @@
                 :update-flag="selectDataChange"
                 @datachange="onProperty"
             ></property-tools>
-            <div class="flex-1 content propertys" 
+            <div class="flex-1 content properties"
                 @scroll="onScroll($event, 'property')"
             >    
                 <template
@@ -72,7 +72,7 @@
                 <div class="duration"
                     v-if="lastFrameInfo"
                     :style="queryDurationStyle(lastFrameInfo.frame)"
-                ></div> 
+                ></div>
             </div>
             <events
                     v-if="eventsDump"
@@ -103,7 +103,7 @@
                             :scroll="nodeScrollInfo"
                             @datachange="onPreviewRow"
                             @startdrag="updateDragInfo"
-                            :key="index"
+                            :key="index + item.path"
                             :box="boxData"
                         ></preview-row>
                     </template>
@@ -157,15 +157,38 @@
                     <div class="box" :style="boxStyle"></div>
                 </template>
             </div>
-            <control-preview 
+            <!-- <control-preview 
                 :position="pointerPosition"
                 :offset="startOffset"
                 @startdrag="updateDragInfo"
-            ></control-preview>
+            ></control-preview> -->
+            <div class="contrl-pointer"
+                name = "pointer"
+                :style="'transform: translateX('+ pointerPosition +'px)'"
+            >
+                <i class="iconfont icon-arrow-right"></i>
+                <span></span>
+            </div>
+            <!-- 辅助小红线 -->
+            <template
+                v-if="previewPointer"
+            >
+                <div class="contrl-pointer preview"
+                    :style="'transform: translateX('+ previewPointer.x +'px)'"
+                >
+                    <i class="iconfont icon-arrow-right"></i>
+                    <span></span>
+                </div>
+                <div class="mouse-info"
+                    :style="'transform: translate('+previewPointer.x+'px,'+previewPointer.y+'px)'"
+                >
+                    {{previewPointer.frame}}
+                </div>
+            </template>
             <!-- 显示当前鼠标moveInfo移动过程中的关键帧信息 -->
             <template v-if="moveInfo">
                 <div class="keyframe-move-info" 
-                :style="'transform: translate('+moveInfo.x+'px,'+moveInfo.y+'px)'"
+                    :style="'transform: translate('+moveInfo.x+'px,'+moveInfo.y+'px)'"
                 >
                     <div v-if="typeof(moveInfo.frame) === 'number'">
                         <span class="name">frame</span>
@@ -188,7 +211,7 @@
             <ui-button name="exit">退出</ui-button>
             <span>Clips</span>
             <ui-select v-if="clipsMenu && clipsMenu.length > 0" name="clip" :value="currentClip">
-                <option v-for="item in clipsMenu" :value="item.uuid">{{item.name}}</option>
+                <option v-for="item in clipsMenu" :key="item.uuid" :value="item.uuid">{{item.name}}</option>
             </ui-select>
         </div> 
         <div class="right" v-if="clipDump">

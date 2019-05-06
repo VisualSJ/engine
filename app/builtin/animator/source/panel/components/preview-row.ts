@@ -23,6 +23,7 @@ export function data() {
         keyData: [],
         imageSrc: [],
         refreshTask: null,
+        refreshTaskNumber: 0, // 记录数据更新的次数
     };
 }
 
@@ -30,6 +31,7 @@ export const watch = {
     // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
         const that: any = this;
+        that.refreshTaskNumber ++;
         // 不显示的时候不去更新和计算
         if (!that.display) {
             return;
@@ -39,23 +41,16 @@ export const watch = {
             await that.refresh();
         });
     },
-    // offset() {
-    //     const that: any = this;
-    //     cancelAnimationFrame(that.refreshTask);
-    //     that.refreshTask = requestAnimationFrame(async () => {
-    //         console.log('keyFrames');
-    //         await that.refresh();
-    //     });
-    // },
+
     async display() {
         const that: any = this;
         if (!that.display) {
             return;
         }
-        if (that.keyData && that.keyData.length > 1) {
-            return;
+        // 只在隐藏过程中有数据更新才做刷新
+        if (that.refreshTaskNumber > 0) {
+            await that.refresh();
         }
-        await that.refresh();
     },
 
     box() {
@@ -180,6 +175,7 @@ export const methods = {
      */
     async refresh() {
         const that: any = this;
+        that.refreshTaskNumber = 0;
         if (that.keyFrames.length < 1) {
             that.keyData = null;
             return;
@@ -257,7 +253,10 @@ export const methods = {
         if (!dump.value) {
             return false;
         }
-        const uuid = dump.value.uuid.match(/(\S*)@[^@]*$/)[1];
+        let uuid = dump.value.uuid;
+        if (uuid.indexOf('@') !== -1) {
+            uuid = uuid.match(/(\S*)@[^@]*$/)[1];
+        }
         const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', uuid);
         if (!asset) {
             return false;
@@ -288,24 +287,43 @@ export const methods = {
 
     onDragOver(event: any) {
         const that: any = this;
-        if (!that.draggable) {
+        if (!that.draggable || !Editor.UI.DragArea.currentDragInfo) {
             return;
         }
-        const {type} = Editor.UI.DragArea.currentDragInfo;
-        if (type !== 'cc.SpriteFrame') {
+        const {dragdata} = Editor.UI.DragArea.currentDragInfo;
+        const dragInfos = JSON.parse(dragdata).values;
+        const index = dragInfos.findIndex((item: any) => item.type === 'cc.SpriteFrame');
+        if (index === -1) {
             return;
         }
         event.preventDefault();
         event.dataTransfer.dropEffect = 'copy';
     },
 
-    onDrop(event: any) {
+    async onDrop(event: any) {
         const that: any = this;
-        const {value} = Editor.UI.DragArea.currentDragInfo;
-        that.$emit('datachange', 'createKey', {
-            x: event.offsetX,
-            param: [...that.param, 0, {uuid: value}],
-        });
+        const {dragdata} = Editor.UI.DragArea.currentDragInfo;
+        const dragInfos = JSON.parse(dragdata).values;
+        const offsetFrame = 1;
+        let frame = 0;
+        if (dragInfos.length > 1) {
+            // 弹窗填写插入的帧间隔数
+        }
+        for (const item of dragInfos) {
+            if (item.type === 'cc.SpriteFrame') {
+                frame = frame + offsetFrame;
+                if (item.value.indexOf('@') === -1) {
+                    const asset = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', item.value);
+                    const name = Object.keys(asset.subAssets);
+                    item.value = asset.subAssets[name[0]].uuid;
+                }
+                that.$emit('datachange', 'createKey', {
+                    x: event.offsetX,
+                    param: [...that.param, 0, {uuid: item.value}, frame],
+                });
+            }
+        }
+
     },
 
     async onMouseDown(event: any, index: number) {

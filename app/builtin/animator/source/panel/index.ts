@@ -174,8 +174,7 @@ export const messages = {
         if (!vm || uuid !== vm.root || vm.animationMode) {
             return;
         }
-        const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
-        mode === 'animation' ? vm.animationMode = true : vm.animationMode = false;
+        vm.animationMode = true;
     },
 
     // 关闭动画编辑模式消息
@@ -183,8 +182,7 @@ export const messages = {
         if (!vm || !vm.animationMode) {
             return;
         }
-        const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
-        mode === 'animation' ? vm.animationMode = true : vm.animationMode = false;
+        vm.animationMode = false;
     },
 
     // 动画更改通知
@@ -218,6 +216,22 @@ export const messages = {
         // const frame = timeToFrame(time, vm.sample);
         // vm.setCurrentFrame(frame);
         // console.log(time);
+    },
+
+    // 动画更改 clips 时的动画通知
+    async 'scene:animation-clip-change'(clipUuis: string) {
+        if (!vm || !vm.animationMode) {
+            return;
+        }
+        const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', vm.rootid, clipUuis);
+        clipDump && (vm.clipDump = formatClipDump(clipDump));
+        vm.setCurrentFrame(0);
+        const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', vm.currentClip);
+        vm.updateState(state);
+        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+        if (typeof(time) === 'number') {
+            vm.setCurrentFrame(timeToFrame(time, vm.sample));
+        }
     },
 };
 
@@ -268,6 +282,8 @@ export async function ready() {
             boxInfo: null,
             boxStyle: null,
             boxData: null,
+            previewPointer: null,
+            previewPointerTask: null,
         },
         computed: {
             // 计算关键帧与实际坐标偏移
@@ -277,7 +293,7 @@ export async function ready() {
             },
             // 当前关键帧显示时间
             currentTime(): string {
-                let result = '0:00';
+                let result = '0-00';
                 // @ts-ignore
                 if (this.grid) {
                     // @ts-ignore
@@ -373,9 +389,37 @@ export async function ready() {
             },
         },
         watch: {
-            currentClip() {
-                // @ts-ignore
-                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', this.currentClip);
+            async currentClip() {
+                const that: any = this;
+                Editor.Ipc.sendToPanel('scene', 'change-edit-clip', that.currentClip);
+                const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', that.root, that.currentClip);
+                clipDump && (that.clipDump = formatClipDump(clipDump));
+                const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
+                if (typeof(time) === 'number') {
+                    that.setCurrentFrame(timeToFrame(time, that.sample));
+                }
+                const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
+                that.updateState(state);
+            },
+            //
+            selectedId() {
+                const that: any = this;
+                if (!that.nodeDump) {
+                    return;
+                }
+                const index = that.nodeDump.nodes.findIndex((item: any) => {
+                    return item.uuid === that.selectedId;
+                });
+                if (index === -1) {
+                    return;
+                }
+                const selectHeight = index * LINEHEIGHT;
+                const {top, height} = that.nodeScrollInfo;
+                // const offset = selectHeight
+                if (selectHeight - top > height || selectHeight - top < 0) {
+                    that.$refs.nodes.scrollTop = selectHeight - height / 2;
+                    that.nodeScrollInfo.top = selectHeight - height / 2;
+                }
             },
         },
         methods: {
@@ -439,14 +483,6 @@ export async function ready() {
                         const {rootid, clipid} = await Editor.Ipc.requestToPackage('scene', 'query-current-animation-info');
                         that.currentClip = clipid;
                         await that.updateRoot(rootid);
-                        const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', rootid, clipid);
-                        clipDump && (vm.clipDump = formatClipDump(clipDump));
-                        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
-                        if (typeof(time) === 'number') {
-                            that.setCurrentFrame(timeToFrame(time, that.sample));
-                        }
-                        const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
-                        that.updateState(state);
                     } else {
                         that.resetState();
                     }
@@ -488,15 +524,6 @@ export async function ready() {
                             return;
                         }
                         that.currentClip = defaultClip;
-                        const clipDump = await Editor.Ipc.requestToPanel('scene', 'query-animation-clip', root, defaultClip);
-                        clipDump && (vm.clipDump = formatClipDump(clipDump));
-
-                        const time = await Editor.Ipc.requestToPanel('scene', 'query-animation-clips-time');
-                        if (typeof(time) === 'number') {
-                            that.setCurrentFrame(timeToFrame(time, that.sample));
-                        }
-                        const state = await Editor.Ipc.requestToPanel('scene', 'query-animation-state', that.currentClip);
-                        that.updateState(state);
                         const mode = await Editor.Ipc.requestToPackage('scene', 'query-scene-mode');
                         mode === 'animation' ? that.animationMode = true : that.animationMode = false;
                     } else {
@@ -590,7 +617,7 @@ export async function ready() {
                 if (that.grid) {
                     result = Math.floor(that.grid.valueToPixelH(frame) - that.startOffset);
                 }
-                return result;
+                return Number(result);
             },
 
             // 相对于 canvas 面板的 x 距离转化为关键帧
@@ -766,18 +793,29 @@ export async function ready() {
                 this.grid && this.grid.resize(offsetWidth, offsetHeight);
             },
 
-            // 更新选中关键帧位置
-            updateSelectInfo() {
+            // 更新选中关键帧位置,以及当前鼠标关键帧的位置
+            updatePositionInfo() {
                 const that: any = this;
                 if (that.selectKeyInfo) {
                     for (const item of that.selectKeyInfo.data) {
+                        if (!item) {
+                            continue;
+                        }
                         item.x = that.grid.valueToPixelH(item.frame);
                     }
                 }
                 if (that.selectEventInfo) {
                     for (const item of that.selectEventInfo.data) {
+                        if (!item) {
+                            continue;
+                        }
                         item.x = that.grid.valueToPixelH(item.frame);
                     }
+                }
+                if (that.previewPointer && that.previewPointer.x) {
+                    requestAnimationFrame(() => {
+                        that.previewPointer.frame = that.pixelToFrame(that.previewPointer.x);
+                    });
                 }
             },
             ///////////////////////// 对时间轴的处理方法 ///////////////////////////////////////
@@ -789,7 +827,7 @@ export async function ready() {
                 const that: any = this;
                 that.grid.transferX(delta);
                 requestAnimationFrame(() => {
-                    that.updateSelectInfo();
+                    that.updatePositionInfo();
                     that.grid.render();
                     that.offset = that.grid.xAxisOffset;
                 });
@@ -804,7 +842,7 @@ export async function ready() {
                 const that: any = this;
                 const scale = smoothScale(delta, that.scale);
                 that.scale = that.grid.xAxisScaleAt(x, scale); // 坐标画布更改
-                that.updateSelectInfo();
+                that.updatePositionInfo();
                 that.grid.render();
                 that.offset = that.grid.xAxisOffset;
             },
@@ -893,16 +931,26 @@ export async function ready() {
                         that.currentFrame = frame;
                         const time = frameToTime(that.currentFrame, that.sample);
                         Editor.Ipc.sendToPanel('scene', 'set-edit-time', time);
+                        that.flags.mouseDownName = 'time-pointer';
                         break;
                     case 'pointer':
-                        that.flags.mouseDownName = 'pointer';
+                        // 不允许左键中键移动小红线
+                        if (event.button === 0) {
+                            that.flags.mouseDownName = 'pointer';
+                        }
                         break;
                     case 'node':
                     case 'property':
-                        boxInfo = {
-                            type: name,
-                        };
-                        that.flags.mouseDownName = name;
+                        if (event.button === 0) {
+                            boxInfo = {
+                                type: name,
+                            };
+                            that.flags.mouseDownName = name;
+                        } else {
+                            that.flags.mouseDownName = 'grid';
+                            that.flags.mouseDownX = event.x;
+                            return;
+                        }
                         break;
                     default:
                         if (event.button === 1 || event.button === 2) {
@@ -984,13 +1032,17 @@ export async function ready() {
             onMouseMove(event: any) {
                 const that: any = this;
                 const {x, y} = event;
+                if (that.flags.mouseDownName) {
+                    that.previewPointer = null;
+                }
                 // 需要实时显示拖拽过程中鼠标信息的处理
-                if (['key', 'event', 'pointer'].includes(that.flags.mouseDownName)) {
+                if (['key', 'event'].includes(that.flags.mouseDownName)) {
                     const frame = that.pageToFrame(x);
                     if (frame < 0) {
                         return;
                     }
                     const result = that.pageToCtrol(x, y);
+                    // 关键帧的半径大小是 5
                     if (!that.moveInfo) {
                         that.moveInfo = {
                             x: result.x + 5,
@@ -1006,12 +1058,15 @@ export async function ready() {
                 switch (that.flags.mouseDownName) {
                     case 'key':
                         if (that.selectKeyInfo) {
+                            const {startX, data} = that.selectKeyInfo;
+                            if (startX === event.x) {
+                                return;
+                            }
                             if (event.altKey) {
                                 event.target.style.cursor = 'copy';
                             } else {
                                 event.target.style.cursor = 'ew-resize';
                             }
-                            const {startX, data} = that.selectKeyInfo;
                             const startFrame = that.pageToFrame(event.x);
                             const endFrame = that.pageToFrame(startX);
                             const offsetFrame = that.pageToFrame(event.x) - that.pageToFrame(startX);
@@ -1066,11 +1121,29 @@ export async function ready() {
                         that.moveTimeLine(moveX);
                         break;
                     case 'pointer':
+                    case 'time-pointer':
                         event.target.style.cursor = 'ew-resize';
-                        that.currentFrame = that.moveInfo.frame;
+                        that.currentFrame = that.pageToFrame(event.x);
+                        Editor.Ipc.sendToPanel('scene', 'set-edit-time', frameToTime(that.currentFrame, that.sample));
+                        break;
                 }
                 if (!that.flags.mouseDownName) {
                     event.target.style.cursor = '';
+                    // 处理鼠标经过时的位置提示
+                    const result = that.pageToCtrol(x, y);
+                    const pointerFrame = that.pageToFrame(x + 5);
+                    if (that.previewPointer && that.previewPointer.frame === pointerFrame && that.previewPointer.y === result.y) {
+                        return;
+                    }
+                    clearTimeout(that.previewPointerTask);
+                    that.previewPointer = {
+                        frame: pointerFrame,
+                        x: that.frameToPixel(pointerFrame),
+                        y: result.y,
+                    };
+                    that.previewPointerTask = setTimeout(() => {
+                        that.previewPointer = null;
+                    }, 1000);
                     return;
                 }
                 if (['node', 'property'].includes(that.flags.mouseDownName)) {
@@ -1123,8 +1196,7 @@ export async function ready() {
 
             async exit() {
                 const that: any = this;
-                // @ts-ignore
-                Editor.Ipc.sendToPanel('scene', 'record', this.root, false);
+                return await Editor.Ipc.requestToPanel('scene', 'record', that.root, false);
             },
 
             /**
@@ -1310,6 +1382,9 @@ export async function ready() {
                         break;
                     case 'createKey':
                         params.param[3] = that.pixelToFrame(params.x);
+                        if (params.param[5]) {
+                            params.param[3] += params.param[5];
+                        }
                         Editor.Ipc.sendToPanel('scene', 'create-clip-key', currentClip, ...params.param);
                         break;
                     case 'removeKey':
@@ -1466,7 +1541,6 @@ export async function ready() {
             const that: any = this;
             document.addEventListener('mouseup', that.onMouseUp);
             document.addEventListener('keyup', that.onKeyUp);
-            // document.addEventListener('keydown', that.onKeyDown);
             const isReady = await Editor.Ipc.requestToPanel('scene', 'query-is-ready');
             if (isReady) {
                 await that.refresh();
@@ -1475,5 +1549,10 @@ export async function ready() {
     });
 }
 
-export async function beforeClose() {}
+export async function beforeClose() {
+    if (vm.animationMode) {
+        // 关闭前发送消息给场景，退出动画模式
+        return await vm.exit();
+    }
+}
 export async function close() {}
