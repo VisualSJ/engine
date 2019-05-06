@@ -99,9 +99,14 @@ function invokeAssetSetter(obj: any, propName: string, assetOrUrl: any) {
 
         if (pd && pd.set) {
             const forceRefresh = true;
-            // 如果是数组，需要清空该数组，防止数组内判断资源是否修改的判断阻止更新
-            if (Array.isArray(data)) {
-                pd.set.call(obj, newData.map((item: any) => null), forceRefresh);
+
+            try {
+                // 如果是数组，需要清空该数组，防止数组内判断资源是否修改的判断阻止更新
+                if (Array.isArray(data)) {
+                    pd.set.call(obj, newData.map((item: any) => null), forceRefresh);
+                }
+            } catch (e) {
+                console.error(e);
             }
             pd.set.call(obj, newData, forceRefresh);
         }
