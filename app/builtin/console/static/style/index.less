@@ -1,47 +1,66 @@
 @import "../iconfont.less";
 
-ui-button {
-    font-size: 0.8rem;
-    line-height: 0.8rem;
-}
-
-
 .ml10 {
-  margin-left: 10px;
+    margin-left: 10px;
 }
 
 .mr10 {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .flex-center {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .console-panel {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100%;
-  font-family: var(--font-mono, "Consolas");
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    font-family: var(--font-mono, "Consolas");
+    background: var(--panel-content-bg);
 }
 
 .header {
-  padding: 2px;
-  // padding-right: 88px;
-  flex-wrap: wrap;
+    padding: 2px 2px 3px 2px;
+    flex-wrap: wrap;
+    box-shadow: 0 0 8px 2px var(--panel-content-shadow);
+    background-color: var(--panel-header-bg);
+
+    ui-button {
+        position: relative;
+        margin: 0 2px;
+        border-radius: 2px;
+        cursor: pointer;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        transition: all 0.2s ease;
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: normal;
+        padding: 0 4px;
+
+        &:hover {
+            background-color: var(--panel-header-hover-c);
+        }
+
+        .label {
+            font-size: 12px;
+        }
+    }
 }
 
 .select-label {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .collapse {
-  position: absolute;
-  right: 0;
+    position: absolute;
+    right: 0;
 }
 
 @import "list.less";

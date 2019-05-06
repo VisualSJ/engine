@@ -14,7 +14,6 @@ section {
     flex: 1;
     display: flex;
     overflow-y: auto;
-    background:  var(--panel-content-bg);
 }
 
 .item {
@@ -25,21 +24,25 @@ section {
     overflow-x: scroll;
     padding: 0 12px;
     box-sizing: border-box;
+
     .wrap {
         display: flex;
         align-items: center;
     }
+
     .text {
         flex: 1;
         white-space: nowrap;
         text-overflow: ellipsis;
         padding-right: 4px;
     }
+
     .details,
     .stack {
         margin-left: 25px;
         white-space: nowrap;
         text-overflow: ellipsis;
+
         pre {
             margin: 0;
             white-space: nowrap;
@@ -47,26 +50,33 @@ section {
             font: inherit;
         }
     }
-    .details ~ .stack {
+
+    .details~.stack {
         margin-left: 40px;
     }
+
     .i-arrow-right {
         display: inline-block;
         font-size: 0.6em;
     }
+
     .i-arrow-right[unfold] {
         transform: rotate(90deg);
     }
+
     &.dark {
         background: #40404066;
     }
 }
+
 .item[fold] {
     overflow-x: hidden;
+
     .details,
     .stack {
         display: none;
     }
+
     .text {
         overflow: hidden;
     }
