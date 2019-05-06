@@ -56,6 +56,8 @@ function reset(nodeUuid, clipUuid) {
 
 async function restore(stepData) {
     await animationManager.restoreFromDump(stepData.nodeUuid, stepData.clipUuid, stepData.clipDump);
+
+    Manager.Ipc.forceSend('broadcast', `scene:change-node`, stepData.nodeUuid);
     refresh();
 }
 

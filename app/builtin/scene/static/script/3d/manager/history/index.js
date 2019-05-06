@@ -74,11 +74,16 @@ sceneManager.on('animation-end', () => {
 });
 
 // 动画编辑的事件
-animationManager.on('scene:animation-change', (nodeUuid, clipUuid) => {
-    if (!sceneManager.modes.animation.isOpen) {
+animationManager.on('scene:animation-change', (nodeUuid, clipUuid, action) => {
+    if (action === 'undo' || !sceneManager.modes.animation.isOpen) {
         return;
     }
-    records.push(clipUuid);
+
+    if (!records.includes(clipUuid)) {
+        records.push(clipUuid);
+    } else {
+        snapshot();
+    }
 });
 
 // 切换所编辑的动画
@@ -104,6 +109,10 @@ function loopRecord(node) {
  * 记录受 ipc 修改指令影响的 uuid
  */
 function record(uuid) {
+    if (sceneManager.modes.animation.isOpen) {
+        return;
+    }
+
     if (!records.includes(uuid)) {
         records.push(uuid);
     }
@@ -132,11 +141,11 @@ function snapshot() {
     const step = stopRecordToArchive();
 
     if (step === false) {
-        return;
+        return false;
     } else {
         // 过滤脏数据，来源于 gizmo 或其他面板中发送了 uuid change 的 ipc，但实际 uuid 节点并没有变化
         if (JSON.stringify(step.undo) === JSON.stringify(step.redo)) {
-            return;
+            return false;
         }
     }
 
@@ -176,6 +185,8 @@ function snapshot() {
     // 重设指针和方法
     index = steps.length - 1;
     method = 'redo';
+
+    return true;
 }
 
 /**

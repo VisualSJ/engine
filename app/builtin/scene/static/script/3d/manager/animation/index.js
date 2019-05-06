@@ -472,7 +472,8 @@ class AnimationManager extends EventEmitter {
 
         utils.decodeClip(dumpData, state);
         state.initialize(animData.node);
-        this.emit('scene:animation-change', nodeUuid, clipUuid);
+        this.setCurEditTime(this._curEditTime);
+        this.emit('scene:animation-change', nodeUuid, clipUuid, 'undo'); // 'undo' 是表明来源
         Manager.Ipc.send('broadcast', 'scene:animation-change', nodeUuid, clipUuid);
         return true;
     }
