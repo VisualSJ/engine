@@ -315,8 +315,8 @@ export const methods = {
      * @param json
      */
     async add(uuid: string) {
-        utils.twinkle.add(uuid, 'shrink'); // 手动新增的时候，由于 uuid 还不存在，不会生效。
-        vm.refresh();
+        await vm.refresh();
+        vm.twinkle(uuid, 'shrink');
     },
 
     /**
@@ -447,24 +447,23 @@ export const methods = {
      * @param content
      */
     async ipcAdd(url: string, content: Buffer | string | null, option?: ICreateOption) {
-        utils.twinkle.sleep();
-
         return await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content, option);
     },
 
     /**
      * 更新树形节点
      */
-    change(uuid: string) {
+    async change(uuid: string) {
+        vm.intoView = uuid;
         utils.twinkle.add(uuid, 'shrink');
-        vm.refresh();
+        await vm.refresh(true);
     },
 
     /**
      * 从树形删除资源节点
      */
-    delete(uuid: string) {
-        vm.refresh();
+    async delete(uuid: string) {
+        await vm.refresh();
     },
 
     /**
@@ -667,9 +666,6 @@ export const methods = {
         }
         asset.state = 'loading'; // 显示 loading 效果
 
-        // 暂停闪烁检测
-        utils.twinkle.sleep();
-
         // 重名命资源
         const target = asset.source.replace(new RegExp(`${basename(asset.source)}$`), name);
         const isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'move-asset', asset.source, target);
@@ -820,7 +816,6 @@ export const methods = {
                     const name = basename(file.path);
                     let target = `${toAsset.source}/${name}`;
                     target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
-                    utils.twinkle.sleep();
                     isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', target, null, { src: file.path });
                 }
 
@@ -949,7 +944,6 @@ export const methods = {
                 const name = basename(asset.source);
                 let target = `${parent.source}/${name}`;
                 target = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', target);
-                utils.twinkle.sleep();
                 isSuccess = await Editor.Ipc.requestToPackage('asset-db', 'copy-asset', asset.source, target);
             }
 
@@ -991,7 +985,7 @@ export const methods = {
             return;
         }
 
-        const uuids = json.from.split(',');
+        const uuids = json.values.map((info: IdragAssetInfo) => info.value);
 
         // @ts-ignore
         if (uuids.includes(json.to)) { // 移动的元素有重叠
@@ -1022,8 +1016,6 @@ export const methods = {
             if (toAsset.uuid === fromParent.uuid) {
                 continue;
             }
-
-            utils.twinkle.sleep();
 
             // 移动资源
             const target = toAsset.source + '/' + basename(fromAsset.source);
@@ -1099,9 +1091,9 @@ export const methods = {
      * 定位资源并闪烁
      * @param uuid
      */
-    twinkle(uuid: string) {
+    twinkle(uuid: string, animation: string = 'shake') {
         utils.scrollIntoView(uuid);
-        utils.twinkle.add(uuid, 'shake');
+        utils.twinkle.add(uuid, animation);
     },
 
     async dialogError(message: string) {

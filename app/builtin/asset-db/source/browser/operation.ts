@@ -329,7 +329,7 @@ export async function moveAsset(source: string, target: string): Promise<boolean
 
     // 目标地址错误 或 目标已经存在
     if (!assets.target || existsSync(assets.target)) {
-        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.target')} \ntarget: ${target}`);
+        console.warn(`${Editor.I18n.t('asset-db.moveAsset.fail.exist')} \ntarget: ${target}`);
         return false;
     }
 

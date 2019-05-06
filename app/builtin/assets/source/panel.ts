@@ -173,7 +173,7 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-        vm.add(uuid);
+        await vm.add(uuid);
     },
 
     /**
@@ -186,7 +186,7 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-        vm.delete(uuid);
+        await vm.delete(uuid);
     },
 
     async 'asset-db:asset-change'(uuid: string) {
@@ -194,7 +194,7 @@ export const messages = {
         if (!vm.ready) {
             return;
         }
-        vm.change(uuid);
+        await vm.change(uuid);
     },
 
     /**
@@ -346,22 +346,22 @@ export async function ready() {
              * ipc 消息后：添加资源到树形
              * @param uuid
              */
-            add(uuid: string) {
-                vm.$refs.tree.add(uuid);
+            async add(uuid: string) {
+                await vm.$refs.tree.add(uuid);
             },
             /**
              * ipc 消息后：修改到节点
              * @param uuid
              */
-            change(uuid: string) {
-                vm.$refs.tree.change(uuid);
+            async change(uuid: string) {
+                await vm.$refs.tree.change(uuid);
             },
             /**
              * ipc 消息后：将节点从树形上删除
              * @param uuid
              */
-            delete(uuid: string) {
-                vm.$refs.tree.delete(uuid);
+            async delete(uuid: string) {
+                await vm.$refs.tree.delete(uuid);
             },
             /**
              * ipc 消息后：选中节点，并返回的该选中项

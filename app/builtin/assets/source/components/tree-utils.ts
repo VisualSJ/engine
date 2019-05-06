@@ -358,7 +358,13 @@ exports.twinkle = {
         this.watch = false;
     },
     sleep(time: number) {
-        // 停止检测，遇到用户主动导入文件，复制文件夹等操作
+        /**
+         * deprecated
+         * 暂定一段时间的新增检测
+         * 之前是因为文件的 change 都走 delete add，所以 change 操作钱都暂停了检测
+         * 现在机制已变动，目前此方法用不到了，
+         * 过段时间可删除本方法
+         */
         this.watch = false;
 
         clearTimeout(this.timer);
@@ -369,6 +375,10 @@ exports.twinkle = {
         // 避免一些无效的记录一直存在
         db.vm.twinkles = {};
     },
+    /**
+     * @param uuid
+     * @param animation 'shrink', 'shake', 'light'
+     */
     add(uuid: string, animation: string = 'shake') {
         if (!this.watch) {
             return;
@@ -378,7 +388,7 @@ exports.twinkle = {
 
         // 动画结束后删除
         setTimeout(() => {
-            db.vm.twinkles[uuid] = undefined;
+            delete db.vm.twinkles[uuid];
         }, 1000);
     },
 };
