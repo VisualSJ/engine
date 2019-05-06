@@ -301,6 +301,8 @@ export const methods = {
         }));
         // @ts-ignore
         event.dataTransfer.setData('value', uuid);
+        // @ts-ignore
+        event.dataTransfer.setData('name', node.name);
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';

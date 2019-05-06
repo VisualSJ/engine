@@ -760,6 +760,7 @@ export const methods = {
                 await Editor.Ipc.requestToPanel('scene', 'create-node', {
                     parent: json.insert === 'inside' ? toNode.uuid : toParent.uuid,
                     assetUuid,
+                    name: asset.name,
                 });
 
                 if (json.insert === 'inside') {

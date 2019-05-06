@@ -209,7 +209,7 @@ function onDragOver(event) {
     if (!event || !canDrop(event.type)) {
         return;
     }
-    const {resultNode} = selection.getResultNode(event.x, event.y);
+    const { resultNode } = selection.getResultNode(event.x, event.y);
     if (!resultNode || lastHilightNode === resultNode) {
         return;
     }
@@ -232,7 +232,7 @@ async function onDrop(event) {
         return;
     }
     gizmoManager.clearAllGizmos();
-    const {resultNode, ray} = selection.getResultNode(event.x, event.y);
+    const { resultNode, ray } = selection.getResultNode(event.x, event.y);
     // 放置的位置有节点
     if (resultNode) {
         const dump = {
@@ -245,7 +245,7 @@ async function onDrop(event) {
                     return comp.__classname__ === 'cc.ModelComponent';
                 });
                 const path = `__comps__.${index}.sharedMaterials.0`; // 默认修改模型材质数组里的第一个材质
-                dump.value = {uuid: event.uuid};
+                dump.value = { uuid: event.uuid };
                 nodeManger.setProperty(resultNode.uuid, path, dump);
                 return;
         }
@@ -261,6 +261,7 @@ async function onDrop(event) {
         const uuid = await nodeManger.createNodeFromAsset(null, event.uuid, {
             position,
             type: event.type,
+            name: event.name,
         });
         const node = nodeManger.query(uuid);
         gizmoManager.showNodeGizmoOfNode(node);

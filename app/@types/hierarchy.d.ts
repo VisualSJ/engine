@@ -14,9 +14,10 @@ declare interface IdragNode {
 }
 
 declare interface IdragNodeInfo {
-    type: string,
-    value: string,
-    extends?: string[]
+    type: string, // 节点或资源的类型
+    value: string, // uuid
+    name: string; // 节点或资源名称
+    extends?: string[] // 所继承的类
 }
 
 declare interface IaddNode {

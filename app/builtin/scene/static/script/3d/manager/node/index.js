@@ -10,6 +10,7 @@ const { get } = require('lodash');
 const utils = require('./utils');
 const compManager = require('./../component/index');
 const { promisify } = require('util');
+const { basename, extname } = require('path');
 
 const Scene = require('../scene');
 
@@ -670,7 +671,7 @@ class NodeManager extends EventEmitter {
             }
 
             if (name) { // 使用创建时指定的名称
-                node.name = name;
+                node.name = basename(name, extname(name));
             }
 
             this.emit('before-add', node);

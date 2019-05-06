@@ -346,10 +346,18 @@ export const methods = {
             // @ts-ignore
             this.selects.forEach((id: string) => {
                 const selected = utils.getAssetFromTree(id);
-                values.push({ type: selected.type, value: selected.uuid });
+                values.push({
+                    type: selected.type,
+                    value: selected.uuid,
+                    name: selected.name,
+                });
             });
         } else {
-            values.push({ type: asset.type, value: uuid });
+            values.push({
+                type: asset.type,
+                value: uuid,
+                name: asset.name,
+            });
         }
         // @ts-ignore
         this.$refs.dragitem.values = values; // 拖动组件新增加的 values 属性
@@ -362,6 +370,8 @@ export const methods = {
         }));
         // @ts-ignore
         event.dataTransfer.setData('value', asset.redirect ? asset.redirect.uuid : uuid);
+        // @ts-ignore
+        event.dataTransfer.setData('name', asset.name);
 
         const img = new Image();
         img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAEALAAAAAABAAEAAAICRAEAOw==';

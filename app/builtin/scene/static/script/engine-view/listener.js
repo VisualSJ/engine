@@ -39,10 +39,11 @@ const utils = {
         if (!Editor.UI.DragArea.currentDragInfo) {
             return;
         }
-        const {type, value} = Editor.UI.DragArea.currentDragInfo;
+        const { type, value, name } = Editor.UI.DragArea.currentDragInfo;
         const newEvent = utils.createMouseEvent(event, bcr);
         newEvent.type = type;
         newEvent.uuid = value;
+        newEvent.name = name;
         return newEvent;
     },
     createConfirmEvent(event) {
@@ -54,7 +55,7 @@ const utils = {
 };
 
 const dragSupportTypes = ['cc.Material', 'cc.Prefab', 'cc.Mesh'];
-module.exports = function(elem) {
+module.exports = function (elem) {
     elem.addEventListener('mousedown', (event) => {
         const bcr = elem.getBoundingClientRect();
 
