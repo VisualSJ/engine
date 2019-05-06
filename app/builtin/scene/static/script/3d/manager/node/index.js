@@ -617,6 +617,7 @@ class NodeManager extends EventEmitter {
             Manager.Ipc.forceSend('broadcast', 'scene:change-node', current.uuid);
 
         } catch (error) {
+            console.warn('The prefab asset no longer exist.');
             console.error(error);
             return null;
         }

@@ -45,12 +45,25 @@ export const methods = {
     async update() {
         // @ts-ignore
         const info = await Editor.Ipc.requestToPackage('asset-db', 'query-asset-info', this.assetUuid);
+
+        let url = '';
+        if (info) {
+            url = info.source;
+        } else {
+            // @ts-ignore
+            const dump = await Editor.Ipc.requestToPackage('scene', 'query-node', this.rootUuid);
+            url = `db://assets/${dump.name.value}.prefab`;
+            url = await Editor.Ipc.requestToPackage('asset-db', 'generate-available-url', url);
+        }
         // @ts-ignore
         const content = await Editor.Ipc.requestToPackage('scene', 'generate-prefab', this.rootUuid);
+
+        // @ts-ignore
+        this.assetUuid = await Editor.Ipc.requestToPackage('asset-db', 'create-asset', url, content, { overwrite: true });
+
         // @ts-ignore
         await Editor.Ipc.requestToPackage('scene', 'link-prefab', this.rootUuid, this.assetUuid);
-        await Editor.Ipc.requestToPackage('asset-db', 'create-asset', info.source, content, { overwrite: true });
-    },
+    }
 };
 
 export const watch = {
