@@ -360,8 +360,8 @@ exports.twinkle = {
     sleep(time: number) {
         /**
          * deprecated
-         * 暂定一段时间的新增检测
-         * 之前是因为文件的 change 都走 delete add，所以 change 操作钱都暂停了检测
+         * 暂停一段时间的新增检测
+         * 之前是因为文件的 change 都走 delete add，所以 change 操作都需要暂停检测
          * 现在机制已变动，目前此方法用不到了，
          * 过段时间可删除本方法
          */
@@ -388,7 +388,8 @@ exports.twinkle = {
 
         // 动画结束后删除
         setTimeout(() => {
-            delete db.vm.twinkles[uuid];
+            db.vm.twinkles[uuid] = undefined; // 这是为了触发 vue 的数据变动
+            delete db.vm.twinkles[uuid]; // 避免一些无效的记录一直存在
         }, 1000);
     },
 };

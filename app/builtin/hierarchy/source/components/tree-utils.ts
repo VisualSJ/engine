@@ -288,19 +288,6 @@ export const twinkle = {
     stop() {
         this.watch = false;
     },
-    sleep(time: number) {
-        // 停止检测，遇到用户主动导入文件，复制文件夹等操作
-        this.watch = false;
-
-        clearTimeout(this.timer);
-        // @ts-ignore
-        this.timer = setTimeout(() => {
-            this.watch = true;
-        }, time || 2000);
-
-        // 避免一些无效的记录一直存在
-        db.vm.twinkles = {};
-    },
     add(uuid: string, animation: string = 'shake') {
         if (!this.watch) {
             return;
@@ -310,7 +297,8 @@ export const twinkle = {
 
         // 动画结束后删除
         setTimeout(() => {
-             db.vm.twinkles[uuid] = undefined;
+            db.vm.twinkles[uuid] = undefined; // 这是为了触发 vue 的数据变动
+            delete db.vm.twinkles[uuid]; // 避免一些无效的记录一直存在
         }, 1000);
     },
 };
