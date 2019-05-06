@@ -11,7 +11,7 @@ class Dialog {
      */
     async openFile(options = {}, window = null) {
         const config = {
-            defaultPath: options.root || null,
+            defaultPath: options.defaultPath || null,
             properties: ['openFile'],
         };
 
@@ -36,9 +36,9 @@ class Dialog {
      */
     async openDirectory(options = {}, window = null) {
         const config = {
-            defaultPath: options.root || null,
+            defaultPath: options.defaultPath || null,
             properties: ['openDirectory'],
-            buttonLabel: options.label || '选择文件夹',
+            buttonLabel: options.buttonLabel || null,
         };
 
         if (options.multi) {
@@ -60,9 +60,9 @@ class Dialog {
      */
     async saveFile(options = {}, window = null) {
         const config = {
-            defaultPath: options.root || null,
+            defaultPath: options.defaultPath || null,
             properties: ['openFile'],
-            buttonLabel: options.label || '保存',
+            buttonLabel: options.buttonLabel || null,
         };
 
         // [{ name: 'Scene File', extensions: ['scene'] }]

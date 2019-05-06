@@ -64,7 +64,7 @@ export function apply(messages: any) {
 
         const savePath = await Editor.Dialog.saveFile({
             title: Editor.I18n.t('scene.save_as'),
-            root: assetsPath,
+            defaultPath: assetsPath,
             filters: [
                 { name: 'Scene File', extensions: ['scene'] },
             ],

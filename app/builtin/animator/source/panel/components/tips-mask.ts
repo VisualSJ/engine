@@ -71,7 +71,7 @@ export const methods = {
                 break;
             case 'add_animation_clip':
                 const path = await Editor.Dialog.saveFile({
-                    root: join(Editor.Project.path, 'assets'),
+                    defaultPath: join(Editor.Project.path, 'assets'),
                     filters: [{name: 'AniamtionClip', extensions: ['anim']}],
                 });
                 if (!path) {

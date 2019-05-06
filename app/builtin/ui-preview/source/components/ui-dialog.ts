@@ -76,7 +76,7 @@ export const methods = {
 
         switch (type) {
             case 'root':
-                config.root = __dirname;
+                config.defaultPath = __dirname;
                 break;
         }
 

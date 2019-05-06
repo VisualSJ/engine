@@ -76,8 +76,8 @@ async function addPackage(type: string = 'project') {
 
     const [filePath] = await Editor.Dialog.saveFile({
         title: Editor.I18n.t('packager.menu.add'),
-        label: Editor.I18n.t('packager.menu.addLabel'),
-        root: pkgPath,
+        buttonLabel: Editor.I18n.t('packager.menu.addLabel'),
+        defaultPath: pkgPath,
     });
 
     if (!filePath || filePath === pkgPath) {
@@ -112,7 +112,7 @@ async function importPackage(type: string = 'project') {
 
     const [filePath] = await Editor.Dialog.openDirectory({
         title: Editor.I18n.t('packager.menu.selectDirectory'),
-        root: pkgPath,
+        defaultPath: pkgPath,
     });
 
     if (!filePath || filePath === pkgPath) {

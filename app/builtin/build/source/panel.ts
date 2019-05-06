@@ -289,7 +289,7 @@ export async function ready() {
             async onChooseBuildPath() {
                 const paths = await Editor.Dialog.openDirectory({
                     title: '选择发布文件夹',
-                    root: Editor.Project.path,
+                    defaultPath: Editor.Project.path,
                 });
                 if (!paths[0]) {
                     return;

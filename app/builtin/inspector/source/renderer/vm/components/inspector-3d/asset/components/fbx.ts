@@ -143,7 +143,7 @@ export const methods = {
         // 弹出选择框，让用户选择文件
         const path = dirname(assetPath);
         const config = {
-            root: path,
+            defaultPath: path,
             filters: [{ name: 'Images', extensions: ['jpg', 'png'] }],
         };
         const [ filePath ] = await Editor.Dialog.openFile(config);

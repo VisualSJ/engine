@@ -77,7 +77,7 @@ exports.methods = {
         let that = this;
         dialog.openDirectory({
             title: this.t('template.select_project'),
-            root: this.directoryPath,
+            defaultPath: this.directoryPath,
         }).then((array) => {
             if (array && array[0]) {
                 that.directoryPath = array[0];
