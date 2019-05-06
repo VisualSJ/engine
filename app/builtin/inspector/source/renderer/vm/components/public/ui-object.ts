@@ -12,6 +12,7 @@ export const template = `
     </div>
     <div class="content">
         <span
+            v-if="value"
             :unfold="unfold"
             @click="unfold = !unfold"
         >
@@ -23,6 +24,7 @@ export const template = `
         v-if="unfold"
     >
         <template
+            v-if="value"
             v-for="item in value"
         >
             <ui-prop auto="true"

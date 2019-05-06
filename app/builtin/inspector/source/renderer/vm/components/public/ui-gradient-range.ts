@@ -7,56 +7,61 @@ export const template = `
             :title="name"
         >{{name}}</span>
         <i class="iconfont icon-lock"
-            v-if="value.readonly"
+            v-if="value && value.readonly"
         ></i>
     </div>
     <div class="content">
 
-        <div class="content">
-            <template
-                v-if="value.mode.value == 0"
-            >
-                <ui-prop auto="true"
-                    :value="value.color"
-                ></ui-prop>
-            </template>
+        <template
+            v-if="value && value.mode !== undefined"
+        >
+            <div class="content">
+                <template
+                    v-if="value.mode.value == 0"
+                >
+                    <ui-prop auto="true"
+                        :value="value.color"
+                    ></ui-prop>
+                </template>
 
-            <template
-                v-else-if="value.mode.value == 2"
-            >
-                <ui-prop auto="true"
-                    :value="value.colorMin"
-                ></ui-prop>
-                <ui-prop auto="true"
-                    :value="value.colorMax"
-                ></ui-prop>
-            </template>
+                <template
+                    v-else-if="value.mode.value == 2"
+                >
+                    <ui-prop auto="true"
+                        :value="value.colorMin"
+                    ></ui-prop>
+                    <ui-prop auto="true"
+                        :value="value.colorMax"
+                    ></ui-prop>
+                </template>
 
-            <template
-                v-else-if="value.mode.value == 3"
-            >
-                <ui-prop auto="true"
-                    :value="value.gradientMin"
-                ></ui-prop>
-                <ui-prop auto="true"
-                    :value="value.gradientMax"
-                ></ui-prop>
-            </template>
+                <template
+                    v-else-if="value.mode.value == 3"
+                >
+                    <ui-prop auto="true"
+                        :value="value.gradientMin"
+                    ></ui-prop>
+                    <ui-prop auto="true"
+                        :value="value.gradientMax"
+                    ></ui-prop>
+                </template>
 
-            <template
-                v-else
-            >
-                <ui-prop auto="true"
-                    :value="value.gradient"
-                ></ui-prop>
-            </template>
-        </div>
+                <template
+                    v-else-if="value.gradient"
+                >
+                    <ui-prop auto="true"
+                        :value="value.gradient"
+                    ></ui-prop>
+                </template>
+            </div>
 
-        <div class="button">
-            <i class="iconfont fold icon-un-fold foldable"
-                @click="_onChangeMode($event)"
-            ></i>
-        </div>
+            <div class="button">
+                <i class="iconfont fold icon-un-fold foldable"
+                    @click="_onChangeMode($event)"
+                ></i>
+            </div>
+        </template>
+        
     </div>
 </div>
 `;

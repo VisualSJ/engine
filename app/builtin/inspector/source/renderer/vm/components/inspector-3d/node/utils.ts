@@ -205,12 +205,24 @@ export function mergeProperty(dumps: Array<IProperty | undefined>) : IProperty {
         }
     });
 
-    // if (
-    //     target.type === 'cc.Asset' || (target.extends && target.extends.includes('cc.Asset'))
-    // ) {
-        
-    // } else 
-    if (typeof target.value !== 'object') {
+    if (
+        !target.isArray &&
+        (
+            target.type === 'cc.Asset' ||
+            (target.extends && target.extends.includes('cc.Asset')) ||
+            target.type === 'cc.Node' ||
+            (target.extends && target.extends.includes('cc.Node')) ||
+            target.type === 'cc.Component' ||
+            (target.extends && target.extends.includes('cc.Component'))
+        )
+    ) {
+        if (dumps.every((item: any) => {
+            return JSON.stringify(target.value) === JSON.stringify(item.value);
+        })) {
+            // @ts-ignore
+            dump.value = target.value;
+        }
+    } else if (typeof target.value !== 'object') {
         if (dumps.every((item) => {
             // @ts-ignore
             return item.value === target.value;
@@ -219,18 +231,24 @@ export function mergeProperty(dumps: Array<IProperty | undefined>) : IProperty {
         }
     } else if (Array.isArray(target.value)) {
         dump.value = undefined;
-    } else {
+    } else if (
+        target.type === 'cc.ValueType' ||
+        (target.extends && target.extends.includes('cc.ValueType'))
+    ) {
         dump.value = {};
         // @ts-ignore
         Object.keys(target.value).forEach((key) => {
-            if (dumps.every((item) => {
+            if (dumps.every((item: any) => {
                 // @ts-ignore
-                return item.value[key] === target.value[key];
+                return target.value && item.value && item.value[key] === target.value[key];
             })) {
                 // @ts-ignore
                 dump.value[key] = target.value[key];
             }
         });
+    } else if (target.value) {
+        // TODO 现在所有未知类型都不支持
+        // 后续应该要支持一个通用的合并规则
     }
 
     return dump;

@@ -5,48 +5,58 @@ import { close as closeCurve, drawCurve ,
 export const template = `
 <div class="ui-curve-range">
     <template
-    v-if="value.mode.value == 0"
+        v-if="value && value.mode !== undefined"
     >
-        <ui-prop auto="true"
-            :value="value.constant"
-        ></ui-prop>
-    </template>
-
-    <div class="ui-prop"
-        v-else-if="value.mode.value == 2"
+    
+        <template
+            v-if="value.mode.value == 0"
         >
-        <div class="ui-curve" @click.right="reset('curveMin', 2)">
-            <canvas @click="showEditor('curveMin')" ref="thumbMin" ></canvas>
-        </div>
-        <div class="ui-curve" @click.right="reset('curveMax', 2)">
-            <canvas @click="showEditor('curveMax')" ref="thumbMax" ></canvas>
-        </div>
-    </div>
+            <ui-prop auto="true"
+                :value="value.constant"
+            ></ui-prop>
+        </template>
 
-    <div class="ui-prop"
-    v-else-if="value.mode.value == 3"
-    >
-        <ui-prop auto="true"
-            :value="value.constantMin"
-        ></ui-prop>
-        <ui-prop auto="true"
-            :value="value.constantMax"
-        ></ui-prop>
-    </div>
-
-    <template
-    v-else
-    >
-        <div class="ui-curve" @click.right="reset('curve', 1)">
-            <canvas @click="showEditor('curve')" ref="thumb" ></canvas>
+        <div class="ui-prop"
+            v-else-if="value.mode.value == 2"
+        >
+            <div class="ui-curve" @click.right="reset('curveMin', 2)">
+                <canvas @click="showEditor('curveMin')" ref="thumbMin" ></canvas>
+            </div>
+            <div class="ui-curve" @click.right="reset('curveMax', 2)">
+                <canvas @click="showEditor('curveMax')" ref="thumbMax" ></canvas>
+            </div>
         </div>
+
+        <div class="ui-prop"
+            v-else-if="value.mode.value == 3"
+        >
+            <ui-prop auto="true"
+                :value="value.constantMin"
+            ></ui-prop>
+            <ui-prop auto="true"
+                :value="value.constantMax"
+            ></ui-prop>
+        </div>
+
+        <template
+            v-else-if="value"
+        >
+            <div class="ui-curve"
+                @click.right="reset('curve', 1)"
+            >
+                <canvas ref="thumb"
+                    @click="showEditor('curve')"
+                ></canvas>
+            </div>
+        </template>
+
+        <div class="button">
+            <i class="iconfont fold icon-un-fold foldable"
+                @click="_onChangeMode($event)"
+            ></i>
+        </div>
+    
     </template>
-
-    <div class="button">
-        <i class="iconfont fold icon-un-fold foldable"
-            @click="_onChangeMode($event)"
-        ></i>
-    </div>
 </div>
 `;
 
@@ -82,6 +92,11 @@ export const methods = {
     refresh() {
         // @ts-ignore
         const vm: any = this;
+
+        if (!vm.value || !vm.value.mode) {
+            return;
+        }
+
         if (vm.value.mode.value === 1) {
             const ctx = this.getThumbCtx('thumb');
             drawCurve(vm.value.curve.value.keyFrames, ctx);
