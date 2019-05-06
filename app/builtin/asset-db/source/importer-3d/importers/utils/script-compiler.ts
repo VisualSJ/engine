@@ -27,6 +27,7 @@ export function compile(source: string, options: IOptions): IResult | null {
             require('@babel/preset-typescript'),
         ],
         plugins: [
+            cocosImportPlugin(),
             [
                 require('@babel/plugin-proposal-decorators'),
                 { legacy: true },
@@ -45,6 +46,62 @@ export function compile(source: string, options: IOptions): IResult | null {
     }
     return {
         code: result.code,
+    };
+}
+
+/*
+// Debug
+import * as babel from "@babel/core";
+const source = `
+import { Component, Vec3, vmath, Vec4 as v4 } from "Cocos3D";
+import * as ccc from "Cocos3D";
+`;
+const result = babel.transformSync(source, {plugins: [cocosImportPlugin()]});
+if (!result || !result.code) {
+    console.error(`Failed.`);
+} else {
+    console.log(result.code);
+}
+*/
+function cocosImportPlugin() {
+    return (): babel.PluginObj => {
+        return {
+            visitor: {
+                ImportDeclaration: {
+                    exit: (path) => {
+                        const node = path.node;
+                        if (node.source.value !== 'Cocos3D') {
+                            return;
+                        }
+                        const decls: babel.types.VariableDeclarator[] = [];
+                        const objectProperties: babel.types.ObjectProperty[] = [];
+                        const initValue = babel.types.identifier('cc');
+                        for (const specifier of node.specifiers) {
+                            if (babel.types.isImportSpecifier(specifier)) {
+                                const left = babel.types.identifier(specifier.imported.name);
+                                if (specifier.imported.name === specifier.local.name) {
+                                    objectProperties.push(babel.types.objectProperty(left, left, undefined, true));
+                                } else {
+                                    const right = babel.types.identifier(specifier.local.name);
+                                    objectProperties.push(babel.types.objectProperty(left, right));
+                                }
+                            } else if (babel.types.isImportDefaultSpecifier(specifier)) {
+                                //
+                            } else {
+                                const asName = specifier.local.name;
+                                decls.push(babel.types.variableDeclarator(babel.types.identifier(asName), initValue));
+                            }
+                        }
+                        if (objectProperties.length !== 0) {
+                            decls.push(babel.types.variableDeclarator(
+                                babel.types.objectPattern(objectProperties), initValue));
+                        }
+                        const varDecl = babel.types.variableDeclaration('const', decls);
+                        path.replaceWith(varDecl);
+                    },
+                },
+            },
+        };
     };
 }
 
