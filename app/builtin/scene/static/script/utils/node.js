@@ -106,16 +106,22 @@ Utils.getWorldOrientedBounds = function(node, size, out_bl, out_tl, out_tr, out_
     }
 };
 
-Utils.getObbFromMeshRenderer = function (modelComp, mat) {
+Utils.getObbFromMeshRenderer = function(modelComp, mat) {
 
     let transformAABB = AabbTool.create(0, 0, 0, 0, 0, 0);
-
-    if (modelComp && modelComp.mesh) {
-        let curMeshAABB = AabbTool.fromPoints(AabbTool.create(), 
-        modelComp.mesh.minPosition, modelComp.mesh.maxPosition);
-        curMeshAABB.transform(mat, null, null, null, transformAABB);
-    }
-    else {
+    let node = modelComp.node;
+    if (modelComp && modelComp.mesh && node) {
+        let meshMinPos = modelComp.mesh.minPosition;
+        let meshMaxPos = modelComp.mesh.maxPosition;
+        if (meshMinPos && meshMaxPos) {
+            let curMeshAABB = AabbTool.fromPoints(AabbTool.create(),
+            meshMinPos, meshMaxPos);
+            curMeshAABB.transform(mat, null, null, null, transformAABB);
+        } else {
+            let nodePos = node.getWorldPosition();
+            AabbTool.set(transformAABB, nodePos.x, nodePos.y, nodePos.z, 0, 0, 0);
+        }
+    } else {
         transformAABB.transform(mat, null, null, null, transformAABB);
     }
 
