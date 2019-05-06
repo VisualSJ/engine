@@ -104,7 +104,7 @@ class NumInput extends Base {
                 }
 
                 // 如果焦点在 input 上，则不设置 value 的值
-                if (this._staging) {
+                if (this._staging !== null) {
                     return;
                 }
 

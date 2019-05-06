@@ -88,7 +88,7 @@ class Input extends Base {
                     return;
                 }
                 // 如果焦点在 input 上，则不设置 value 的值
-                if (this._staging) {
+                if (this._staging !== null) {
                     break;
                 }
                 this.$input.value = newData;

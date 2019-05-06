@@ -127,3 +127,15 @@
 :host([invalid]) .area > ui-drag-area > .placeholder {
   display: none;
 }
+:host([invalid]) .area > ui-drag-area {
+  background-color: #6691b9;
+}
+:host([invalid]) .area > ui-drag-area > .value {
+  display: inline;
+}
+:host([invalid]) .area > ui-drag-area > .placeholder {
+  display: none;
+}
+:host([invalid]) .area > svg {
+  display: inline;
+}

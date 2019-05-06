@@ -23,7 +23,7 @@ export function mergeDumps(dumps: Array<IScene | INode>) {
             return mergeNode(dumps);
         case 'cc.Scene':
           // @ts-ignore
-            return mergeNode(dumps);
+            return mergeScene(dumps);
         default:
             console.warn(`The property inspector could not merge dump data`);
             return null;
