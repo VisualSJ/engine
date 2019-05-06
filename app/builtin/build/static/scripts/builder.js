@@ -489,7 +489,9 @@ class Builder {
             excludedModules.forEach(exName => {
                 modules.some(module => {
                     if (module.id === exName) {
-                        excludes.push(module.id);
+                        module.entries && module.entries.forEach(file => {
+                            excludes.push(file);
+                        });
                         return;
                     }
                 });
@@ -498,7 +500,9 @@ class Builder {
         if (platform === 'wechat-game-subcontext') {
             modules.forEach((module) => {
                 if (module.id === 'WebGL Renderer' || (module.dependencies && module.dependencies.indexOf('WebGL Renderer') !== -1)) {
-                    excludes.push(module.id);
+                    module.entries && module.entries.forEach(file => {
+                        excludes.push(file);
+                    });
                 }
             });
         }
