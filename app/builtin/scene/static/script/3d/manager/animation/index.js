@@ -72,6 +72,8 @@ class AnimationManager extends EventEmitter {
                 const state = animData.animState;
                 if (state) {
                     state.on('finished', this.onAnimPlayEnd, this);
+                    this._lastSaveData = Manager.Utils.serialize(state.clip);
+                    this._lastSaveClipDump = this.queryClip(uuid, this._curEditClipUuid);
                 }
 
                 if (!this._animUpdateInterval) {
@@ -88,11 +90,33 @@ class AnimationManager extends EventEmitter {
                 return false;
             }
 
-            const animData = this.queryRecordAnimState();
+            const animData = this.queryRecordAnimData();
             if (animData) {
                 const state = animData.animState;
                 if (state) {
                     state.off('finished', this.onAnimPlayEnd, this);
+
+                    // 如果更改，则询问是否需要保存
+                    const json = Manager.Utils.serialize(state.clip);
+                    if (this._lastSaveData !== json) {
+                        const code = await Manager.Ipc.send('dirty-dialog', 'Animation');
+                        switch (code) {
+                            case 0:
+                            case '0':
+                                // Save
+                                await this.save();
+                                break;
+                            case 1:
+                            case '1':
+                                // Don't Save
+                                // 不保存则还原到上次保存的数据
+                                this.restoreFromDump(Scene.modes.animation.root, this._curEditClipUuid, this._lastSaveClipDump);
+                                break;
+                            case 2:
+                            case '2': // Cancel
+                                return false;
+                        }
+                    }
                 }
             }
 
@@ -125,6 +149,8 @@ class AnimationManager extends EventEmitter {
 
         let clip = state.clip;
 
+        this._lastSaveData = Manager.Utils.serialize(clip);
+        this._lastSaveClipDump = this.queryClip(Scene.modes.animation.root, clipUuid);
         // 判断是否为骨骼动画的animationclip，用id中是否有'@'来判断
         let index = clipUuid.indexOf('@');
         if (index >= 0) {
@@ -139,7 +165,7 @@ class AnimationManager extends EventEmitter {
                 await Manager.Ipc.send('save-asset-meta', clip._uuid, Manager.Utils.serialize(metaData));
             }
         } else  {
-            await Manager.Ipc.send('save-asset', clip._uuid, Manager.Utils.serialize(clip));
+            await Manager.Ipc.send('save-asset', clip._uuid, this._lastSaveData);
         }
 
         return true;
@@ -613,6 +639,8 @@ class AnimationManager extends EventEmitter {
 
     onAnimPlayEnd() {
         this.changePlayState(PlayState.STOP);
+        // 结束时也广播一下当前时间
+        Manager.Ipc.send('broadcast', 'scene:animation-time-change', this.queryPlayingClipTime());
     }
 
     update() {
