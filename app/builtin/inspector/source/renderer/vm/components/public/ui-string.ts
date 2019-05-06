@@ -6,6 +6,7 @@ export const template = `
 >
     <ui-input
         :disabled="readonly"
+        :invalid="value === undefined"
         :value="value"
         :default="dataDefault"
         @change="_onChange($event)"

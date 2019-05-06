@@ -20,6 +20,7 @@
                 :value="dump.active"
             >
                 <ui-checkbox
+                    :invalid="dump.active.value === undefined"
                     :value="dump.active.value"
                     @confirm="dump.active.value = $event.target.value"
                 ></ui-checkbox>
@@ -28,6 +29,7 @@
                 :value="dump.name"
             >
                 <ui-input
+                    :invalid="dump.name.value === undefined"
                     :value="dump.name.value"
                     @confirm="dump.name.value = $event.target.value"
                 ></ui-input>

@@ -105,6 +105,7 @@ class TextArea extends Base {
         return [
             'disabled',
             'value',
+            'invalid',
             'placeholder',
             'readonly',
             'password',
@@ -122,7 +123,11 @@ class TextArea extends Base {
             case 'disabled':
                 this.$textarea.disabled = newData !== null;
                 break;
+            case 'invalid':
+                this.$textarea.value = '-';
+                break;
             case 'value':
+                this.invalid = false;
                 this.$textarea.value = newData;
                 break;
             case 'placeholder':

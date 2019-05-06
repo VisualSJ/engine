@@ -14,6 +14,7 @@ export const template = `
     >
         <ui-slider ref="num"
             :disabled="readonly"
+            :invalid="value === undefined"
             :min="min"
             :max="max"
             :step="step"
@@ -27,6 +28,7 @@ export const template = `
     >
         <ui-num-input ref="num"
             :disabled="readonly"
+            :invalid="value === undefined"
             :min="min"
             :max="max"
             :step="step"

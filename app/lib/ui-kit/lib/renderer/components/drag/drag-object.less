@@ -43,6 +43,10 @@
             background: none;
             line-height: 1.4;
 
+            & > .invalid {
+                display: none;
+            }
+
             & > .value {
                 
                 display: none;
@@ -137,6 +141,26 @@
 
         & > ui-drag-area {
             background: var(--red-c, #b54344);
+        }
+    }
+}
+
+:host([invalid]) {
+    .area {
+
+        & > ui-drag-area {
+
+            & > .invalid {
+                display: inline-block;;
+            }
+
+            & > .value {
+                display: none;
+            }
+
+            & > .placeholder {
+                display: none;
+            }
         }
     }
 }

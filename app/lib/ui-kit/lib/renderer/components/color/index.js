@@ -51,6 +51,9 @@ class Color extends Base {
         this.$color = this.shadowRoot.querySelector('.color');
         this.$alpha = this.shadowRoot.querySelector('.alpha-line');
         this.$alpha.$root = this.$color.$root = this;
+
+        // 绑定 color 事件
+        this.addEventListener('click', this._onClick);
     }
 
     /**
@@ -64,9 +67,6 @@ class Color extends Base {
         // 初始化 attribute
         this.readonly = this.getAttribute('readonly') !== null;
         this.disabled = this.getAttribute('disabled') !== null;
-
-        // 绑定 color 事件
-        this.addEventListener('click', this._onClick);
 
         // 生成 colorPicker 供颜色选择
         if (!$colorPicker || !$ghost) {
@@ -85,9 +85,6 @@ class Color extends Base {
 
         // 删除缓存的节点
         instanceArray.splice(index, 1);
-
-        // 销毁 color 事件
-        this.removeEventListener('click', this._onClick);
     }
 
     get value() {
@@ -104,12 +101,22 @@ class Color extends Base {
      * 监听的 attribute 修改
      */
     static get observedAttributes() {
-        return ['focused', 'readonly', 'disabled', 'value'];
+        return [
+            'focused',
+            'readonly',
+            'disabled',
+            'invalid',
+            'value',
+        ];
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
         switch (attr) {
+            case 'invalid':
+                this._updateColor([0, 0, 0, 0]);
+                break;
             case 'value':
+                this.invalid = false;
                 this._updateColor(this.value);
                 break;
         }

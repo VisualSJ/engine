@@ -5,6 +5,8 @@ import { join } from 'path';
 
 const Vue = require('vue/dist/vue.js');
 
+const profile = Editor.Profile.load('profile://global/packages/ui-preview');
+
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
 
@@ -29,10 +31,34 @@ export async function ready() {
     vm = new Vue({
         el: panel.$['ui-preview'],
         data: {
-            uiCollectors: ['dialog', 'button', 'input', 'num-input', 'checkbox', 'slider',
-             'select', 'section', 'color-picker', 'color', 'loading', 'drag', 'prop', 'textarea', 'progress', 'label'],
-            // chooseIndex: 'progress',
-            chooseIndex: 'label',
+            uiCollectors: {
+                Input: [
+                    'input',
+                    'num-input',
+                    'checkbox',
+                    'select',
+                    'color',
+                    'textarea',
+                    'slider',
+                    'drag',
+                ],
+
+                Extension: [
+                    'color-picker',
+                    'button',
+                    'progress',
+                    'dialog',
+                ],
+
+                Layout: [
+                    'loading',
+                    'label',
+                    'prop',
+                    'section',
+                ],
+            },
+
+            chooseIndex: profile.get('tab') || 'input',
         },
         beforeCreate() {
 
@@ -44,6 +70,7 @@ export async function ready() {
              */
             selectChange(event: any) {
                 this.chooseIndex = event.target.value;
+                profile.set('tab', event.target.value);
             },
         },
         components: {
@@ -70,4 +97,6 @@ export async function ready() {
 }
 
 export async function beforeClose() {}
-export async function close() {}
+export async function close() {
+    profile.save();
+}

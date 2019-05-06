@@ -6,6 +6,7 @@ export const template = `
 >
     <ui-color
         :disabled="readonly"
+        :invalid="value === undefined"
         :value="color"
         :default="defaultColor"
         @change="_onChange($event)"

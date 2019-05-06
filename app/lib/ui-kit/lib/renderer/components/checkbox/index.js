@@ -12,6 +12,17 @@ const instanceArray = [];
 
 let customStyle = '';
 
+/**
+ * Attribute
+ *
+ *   disabled: 禁用组件，显示灰色，无法输入，无法选中
+ *   readonly: 可以选中，无法输入
+ *   invalid: 无效数据
+ *
+ *   value: 当前的选中值
+ *   checked: 是否勾选
+ */
+
 class Checkbox extends Base {
 
     /**
@@ -37,7 +48,14 @@ class Checkbox extends Base {
      * 监听的 attribute 修改
      */
     static get observedAttributes() {
-        return ['focused', 'readonly', 'disabled', 'value', 'checked'];
+        return [
+            'disabled',
+            'readonly',
+            'invalid',
+
+            'value',
+            'checked',
+        ];
     }
 
     /**
@@ -48,16 +66,20 @@ class Checkbox extends Base {
      */
     attributeChangedCallback(attr, oldData, newData) {
         switch (attr) {
+
             case 'disabled':
                 break;
-            case 'value':
-                if (newData === 'false') {
-                    this.checked = false;
-                    break;
-                }
-                this.checked = newData;
-                break;
             case 'readonly':
+                break;
+            case 'invalid':
+                break;
+
+            case 'value':
+                if (newData === null) {
+                    this.removeAttribute('checked');
+                } else {
+                    this.setAttribute('checked', newData);
+                }
                 break;
             case 'checked':
                 break;
@@ -65,43 +87,30 @@ class Checkbox extends Base {
     }
 
     //////////////////////////////////////////////
-    //取值
+
+    // disabled
+    // readonly
+    // invalid
+
+    get value() {
+        return this.getAttribute('value') !== null;
+    }
+    set value(bool) {
+        if (bool) {
+            this.setAttribute('value', '');
+        } else {
+            this.removeAttribute('value');
+        }
+    }
 
     get checked() {
         return this.getAttribute('checked') !== null;
     }
-
     set checked(bool) {
-        if (bool !== '-') {
-            bool = !!bool;
-        }
         if (bool) {
-            this.setAttribute('checked', bool);
+            this.setAttribute('checked', '');
         } else {
             this.removeAttribute('checked');
-        }
-    }
-
-    get value() {
-        return this.getAttribute('checked') !== null;
-    }
-
-    set value(bool) {
-        if (bool !== '-') {
-            bool = !!bool;
-        }
-        this.checked = bool;
-    }
-
-    get pressed() {
-        return this.getAttribute('pressed') !== null;
-    }
-
-    set pressed(bool) {
-        if (!!bool) {
-            this.setAttribute('pressed', '');
-        } else {
-            this.removeAttribute('pressed');
         }
     }
 
@@ -111,6 +120,11 @@ class Checkbox extends Base {
     constructor() {
         super();
         this.shadowRoot.innerHTML = `${STYLE}${CUSTOM_STYLE}${HTML}`;
+
+        // 绑定事件
+        this.addEventListener('click', this._onClick);
+        this.addEventListener('keydown', this._onKeyDown);
+        this.addEventListener('keyup', this._onKeyUp);
     }
 
     /**
@@ -121,11 +135,6 @@ class Checkbox extends Base {
 
         // 缓存已经放入文档流的节点
         instanceArray.push(this);
-
-        // 绑定事件
-        this.addEventListener('click', this._onClick);
-        this.addEventListener('keydown', this._onKeyDown);
-        this.addEventListener('keyup', this._onKeyUp);
 
         // 插入自定义样式
         const $style = this.shadowRoot.querySelector('#custom-style');
@@ -141,11 +150,6 @@ class Checkbox extends Base {
         // 移除缓存的节点
         const index = instanceArray.indexOf(this);
         instanceArray.splice(index, 1);
-
-        // 取消绑定事件
-        this.removeEventListener('click', this._onClick);
-        this.removeEventListener('keydown', this._onKeyDown);
-        this.removeEventListener('keyup', this._onKeyUp);
     }
 
     //////////////////////
@@ -161,7 +165,11 @@ class Checkbox extends Base {
             return;
         }
 
-        this.checked = !this.checked;
+        if (this.invalid) {
+            this.invalid = false;
+        }
+
+        this.value = !this.value;
         this.dispatch('change');
         this.dispatch('confirm');
     }
@@ -174,7 +182,7 @@ class Checkbox extends Base {
         if (this.disabled || this.readonly) {
             return;
         }
-        this.pressed = true;
+        this.setAttribute('pressed', '');
     }
 
     /**
@@ -188,7 +196,7 @@ class Checkbox extends Base {
         if (this.disabled || this.readonly) {
             return;
         }
-        this.pressed = false;
+        this.removeAttribute('pressed');
         // 如果是空格和回车，则切换 checked
         switch (event.keyCode) {
             case 32:

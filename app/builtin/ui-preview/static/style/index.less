@@ -13,6 +13,7 @@
 section {
   padding: 10px;
   border-bottom: 1px #ccc solid;
+
   .line {
     display: flex;
     ui-progress {
@@ -38,6 +39,10 @@ section {
 
   .size-20 {
     font-size: 20px;
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
@@ -158,4 +163,28 @@ ui-prop[type="asset"] {
       margin-left: 10px;
     }
   }
+}
+
+///////////////////
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-2 {
+  flex: 1;
+}
+
+.flex-3 {
+  flex: 3;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

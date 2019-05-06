@@ -90,6 +90,7 @@ export const messages = {
         }
         // @ts-ignore
         clearTimeout(this._unselectTimer);
+        _waitDeleteUuids = [];
         const uuids = Editor.Selection.getSelected(type);
 
         // 更新选中的物体类型

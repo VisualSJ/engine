@@ -4,12 +4,6 @@ declare const cc: any;
 declare const Manager: any;
 
 import {
-    INode,
-    IProperty,
-    IScene,
-} from './interface';
-
-import {
     getConstructor,
     getDefault,
     getTypeInheritanceChain,

@@ -3,11 +3,6 @@
 declare const cc: any;
 declare const Manager: any;
 const { promisify } = require('util');
-import {
-    INode,
-    IProperty,
-    IScene,
-} from './interface';
 
 import {
     fillDefaultValue,
@@ -333,10 +328,8 @@ export async function decodePatch(path: string, dump: any, node: any) {
         data[info.key] = Manager.Component.query(dump.value.uuid);
     } else if (ccExtends.includes(valueType) || valueType === dump.type) {
         const value = new ccType();
-        Object.keys(dump.value).forEach((key: string) => {
-            // TODO hack 这里是因为 UI 组件识别多个不同数据的时候，直接设置了 -
-            // 但是这么干是不对的，可能导致真实的 - 数据被判断错误
-            if (dump.value[key] === '-') {
+        Object.keys(value).forEach((key: string) => {
+            if (dump.value[key] === undefined) {
                 value[key] = data[info.key][key];
                 return;
             }

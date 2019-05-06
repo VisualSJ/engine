@@ -65,6 +65,10 @@ export function readTemplate(path: string) {
     return readFileSync(path, 'utf8');
 }
 
+/**
+ * 合并两个 dump 数据
+ * @param dumps 
+ */
 export function mergeDumps(dumps: any[]) {
     if (!dumps || dumps.length === 0) {
         return null;

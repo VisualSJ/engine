@@ -179,11 +179,16 @@ class Slider extends Base {
      * 监听的 attribute 修改
      */
     static get observedAttributes() {
-        return ['min', 'max', 'height', 'preci', 'step', 'value', 'readonly', 'disabled'];
+        return ['min', 'max', 'height', 'preci', 'step', 'value', 'readonly', 'disabled', 'invalid'];
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
         switch (attr) {
+            case 'invalid':
+                process.nextTick(() => {
+                    this.$input.invalid = newValue !== null;
+                });
+                break;
             case 'preci':
                 this.preci = parseInt(newData, 10);
                 break;
@@ -191,19 +196,19 @@ class Slider extends Base {
                 if (oldValue === newValue) {
                     break;
                 }
-                if (newValue !== '-') {
-                    if (isNaN(newValue)) {
-                        this.$input.value = 0;
-                        break;
-                    }
-                    let value = mathUtils.clamp(newValue, this.min, this.max);
-                    // 判断是否超出界限
-                    if (value !== parseFloat(newValue)) {
-                        break;
-                    }
-                    // 存在 preci 控制小数点位数
-                    newValue = parseFloat(newValue).toFixed(this.preci);
+            
+                if (isNaN(newValue)) {
+                    this.$input.value = 0;
+                    break;
                 }
+                let value = mathUtils.clamp(newValue, this.min, this.max);
+                // 判断是否超出界限
+                if (value !== parseFloat(newValue)) {
+                    break;
+                }
+                // 存在 preci 控制小数点位数
+                newValue = parseFloat(newValue).toFixed(this.preci);
+                
                 // this.value = newValue;
                 this.updateCursorAndInput();
                 break;
@@ -347,6 +352,9 @@ class Slider extends Base {
      * num-input 的 change 监听事件
      */
     _onInputChange() {
+        if (this.$input.invalid) {
+            this.invalid = false;
+        }
         this.$root.value = this.value;
         this.$root.updateCursorAndInput();
         this.$root.dispatch('change');
@@ -456,6 +464,9 @@ class Slider extends Base {
      * @param {Event} event
      */
     stepDown(event) {
+        if (this.$input.invalid) {
+            this.invalid = false;
+        }
         let step = this.step;
         // 按下shit键可以10倍加快
         event.shiftKey && (step *= 10);
@@ -468,6 +479,9 @@ class Slider extends Base {
      * @param {Event} event
      */
     stepUp(event) {
+        if (this.$input.invalid) {
+            this.invalid = false;
+        }
         let step = this.step;
         // 按下shit键可以10倍加快
         event.shiftKey && (step *= 10);

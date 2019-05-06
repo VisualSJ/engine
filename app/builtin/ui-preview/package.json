@@ -17,7 +17,6 @@
     "panel": {
         "title": "i18n:ui-preview.title",
         "main": "./dist/panel.js",
-        "icon": "./static/icon.png",
         "min-width": 200,
         "min-height": 200,
         "width": 400,

@@ -6,6 +6,7 @@ export const template = `
 >
     <ui-drag-object
         :disabled="readonly"
+        :invalid="!value || value === undefined"
         :dropable="type"
         :value="value ? value.uuid : null"
         :default="dataDefault"

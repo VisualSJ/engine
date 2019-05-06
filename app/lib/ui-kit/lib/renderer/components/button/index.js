@@ -54,6 +54,13 @@ class Button extends Base {
     constructor() {
         super();
         this.shadowRoot.innerHTML = `${STYLE}${CUSTOM_STYLE}${HTML}`;
+
+        // 绑定键盘事件
+        this.addEventListener('keydown', this._onKeyDown);
+        this.addEventListener('keyup', this._onKeyUp);
+
+        // 绑定鼠标事件
+        this.addEventListener('mousedown', this._onMouseDown);
     }
 
     /**
@@ -64,13 +71,6 @@ class Button extends Base {
 
         // 缓存已经放入文档流的节点
         instanceArray.push(this);
-
-        // 绑定键盘事件
-        this.addEventListener('keydown', this._onKeyDown);
-        this.addEventListener('keyup', this._onKeyUp);
-
-        // 绑定鼠标事件
-        this.addEventListener('mousedown', this._onMouseDown);
 
         // 插入自定义样式
         const $style = this.shadowRoot.querySelector('#custom-style');
@@ -86,13 +86,6 @@ class Button extends Base {
         // 移除缓存的节点
         const index = instanceArray.indexOf(this);
         instanceArray.splice(index, 1);
-
-        // 取消绑定键盘事件
-        this.addEventListener('keydown', this._onKeyDown);
-        this.addEventListener('keyup', this._onKeyUp);
-
-        // 取消绑定鼠标事件
-        this.removeEventListener('mousedown', this._onMouseDown);
     }
 
     // get set focused

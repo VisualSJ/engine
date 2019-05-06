@@ -49,6 +49,9 @@
   background: none;
   line-height: 1.4;
 }
+:host .area > ui-drag-area > .invalid {
+  display: none;
+}
 :host .area > ui-drag-area > .value {
   display: none;
   flex: 1;
@@ -114,4 +117,13 @@
 }
 :host([state='refused']) .area > ui-drag-area {
   background: var(--red-c, #b54344);
+}
+:host([invalid]) .area > ui-drag-area > .invalid {
+  display: inline-block;
+}
+:host([invalid]) .area > ui-drag-area > .value {
+  display: none;
+}
+:host([invalid]) .area > ui-drag-area > .placeholder {
+  display: none;
 }

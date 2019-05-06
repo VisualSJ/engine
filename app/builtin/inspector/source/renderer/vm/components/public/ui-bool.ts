@@ -6,6 +6,7 @@ export const template = `
 >
     <ui-checkbox
         :disabled="readonly"
+        :invalid="value === undefined"
         :value="value"
         :default="dataDefault"
     ></ui-checkbox>

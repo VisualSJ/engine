@@ -84,9 +84,8 @@ class Input extends Base {
                 break;
 
             case 'value':
-                // 无效状态在被修改后应该重置
-                if (this.invalid) {
-                    this.invalid = false;
+                if(this.invalid) {
+                    return;
                 }
                 // 如果焦点在 input 上，则不设置 value 的值
                 if (this._staging) {
@@ -323,9 +322,10 @@ class Input extends Base {
 
         // 如果缓存数据存在，这时候退出，则还原缓存数据
         if (this._staging !== null && this._staging !== this.value) {
-            this.$input.value = this._staging;
+            this.value = this.$input.value = this._staging;
             this.dispatch('change');
             this.dispatch('cancel');
+            this.dispatch('confirm');
         }
 
         if (inputFocused) {

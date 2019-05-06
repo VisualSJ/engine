@@ -98,19 +98,13 @@ class NumInput extends Base {
                 break;
 
             case 'value':
-                // 无效状态在被修改后应该重置
+                // 无效状态下 value 不需要给 input.value
                 if (this.invalid) {
-                    this.invalid = false;
+                    return;
                 }
 
                 // 如果焦点在 input 上，则不设置 value 的值
                 if (this._staging) {
-                    return;
-                }
-
-                // TODO hack 允许输入 -
-                if (newData === '-') {
-                    this.$input.value = '-';
                     return;
                 }
 
@@ -280,7 +274,7 @@ class NumInput extends Base {
     _onFocus(event) {
         super._onFocus(event);
         // 只读或者禁用状态，不需要处理
-        if (this.disabled || this.readonly) {
+        if (this.invalid || this.disabled || this.readonly) {
             return;
         }
         // 判断是否已按下shift键
@@ -298,6 +292,7 @@ class NumInput extends Base {
         if (this.disabled) {
             return;
         }
+
         if (this.readonly) {
             this.$root.focus();
             return;
@@ -325,6 +320,9 @@ class NumInput extends Base {
      * input 数据修改
      */
     _onInputChange() {
+        if (this.$root.invalid) {
+            this.$root.invalid = false;
+        }
         let value = this.value - 0;
         if (isNaN(value) || this.value === '') {
             return;
@@ -376,7 +374,10 @@ class NumInput extends Base {
             this.dispatch('confirm');
         }
 
-        this.$input.value = this.value;
+        // 如果输入非法字符，需要还原数据
+        if (!this.invalid) {
+            this.$input.value = this.value;
+        }
 
         if (!ignore) {
             if (inputFocused) {
@@ -389,15 +390,18 @@ class NumInput extends Base {
 
     _cancel() {
         const inputFocused = this._staging !== null;
-
         // 如果缓存数据存在，这时候退出，则还原缓存数据
         if (this._staging !== null && this._staging !== this.value) {
-            this.$input.value = this._staging;
+            this.value = this.$input.value = this._staging;
             this.dispatch('change');
             this.dispatch('cancel');
+            this.dispatch('confirm');
         }
 
-        this.$input.value = this.value;
+        // 如果输入非法字符，需要还原数据
+        if (!this.invalid) {
+            this.$input.value = this.value;
+        }
 
         if (inputFocused) {
             this.focus();
@@ -421,13 +425,9 @@ class NumInput extends Base {
             this.$input.focus();
         }
 
-        if (this.invalid) {
-            this.$input.value = this.value;
-        }
-
         // this.focused = true;
         const inscrease = step || this.step;
-        let value = mathUtils.accAdd(this.$input.value, inscrease);
+        let value = mathUtils.accAdd(this.value, inscrease);
         if (this.max !== null && value > this.max) {
             if (this._timer) {
                 // 清除定时器
@@ -437,6 +437,11 @@ class NumInput extends Base {
             return;
         }
         this.$input.value = value;
+
+        if (this.invalid) {
+            this.invalid = false;
+        }
+
         this.setAttribute('value', this.$input.value);
         this.dispatch('change');
     }
@@ -455,12 +460,8 @@ class NumInput extends Base {
             this.$input.focus();
         }
 
-        if (this.invalid) {
-            this.$input.value = this.value;
-        }
-
         const decrease = step || this.step;
-        let value = mathUtils.accSub(this.$input.value, decrease);
+        let value = mathUtils.accSub(this.value, decrease);
         if (this.min !== null && value < this.min) {
             if (this._timer) {
                 // 清除定时器
@@ -469,6 +470,11 @@ class NumInput extends Base {
             }
             return;
         }
+  
+        if (this.invalid) {
+            this.invalid = false;
+        }
+
         this.$input.value = value;
         this.setAttribute('value', this.$input.value);
         this.dispatch('change');

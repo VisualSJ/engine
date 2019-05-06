@@ -10,7 +10,9 @@ export const template = `
             v-if="readonly"
         ></i>
     </div>
-    <div class="content">
+    <div class="content"
+        v-if="value"
+    >
         <ui-num-input path="length" min="0" step="1"
             :readonly="readonly"
             :disabled="readonly"
@@ -24,7 +26,7 @@ export const template = `
         </span>
     </div>
     <div class="array"
-        v-if="unfold && value.length !== 0"
+        v-if="value && unfold && value.length !== 0"
     >
         <template
             v-for="(item, index) in value"

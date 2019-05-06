@@ -1,9 +1,31 @@
 <div class="input-wrap">
     <section>
         <h1>Standard</h1>
-        <ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button>
-        <h5>事件/Event:{{eventName}}</h5>
-        <ui-textarea name="uiTest" value = "test"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-textarea>{{value}}
+        <ui-button
+            @click="addItem"
+        >添加元素</ui-button>
+        <ui-button
+            @click="removeItem"
+        >移除元素</ui-button>
+
+        <div>
+            <ui-textarea name="uiTest" value="test"
+                @change="changeValue"
+                @confirm="confirmValue"
+                @cancel = "cancelValue"
+            ></ui-textarea>
+        </div>
+
+        <div class="flex">
+            <div class="flex-1 ellipsis">
+                <span>Event: </span>
+                <span>{{eventList.join(',')}}</span>
+            </div>
+            <div class="flex-1 ellipsis">
+                <span>Value: </span>
+                <span>{{value}}</span>
+            </div>
+        </div>
         <div v-html="itemHtmls"></div>
     </section>
 
@@ -47,6 +69,11 @@
 
     <section >
         <h1>Style</h1>
-        <ui-textarea class="transparent">Button</ui-textarea>
+        <ui-textarea class="transparent"></ui-textarea>
+    </section>
+
+    <section >
+        <h1>Invalid</h1>
+        <ui-textarea class="transparent" value="test" invalid></ui-textarea>
     </section>
 </div>

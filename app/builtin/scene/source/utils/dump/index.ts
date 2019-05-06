@@ -1,10 +1,6 @@
 'use strict';
 
 import {
-    INode, IProperty, IScene,
-} from './interface';
-
-import {
     encodeComponent, encodeNode, encodeScene
 } from './encode';
 

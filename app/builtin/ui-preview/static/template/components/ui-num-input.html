@@ -1,9 +1,30 @@
 <div class="num-input">
     <section>
         <h1>Standard</h1>
-        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
-        <h5>事件/Event : {{eventName}}</h5>
-        <ui-num-input id="uiNumInput" value="666"  @change = "changeValue" @confirm = "confirmValue" @cancel = "cancelValue"></ui-num-input>{{value}}
+        <ui-button
+            @click="addItem"
+        >添加元素</ui-button>
+        <ui-button
+            @click="removeItem"
+        >移除元素</ui-button>
+
+        <div>
+            <ui-num-input id="uiNumInput" value="666"
+                @change="changeValue"
+                @confirm="confirmValue"
+                @cancel="cancelValue"
+            ></ui-num-input>
+        </div>
+        <div class="flex">
+            <div class="flex-1 ellipsis">
+                <span>Event: </span>
+                <span>{{eventList.join(',')}}</span>
+            </div>
+            <div class="flex-1 ellipsis">
+                <span>Value: </span>
+                <span>{{value}}</span>
+            </div>
+        </div>
         <div v-html="itemHtmls"></div>
     </section>
 
@@ -49,8 +70,14 @@
             <ui-num-input value="20px"></ui-num-input>
         </div>
     </section>
+
     <section>
         <h1>Style</h1>
-        <ui-num-input class="transparent" unit="%">Button</ui-num-input>
+        <ui-num-input class="transparent" unit="%"></ui-num-input>
+    </section>
+
+    <section >
+        <h1>Invalid</h1>
+        <ui-num-input value="value" invalid></ui-num-input>
     </section>
 </div>

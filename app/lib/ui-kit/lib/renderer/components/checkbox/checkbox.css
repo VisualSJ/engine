@@ -57,10 +57,11 @@
 :host([focused]) label {
   color: var(--focus-c);
 }
-:host([checked = true]) {
+:host([checked]) {
   --box-visi: visible;
 }
-:host([checked = '-']) {
+:host([invalid]) {
+  --box-visi: hidden;
   --invalid-visi: visible;
 }
 :host([disabled]),

@@ -6,8 +6,8 @@ import { join } from 'path';
 export const template = readFileSync(join(__dirname, '../../static/template/components/ui-select.html'), 'utf8');
 export function data() {
     return {
-        value:'test',
-        eventName:''
+        value: 'test',
+        eventList: [],
     };
 }
 
@@ -18,7 +18,11 @@ export const methods = {
      */
     confirmValue(event:Event) {
         // @ts-ignore
-        this.eventName = 'confirm';
+        this.eventList.push('confirm');
+        setTimeout(() => {
+            // @ts-ignore
+            this.eventList.shift();
+        }, 400);
         // @ts-ignore
         this.value = event.target.value;
     },
@@ -29,7 +33,11 @@ export const methods = {
      */
     changeValue(event:Event) {
         // @ts-ignore
-        this.eventName = 'change';
+        this.eventList.push('change');
+        setTimeout(() => {
+            // @ts-ignore
+            this.eventList.shift();
+        }, 400);
         // @ts-ignore
         this.value = event.target.value;
     },
@@ -40,7 +48,11 @@ export const methods = {
      */
     cancelValue(event:Event) {
         // @ts-ignore
-        this.eventName = 'cancel';
+        this.eventList.push('cancel');
+        setTimeout(() => {
+            // @ts-ignore
+            this.eventList.shift();
+        }, 400);
         // @ts-ignore
         this.value = event.target.value;
     }

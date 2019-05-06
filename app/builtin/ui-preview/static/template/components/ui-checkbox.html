@@ -1,9 +1,32 @@
 <div class="cehckebox-wrap">
     <section>
         <h1>Standard</h1>
-        <div><ui-button @click="addItem">添加元素</ui-button><ui-button @click="removeItem">移除元素</ui-button></div>
-        <h5>事件/Event : {{eventName}}</h5>
-        <ui-checkbox  @change = "changeValue" @confirm = "confirmValue">default label</ui-checkbox> {{value}}
+        
+        <ui-button
+            @click="addItem"
+        >添加元素</ui-button>
+        <ui-button
+            @click="removeItem"
+        >移除元素</ui-button>
+
+        <div>
+            <ui-checkbox
+                :value="value"
+                @change="changeValue"
+                @confirm = "confirmValue"
+            >default label</ui-checkbox>
+        </div>
+
+        <div class="flex">
+            <div class="flex-1 ellipsis">
+                <span>Event: </span>
+                <span>{{eventList.join(',')}}</span>
+            </div>
+            <div class="flex-1 ellipsis">
+                <span>Value: </span>
+                <span>{{value}}</span>
+            </div>
+        </div>
         <div v-html="itemHtmls"></div>
     </section>
 
@@ -21,7 +44,12 @@
     </section>
 
     <section>
-        <h1>checked</h1>
+        <h1>Checked</h1>
         <ui-checkbox checked>checked</ui-checkbox>
+    </section>
+
+    <section>
+        <h1>Invalid</h1>
+        <ui-checkbox invalid>invalid</ui-checkbox>
     </section>
 </div>

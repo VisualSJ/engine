@@ -54,7 +54,7 @@ class DragObject extends Base {
      * 监听的 Attribute
      */
     static get observedAttributes() {
-        return ['disabled', 'dropable', 'value', 'placeholder', 'readonly', 'password'];
+        return ['disabled', 'dropable', 'value', 'placeholder', 'readonly', 'invalid'];
     }
 
     /**
@@ -83,7 +83,7 @@ class DragObject extends Base {
 
                 break;
             case 'placeholder':
-                this.$placeholder.innerHTML = newData || 'None';
+                // this.$placeholder.innerHTML = newData || 'None';
                 break;
         }
     }
@@ -185,10 +185,10 @@ class DragObject extends Base {
         this.$area.addEventListener('drop', this._onAreaDrop);
         this.$close.addEventListener('click', this._onCloseClick);
 
-        if (this._value) {
-            this.$value.innerHTML = this._value;
-            this.$value.innerHTML = await nameTranslator.call(this, this._value);
-        }
+        // if (this._value) {
+        //     this.$value.innerHTML = this._value;
+        //     this.$value.innerHTML = await nameTranslator.call(this, this._value);
+        // }
     }
 
     /**
@@ -254,6 +254,9 @@ class DragObject extends Base {
                 }
             }
         } else {
+            if (this.$root.invalid) {
+                this.$root.invalid = false;
+            }
             this.$root.value = event.dataTransfer.getData('value');
         }
     }
@@ -264,6 +267,10 @@ class DragObject extends Base {
     _onCloseClick(event) {
         if (this.$root.disabled || this.$root.readonly) {
             return;
+        }
+
+        if (this.$root.invalid) {
+            this.$root.invalid = false;
         }
         this.$root.value = '';
 

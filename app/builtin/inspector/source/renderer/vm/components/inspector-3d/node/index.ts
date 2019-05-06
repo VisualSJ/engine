@@ -1,7 +1,8 @@
 'use strict';
 
 import { off, on } from '../../../event';
-import { mergeDumps, readTemplate, translationDump, transSceneDump } from '../../../utils';
+import { readTemplate, translationDump, transSceneDump } from '../../../utils';
+import { mergeDumps } from './utils';
 
 export const template = readTemplate('inspector-3d/node/index.html');
 

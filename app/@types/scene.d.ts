@@ -3,7 +3,7 @@ interface SetPropertyOptions {
     uuid: string; // 修改属性的对象的 uuid
     path: string; // 属性挂载对象的搜索路径
     // key: string; // 属性的 key
-    dump: PropertyDump; // 属性 dump 出来的数据
+    dump: IProperty; // 属性 dump 出来的数据
 }
 interface CreatePropertyOptions {
     uuid: string; // 创建属性的对象的 uuid
@@ -22,7 +22,7 @@ interface InsertArrayOptions {
     path: string; // 修改的对象与 uuid 指向对象间的搜索路径 - 'comps/0'
     key: string; // 修改对象上的某个值的 key - 'colors'
     index: number; // 修改 item 在数组内的 index
-    dump: PropertyDump; // 该数据的 dump 信息
+    dump: IProperty; // 该数据的 dump 信息
 }
 
 // move-array-element 消息的 options 定义
@@ -46,7 +46,7 @@ interface CreateNodeOptions {
     components?: string[];
 
     name?: string;
-    dump?: NodeDump; // node 初始化应用的数据
+    dump?: INode | IScene; // node 初始化应用的数据
     assetUuid?: string; // 如果发送了资源 id，则从资源内创建对应的节点
 }
 
@@ -70,30 +70,72 @@ interface ExcuteComponentMethodOptions {
     args: any[];
 }
 
-interface NodeDump {
-    uuid: PropertyDump;
+interface IProperty {
+    value: { [key: string]: IProperty | IProperty[] | null | undefined | number | boolean | string } | null | undefined;
+    default: any; // 默认值
 
-    parent: PropertyDump;
-    active: PropertyDump;
-    name: PropertyDump;
-    layer: PropertyDump;
-    lpos: PropertyDump;
-    lrot: PropertyDump;
+    // 多选节点之后，这里存储多个数据
+    values?: ({ [key: string]: IProperty | IProperty[] | null | undefined | number | boolean | string } | null | undefined)[];
 
-    comps: PropertyDump;
-
-    children: PropertyDump;
-    [index: string]: PropertyDump;
-}
-
-interface PropertyDump {
+    // name: string;
     type: string;
-    value: any;
-    extends: string[];
-    default?: any;
-    options?: [];
-    [index: string]: any;
+    readonly: boolean;
+    visible: boolean;
+
+    path?: string; // 数据的搜索路径，这个是由使用方填充的
+
+    isArray?: boolean;
+    invalid?: boolean;
+    extends?: string[]; // 继承链
+    displayName?: string; // 显示到界面上的名字
+    displayOrder?: number; // 显示排序
+    tooltip?: string; // 提示文本
+    editor?: any; // 组件上定义的编辑器数据
+    animatable?: boolean; // 是否可以在动画中编辑
+
+    // Enum
+    enumList?: any[]; // enum 类型的 list 选项数组
+
+    // Number
+    min?: number; // 数值类型的最小值
+    max?: number; // 数值类型的最大值
+    step?: number; // 数值类型的步进值
+    slide?: boolean; // 数组是否显示为滑块
+    unit?: string; // 显示的单位
+
+    // Label
+    multiline?: boolean; // 字符串是否允许换行
+    // nullable?: boolean; 属性是否允许为空
 }
+
+interface INode {
+    active: IProperty;
+    name: IProperty;
+    position: IProperty;
+    rotation: IProperty;
+    scale: IProperty;
+    uuid: IProperty;
+
+    children: any[];
+    parent: any;
+
+    __comps__: IProperty[];
+    __type__: string;
+    __prefab__?: any;
+}
+
+interface IScene {
+    name: IProperty;
+    active: IProperty;
+    _globals: any;
+    isScene: boolean;
+
+    uuid: IProperty;
+    children: any[];
+    parent: any;
+    __type__: string;
+}
+
 
 interface NodeTreeItem {
     name: string;
