@@ -87,7 +87,8 @@ function legealNodeAttr(node: ItreeNode) {
     }
 
     if (vm.folds[node.uuid] === undefined) {
-        vm.$set(vm.folds, node.uuid, vm.firstAllExpand);
+        const defaultValue = vm.usefor === 'prefab' ? true : vm.firstAllExpand
+        vm.$set(vm.folds, node.uuid, defaultValue);
     }
 
     Object.defineProperty(node, 'isExpand', {

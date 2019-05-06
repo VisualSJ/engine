@@ -66,7 +66,7 @@ export function readTemplate(path: string) {
 }
 
 export function mergeDumps(dumps: any[]) {
-    if (!dumps) {
+    if (!dumps || dumps.length === 0) {
         return null;
     }
     const temp = dumps[0];

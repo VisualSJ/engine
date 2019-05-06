@@ -25,7 +25,7 @@ export const methods = {
      * 中断正在执行的操作
      * 一般是选中器其他物体
      */
-    break() {},
+    break() { },
 
     /**
      * 翻译
@@ -53,7 +53,9 @@ export const methods = {
         const dumps = [];
         for (const uuid of vm.uuids) {
             const dump = await Editor.Ipc.requestToPanel('scene', 'query-node', uuid);
-            dumps.push(dump);
+            if (dump) {
+                dumps.push(dump);
+            }
 
             // 如果请求数据中途，又有数据更新（num 变化），则忽略这个数据
             if (id !== vm.num) {
@@ -62,11 +64,12 @@ export const methods = {
         }
 
         const result = mergeDumps(dumps);
-
-        if (result.isScene) {
-            vm.dump = transSceneDump(result);
-        } else {
-            vm.dump = translationDump(result);
+        if (result) {
+            if (result.isScene) {
+                vm.dump = transSceneDump(result);
+            } else {
+                vm.dump = translationDump(result);
+            }
         }
     },
 
