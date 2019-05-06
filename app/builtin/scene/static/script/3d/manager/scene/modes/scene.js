@@ -210,7 +210,16 @@ class SceneMode extends Mode {
     async save(url) {
         const json = this.serialize();
 
+        let exist = false;
+
         if (this.current && !url) {
+            const fileInfo = await ipc.send('query-asset-info', this.current);
+            if (fileInfo && existsSync(fileInfo.file)) {
+                exist = true;
+            }
+        }
+
+        if (exist) {
             await ipc.send('save-asset', this.current, json);
         } else {
             url = await ipc.send('generate-available-url', url || 'db://assets/New Scene.scene');
