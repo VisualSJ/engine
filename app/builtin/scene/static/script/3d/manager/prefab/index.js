@@ -132,7 +132,8 @@ function sync(nodeUuid) {
 }
 
 /**
- * 从一个节点创建出一个 prefab json
+ * 将一个节点变为 prefab
+ * 返回序列化数据
  * @param {*} nodeUuid
  */
 function generate(nodeUuid) {
@@ -160,10 +161,24 @@ function generate(nodeUuid) {
     return Manager.Utils.serialize(prefab);
 }
 
+/**
+ * 从一个 prefab 节点取数据
+ * 返回序列化数据
+ */
+function getdata(nodeUuid){
+    const node = nodeManager.query(nodeUuid);
+    const prefab = new cc.Prefab();
+
+    const dump = utils.getDumpableNode(node);
+    prefab.data = dump;
+    return Manager.Utils.serialize(prefab);
+}
+
 module.exports = {
     link,
     unlink,
     revert,
     sync,
     generate,
+    getdata,
 };

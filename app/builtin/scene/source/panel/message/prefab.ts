@@ -13,13 +13,27 @@ export function init(element: any) {
  */
 export function apply(messages: any) {
     /**
-     * 打开场景的调试工具
+     * 将一个节点变为 prefab
      */
     messages['generate-prefab'] = async (uuid: string) => {
         if (!$scene) {
             return null;
         }
         const json = await $scene.forwarding('Prefab', 'generate', [
+            uuid,
+        ]);
+
+        return json;
+    };
+
+    /**
+     * 从一个 prefab 节点取它的完整数据
+     */
+    messages['getdata-prefab'] = async (uuid: string) => {
+        if (!$scene) {
+            return null;
+        }
+        const json = await $scene.forwarding('Prefab', 'getdata', [
             uuid,
         ]);
 

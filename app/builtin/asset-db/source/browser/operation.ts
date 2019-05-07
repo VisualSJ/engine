@@ -53,7 +53,7 @@ export async function createAsset(url: string, content?: Buffer | string | null,
 
     let overwrite = false;
     if (existsSync(file)) {
-        if (await isReadonly(file)) {
+        if (await isReadonly(url)) {
             console.warn(`${Editor.I18n.t('asset-db.createAsset.fail.readonly')} \n${url}`);
             return null;
         }
