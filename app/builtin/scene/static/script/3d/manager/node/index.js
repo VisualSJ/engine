@@ -460,6 +460,10 @@ class NodeManager extends EventEmitter {
 
         parent.addChild(node);
 
+        if (!dump) {
+            this.ensureUITransformComponent(node);
+        }
+
         await this.add(node);
 
         // 发送节点修改消息
@@ -469,6 +473,30 @@ class NodeManager extends EventEmitter {
         Manager.Ipc.forceSend('broadcast', 'scene:change-node', uuid);
 
         return node.uuid;
+    }
+
+    /**
+     * 确保节点有 uiTransformComponent 组件
+     * 目前只需保障在创建空节点的时候检查任意上级是否为 canvas
+     */
+    ensureUITransformComponent(node) {
+        if ((node instanceof cc.Node) && node.children.length === 0) { // 空节点
+            let inside = false;
+            let parent = node.parent;
+
+            while (parent) {
+                const components = parent._components.map((comp) => cc.js.getClassName(comp.constructor));
+                if (components.includes('cc.CanvasComponent')) {
+                    inside = true;
+                    break;
+                }
+                parent = parent.parent;
+            }
+
+            if (inside) {
+                node.addComponent('cc.UITransformComponent');
+            }
+        }
     }
 
     async restorePrefab(uuid, assetUuid) {
