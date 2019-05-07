@@ -1136,6 +1136,12 @@ export async function ready() {
                         return;
                     }
                     clearTimeout(that.previewPointerTask);
+                    // 留有距离避免影响到点击关键帧等的使用
+                    result.y += 24;
+                    // 限制提示关键帧的显示范围，避免影响到顶部的使用
+                    if (result.y < 32) {
+                        result.y = 32;
+                    }
                     that.previewPointer = {
                         frame: pointerFrame,
                         x: that.frameToPixel(pointerFrame),

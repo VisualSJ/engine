@@ -2,6 +2,7 @@
 
 module.exports = {
     title: '动画编辑器',
+    loading_tips: '动画数据载入中，请稍候...',
     mask: {
         need_select_node: '请选中一个节点来开始动画制作',
         need_animation_component: '要制作动画，需要先为当前节点添加动画组件',

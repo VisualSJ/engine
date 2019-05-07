@@ -188,6 +188,12 @@ export const methods = {
             }
             return result;
         });
+        if (!that.name) {
+            // 节点的关键帧数据需要先排序
+            keyData.sort((a: any, b: any) => {
+                return a.x - b.x;
+            });
+        }
         if (indexFirst !== -1) {
             keyData.push(that.keyFrames[indexFirst]);
         }

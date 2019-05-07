@@ -113,7 +113,7 @@
                 </template>
             </div> 
             <div class="property-tools">
-                <span>wrapMode</span>
+                <span>WrapMode</span>
                 <ui-select 
                     :value="clipDump ? clipDump.wrapMode : 0"
                     name="wrapMode"
@@ -215,9 +215,9 @@
             </ui-select>
         </div> 
         <div class="right" v-if="clipDump">
-            <span>sample</span>
+            <span>Sample</span>
             <ui-num-input :value="clipDump.sample" step="1" name="sample"></ui-num-input>
-            <span>speed</span>
+            <span>Speed</span>
             <ui-num-input :value="clipDump.speed" name="speed"></ui-num-input>
             <span v-if="clipDump.duration">Duration :{{clipDump.duration.toFixed(2)}}({{(clipDump.duration / clipDump.speed).toFixed(2)}})s</span>
         </div> 
@@ -244,6 +244,6 @@
         :comp-index = "compIndex"
     ></tips-mask>
     <div class="loading" v-if="loading">
-        动画数据载入中，请稍等.......
+        t('loading_tips')
     </div>
 </div>

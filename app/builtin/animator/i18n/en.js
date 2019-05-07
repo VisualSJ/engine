@@ -2,6 +2,7 @@
 
 module.exports = {
     title: 'animation',
+    loading_tips: 'Loading animation data, please wait...',
     mask: {
         need_select_node: 'Select a Node to get started',
         need_animation_component: 'The current node has no animation components',

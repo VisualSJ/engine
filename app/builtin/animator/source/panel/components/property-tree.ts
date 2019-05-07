@@ -4,6 +4,7 @@ export const template = `
     <span class="name">{{name}}</span>
     <span class="oprate">
         <i class="key"
+            name="key"
             :empty="isEmpty"
             :title="oprateTitle"
         ></i>
@@ -87,6 +88,9 @@ export const methods = {
                     },
                 ],
             });
+            return;
+        }
+        if (name !== 'key') {
             return;
         }
         const isEmpty = event.target.getAttribute('empty');
