@@ -63,6 +63,6 @@ module.exports = {
         demo_blackjack: '有完整菜单和复杂数据表现逻辑的21点游戏',
     },
     help_3d: {
-        intro: '欢迎使用  Cocos Editor 3D，你可以采取下列行动来开始游戏开发工作：',
+        intro: '欢迎使用  Cocos 3D，你可以采取下列行动来开始游戏开发工作：',
     },
 };

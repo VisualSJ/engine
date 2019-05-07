@@ -17,7 +17,7 @@ const projectManager = require('../project');
 let win32 = function() {
 
     menu
-        .add('Cocos3d')
+        .add('Cocos3D')
         .add(i18n.translation('menu.file'))
         .add(i18n.translation('menu.edit'))
         .add(i18n.translation('menu.project'))
@@ -25,7 +25,7 @@ let win32 = function() {
         .add(i18n.translation('menu.layout'))
         .add(i18n.translation('menu.expansion'))
         .add(i18n.translation('menu.develop'));
-    let cccMenu = menu.get('Cocos3d');
+    let cccMenu = menu.get('Cocos3D');
     cccMenu.group('quit', 99);
     cccMenu.add(i18n.translation('menu.close'), {
         group: 'quit',
@@ -54,7 +54,7 @@ let win32 = function() {
  */
 let darwin = function() {
     menu
-        .add('Cocos3d')
+        .add('Cocos3D')
         .add(i18n.translation('menu.file'))
         .add(i18n.translation('menu.edit'))
         .add(i18n.translation('menu.project'))
@@ -62,7 +62,7 @@ let darwin = function() {
         .add(i18n.translation('menu.layout'))
         .add(i18n.translation('menu.expansion'))
         .add(i18n.translation('menu.develop'));
-    let cccMenu = menu.get('Cocos3d');
+    let cccMenu = menu.get('Cocos3D');
     cccMenu
         .group('about', 0)
         .group('default', 1)

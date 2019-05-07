@@ -3,7 +3,7 @@
 module.exports = {
     title: 'preferences',
     nav: {
-        general: 'Gneneral',
+        general: 'General',
         edit: 'Data Editor',
         extension: 'Extension',
     },
@@ -20,7 +20,7 @@ module.exports = {
     edit: {
         script_editor: 'Script Editor',
         picture_editor: 'Picture Editor',
-        browse: 'Drowse',
+        browse: 'Browse',
         remove: 'Remove',
         internal: 'Default',
     },

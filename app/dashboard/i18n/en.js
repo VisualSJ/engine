@@ -65,6 +65,6 @@ module.exports = {
         demo_blackjack: 'BlackJack Game',
     },
     help_3d: {
-        intro: 'This is the dashboard of Cocos Editor 3D, you can take these actions by clicking below to get started:',
+        intro: 'This is the dashboard of Cocos 3D, you can take these actions by clicking below to get started:',
     },
 };

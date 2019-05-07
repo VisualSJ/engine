@@ -3,7 +3,7 @@
     "version": "0.1.0",
 
     "menu": {
-        "Cocos3d/i18n:preferences.title": {
+        "Cocos3D/i18n:preferences.title": {
             "message": "open"
         }
     },
