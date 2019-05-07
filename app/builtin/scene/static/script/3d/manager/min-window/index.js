@@ -60,7 +60,7 @@ class MinWindow {
      */
     showParticleWin() {
         const particleComp = find(this.components, 'cc.ParticleSystemComponent');
-        const particleRender = find(this.components, 'cc.ParticleSystemRenderer');
+        const particleRender = particleComp.renderer;
         this.components = {particleComp, particleRender};
 
         const info = {
