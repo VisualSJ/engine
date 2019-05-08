@@ -25,7 +25,7 @@ let openType = '3d';
 /**
  * 等待 app 初始化完毕
  */
-exports.app = async function() {
+exports.app = async function () {
     if (!app.isReady()) {
         await new Promise((resolve) => {
             app.once('ready', resolve);
@@ -36,7 +36,7 @@ exports.app = async function() {
 /**
  * 启动 Dashboard 窗口
  */
-exports.window = function() {
+exports.window = function () {
     // 注册编辑器默认使用的本地化语言
     i18n.register(languages.en, 'en');
     i18n.register(languages.zh, 'zh');
@@ -70,7 +70,7 @@ let tray = null;
 /**
  * 启动任务栏图标
  */
-exports.tray = async function() {
+exports.tray = async function () {
     if (!app.isReady()) {
         await new Promise((resolve) => {
             app.once('ready', resolve);
@@ -111,7 +111,7 @@ exports.tray = async function() {
 /**
  * 开始监听 ipc 消息
  */
-exports.listener = function() {
+exports.listener = function () {
 
     // 监听关闭窗口事件
     ipc.on('dashboard:close', (event) => {
@@ -160,10 +160,11 @@ exports.listener = function() {
         }
 
         // 再查本项目对应的进程 id 是否在运行
-        const stateFile = join(path, 'temp', 'startup.json');
-        let stateJson = {};
-        if (existsSync(stateFile)) {
-            const json = readJSONSync(stateFile);
+        const startupFile = join(path, 'temp', 'startup.json');
+        let startupJson = {};
+
+        if (existsSync(startupFile)) {
+            const json = readJSONSync(startupFile);
             if (json && json.pid) {
                 const proccessList = await psList();
                 let exist = false;
@@ -183,7 +184,7 @@ exports.listener = function() {
                     warnAlreadyOpened();
                     return;
                 }
-                stateJson = json;
+                startupJson = json;
             }
         }
 
@@ -228,7 +229,7 @@ exports.listener = function() {
             stdio: [0, 1, 2, 'ipc'],
         });
         projectMap.set(path, child);
-        stateJson.pid = child.pid;
+        startupJson.pid = child.pid;
         ipcOpenState();
 
         child.on('message', (options) => {
@@ -256,7 +257,28 @@ exports.listener = function() {
             }
         });
 
-        outputJSONSync(stateFile, stateJson); // 保存项目启动状态
+        // 保存项目启动状态
+        outputJSONSync(startupFile, startupJson, {
+            spaces: 2,
+        });
+
+        // 写入配置: 支持项目代码智能提示引擎 API
+
+        const tsconfigFile = join(path, 'temp', 'tsconfig.cocos.json');
+        let tsconfigJson = {
+            compilerOptions: {
+                target: 'es2016',
+                module: 'es6',
+                types: [
+                    join(__dirname, '../../resources', openType, 'engine/declarations/Cocos3D'),
+                ],
+                experimentalDecorators: true,
+            },
+        };
+        outputJSONSync(tsconfigFile, tsconfigJson, {
+            spaces: 2,
+        });
+
     });
 };
 
