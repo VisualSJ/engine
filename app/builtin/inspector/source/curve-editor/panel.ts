@@ -100,7 +100,7 @@ export async function ready() {
                 if (that.dump.radian) {
                     return Number((that.dump.multiplier * 180 / Math.PI).toFixed(2));
                 }
-                return that.multiplier;
+                return that.dump.multiplier;
             },
         },
 

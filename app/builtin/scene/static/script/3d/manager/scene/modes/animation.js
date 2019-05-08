@@ -97,6 +97,7 @@ class AnimationMode extends Mode {
         // 广播场景关闭消息
         Manager.Ipc.forceSend('broadcast', 'scene:animation-end');
 
+        Manager.Ipc.send('toolbar', ''); // 隐藏工具条
         super.close();
         return true;
     }
