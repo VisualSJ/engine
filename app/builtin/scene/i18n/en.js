@@ -21,4 +21,6 @@ module.exports = {
 
     save_prefab: 'Save Prefab',
     close_prefab: 'Close',
+    save_clip: 'Save Clip',
+    close_clip: 'Close',
 };

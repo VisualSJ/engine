@@ -167,6 +167,14 @@ class View extends window.HTMLElement {
         this.$toolbar.querySelector('#close_prefab').addEventListener('click', async () => {
             await this.forwarding('Scene', 'close');
         });
+
+        this.$toolbar.querySelector('#save_clip').addEventListener('click', async () => {
+            await this.forwarding('Scene', 'save');
+        });
+
+        this.$toolbar.querySelector('#close_clip').addEventListener('click', async () => {
+            await this.forwarding('Scene', 'close');
+        });
     }
 
     ///////////////////

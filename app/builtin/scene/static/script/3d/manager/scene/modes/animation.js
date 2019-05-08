@@ -63,6 +63,7 @@ class AnimationMode extends Mode {
         Manager.Ipc.forceSend('broadcast', 'scene:animation-start', uuid);
 
         super.open(uuid);
+        Manager.Ipc.send('toolbar', 'animation'); // 显示工具条
         return true;
     }
 

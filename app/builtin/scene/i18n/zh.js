@@ -21,4 +21,6 @@ module.exports = {
 
     save_prefab: '保存 Prefab',
     close_prefab: '关闭',
+    save_clip: '保存动画',
+    close_clip: '关闭',
 };
