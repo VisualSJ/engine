@@ -273,6 +273,17 @@ class GizmoBase {
     set hovering(value) {
         this._hovering = value;
     }
+
+    getCompPropPath(propName) {
+        let node = this.node;
+        let target = this.target;
+        if (node && target) {
+            let compIdx = node._components.indexOf(target);
+            return '_components.' + compIdx + '.' + propName;
+        }
+
+        return null;
+    }
 }
 
 module.exports = GizmoBase;

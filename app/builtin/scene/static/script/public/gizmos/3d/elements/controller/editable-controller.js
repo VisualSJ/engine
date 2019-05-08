@@ -15,7 +15,7 @@ class EditableController extends ControllerBase {
         this._editable = false;     //是否Controller是可编辑的
         this._edit = false;     //是否开启Controller的编辑
         this._editControllerShape = null;
-        this._defaultEditCtrlSize = 5;
+        this._defaultEditCtrlSize = 7;
         this._hoverColor = cc.Color.GREEN;
         this._editCtrlScales = {};
         this._editCtrlColor = cc.Color.WHITE;

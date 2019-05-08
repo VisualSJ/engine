@@ -47,6 +47,8 @@ class BoxColliderComponentGizmo extends Gizmo {
 
         this._size = this.target.size.clone();
         this._scale = NodeUtils.getWorldScale3D(this.node);
+
+        this._propPath = this.getCompPropPath('size');
     }
 
     onControllerMouseMove(/*event*/) {
@@ -58,12 +60,13 @@ class BoxColliderComponentGizmo extends Gizmo {
     }
 
     onControllerMouseUp() {
-
+        this.onControlEnd(this._propPath);
     }
 
     updateDataFromController() {
 
         if (this._controller.updated) {
+            this.onControlUpdate(this._propPath);
             let deltaSize = this._controller.getDeltaSize();
             vec3.div(deltaSize, deltaSize, this._scale);
             vec3.scale(deltaSize, deltaSize, 2);

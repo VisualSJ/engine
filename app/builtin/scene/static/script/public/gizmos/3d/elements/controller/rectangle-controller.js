@@ -45,6 +45,7 @@ class RectangleController extends EditableController {
         delete this._axisDir.z;
         this._deltaSize = cc.v3();
         this._curHandleType = RectHandleType.None;
+        this._defaultEditCtrlSize = 10;
 
         this.initShape();
     }
@@ -105,7 +106,7 @@ class RectangleController extends EditableController {
     }
 
     createEditController(axisName, color) {
-        let ctrlSize = this._defaultEditCtrlSize * 2;
+        let ctrlSize = this._defaultEditCtrlSize;
         let editCtrlNode = ControllerUtils.quad(cc.v3(), ctrlSize, ctrlSize, color, {unlit : true});
 
         // if (isBorder(editCtrlNode)) {

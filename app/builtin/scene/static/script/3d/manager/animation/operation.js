@@ -226,6 +226,10 @@ class AnimationOperation {
         }
 
         let value = target[prop];
+        if (value.constructor && cc.js.isChildClassOf(value.constructor, cc.ValueType)) {
+            value = value.clone();
+        }
+
         if (customData) {
             if (comp === 'cc.SpriteComponent' && prop === 'spriteFrame') {
                 if (customData.uuid) {

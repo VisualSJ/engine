@@ -48,6 +48,8 @@ class SphereColliderComponentGizmo extends Gizmo {
         let worldScale = NodeUtils.getWorldScale3D(this.node);
         this._maxScale = this.getMaxScale(worldScale);
         this._radius = this.target.radius;
+
+        this._propPath = this.getCompPropPath('radius');
     }
 
     onControllerMouseMove(/*event*/) {
@@ -59,7 +61,7 @@ class SphereColliderComponentGizmo extends Gizmo {
     }
 
     onControllerMouseUp() {
-
+        this.onControlEnd(this._propPath);
     }
 
     getMaxScale(inScale) {
@@ -71,6 +73,8 @@ class SphereColliderComponentGizmo extends Gizmo {
     updateDataFromController() {
 
         if (this._controller.updated) {
+            this.onControlUpdate(this._propPath);
+
             let deltaRadius = this._controller.getDeltaRadius();
 
             let newRadius = this._radius + deltaRadius / this._maxScale;
