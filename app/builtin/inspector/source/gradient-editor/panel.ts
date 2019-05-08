@@ -51,6 +51,11 @@ export const listeners = {
     },
 };
 
+// 由于窗口是 simple 模式，resize 需要绑在 window 上
+window.addEventListener('resize', () => {
+    vm.resize();
+});
+
 /**
  * 根据模式计算出需要的 stop
  *
@@ -147,11 +152,11 @@ function getValByType(index: number, time: number, stops: any[], type: string, m
     }
 
     if (!prev) {
-        prev = {color: [255, 255, 255], time: 0};
+        prev = { color: [255, 255, 255], time: 0 };
     }
 
     if (!next) {
-        next = {color: [255, 255, 255], time: 1};
+        next = { color: [255, 255, 255], time: 1 };
     }
 
     let val = prev[type];
@@ -408,19 +413,19 @@ export async function ready() {
                         return d3.rgb(...Array.from({ length: 3 }, () => d.alpha * 255));
                     }).order().call(
                         d3.drag().filter(['dragstart', 'drag'])
-                            .on('start', function(this: any) {
+                            .on('start', function (this: any) {
                                 const anchor = d3.select(this);
                                 const data = anchor.datum();
                                 self.update({ data, operation: 'active' });
                             })
-                            .on('drag', function(this: any) {
+                            .on('drag', function (this: any) {
                                 if (d3.event.dx || d3.event.dy) {
                                     enable = true;
                                     self.update({ operation: 'move' });
                                 }
 
                             })
-                            .on('end', function(this: any) {
+                            .on('end', function (this: any) {
                                 if (enable) {
                                     enable = false;
                                     self.update({ operation: 'drop' });
@@ -621,15 +626,15 @@ export async function ready() {
                 let enable = false;
                 this._svg.call(
                     d3.drag()
-                        .on('start', function(this: any) {
+                        .on('start', function (this: any) {
                             enable = self.update({ operation: 'create' });
                         })
-                        .on('drag', function(this: any) {
+                        .on('drag', function (this: any) {
                             if (enable) {
                                 self.update({ operation: 'move' });
                             }
                         })
-                        .on('end', function(this: any) {
+                        .on('end', function (this: any) {
                             if (enable) {
                                 enable = false;
                                 self.update({ operation: 'drop' });
