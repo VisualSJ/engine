@@ -28,31 +28,59 @@ export default class Grid {
             return;
         }
         this._multiplier = value;
-        const {x, y, h} = this.location;
-        const {stepY, spaceY} = this.step;
-        this.cxt2D.clearRect(0, 0, this.axesMargin, h + this.axesMargin);
-        // 绘制纵坐标刻度
-        let cellY = y + h;
-        let textY = 0;
-        while (cellY > x) {
-            this.cxt2D.fillText(textY, x / 2 - HALF_TEXT_WIDTH, cellY);
-            const step = Editor.Utils.Math.mul(stepY, this.multiplier);
-            textY = Editor.Utils.Math.add(textY, step);
-            cellY -= spaceY;
-        }
+        this.rePaint();
     }
 
     get multiplier() {
         return this._multiplier;
     }
-    public location: any; // 原点坐标信息以及绘图范围
-    public step: any; // 存储横纵坐标参数递增值
+
+    set negative(value: boolean) {
+        if (value === this._negative) {
+            return;
+        }
+        this._negative = value;
+        this.rePaint();
+    }
+
+    get negative() {
+        return this._negative;
+    }
+
+    get step() {
+        const spaceX = this.location.w / this.axis.piece;
+        const spaceY = this.location.h / this.axis.piece;
+        const {rangeX, rangeY} = this.axis;
+        // 计算当前刻度的间隔步长
+        const stepX = Number((rangeX / this.axis.piece).toFixed(POINT_LENGTH));
+        let stepY = Number((rangeY / this.axis.piece).toFixed(POINT_LENGTH));
+
+        // 计算原始刻度的间隔步长
+        const orgStepX = Number((1 / this.axis.piece).toFixed(POINT_LENGTH));
+
+        let orgStepY = Number((1 / this.axis.piece).toFixed(POINT_LENGTH));
+        if (this.negative) {
+            stepY = stepY * 2;
+            orgStepY = orgStepY * 2;
+        }
+        return {spaceX, spaceY, stepX, stepY, orgStepX, orgStepY};
+    }
+
+    // 原点坐标信息以及绘图范围
+    get location() {
+        const x = this.axesMargin;
+        const y = this.axesMargin;
+        const w = this.canvas.width - this.axesMargin * 2; // 最大的画线宽度
+        const h = this.canvas.height - this.axesMargin * 2; // 最大的画线高度
+        return {x, y, w, h};
+    }
 
     private axis: any;  // 存储传入的坐标信息 切割值，横纵坐标的数据范围
     private axesMargin: number; // 画布边距（无效绘图区域
     private _cxt2D: any; // 绘图上下文
     private canvas: any;
     private _multiplier: any; // 递增倍数
+    private _negative: boolean = false; // 是否带有负坐标系
 
     constructor(options: any) {
         this.cxt2D = options.context;
@@ -61,11 +89,6 @@ export default class Grid {
         this._multiplier = options.multiplier || 1;
         this.cxt2D.lineWidth = options.lineWidth;
         this.cxt2D.strokeStyle = options.color || '#333';
-
-        // 计算需要绘制的网格范围
-        this.location = this.computView();
-        // 计算刻度范围
-        this.step = this.computeStep();
     }
 
     /**
@@ -75,10 +98,24 @@ export default class Grid {
         // 计算画面可视范围
         const {spaceX, spaceY} = this.step;
         // 绘制小网格
-        this.drawGrid(spaceX / 4, spaceY / 2, 'rgba(51, 51, 51, 0.44)');
+        this.drawGrid(spaceX / 4, spaceY / 2, 'rgba(51, 51, 51, 0.44)', 0.5);
         // 绘制大网格
-        this.drawGrid(spaceX, spaceY * 2, '#333');
+        if (this.negative) {
+            this.drawGrid(spaceX, spaceY * 1, '#3a3939', 1);
+        } else {
+            this.drawGrid(spaceX, spaceY * 2, '#3a3939', 1);
+        }
 
+        const {x, w, h} = this.location;
+        this.cxt2D.strokeStyle = '#333';
+        this.cxt2D.lineWidth = 1.5;
+        if (this.negative) {
+            // 包含负轴需要多绘制一条坐标轴
+            this.cxt2D.beginPath();
+            this.cxt2D.moveTo(x, h / 2 + x + 0.5);
+            this.cxt2D.lineTo(w + x, h / 2 + x + 0.5);
+            this.cxt2D.stroke();
+        }
         // 绘制坐标轴(要放置在网格绘制之后)
         this.drawAxis();
     }
@@ -87,10 +124,6 @@ export default class Grid {
      * 重绘
      */
     public rePaint() {
-        // 计算需要绘制的网格范围
-        this.location = this.computView();
-        // 计算刻度范围
-        this.step = this.computeStep();
         this.clear();
         this.draw();
     }
@@ -102,7 +135,12 @@ export default class Grid {
     public axisToOri(point: Point) {
         const {w, h} = this.location;
         const resultX = Number((point.x / w).toFixed(POINT_LENGTH));
-        const resultY = Number((point.y / h).toFixed(POINT_LENGTH));
+        let resultY;
+        if (this.negative) {
+            resultY = Number((point.y / h * 2).toFixed(POINT_LENGTH));
+        } else {
+            resultY = Number((point.y / h).toFixed(POINT_LENGTH));
+        }
         return {time: resultX, value: resultY};
     }
 
@@ -112,8 +150,13 @@ export default class Grid {
      */
     public tranToAxis(point: any) {
         const {w, h} = this.location;
+        let resultY;
+        if (this.negative) {
+            resultY = point.value * h / 2;
+        } else {
+            resultY = point.value * h;
+        }
         const resultX = point.time * w;
-        const resultY = point.value * h;
         return new Point({x: resultX, y: resultY});
     }
 
@@ -133,7 +176,10 @@ export default class Grid {
     public canvasToAxis(point: Point) {
         const {x, y, h} = this.location;
         const resultX = point.x - x;
-        const resultY = h - point.y + y;
+        let resultY = h - point.y + y;
+        if (this.negative) {
+            resultY = h / 2 - point.y + y;
+        }
         return new Point({x: resultX, y: resultY});
     }
 
@@ -143,6 +189,12 @@ export default class Grid {
      */
     public axisToCanvas(point: Point) {
         const {x, y, h} = this.location;
+        if (this.negative) {
+            return new Point({
+                x: point.x + x,
+                y: h / 2 - point.y + y,
+            });
+        }
         return new Point({
             x: point.x + x,
             y: h - point.y + y,
@@ -162,6 +214,9 @@ export default class Grid {
         this.cxt2D.lineWidth = 2;
         const {x, y, w, h} = this.location;
         const {stepX, stepY, spaceX, spaceY} = this.step;
+        this.cxt2D.clearRect(0, 0, this.axesMargin, h + this.axesMargin);
+        this.cxt2D.clearRect(0, h + this.axesMargin, w + this.axesMargin, this.axesMargin);
+
         // 绘制范围矩形框
         this.cxt2D.strokeRect(x , y, w, h);
 
@@ -171,15 +226,15 @@ export default class Grid {
         let textX = 0;
         while (cellX < x + w) {
             this.cxt2D.fillText(textX, cellX, y + h + x / 2);
-            textX = Editor.Utils.Math.add(textX, stepX * this.multiplier);
+            textX = Number((textX + stepX).toFixed(2));
             cellX += spaceX;
         }
         // 绘制纵坐标刻度
         let cellY = y + h;
-        let textY = 0;
+        let textY = this.negative ? -1 * this.multiplier : 0;
         while (cellY > x) {
             this.cxt2D.fillText(textY, x / 2 - HALF_TEXT_WIDTH, cellY);
-            textY = Editor.Utils.Math.add(textY, stepY * this.multiplier);
+            textY = Number((textY + stepY * this.multiplier).toFixed(2));
             cellY -= spaceY;
         }
     }
@@ -199,7 +254,7 @@ export default class Grid {
         for (let i = x; i < w + x; i += spaceX) {
           this.cxt2D.beginPath();
           this.cxt2D.moveTo(i + 0.5, y);
-          this.cxt2D.lineTo(i + 0.5, h + x);
+          this.cxt2D.lineTo(i + 0.5, h + y);
           this.cxt2D.stroke();
         }
 
@@ -210,33 +265,5 @@ export default class Grid {
           this.cxt2D.lineTo(w + x, i + 0.5);
           this.cxt2D.stroke();
         }
-    }
-
-    /**
-     * 计算坐标起始点与画线宽高
-     */
-    private computView() {
-        const x = this.axesMargin;
-        const y = this.axesMargin;
-        const w = this.canvas.width - this.axesMargin * 2; // 最大的画线宽度
-        const h = this.canvas.height - this.axesMargin * 2; // 最大的画线高度
-        return {x, y, w, h};
-    }
-
-    /**
-     * 计算步长
-     */
-    private computeStep() {
-        const spaceX = this.location.w / this.axis.piece;
-        const spaceY = this.location.h / this.axis.piece;
-        const {rangeX, rangeY} = this.axis;
-        // 计算当前刻度的间隔步长
-        const stepX = Number((rangeX / this.axis.piece).toFixed(POINT_LENGTH));
-        const stepY = Number((rangeY / this.axis.piece).toFixed(POINT_LENGTH));
-
-        // 计算原始刻度的间隔步长
-        const orgStepX = Number((1 / this.axis.piece).toFixed(POINT_LENGTH));
-        const orgStepY = Number((1 / this.axis.piece).toFixed(POINT_LENGTH));
-        return {spaceX, spaceY, stepX, stepY, orgStepX, orgStepY};
     }
 }

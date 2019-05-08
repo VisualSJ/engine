@@ -28,7 +28,8 @@ export default class CurveControl extends EventEmitter {
     private isShowPoint: boolean = false; // 是否显示点坐标
     private isShowAuxi: boolean = false; // 是否显示辅助线
     private isBindHandle: boolean = false; // 是否绑定事件
-
+    private position: any; // 存储当前 canvas 的文档位置
+    private negative: boolean = false; // 存储当前坐标系是否包含负轴
     // 存储事件需要使用的 flags
     private flags: any = {
         flag: false,
@@ -54,8 +55,10 @@ export default class CurveControl extends EventEmitter {
             ctrlConfig: options.ctrlConfig,
             grid: options.grid,
             curveConfig: options.curveConfig,
+            range: options.range,
         });
-
+        const {top, left} = this.canvas.getBoundingClientRect();
+        this.position = {top, left};
     }
 
     /**
@@ -71,7 +74,10 @@ export default class CurveControl extends EventEmitter {
      * 更新关键帧数据
      * @param keyFrames
      */
-    public update(keyFrames: any) {
+    public update(keyFrames: any, negative: boolean) {
+        this.negative = negative;
+        this.hermite.negative = negative;
+        this.grid.negative = negative;
         this.clear();
         this.hermite.clear();
         this.draw(keyFrames);
@@ -278,6 +284,8 @@ export default class CurveControl extends EventEmitter {
      * @param y
      */
     private moveKey(x: number, y: number) {
+        x = x - this.position.left;
+        y = y - this.position.top;
         this.changeType = 'keyframe';
         const {index} = this.ctrlPoints;
         // 因为 canvas 坐标系的不同，这里需要对移动的 y 值取负值

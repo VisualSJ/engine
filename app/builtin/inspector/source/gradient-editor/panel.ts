@@ -240,10 +240,6 @@ export async function ready() {
         },
 
         async mounted() {
-            // const data = await Editor.Ipc.requestToPackage('inspector', 'get-gradient-data');
-            // if (data) {
-            //     this.init(data);
-            // }
         },
         methods: {
 

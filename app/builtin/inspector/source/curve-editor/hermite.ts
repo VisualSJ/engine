@@ -37,6 +37,7 @@ export default class Hermite {
         });
         return result;
     }
+    public negative: boolean = false; // 存储当前坐标系是否包含负轴
     private cxt2D: any; // 绘图上下文
     private canvas: any;
     private grid: any;
@@ -53,6 +54,7 @@ export default class Hermite {
         this.cxt2D = options.context;
         this.cxt2D.strokeStyle = options.curveConfig.strokeStyle;
         this.canvas = options.context.canvas;
+        this.negative = options.range ? true : false;
     }
 
     public rePaint() {
@@ -80,15 +82,19 @@ export default class Hermite {
             console.error(error);
             return;
         }
+        if (this.negative) {
+            this.mult = h / w / 2;
+        } else {
+            this.mult = h / w;
+        }
         // 原始数据需要做一次坐标转换
         for (const item of this._keyframes) {
             const point = this.grid.tranToAxis(item);
             // 宽高比例与原始的不同，需要对斜率进行转换
-            item.outTangent *= h / w;
-            item.inTangent *= h / w;
+            item.outTangent *= this.mult;
+            item.inTangent *= this.mult;
             item.point = point;
         }
-        this.mult = h / w;
         // 对保存的函数系数重置
         this.hermiteArgs = [];
         // 遍历坐标点，绘制曲线
@@ -249,6 +255,10 @@ export default class Hermite {
         const last = this._keyframes[index - 1];
         const {point} = now;
         const {w, h} = this.grid.location;
+        let rangeY = [0, h];
+        if (this.negative) {
+            rangeY = [- h / 2, h / 2];
+        }
         if ((point.x > w || point.x < 0) && (point.y > h || point.y < 0)) {
             return;
         }
@@ -256,7 +266,7 @@ export default class Hermite {
 
         // 对超出边界的处理
         point.x = clamp(result.x, 0, w);
-        point.y = clamp(result.y, 0, h);
+        point.y = clamp(result.y, rangeY[0], rangeY[1]);
 
         next && (this.hermiteArgs[index] = calcHermite(now.point, now.outTangent, next.point, next.inTangent));
         last &&

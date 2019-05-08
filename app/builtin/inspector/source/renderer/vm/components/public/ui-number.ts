@@ -2,7 +2,7 @@
 
 export const template = `
 <div class="ui-number"
-    @change.stop="$emit('input', $event.target.value)"
+    @change.stop="_onInput"
 >
     <span
         v-if="name"
@@ -22,6 +22,21 @@ export const template = `
             :default="dataDefault"
             @change="_onChange($event)"
         ></ui-slider>
+    </template>
+    <template
+        v-if="radian"
+    >
+        <ui-num-input ref="num"
+            :disabled="readonly"
+            :invalid="value === undefined"
+            :min="min"
+            :max="max"
+            :step="step"
+            :value="radianToAngle(value)"
+            unit="deg"
+            :default="dataDefault"
+            @change="_onChange($event)"
+        ></ui-num-input>
     </template>
     <template
         v-else
@@ -48,6 +63,7 @@ export const props = [
     'max',
     'step',
     'slide',
+    'radian',
     'test',
     'value',
     'unit',
@@ -62,7 +78,7 @@ export const methods = {
      * 数据更改的时候，需要间隔发送上传数据
      * @param event
      */
-    _onChange(event: CustomEvent) {
+    _onChange(event: CustomEvent, type: string) {
         // @ts-ignore
         const vm: any = this;
 
@@ -76,6 +92,16 @@ export const methods = {
             vm.$el.dispatchEvent(event);
             vm.lock = false;
         }, 200);
+    },
+
+    _onInput(event: any) {
+        const that: any = this;
+        let value = event.target.value;
+        if (that.radian) {
+            value = that.angleToRadian(value);
+        }
+        // 数据双向绑定
+        that.$emit('input', value);
     },
 
     /**
@@ -103,6 +129,14 @@ export const methods = {
 
         document.addEventListener('mousemove', mouseMove);
         document.addEventListener('mouseup', mouseUp);
+    },
+
+    radianToAngle(value: number) {
+        return (value / Math.PI * 180).toFixed(0);
+    },
+
+    angleToRadian(value: number) {
+        return value / 180 * Math.PI;
     },
 };
 

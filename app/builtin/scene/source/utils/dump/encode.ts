@@ -104,7 +104,7 @@ export function encodeComponent(component: any): IProperty {
         if (!data.value) {
             return;
         }
-        
+
         try {
             if (component[key] === undefined) {
                 return;
@@ -112,7 +112,7 @@ export function encodeComponent(component: any): IProperty {
             const attrs = cc.Class.attr(ctor, key);
             data.value[key] = encodeObject(component[key], attrs);
 
-        } catch(error) {
+        } catch (error) {
             console.warn(`Component property dump failed:\n  Node: ${component.node.name}(${component.node.uuid})\n Component: ${data.type}(${component.uuid})\n Property: ${key}`);
             console.warn(error);
             delete data.value[key];
@@ -222,6 +222,10 @@ export function encodeObject(object: any, attributes: any): IProperty {
         data.unit = attributes.unit;
     }
 
+    if (attributes.hasOwnProperty('radian')) {
+        data.radian = attributes.radian;
+    }
+
     if (attributes.hasOwnProperty('displayOrder')) {
         data.displayOrder = attributes.displayOrder;
     }
@@ -251,10 +255,10 @@ export function encodeObject(object: any, attributes: any): IProperty {
             const dump = Manager.Utils.serialize(object, { stringify: false });
             delete dump.__type__;
             data.value = dump;
-        } catch(error) {
+        } catch (error) {
             console.warn(`Value dump failed.`);
             console.warn(error);
-            
+
             const dump = Manager.Utils.serialize(new ctor(), { stringify: false });
             delete dump.__type__;
             data.value = dump;

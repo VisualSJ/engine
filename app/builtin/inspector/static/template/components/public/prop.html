@@ -93,6 +93,7 @@
                 :max="value.max"
                 :step="value.step"
                 :slide="value.slide"
+                :radian="radian || value.radian"
                 :unit="value.unit"
                 :data-default="value.default"
                 v-model="value.value"
@@ -403,6 +404,8 @@
                 :readonly="readonly || (value ? value.readonly : false)"
                 :name="getName(value ? value.name : '')"
                 v-model="value.value"
+                :min="value.min"
+                :radian="value.radian"
 
                 :width="width"
                 :height="height"

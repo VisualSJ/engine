@@ -62,7 +62,6 @@ export async function ready() {
             dump: {
                 keyFrames: DEFAULT_KEYFRAMES[0],
             },
-            multiplier: 1,
             // 坐标设置相关信息
             axis: {
                 piece: 10, // 横纵坐标的刻度切分数
@@ -93,6 +92,16 @@ export async function ready() {
                 const result: any = {w: this.mainCtx.canvas.width / 10, h: this.mainCtx.canvas.height / 5};
                 return result;
             },
+            multiplier() {
+                const that: any = this;
+                if (!that.dump.multiplier) {
+                    return 1;
+                }
+                if (that.dump.radian) {
+                    return Number((that.dump.multiplier * 180 / Math.PI).toFixed(2));
+                }
+                return that.multiplier;
+            },
         },
 
         async mounted() {
@@ -118,13 +127,17 @@ export async function ready() {
                 this.drawGrid();
                 this.drawCurve();
                 // @ts-ignore
-                this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
+                // this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
             },
 
             onMulti(this: any, event: any) {
+                let value = event.target.value;
                 if (event.target.value !== 0) {
-                    this.grid.multiplier = event.target.value;
-                    this.dump.multiplier = event.target.value;
+                    this.grid.multiplier = value;
+                    if (this.dump.radian) {
+                        value = value / 180 * Math.PI;
+                    }
+                    this.dump.multiplier = value;
                     Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
                 }
             },
@@ -139,7 +152,7 @@ export async function ready() {
                     return;
                 }
                 this.dump.keyFrames = this.defaultKeyFrames[index];
-                this.curveControl.update(this.dump.keyFrames);
+                this.curveControl.update(this.dump.keyFrames, this.dump.negative);
                 Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
             },
 
@@ -168,14 +181,17 @@ export async function ready() {
                 }
                 this.dump = dump.value;
                 this.dump.key = dump.key;
-                this.curveControl.update(this.dump.keyFrames);
+                this.dump.negative = dump.negative;
+                this.dump.radian = dump.radian;
                 if (typeof(dump.multiplier) !== 'number') {
                     this.dump.multiplier = 1;
                     return;
                 } else {
                     this.dump.multiplier = dump.multiplier;
                 }
-                this.grid.multiplier = this.dump.multiplier;
+                this.grid.multiplier = this.multiplier;
+                this.curveControl.update(this.dump.keyFrames, dump.negative);
+                this.drawThumb(this.$refs.tools, this.defaultKeyFrames);
             },
 
             /**
@@ -204,7 +220,7 @@ export async function ready() {
                     const ctx: any = $canvas.getContext('2d');
                     ctx.strokeStyle = 'white';
                     // @ts-ignore
-                    drawHermite(item, ctx);
+                    drawHermite(item, ctx, this.dump.negative);
                 });
             },
 
@@ -241,10 +257,8 @@ export async function ready() {
                     ctrlConfig: this.ctrlConfig,
                     curveConfig: this.curveConfig,
                 });
-                this.curveControl.draw(this.dump.keyFrames);
                 this.curveControl.on('change', (data: any) => {
                     this.dump.keyFrames = data.keyFrames;
-                    this.dump.multiplier = data.multiplier;
                     Editor.Ipc.sendToPanel('inspector', 'curve:change', this.dump);
                 });
             },

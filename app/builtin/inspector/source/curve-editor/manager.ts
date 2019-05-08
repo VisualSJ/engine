@@ -24,8 +24,8 @@ export function changeCurveState(bool: boolean) {
     }
 }
 
-export function drawCurve(keyframes: any, ctx: any) {
-    drawHermite(keyframes, ctx);
+export function drawCurve(keyframes: any, ctx: any, negative: boolean) {
+    drawHermite(keyframes, ctx, negative);
 }
 
 /**

@@ -102,6 +102,7 @@ interface IProperty {
     step?: number; // 数值类型的步进值
     slide?: boolean; // 数组是否显示为滑块
     unit?: string; // 显示的单位
+    radian?: boolean; // 标识是否为角度
 
     // Label
     multiline?: boolean; // 字符串是否允许换行

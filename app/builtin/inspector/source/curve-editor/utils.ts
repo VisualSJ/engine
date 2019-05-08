@@ -176,19 +176,26 @@ function calcHermite(point1: any, k1: number,  point2: any, k2: number) {
  * @param keyframes 关键帧数据
  * @param ctx 绘图上下文
  */
-function drawHermite(keyframes: any, ctx: any) {
+function drawHermite(keyframes: any, ctx: any, negative: boolean) {
     if (!keyframes) {
         keyframes = DEFAULT_KEYFRAMES[0];
     }
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
     ctx.clearRect(0, 0, w, h);
+
+    let mult: number;
+    if (negative) {
+        mult = h / w / 2;
+    } else {
+        mult = h / w;
+    }
     // 注意不能更改到原数据
     const data = keyframes.map((item: any) => {
         const point = {x: item.time * w, y: item.value * h};
         // canvas 宽高比例与原始的不同，需要对斜率进行转换
-        const outTangent = item.outTangent * h / w;
-        const inTangent = item.inTangent * h / w;
+        const outTangent = item.outTangent * mult;
+        const inTangent = item.inTangent * mult;
         return {
             point,
             outTangent,
@@ -203,8 +210,21 @@ function drawHermite(keyframes: any, ctx: any) {
         const f = calcFunc(args);
         ctx.beginPath();
         for (let j = now.point.x; j <= next.point.x; j++) {
-            ctx.lineTo(j, h - f(j));
+            if (negative) {
+                ctx.lineTo(j, h - f(j) * 0.5 - h / 2);
+            } else {
+                ctx.lineTo(j, h - f(j));
+            }
         }
+        ctx.stroke();
+    }
+
+    if (negative) {
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2);
+        ctx.lineTo(w, h / 2);
         ctx.stroke();
     }
 }

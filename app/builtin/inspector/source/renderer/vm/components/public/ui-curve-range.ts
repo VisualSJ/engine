@@ -5,58 +5,51 @@ import { close as closeCurve, drawCurve ,
 export const template = `
 <div class="ui-curve-range">
     <template
-        v-if="value && value.mode !== undefined"
+        v-if="value.mode.value == 0"
     >
-    
-        <template
-            v-if="value.mode.value == 0"
-        >
-            <ui-prop auto="true"
-                :value="value.constant"
-            ></ui-prop>
-        </template>
-
-        <div class="ui-prop"
-            v-else-if="value.mode.value == 2"
-        >
-            <div class="ui-curve" @click.right="reset('curveMin', 2)">
-                <canvas @click="showEditor('curveMin')" ref="thumbMin" ></canvas>
-            </div>
-            <div class="ui-curve" @click.right="reset('curveMax', 2)">
-                <canvas @click="showEditor('curveMax')" ref="thumbMax" ></canvas>
-            </div>
-        </div>
-
-        <div class="ui-prop"
-            v-else-if="value.mode.value == 3"
-        >
-            <ui-prop auto="true"
-                :value="value.constantMin"
-            ></ui-prop>
-            <ui-prop auto="true"
-                :value="value.constantMax"
-            ></ui-prop>
-        </div>
-
-        <template
-            v-else-if="value"
-        >
-            <div class="ui-curve"
-                @click.right="reset('curve', 1)"
-            >
-                <canvas ref="thumb"
-                    @click="showEditor('curve')"
-                ></canvas>
-            </div>
-        </template>
-
-        <div class="button">
-            <i class="iconfont fold icon-un-fold foldable"
-                @click="_onChangeMode($event)"
-            ></i>
-        </div>
-    
+        <ui-prop auto="true"
+            :value="value.constant"
+            :radian="radian"
+        ></ui-prop>
     </template>
+
+    <div class="ui-prop"
+        v-else-if="value.mode.value == 2"
+        >
+        <div class="ui-curve" @click.right="reset('curveMin', 2)">
+            <canvas @click="showEditor('curveMin')" ref="thumbMin" ></canvas>
+        </div>
+        <div class="ui-curve" @click.right="reset('curveMax', 2)">
+            <canvas @click="showEditor('curveMax')" ref="thumbMax" ></canvas>
+        </div>
+    </div>
+
+    <div class="ui-prop"
+    v-else-if="value.mode.value == 3"
+    >
+        <ui-prop auto="true"
+            :value="value.constantMin"
+            :radian="radian"
+        ></ui-prop>
+        <ui-prop auto="true"
+            :value="value.constantMax"
+            :radian="radian"
+        ></ui-prop>
+    </div>
+
+    <template
+    v-else
+    >
+        <div class="ui-curve" @click.right="reset('curve', 1)">
+            <canvas @click="showEditor('curve')" ref="thumb" ></canvas>
+        </div>
+    </template>
+
+    <div class="button">
+        <i class="iconfont fold icon-un-fold foldable"
+            @click="_onChangeMode($event)"
+        ></i>
+    </div>
 </div>
 `;
 
@@ -64,6 +57,8 @@ export const props = [
     'readonly',
     'name',
     'value',
+    'min',
+    'radian',
 ];
 
 export const components = {
@@ -92,19 +87,18 @@ export const methods = {
     refresh() {
         // @ts-ignore
         const vm: any = this;
-
-        if (!vm.value || !vm.value.mode) {
-            return;
+        let negative = false;
+        if (vm.min === -1) {
+            negative = true;
         }
-
         if (vm.value.mode.value === 1) {
             const ctx = this.getThumbCtx('thumb');
-            drawCurve(vm.value.curve.value.keyFrames, ctx);
+            ctx && drawCurve(vm.value.curve.value.keyFrames, ctx, negative);
         } else if (vm.value.mode.value === 2) {
             const ctxMin = this.getThumbCtx('thumbMin');
-            drawCurve(vm.value.curveMin.value.keyFrames, ctxMin);
+            ctxMin && drawCurve(vm.value.curveMin.value.keyFrames, ctxMin, negative);
             const ctxMax = this.getThumbCtx('thumbMax');
-            drawCurve(vm.value.curveMax.value.keyFrames, ctxMax);
+            ctxMax && drawCurve(vm.value.curveMax.value.keyFrames, ctxMax, negative);
         }
     },
 
@@ -113,6 +107,11 @@ export const methods = {
      * @param name
      */
     getThumbCtx(name: string): any {
+        // @ts-ignore
+        if (!this.$refs[name]) {
+            console.warn(`${name} is not exit!`);
+            return null;
+        }
         // @ts-ignore
         const ctx = this.$refs[name].getContext('2d');
         ctx.canvas.width = ctx.canvas.offsetWidth;
@@ -125,10 +124,16 @@ export const methods = {
      * 打开曲线编辑器
      */
     showEditor(this: any, key: string) {
+        let negative = false;
+        if (this.min === -1) {
+            negative = true;
+        }
         openCurve({
             value: this.value[key].value,
             key,
             multiplier: this.value.multiplier.value,
+            negative,
+            radian: this.radian,
         }, this);
     },
 

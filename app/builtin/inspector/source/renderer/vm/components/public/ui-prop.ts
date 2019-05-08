@@ -1,7 +1,7 @@
 'use strict';
 
-import { readTemplate } from '../../utils';
 import { emit } from '../../event';
+import { readTemplate } from '../../utils';
 
 export const template = readTemplate('./public/prop.html');
 
@@ -13,6 +13,7 @@ export const props = [
     'readonly',
     'empty',
     'value',
+    'radian',
 ];
 
 export const components = {
