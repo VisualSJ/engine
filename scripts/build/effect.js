@@ -81,6 +81,7 @@ const addEssential = (() => {
     'builtin-skybox': [],
     'builtin-sprite': [],
     'builtin-particle': [0],
+    'builtin-particle-trail': [0],
   };
   return (essentials, name, effect) => {
     const techs = essentialList[name];
