@@ -12,6 +12,11 @@ export function mergeDumps(dumps: Array<IScene | INode>) {
         return null;
     }
 
+    // 只有一个数据的时候不需要合并
+    if (dumps.length === 1) {
+        return dumps[0];
+    }
+
     // 过滤不同类型的数据
     dumps = dumps.filter((dump) => {
         return dump.__type__ === target.__type__;
