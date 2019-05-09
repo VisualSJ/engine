@@ -784,7 +784,8 @@ export const methods = {
             }
 
             if (json.copy) { // 按住了 ctrl 键，拖动复制
-                vm.copy(json.from.split(','));
+                const uuids = json.values.map((info: IdragNodeInfo) => info.value);
+                vm.copy(uuids);
                 vm.paste(json.to);
                 return;
             }
@@ -947,7 +948,7 @@ export const methods = {
             return;
         }
 
-        const uuids = json.from.split(',');
+        const uuids = json.values.map((info: IdragNodeInfo) => info.value);
 
         // @ts-ignore
         if (uuids.includes(json.to)) { // 移动的元素有重叠

@@ -18,6 +18,7 @@ declare interface IdragAsset {
 declare interface IdragAssetInfo {
     type: string,
     value: string,
+    name: string; // 节点或资源名称
     extends?: string[]
 }
 
