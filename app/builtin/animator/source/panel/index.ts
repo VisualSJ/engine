@@ -1378,7 +1378,7 @@ export async function ready() {
                         if (params[0] === 'play' && that.animationState === 'pause') {
                             params[0] = 'resume';
                         }
-                        const changeSuccess = await Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
+                        const changeSuccess = await Editor.Ipc.requestToPanel('scene', 'change-clip-state', params[0], that.currentClip);
                         if (!changeSuccess) {
                             console.warn(`${that.currentClip} change play status ${params[0]} failed！`);
                         }

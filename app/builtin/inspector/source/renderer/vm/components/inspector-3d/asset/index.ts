@@ -64,6 +64,8 @@ export const methods = {
                 Editor.I18n.t('inspector.check_is_saved.abort'),
                 Editor.I18n.t('inspector.check_is_saved.save'),
             ],
+            default: 1,
+            cancel: 1,
         });
         if (result === 1) {
             vm._onApply(uuid);
