@@ -160,6 +160,13 @@ class View extends window.HTMLElement {
         this.$toolbar.setAttribute('id', 'toolbar');
         this.appendChild(this.$toolbar);
 
+        this.$toolbar.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
+        });
+        this.$toolbar.addEventListener('mousewheel', (event) => {
+            event.stopPropagation();
+        });
+
         this.$toolbar.querySelector('#save_prefab').addEventListener('click', async () => {
             await this.forwarding('Scene', 'save');
         });
