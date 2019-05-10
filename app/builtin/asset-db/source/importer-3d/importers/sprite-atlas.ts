@@ -5,7 +5,7 @@
 import { Asset, Importer, VirtualAsset } from '@editor/asset-db';
 import { existsSync, readFile } from 'fs-extra';
 import { basename, dirname, extname, join } from 'path';
-import plist from 'plist';
+const plist = require('plist');
 import { makeDefaultSpriteFrameAssetUserDataFromImageUuid } from './sprite-frame';
 import { SpriteFrameBaseAssetUserData } from './texture-base';
 // const BRACE_REGEX = /[\{\}]/g;
@@ -69,6 +69,8 @@ export default class SpriteAtlasImporter extends Importer {
       const userData = asset.userData as IAtlas;
 
       const file = await readFile(asset.source, 'utf8');
+
+      // @ts-ignore
       const data = plist.parse(file);
       // @ts-ignore
       userData.atlasTextureName = data.metadata.realTextureFileName;
