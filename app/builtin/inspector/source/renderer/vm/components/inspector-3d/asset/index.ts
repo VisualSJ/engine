@@ -48,15 +48,17 @@ export const methods = {
      * 中断正在执行的操作
      * 一般是选中器其他物体
      */
-    break(uuid: string) {
+    async break(uuid: string) {
         // @ts-ignore
         const vm: any = this;
-        uuid = uuid || vm.uuids[0];
 
         if (!vm.dirty) {
             return;
         }
-        const result = Editor.Dialog.show({
+
+        uuid = uuid || vm.uuids[0];
+
+        const result = await Editor.Dialog.show({
             title: 'warn',
             type: 'warn',
             message: Editor.I18n.t(`inspector.check_is_saved.message`),
@@ -106,8 +108,8 @@ export const methods = {
         vm.$watch('meta', () => {
             vm.dirty = true;
         }, {
-            deep: true,
-        });
+                deep: true,
+            });
 
         vm.dirty = false;
         requestAnimationFrame(() => {
@@ -173,12 +175,16 @@ export const methods = {
 };
 
 export const watch = {
-
     uuids(nData: string, oData: string) {
         // @ts-ignore
-        this.break(oData[0]);
+        clearTimeout(this.timer);
         // @ts-ignore
-        this.refresh();
+        this.timer = setTimeout(async () => { // 减缓刷新的频率
+            // @ts-ignore
+            await this.break(oData[0]);
+            // @ts-ignore
+            this.refresh();
+        }, 300);
     },
 };
 
@@ -188,6 +194,7 @@ export function data() {
         info: null,
         meta: null,
         componentName: null,
+        timer: 0,
     };
 }
 
