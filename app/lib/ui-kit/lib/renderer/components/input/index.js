@@ -301,6 +301,9 @@ class Input extends Base {
     _confirm(ignore) {
         const inputFocused = this._staging !== null;
 
+        // 按下回车的时候，将 input 里的数据应用到当前组件
+        this._onInputChange.call(this.$input);
+
         // 如果数据修改，则发送 confirm 事件
         if (this._staging !== null && this._staging !== this.value) {
             this._staging = this.value;
