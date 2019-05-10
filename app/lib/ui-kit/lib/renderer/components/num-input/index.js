@@ -346,7 +346,7 @@ class NumInput extends Base {
         }
 
         if (typeof this.$root.preci === 'number') {
-            let rang = mathUtils.comPreci(newData);
+            let rang = mathUtils.comPreci(value);
             if (rang > this.$root.preci) {
                 value = value.toFixed(this.$root.preci);
             }
