@@ -68,9 +68,6 @@ export const methods = {
     },
     async onMouseDown(event: any, path: string) {
         const that: any = this;
-        if (that.lock) {
-            return;
-        }
         if (that.movePath) {
             if (!that.dumps.uuid) {
                 return;
@@ -91,13 +88,14 @@ export const methods = {
                         click() {
                             that.$emit('datachange', 'clearNode', [path]);
                         },
-                        disabled: that.disabled,
+                        enabled: !that.disabled,
                     },
                     {
                         label: that.t('move_data'),
                         click() {
                             that.$emit('datachange', 'setMovePath', [path]);
                         },
+                        enabled: !that.lock,
                     },
                 ],
             });

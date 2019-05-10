@@ -94,6 +94,12 @@ npm install electron-rebuild -g
 
 3. 建议 vscode 的个人设置里面启用 tslint.autoFixOnSave、tslint.jsEnable
 
+### 打包编辑器
+1. 先把分支都切换好，引擎在 master/3d;
+2. npm run clear
+3. npm install
+4. npm run publish
+
 ### 其他参考资料
 
 编辑器使用的基础模块的接口说明，因为部分文档存在与 node_modules 内，所以需要在项目构建完成后才能够预览。

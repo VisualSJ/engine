@@ -70,6 +70,14 @@ function queryClipUuid(comp) {
     const clips = animComp.value.clips.value.map((item) => {
         return item.value.uuid;
     });
+    // Hack: 针对 default clip 有值而 clips 无值做处理，后续引擎处理好后可移除
+    if (!clips || clips.length === 0) {
+        return {
+            defaultClip: null,
+            clips: [],
+            compIndex,
+        }
+    }
     return {
         defaultClip: animComp.value.defaultClip.value.uuid,
         clips,

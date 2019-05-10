@@ -21,7 +21,7 @@ module.exports = {
         jump_last_frame: 'Jump to the last frame',
         insert_event: 'Insert frame\'s event',
     },
-    property_tools: {
+    property: {
         create_prop: 'Add prop track',
         remove_prop: 'Remove prop track',
         clear_keys: 'Clear keyframes data',

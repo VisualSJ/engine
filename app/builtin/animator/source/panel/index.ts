@@ -1332,8 +1332,12 @@ export async function ready() {
                 }, 300);
             },
 
+            // 快捷键快速创建关键帧
             createKey() {
                 const that: any = this;
+                if (that.clipDump && that.clipDump.isLock) {
+                    return;
+                }
                 Editor.Ipc.requestToPanel('scene', 'create-clip-key', that.currentClip, that.computeSelectPath, that.selectProperty[0], that.selectProperty[1], that.currentFrame);
             },
 

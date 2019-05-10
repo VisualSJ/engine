@@ -1,4 +1,4 @@
-<div class="content-item preview-row"
+<div :class="['content-item', 'preview-row', lock ? 'lock' : '']"
     v-if="display"
     :style="previewStyle"
     @click.right="onPopMenu"

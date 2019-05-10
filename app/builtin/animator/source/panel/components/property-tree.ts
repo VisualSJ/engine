@@ -26,7 +26,8 @@ export const props = [
     'prop',
     'comp',
     'missing',
-    'select'
+    'select',
+    'lock'
 ];
 
 export function data() {
@@ -72,6 +73,12 @@ export const computed = {
         }
         return `${that.comp}.${that.name}`;
     },
+    disabled() {
+        const that: any = this;
+        if (that.lock || that.missing) {
+            return true;
+        }
+    },
 };
 
 export const components = {};
@@ -95,12 +102,14 @@ export const methods = {
                         click() {
                             that.$emit('datachange', 'removeProp', that.params);
                         },
+                        enabled: !that.lock,
                     },
                     {
                         label: that.t('clear_keys'),
                         click() {
                             that.$emit('datachange', 'clearKeys', that.params);
                         },
+                        enabled: !that.disabled,
                     },
                 ],
             });
@@ -108,6 +117,9 @@ export const methods = {
         }
         if (name !== 'key') {
             that.$emit('datachange', 'selectProperty', that.params);
+            return;
+        }
+        if (that.disabled) {
             return;
         }
         const isEmpty = event.target.getAttribute('empty');

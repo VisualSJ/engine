@@ -50,6 +50,7 @@
                         :frame="currentFrame"
                         :select="selectProperty"
                         @datachange="onProperty"
+                        :lock="item.missing || !selectedId || (clipDump && clipDump.isLock)"
                     ></property-tree>
                 </template>
             </div>
@@ -99,13 +100,14 @@
                             :key="index + item.path"
                             :box="boxData"
                             :select="selectePath"
-                            :lock="clipDump && clipDump.isLock"
+                            :lock="!item.uuid"
                         ></preview-row>
                     </template>
                 </div>
                 <template v-if="boxStyle && boxInfo && boxInfo.type === 'node'">
                     <div class="box" :style="boxStyle"></div>
                 </template>
+                <div class="lock-mask" v-if="clipDump && clipDump.isLock"></div>
             </div> 
             <div class="property-tools">
                 <span>WrapMode</span>
@@ -147,13 +149,14 @@
                             @startdrag="updateDragInfo"
                             :key="index"
                             :box="boxData"
-                            :lock="clipDump && clipDump.isLock"
+                            :lock="item.missing || !selectedId"
                         ></preview-row>
                     </template>
                 </div>
                 <template v-if="boxStyle && boxInfo && boxInfo.type === 'property'">
                     <div class="box" :style="boxStyle"></div>
                 </template>
+                <div class="lock-mask" v-if="clipDump && clipDump.isLock"></div>
             </div>
             <!-- <control-preview 
                 :position="pointerPosition"
@@ -183,7 +186,7 @@
                     {{previewPointer.frame}}
                 </div>
             </template>
-            <!-- 显示当前鼠标moveInfo移动过程中的关键帧信息 -->
+            <!-- 显示当前鼠标 moveInfo 移动过程中的关键帧信息 -->
             <template v-if="moveInfo">
                 <div class="keyframe-move-info" 
                     :style="'transform: translate('+moveInfo.x+'px,'+moveInfo.y+'px)'"

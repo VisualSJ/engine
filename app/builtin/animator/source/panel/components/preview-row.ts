@@ -15,7 +15,8 @@ export const props = [
     'index',
     'scroll',
     'box',
-    'select'
+    'select',
+    'lock',
 ];
 
 export function data() {
@@ -33,9 +34,6 @@ export const watch = {
     // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
         const that: any = this;
-        if (that.lock) {
-            return;
-        }
         that.refreshTaskNumber ++;
         // 不显示的时候不去更新和计算
         if (!that.display) {
