@@ -1375,15 +1375,14 @@ export async function ready() {
                         that.onEvents('addEvent', params);
                         break;
                     case 'update-state':
-                        let operate = params[0];
-                        if (operate === 'play' && that.animationState === 'pause') {
-                            operate = 'resume';
+                        if (params[0] === 'play' && that.animationState === 'pause') {
+                            params[0] = 'resume';
                         }
                         const changeSuccess = await Editor.Ipc.requestToPanel('scene', 'change-clip-state', operate, that.currentClip);
                         if (!changeSuccess) {
-                            console.warn(`${that.currentClip} change play status ${operate} failed！`);
+                            console.warn(`${that.currentClip} change play status ${params[0]} failed！`);
                         }
-                        if (operate === 'stop') {
+                        if (params[0] === 'stop') {
                             that.setCurrentFrame(0);
                         }
                         break;
