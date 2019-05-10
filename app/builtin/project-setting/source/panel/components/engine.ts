@@ -13,6 +13,7 @@ export function data() {
     return {
         settings: {
             use_global: true,
+            physics: 'cannon',
             javascript: {
                 builtin: true,
                 custom: '',
@@ -34,6 +35,14 @@ export const components = {};
 
 export const methods = {
     /**
+     * 翻译
+     * @param key
+     */
+    t(key: string) {
+        const name = `project-setting.engine.${key}`;
+        return Editor.I18n.t(name);
+    },
+    /**
      * 刷新组件
      */
     async refresh() {
@@ -42,6 +51,8 @@ export const methods = {
         vm.settings.use_global = await Editor.Ipc.requestToPackage('engine', 'get-config', 'local', `${Editor.Project.type}.use_global`);
         vm.settings.javascript.builtin = await Editor.Ipc.requestToPackage('engine', 'get-config', vm.position, `${Editor.Project.type}.javascript.builtin`);
         vm.settings.javascript.custom = await Editor.Ipc.requestToPackage('engine', 'get-config', vm.position, `${Editor.Project.type}.javascript.custom`);
+
+        vm.settings.physics = await Editor.Ipc.requestToPackage('engine', 'get-config', 'local', `${Editor.Project.type}.physics`);
     },
 
     /**
@@ -61,6 +72,10 @@ export const methods = {
         }
 
         data[array[array.length - 1]] = event.target.value;
+    },
+
+    _onSelectChanged(event: any, key: string) {
+        Editor.Ipc.sendToPackage('engine', 'set-config', 'local', `${Editor.Project.type}.${key}`, event.target.value);
     },
 };
 

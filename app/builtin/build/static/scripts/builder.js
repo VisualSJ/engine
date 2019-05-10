@@ -552,6 +552,7 @@ class Builder {
                 nativeRenderer,
                 isWeChatGame,
                 isQQPlay,
+                physics,
             } = this._options;
 
             // 利用引擎内部的 gulp 任务来打包相应的引擎模块
@@ -578,6 +579,8 @@ class Builder {
             ].concat(excludes).concat([
                 '--platform',
                 'build',
+                '--physics',
+                physics,
                 ...args,
             ]);
 

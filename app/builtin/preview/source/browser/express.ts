@@ -58,11 +58,13 @@ export async function start() {
     app.set('views', join(__dirname, '../../static/views'));
 
     app.get('/setting.js', async (req: any, res: any, next: any) => {
+        const physics: string = await Editor.Ipc.requestToPackage('engine', 'get-config', 'local', `${Editor.Project.type}.physics`);
         // 监听构建
         const data = await Editor.Ipc.requestToPackage('build', 'build-setting', {
             debug: true,
             type: 'preview', // 构建 setting 的种类
             platform: 'web-desktop',
+            physics,
             start_scene: getConfig('start_scene'),
             designWidth: getConfig('design_width'),
             designHeight: getConfig('design_height'),

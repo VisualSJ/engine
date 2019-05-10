@@ -34,4 +34,12 @@ module.exports = {
         module: '模块',
         inquiry: '是否打包',
     },
+    engine: {
+        cocos_default: '使用内置引擎',
+        user_customize: '自定义引擎路径',
+        physics: '物理选项',
+        cannon: '轻量级物理',
+        builtin: '仅碰撞检测',
+        ammo: '重量级物理',
+    },
 };

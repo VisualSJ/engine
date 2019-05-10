@@ -12,7 +12,7 @@
 
     <!-- javascript -->
     <ui-section expand header="Javascript">
-        <ui-prop label="使用内置引擎"
+        <ui-prop :label="t('cocos_default')"
             :disabled="position === 'local' && settings.use_global"
         >
             <ui-checkbox slot="content"
@@ -20,13 +20,28 @@
                 @confirm="_onSettingsChanged($event, 'javascript.builtin')"
             ></ui-checkbox>
         </ui-prop>
-        <ui-prop label="自定义引擎路径"
+        <ui-prop :label="t('user_customize')"
             :disabled="(position === 'local' && settings.use_global) || settings.javascript.builtin"
         >
             <ui-input slot="content"
                 :value="settings.javascript.custom"
                 @confirm="_onSettingsChanged($event, 'javascript.custom')"
             ></ui-input>
+        </ui-prop>
+    </ui-section>
+
+    <ui-section expand header="Physics">
+        <ui-prop :label="t('physics')">
+            <div slot="content">
+                <ui-select 
+                    :value="settings.physics"
+                    @confirm="_onSelectChanged($event, 'physics')"
+                >
+                    <option value="cannon">{{t('cannon')}}</option>
+                    <option value="builtin">{{t('builtin')}}</option>
+                    <!-- <option value="ammo">{{t('ammo')}}</option> -->
+                </ui-select>
+            </div>
         </ui-prop>
     </ui-section>
 

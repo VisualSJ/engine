@@ -169,7 +169,7 @@ export async function ready() {
                     }
                 }
                 this.name = basename(Editor.Project.path);
-                const scenes = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', {type: 'scene'});
+                const scenes = await Editor.Ipc.requestToPackage('asset-db', 'query-assets', { type: 'scene' });
                 if (scenes) {
                     this.isReady = true;
                 }
@@ -214,7 +214,7 @@ export async function ready() {
 
             // 检查数据后再更新数据
             onCheckChange(key: string, value: any) {
-                const {platform} = this.setting;
+                const { platform } = this.setting;
                 let checkSuccess = false;
                 // TODO 更多构建平台加入后，需要更新完善该检测函数
                 switch (key) {
@@ -321,7 +321,7 @@ export async function ready() {
                     return;
                 }
                 this.rate = 0;
-                const {platform, source_map, debug, build_path, md5Cache, force_combile_engin} = this.setting;
+                const { platform, source_map, debug, build_path, md5Cache, force_combile_engin } = this.setting;
                 const data = {
                     platform,
                     source_map,
@@ -346,9 +346,10 @@ export async function ready() {
                 });
                 data.scenes = scenes;
                 const excludedModules: any[] = await Editor.Ipc.requestToPackage('project-setting', 'get-config', 'modules.excluded') || [];
-                const options = Object.assign(data, this.$refs.children._data, {excludedModules});
+                const physics: string = await Editor.Ipc.requestToPackage('engine', 'get-config', 'local', `${Editor.Project.type}.physics`);
+                const options = Object.assign(data, this.$refs.children._data, { excludedModules, physics });
                 options.embedWebDebugger =
-                (platform === 'web-mobile' || platform === 'fb-instant-games') && options.debug;
+                    (platform === 'web-mobile' || platform === 'fb-instant-games') && options.debug;
                 Editor.Ipc.sendToPackage('build', 'build', options);
             },
 
@@ -368,10 +369,10 @@ export async function ready() {
             },
         },
         components: {
-            'web-desktop' : require('./components/web-desktop'),
-            'web-mobile' : require('./components/web-mobile'),
-            'wechat-game' : require('./components/wechat-game'),
-            'wechat-game-subcontext' : require('./components/wechat-game-subcontext'),
+            'web-desktop': require('./components/web-desktop'),
+            'web-mobile': require('./components/web-mobile'),
+            'wechat-game': require('./components/wechat-game'),
+            'wechat-game-subcontext': require('./components/wechat-game-subcontext'),
         },
         created() {
             this.initData();
@@ -379,6 +380,6 @@ export async function ready() {
     });
 }
 
-export async function beforeClose() {}
+export async function beforeClose() { }
 
-export async function close() {}
+export async function close() { }

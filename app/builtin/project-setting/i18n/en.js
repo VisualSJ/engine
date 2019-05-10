@@ -34,4 +34,12 @@ module.exports = {
         module: 'name',
         inquiry: 'packing',
     },
+    engine: {
+        cocos_default: 'Using the built-in engine',
+        user_customize: 'Customize the engine path',
+        physics: 'Physics',
+        cannon: 'Lightweight physics',
+        builtin: 'Collision detection only',
+        ammo: 'Heavyweight physics',
+    },
 };

@@ -88,6 +88,7 @@ export async function load() {
             builtin: true,
             custom: '',
         },
+        physics: 'cannon',
     });
     profile.default.set('3d', {
         use_global: true,
@@ -99,6 +100,7 @@ export async function load() {
             builtin: true,
             custom: '',
         },
+        physics: 'cannon',
     });
 
     Editor.Task.removeSyncTask(`startup.engine`);
