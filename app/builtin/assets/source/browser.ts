@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import { shell } from 'electron';
 import { existsSync, outputFileSync, readFileSync } from 'fs-extra';
 import { join } from 'path';
-import { parse } from 'plist';
+const parse = require('plist').parse;
 
 const profile = {
     default: Editor.Profile.load('profile://default/packages/assets.json'),
