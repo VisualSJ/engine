@@ -37,6 +37,16 @@
         ></ui-num-input>
     </ui-prop>
 
+    <!-- UI 默认精度 -->
+    <ui-prop
+        :label="t('preci', language)"
+    >
+        <ui-num-input slot="content"
+            :value="settings.preci"
+            @confirm="_onSettingChanged($event, 'preci')"
+        ></ui-num-input>
+    </ui-prop>
+
     <!-- 皮肤主题 -->
     <ui-prop
         :label="t('themeColor', language)"

@@ -10,6 +10,7 @@ module.exports = {
     general: {
         language: 'Language',
         step: 'Number step',
+        preci: 'Number preci',
         theme: 'theme',
         themeColor: 'Theme Color ',
         node_tree: 'Node Tree State',

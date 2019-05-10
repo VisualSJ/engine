@@ -19,6 +19,9 @@ const HTML = `${fs.readFileSync(path.join(__dirname, './num-input.html'), 'utf8'
 
 const instanceArray = [];
 let customStyle = '';
+const profile = require('./../../../../../profile');
+
+const uiProfile = profile.load('profile://global/ui-kit.json');
 
 /**
  * Attribute
@@ -63,6 +66,16 @@ class NumInput extends Base {
     static updateStep(step) {
         instanceArray.map((elem) => {
             elem.step = step;
+        });
+    }
+
+    /**
+     * 动态传入 num-input 显示精度问题
+     * @param {*} preci
+     */
+    static updatePreci(preci) {
+        instanceArray.map((elem) => {
+            elem.preci = preci;
         });
     }
 
@@ -114,7 +127,10 @@ class NumInput extends Base {
                 }
 
                 if (typeof this.preci === 'number') {
-                    value = value.toFixed(this.preci);
+                    let rang = mathUtils.comPreci(value);
+                    if (rang > this.preci) {
+                        value = value.toFixed(this.preci);
+                    }
                 }
 
                 if (typeof this.max === 'number') {
@@ -165,7 +181,8 @@ class NumInput extends Base {
     // invalid
 
     get value() {
-        return this.getAttribute('value') - 0 || 0;
+        const value = this.getAttribute('value') - 0;
+        return value || 0;
     }
     set value(val) {
         val -= 0;
@@ -181,7 +198,7 @@ class NumInput extends Base {
     }
 
     get preci() {
-        return this.getAttribute('preci') || null;
+        return this.getAttribute('preci') || uiProfile.get('num_input.preci');
     }
     set preci(val) {
         val -= 0;
@@ -189,7 +206,7 @@ class NumInput extends Base {
     }
 
     get step() {
-        return this.getAttribute('step') || 1;
+        return this.getAttribute('step') || uiProfile.get('num_input.step');
     }
     set step(val) {
         val -= 0;
@@ -328,8 +345,23 @@ class NumInput extends Base {
             return;
         }
 
+        if (typeof this.$root.preci === 'number') {
+            let rang = mathUtils.comPreci(newData);
+            if (rang > this.$root.preci) {
+                value = value.toFixed(this.$root.preci);
+            }
+        }
+
+        if (typeof this.$root.max === 'number') {
+            value = Math.min(this.$root.max, value);
+        }
+
+        if (typeof this.$root.min === 'number') {
+            value = Math.max(this.$root.min, value);
+        }
+
         // 更新当前组件上的 value
-        this.$root.value = this.value;
+        this.$root.value = value;
 
         // 发送 change 事件
         this.$root.dispatch('change');

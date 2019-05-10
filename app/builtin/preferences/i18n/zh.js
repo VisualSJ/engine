@@ -10,6 +10,7 @@ module.exports = {
     general: {
         language: '编辑器语言',
         step: '数值默认步长',
+        preci: '数值默认精度',
         theme: '皮肤主题',
         themeColor: '配色主题',
         node_tree: '管理器节点折叠状态',
