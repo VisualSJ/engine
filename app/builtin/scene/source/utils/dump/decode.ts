@@ -364,6 +364,7 @@ export async function decodePatch(path: string, dump: any, node: any) {
         } else if (dump.type === 'cc.CurveRange') {
             for (const key of Object.keys(dump.value)) {
                 const item = dump.value[key];
+                item.path = `${path}.${key}`;
                 decodePatch(item.path, item, node);
             }
         } else if (dump.type === 'cc.AnimationCurve') {
