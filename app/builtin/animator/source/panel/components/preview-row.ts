@@ -15,6 +15,7 @@ export const props = [
     'index',
     'scroll',
     'box',
+    'select'
 ];
 
 export function data() {
@@ -24,6 +25,7 @@ export function data() {
         imageSrc: [],
         refreshTask: null,
         refreshTaskNumber: 0, // 记录数据更新的次数
+        dbKeyClick: false,
     };
 }
 
@@ -31,6 +33,9 @@ export const watch = {
     // todo 监听 keyFrames 的变化会触发多次更新
     keyFrames() {
         const that: any = this;
+        if (that.lock) {
+            return;
+        }
         that.refreshTaskNumber ++;
         // 不显示的时候不去更新和计算
         if (!that.display) {
@@ -55,7 +60,7 @@ export const watch = {
 
     box() {
         const that: any = this;
-        if (!that.display || !that.box || !that.keyData) {
+        if (!that.display || !that.box || !that.keyData || !that.param) {
             return;
         }
         const {origin, w, h, type} = that.box;
@@ -122,7 +127,7 @@ export const computed = {
     // 筛选出能在当前组件内显示的选中关键帧数据
     selectKey() {
         const that: any = this;
-        if (!that.selectInfo || that.selectInfo.data.length < 1) {
+        if (!that.selectInfo || that.selectInfo.data.length < 1 || !that.param) {
             return null;
         }
         const {data, params} = that.selectInfo;
@@ -155,6 +160,10 @@ export const computed = {
     },
 
     keyType() {
+        const that: any = this;
+        if (!that.param) {
+            return 'key';
+        }
         // @ts-ignore
         if (this.param[2] === 'spriteFrame' && this.param[1] === 'cc.SpriteComponent') {
             return 'sprite';
@@ -176,6 +185,10 @@ export const methods = {
     async refresh() {
         const that: any = this;
         that.refreshTaskNumber = 0;
+        if (!that.keyFrames) {
+            that.keyData = null;
+            return;
+        }
         if (that.keyFrames.length < 1) {
             that.keyData = null;
             return;
@@ -336,7 +349,16 @@ export const methods = {
         event.stopPropagation();
         const that: any = this;        // @ts-ignore
         const data = JSON.parse(JSON.stringify(that.keyData[index]));
+        if (that.dbKeyClick) {
+            that.$emit('datachange', 'updateFrame', [data.frame]);
+        } else {
+            that.dbKeyClick = true;
+            setTimeout(() => {
+                that.dbKeyClick = false;
+            }, 300);
+        }
         const param = that.param;
+
         if (!that.name) {
             if (data.prop === 'spriteFrame' && data.comp === 'cc.SpriteComponent') {
                 data.imageSrc = await this.queryImageSrc(data.data);
@@ -379,6 +401,9 @@ export const methods = {
     onPopMenu(event: any) {
         event.stopPropagation();
         const that: any = this;
+        if (that.lock) {
+            return;
+        }
         const params: any = {
             param : that.param,
         };

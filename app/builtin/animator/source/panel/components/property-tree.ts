@@ -1,7 +1,11 @@
 
 export const template = `
-<div class="content-item property" @mousedown="onMouseDown">
-    <span class="name">{{name}}</span>
+<div class="content-item property" 
+    :missing="missing"
+    :selected="select && select[0] === comp && select[1] === prop"
+    @mousedown="onMouseDown"
+>
+    <span class="name" :title="displayName">{{displayName}}</span>
     <span class="oprate">
         <i class="key"
             name="key"
@@ -21,6 +25,8 @@ export const props = [
     'frame',
     'prop',
     'comp',
+    'missing',
+    'select'
 ];
 
 export function data() {
@@ -55,6 +61,16 @@ export const computed = {
     params(): any {
         // @ts-ignore
         return [this.comp, this.prop, this.frame];
+    },
+    displayName() {
+        const that: any = this;
+        if (!that.comp) {
+            return that.name;
+        }
+        if (that.missing) {
+            return `${that.comp}.${that.name} (missing)`;
+        }
+        return `${that.comp}.${that.name}`;
     },
 };
 
@@ -91,6 +107,7 @@ export const methods = {
             return;
         }
         if (name !== 'key') {
+            that.$emit('datachange', 'selectProperty', that.params);
             return;
         }
         const isEmpty = event.target.getAttribute('empty');

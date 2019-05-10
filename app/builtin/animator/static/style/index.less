@@ -1,4 +1,6 @@
 
+@c-missing: #96933b;
+@c-select: #1f537d;
 .animator {
     display: flex;
     height: 100%;
@@ -16,6 +18,15 @@
     // 公共全局样式
     .flex-1 {
         flex: 1;
+    }
+    .lock-mask {
+        position: absolute;
+        z-index: 1;
+        top:0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: #302d2d88;
     }
     .content-device {
         height: 28px;
@@ -36,8 +47,9 @@
         z-index: 1;
     }
     .content-item {
-        line-height: 24px;
+        line-height: 22px;
         height: 24px;
+        padding: 1px;
         &:nth-child(even) {
             background: rgba(95, 90, 90, 0.25);
         }
@@ -224,6 +236,25 @@
             top:0;
             cursor: pointer;
         }
+        .tips {
+            background-color: #689eca;
+            position: absolute;
+            text-indent: 0;
+            text-align: center;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            line-height: 24px;
+            width: 0;
+            transition: width 0.5s;
+        }
+    }
+    .icon-lock {
+        position: relative;
+        font-size: 8px;
+        top: -4px;
+        right: 3px;
+        color: #afa9a9;
     }
     .content-item:hover {
         background-color: #6d6969;
@@ -232,11 +263,49 @@
             display: flex;
         }
     }
+    .content-item[draggable=true] {
+        background-color: @c-missing;
+        border-left: 1px solid #e6cc42;
+        color: white;
+    }
+    .content-item[hoving=true], .content-item[moving]:hover {
+        .tips {
+            width: 110px;
+        }
+    }
     .content-item[selected] {
-        background-color: #1f537d;
+        background-color: @c-select;
     }
 }
-
+@keyframes shine {
+    0% { background-position: -1px -1px;}
+    100% { background-position: -12px -12px;}
+}
+.nodes {
+    .content-item.moving {
+        &[draggable=true] {
+            .tips {
+                display: none;
+            }
+        }
+        &[moving] {
+            background: repeating-linear-gradient(135deg, transparent, transparent 2px, #fff 2px, #fff 4px);
+            animation: shine 1s infinite linear;
+            overflow: hidden;
+            .node {
+                background: #6d6969;
+            }
+            .operate {
+                display: none;
+            }
+        }
+        &[moving="missing"] {
+            .node {
+                background: @c-missing;
+            }
+        }
+    }
+}
 //////////////////////////// property-tools /////////////////////////////////////////////
 .property-tools {
     display: flex;
@@ -381,7 +450,7 @@
 
 
 ///////////////////// property-tree ///////////////////////////////////////////////
-.property {
+#properties .property {
     display: flex;
     justify-content: space-between;
     padding-left: 10px;
@@ -389,6 +458,9 @@
     .name {
         width: 80%;
         flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .oprate {
         display: flex;
@@ -415,8 +487,18 @@
             background-color: @c-key-active;
         }
     }
+    &[missing] {
+        background-color: @c-missing;
+        border-left: 1px solid #e6cc42;
+        color: white;
+    }
+    &[selected] {
+        background-color: @c-select;
+    }
 }
-.property:hover {
+#properties .property:hover {
+    background-color: #6d6969;
+    color: white;
     .oprate {
         display: flex;
     }

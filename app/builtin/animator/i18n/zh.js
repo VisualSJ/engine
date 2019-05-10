@@ -45,6 +45,7 @@ module.exports = {
     },
     node_tree: {
         move_data: '迁移数据',
+        move_data_to: '迁移数据到该节点',
         clear_data: '清空数据',
     },
     preview_row: {
@@ -58,6 +59,9 @@ module.exports = {
     overwrite: '覆盖',
     is_clear: '是否清除数据？',
     is_clear_message: '此次操作将会清除关键帧，是否继续？',
+    is_move_data: '是否迁移数据到当前节点？',
+    is_move_data_message: '此次操作将会覆盖原节点所有关键帧数据，是否继续？',
+    move: '迁移',
     clear: '清除',
     copy: '复制',
     paste: '粘贴',

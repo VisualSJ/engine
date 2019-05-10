@@ -1,35 +1,32 @@
-<div class="content-item" 
+<div :class="nodeClass" 
     v-if="dumps"
-    :selected="select === dumps.uuid"
-    @mousedown="onMouseDown(dumps.uuid)" 
+    :selected="selectPath === dumps.path"
+    :moving="movingProperty"
+    :draggable="!dumps.uuid && !lock"
+    :hoving="hoving"
+    @mousedown="onMouseDown($event, dumps.path)"
+    @dragstart="onDragStart"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+    @dragend="onDragEnd"
 >
     <div
         class="node"
         :title="dumps.name"
         :style="nodeStyle"
-        >{{dumps.name}}
+        ><i v-if="lock || !dumps.uuid" class="lock iconfont icon-lock"></i>{{dumps.name}}<span v-if="!dumps.uuid"> (missing)</span>
     </div>
-    <div class="operate" @mousedown="onOperate">
-        <!-- <i class="iconfont icon-move"
-            name="move"
-            :title="t('move_data')"
-        ></i> -->
-        <i class="iconfont icon-clear-b"
-            name="clear"
-            :title="t('clear_data')"
+    <div class="operate">
+        <i v-if="!movePath" class="iconfont icon-list"
+            name="showPopMenu"
         ></i>
-    <!-- <div class="node-edit">
-        <span></span>
-        <ui-input></ui-input>
-    </div> -->
+        <!-- <i v-else class="iconfont icon-move"
+            name="moveData"
+            :title="t('move_data_to')"
+        ></i> -->
     </div>
-    <!-- <template v-if="dumps.children && dumps.children.length > 0" v-for="node in dumps.children">
-        <node-tree v-if="node"
-        :dumps="node"
-        :key="node.uuid"
-        :select="select"
-        :indent="node.indent"
-        :uuid="uuid"
-        >{{node}}</node-tree>
-    </template> -->
+    <div class="tips" v-if="movePath && dumps.uuid">
+        {{t('move_data_to')}}
+    </div>
 </div>

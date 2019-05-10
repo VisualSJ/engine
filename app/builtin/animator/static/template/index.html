@@ -15,37 +15,28 @@
                 ref="nodes"
                 @scroll="onScroll($event, 'node')"
             >
-                
-            <template v-if="nodeDump">
+            <template v-if="nodes">
                 <node-tree
-                    v-for="(item, index) of nodeDump.nodes"
+                    v-for="(item, index) of nodes"
                     :dumps="item"
-                    :select="selectedId"
+                    :select-path="computeSelectPath"
                     :uuid="currentClip"
                     :key="index"
+                    :move-path = "moveNodePath"
+                    :lock="clipDump && clipDump.isLock"
                     @datachange="onNodes"
                 ></node-tree>
             </template>
-                <!-- <div class="wrap"
-                    :style="{height: nodesHeight + 'px'}"
-                    v-if="nodeDump"                 
-                >
-                    <node-tree 
-                        v-for="item of nodeDump.nodes"
-                        :dumps="item"
-                        :select="selectedId"
-                        :uuid="currentClip"
-                    ></node-tree>
-                </div> -->
             </div>
             <property-tools
-                :uuid="selectedId"
-                :update-flag="selectDataChange"
+                :menu="propertiesMenu"
                 @datachange="onProperty"
             ></property-tools>
-            <div class="flex-1 content properties"
+            <div 
+                id="properties"
+                class="flex-1 content properties"
                 @scroll="onScroll($event, 'property')"
-            >    
+            >
                 <template
                     v-if="properties && Object.keys(properties).length > 0" 
                 >
@@ -55,7 +46,9 @@
                         :prop="item.prop"
                         :comp="item.comp"
                         :info="item.dump"
+                        :missing="item.missing"
                         :frame="currentFrame"
+                        :select="selectProperty"
                         @datachange="onProperty"
                     ></property-tree>
                 </template>
@@ -95,7 +88,7 @@
                         v-if="grid && nodeDump && clipDump"
                     >
                         <preview-row 
-                            v-for="(item, index) in nodeDump.nodes"
+                            v-for="(item, index) in nodes"
                             :param="[item.path]"
                             :key-frames=calcNodeFrames(item.path)
                             :index="index"
@@ -105,6 +98,8 @@
                             @startdrag="updateDragInfo"
                             :key="index + item.path"
                             :box="boxData"
+                            :select="selectePath"
+                            :lock="clipDump && clipDump.isLock"
                         ></preview-row>
                     </template>
                 </div>
@@ -116,6 +111,7 @@
                 <span>WrapMode</span>
                 <ui-select 
                     :value="clipDump ? clipDump.wrapMode : 0"
+                    :disabled="clipDump && clipDump.isLock"
                     name="wrapMode"
                 >
                     <option value="0">Default</option>
@@ -132,15 +128,16 @@
             >
                 <div
                     class="wrap"
-                    v-if="grid && clipDump && properties"
+                    v-if="properties"
                     :style="{height:propertyHeight+'px'}"
                 >
                     <template
                         v-for="(item, name, index) in properties"
                     >
-                        <preview-row 
+                        <preview-row
+                            
                             :key-frames=item.keyFrames
-                            :param="[selectPath, item.comp, item.prop]"
+                            :param="[computeSelectPath, item.comp, item.prop]"
                             :select-Info="selectKeyInfo"
                             :copy-info="copyKeyInfo"
                             :name="name"
@@ -150,6 +147,7 @@
                             @startdrag="updateDragInfo"
                             :key="index"
                             :box="boxData"
+                            :lock="clipDump && clipDump.isLock"
                         ></preview-row>
                     </template>
                 </div>
@@ -208,7 +206,6 @@
     ></canvas>
     <div class="foot">
         <div class="left">
-            <ui-button name="exit">退出</ui-button>
             <span>Clips</span>
             <ui-select v-if="clipsMenu && clipsMenu.length > 0" name="clip" :value="currentClip">
                 <option v-for="item in clipsMenu" :key="item.uuid" :value="item.uuid">{{item.name}}</option>
@@ -216,9 +213,9 @@
         </div> 
         <div class="right" v-if="clipDump">
             <span>Sample</span>
-            <ui-num-input :value="clipDump.sample" step="1" name="sample"></ui-num-input>
+            <ui-num-input :value="clipDump.sample" :disabled="clipDump.isLock" step="1" name="sample"></ui-num-input>
             <span>Speed</span>
-            <ui-num-input :value="clipDump.speed" name="speed"></ui-num-input>
+            <ui-num-input :value="clipDump.speed" :disabled="clipDump.isLock" name="speed"></ui-num-input>
             <span v-if="clipDump.duration">Duration :{{clipDump.duration.toFixed(2)}}({{(clipDump.duration / clipDump.speed).toFixed(2)}})s</span>
         </div> 
     </div>

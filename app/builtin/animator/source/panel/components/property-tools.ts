@@ -9,21 +9,16 @@ export const template = `
 `;
 
 export const props = [
-    'uuid',
     'updataFlag',
+    'menu',
 ];
 
 export function data() {
-return {
-    menu: [],
-};
+    return {
+    };
 }
 
 export const watch = {
-    async uuid() {
-        // @ts-ignore
-        await this.refresh();
-    },
 
     async updateFlag() {
         // @ts-ignore
@@ -32,7 +27,23 @@ export const watch = {
 };
 
 export const computed = {
-
+    propertiesMenu() {
+        const that: any = this;
+        if (!that.menu) {
+            return;
+        }
+        let result = [];
+        for (const item of that.menu) {
+            const label = item.displayName.replace(/\./g, '_');
+            result.push({
+                label,
+                click() {
+                    that.$emit('datachange', 'createProp', [item.comp, item.prop]);
+                },
+            });
+        }
+        return result;
+    }
 };
 
 export const components = {};
@@ -46,14 +57,14 @@ export const methods = {
         const that: any = this;
         const name = event.target.getAttribute('name');
         if (name === 'createProp') {
-            if (!that.uuid) {
+            if (!that.menu) {
                 console.warn('please select node first!');
                 return;
             }
             Editor.Menu.popup({
                 x: event.pageX,
                 y: event.pageY,
-                menu: that.menu,
+                menu: that.propertiesMenu,
             });
         } else {
             that.$emit('datachange', name);
@@ -61,20 +72,6 @@ export const methods = {
     },
 
     async refresh() {
-        // @ts-ignore
-        const that: any = this;
-        const properties = await Editor.Ipc.requestToPanel('scene', 'query-animation-properties', that.uuid);
-        const result = [];
-        for (const item of properties) {
-            const label = item.displayName.replace(/\./g, '_');
-            result.push({
-                label,
-                click() {
-                    that.$emit('datachange', 'createProp', [item.comp, item.prop]);
-                },
-            });
-        }
-        that.menu = result;
     },
 };
 export async function mounted() {}

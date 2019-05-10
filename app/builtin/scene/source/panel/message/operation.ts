@@ -440,6 +440,13 @@ export function apply(messages: any) {
     };
 
     /**
+     * 迁移节点动画数据
+     */
+    messages['change-node-path'] = (clipUuid: string, srcPath: string, dstPath: string) => {
+        return $scene.forwarding('Animation', 'operation', ['changeNodeDataPath', clipUuid, srcPath, dstPath]);
+    };
+
+    /**
      * 添加帧事件
      */
     messages['add-clip-event'] = (clipUuid: string, frame: number, funcName: string , params: any[]) => {

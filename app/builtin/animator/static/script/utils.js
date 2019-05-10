@@ -13,6 +13,8 @@ async function formatNodeDump(dump, path = '', indent = 0, obj = {}) {
     if (!path) {
         initNode(obj);
         obj.uuid2path[dump.uuid.value] = '/';
+        obj.path2uuid['/'] = dump.uuid.value;
+
         obj.nodes.push({
             path: '/',
             uuid: dump.uuid.value,
@@ -158,6 +160,19 @@ function calcParamPath(param) {
     }
     return path;
 }
+
+function isExitProperty(target, arr) {
+    const index = arr.findIndex((item) => {
+        if (target.comp) {
+            return target.comp === item.comp && target.prop === item.prop;
+        }
+        if (!target.comp) {
+            return target.prop === item.prop;
+        }
+    })
+    return index !== -1;
+}
+
 module.exports = {
     smoothScale,
     formatNodeDump,
@@ -166,4 +181,5 @@ module.exports = {
     timeToFrame,
     frameToTime,
     sortSelectParams,
+    isExitProperty,
 };

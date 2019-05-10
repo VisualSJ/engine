@@ -6,21 +6,21 @@
     @drop="onDrop"
 >
     <!-- 节点预览显示的关键帧线条 -->
-    <template v-if="!name && !draggable">
+    <template v-if="keyData && !name && !draggable">
         <div
             class="line"
             v-for="(item, i) in keyData"
-            v-if="keyFrames[i + 1]"
+            v-if="keyData[i + 1]"
             :style="queryLineStyle(item, keyData[i + 1])"
         ></div>
     </template>
 
     <!-- 属性轨道显示的关键帧线条 -->
-    <template v-if="name && !draggable">
+    <template v-if="keyData && name && !draggable">
         <div
             class="line"
             v-for="(item, i) in keyData"
-            v-if="keyFrames[i + 1]"
+            v-if="keyData[i + 1]"
             :style="queryLineStyle(item, keyData[i + 1])"
             :title="t('line_tips')"
             @dblclick="openBezierEditor(item)"
@@ -28,7 +28,9 @@
     </template>
 
     <!-- 关键帧显示 -->
-    <template>
+    <template
+        v-if="keyData"
+    >
         <div
             :class="keyType"
             name="key"
@@ -52,16 +54,6 @@
             </template>
         </div>
     </template>
-
-    <!-- <template v-if="display">
-        <div class="v-key" preview 
-            name="key"
-            v-for="item in virtualkeys" 
-            :style="queryKeyStyle(item.x)"
-        >
-            <div class="dot"></div>
-        </div>
-    </template> -->
 
     <!-- 选中的关键数据显示 -->
     <template v-if="selectKey">

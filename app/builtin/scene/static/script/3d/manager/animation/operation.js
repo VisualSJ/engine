@@ -135,6 +135,40 @@ class AnimationOperation {
         return true;
     }
 
+    /**
+     * 更改一个节点上某个动画的节点数据到另一个节点上
+     * @param {String} uuid 动画节点的 uuid
+     * @param {String} clipUuid 被修改的动画的uuid
+     * @param {Strig} srcPath 待转移的节点路径
+     * @param {Strig} dstPath 目标的节点路径
+     */
+    changeNodeDataPath(uuid, clipUuid, srcPath, dstPath) {
+        const animData = utils.queryNodeAnimationData(uuid, clipUuid);
+        let state = animData.animState;
+        if (!state) {
+            return false;
+        }
+
+        // 如果是非根节点
+        if (srcPath !== '/') {
+            srcPath = srcPath.substr(1);
+        }
+
+        if (dstPath !== '/') {
+            dstPath = dstPath.substr(1);
+        }
+
+        if (state.clip.curveDatas && state.clip.curveDatas[srcPath]) {
+            state.clip.curveDatas[dstPath] = state.clip.curveDatas[srcPath];
+            delete state.clip.curveDatas[srcPath];
+
+            state.initialize(animData.node);
+            return true;
+        }
+
+        return false;
+    }
+
     // 属性数据
 
     /**

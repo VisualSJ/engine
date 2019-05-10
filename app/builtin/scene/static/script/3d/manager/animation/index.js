@@ -152,9 +152,8 @@ class AnimationManager extends EventEmitter {
 
         this._lastSaveData = Manager.Utils.serialize(clip);
         this._lastSaveClipDump = this.queryClip(Scene.modes.animation.root, clipUuid);
-        // 判断是否为骨骼动画的animationclip，用id中是否有'@'来判断
-        let index = clipUuid.indexOf('@');
-        if (index >= 0) {
+
+        if (this.isSkeletonClip(clipUuid)) {
             // 骨骼动画的clip不保存事件，将事件存到meta文件中
             let eventData = utils.queryEvents(clip);
             if (eventData && eventData.length > 0) {
@@ -170,6 +169,17 @@ class AnimationManager extends EventEmitter {
         }
 
         return true;
+    }
+
+    isSkeletonClip(clipUuid) {
+        // 判断是否为骨骼动画的animationclip，用id中是否有'@'来判断
+        let index = clipUuid.indexOf('@');
+
+        if (index >= 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -441,6 +451,11 @@ class AnimationManager extends EventEmitter {
         }
 
         const dump = utils.encodeClip(state);
+
+        if (this.isSkeletonClip(clipUuid)) {
+            dump.isLock = true;
+        }
+
         return dump;
     }
 

@@ -44,6 +44,7 @@ module.exports = {
     },
     node_tree: {
         move_data: 'Move data',
+        move_data_to: 'Move data To This Node',
         clear_data: 'Clear data',
     },
     preview_row: {
@@ -57,6 +58,9 @@ module.exports = {
     overwrite: 'overwrite',
     is_clear: 'Do you want to clear this data?',
     is_clear_message: 'That will clear the keyframe, will it continue?',
+    is_move_data: 'Do you want to migrate data to the current node?',
+    is_move_data_message: 'This operation will overwrite all key frame data of the original node, Do you want to continue?',
+    move: 'move',    
     clear: 'clear',
     copy: 'copy',
     paste: 'paste',
