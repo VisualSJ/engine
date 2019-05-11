@@ -294,11 +294,11 @@ export async function decodePatch(path: string, dump: any, node: any) {
             }
         }
     } else if (dump.isArray) {
-        data[info.key].length = 0; // 重要：重置原数据
+        data[info.key] = []; // 重要：重置原数据
         if (Array.isArray(dump.value)) {
-            await Promise.all(dump.value.map(async (item: IProperty, index: number) => {
-                return await decodePatch(`${info.key}.${index}`, item, data);
-            }));
+            for (let i = 0; i < dump.value.length; i++) {
+                await decodePatch(`${info.key}.${i}`, dump.value[i], data);
+            }
         }
     } else if (ccExtends.includes(assetType) || assetType === dump.type) {
         try {
