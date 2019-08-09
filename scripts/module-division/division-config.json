@@ -11,6 +11,7 @@
         {
             "text": "Graphcis API",
             "description": "Graphcis API used by GFX. There can be more than one API existed.",
+            "required": true,
             "items": [
                 {
                     "text": "WebGL 1.0",
